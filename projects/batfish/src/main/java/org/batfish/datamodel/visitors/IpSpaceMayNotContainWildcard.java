@@ -1,0 +1,101 @@
+package org.batfish.datamodel.visitors;
+
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
+import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.PrefixIpSpace;
+import org.batfish.datamodel.UniverseIpSpace;
+
+/**
+ * Test if it's possible (or certain) that {@code _ipWildcard} might not be contained within an
+ * input {@link IpSpace}. We do not require this to be perfect -- false positives are OK, but
+ * false-negatives are not. This can return false only if we know for certain that {@code
+ * _ipWildcard} is contained with the input {@link IpSpace}.
+ */
+public class IpSpaceMayNotContainWildcard implements GenericIpSpaceVisitor<Boolean> {
+  private final IpWildcard _ipWildcard;
+
+  private final IpSpaceMayIntersectWildcard _mayIntersect;
+
+  public IpSpaceMayNotContainWildcard(IpWildcard ipWildcard) {
+    _ipWildcard = ipWildcard;
+    _mayIntersect = new IpSpaceMayIntersectWildcard(ipWildcard, this);
+  }
+
+  public IpSpaceMayNotContainWildcard(
+      IpWildcard ipWildcard, IpSpaceMayIntersectWildcard mayIntersect) {
+    _ipWildcard = ipWildcard;
+    _mayIntersect = mayIntersect;
+  }
+
+  @Override
+  public Boolean castToGenericIpSpaceVisitorReturnType(Object o) {
+    return (Boolean) o;
+  }
+
+  private boolean ipSpaceContainsWildcard(IpSpace ipSpace) {
+    return !ipSpace.accept(this);
+  }
+
+  private boolean ipSpaceMayIntersectWildcard(IpSpace ipSpace) {
+    return ipSpace.accept(_mayIntersect);
+  }
+
+  @Override
+  public Boolean visitAclIpSpace(AclIpSpace aclIpSpace) {
+    for (AclIpSpaceLine line : aclIpSpace.getLines()) {
+      if (line.getAction() == LineAction.REJECT && ipSpaceMayIntersectWildcard(line.getIpSpace())) {
+        return true;
+      }
+
+      if (line.getAction() == LineAction.ACCEPT && ipSpaceContainsWildcard(line.getIpSpace())) {
+        return false;
+      }
+    }
+    /*
+     * If we reach this point, no ACCEPT line is guaranteed to contain ipWildcard. This means
+     * it's possible (though not certain) that this does not contain ipWildcard.
+     */
+    return true;
+  }
+
+  @Override
+  public Boolean visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
+    return true;
+  }
+
+  @Override
+  public Boolean visitIpIpSpace(IpIpSpace ipIpSpace) {
+    return !new IpWildcard(ipIpSpace.getIp()).equals(_ipWildcard);
+  }
+
+  @Override
+  public Boolean visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+    return !ipWildcardIpSpace.getIpWildcard().supersetOf(_ipWildcard);
+  }
+
+  @Override
+  public Boolean visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
+    /* Need to be careful not to give a false-negative here. We can return false only
+     * if we're completely sure that ipWildcardSetIpSpace containsIp _ipWildcard.
+     */
+    return ipWildcardSetIpSpace.getBlacklist().stream().anyMatch(_ipWildcard::subsetOf)
+        || ipWildcardSetIpSpace.getWhitelist().stream().noneMatch(_ipWildcard::subsetOf);
+  }
+
+  @Override
+  public Boolean visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+    return !new IpWildcard(prefixIpSpace.getPrefix()).supersetOf(_ipWildcard);
+  }
+
+  @Override
+  public Boolean visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
+    return false;
+  }
+}
