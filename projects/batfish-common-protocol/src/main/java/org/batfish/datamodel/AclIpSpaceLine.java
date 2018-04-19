@@ -5,7 +5,6 @@ import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.visitors.IpSpaceComparator;
 
 public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
 
@@ -100,7 +99,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
   @Override
   public int compareTo(AclIpSpaceLine o) {
     return Comparator.comparing(AclIpSpaceLine::getAction)
-        .thenComparing(AclIpSpaceLine::getIpSpace, IpSpaceComparator::compare)
+        .thenComparing(AclIpSpaceLine::getIpSpace)
         .compare(this, o);
   }
 }

@@ -22,10 +22,14 @@ public class IpSpaceSimplifierTest {
         IpSpaceSimplifier.simplify(
             AclIpSpace.builder()
                 .thenRejecting(EmptyIpSpace.INSTANCE)
-                .thenPermitting(IP1234)
-                .thenPermitting(IP1234)
+                .thenPermitting(IP1234.toIpSpace())
+                .thenPermitting(IP1234.toIpSpace())
                 .build()),
-        equalTo(AclIpSpace.builder().thenPermitting(IP1234).thenPermitting(IP1234).build()));
+        equalTo(
+            AclIpSpace.builder()
+                .thenPermitting(IP1234.toIpSpace())
+                .thenPermitting(IP1234.toIpSpace())
+                .build()));
   }
 
   @Test
@@ -34,13 +38,13 @@ public class IpSpaceSimplifierTest {
     assertThat(
         IpSpaceSimplifier.simplify(
             AclIpSpace.builder()
-                .thenRejecting(IP1234)
+                .thenRejecting(IP1234.toIpSpace())
                 .thenPermitting(UniverseIpSpace.INSTANCE)
-                .thenRejecting(IP1234)
+                .thenRejecting(IP1234.toIpSpace())
                 .build()),
         equalTo(
             AclIpSpace.builder()
-                .thenRejecting(IP1234)
+                .thenRejecting(IP1234.toIpSpace())
                 .thenPermitting(UniverseIpSpace.INSTANCE)
                 .build()));
   }
@@ -54,9 +58,9 @@ public class IpSpaceSimplifierTest {
     assertThat(
         IpSpaceSimplifier.simplify(
             AclIpSpace.builder()
-                .thenPermitting(IP1234)
-                .thenPermitting(IpWildcard.ANY)
-                .thenRejecting(IP1234)
+                .thenPermitting(IP1234.toIpSpace())
+                .thenPermitting(IpWildcard.ANY.toIpSpace())
+                .thenRejecting(IP1234.toIpSpace())
                 .build()),
         equalTo(UniverseIpSpace.INSTANCE));
   }
@@ -64,7 +68,7 @@ public class IpSpaceSimplifierTest {
   @Test
   public void testVisitAclIpSpace_toEmpty() {
     assertThat(
-        IpSpaceSimplifier.simplify(AclIpSpace.builder().thenRejecting(IP1234).build()),
+        IpSpaceSimplifier.simplify(AclIpSpace.builder().thenRejecting(IP1234.toIpSpace()).build()),
         equalTo(EmptyIpSpace.INSTANCE));
 
     assertThat(
@@ -76,10 +80,13 @@ public class IpSpaceSimplifierTest {
     // simplification should simplify the IpSpaces of each line
     assertThat(
         IpSpaceSimplifier.simplify(
-            AclIpSpace.builder().thenRejecting(IP1234).thenPermitting(IpWildcard.ANY).build()),
+            AclIpSpace.builder()
+                .thenRejecting(IP1234.toIpSpace())
+                .thenPermitting(IpWildcard.ANY.toIpSpace())
+                .build()),
         equalTo(
             AclIpSpace.builder()
-                .thenRejecting(IP1234)
+                .thenRejecting(IP1234.toIpSpace())
                 .thenPermitting(UniverseIpSpace.INSTANCE)
                 .build()));
   }
@@ -87,7 +94,7 @@ public class IpSpaceSimplifierTest {
   @Test
   public void testAclIpSpace_simplifyOneAccept() {
     assertThat(
-        IpSpaceSimplifier.simplify(AclIpSpace.builder().thenPermitting(IP1234).build()),
+        IpSpaceSimplifier.simplify(AclIpSpace.builder().thenPermitting(IP1234.toIpSpace()).build()),
         equalTo(IP1234));
   }
 
@@ -98,15 +105,16 @@ public class IpSpaceSimplifierTest {
 
   @Test
   public void testVisitIp() {
-    assertThat(IpSpaceSimplifier.simplify(IP1234), equalTo(IP1234));
+    assertThat(IpSpaceSimplifier.simplify(IP1234.toIpSpace()), equalTo(IP1234.toIpSpace()));
   }
 
   @Test
   public void testVisitIpWildcard() {
-    assertThat(IpSpaceSimplifier.simplify(IpWildcard.ANY), equalTo(UniverseIpSpace.INSTANCE));
+    assertThat(
+        IpSpaceSimplifier.simplify(IpWildcard.ANY.toIpSpace()), equalTo(UniverseIpSpace.INSTANCE));
 
     IpWildcard ipWildcard = new IpWildcard(new Ip("1.2.0.5"), new Ip(0xFFFF00FFL));
-    assertThat(IpSpaceSimplifier.simplify(ipWildcard), equalTo(ipWildcard));
+    assertThat(IpSpaceSimplifier.simplify(ipWildcard.toIpSpace()), equalTo(ipWildcard.toIpSpace()));
   }
 
   @Test
@@ -160,7 +168,8 @@ public class IpSpaceSimplifierTest {
   @Test
   public void testVisitPrefix() {
     assertThat(
-        IpSpaceSimplifier.simplify(Prefix.parse("0.0.0.0/0")), equalTo(UniverseIpSpace.INSTANCE));
+        IpSpaceSimplifier.simplify(Prefix.parse("0.0.0.0/0").toIpSpace()),
+        equalTo(UniverseIpSpace.INSTANCE));
   }
 
   @Test

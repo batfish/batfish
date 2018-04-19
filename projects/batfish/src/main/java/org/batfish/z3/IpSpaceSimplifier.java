@@ -7,12 +7,14 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -76,7 +78,10 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
      * If all lines are accepts, and the last accepts UniverseIpSpace, then this can be simplified
      * to UniverseIpSpace.
      */
-    if (simplifiedLines.get(simplifiedLines.size() - 1).getIpSpace() == UniverseIpSpace.INSTANCE
+    if (simplifiedLines
+            .get(simplifiedLines.size() - 1)
+            .getIpSpace()
+            .equals(UniverseIpSpace.INSTANCE)
         && simplifiedLines.stream().allMatch(line -> line.getAction() == LineAction.ACCEPT)) {
       return UniverseIpSpace.INSTANCE;
     }
@@ -90,16 +95,16 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   @Override
-  public IpSpace visitIp(Ip ip) {
-    return ip;
+  public IpSpace visitIpIpSpace(IpIpSpace ipIpSpace) {
+    return ipIpSpace;
   }
 
   @Override
-  public IpSpace visitIpWildcard(IpWildcard ipWildcard) {
-    if (ipWildcard == IpWildcard.ANY) {
+  public IpSpace visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+    if (ipWildcardIpSpace.getIpWildcard().equals(IpWildcard.ANY)) {
       return UniverseIpSpace.INSTANCE;
     }
-    return ipWildcard;
+    return ipWildcardIpSpace;
   }
 
   @Override
@@ -136,7 +141,7 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
         return UniverseIpSpace.INSTANCE;
       }
       if (whitelist.size() == 1) {
-        return whitelist.iterator().next();
+        return whitelist.iterator().next().toIpSpace();
       }
     }
 
@@ -144,11 +149,11 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   @Override
-  public IpSpace visitPrefix(Prefix prefix) {
-    if (prefix.equals(Prefix.ZERO)) {
+  public IpSpace visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+    if (prefixIpSpace.getPrefix().equals(Prefix.ZERO)) {
       return UniverseIpSpace.INSTANCE;
     }
-    return prefix;
+    return prefixIpSpace;
   }
 
   @Override

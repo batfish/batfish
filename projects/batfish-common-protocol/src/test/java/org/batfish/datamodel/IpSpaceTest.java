@@ -4,9 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -14,31 +11,6 @@ import org.hamcrest.FeatureMatcher;
 import org.junit.Test;
 
 public class IpSpaceTest {
-
-  private static class IpSpaceWrapper {
-
-    private static final String PROP_IP_SPACE = "ipSpace";
-
-    private IpSpace _ipSpace;
-
-    @JsonSerialize(
-      using = IpSpaceToJacksonSerializableIpSpace.class,
-      as = JacksonSerializableIpSpace.class
-    )
-    @JsonProperty(PROP_IP_SPACE)
-    private IpSpace getIpspace() {
-      return _ipSpace;
-    }
-
-    @JsonDeserialize(
-      using = JacksonSerializableIpSpaceToIpSpace.class,
-      as = JacksonSerializableIpSpace.class
-    )
-    @JsonProperty(PROP_IP_SPACE)
-    private void setIpSpace(IpSpace ipSpace) {
-      _ipSpace = ipSpace;
-    }
-  }
 
   private static class Contains extends FeatureMatcher<IpWildcardSetIpSpace, Boolean> {
 
@@ -108,32 +80,41 @@ public class IpSpaceTest {
 
   @Test
   public void testIpSpaceJacksonSerialization() throws IOException {
-    Ip ip1 = new Ip("1.0.0.0");
-    Prefix p1 = new Prefix(ip1, 24);
-    IpWildcard ipWildcard1 = new IpWildcard(p1);
-    IpWildcard ipWildcard2 = new IpWildcard(ip1);
-    IpWildcard ipWildcard3 = new IpWildcard(ip1, new Ip("0.255.0.255"));
+    Ip ip = new Ip("1.0.0.0");
+    IpIpSpace ipIpSpace = ip.toIpSpace();
+    Prefix p = new Prefix(ip, 24);
+    PrefixIpSpace prefixIpSpace = p.toIpSpace();
+    IpWildcard ipWildcard1 = new IpWildcard(p);
+    IpWildcardIpSpace ipWildcard1IpSpace = ipWildcard1.toIpSpace();
+    IpWildcard ipWildcard2 = new IpWildcard(ip);
+    IpWildcardIpSpace ipWildcard2IpSpace = ipWildcard2.toIpSpace();
+    IpWildcard ipWildcard3 = new IpWildcard(ip, new Ip("0.255.0.255"));
+    IpWildcardIpSpace ipWildcard3IpSpace = ipWildcard3.toIpSpace();
     IpSpace ipWildcardSetIpSpace =
         IpWildcardSetIpSpace.builder().including(ipWildcard1, ipWildcard2, ipWildcard3).build();
     IpSpace aclIpSpace1 =
         AclIpSpace.permitting(ipWildcardSetIpSpace)
-            .thenPermitting(ip1)
-            .thenPermitting(p1)
-            .thenRejecting(ipWildcard1)
+            .thenPermitting(ipIpSpace)
+            .thenPermitting(prefixIpSpace)
+            .thenRejecting(ipWildcard1IpSpace)
             .thenPermitting(EmptyIpSpace.INSTANCE)
             .thenRejecting(UniverseIpSpace.INSTANCE)
             .build();
     for (IpSpace ipSpace :
         ImmutableList.<IpSpace>of(
-            ip1, p1, ipWildcard1, ipWildcard2, ipWildcard3, ipWildcardSetIpSpace, aclIpSpace1)) {
-      IpSpaceWrapper wrapper = new IpSpaceWrapper();
-      wrapper.setIpSpace(ipSpace);
-      String jsonString = BatfishObjectMapper.writePrettyString(wrapper);
-      IpSpaceWrapper deserializedIpSpaceWrapper =
-          BatfishObjectMapper.mapper().readValue(jsonString, IpSpaceWrapper.class);
+            ipIpSpace,
+            prefixIpSpace,
+            ipWildcard1IpSpace,
+            ipWildcard2IpSpace,
+            ipWildcard3IpSpace,
+            ipWildcardSetIpSpace,
+            aclIpSpace1)) {
+      String jsonString = BatfishObjectMapper.writePrettyString(ipSpace);
+      IpSpace deserializedIpSpace =
+          BatfishObjectMapper.mapper().readValue(jsonString, IpSpace.class);
 
       /* IpSpace should be equal to deserialized version */
-      assertThat(ipSpace, equalTo(deserializedIpSpaceWrapper.getIpspace()));
+      assertThat(ipSpace, equalTo(deserializedIpSpace));
     }
   }
 }

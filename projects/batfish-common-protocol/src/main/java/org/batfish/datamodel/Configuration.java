@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Collections;
@@ -449,10 +447,6 @@ public final class Configuration extends ComparableStructure<String> {
     return _ipAccessLists;
   }
 
-  @JsonSerialize(
-    contentUsing = IpSpaceToJacksonSerializableIpSpace.class,
-    contentAs = JacksonSerializableIpSpace.class
-  )
   @JsonProperty(PROP_IP_SPACES)
   public NavigableMap<String, IpSpace> getIpSpaces() {
     return _ipSpaces;
@@ -715,10 +709,6 @@ public final class Configuration extends ComparableStructure<String> {
     _ipAccessLists = ipAccessLists;
   }
 
-  @JsonDeserialize(
-    contentUsing = JacksonSerializableIpSpaceToIpSpace.class,
-    contentAs = JacksonSerializableIpSpace.class
-  )
   @JsonProperty(PROP_IP_SPACES)
   public void setIpSpaces(NavigableMap<String, IpSpace> ipSpaces) {
     _ipSpaces = ipSpaces;

@@ -2,7 +2,10 @@ package org.batfish.datamodel;
 
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class EmptyIpSpace implements JacksonSerializableIpSpace {
+public class EmptyIpSpace extends IpSpace {
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   public static final IpSpace INSTANCE = new EmptyIpSpace();
 
@@ -24,22 +27,22 @@ public class EmptyIpSpace implements JacksonSerializableIpSpace {
   }
 
   @Override
-  public IpSpace unwrap() {
-    return this;
-  }
-
-  @Override
   public String toString() {
     return "empty";
   }
 
   @Override
-  public boolean equals(Object obj) {
-    return obj == INSTANCE || obj instanceof EmptyIpSpace;
+  public int hashCode() {
+    return getClass().getCanonicalName().hashCode();
   }
 
   @Override
-  public int hashCode() {
-    return getClass().getCanonicalName().hashCode();
+  protected int compareSameClass(IpSpace o) {
+    return 0;
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
+    return true;
   }
 }

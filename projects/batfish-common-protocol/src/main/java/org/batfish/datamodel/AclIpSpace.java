@@ -19,7 +19,10 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * An ACL-based {@link IpSpace}. An IP is permitted if it is in the space the ACL represents, or
  * denied if it is not.
  */
-public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
+public class AclIpSpace extends IpSpace {
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   public static class Builder {
 
@@ -118,11 +121,6 @@ public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
   }
 
   @Override
-  public int compareTo(AclIpSpace o) {
-    return CommonUtil.compareIterable(_lines, o._lines);
-  }
-
-  @Override
   public IpSpace complement() {
     Builder builder = AclIpSpace.builder();
     _lines.forEach(
@@ -140,17 +138,6 @@ public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
   @Override
   public boolean containsIp(@Nonnull Ip ip) {
     return action(ip) == LineAction.ACCEPT;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || !(o instanceof AclIpSpace)) {
-      return false;
-    }
-    return Objects.equals(_lines, ((AclIpSpace) o)._lines);
   }
 
   public List<AclIpSpaceLine> getLines() {
@@ -191,5 +178,15 @@ public class AclIpSpace implements IpSpace, Comparable<AclIpSpace> {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).add("lines", _lines).toString();
+  }
+
+  @Override
+  protected int compareSameClass(IpSpace o) {
+    return CommonUtil.compareIterable(_lines, ((AclIpSpace) o)._lines);
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
+    return Objects.equals(_lines, ((AclIpSpace) o)._lines);
   }
 }

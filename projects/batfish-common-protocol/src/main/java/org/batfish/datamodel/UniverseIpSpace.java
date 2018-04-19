@@ -3,7 +3,10 @@ package org.batfish.datamodel;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class UniverseIpSpace implements JacksonSerializableIpSpace {
+public class UniverseIpSpace extends IpSpace {
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   public static final UniverseIpSpace INSTANCE = new UniverseIpSpace();
 
@@ -30,17 +33,17 @@ public class UniverseIpSpace implements JacksonSerializableIpSpace {
   }
 
   @Override
-  public boolean equals(Object obj) {
-    return obj == INSTANCE || obj instanceof UniverseIpSpace;
-  }
-
-  @Override
   public int hashCode() {
     return getClass().getCanonicalName().hashCode();
   }
 
   @Override
-  public IpSpace unwrap() {
-    return this;
+  protected int compareSameClass(IpSpace o) {
+    return 0;
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
+    return true;
   }
 }

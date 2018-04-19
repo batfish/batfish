@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Objects;
@@ -21,8 +20,7 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  *
  * <p>Any empty whitelist is equivalent to an {@link EmptyIpSpace}.
  */
-public final class IpWildcardSetIpSpace
-    implements IpSpace, Serializable, Comparable<IpWildcardSetIpSpace> {
+public final class IpWildcardSetIpSpace extends IpSpace {
 
   public static class Builder {
 
@@ -90,13 +88,6 @@ public final class IpWildcardSetIpSpace
   }
 
   @Override
-  public int compareTo(IpWildcardSetIpSpace o) {
-    return Comparator.comparing(IpWildcardSetIpSpace::getBlacklist, CommonUtil::compareIterable)
-        .thenComparing(IpWildcardSetIpSpace::getWhitelist, CommonUtil::compareIterable)
-        .compare(this, o);
-  }
-
-  @Override
   public IpSpace complement() {
     /*
      * the current is first reject everything in blacklist.
@@ -108,8 +99,8 @@ public final class IpWildcardSetIpSpace
      * then accept everything else.
      */
     AclIpSpace.Builder builder = AclIpSpace.builder();
-    _blacklist.forEach(builder::thenPermitting);
-    _whitelist.forEach(builder::thenRejecting);
+    _blacklist.stream().map(IpWildcard::toIpSpace).forEach(builder::thenPermitting);
+    _whitelist.stream().map(IpWildcard::toIpSpace).forEach(builder::thenRejecting);
     builder.thenPermitting(UniverseIpSpace.INSTANCE);
     return builder.build();
   }
@@ -118,18 +109,6 @@ public final class IpWildcardSetIpSpace
   public boolean containsIp(@Nonnull Ip ip) {
     return _blacklist.stream().noneMatch(w -> w.containsIp(ip))
         && _whitelist.stream().anyMatch(w -> w.containsIp(ip));
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || !(o instanceof IpWildcardSetIpSpace)) {
-      return false;
-    }
-    IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
-    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
   }
 
   @JsonProperty(PROP_BLACKLIST)
@@ -153,5 +132,18 @@ public final class IpWildcardSetIpSpace
         .add(PROP_BLACKLIST, _blacklist)
         .add(PROP_WHITELIST, _whitelist)
         .toString();
+  }
+
+  @Override
+  protected int compareSameClass(IpSpace o) {
+    return Comparator.comparing(IpWildcardSetIpSpace::getBlacklist, CommonUtil::compareIterable)
+        .thenComparing(IpWildcardSetIpSpace::getWhitelist, CommonUtil::compareIterable)
+        .compare(this, (IpWildcardSetIpSpace) o);
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
+    IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
+    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
   }
 }
