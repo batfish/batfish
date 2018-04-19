@@ -1,3 +1,8 @@
 package org.batfish.representation.cisco;
 
-public interface ExtendedAccessListAddressSpecifier {}
+import org.batfish.datamodel.IpSpace;
+
+public interface ExtendedAccessListAddressSpecifier {
+
+  IpSpace toIpSpace();
+}

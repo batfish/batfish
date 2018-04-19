@@ -158,6 +158,10 @@ public class ExtendedAccessListLine implements Serializable {
 
   private final ExtendedAccessListServiceSpecifier _serviceSpecifier;
 
+  public ExtendedAccessListServiceSpecifier getServiceSpecifier() {
+    return _serviceSpecifier;
+  }
+
   private ExtendedAccessListLine(Builder builder) {
     _action = requireNonNull(builder._action);
     _dscps = builder._dscps;
