@@ -109,9 +109,12 @@ public class IpSpaceSpecializerTest {
   @Test
   public void testSpecializeIpWildcard() {
     IpWildcard ipWildcard = new IpWildcard(new Ip(0x01010001L), new Ip(0x0000FF00L));
-    assertThat(trivialSpecializer.visitIpWildcardIpSpace(ipWildcard.toIpSpace()), equalTo(ipWildcard.toIpSpace()));
     assertThat(
-        whitelistAnySpecializer.visitIpWildcardIpSpace(ipWildcard.toIpSpace()), equalTo(ipWildcard.toIpSpace()));
+        trivialSpecializer.visitIpWildcardIpSpace(ipWildcard.toIpSpace()),
+        equalTo(ipWildcard.toIpSpace()));
+    assertThat(
+        whitelistAnySpecializer.visitIpWildcardIpSpace(ipWildcard.toIpSpace()),
+        equalTo(ipWildcard.toIpSpace()));
     assertThat(
         blacklistAnySpecializer.visitIpWildcardIpSpace(ipWildcard.toIpSpace()),
         equalTo(EmptyIpSpace.INSTANCE));
