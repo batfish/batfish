@@ -1223,6 +1223,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void disableUnusableVlanInterfaces(Map<String, Configuration> configurations) {
     for (Configuration c : configurations.values()) {
+      String hostname = c.getHostname();
+
       Map<Integer, Interface> vlanInterfaces = new HashMap<>();
       Map<Integer, Integer> vlanMemberCounts = new HashMap<>();
       Set<Interface> nonVlanInterfaces = new HashSet<>();
@@ -1257,7 +1259,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           vlanNumber = iface.getAccessVlan();
           vlans.add(new SubRange(vlanNumber, vlanNumber));
         } else {
-          // TODO?
+          _logger.warnf(
+              "WARNING: Unsupported switchport mode %s, assuming no VLANs allowed: \"%s:%s\"\n",
+              iface.getSwitchportMode(), hostname, iface.getName());
         }
 
         for (SubRange sr : vlans) {
@@ -1267,7 +1271,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
       }
       // Disable all "normal" vlan interfaces with zero member counts:
-      String hostname = c.getHostname();
       SubRange normalVlanRange = c.getNormalVlanRange();
       for (Map.Entry<Integer, Integer> entry : vlanMemberCounts.entrySet()) {
         if (entry.getValue() == 0) {
