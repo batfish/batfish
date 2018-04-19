@@ -73,7 +73,7 @@ public class IpWildcard extends Pair<Ip, Ip> {
 
   @JsonCreator
   public IpWildcard(String str) {
-    super(parseAddress(str), parseMask(str));
+    this(parseAddress(str), parseMask(str));
   }
 
   public boolean containsIp(@Nonnull Ip ip) {

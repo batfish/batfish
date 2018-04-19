@@ -17,6 +17,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.datamodel.visitors.IpSpaceMayIntersectWildcard;
 
 /**
  * Simplify an {@link IpSpace}. For example, there are many ways to express an empty {@link IpSpace}
@@ -30,6 +31,10 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
   private IpSpaceSimplifier() {}
 
   public static IpSpace simplify(IpSpace ipSpace) {
+    if (ipSpace == null) {
+      return null;
+    }
+
     return ipSpace.accept(INSTANCE);
   }
 
@@ -53,7 +58,7 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
       if (simplifiedLineIpSpace == EmptyIpSpace.INSTANCE) {
         continue;
       }
-      AclIpSpaceLine simplifiedLine = line.rebuild().setIpSpace(simplifiedLineIpSpace).build();
+      AclIpSpaceLine simplifiedLine = line.toBuilder().setIpSpace(simplifiedLineIpSpace).build();
       simplifiedLines.add(simplifiedLine);
       if (simplifiedLineIpSpace == UniverseIpSpace.INSTANCE) {
         break;
@@ -132,8 +137,14 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
             .getBlacklist()
             .stream()
             .filter(
-                blacklistedIpWildcard ->
-                    whitelist.stream().anyMatch(blacklistedIpWildcard::intersects))
+                blacklistedIpWildcard -> {
+                  IpSpaceMayIntersectWildcard mayIntersect =
+                      new IpSpaceMayIntersectWildcard(blacklistedIpWildcard);
+                  return whitelist
+                      .stream()
+                      .map(IpWildcard::toIpSpace)
+                      .anyMatch(mayIntersect::visit);
+                })
             .collect(Collectors.toSet());
 
     if (blacklist.isEmpty()) {

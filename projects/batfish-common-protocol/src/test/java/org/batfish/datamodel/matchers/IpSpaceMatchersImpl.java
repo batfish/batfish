@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
@@ -29,6 +30,72 @@ public class IpSpaceMatchersImpl {
         mismatchDescription.appendText(String.format("was %s", item));
       }
       return matches;
+    }
+  }
+
+  static final class Intersects extends TypeSafeDiagnosingMatcher<IpWildcard> {
+    private final IpWildcard _ipWildcard;
+
+    Intersects(IpWildcard ipWildcard) {
+      _ipWildcard = ipWildcard;
+    }
+
+    @Override
+    protected boolean matchesSafely(IpWildcard ipWildcard, Description mismatchDescription) {
+      boolean matches = ipWildcard.intersects(_ipWildcard);
+      if (!matches) {
+        mismatchDescription.appendText(String.format("was %s", ipWildcard));
+      }
+      return matches;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(String.format("An IpWildcard that intersects %s", _ipWildcard));
+    }
+  }
+
+  static final class SubsetOf extends TypeSafeDiagnosingMatcher<IpWildcard> {
+    private final IpWildcard _ipWildcard;
+
+    SubsetOf(IpWildcard ipWildcard) {
+      _ipWildcard = ipWildcard;
+    }
+
+    @Override
+    protected boolean matchesSafely(IpWildcard ipWildcard, Description mismatchDescription) {
+      boolean matches = ipWildcard.subsetOf(_ipWildcard);
+      if (!matches) {
+        mismatchDescription.appendText(String.format("was %s", ipWildcard));
+      }
+      return matches;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(String.format("An IpWildcard that is a subset of %s", _ipWildcard));
+    }
+  }
+
+  static final class SupersetOf extends TypeSafeDiagnosingMatcher<IpWildcard> {
+    private final IpWildcard _ipWildcard;
+
+    SupersetOf(IpWildcard ipWildcard) {
+      _ipWildcard = ipWildcard;
+    }
+
+    @Override
+    protected boolean matchesSafely(IpWildcard ipWildcard, Description mismatchDescription) {
+      boolean matches = ipWildcard.supersetOf(_ipWildcard);
+      if (!matches) {
+        mismatchDescription.appendText(String.format("was %s", ipWildcard));
+      }
+      return matches;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(String.format("An IpWildcard that is a superset of %s", _ipWildcard));
     }
   }
 }

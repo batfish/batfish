@@ -5,9 +5,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.junit.Test;
 
@@ -38,19 +40,27 @@ public class IpAccessListSpecializerTest {
             .setMatchCondition(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
-                        .setDstIps(ImmutableSet.of(new IpWildcard("1.2.3.0/24")))
+                        .setDstIps(new IpWildcard("1.2.3.0/24").toIpSpace())
                         .build()))
             .build();
 
     assertThat(
         TRIVIAL_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
     assertThat(
-        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.empty()));
+        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine),
+        equalTo(
+            Optional.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build()))
+                    .build())));
     assertThat(
         WHITELIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine),
         equalTo(Optional.of(ipAccessListLine)));
     assertThat(
-        BLACKLIST_ANY_SRC_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.empty()));
+        BLACKLIST_ANY_SRC_SPECIALIZER.specialize(ipAccessListLine),
+        equalTo(Optional.of(ipAccessListLine)));
     assertThat(
         WHITELIST_ANY_SRC_SPECIALIZER.specialize(ipAccessListLine),
         equalTo(Optional.of(ipAccessListLine)));
@@ -61,7 +71,13 @@ public class IpAccessListSpecializerTest {
             HeaderSpace.builder().setDstIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build());
     assertThat(
         specializer.specialize(ipAccessListLine),
-        equalTo(Optional.of(IpAccessListLine.ACCEPT_ALL)));
+        equalTo(
+            Optional.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new MatchHeaderSpace(
+                            HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build()))
+                    .build())));
 
     // specialize to a headerspace that blacklists part of the dstIp
     specializer =

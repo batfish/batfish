@@ -9,7 +9,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 
@@ -141,7 +143,7 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_DST_IPS)
-  public Set<IpWildcard> getDstIps() {
+  public IpSpace getDstIps() {
     return _headerSpace.getDstIps();
   }
 
@@ -186,7 +188,7 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_NOT_DST_IPS)
-  public Set<IpWildcard> getNotDstIps() {
+  public IpSpace getNotDstIps() {
     return _headerSpace.getNotDstIps();
   }
 
@@ -217,7 +219,7 @@ public class HeaderQuestion extends Question {
 
   @JsonProperty(PROP_NOT_SRC_IPS)
   public Set<IpWildcard> getNotSrcIps() {
-    return _headerSpace.getNotSrcIps();
+    return ((IpWildcardSetIpSpace) _headerSpace.getNotSrcIps()).getWhitelist();
   }
 
   @JsonProperty(PROP_NOT_SRC_PORTS)
@@ -226,12 +228,12 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_SRC_IPS)
-  public Set<IpWildcard> getSrcIps() {
+  public IpSpace getSrcIps() {
     return _headerSpace.getSrcIps();
   }
 
   @JsonProperty(PROP_SRC_OR_DST_IPS)
-  public Set<IpWildcard> getSrcOrDstIps() {
+  public IpSpace getSrcOrDstIps() {
     return _headerSpace.getSrcOrDstIps();
   }
 
@@ -306,7 +308,7 @@ public class HeaderQuestion extends Question {
       if (getDstPorts() != null && getDstPorts().size() != 0) {
         retString += String.format(", dstPorts=%s", getDstPorts());
       }
-      if (getDstIps() != null && getDstIps().size() != 0) {
+      if (getDstIps() != null) {
         retString += String.format(", dstIps=%s", getDstIps());
       }
       if (getFragmentOffsets() != null && getFragmentOffsets().size() != 0) {
@@ -324,10 +326,10 @@ public class HeaderQuestion extends Question {
       if (getSrcOrDstPorts() != null && getSrcOrDstPorts().size() != 0) {
         retString += String.format(", srcOrDstPorts=%s", getSrcOrDstPorts());
       }
-      if (getSrcOrDstIps() != null && getSrcOrDstIps().size() != 0) {
+      if (getSrcOrDstIps() != null) {
         retString += String.format(", srcOrDstIps=%s", getSrcOrDstIps());
       }
-      if (getSrcIps() != null && getSrcIps().size() != 0) {
+      if (getSrcIps() != null) {
         retString += String.format(", srcIps=%s", getSrcIps());
       }
       if (getSrcPorts() != null && getSrcPorts().size() != 0) {
@@ -336,7 +338,7 @@ public class HeaderQuestion extends Question {
       if (getNotDstPorts() != null && getNotDstPorts().size() != 0) {
         retString += String.format(", notDstPorts=%s", getNotDstPorts());
       }
-      if (getNotDstIps() != null && getNotDstIps().size() != 0) {
+      if (getNotDstIps() != null) {
         retString += String.format(", notDstIps=%s", getNotDstIps());
       }
       if (getNotFragmentOffsets() != null && getNotFragmentOffsets().size() != 0) {

@@ -1,8 +1,7 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -26,7 +25,7 @@ public final class FwFromDestinationAddress extends FwFrom {
       Warnings w,
       Configuration c) {
     headerSpaceBuilder.setDstIps(
-        Iterables.concat(headerSpaceBuilder.getDstIps(), ImmutableSet.of(new IpWildcard(_prefix))));
+        AclIpSpace.union(headerSpaceBuilder.getDstIps(), new IpWildcard(_prefix).toIpSpace()));
   }
 
   public Prefix getPrefix() {
