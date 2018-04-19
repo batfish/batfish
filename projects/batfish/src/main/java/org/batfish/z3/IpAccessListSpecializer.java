@@ -25,6 +25,7 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import sun.jvm.hotspot.memory.HeapBlock.Header;
 
 /**
  * Specialize an {@link IpAccessList} to a given {@link HeaderSpace}. Lines that can never match the
@@ -231,11 +232,11 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
       srcOrDstIps = _srcOrDstIpSpaceSpecializer.specialize(srcOrDstIps);
     }
 
-    if (dstIps == EmptyIpSpace.INSTANCE && srcOrDstIps == EmptyIpSpace.INSTANCE) {
+    if (constraintUnionEmpty(dstIps, srcOrDstIps)) {
       return FalseExpr.INSTANCE;
     }
 
-    if (srcIps == EmptyIpSpace.INSTANCE && srcOrDstIps == EmptyIpSpace.INSTANCE) {
+    if (constraintUnionEmpty(srcIps, srcOrDstIps)) {
       return FalseExpr.INSTANCE;
     }
 
@@ -243,15 +244,41 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
       return FalseExpr.INSTANCE;
     }
 
-    return new MatchHeaderSpace(
+    HeaderSpace specializedHeaderSpace =
         headerSpace
             .rebuild()
-            .setDstIps(dstIps)
-            .setNotDstIps(notDstIps)
-            .setNotSrcIps(notSrcIps)
-            .setSrcIps(srcIps)
-            .setSrcOrDstIps(srcOrDstIps)
-            .build());
+            .setDstIps(simplifyPositiveIpConstraint(dstIps))
+            .setNotDstIps(simplifyNegativeIpConstraint(notDstIps))
+            .setNotSrcIps(simplifyNegativeIpConstraint(notSrcIps))
+            .setSrcIps(simplifyPositiveIpConstraint(srcIps))
+            .setSrcOrDstIps(simplifyPositiveIpConstraint(srcOrDstIps))
+            .build();
+
+    if (specializedHeaderSpace.equals(HeaderSpace.builder().build())) {
+      return TrueExpr.INSTANCE;
+    }
+
+    return new MatchHeaderSpace(specializedHeaderSpace);
+  }
+  private static IpSpace simplifyNegativeIpConstraint(IpSpace ipSpace) {
+    if (ipSpace == EmptyIpSpace.INSTANCE) {
+      return null;
+    }
+    return ipSpace;
+  }
+
+  private static IpSpace simplifyPositiveIpConstraint(IpSpace ipSpace) {
+    if (ipSpace == UniverseIpSpace.INSTANCE) {
+      return null;
+    }
+    return ipSpace;
+  }
+
+
+  private static boolean constraintUnionEmpty(IpSpace ipSpace1, IpSpace ipSpace2) {
+    return (ipSpace1 == EmptyIpSpace.INSTANCE && ipSpace2 == null)
+        || (ipSpace1 == null && ipSpace2 == EmptyIpSpace.INSTANCE)
+        || (ipSpace1 == EmptyIpSpace.INSTANCE && ipSpace2 == EmptyIpSpace.INSTANCE);
   }
 
   @Override

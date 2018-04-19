@@ -406,7 +406,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
               .computeIfAbsent(vrf, n -> new HashMap<>())
               .computeIfAbsent(outInterface, n -> new HashMap<>())
               .computeIfAbsent(recvNode, n -> new HashMap<>())
-              .put(recvInterface, new IpSpaceMatchExpr(ipSpace, Field.DST_IP));
+              .put(recvInterface, new IpSpaceMatchExpr(ipSpace, Field.DST_IP).getExpr());
         });
 
     // freeze
@@ -599,7 +599,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                             new IpSpaceMatchExpr(
                                 _ipSpaceSpecializer.specialize(
                                     neighborUnreachableByOutInterfaceEntry.getValue()),
-                                Field.DST_IP))));
+                                Field.DST_IP).getExpr())));
   }
 
   private Map<String, Map<String, BooleanExpr>> computeNullRoutedIps(

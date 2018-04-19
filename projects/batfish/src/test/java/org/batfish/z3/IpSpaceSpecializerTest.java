@@ -134,23 +134,23 @@ public class IpSpaceSpecializerTest {
 
   @Test
   public void testSpecializeIpWildcard_subsetOfWhitelisted() {
-    IpWildcard ip = new IpWildcard("1.2.3.0/24");
+    IpSpace ipSpace = new IpWildcard("1.2.3.0/24").toIpSpace();
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
             IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/16")).build());
-    assertThat(specializer.specialize(ip), equalTo(ip));
+    assertThat(specializer.specialize(ipSpace), equalTo(ipSpace));
   }
 
   @Test
   public void testSpecializeIpWildcard_subsetOfWhitelisted_intersectBlacklist() {
-    IpWildcard ip = new IpWildcard("1.2.3.0/24");
+    IpSpace ipSpace = new IpWildcard("1.2.3.0/24").toIpSpace();
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
             IpWildcardSetIpSpace.builder()
                 .including(new IpWildcard("1.2.0.0/16"))
                 .excluding(new IpWildcard("1.2.3.4"))
                 .build());
-    assertThat(specializer.specialize(ip), equalTo(ip));
+    assertThat(specializer.specialize(ipSpace), equalTo(ipSpace));
   }
 
   @Test

@@ -53,6 +53,25 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
     }
   }
 
+  public IpSpace specialize(Ip ip) {
+    if (_ipSpace.containsIp(ip, ImmutableMap.of())) {
+      return ip.toIpSpace();
+    } else {
+      return EmptyIpSpace.INSTANCE;
+    }
+  }
+
+  public IpSpace specialize(IpWildcard ipWildcard) {
+    if (!_ipSpace.accept(new IpSpaceMayIntersectWildcard(ipWildcard))) {
+      return EmptyIpSpace.INSTANCE;
+    } else if (_ipSpace.accept(new IpSpaceContainedInWildcard(ipWildcard))) {
+      return UniverseIpSpace.INSTANCE;
+    } else {
+      return ipWildcard.toIpSpace();
+    }
+  }
+
+
   @Override
   public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
     /* Just specialize the IpSpace of each acl line. */
@@ -89,27 +108,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-    return null;
+    return specialize(ipWildcardIpSpace.getIpWildcard());
   }
-
-  private IpSpace specialize(Ip ip) {
-    if (_ipSpace.containsIp(ip, ImmutableMap.of())) {
-      return ip.toIpSpace();
-    } else {
-      return EmptyIpSpace.INSTANCE;
-    }
-  }
-
-  public IpSpace specialize(IpWildcard ipWildcard) {
-    if (!_ipSpace.accept(new IpSpaceMayIntersectWildcard(ipWildcard))) {
-      return EmptyIpSpace.INSTANCE;
-    } else if (_ipSpace.accept(new IpSpaceContainedInWildcard(ipWildcard))) {
-      return UniverseIpSpace.INSTANCE;
-    } else {
-      return ipWildcard.toIpSpace();
-    }
-  }
-
   @Override
   public IpSpace visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     Set<IpSpace> blacklistIpSpace =
@@ -132,7 +132,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
     Set<IpWildcard> blacklist =
         blacklistIpSpace
             .stream()
-            .map(IpWildcard.class::cast)
+            .map(IpWildcardIpSpace.class::cast)
+            .map(IpWildcardIpSpace::getIpWildcard)
             .collect(ImmutableSet.toImmutableSet());
 
     IpSpaceSpecializer refinedSpecializer;
@@ -186,7 +187,7 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
       }
     } else {
       Set<IpWildcard> ipWildcardWhitelist =
-          ipSpaceWhitelist.stream().map(IpWildcard.class::cast).collect(Collectors.toSet());
+          ipSpaceWhitelist.stream().map(IpWildcardIpSpace.class::cast).map(IpWildcardIpSpace::getIpWildcard).collect(Collectors.toSet());
       return IpWildcardSetIpSpace.builder()
           .including(ipWildcardWhitelist)
           .excluding(blacklist)

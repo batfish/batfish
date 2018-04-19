@@ -86,11 +86,7 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     return new OrExpr(
         ipWildcards
             .stream()
-            .map(
-                ipWildcard ->
-                    ipWildcard.isPrefix()
-                        ? matchPrefix(ipWildcard.toPrefix(), ipField)
-                        : matchIpWildcard(ipWildcard, ipField))
+            .map(ipWildcard -> matchIpWildcard(ipWildcard, ipField))
             .collect(Collectors.toList()));
   }
 
@@ -109,6 +105,10 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
   }
 
   public static BooleanExpr matchIpWildcard(IpWildcard ipWildcard, Field ipField) {
+    if (ipWildcard.isPrefix()) {
+      return matchPrefix(ipWildcard.toPrefix(), ipField);
+    }
+
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcard().asLong();
     ImmutableList.Builder<BooleanExpr> matchIp = ImmutableList.builder();
@@ -311,20 +311,30 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
         HeaderSpaceMatchExpr::matchSrcOrDstProtocol);
 
     // ip
-    requireMatch(
-        matchBuilder,
-        headerSpace.getSrcIps(),
-        orig ? HeaderSpaceMatchExpr::matchOrigSrcIp : HeaderSpaceMatchExpr::matchSrcIp);
-    requireNoMatch(
-        matchBuilder,
-        headerSpace.getNotSrcIps(),
-        orig ? HeaderSpaceMatchExpr::matchOrigSrcIp : HeaderSpaceMatchExpr::matchSrcIp);
-    requireMatch(
-        matchBuilder,
-        headerSpace.getSrcOrDstIps(),
-        orig ? HeaderSpaceMatchExpr::matchOrigSrcOrDstIp : HeaderSpaceMatchExpr::matchSrcOrDstIp);
-    requireMatch(matchBuilder, headerSpace.getDstIps(), HeaderSpaceMatchExpr::matchDstIp);
-    requireNoMatch(matchBuilder, headerSpace.getNotDstIps(), HeaderSpaceMatchExpr::matchDstIp);
+    if (headerSpace.getSrcIps() != null) {
+      requireMatch(
+          matchBuilder,
+          headerSpace.getSrcIps(),
+          orig ? HeaderSpaceMatchExpr::matchOrigSrcIp : HeaderSpaceMatchExpr::matchSrcIp);
+    }
+    if (headerSpace.getNotSrcIps() != null) {
+      requireNoMatch(
+          matchBuilder,
+          headerSpace.getNotSrcIps(),
+          orig ? HeaderSpaceMatchExpr::matchOrigSrcIp : HeaderSpaceMatchExpr::matchSrcIp);
+    }
+    if (headerSpace.getSrcOrDstIps() != null) {
+      requireMatch(
+          matchBuilder,
+          headerSpace.getSrcOrDstIps(),
+          orig ? HeaderSpaceMatchExpr::matchOrigSrcOrDstIp : HeaderSpaceMatchExpr::matchSrcOrDstIp);
+    }
+    if (headerSpace.getDstIps() != null) {
+      requireMatch(matchBuilder, headerSpace.getDstIps(), HeaderSpaceMatchExpr::matchDstIp);
+    }
+    if (headerSpace.getNotDstIps() != null) {
+      requireNoMatch(matchBuilder, headerSpace.getNotDstIps(), HeaderSpaceMatchExpr::matchDstIp);
+    }
 
     // port
     requireMatch(matchBuilder, headerSpace.getSrcPorts(), HeaderSpaceMatchExpr::matchSrcPort);

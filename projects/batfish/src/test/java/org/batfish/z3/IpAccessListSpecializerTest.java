@@ -9,8 +9,10 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Test;
 
 public class IpAccessListSpecializerTest {
@@ -47,14 +49,7 @@ public class IpAccessListSpecializerTest {
     assertThat(
         TRIVIAL_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
     assertThat(
-        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine),
-        equalTo(
-            Optional.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build()))
-                    .build())));
+        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.empty()));
     assertThat(
         WHITELIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine),
         equalTo(Optional.of(ipAccessListLine)));
@@ -74,15 +69,13 @@ public class IpAccessListSpecializerTest {
         equalTo(
             Optional.of(
                 IpAccessListLine.accepting()
-                    .setMatchCondition(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build()))
+                    .setMatchCondition(TrueExpr.INSTANCE)
                     .build())));
 
     // specialize to a headerspace that blacklists part of the dstIp
     specializer =
         new IpAccessListSpecializer(
-            HeaderSpace.builder().setNotDstIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build());
+            HeaderSpace.builder().setNotDstIps(new IpWildcard("1.2.3.4").toIpSpace()).build());
     assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
   }
 
@@ -90,12 +83,12 @@ public class IpAccessListSpecializerTest {
   public void testSpecializeIpAccessListLine_singleSrc() {
     IpAccessListLine ipAccessListLine =
         IpAccessListLine.acceptingHeaderSpace(
-            HeaderSpace.builder().setSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.0/24"))).build());
+            HeaderSpace.builder().setSrcIps(new IpWildcard("1.2.3.0/24").toIpSpace()).build());
 
     assertThat(
         TRIVIAL_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
     assertThat(
-        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.empty()));
+        BLACKLIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
     assertThat(
         WHITELIST_ANY_DST_SPECIALIZER.specialize(ipAccessListLine),
         equalTo(Optional.of(ipAccessListLine)));

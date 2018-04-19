@@ -87,7 +87,7 @@ public class AclIpSpace extends IpSpace {
     if (ipSpace1 == null && ipSpace2 == null) {
       return null;
     } else if (ipSpace1 == null) {
-      return EmptyIpSpace.INSTANCE;
+      ipSpace1 = UniverseIpSpace.INSTANCE;
     } else if (ipSpace2 == null) {
       return ipSpace1;
     }

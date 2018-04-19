@@ -264,10 +264,10 @@ public class SynthesizerInputImplTest {
     String nextHopInterface1 = "nextHopInterface1";
     String nextHop2 = "nextHop2";
     String nextHopInterface2 = "nextHopInterface2";
-    IpSpace srcIpSpace = Ip.ZERO.toIpSpace();
-    IpSpace dstIpSpace = Ip.MAX.toIpSpace();
-    BooleanExpr m1 = srcIpSpace.accept(new IpSpaceBooleanExprTransformer(Field.SRC_IP));
-    BooleanExpr m2 = dstIpSpace.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
+    IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
+    IpSpace ipSpace2 = Ip.MAX.toIpSpace();
+    BooleanExpr m1 = ipSpace1.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
+    BooleanExpr m2 = ipSpace2.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
     Edge edge1 =
         new Edge(srcNode.getHostname(), srcInterface.getName(), nextHop1, nextHopInterface1);
     Edge edge2 =
@@ -279,7 +279,7 @@ public class SynthesizerInputImplTest {
         _inputBuilder
             .setForwardingAnalysis(
                 MockForwardingAnalysis.builder()
-                    .setArpTrueEdge(ImmutableMap.of(edge1, dstIpSpace, edge2, srcIpSpace))
+                    .setArpTrueEdge(ImmutableMap.of(edge1, ipSpace1, edge2, ipSpace2))
                     .build())
             .setTopology(new Topology(ImmutableSortedSet.of(edge1, edge2)))
             .build();
@@ -481,7 +481,7 @@ public class SynthesizerInputImplTest {
     Interface iface2 = _ib.build();
     IpSpace srcIpSpace = Ip.ZERO.toIpSpace();
     IpSpace dstIpSpace = Ip.MAX.toIpSpace();
-    BooleanExpr m1 = srcIpSpace.accept(new IpSpaceBooleanExprTransformer(Field.SRC_IP));
+    BooleanExpr m1 = srcIpSpace.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
     BooleanExpr m2 = dstIpSpace.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
 
     SynthesizerInput inputWithoutDataPlane =
