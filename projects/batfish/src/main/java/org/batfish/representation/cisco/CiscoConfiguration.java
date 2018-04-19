@@ -405,6 +405,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _wccpAcls;
 
+  private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -446,6 +448,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _roles = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
+    _serviceObjectGroups = new TreeMap<>();
     _snmpAccessLists = new TreeSet<>();
     _sshAcls = new TreeSet<>();
     _sshIpv6Acls = new TreeSet<>();
@@ -1119,6 +1122,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Cable cable = _cf.getCable();
     markStructure(
         CiscoStructureType.SERVICE_CLASS, usage, cable != null ? cable.getServiceClasses() : null);
+  }
+
+  private void markServiceObjectGroups(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.SERVICE_OBJECT_GROUP, usage, _serviceObjectGroups);
   }
 
   private void processFailoverSettings() {
@@ -3863,6 +3870,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // object-group
     markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
+    markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
 
     // warn about unreferenced data structures
     warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
@@ -3886,6 +3894,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
     warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
+    warnUnusedStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
     warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
 
@@ -4115,5 +4124,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
+    return _serviceObjectGroups;
   }
 }

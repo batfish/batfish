@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -15,7 +17,8 @@ public class IpSpaceReference extends IpSpace {
   private final String _name;
 
   /** A reference to a named {@link IpSpace} */
-  public IpSpaceReference(@Nonnull String name) {
+  @JsonCreator
+  public IpSpaceReference(@JsonProperty(PROP_NAME) @Nonnull String name) {
     _name = name;
   }
 
@@ -42,6 +45,11 @@ public class IpSpaceReference extends IpSpace {
   @Override
   protected boolean exprEquals(Object o) {
     return _name.equals(((IpSpaceReference) o)._name);
+  }
+
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 
   @Override

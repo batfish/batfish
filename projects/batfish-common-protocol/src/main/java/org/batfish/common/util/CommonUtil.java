@@ -669,6 +669,7 @@ public class CommonUtil {
     fb.setTag("neighbor-resolution");
 
     fb.setIngressNode(src.getOwner().getHostname());
+    fb.setIngressVrf(src.getVrf());
     fb.setSrcIp(srcAddress);
     fb.setDstIp(dstAddress);
     fb.setSrcPort(NamedPort.EPHEMERAL_LOWEST.number());

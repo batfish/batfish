@@ -395,6 +395,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_exprContext;
@@ -714,6 +715,7 @@ import org.batfish.representation.cisco.RoutePolicySetTag;
 import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
+import org.batfish.representation.cisco.ServiceObjectGroup;
 import org.batfish.representation.cisco.ServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco.SimpleExtendedServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
@@ -1018,6 +1020,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private final Warnings _w;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
+
+  private ServiceObjectGroup _currentServiceObjectGroup;
 
   public CiscoControlPlaneExtractor(
       String text,
@@ -1826,6 +1830,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOg_network(Og_networkContext ctx) {
     _currentNetworkObjectGroup = null;
+  }
+
+  @Override
+  public void enterOg_service(Og_serviceContext ctx) {
+    String name = ctx.name.getText();
+    int definitionLine = ctx.name.getStart().getLine();
+    _currentServiceObjectGroup =
+        _configuration
+            .getServiceObjectGroups()
+            .computeIfAbsent(name, n -> new ServiceObjectGroup(n, definitionLine));
+  }
+
+  @Override
+  public void exitOg_service(Og_serviceContext ctx) {
+    _currentServiceObjectGroup = null;
   }
 
   @Override
