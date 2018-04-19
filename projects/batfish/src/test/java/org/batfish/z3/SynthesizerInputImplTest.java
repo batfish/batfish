@@ -263,8 +263,8 @@ public class SynthesizerInputImplTest {
     String nextHopInterface1 = "nextHopInterface1";
     String nextHop2 = "nextHop2";
     String nextHopInterface2 = "nextHopInterface2";
-    IpSpace ipSpace1 = Ip.ZERO;
-    IpSpace ipSpace2 = Ip.MAX;
+    IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
+    IpSpace ipSpace2 = Ip.MAX.toIpSpace();
     IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
     IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
     Edge edge1 =
@@ -478,8 +478,8 @@ public class SynthesizerInputImplTest {
     Vrf vrf = _vb.setOwner(node).build();
     Interface iface1 = _ib.setOwner(node).setVrf(vrf).build();
     Interface iface2 = _ib.build();
-    IpSpace ipSpace1 = Ip.ZERO;
-    IpSpace ipSpace2 = Ip.MAX;
+    IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
+    IpSpace ipSpace2 = Ip.MAX.toIpSpace();
     IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
     IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
 

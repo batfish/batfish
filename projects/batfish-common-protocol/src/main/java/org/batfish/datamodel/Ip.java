@@ -10,9 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public class Ip implements Comparable<Ip>, Serializable, IpSpace {
+public class Ip implements Comparable<Ip>, Serializable {
 
   private static Map<Ip, BitSet> _addressBitsCache = new ConcurrentHashMap<>();
 
@@ -112,11 +111,6 @@ public class Ip implements Comparable<Ip>, Serializable, IpSpace {
     _ip = ipStrToLong(ipAsString);
   }
 
-  @Override
-  public <R> R accept(GenericIpSpaceVisitor<R> visitor) {
-    return visitor.visitIp(this);
-  }
-
   public long asLong() {
     return _ip;
   }
@@ -124,19 +118,6 @@ public class Ip implements Comparable<Ip>, Serializable, IpSpace {
   @Override
   public int compareTo(@Nullable Ip rhs) {
     return Long.compare(_ip, rhs._ip);
-  }
-
-  @Override
-  public boolean containsIp(Ip ip) {
-    return _ip == ip._ip;
-  }
-
-  @Override
-  public IpSpace complement() {
-    return AclIpSpace.builder()
-        .thenRejecting(this)
-        .thenPermitting(UniverseIpSpace.INSTANCE)
-        .build();
   }
 
   @Override
@@ -243,6 +224,10 @@ public class Ip implements Comparable<Ip>, Serializable, IpSpace {
     } else {
       return Prefix.MAX_PREFIX_LENGTH - numTrailingZeros;
     }
+  }
+
+  public IpIpSpace toIpSpace() {
+    return new IpIpSpace(this);
   }
 
   @Override

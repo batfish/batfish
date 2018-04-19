@@ -5,9 +5,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
-public final class Prefix implements Comparable<Prefix>, Serializable, IpSpace {
+public final class Prefix implements Comparable<Prefix>, Serializable {
 
   public static final int MAX_PREFIX_LENGTH = 32;
 
@@ -65,11 +64,6 @@ public final class Prefix implements Comparable<Prefix>, Serializable, IpSpace {
   }
 
   @Override
-  public <R> R accept(GenericIpSpaceVisitor<R> visitor) {
-    return visitor.visitPrefix(this);
-  }
-
-  @Override
   public int compareTo(Prefix rhs) {
     int ret = _ip.compareTo(rhs._ip);
     if (ret != 0) {
@@ -78,20 +72,11 @@ public final class Prefix implements Comparable<Prefix>, Serializable, IpSpace {
     return Integer.compare(_prefixLength, rhs._prefixLength);
   }
 
-  @Override
   public boolean containsIp(Ip ip) {
     long start = _ip.asLong();
     long end = getNetworkEnd(start, _prefixLength);
     long ipAsLong = ip.asLong();
     return start <= ipAsLong && ipAsLong <= end;
-  }
-
-  @Override
-  public IpSpace complement() {
-    return AclIpSpace.builder()
-        .thenRejecting(this)
-        .thenPermitting(UniverseIpSpace.INSTANCE)
-        .build();
   }
 
   public boolean containsPrefix(Prefix prefix) {
@@ -134,6 +119,10 @@ public final class Prefix implements Comparable<Prefix>, Serializable, IpSpace {
     result = prime * result + _ip.hashCode();
     result = prime * result + _prefixLength;
     return result;
+  }
+
+  public PrefixIpSpace toIpSpace() {
+    return new PrefixIpSpace(this);
   }
 
   @Override

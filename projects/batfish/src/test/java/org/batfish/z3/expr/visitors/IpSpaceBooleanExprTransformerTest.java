@@ -67,17 +67,18 @@ public class IpSpaceBooleanExprTransformerTest {
   public void testVisitIp() {
     Ip ip = new Ip("1.2.3.4");
 
-    BooleanExpr matchSrcExpr = ip.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr matchSrcExpr = ip.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchSrcExpr,
         equalTo(HeaderSpaceMatchExpr.matchSrcIp(ImmutableSet.of(new IpWildcard(ip)))));
 
-    BooleanExpr matchDstExpr = ip.accept(DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr matchDstExpr = ip.toIpSpace().accept(DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchDstExpr,
         equalTo(HeaderSpaceMatchExpr.matchDstIp(ImmutableSet.of(new IpWildcard(ip)))));
 
-    BooleanExpr matchSrcOrDstExpr = ip.accept(SRC_OR_DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr matchSrcOrDstExpr =
+        ip.toIpSpace().accept(SRC_OR_DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(
         matchSrcOrDstExpr,
         equalTo(HeaderSpaceMatchExpr.matchSrcOrDstIp(ImmutableSet.of(new IpWildcard(ip)))));
@@ -86,7 +87,7 @@ public class IpSpaceBooleanExprTransformerTest {
   @Test
   public void testVisitIpWildcard() {
     IpWildcard wildcard = new IpWildcard(new Ip("1.2.0.4"), new Ip(0x0000FF00L));
-    BooleanExpr matchExpr = wildcard.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr matchExpr = wildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
     assertThat(matchExpr, equalTo(HeaderSpaceMatchExpr.matchSrcIp(ImmutableSet.of(wildcard))));
   }
 
@@ -101,8 +102,10 @@ public class IpSpaceBooleanExprTransformerTest {
             .build();
 
     BooleanExpr expr = ipSpace.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
-    BooleanExpr includeExpr = includeWildcard.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
-    BooleanExpr excludeExpr = excludeWildcard.accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr includeExpr =
+        includeWildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
+    BooleanExpr excludeExpr =
+        excludeWildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
 
     assertThat(expr, equalTo(new AndExpr(ImmutableList.of(new NotExpr(excludeExpr), includeExpr))));
   }
