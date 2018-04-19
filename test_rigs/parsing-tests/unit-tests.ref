@@ -7573,7 +7573,7 @@
             "        (access_list_ip_range",
             "          OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "          (variable",
-            "            VARIABLE:'drawbridge_hosts'  <== mode:DEFAULT_MODE))",
+            "            VARIABLE:'drawbridge_hosts'  <== mode:M_ObjectGroup))",
             "        (access_list_ip_range",
             "          INTERFACE:'interface'  <== mode:DEFAULT_MODE",
             "          (variable",
@@ -19118,7 +19118,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_ip_address",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:M_ObjectGroup",
             "        ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "        (variable",
             "          VARIABLE:'_anonymized_'  <== mode:DEFAULT_MODE)",
@@ -19131,7 +19131,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_ip_address",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:M_ObjectGroup",
             "        ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "        (variable",
             "          VARIABLE:'_anonymized2_'  <== mode:DEFAULT_MODE)",
@@ -26974,7 +26974,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_service",
-            "        SERVICE:'service'  <== mode:DEFAULT_MODE",
+            "        SERVICE:'service'  <== mode:M_ObjectGroup",
             "        (variable",
             "          VARIABLE:'SVCGRP-ICMP'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
@@ -29449,7 +29449,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_ip_address",
-            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:M_ObjectGroup",
             "        ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "        (variable",
             "          VARIABLE:'BIPPETY'  <== mode:DEFAULT_MODE)",
@@ -29484,7 +29484,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_network",
-            "        NETWORK:'network'  <== mode:DEFAULT_MODE",
+            "        NETWORK:'network'  <== mode:M_ObjectGroup",
             "        (variable",
             "          VARIABLE:'dns_servers'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
@@ -29502,7 +29502,7 @@
             "    (s_object_group",
             "      OBJECT_GROUP:'object-group'  <== mode:DEFAULT_MODE",
             "      (og_network",
-            "        NETWORK:'network'  <== mode:DEFAULT_MODE",
+            "        NETWORK:'network'  <== mode:M_ObjectGroup",
             "        (variable",
             "          VARIABLE:'ntp_servers'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
@@ -52320,6 +52320,16 @@
             ],
             "copp-system-p-acl-mac-cdp-udld-vtp" : [
               6
+            ]
+          }
+        },
+        "cisco_qos" : {
+          "object-group network" : {
+            "dns_servers" : [
+              26
+            ],
+            "ntp_servers" : [
+              29
             ]
           }
         },
