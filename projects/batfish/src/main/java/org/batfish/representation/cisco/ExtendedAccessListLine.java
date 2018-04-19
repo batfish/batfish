@@ -1,11 +1,15 @@
 package org.batfish.representation.cisco;
 
+import static java.util.Objects.requireNonNull;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
-import javax.annotation.Nullable;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
@@ -13,15 +17,124 @@ import org.batfish.datamodel.TcpFlags;
 
 public class ExtendedAccessListLine implements Serializable {
 
+  public static class Builder {
+
+    private LineAction _action;
+
+    private Set<Integer> _dscps;
+
+    private ExtendedAccessListAddressSpecifier _dstAddressSpecifier;
+
+    private List<SubRange> _dstPortRanges;
+
+    private Set<Integer> _ecns;
+
+    private Integer _icmpCode;
+
+    private Integer _icmpType;
+
+    private String _name;
+
+    private IpProtocol _protocol;
+
+    private ExtendedAccessListServiceSpecifier _serviceSpecifier;
+
+    public Builder setServiceSpecifier(ExtendedAccessListServiceSpecifier serviceSpecifier) {
+      _serviceSpecifier = serviceSpecifier;
+      return this;
+    }
+
+    private ExtendedAccessListAddressSpecifier _srcAddressSpecifier;
+
+    private List<SubRange> _srcPortRanges;
+
+    private Set<State> _states;
+
+    private List<TcpFlags> _tcpFlags;
+
+    private Builder() {
+      _dscps = ImmutableSet.of();
+      _dstPortRanges = ImmutableList.of();
+      _ecns = ImmutableSet.of();
+      _srcPortRanges = ImmutableList.of();
+    }
+
+    public Builder setAction(@Nonnull LineAction action) {
+      _action = action;
+      return this;
+    }
+
+    public Builder setDscps(Iterable<Integer> dscps) {
+      _dscps = ImmutableSet.copyOf(dscps);
+      return this;
+    }
+
+    public Builder setDstAddressSpecifier(ExtendedAccessListAddressSpecifier dstAddressSpecifier) {
+      _dstAddressSpecifier = dstAddressSpecifier;
+      return this;
+    }
+
+    public Builder setDstPortRanges(Iterable<SubRange> dstPortRanges) {
+      _dstPortRanges = ImmutableList.copyOf(dstPortRanges);
+      return this;
+    }
+
+    public Builder setEcns(Iterable<Integer> ecns) {
+      _ecns = ImmutableSet.copyOf(ecns);
+      return this;
+    }
+
+    public Builder setIcmpCode(Integer icmpCode) {
+      _icmpCode = icmpCode;
+      return this;
+    }
+
+    public Builder setIcmpType(Integer icmpType) {
+      _icmpType = icmpType;
+      return this;
+    }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setProtocol(IpProtocol protocol) {
+      _protocol = protocol;
+      return this;
+    }
+
+    public Builder setSrcPortRanges(Iterable<SubRange> srcPortRanges) {
+      _srcPortRanges = ImmutableList.copyOf(srcPortRanges);
+      return this;
+    }
+
+    public Builder setStates(Iterable<State> states) {
+      _states = ImmutableSet.copyOf(states);
+      return this;
+    }
+
+    public Builder setTcpFlags(Iterable<TcpFlags> tcpFlags) {
+      _tcpFlags = ImmutableList.copyOf(tcpFlags);
+      return this;
+    }
+
+    public ExtendedAccessListLine build() {
+      return new ExtendedAccessListLine(this);
+    }
+  }
+
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder();
+  }
 
   private final LineAction _action;
 
   private final Set<Integer> _dscps;
 
-  private final String _dstAddressGroup;
-
-  private final IpWildcard _dstIpWildcard;
+  private final ExtendedAccessListAddressSpecifier _dstAddressSpecifier;
 
   private final List<SubRange> _dstPortRanges;
 
@@ -35,63 +148,43 @@ public class ExtendedAccessListLine implements Serializable {
 
   private final IpProtocol _protocol;
 
-  private final String _srcAddressGroup;
-
-  private final IpWildcard _srcIpWildcard;
+  private final ExtendedAccessListAddressSpecifier _srcAddressSpecifier;
 
   private final List<SubRange> _srcPortRanges;
 
-  private Set<State> _states;
+  private final Set<State> _states;
 
   private final List<TcpFlags> _tcpFlags;
 
-  public ExtendedAccessListLine(
-      String name,
-      LineAction action,
-      IpProtocol protocol,
-      IpWildcard srcIpWildcard,
-      @Nullable String srcAddressGroup,
-      IpWildcard dstIpWildcard,
-      @Nullable String dstAddressGroup,
-      List<SubRange> srcPortRanges,
-      List<SubRange> dstPortRanges,
-      Set<Integer> dscps,
-      Set<Integer> ecns,
-      @Nullable Integer icmpType,
-      @Nullable Integer icmpCode,
-      Set<State> states,
-      List<TcpFlags> tcpFlags) {
-    _name = name;
-    _action = action;
-    _protocol = protocol;
-    _srcIpWildcard = srcIpWildcard;
-    _srcAddressGroup = srcAddressGroup;
-    _dscps = dscps;
-    _dstIpWildcard = dstIpWildcard;
-    _dstAddressGroup = dstAddressGroup;
-    _ecns = ecns;
-    _srcPortRanges = srcPortRanges;
-    _dstPortRanges = dstPortRanges;
-    _icmpType = icmpType;
-    _icmpCode = icmpCode;
-    _states = states;
-    _tcpFlags = tcpFlags;
+  private final ExtendedAccessListServiceSpecifier _serviceSpecifier;
+
+  private ExtendedAccessListLine(Builder builder) {
+    _action = requireNonNull(builder._action);
+    _dscps = builder._dscps;
+    _dstAddressSpecifier = builder._dstAddressSpecifier;
+    _dstPortRanges = builder._dstPortRanges;
+    _ecns = builder._ecns;
+    _icmpCode = builder._icmpCode;
+    _icmpType = builder._icmpType;
+    _name = builder._name;
+    _protocol = builder._protocol;
+    _serviceSpecifier = builder._serviceSpecifier;
+    _srcAddressSpecifier = builder._srcAddressSpecifier;
+    _srcPortRanges = builder._srcPortRanges;
+    _states = builder._states;
+    _tcpFlags = builder._tcpFlags;
   }
 
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  public IpWildcard getDestinationIpWildcard() {
-    return _dstIpWildcard;
+  public ExtendedAccessListAddressSpecifier getDestinationAddressSpecifier() {
+    return _dstAddressSpecifier;
   }
 
   public Set<Integer> getDscps() {
     return _dscps;
-  }
-
-  public String getDstAddressGroup() {
-    return _dstAddressGroup;
   }
 
   public List<SubRange> getDstPorts() {
@@ -118,12 +211,8 @@ public class ExtendedAccessListLine implements Serializable {
     return _protocol;
   }
 
-  public IpWildcard getSourceIpWildcard() {
-    return _srcIpWildcard;
-  }
-
-  public String getSrcAddressGroup() {
-    return _srcAddressGroup;
+  public ExtendedAccessListAddressSpecifier getSourceAddressSpecifier() {
+    return _srcAddressSpecifier;
   }
 
   public List<SubRange> getSrcPorts() {
@@ -140,22 +229,21 @@ public class ExtendedAccessListLine implements Serializable {
 
   @Override
   public String toString() {
-    String protocolName = _protocol.name();
-    return "[Name:\""
-        + _name
-        + "\", Action:"
-        + _action
-        + ", Protocol:"
-        + protocolName
-        + "("
-        + _protocol.number()
-        + ")"
-        + ", SourceIpWildcard:"
-        + _srcIpWildcard
-        + ", DestinationIpWildcard:"
-        + _dstIpWildcard
-        + ", PortRange:"
-        + _srcPortRanges
-        + "]";
+    return MoreObjects.toStringHelper(getClass())
+        .add("action", _action)
+        .add("dscps", _dscps)
+        .add("dstAddressSpecicier", _dstAddressSpecifier)
+        .add("dstPortRanges", _dstPortRanges)
+        .add("ecns", _ecns)
+        .add("icmpCode", _icmpCode)
+        .add("icmpType", _icmpType)
+        .add("name", _name)
+        .add("protocol", _protocol)
+        .add("serviceSpecifier", _serviceSpecifier)
+        .add("srcAddressSpecifier", _srcAddressSpecifier)
+        .add("srcPortRanges", _srcPortRanges)
+        .add("states", _states)
+        .add("tcpFlags", _tcpFlags)
+        .toString();
   }
 }

@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -13,6 +14,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
@@ -29,6 +31,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -72,6 +75,7 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -194,6 +198,14 @@ public class CiscoGrammarTest {
   public void testIosLoggingOnDefault() throws IOException {
     Configuration loggingOnOmitted = parseConfig("iosLoggingOnOmitted");
     assertThat(loggingOnOmitted, hasVendorFamily(hasCisco(hasLogging(isOn()))));
+  }
+
+  @Test
+  public void testIosAclObjectGroup() throws IOException {
+    Configuration c = parseConfig("ios-acl-object-group");
+
+    /* Each object group should permit an IP iff it is in its space. */
+    assertThat(c, hasIpAccessList("acl1", hasLines(not(empty()))));
   }
 
   @Test

@@ -604,7 +604,9 @@ import org.batfish.representation.cisco.DynamicIpv6BgpPeerGroup;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.ExtendedAccessList;
+import org.batfish.representation.cisco.ExtendedAccessListAddressSpecifier;
 import org.batfish.representation.cisco.ExtendedAccessListLine;
+import org.batfish.representation.cisco.ExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco.Interface;
@@ -624,6 +626,7 @@ import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObjectGroup;
+import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecificier;
 import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
@@ -723,6 +726,7 @@ import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
+import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
@@ -775,6 +779,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_TTL = "acl ttl eq number";
 
+  private static final String F_ACL_ADDRESS_GROUP = "acl match address-group";
+
+  private static final String F_ACL_INTERFACE = "acl match interface";
+
+  private static final String F_ACL_OBJECT = "acl match object";
+
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
@@ -788,7 +798,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.prefix != null) {
       return Prefix.parse(ctx.prefix.getText()).getStartIp();
     } else {
-      return Ip.ZERO;
+      return null;
     }
   }
 
@@ -2912,11 +2922,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitExtended_access_list_tail(Extended_access_list_tailContext ctx) {
-
     LineAction action = toLineAction(ctx.ala);
-    IpProtocol protocol = toIpProtocol(ctx.prot);
-    Ip srcIp = getIp(ctx.srcipr);
-    Ip srcWildcard = getWildcard(ctx.srcipr);
+    IpProtocol protocol = ctx.prot != null ? toIpProtocol(ctx.prot) : null;
+    ExtendedAccessListAddressSpecifier srcAddressSpecifier =
+        toExtendedAccessListAddressSpecifier(ctx.srcipr);
+    ExtendedAccessListAddressSpecifier dstAddressSpecifier =
+        toExtendedAccessListAddressSpecifier(ctx.dstipr);
+    ExtendedAccessListServiceSpecifier serviceSpecifier = computeServiceSpecifier(ctx);
     Ip dstIp = getIp(ctx.dstipr);
     Ip dstWildcard = getWildcard(ctx.dstipr);
     String srcAddressGroup = getAddressGroup(ctx.srcipr);
@@ -3061,23 +3073,49 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     String name = getFullText(ctx).trim();
     ExtendedAccessListLine line =
-        new ExtendedAccessListLine(
-            name,
-            action,
-            protocol,
-            new IpWildcard(srcIp, srcWildcard),
-            srcAddressGroup,
-            new IpWildcard(dstIp, dstWildcard),
-            dstAddressGroup,
-            srcPortRanges,
-            dstPortRanges,
-            dscps,
-            ecns,
-            icmpType,
-            icmpCode,
-            states,
-            tcpFlags);
+        ExtendedAccessListLine.builder()
+            .setAction(action)
+            .setDstAddressSpecifier(dstAddressSpecifier)
+            .setName(name)
+            .setServiceSpecifier(serviceSpecifier)
+            .build();
     _currentExtendedAcl.addLine(line);
+  }
+
+  private ExtendedAccessListServiceSpecifier computeServiceSpecifier(
+      Extended_access_list_tailContext ctx) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
+  }
+
+  private ExtendedAccessListAddressSpecifier toExtendedAccessListAddressSpecifier(
+      Access_list_ip_rangeContext ctx) {
+    if (ctx.ip != null) {
+      if (ctx.wildcard != null) {
+        // IP and mask
+        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip), toIp(ctx.wildcard)));
+      } else {
+        // Just IP. Same as if 'host' was specified
+        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip)));
+      }
+    } else if (ctx.ANY() != null || ctx.ANY4() != null) {
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.prefix != null) {
+      return new WildcardAddressSpecifier(new IpWildcard(Prefix.parse(ctx.prefix.getText())));
+    } else if (ctx.address_group != null) {
+      todo(ctx, F_ACL_ADDRESS_GROUP);
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.iface != null) {
+      todo(ctx, F_ACL_INTERFACE);
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.obj != null) {
+      todo(ctx, F_ACL_OBJECT);
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.og != null) {
+      return new NetworkObjectGroupAddressSpecificier(ctx.og.getText());
+    } else {
+      throw convError(ExtendedAccessListAddressSpecifier.class, ctx);
+    }
   }
 
   @Override
@@ -6463,6 +6501,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ip != null) {
       // basically same as host
       return Ip.ZERO;
+    } else if (ctx.address_group != null) {
+      return null;
     } else {
       throw convError(Ip.class, ctx);
     }

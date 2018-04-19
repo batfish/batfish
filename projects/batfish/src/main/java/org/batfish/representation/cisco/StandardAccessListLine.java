@@ -51,21 +51,17 @@ public class StandardAccessListLine implements Serializable {
   }
 
   public ExtendedAccessListLine toExtendedAccessListLine() {
-    return new ExtendedAccessListLine(
-        _name,
-        _action,
-        IpProtocol.IP,
-        _ipWildcard,
-        null,
-        IpWildcard.ANY,
-        null,
-        Collections.<SubRange>emptyList(),
-        Collections.<SubRange>emptyList(),
-        _dscps,
-        _ecns,
-        null,
-        null,
-        EnumSet.noneOf(State.class),
-        Collections.<TcpFlags>emptyList());
+    return ExtendedAccessListLine.builder()
+        .setAction(_action)
+        .setName(_name)
+        .setServiceSpecifier(
+            SimpleServiceSpecifier.builder()
+                .setProtocol(IpProtocol.IP)
+                .setSrcIpWildcard(_ipWildcard)
+                .setDstIpWildcard(IpWildcard.ANY)
+                .setDscps(_dscps)
+                .setEcns(_ecns)
+                .build())
+        .build();
   }
 }
