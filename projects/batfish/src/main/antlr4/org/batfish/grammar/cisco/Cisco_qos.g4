@@ -226,7 +226,10 @@ og_service
    (
       ogs_description
       | ogs_group_object
+      | ogs_icmp
       | ogs_service_object
+      | ogs_tcp
+      | ogs_udp
    )*
 ;
 
@@ -339,6 +342,11 @@ ogs_group_object
    GROUP_OBJECT name = variable NEWLINE
 ;
 
+ogs_icmp
+:
+   ICMP NEWLINE
+;
+
 ogs_service_object
 :
    SERVICE_OBJECT
@@ -351,6 +359,16 @@ ogs_service_object
          OBJECT name = variable
       )
    ) NEWLINE
+;
+
+ogs_tcp
+:
+   TCP ps = port_specifier NEWLINE
+;
+
+ogs_udp
+:
+   UDP ps = port_specifier NEWLINE
 ;
 
 ogu_description

@@ -2,12 +2,17 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.hamcrest.Matcher;
@@ -24,11 +29,29 @@ public final class DataModelMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the HeaderSpace's
+   * srcOrDstPorts.
+   */
+  public static @Nonnull Matcher<HeaderSpace> hasSrcOrDstPorts(
+      @Nonnull Matcher<? super SortedSet<SubRange>> subMatcher) {
+    return new HasSrcOrDstPorts(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@code name} is that of the {@link
    * IpSpaceReference}.
    */
   public static @Nonnull Matcher<PermittedByAcl> hasAclName(@Nonnull String name) {
     return hasAclName(equalTo(name));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * HeaderSpace}'s ipProtcols.
+   */
+  public static @Nonnull Matcher<HeaderSpace> hasIpProtocols(
+      @Nonnull Matcher<? super SortedSet<IpProtocol>> subMatcher) {
+    return new HeaderSpaceMatchersImpl.HasIpProtocols(subMatcher);
   }
 
   /**

@@ -3633,6 +3633,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
 
+    // convert each ServiceObjectGroup to IpAccessList
+    _serviceObjectGroups.forEach(
+        (name, serviceObjectGroup) ->
+            c.getIpAccessLists()
+                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
+
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
     // lists
@@ -3901,6 +3907,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.computeRoutingPolicySources(_w);
 
     return c;
+  }
+
+  private IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
+        .build();
   }
 
   private void addIkePoliciesAndGateways(Configuration c) {

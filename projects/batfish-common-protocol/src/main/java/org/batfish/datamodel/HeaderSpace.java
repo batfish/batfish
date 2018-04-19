@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator.nullsFirst;
 import static org.batfish.common.util.CommonUtil.nullIfEmpty;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -436,7 +438,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   private static final Comparator<HeaderSpace> COMPARATOR =
       Comparator.comparing(HeaderSpace::getDscps, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getDstIps)
+          .thenComparing(HeaderSpace::getDstIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getDstPorts, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getDstProtocols, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getEcns, CommonUtil::compareIterable)
@@ -446,7 +448,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getIpProtocols, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getNegate)
           .thenComparing(HeaderSpace::getNotDscps, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotDstIps)
+          .thenComparing(HeaderSpace::getNotDstIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getNotDstPorts, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getNotDstProtocols, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getNotEcns, CommonUtil::compareIterable)
@@ -455,12 +457,12 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
           .thenComparing(HeaderSpace::getNotIcmpTypes, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getNotIpProtocols, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getNotPacketLengths, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getNotSrcIps)
+          .thenComparing(HeaderSpace::getNotSrcIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getNotSrcPorts, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getNotSrcProtocols, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getPacketLengths, CommonUtil::compareIterable)
-          .thenComparing(HeaderSpace::getSrcIps)
-          .thenComparing(HeaderSpace::getSrcOrDstIps)
+          .thenComparing(HeaderSpace::getSrcIps, Comparator.nullsFirst(naturalOrder()))
+          .thenComparing(HeaderSpace::getSrcOrDstIps, nullsFirst(naturalOrder()))
           .thenComparing(HeaderSpace::getSrcOrDstPorts, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getSrcOrDstProtocols, CommonUtil::compareIterable)
           .thenComparing(HeaderSpace::getSrcPorts, CommonUtil::compareIterable)

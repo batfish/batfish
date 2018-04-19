@@ -10,7 +10,9 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUnusedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
@@ -29,6 +31,8 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
+import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
+import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
@@ -45,6 +49,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
@@ -84,10 +89,13 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
+import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -318,6 +326,140 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
     assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
+  }
+
+  @Test
+  public void testIosObjectGroupService() throws IOException {
+    Configuration c = parseConfig("ios-object-group-service");
+
+    /* og-icmp */
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeServiceObjectGroupAclName("og-icmp"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    contains(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                hasIpProtocols(
+                                                    contains(IpProtocol.ICMP)))))))))))));
+    /* og-tcp */
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeServiceObjectGroupAclName("og-tcp"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    containsInAnyOrder(
+                                        ImmutableList.of(
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(new SubRange(65500))))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(
+                                                                    new SubRange(
+                                                                        NamedPort.DOMAIN
+                                                                            .number()))))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(
+                                                                    new SubRange(
+                                                                        NamedPort
+                                                                            .CMDtcp_OR_SYSLOGudp
+                                                                            .number()))))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.TCP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(
+                                                                    new SubRange(
+                                                                        NamedPort.HTTP
+                                                                            .number())))))))))))))))));
+    /* og-udp */
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeServiceObjectGroupAclName("og-udp"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    containsInAnyOrder(
+                                        ImmutableList.of(
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(new SubRange(65501))))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(
+                                                                    new SubRange(
+                                                                        NamedPort.NTP
+                                                                            .number()))))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(
+                                                                    new SubRange(
+                                                                        NamedPort.SNMPTRAP
+                                                                            .number()))))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(
+                                                                    new SubRange(
+                                                                        NamedPort
+                                                                            .CMDtcp_OR_SYSLOGudp
+                                                                            .number()))))))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    allOf(
+                                                        hasIpProtocols(contains(IpProtocol.UDP)),
+                                                        hasSrcOrDstPorts(
+                                                            hasItem(
+                                                                equalTo(
+                                                                    new SubRange(
+                                                                        NamedPort.TFTP
+                                                                            .number())))))))))))))))));
   }
 
   @Test
