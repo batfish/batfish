@@ -88,6 +88,19 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   }
 
   @Override
+  protected int compareSameClass(IpSpace o) {
+    return Comparator.comparing(IpWildcardSetIpSpace::getBlacklist, CommonUtil::compareIterable)
+        .thenComparing(IpWildcardSetIpSpace::getWhitelist, CommonUtil::compareIterable)
+        .compare(this, (IpWildcardSetIpSpace) o);
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
+    IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
+    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
+  }
+
+  @Override
   public IpSpace complement() {
     /*
      * the current is first reject everything in blacklist.
@@ -132,18 +145,5 @@ public final class IpWildcardSetIpSpace extends IpSpace {
         .add(PROP_BLACKLIST, _blacklist)
         .add(PROP_WHITELIST, _whitelist)
         .toString();
-  }
-
-  @Override
-  protected int compareSameClass(IpSpace o) {
-    return Comparator.comparing(IpWildcardSetIpSpace::getBlacklist, CommonUtil::compareIterable)
-        .thenComparing(IpWildcardSetIpSpace::getWhitelist, CommonUtil::compareIterable)
-        .compare(this, (IpWildcardSetIpSpace) o);
-  }
-
-  @Override
-  protected boolean exprEquals(Object o) {
-    IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
-    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
   }
 }

@@ -81,22 +81,40 @@ public class AclIpSpace extends IpSpace {
     return new Builder();
   }
 
+  /** Set-theoretic difference between two IpSpaces. */
+  public static IpSpace difference(IpSpace ipSpace1, IpSpace ipSpace2) {
+    if (ipSpace1 == null && ipSpace2 == null) {
+      return null;
+    } else if (ipSpace1 == null) {
+      return EmptyIpSpace.INSTANCE;
+    } else if (ipSpace2 == null) {
+      return ipSpace1;
+    }
+    return builder().thenRejecting(ipSpace2).thenPermitting(ipSpace1).build();
+  }
+
+  /** Set-theoretic intersection of multiple IpSpaces */
   public static IpSpace intersection(IpSpace... ipSpaces) {
     return intersection(Arrays.spliterator(ipSpaces));
   }
 
+  /** Set-theoretic intersection of multiple IpSpaces */
   public static IpSpace intersection(Iterable<IpSpace> ipSpaces) {
     return intersection(ipSpaces.spliterator());
   }
 
   private static IpSpace intersection(Spliterator<IpSpace> ipSpaces) {
-    return builder()
-        .thenRejecting(
-            StreamSupport.stream(ipSpaces, false)
-                .map(IpSpace::complement)
-                .collect(ImmutableList.toImmutableList()))
-        .thenPermitting(UniverseIpSpace.INSTANCE)
-        .build();
+    IpSpace[] complements =
+        StreamSupport.stream(ipSpaces, false)
+            .filter(Objects::nonNull)
+            .map(IpSpace::complement)
+            .toArray(IpSpace[]::new);
+
+    if (complements.length == 0) {
+      return null;
+    }
+
+    return builder().thenRejecting(complements).thenPermitting(UniverseIpSpace.INSTANCE).build();
   }
 
   public static Builder permitting(IpSpace... ipSpaces) {
@@ -119,12 +137,27 @@ public class AclIpSpace extends IpSpace {
     return new Builder().thenRejecting(ipSpaces);
   }
 
+  /** Set-theoretic union of multiple IpSpaces */
   public static IpSpace union(IpSpace... ipSpaces) {
-    return union(ImmutableList.copyOf(ipSpaces));
+    return unionNonnull(Arrays.stream(ipSpaces).filter(Objects::nonNull).toArray(IpSpace[]::new));
   }
 
+  /** Set-theoretic union of multiple IpSpaces */
   public static IpSpace union(Iterable<IpSpace> ipSpaces) {
-    return builder().thenPermitting(ipSpaces).build();
+    return unionNonnull(
+        StreamSupport.stream(ipSpaces.spliterator(), false)
+            .filter(Objects::nonNull)
+            .toArray(IpSpace[]::new));
+  }
+
+  private static IpSpace unionNonnull(IpSpace... ipSpaces) {
+    if (ipSpaces.length == 0) {
+      return null;
+    } else if (ipSpaces.length == 1) {
+      return ipSpaces[0];
+    } else {
+      return builder().thenPermitting(ipSpaces).build();
+    }
   }
 
   private final Supplier<Integer> _hash;

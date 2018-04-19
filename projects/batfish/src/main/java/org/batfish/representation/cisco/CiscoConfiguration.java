@@ -214,6 +214,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
+  public static String computeNetworkObjectGroupAclName(String name) {
+    return String.format("~NETWORK_OBJECT_GROUP~%s~", name);
+  }
+
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
     Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);

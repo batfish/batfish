@@ -5,40 +5,35 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.datamodel.visitors.IpSpaceContainedInWildcard;
+import org.batfish.datamodel.visitors.IpSpaceMayIntersectWildcard;
 
 /**
  * Specialize an {@link IpSpace} to input destination IP whitelist and blacklist. The goal is to
  * simplify the {@link IpSpace} as much as possible under the assumption that the whitelist and
  * blacklist are always true (i.e. all packets match the whitelist, no packets match the blacklist).
  * For example, if the {@link IpSpace} is disjoint from the whitelist, it is effectively empty (i.e.
- * it contains no IPs in the whitelist).
+ * it containsIp no IPs in the whitelist).
  */
 public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
-  private final Set<IpWildcard> _whitelist;
+  private final IpSpace _ipSpace;
 
-  private final Set<IpWildcard> _blacklist;
-
-  private final boolean _canSpecialize;
-
-  public IpSpaceSpecializer(Set<IpWildcard> whitelist, Set<IpWildcard> blacklist) {
-    _canSpecialize =
-        !((whitelist.isEmpty() || whitelist.contains(IpWildcard.ANY)) && blacklist.isEmpty());
-
-    _whitelist = !whitelist.isEmpty() ? whitelist : ImmutableSet.of(IpWildcard.ANY);
-    _blacklist = blacklist;
+  public IpSpaceSpecializer(IpSpace ipSpace) {
+    _ipSpace = IpSpaceSimplifier.simplify(ipSpace);
   }
 
   @Override
@@ -47,8 +42,10 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   public IpSpace specialize(IpSpace ipSpace) {
-    if (!_canSpecialize) {
+    if (_ipSpace == null || _ipSpace == UniverseIpSpace.INSTANCE) {
       return IpSpaceSimplifier.simplify(ipSpace);
+    } else if (_ipSpace == EmptyIpSpace.INSTANCE) {
+      return EmptyIpSpace.INSTANCE;
     } else {
       return IpSpaceSimplifier.simplify(ipSpace.accept(this));
     }
@@ -61,13 +58,19 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
         aclIpSpace
             .getLines()
             .stream()
-            .map(
-                aclIpSpaceLine ->
-                    AclIpSpaceLine.builder()
-                        .setAction(aclIpSpaceLine.getAction())
-                        .setIpSpace(aclIpSpaceLine.getIpSpace().accept(this))
-                        .build())
+            .map(line -> line.toBuilder().setIpSpace(line.getIpSpace().accept(this)).build())
+            .filter(line -> line.getIpSpace() != EmptyIpSpace.INSTANCE)
             .collect(ImmutableList.toImmutableList());
+
+    if (specializedLines.isEmpty()) {
+      return EmptyIpSpace.INSTANCE;
+    }
+
+    if (specializedLines
+        .stream()
+        .allMatch(aclIpSpaceLine -> aclIpSpaceLine.getAction() == LineAction.REJECT)) {
+      return EmptyIpSpace.INSTANCE;
+    }
 
     return AclIpSpace.builder().setLines(specializedLines).build();
   }
@@ -79,77 +82,94 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitIpIpSpace(IpIpSpace ipIpSpace) {
-    if (_blacklist.stream().noneMatch(ipWildcard -> ipWildcard.containsIp(ipIpSpace.getIp()))
-        && _whitelist.stream().anyMatch(ipWildcard -> ipWildcard.containsIp(ipIpSpace.getIp()))) {
-      return ipIpSpace;
-    } else {
-      return EmptyIpSpace.INSTANCE;
-    }
+    return specialize(ipIpSpace.getIp());
   }
 
   @Override
   public IpSpace visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-    return visitIpWildcardIpSpace(ipWildcardIpSpace, _whitelist);
+    return null;
   }
 
-  public IpSpace visitIpWildcardIpSpace(
-      IpWildcardIpSpace ipWildcardIpSpace, Set<IpWildcard> whitelist) {
-    IpWildcard ipWildcard = ipWildcardIpSpace.getIpWildcard();
-    if (_blacklist.stream().anyMatch(ipWildcard::subsetOf)) {
-      // blacklisted
-      return EmptyIpSpace.INSTANCE;
-    }
-
-    if (whitelist.stream().allMatch(ipWildcard::supersetOf)
-        && _blacklist.stream().noneMatch(ipWildcard::intersects)) {
-      return UniverseIpSpace.INSTANCE;
-    } else if (whitelist.stream().anyMatch(ipWildcard::intersects)) {
-      // some match
-      return ipWildcardIpSpace;
+  private IpSpace specialize(Ip ip) {
+    if (_ipSpace.containsIp(ip)) {
+      return ip.toIpSpace();
     } else {
       return EmptyIpSpace.INSTANCE;
+    }
+  }
+
+  public IpSpace specialize(IpWildcard ipWildcard) {
+    if (!_ipSpace.accept(new IpSpaceMayIntersectWildcard(ipWildcard))) {
+      return EmptyIpSpace.INSTANCE;
+    } else if (_ipSpace.accept(new IpSpaceContainedInWildcard(ipWildcard))) {
+      return UniverseIpSpace.INSTANCE;
+    } else {
+      return ipWildcard.toIpSpace();
     }
   }
 
   @Override
   public IpSpace visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    /*
-     * Remove any blacklisted Ips that are already blacklisted by _blacklist
-     * or that don't match any _whitelist
-     */
-    Stream<IpWildcard> blacklistStream = ipWildcardSetIpSpace.getBlacklist().stream();
-    if (!_blacklist.isEmpty()) {
-      blacklistStream =
-          blacklistStream.filter(notDstIp -> _blacklist.stream().noneMatch(notDstIp::subsetOf));
-    }
-    if (!_whitelist.isEmpty()) {
-      blacklistStream =
-          blacklistStream.filter(notDstIp -> _whitelist.stream().anyMatch(notDstIp::intersects));
-    }
-    Set<IpWildcard> blacklist = blacklistStream.collect(Collectors.toSet());
-
-    // Temporarily narrow the headerspace whitelist to what is not covered by the IpSpace blacklist.
-    Set<IpWildcard> newWhitelist =
-        _whitelist
+    Set<IpSpace> blacklistIpSpace =
+        ipWildcardSetIpSpace
+            .getBlacklist()
             .stream()
-            .filter(ipWildcard -> blacklist.stream().noneMatch(ipWildcard::subsetOf))
-            .collect(Collectors.toSet());
+            .map(this::specialize)
+            .filter(ipSpace -> ipSpace != EmptyIpSpace.INSTANCE)
+            .collect(ImmutableSet.toImmutableSet());
 
-    if (newWhitelist.isEmpty()) {
+    if (blacklistIpSpace.contains(UniverseIpSpace.INSTANCE)) {
       return EmptyIpSpace.INSTANCE;
     }
 
     /*
-     * Remove any whitelisted Ips that are either blacklisted or don't overlap with the specialized
-     * whitelist.
+     * A specialized IpWildcard is one of EmptyIpSpace, UniverseIpSpace, or IpWildcard.
+     * We've already removed EmptyIpSpace and checked for UniverseIpSpace, so everything left
+     * is an IpWildcard.
      */
+    Set<IpWildcard> blacklist =
+        blacklistIpSpace
+            .stream()
+            .map(IpWildcard.class::cast)
+            .collect(ImmutableSet.toImmutableSet());
+
+    IpSpaceSpecializer refinedSpecializer;
+
+    if (blacklist.isEmpty()) {
+      refinedSpecializer = this;
+    } else {
+      /* Specialize the whitelist using a refined specializer obtained by specializing _ipSpace
+       * to the blacklist. This helps situations like this:
+       *    _ipSpace <= blacklist <= whitelist
+       * If _ipSpace is covered by the blacklist, then refinedIpSpace will be empty, and we will
+       * later infer that the input ipWildcardSetIpSpace should be specialized to empty as well.
+       * Without this, specialization would not be able to infer this, so we'd do less optimization.
+       */
+      IpSpace refinedIpSpace =
+          _ipSpace.accept(
+              new IpSpaceSpecializer(
+                  IpWildcardSetIpSpace.builder()
+                      .including(IpWildcard.ANY)
+                      .excluding(blacklist)
+                      .build()));
+
+      /* blacklist covers the entire _ipSpace, so no need to consider the whitelist.
+       * TODO is this possible if !blacklistIpSpace.containsIp(UniverseIpSpace.INSTANCE)?
+       */
+      if (refinedIpSpace == EmptyIpSpace.INSTANCE) {
+        return EmptyIpSpace.INSTANCE;
+      }
+
+      refinedSpecializer = new IpSpaceSpecializer(refinedIpSpace);
+    }
+
     Set<IpSpace> ipSpaceWhitelist =
         ipWildcardSetIpSpace
             .getWhitelist()
             .stream()
-            .map(ipWildcard -> visitIpWildcardIpSpace(ipWildcard.toIpSpace(), newWhitelist))
-            .filter(ipSpace -> !(ipSpace instanceof EmptyIpSpace))
-            .collect(Collectors.toSet());
+            .map(refinedSpecializer::specialize)
+            .filter(ipSpace -> ipSpace != EmptyIpSpace.INSTANCE)
+            .collect(ImmutableSet.toImmutableSet());
 
     if (ipSpaceWhitelist.isEmpty()) {
       return EmptyIpSpace.INSTANCE;
@@ -163,17 +183,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
             .build();
       }
     } else {
-      /*
-       * visitIpWildcard can return either EmptyIpSpace, UniverseIpSpace, or IpWildcard.
-       * We've already removed EmptyIpSpace and checked for UniverseIpSpace, so everything left
-       * is an IpWildcard.
-       */
       Set<IpWildcard> ipWildcardWhitelist =
-          ipSpaceWhitelist
-              .stream()
-              .map(IpWildcardIpSpace.class::cast)
-              .map(IpWildcardIpSpace::getIpWildcard)
-              .collect(Collectors.toSet());
+          ipSpaceWhitelist.stream().map(IpWildcard.class::cast).collect(Collectors.toSet());
       return IpWildcardSetIpSpace.builder()
           .including(ipWildcardWhitelist)
           .excluding(blacklist)
@@ -183,11 +194,10 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    IpSpace specialized =
-        visitIpWildcardIpSpace(new IpWildcard(prefixIpSpace.getPrefix()).toIpSpace());
+    IpSpace specialized = specialize(new IpWildcard(prefixIpSpace.getPrefix()));
     /*
      * visitIpWildcard can return EmptyIpSpace, UniverseIpSpace, or IpWildcard
-     * If it returns IpWildcard, it will be unchanged, so return prefix instead.
+     * If it returns IpWildcard, it will be unchanged, so return prefixIpSpace instead.
      */
     if (specialized instanceof IpWildcardIpSpace) {
       return prefixIpSpace;

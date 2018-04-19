@@ -12,6 +12,7 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.SubRange;
@@ -234,7 +235,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_DST_IPS)
     public SortedSet<IpWildcard> getDstIps() {
-      return _reachabilitySettings.getHeaderSpace().getDstIps();
+      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getDstIps())
+          .getWhitelist();
     }
 
     @JsonProperty(PROP_DST_PORTS)
@@ -299,7 +301,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_DST_IPS)
     public SortedSet<IpWildcard> getNotDstIps() {
-      return _reachabilitySettings.getHeaderSpace().getNotDstIps();
+      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getNotDstIps())
+          .getWhitelist();
     }
 
     @JsonProperty(PROP_NOT_DST_PORTS)
@@ -349,7 +352,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_SRC_IPS)
     public SortedSet<IpWildcard> getNotSrcIps() {
-      return _reachabilitySettings.getHeaderSpace().getNotSrcIps();
+      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getNotSrcIps())
+          .getWhitelist();
     }
 
     @JsonProperty(PROP_NOT_SRC_PORTS)
@@ -374,7 +378,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_IPS)
     public SortedSet<IpWildcard> getSrcIps() {
-      return _reachabilitySettings.getHeaderSpace().getSrcIps();
+      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getSrcIps())
+          .getWhitelist();
     }
 
     @JsonProperty(PROP_SRC_NATTED)
@@ -384,7 +389,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public SortedSet<IpWildcard> getSrcOrDstIps() {
-      return _reachabilitySettings.getHeaderSpace().getSrcOrDstIps();
+      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getSrcOrDstIps())
+          .getWhitelist();
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PORTS)
