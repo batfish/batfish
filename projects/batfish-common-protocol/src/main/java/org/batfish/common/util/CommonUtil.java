@@ -119,7 +119,9 @@ import org.skyscreamer.jsonassert.JSONAssert;
 public class CommonUtil {
 
   public static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
-    if (ipSpace instanceof IpWildcardSetIpSpace) {
+    if (ipSpace == null) {
+      return null;
+    } else if (ipSpace instanceof IpWildcardSetIpSpace) {
       return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
     } else if (ipSpace instanceof UniverseIpSpace) {
       return ImmutableSortedSet.of();
@@ -130,7 +132,9 @@ public class CommonUtil {
   }
 
   public static SortedSet<IpWildcard> asNegativeIpWildcards(IpSpace ipSpace) {
-    if (ipSpace instanceof IpWildcardSetIpSpace) {
+    if (ipSpace == null) {
+      return null;
+    } else if (ipSpace instanceof IpWildcardSetIpSpace) {
       return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
     } else if (ipSpace instanceof EmptyIpSpace) {
       return ImmutableSortedSet.of();
