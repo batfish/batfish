@@ -398,7 +398,8 @@ public class CiscoGrammarTest {
                                                                 equalTo(
                                                                     new SubRange(
                                                                         NamedPort.HTTP
-                                                                            .number())))))))))))))))));
+                                                                            .number())))))))
+                                            /* end */ ))))))))));
     /* og-udp */
     assertThat(
         c,
@@ -459,7 +460,8 @@ public class CiscoGrammarTest {
                                                                 equalTo(
                                                                     new SubRange(
                                                                         NamedPort.TFTP
-                                                                            .number())))))))))))))))));
+                                                                            .number())))))))
+                                            /* end */ ))))))))));
   }
 
   @Test
