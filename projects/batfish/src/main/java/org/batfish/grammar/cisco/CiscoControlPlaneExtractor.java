@@ -3154,7 +3154,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.ip != null) {
       if (ctx.wildcard != null) {
         // IP and mask
-        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip), toIp(ctx.wildcard)));
+        Ip wildcard = toIp(ctx.wildcard);
+        if (_format == ConfigurationFormat.CISCO_ASA) {
+          wildcard = wildcard.inverted();
+        }
+        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip), wildcard));
       } else {
         // Just IP. Same as if 'host' was specified
         return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip)));

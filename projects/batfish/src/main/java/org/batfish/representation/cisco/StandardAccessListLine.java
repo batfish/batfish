@@ -48,15 +48,15 @@ public class StandardAccessListLine implements Serializable {
   public ExtendedAccessListLine toExtendedAccessListLine() {
     return ExtendedAccessListLine.builder()
         .setAction(_action)
+        .setDstAddressSpecifier(new WildcardAddressSpecifier(IpWildcard.ANY))
         .setName(_name)
         .setServiceSpecifier(
             SimpleStandardServiceSpecifier.builder()
                 .setProtocol(IpProtocol.IP)
-                .setSrcIpWildcard(_ipWildcard)
-                .setDstIpWildcard(IpWildcard.ANY)
                 .setDscps(_dscps)
                 .setEcns(_ecns)
                 .build())
+        .setSrcAddressSpecifier(new WildcardAddressSpecifier(_ipWildcard))
         .build();
   }
 }

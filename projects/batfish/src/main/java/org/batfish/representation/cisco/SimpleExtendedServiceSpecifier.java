@@ -129,8 +129,10 @@ public class SimpleExtendedServiceSpecifier implements ExtendedAccessListService
             .setDscps(_dscps)
             .setDstPorts(_dstPortRanges)
             .setEcns(_ecns)
-            .setIcmpCodes(ImmutableSet.of(new SubRange(_icmpCode)))
-            .setIcmpTypes(ImmutableSet.of(new SubRange(_icmpType)))
+            .setIcmpCodes(
+                _icmpCode != null ? ImmutableSet.of(new SubRange(_icmpCode)) : ImmutableSet.of())
+            .setIcmpTypes(
+                _icmpType != null ? ImmutableSet.of(new SubRange(_icmpType)) : ImmutableSet.of())
             .setIpProtocols(ImmutableSet.of(_protocol))
             .setSrcPorts(_srcPortRanges)
             .setStates(_states)
