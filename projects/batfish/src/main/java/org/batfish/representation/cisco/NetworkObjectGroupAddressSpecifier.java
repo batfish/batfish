@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 
-public class NetworkObjectGroupAddressSpecifier implements ExtendedAccessListAddressSpecifier {
+public class NetworkObjectGroupAddressSpecifier implements AccessListAddressSpecifier {
 
   /** */
   private static final long serialVersionUID = 1L;

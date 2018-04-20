@@ -8,14 +8,17 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IReachabilityQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -235,8 +238,29 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_DST_IPS)
     public SortedSet<IpWildcard> getDstIps() {
-      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getDstIps())
-          .getWhitelist();
+      return asPositiveIpWildcards(_reachabilitySettings.getHeaderSpace().getDstIps());
+    }
+
+    private static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
+      if (ipSpace instanceof IpWildcardSetIpSpace) {
+        return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
+      } else if (ipSpace instanceof UniverseIpSpace) {
+        return ImmutableSortedSet.of();
+      } else {
+        throw new BatfishException(
+            String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
+      }
+    }
+
+    private static SortedSet<IpWildcard> asNegativeIpWildcards(IpSpace ipSpace) {
+      if (ipSpace instanceof IpWildcardSetIpSpace) {
+        return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
+      } else if (ipSpace instanceof EmptyIpSpace) {
+        return ImmutableSortedSet.of();
+      } else {
+        throw new BatfishException(
+            String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
+      }
     }
 
     @JsonProperty(PROP_DST_PORTS)
@@ -301,8 +325,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_DST_IPS)
     public SortedSet<IpWildcard> getNotDstIps() {
-      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getNotDstIps())
-          .getWhitelist();
+      return asNegativeIpWildcards(_reachabilitySettings.getHeaderSpace().getNotDstIps());
     }
 
     @JsonProperty(PROP_NOT_DST_PORTS)
@@ -352,8 +375,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_SRC_IPS)
     public SortedSet<IpWildcard> getNotSrcIps() {
-      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getNotSrcIps())
-          .getWhitelist();
+      return asNegativeIpWildcards(_reachabilitySettings.getHeaderSpace().getNotSrcIps());
     }
 
     @JsonProperty(PROP_NOT_SRC_PORTS)
@@ -378,8 +400,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_IPS)
     public SortedSet<IpWildcard> getSrcIps() {
-      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getSrcIps())
-          .getWhitelist();
+      return asPositiveIpWildcards(_reachabilitySettings.getHeaderSpace().getSrcIps());
     }
 
     @JsonProperty(PROP_SRC_NATTED)
@@ -389,8 +410,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public SortedSet<IpWildcard> getSrcOrDstIps() {
-      return ((IpWildcardSetIpSpace) _reachabilitySettings.getHeaderSpace().getSrcOrDstIps())
-          .getWhitelist();
+      return asPositiveIpWildcards(_reachabilitySettings.getHeaderSpace().getSrcOrDstIps());
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PORTS)

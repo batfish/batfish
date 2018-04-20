@@ -1,8 +1,7 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import java.util.Set;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 
@@ -12,37 +11,37 @@ public class StandardAccessListLine implements Serializable {
 
   private final LineAction _action;
 
-  private final Set<Integer> _dscps;
-
-  private final Set<Integer> _ecns;
-
-  private final IpWildcard _ipWildcard;
-
   private final String _name;
 
+  private final StandardAccessListServiceSpecifier _serviceSpecifier;
+
+  private final AccessListAddressSpecifier _srcAddressSpecifier;
+
   public StandardAccessListLine(
-      String name,
       LineAction action,
-      IpWildcard ipWildcard,
-      Set<Integer> dscps,
-      Set<Integer> ecns) {
-    _name = name;
+      String name,
+      StandardAccessListServiceSpecifier serviceSpecifier,
+      AccessListAddressSpecifier srcAddressSpecifier) {
     _action = action;
-    _ipWildcard = ipWildcard;
-    _dscps = dscps;
-    _ecns = ecns;
+    _name = name;
+    _serviceSpecifier = serviceSpecifier;
+    _srcAddressSpecifier = srcAddressSpecifier;
   }
 
   public LineAction getAction() {
     return _action;
   }
 
-  public IpWildcard getIpWildcard() {
-    return _ipWildcard;
-  }
-
   public String getName() {
     return _name;
+  }
+
+  public StandardAccessListServiceSpecifier getServiceSpecifier() {
+    return _serviceSpecifier;
+  }
+
+  public AccessListAddressSpecifier getSrcAddressSpecifier() {
+    return _srcAddressSpecifier;
   }
 
   public ExtendedAccessListLine toExtendedAccessListLine() {
@@ -50,13 +49,18 @@ public class StandardAccessListLine implements Serializable {
         .setAction(_action)
         .setDstAddressSpecifier(new WildcardAddressSpecifier(IpWildcard.ANY))
         .setName(_name)
-        .setServiceSpecifier(
-            SimpleStandardServiceSpecifier.builder()
-                .setProtocol(IpProtocol.IP)
-                .setDscps(_dscps)
-                .setEcns(_ecns)
-                .build())
-        .setSrcAddressSpecifier(new WildcardAddressSpecifier(_ipWildcard))
+        .setServiceSpecifier(_serviceSpecifier)
+        .setSrcAddressSpecifier(_srcAddressSpecifier)
         .build();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(getClass())
+        .add("action", _action)
+        .add("name", _name)
+        .add("serviceSpecifier", _serviceSpecifier)
+        .add("srcAddressSpecifier", _srcAddressSpecifier)
+        .toString();
   }
 }

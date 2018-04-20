@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 
-public class WildcardAddressSpecifier implements ExtendedAccessListAddressSpecifier {
+public class WildcardAddressSpecifier implements AccessListAddressSpecifier {
 
   /** */
   private static final long serialVersionUID = 1L;

@@ -13,13 +13,13 @@ public class ExtendedAccessListLine implements Serializable {
 
     private LineAction _action;
 
-    private ExtendedAccessListAddressSpecifier _dstAddressSpecifier;
+    private AccessListAddressSpecifier _dstAddressSpecifier;
 
     private String _name;
 
-    private ExtendedAccessListServiceSpecifier _serviceSpecifier;
+    private AccessListServiceSpecifier _serviceSpecifier;
 
-    private ExtendedAccessListAddressSpecifier _srcAddressSpecifier;
+    private AccessListAddressSpecifier _srcAddressSpecifier;
 
     private Builder() {}
 
@@ -32,7 +32,7 @@ public class ExtendedAccessListLine implements Serializable {
       return this;
     }
 
-    public Builder setDstAddressSpecifier(ExtendedAccessListAddressSpecifier dstAddressSpecifier) {
+    public Builder setDstAddressSpecifier(AccessListAddressSpecifier dstAddressSpecifier) {
       _dstAddressSpecifier = dstAddressSpecifier;
       return this;
     }
@@ -42,12 +42,12 @@ public class ExtendedAccessListLine implements Serializable {
       return this;
     }
 
-    public Builder setServiceSpecifier(ExtendedAccessListServiceSpecifier serviceSpecifier) {
+    public Builder setServiceSpecifier(AccessListServiceSpecifier serviceSpecifier) {
       _serviceSpecifier = serviceSpecifier;
       return this;
     }
 
-    public Builder setSrcAddressSpecifier(ExtendedAccessListAddressSpecifier srcAddressSpecifier) {
+    public Builder setSrcAddressSpecifier(AccessListAddressSpecifier srcAddressSpecifier) {
       _srcAddressSpecifier = srcAddressSpecifier;
       return this;
     }
@@ -61,13 +61,13 @@ public class ExtendedAccessListLine implements Serializable {
 
   private final LineAction _action;
 
-  private final ExtendedAccessListAddressSpecifier _dstAddressSpecifier;
+  private final AccessListAddressSpecifier _dstAddressSpecifier;
 
   private final String _name;
 
-  private final ExtendedAccessListServiceSpecifier _serviceSpecifier;
+  private final AccessListServiceSpecifier _serviceSpecifier;
 
-  private final ExtendedAccessListAddressSpecifier _srcAddressSpecifier;
+  private final AccessListAddressSpecifier _srcAddressSpecifier;
 
   private ExtendedAccessListLine(Builder builder) {
     _action = requireNonNull(builder._action);
@@ -81,7 +81,7 @@ public class ExtendedAccessListLine implements Serializable {
     return _action;
   }
 
-  public ExtendedAccessListAddressSpecifier getDestinationAddressSpecifier() {
+  public AccessListAddressSpecifier getDestinationAddressSpecifier() {
     return _dstAddressSpecifier;
   }
 
@@ -89,11 +89,11 @@ public class ExtendedAccessListLine implements Serializable {
     return _name;
   }
 
-  public ExtendedAccessListServiceSpecifier getServiceSpecifier() {
+  public AccessListServiceSpecifier getServiceSpecifier() {
     return _serviceSpecifier;
   }
 
-  public ExtendedAccessListAddressSpecifier getSourceAddressSpecifier() {
+  public AccessListAddressSpecifier getSourceAddressSpecifier() {
     return _srcAddressSpecifier;
   }
 

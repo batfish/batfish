@@ -591,6 +591,8 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfc_ip_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
+import org.batfish.representation.cisco.AccessListAddressSpecifier;
+import org.batfish.representation.cisco.AccessListServiceSpecifier;
 import org.batfish.representation.cisco.AsPathSet;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco.BgpAggregateIpv6Network;
@@ -608,9 +610,7 @@ import org.batfish.representation.cisco.DynamicIpv6BgpPeerGroup;
 import org.batfish.representation.cisco.ExpandedCommunityList;
 import org.batfish.representation.cisco.ExpandedCommunityListLine;
 import org.batfish.representation.cisco.ExtendedAccessList;
-import org.batfish.representation.cisco.ExtendedAccessListAddressSpecifier;
 import org.batfish.representation.cisco.ExtendedAccessListLine;
-import org.batfish.representation.cisco.ExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
@@ -721,9 +721,10 @@ import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.ServiceObjectGroup;
 import org.batfish.representation.cisco.ServiceObjectGroupServiceSpecifier;
-import org.batfish.representation.cisco.SimpleExtendedServiceSpecifier;
+import org.batfish.representation.cisco.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
+import org.batfish.representation.cisco.StandardAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.StandardIpv6AccessList;
@@ -799,16 +800,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
       iface.setOspfPointToPoint(true);
-    }
-  }
-
-  private static Ip getIp(Access_list_ip_rangeContext ctx) {
-    if (ctx.ip != null) {
-      return toIp(ctx.ip);
-    } else if (ctx.prefix != null) {
-      return Prefix.parse(ctx.prefix.getText()).getStartIp();
-    } else {
-      return null;
     }
   }
 
@@ -2965,11 +2956,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitExtended_access_list_tail(Extended_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
-    ExtendedAccessListAddressSpecifier srcAddressSpecifier =
-        toExtendedAccessListAddressSpecifier(ctx.srcipr);
-    ExtendedAccessListAddressSpecifier dstAddressSpecifier =
-        toExtendedAccessListAddressSpecifier(ctx.dstipr);
-    ExtendedAccessListServiceSpecifier serviceSpecifier = computeServiceSpecifier(ctx);
+    AccessListAddressSpecifier srcAddressSpecifier = toAccessListAddressSpecifier(ctx.srcipr);
+    AccessListAddressSpecifier dstAddressSpecifier = toAccessListAddressSpecifier(ctx.dstipr);
+    AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
     ExtendedAccessListLine line =
         ExtendedAccessListLine.builder()
@@ -2982,10 +2971,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentExtendedAcl.addLine(line);
   }
 
-  private ExtendedAccessListServiceSpecifier computeServiceSpecifier(
+  private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
       Extended_access_list_tailContext ctx) {
     if (ctx.prot != null) {
-      IpProtocol protocol = ctx.prot != null ? toIpProtocol(ctx.prot) : null;
+      IpProtocol protocol = toIpProtocol(ctx.prot);
       List<SubRange> srcPortRanges =
           ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.<SubRange>emptyList();
       List<SubRange> dstPortRanges =
@@ -3124,7 +3113,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           tcpFlags.add(alt);
         }
       }
-      return SimpleExtendedServiceSpecifier.builder()
+      return SimpleExtendedAccessListServiceSpecifier.builder()
           .setDscps(dscps)
           .setDstPortRanges(dstPortRanges)
           .setEcns(ecns)
@@ -3145,12 +3134,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           line);
       return new ServiceObjectGroupServiceSpecifier(name);
     } else {
-      throw convError(ExtendedAccessListServiceSpecifier.class, ctx);
+      throw convError(AccessListServiceSpecifier.class, ctx);
     }
   }
 
-  private ExtendedAccessListAddressSpecifier toExtendedAccessListAddressSpecifier(
-      Access_list_ip_rangeContext ctx) {
+  private AccessListAddressSpecifier toAccessListAddressSpecifier(Access_list_ip_rangeContext ctx) {
     if (ctx.ip != null) {
       if (ctx.wildcard != null) {
         // IP and mask
@@ -3186,7 +3174,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           line);
       return new NetworkObjectGroupAddressSpecifier(name);
     } else {
-      throw convError(ExtendedAccessListAddressSpecifier.class, ctx);
+      throw convError(AccessListAddressSpecifier.class, ctx);
     }
   }
 
@@ -6197,8 +6185,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitStandard_access_list_tail(Standard_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
-    Ip srcIp = getIp(ctx.ipr);
-    Ip srcWildcard = getWildcard(ctx.ipr);
+    AccessListAddressSpecifier srcAddressSpecifier = toAccessListAddressSpecifier(ctx.ipr);
+    StandardAccessListServiceSpecifier serviceSpecifer =
+        computeStandardAccessListServiceSpecifier(ctx);
+    String name = getFullText(ctx).trim();
+    StandardAccessListLine line =
+        new StandardAccessListLine(action, name, serviceSpecifer, srcAddressSpecifier);
+    _currentStandardAcl.addLine(line);
+  }
+
+  private StandardAccessListServiceSpecifier computeStandardAccessListServiceSpecifier(
+      Standard_access_list_tailContext ctx) {
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
     for (Standard_access_list_additional_featureContext feature : ctx.features) {
@@ -6210,10 +6207,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ecns.add(ecn);
       }
     }
-    String name = getFullText(ctx).trim();
-    StandardAccessListLine line =
-        new StandardAccessListLine(name, action, new IpWildcard(srcIp, srcWildcard), dscps, ecns);
-    _currentStandardAcl.addLine(line);
+    return new StandardAccessListServiceSpecifier(dscps, ecns);
   }
 
   @Override
@@ -6549,35 +6543,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
-  }
-
-  private Ip getWildcard(Access_list_ip_rangeContext ctx) {
-    // TODO: fix for address-group, object, object-group, interface
-    if (ctx.wildcard != null) {
-      Ip wildcard = toIp(ctx.wildcard);
-      if (_format == CISCO_ASA) {
-        wildcard = wildcard.inverted();
-      }
-      return wildcard;
-    } else if (ctx.ANY() != null
-        || ctx.ANY4() != null
-        || ctx.address_group != null
-        || ctx.obj != null
-        || ctx.og != null
-        || ctx.iface != null) {
-      return Ip.MAX;
-    } else if (ctx.HOST() != null) {
-      return Ip.ZERO;
-    } else if (ctx.prefix != null) {
-      return Prefix.parse(ctx.prefix.getText()).getPrefixWildcard();
-    } else if (ctx.ip != null) {
-      // basically same as host
-      return Ip.ZERO;
-    } else if (ctx.address_group != null) {
-      return null;
-    } else {
-      throw convError(Ip.class, ctx);
-    }
   }
 
   private Ip6 getWildcard(Access_list_ip6_rangeContext ctx) {

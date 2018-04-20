@@ -16,7 +16,7 @@ public class AndMatchExpr extends AclLineMatchExpr {
 
   @JsonCreator
   public AndMatchExpr(@JsonProperty(PROP_CONJUNCTS) Iterable<AclLineMatchExpr> conjuncts) {
-    _conjuncts = ImmutableSortedSet.copyOf(conjuncts);
+    _conjuncts = conjuncts != null ? ImmutableSortedSet.copyOf(conjuncts) : ImmutableSortedSet.of();
   }
 
   @Override

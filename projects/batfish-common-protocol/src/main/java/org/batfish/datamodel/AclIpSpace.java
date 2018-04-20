@@ -3,8 +3,6 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Streams;
 import java.util.Arrays;
@@ -161,14 +159,11 @@ public class AclIpSpace extends IpSpace {
     }
   }
 
-  private final Supplier<Integer> _hash;
-
   private final List<AclIpSpaceLine> _lines;
 
   @JsonCreator
   private AclIpSpace(@JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {
     _lines = lines;
-    _hash = Suppliers.memoize(() -> Objects.hash(_lines));
   }
 
   @Override
@@ -220,9 +215,8 @@ public class AclIpSpace extends IpSpace {
     return _lines;
   }
 
-  @Override
   public int hashCode() {
-    return _hash.get();
+    return _lines.hashCode();
   }
 
   @Override

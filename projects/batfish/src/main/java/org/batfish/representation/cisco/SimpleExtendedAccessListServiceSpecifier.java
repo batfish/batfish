@@ -13,7 +13,7 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
-public class SimpleExtendedServiceSpecifier implements ExtendedAccessListServiceSpecifier {
+public class SimpleExtendedAccessListServiceSpecifier implements AccessListServiceSpecifier {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -38,8 +38,8 @@ public class SimpleExtendedServiceSpecifier implements ExtendedAccessListService
 
     private List<TcpFlags> _tcpFlags;
 
-    public SimpleExtendedServiceSpecifier build() {
-      return new SimpleExtendedServiceSpecifier(this);
+    public SimpleExtendedAccessListServiceSpecifier build() {
+      return new SimpleExtendedAccessListServiceSpecifier(this);
     }
 
     public Builder setDscps(Iterable<Integer> dscps) {
@@ -110,7 +110,7 @@ public class SimpleExtendedServiceSpecifier implements ExtendedAccessListService
 
   private final List<TcpFlags> _tcpFlags;
 
-  private SimpleExtendedServiceSpecifier(Builder builder) {
+  private SimpleExtendedAccessListServiceSpecifier(Builder builder) {
     _dscps = builder._dscps;
     _dstPortRanges = builder._dstPortRanges;
     _ecns = builder._ecns;
