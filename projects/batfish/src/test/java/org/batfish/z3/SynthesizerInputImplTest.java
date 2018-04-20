@@ -187,7 +187,8 @@ public class SynthesizerInputImplTest {
     SynthesizerInput input =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-        new AclLineMatchExprToBooleanExpr(ImmutableMap.of(), null, ImmutableMap.of());
+        new AclLineMatchExprToBooleanExpr(
+            ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of());
 
     assertThat(
         input,
@@ -266,8 +267,10 @@ public class SynthesizerInputImplTest {
     String nextHopInterface2 = "nextHopInterface2";
     IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
     IpSpace ipSpace2 = Ip.MAX.toIpSpace();
-    BooleanExpr m1 = ipSpace1.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
-    BooleanExpr m2 = ipSpace2.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
+    BooleanExpr m1 =
+        ipSpace1.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
+    BooleanExpr m2 =
+        ipSpace2.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
     Edge edge1 =
         new Edge(srcNode.getHostname(), srcInterface.getName(), nextHop1, nextHopInterface1);
     Edge edge2 =
@@ -481,8 +484,10 @@ public class SynthesizerInputImplTest {
     Interface iface2 = _ib.build();
     IpSpace srcIpSpace = Ip.ZERO.toIpSpace();
     IpSpace dstIpSpace = Ip.MAX.toIpSpace();
-    BooleanExpr m1 = srcIpSpace.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
-    BooleanExpr m2 = dstIpSpace.accept(new IpSpaceBooleanExprTransformer(Field.DST_IP));
+    BooleanExpr m1 =
+        srcIpSpace.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
+    BooleanExpr m2 =
+        dstIpSpace.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
 
     SynthesizerInput inputWithoutDataPlane =
         _inputBuilder.setConfigurations(ImmutableMap.of(node.getName(), node)).build();

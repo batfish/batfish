@@ -1,14 +1,17 @@
 package org.batfish.z3.expr.visitors;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
@@ -24,6 +27,7 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.FalseExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfThenElse;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.TrueExpr;
@@ -36,8 +40,11 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
 
   private final List<Field> _fields;
 
-  public IpSpaceBooleanExprTransformer(Field... fields) {
+  private Map<String, IpSpace> _namedIpSpaces;
+
+  public IpSpaceBooleanExprTransformer(Map<String, IpSpace> namedIpSpaces, Field... fields) {
     _fields = ImmutableList.copyOf(fields);
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
   }
 
   @Override
@@ -59,7 +66,7 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
             AclIpSpaceLine line = aclIpSpace.getLines().get(i);
             expr =
                 new IfThenElse(
-                    HeaderSpaceMatchExpr.matchIpSpace(line.getIpSpace(), field),
+                    new IpSpaceMatchExpr(line.getIpSpace(), _namedIpSpaces, field).getExpr(),
                     line.getAction() == LineAction.ACCEPT ? TrueExpr.INSTANCE : FalseExpr.INSTANCE,
                     expr);
           }
@@ -76,6 +83,11 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
   public BooleanExpr visitIpIpSpace(IpIpSpace ipIpSpace) {
     Ip ip = ipIpSpace.getIp();
     return matchAnyField(field -> HeaderSpaceMatchExpr.matchIp(ip, field));
+  }
+
+  @Override
+  public BooleanExpr visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    return _namedIpSpaces.get(ipSpaceReference.getName()).accept(this);
   }
 
   @Override
@@ -107,11 +119,5 @@ public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<Bool
   @Override
   public BooleanExpr visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return TrueExpr.INSTANCE;
-  }
-
-  @Override
-  public BooleanExpr visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

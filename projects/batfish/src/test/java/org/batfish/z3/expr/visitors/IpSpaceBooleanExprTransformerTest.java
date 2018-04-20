@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -26,13 +27,13 @@ import org.junit.Test;
 
 public class IpSpaceBooleanExprTransformerTest {
   private static final IpSpaceBooleanExprTransformer SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER =
-      new IpSpaceBooleanExprTransformer(Field.SRC_IP);
+      new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.SRC_IP);
 
   private static final IpSpaceBooleanExprTransformer DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER =
-      new IpSpaceBooleanExprTransformer(Field.DST_IP);
+      new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP);
 
   private static final IpSpaceBooleanExprTransformer SRC_OR_DST_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER =
-      new IpSpaceBooleanExprTransformer(Field.SRC_IP, Field.DST_IP);
+      new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.SRC_IP, Field.DST_IP);
 
   @Test
   public void testVisitAclIpSpace() {
@@ -92,7 +93,9 @@ public class IpSpaceBooleanExprTransformerTest {
   public void testVisitIpWildcard() {
     IpWildcard wildcard = new IpWildcard(new Ip("1.2.0.4"), new Ip(0x0000FF00L));
     BooleanExpr matchExpr = wildcard.toIpSpace().accept(SRC_IP_SPACE_BOOLEAN_EXPR_TRANSFORMER);
-    assertThat(matchExpr, equalTo(HeaderSpaceMatchExpr.matchSrcIp(wildcard.toIpSpace())));
+    assertThat(
+        matchExpr,
+        equalTo(HeaderSpaceMatchExpr.matchSrcIp(wildcard.toIpSpace(), ImmutableMap.of())));
   }
 
   @Test

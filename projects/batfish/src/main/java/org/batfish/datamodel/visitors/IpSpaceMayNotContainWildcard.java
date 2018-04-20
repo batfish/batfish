@@ -1,5 +1,6 @@
 package org.batfish.datamodel.visitors;
 
+import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -24,15 +25,21 @@ public class IpSpaceMayNotContainWildcard implements GenericIpSpaceVisitor<Boole
 
   private final IpSpaceMayIntersectWildcard _mayIntersect;
 
-  public IpSpaceMayNotContainWildcard(IpWildcard ipWildcard) {
+  private final Map<String, IpSpace> _namedIpSpaces;
+
+  public IpSpaceMayNotContainWildcard(IpWildcard ipWildcard, Map<String, IpSpace> namedIpSpaces) {
     _ipWildcard = ipWildcard;
-    _mayIntersect = new IpSpaceMayIntersectWildcard(ipWildcard, this);
+    _mayIntersect = new IpSpaceMayIntersectWildcard(ipWildcard, namedIpSpaces, this);
+    _namedIpSpaces = namedIpSpaces;
   }
 
   public IpSpaceMayNotContainWildcard(
-      IpWildcard ipWildcard, IpSpaceMayIntersectWildcard mayIntersect) {
+      IpWildcard ipWildcard,
+      Map<String, IpSpace> namedIpSpaces,
+      IpSpaceMayIntersectWildcard mayIntersect) {
     _ipWildcard = ipWildcard;
     _mayIntersect = mayIntersect;
+    _namedIpSpaces = namedIpSpaces;
   }
 
   @Override
@@ -77,6 +84,11 @@ public class IpSpaceMayNotContainWildcard implements GenericIpSpaceVisitor<Boole
   }
 
   @Override
+  public Boolean visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    return _namedIpSpaces.get(ipSpaceReference.getName()).accept(this);
+  }
+
+  @Override
   public Boolean visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
     return !ipWildcardIpSpace.getIpWildcard().supersetOf(_ipWildcard);
   }
@@ -98,11 +110,5 @@ public class IpSpaceMayNotContainWildcard implements GenericIpSpaceVisitor<Boole
   @Override
   public Boolean visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return false;
-  }
-
-  @Override
-  public Boolean visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

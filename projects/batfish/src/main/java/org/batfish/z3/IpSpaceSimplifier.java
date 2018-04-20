@@ -1,7 +1,9 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
@@ -26,17 +28,18 @@ import org.batfish.datamodel.visitors.IpSpaceMayIntersectWildcard;
  * {@link UniverseIpSpace} respectively.
  */
 public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
+  private Map<String, IpSpace> _namedIpSpaces;
 
-  private static final IpSpaceSimplifier INSTANCE = new IpSpaceSimplifier();
+  public IpSpaceSimplifier(Map<String, IpSpace> namedIpSpaces) {
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+  }
 
-  private IpSpaceSimplifier() {}
-
-  public static IpSpace simplify(IpSpace ipSpace) {
+  public IpSpace simplify(IpSpace ipSpace) {
     if (ipSpace == null) {
       return null;
     }
 
-    return ipSpace.accept(INSTANCE);
+    return ipSpace.accept(this);
   }
 
   @Override
@@ -140,7 +143,7 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
             .filter(
                 blacklistedIpWildcard -> {
                   IpSpaceMayIntersectWildcard mayIntersect =
-                      new IpSpaceMayIntersectWildcard(blacklistedIpWildcard);
+                      new IpSpaceMayIntersectWildcard(blacklistedIpWildcard, _namedIpSpaces);
                   return whitelist
                       .stream()
                       .map(IpWildcard::toIpSpace)
@@ -175,7 +178,7 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    // todo cache simplified named IpSpaces?
+    return _namedIpSpaces.get(ipSpaceReference.getName()).accept(this);
   }
 }

@@ -1,5 +1,6 @@
 package org.batfish.z3.expr;
 
+import java.util.Map;
 import java.util.Objects;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.z3.Field;
@@ -11,8 +12,9 @@ public final class IpSpaceMatchExpr extends BooleanExpr {
 
   private final BooleanExpr _expr;
 
-  public IpSpaceMatchExpr(IpSpace ipSpace, Field... fields) {
-    _expr = ipSpace.accept(new IpSpaceBooleanExprTransformer(fields));
+  public IpSpaceMatchExpr(IpSpace ipSpace, Map<String, IpSpace> namedIpSpaces, Field... fields) {
+    assert fields.length > 0;
+    _expr = ipSpace.accept(new IpSpaceBooleanExprTransformer(namedIpSpaces, fields));
   }
 
   @Override

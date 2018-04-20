@@ -3,6 +3,7 @@ package org.batfish.z3;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Optional;
 import org.batfish.datamodel.HeaderSpace;
@@ -14,23 +15,27 @@ import org.junit.Test;
 
 public class IpAccessListSpecializerTest {
   private static final IpAccessListSpecializer TRIVIAL_SPECIALIZER =
-      new IpAccessListSpecializer(new HeaderSpace());
+      new IpAccessListSpecializer(new HeaderSpace(), ImmutableMap.of());
 
   private static final IpAccessListSpecializer BLACKLIST_ANY_DST_SPECIALIZER =
       new IpAccessListSpecializer(
-          HeaderSpace.builder().setNotDstIps(ImmutableSet.of(IpWildcard.ANY)).build());
+          HeaderSpace.builder().setNotDstIps(ImmutableSet.of(IpWildcard.ANY)).build(),
+          ImmutableMap.of());
 
   private static final IpAccessListSpecializer BLACKLIST_ANY_SRC_SPECIALIZER =
       new IpAccessListSpecializer(
-          HeaderSpace.builder().setNotSrcIps(ImmutableSet.of(IpWildcard.ANY)).build());
+          HeaderSpace.builder().setNotSrcIps(ImmutableSet.of(IpWildcard.ANY)).build(),
+          ImmutableMap.of());
 
   private static final IpAccessListSpecializer WHITELIST_ANY_DST_SPECIALIZER =
       new IpAccessListSpecializer(
-          HeaderSpace.builder().setDstIps(ImmutableSet.of(IpWildcard.ANY)).build());
+          HeaderSpace.builder().setDstIps(ImmutableSet.of(IpWildcard.ANY)).build(),
+          ImmutableMap.of());
 
   private static final IpAccessListSpecializer WHITELIST_ANY_SRC_SPECIALIZER =
       new IpAccessListSpecializer(
-          HeaderSpace.builder().setSrcIps(ImmutableSet.of(IpWildcard.ANY)).build());
+          HeaderSpace.builder().setSrcIps(ImmutableSet.of(IpWildcard.ANY)).build(),
+          ImmutableMap.of());
 
   @Test
   public void testSpecializeIpAccessListLine_singleDst() {
@@ -60,7 +65,8 @@ public class IpAccessListSpecializerTest {
     // specialize to a headerspace that whitelists part of the dstIp
     IpAccessListSpecializer specializer =
         new IpAccessListSpecializer(
-            HeaderSpace.builder().setDstIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build());
+            HeaderSpace.builder().setDstIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build(),
+            ImmutableMap.of());
     assertThat(
         specializer.specialize(ipAccessListLine),
         equalTo(
@@ -70,7 +76,8 @@ public class IpAccessListSpecializerTest {
     // specialize to a headerspace that blacklists part of the dstIp
     specializer =
         new IpAccessListSpecializer(
-            HeaderSpace.builder().setNotDstIps(new IpWildcard("1.2.3.4").toIpSpace()).build());
+            HeaderSpace.builder().setNotDstIps(new IpWildcard("1.2.3.4").toIpSpace()).build(),
+            ImmutableMap.of());
     assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
   }
 
@@ -97,7 +104,8 @@ public class IpAccessListSpecializerTest {
     // specialize to a headerspace that whitelists part of the srcIp
     IpAccessListSpecializer specializer =
         new IpAccessListSpecializer(
-            HeaderSpace.builder().setSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build());
+            HeaderSpace.builder().setSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build(),
+            ImmutableMap.of());
     assertThat(
         specializer.specialize(ipAccessListLine),
         equalTo(Optional.of(IpAccessListLine.ACCEPT_ALL)));
@@ -105,7 +113,8 @@ public class IpAccessListSpecializerTest {
     // specialize to a headerspace that blacklists part of the srcIp
     specializer =
         new IpAccessListSpecializer(
-            HeaderSpace.builder().setNotSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build());
+            HeaderSpace.builder().setNotSrcIps(ImmutableSet.of(new IpWildcard("1.2.3.4"))).build(),
+            ImmutableMap.of());
     assertThat(specializer.specialize(ipAccessListLine), equalTo(Optional.of(ipAccessListLine)));
   }
 }
