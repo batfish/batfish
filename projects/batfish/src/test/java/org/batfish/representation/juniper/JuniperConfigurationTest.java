@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.iterableWithSize;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.util.Collections;
 import java.util.TreeMap;
@@ -88,8 +87,7 @@ public class JuniperConfigurationTest {
                         new MatchSrcInterface(ImmutableList.of(interface1Name, interface2Name)),
                         new MatchHeaderSpace(
                             HeaderSpace.builder()
-                                .setSrcIps(
-                                    ImmutableSet.of(new IpWildcard(Prefix.parse(ipAddrPrefix))))
+                                .setSrcIps(new IpWildcard(Prefix.parse(ipAddrPrefix)).toIpSpace())
                                 .build()))))));
   }
 }
