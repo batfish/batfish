@@ -48,7 +48,7 @@ public class NodesSpecifierTest {
     Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN);
     Configuration nonMatching1 = new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN);
     Configuration nonMatching2 = new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN);
-    nonMatching2.getRoles().add("lhr-border1"); // to check for accidental role matching
+    // TODO: nonMatching2.getRoles().add("lhr-border1"); // to check for accidental role matching
     configurations.put(matchingRouter, matching);
     configurations.put(nonMatchingRouter1, nonMatching1);
     configurations.put(nonMatchingRouter2, nonMatching2);
@@ -69,11 +69,11 @@ public class NodesSpecifierTest {
     String nonMatchingRouter1 = "svr-border1"; // name shouldn't match role
     String nonMatchingRouter2 = "lhr-border2";
     Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN);
-    matching.getRoles().add("svr-web");
+    // TODO matching.getRoles().add("svr-web");
     Configuration nonMatching1 = new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN);
-    matching.getRoles().add("web");
+    // TODO matching.getRoles().add("web");
     Configuration nonMatching2 = new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN);
-    nonMatching2.getRoles().add("rtr");
+    // TODO nonMatching2.getRoles().add("rtr");
     configurations.put(matchingRouter, matching);
     configurations.put(nonMatchingRouter1, nonMatching1);
     configurations.put(nonMatchingRouter2, nonMatching2);

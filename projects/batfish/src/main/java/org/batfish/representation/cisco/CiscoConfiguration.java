@@ -349,8 +349,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _referencedRouteMaps;
 
-  private final SortedSet<String> _roles;
-
   private final Map<String, RouteMap> _routeMaps;
 
   private final Map<String, RoutePolicy> _routePolicies;
@@ -432,7 +430,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
     _referencedRouteMaps = new TreeSet<>();
-    _roles = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
     _snmpAccessLists = new TreeSet<>();
@@ -808,11 +805,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Set<String> getReferencedRouteMaps() {
     return _referencedRouteMaps;
-  }
-
-  @Override
-  public SortedSet<String> getRoles() {
-    return _roles;
   }
 
   public Map<String, RouteMap> getRouteMaps() {
@@ -1192,11 +1184,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public void setNtpSourceInterface(String ntpSourceInterface) {
     _ntpSourceInterface = ntpSourceInterface;
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
   }
 
   public void setSnmpServer(SnmpServer snmpServer) {
@@ -3496,7 +3483,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public Configuration toVendorIndependentConfiguration() {
     final Configuration c = new Configuration(_hostname, _vendor);
     c.getVendorFamily().setCisco(_cf);
-    c.setRoles(_roles);
     c.setDefaultInboundAction(LineAction.ACCEPT);
     c.setDefaultCrossZoneAction(LineAction.ACCEPT);
     c.setDnsServers(_dnsServers);

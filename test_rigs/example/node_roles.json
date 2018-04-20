@@ -1,6 +1,16 @@
-{"roleMap": { "border": ["as2border1", "as2border2"],
-			  "core": ["as2core1", "as2core2"],
-			  "dept": ["as2dept1"],
-			"dist": ["as2dist1", "as2dist2"] },
- "roleRegexes": ["[a-z]*\\d([a-z]+).*", "([a-z]+)\\d"]
+{
+	"lastModifiedTime" : "2018-04-20T08:24:30.224Z",
+	"roleDimensions": { 
+ 		".autoas": {
+ 			"as1": "as1.*", 
+ 			"as2": "as2.*",
+ 			"as3": "as3.*"
+ 		},
+		"func": {
+			"border": "as2border(1|2)",
+			"core": "as2core1|as2core2",
+			"dept": "as2dept1",
+			"dist": "as2dist(1|2)" 
+		}
+	}
 }

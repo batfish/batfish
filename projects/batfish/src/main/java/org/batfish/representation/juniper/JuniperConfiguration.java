@@ -762,11 +762,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _prefixLists;
   }
 
-  @Override
-  public SortedSet<String> getRoles() {
-    return _roles;
-  }
-
   public Map<String, RouteFilter> getRouteFilters() {
     return _routeFilters;
   }
@@ -965,11 +960,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
   }
 
   public void setSyslogHosts(NavigableSet<String> syslogHosts) {
@@ -1795,7 +1785,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setAuthenticationKeyChains(convertAuthenticationKeyChains(_authenticationKeyChains));
-    _c.setRoles(_roles);
     _c.setDnsServers(_dnsServers);
     _c.setDomainName(_defaultRoutingInstance.getDomainName());
     _c.setLoggingServers(_syslogHosts);

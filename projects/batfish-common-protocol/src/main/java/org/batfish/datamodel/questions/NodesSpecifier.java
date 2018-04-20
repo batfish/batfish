@@ -94,12 +94,12 @@ public class NodesSpecifier {
           }
           break;
         case ROLE:
-          for (String role : configurations.get(node).getRoles()) {
-            if (_regex.matcher(role).matches()) {
-              nodes.add(node);
-            }
-          }
-          break;
+          //          for (String role : configurations.get(node).getRoles()) {
+          //            if (_regex.matcher(role).matches()) {
+          //              nodes.add(node);
+          //            }
+          //          }
+          //          break;
         default:
           throw new BatfishException("Unhandled NodesSpecifier type: " + _type);
       }

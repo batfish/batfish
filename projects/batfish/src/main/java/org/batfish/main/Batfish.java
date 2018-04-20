@@ -35,7 +35,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.NavigableMap;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -173,7 +172,10 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
-import org.batfish.role.InferRoles;
+import org.batfish.role.InferRoles2;
+import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.NodeRolesData;
+import org.batfish.role.NodeRolesData.NodeRoleType;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -1879,8 +1881,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private NodeRoleSpecifier inferNodeRoles(Map<String, Configuration> configurations) {
-    InferRoles ir = new InferRoles(configurations.keySet(), configurations, this);
+  private Map<String, NodeRoleDimension> inferNodeRoles(Map<String, Configuration> configurations) {
+    InferRoles2 ir = new InferRoles2(configurations.keySet(), configurations, this);
     return ir.call();
   }
 
@@ -3127,39 +3129,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  /**
-   * Set the roles of each configuration. Use an explicitly provided {@link NodeRoleSpecifier} if
-   * one exists; otherwise use the results of our node-role inference. Also set the inferred role
-   * dimensions of each node, based on its name.
-   */
-  private void processNodeRoles(
-      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
-    NodeRoleSpecifier specifier = getNodeRoleSpecifier(false);
-    SortedMap<String, SortedSet<String>> nodeRoles =
-        specifier.createNodeRolesMap(configurations.keySet());
-    for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
-      String hostname = nodeRolesEntry.getKey();
-      Configuration config = configurations.get(hostname);
-      if (config == null) {
-        veae.setValid(false);
-        veae.getUndefinedNodeRoleSpecifierNodes().add(hostname);
-      } else {
-        SortedSet<String> roles = nodeRolesEntry.getValue();
-        config.setRoles(roles);
-      }
-    }
-    Map<String, NavigableMap<Integer, String>> roleDimensions =
-        InferRoles.getRoleDimensions(configurations);
-    for (Map.Entry<String, NavigableMap<Integer, String>> entry : roleDimensions.entrySet()) {
-      String nodeName = entry.getKey();
-      Configuration config = configurations.get(nodeName);
-      if (config == null) {
-        veae.setValid(false);
-      } else {
-        config.setRoleDimensions(entry.getValue());
-      }
-    }
-  }
+  //  /**
+  //   * Set the roles of each configuration. Use an explicitly provided {@link NodeRoleSpecifier}
+  // if
+  //   * one exists; otherwise use the results of our node-role inference. Also set the inferred
+  // role
+  //   * dimensions of each node, based on its name.
+  //   */
+  //  private void processNodeRoles(
+  //      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
+  //    NodeRoleSpecifier specifier = getNodeRoleSpecifier(false);
+  //    SortedMap<String, SortedSet<String>> nodeRoles =
+  //        specifier.createNodeRolesMap(configurations.keySet());
+  //    for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
+  //      String hostname = nodeRolesEntry.getKey();
+  //      Configuration config = configurations.get(hostname);
+  //      if (config == null) {
+  //        veae.setValid(false);
+  //        veae.getUndefinedNodeRoleSpecifierNodes().add(hostname);
+  //      } else {
+  //        SortedSet<String> roles = nodeRolesEntry.getValue();
+  //        // config.setRoles(roles);
+  //      }
+  //    }
+  //    Map<String, NavigableMap<Integer, String>> roleDimensions =
+  //        InferRoles.getRoleDimensions(configurations);
+  //    for (Map.Entry<String, NavigableMap<Integer, String>> entry : roleDimensions.entrySet()) {
+  //      String nodeName = entry.getKey();
+  //      Configuration config = configurations.get(nodeName);
+  //      if (config == null) {
+  //        veae.setValid(false);
+  //      } else {
+  //        // config.setRoleDimensions(entry.getValue());
+  //      }
+  //    }
+  //  }
 
   private Topology processTopologyFile(Path topologyFilePath) {
     Topology topology = parseTopology(topologyFilePath);
@@ -3493,7 +3497,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void applyEnvironment(Map<String, Configuration> configurationsWithoutEnvironment) {
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
-    processNodeRoles(configurationsWithoutEnvironment, veae);
 
     serializeObject(
         veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());
@@ -3859,9 +3862,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         envTopology,
         "environment topology");
 
-    NodeRoleSpecifier roleSpecifier = inferNodeRoles(configurations);
-    serializeAsJson(
-        _testrigSettings.getInferredNodeRolesPath(), roleSpecifier, "inferred node roles");
+    // Compute new auto role data and updates existing auto data with it
+    Map<String, NodeRoleDimension> autoRoles = inferNodeRoles(configurations);
+    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    try {
+      NodeRolesData.replaceNodeRoleDimensions(nodeRoleDataPath, autoRoles, NodeRoleType.AUTO);
+    } catch (IOException e) {
+      _logger.warnf("Could not update node roles in %s: %s", nodeRoleDataPath, e);
+    }
 
     return answer;
   }

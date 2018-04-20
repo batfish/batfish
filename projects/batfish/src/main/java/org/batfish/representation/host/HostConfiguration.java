@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -87,8 +86,6 @@ public class HostConfiguration extends VendorConfiguration {
 
   private boolean _overlay;
 
-  protected final SortedSet<String> _roles = new TreeSet<>();
-
   // @JsonCreator
   // public HostConfiguration(@JsonProperty(PROP_HOSTNAME) String name) {
   // _hostname = name;
@@ -134,12 +131,6 @@ public class HostConfiguration extends VendorConfiguration {
 
   @JsonIgnore
   @Override
-  public SortedSet<String> getRoles() {
-    return _roles;
-  }
-
-  @JsonIgnore
-  @Override
   public Set<String> getUnimplementedFeatures() {
     return _unimplementedFeatures;
   }
@@ -160,11 +151,6 @@ public class HostConfiguration extends VendorConfiguration {
   @JsonProperty(PROP_OVERLAY)
   public void setOverlay(boolean overlay) {
     _overlay = overlay;
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
   }
 
   @JsonIgnore
@@ -225,7 +211,6 @@ public class HostConfiguration extends VendorConfiguration {
     _c = new Configuration(hostname, ConfigurationFormat.HOST);
     _c.setDefaultCrossZoneAction(LineAction.ACCEPT);
     _c.setDefaultInboundAction(LineAction.ACCEPT);
-    _c.setRoles(_roles);
     _c.getVrfs().put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
 
     // add interfaces
