@@ -1,8 +1,11 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 import static org.batfish.common.util.CommonUtil.computeIpOwners;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
@@ -15,6 +18,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,6 +74,18 @@ public class CommonUtilTest {
     i2.setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg2));
 
     return ImmutableSortedMap.of("n1", c1, "n2", c2);
+  }
+
+  /** Test that asPostiveIpWildcards handles null */
+  @Test
+  public void testAsPositiveIpWildcards() {
+    assertThat(asPositiveIpWildcards(null), nullValue());
+  }
+
+  /** Test that asNegativeIpWildcards handles null */
+  @Test
+  public void testAsNegativeIpWildcards() {
+    assertThat(asNegativeIpWildcards(null), nullValue());
   }
 
   /** Test that higher priority router wins */

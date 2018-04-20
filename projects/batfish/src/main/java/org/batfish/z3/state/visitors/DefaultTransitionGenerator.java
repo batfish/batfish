@@ -749,9 +749,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                               Field.DST_IP)
                           .getExpr());
               return new BasicRuleStatement(
-                  ipForeignToCurrentNode,
-                  new PostIn(hostname),
-                  new PreOut(hostname));
+                  ipForeignToCurrentNode, new PostIn(hostname), new PreOut(hostname));
             })
         .forEach(_rules::add);
   }
