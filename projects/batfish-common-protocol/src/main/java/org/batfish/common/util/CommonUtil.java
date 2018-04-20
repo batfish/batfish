@@ -709,6 +709,7 @@ public class CommonUtil {
     String acceptedHostname = acceptPoint.getHostname();
     // The reply traceroute
     fb.setIngressNode(acceptedHostname);
+    fb.setIngressVrf(dst.getVrf());
     fb.setSrcIp(forwardFlow.getDstIp());
     fb.setDstIp(forwardFlow.getSrcIp());
     fb.setSrcPort(forwardFlow.getDstPort());
