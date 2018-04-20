@@ -30,6 +30,11 @@ public class NodeRoleDimension {
     return _nodeRoles.equals(((NodeRoleDimension) o)._nodeRoles);
   }
 
+  @Override
+  public int hashCode() {
+    return _nodeRoles.hashCode();
+  }
+
   @JsonValue
   public Map<String, NodeRole> getNodeRoles() {
     return _nodeRoles;

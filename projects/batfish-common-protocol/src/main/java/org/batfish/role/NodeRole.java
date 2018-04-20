@@ -22,6 +22,11 @@ public class NodeRole {
     return _regex.equals(((NodeRole) o)._regex);
   }
 
+  @Override
+  public int hashCode() {
+    return _regex.hashCode();
+  }
+
   @JsonValue
   public String toString() {
     return _regex;
