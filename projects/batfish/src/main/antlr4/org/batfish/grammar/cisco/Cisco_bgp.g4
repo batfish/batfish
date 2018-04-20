@@ -462,6 +462,7 @@ vrf_block_rb_stanza
    VRF name = ~NEWLINE NEWLINE
    (
       address_family_rb_stanza
+      | aggregate_address_rb_stanza
       | always_compare_med_rb_stanza
       | as_path_multipath_relax_rb_stanza
       | bgp_listen_range_rb_stanza
