@@ -43,7 +43,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -1589,10 +1588,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
     book.getEntries()
         .forEach(
             (n, entry) -> {
-              entry.getEntryNames().forEach(subName -> {
-                // TODO add reference to this entry for the base IpSpace
-                // TODO add this entry to ipSpaces
-              });
+              // If this address book references other entries, add them to an AclIpSpace
+              entry
+                  .getEntryNames()
+                  .forEach(
+                      subName -> {
+                        String ipSpaceName = name + "~" + subName;
+                        // TODO add reference to this entry for the base IpSpace
+                        // TODO add this entry to ipSpaces
+                        // AclIpSpace aclIpSpace = AclIpSpace.permitting(new IpSpaceReference(ipSpaceName));
+                        ipSpaces.computeIfAbsent(
+                            ipSpaceName,
+                            i ->
+                                IpWildcardSetIpSpace.builder()
+                                    .including(entry.getIpWildcards(_w))
+                                    .build());
+                      });
               ipSpaceBuilder.including(entry.getIpWildcards(_w));
             });
     return ImmutableMap.of(name, ipSpaceBuilder.build());
