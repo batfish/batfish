@@ -616,7 +616,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   public HeaderSpace() {
     _dscps = Collections.emptySortedSet();
-    _dstIps = UniverseIpSpace.INSTANCE;
     _dstPorts = Collections.emptySortedSet();
     _dstProtocols = Collections.emptySortedSet();
     _ecns = Collections.emptySortedSet();
@@ -625,8 +624,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _icmpTypes = Collections.emptySortedSet();
     _ipProtocols = Collections.emptySortedSet();
     _packetLengths = Collections.emptySortedSet();
-    _srcIps = UniverseIpSpace.INSTANCE;
-    _srcOrDstIps = UniverseIpSpace.INSTANCE;
     _srcOrDstPorts = Collections.emptySortedSet();
     _srcOrDstProtocols = Collections.emptySortedSet();
     _srcPorts = Collections.emptySortedSet();
@@ -634,7 +631,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _states = Collections.emptySortedSet();
     _tcpFlags = Collections.emptyList();
     _notDscps = Collections.emptySortedSet();
-    _notDstIps = EmptyIpSpace.INSTANCE;
     _notDstPorts = Collections.emptySortedSet();
     _notDstProtocols = Collections.emptySortedSet();
     _notEcns = Collections.emptySortedSet();
@@ -643,7 +639,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _notIcmpTypes = Collections.emptySortedSet();
     _notIpProtocols = Collections.emptySortedSet();
     _notPacketLengths = Collections.emptySortedSet();
-    _notSrcIps = EmptyIpSpace.INSTANCE;
     _notSrcPorts = Collections.emptySortedSet();
     _notSrcProtocols = Collections.emptySortedSet();
   }

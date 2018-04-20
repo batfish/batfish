@@ -750,7 +750,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                           .getExpr());
               return new BasicRuleStatement(
                   ipForeignToCurrentNode,
-                  ImmutableSet.of(new PostIn(hostname)),
+                  new PostIn(hostname),
                   new PreOut(hostname));
             })
         .forEach(_rules::add);
