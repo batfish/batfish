@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
 import java.util.Set;
 import org.batfish.common.Warnings;
@@ -15,6 +16,11 @@ public final class AddressAddressBookEntry extends AddressBookEntry {
   public AddressAddressBookEntry(String name, IpWildcard ipWildcard) {
     super(name);
     _ipWildcard = ipWildcard;
+  }
+
+  @Override
+  public Set<String> getEntryNames() {
+    return ImmutableSet.of();
   }
 
   public IpWildcard getIpWildcard() {

@@ -14,5 +14,7 @@ public abstract class AddressBookEntry extends ComparableStructure<String> {
     super(name);
   }
 
+  public abstract Set<String> getEntryNames();
+
   public abstract Set<IpWildcard> getIpWildcards(Warnings w);
 }

@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpWildcard;
 
@@ -17,8 +18,9 @@ public final class AddressSetAddressBookEntry extends AddressBookEntry {
     _entries = new HashSet<>();
   }
 
-  public Set<AddressSetEntry> getEntries() {
-    return _entries;
+  @Override
+  public Set<String> getEntryNames() {
+    return _entries.stream().map(AddressSetEntry::getName).collect(Collectors.toSet());
   }
 
   @Override

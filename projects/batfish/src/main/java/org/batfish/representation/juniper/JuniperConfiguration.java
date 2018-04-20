@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -1580,14 +1582,20 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecVpn;
   }
 
-  private IpSpace toIpSpace(AddressBook book) {
-    IpWildcardSetIpSpace.Builder ipSpaceB = IpWildcardSetIpSpace.builder();
+  private Map<String, IpSpace> toIpSpaces(String name, AddressBook book) {
+    // TODO fix this to make ip spaces for each address, set, and book
+    Map<String, IpSpace> ipSpaces = new TreeMap<>();
+    IpWildcardSetIpSpace.Builder ipSpaceBuilder = IpWildcardSetIpSpace.builder();
     book.getEntries()
         .forEach(
-            (name, entry) -> {
-              ipSpaceB.including(entry.getIpWildcards(_w));
+            (n, entry) -> {
+              entry.getEntryNames().forEach(subName -> {
+                // TODO add reference to this entry for the base IpSpace
+                // TODO add this entry to ipSpaces
+              });
+              ipSpaceBuilder.including(entry.getIpWildcards(_w));
             });
-    return ipSpaceB.build();
+    return ImmutableMap.of(name, ipSpaceBuilder.build());
   }
 
   private RoutingPolicy toRoutingPolicy(FirewallFilter filter) {
@@ -1835,7 +1843,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // Convert AddressBooks to IpSpaces
     _globalAddressBooks.forEach(
-        (name, addressBook) -> _c.getIpSpaces().put(name, toIpSpace(addressBook)));
+        (name, addressBook) -> _c.getIpSpaces().putAll(toIpSpaces(name, addressBook)));
 
     // TODO: instead make both IpAccessList and Ip6AccessList instances from
     // such firewall filters
@@ -2015,7 +2023,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Zone newZone = toZone(zone);
       _c.getZones().put(zone.getName(), newZone);
       if (!zone.getAddressBook().getEntries().isEmpty()) {
-        _c.getIpSpaces().put(zone.getName(), toIpSpace(zone.getAddressBook()));
+        _c.getIpSpaces().putAll(toIpSpaces(zone.getName(), zone.getAddressBook()));
       }
     }
     // If there are zones, then assume we will need to support existing connection ACL
