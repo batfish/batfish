@@ -3,6 +3,7 @@ package org.batfish.symbolic.smt;
 import com.google.common.collect.Lists;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -17,12 +18,12 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
-  private final Encoder _encoder;
+  private final Context _context;
 
   private final BitVecExpr _var;
 
-  public IpSpaceToBoolExpr(Encoder encoder, BitVecExpr var) {
-    _encoder = encoder;
+  public IpSpaceToBoolExpr(Context context, BitVecExpr var) {
+    _context = context;
     _var = var;
   }
 
@@ -33,24 +34,24 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
 
   @Override
   public BoolExpr visitAclIpSpace(AclIpSpace aclIpSpace) {
-    BoolExpr expr = _encoder.mkFalse();
+    BoolExpr expr = _context.mkFalse();
     for (AclIpSpaceLine aclIpSpaceLine : Lists.reverse(aclIpSpace.getLines())) {
       BoolExpr matchExpr = aclIpSpaceLine.getIpSpace().accept(this);
       BoolExpr actionExpr =
-          aclIpSpaceLine.getAction() == LineAction.ACCEPT ? _encoder.mkTrue() : _encoder.mkFalse();
-      expr = _encoder.mkIf(matchExpr, actionExpr, expr);
+          aclIpSpaceLine.getAction() == LineAction.ACCEPT ? _context.mkTrue() : _context.mkFalse();
+      expr = (BoolExpr) _context.mkITE(matchExpr, actionExpr, expr);
     }
     return expr;
   }
 
   @Override
   public BoolExpr visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-    return _encoder.mkFalse();
+    return _context.mkFalse();
   }
 
   @Override
   public BoolExpr visitIpIpSpace(IpIpSpace ipIpSpace) {
-    return _encoder.mkEq(_var, _encoder.mkBV(ipIpSpace.getIp().asLong(), 32));
+    return _context.mkEq(_var, _context.mkBV(ipIpSpace.getIp().asLong(), 32));
   }
 
   @Override
@@ -59,15 +60,15 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
   }
 
   private BoolExpr toBoolExpr(IpWildcard ipWildcard) {
-    BitVecExpr ip = _encoder.mkBV(ipWildcard.getIp().asLong(), 32);
-    BitVecExpr mask = _encoder.mkBV(~ipWildcard.getWildcard().asLong(), 32);
-    return _encoder.mkEq(_encoder.mkBVAND(_var, mask), _encoder.mkBVAND(ip, mask));
+    BitVecExpr ip = _context.mkBV(ipWildcard.getIp().asLong(), 32);
+    BitVecExpr mask = _context.mkBV(~ipWildcard.getWildcard().asLong(), 32);
+    return _context.mkEq(_context.mkBVAND(_var, mask), _context.mkBVAND(ip, mask));
   }
 
   @Override
   public BoolExpr visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
     BoolExpr whitelistExpr =
-        _encoder.mkOr(
+        _context.mkOr(
             ipWildcardSetIpSpace
                 .getWhitelist()
                 .stream()
@@ -75,14 +76,14 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
                 .toArray(BoolExpr[]::new));
 
     BoolExpr blacklistExpr =
-        _encoder.mkOr(
+        _context.mkOr(
             ipWildcardSetIpSpace
                 .getBlacklist()
                 .stream()
                 .map(this::toBoolExpr)
                 .toArray(BoolExpr[]::new));
 
-    return _encoder.mkAnd(whitelistExpr, _encoder.mkNot(blacklistExpr));
+    return _context.mkAnd(whitelistExpr, _context.mkNot(blacklistExpr));
   }
 
   @Override
@@ -92,7 +93,7 @@ public class IpSpaceToBoolExpr implements GenericIpSpaceVisitor<BoolExpr> {
 
   @Override
   public BoolExpr visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
-    return _encoder.mkTrue();
+    return _context.mkTrue();
   }
 
   @Override

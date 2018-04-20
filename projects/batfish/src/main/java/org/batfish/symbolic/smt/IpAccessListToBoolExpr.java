@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -30,12 +31,12 @@ import org.batfish.datamodel.acl.TrueExpr;
 
 public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<BoolExpr> {
 
-  private final Encoder _encoder;
+  private final Context _context;
 
   private final SymbolicPacket _packet;
 
-  public IpAccessListToBoolExpr(Encoder encoder, SymbolicPacket packet) {
-    _encoder = encoder;
+  public IpAccessListToBoolExpr(Context context, SymbolicPacket packet) {
+    _context = context;
     _packet = packet;
   }
 
@@ -44,12 +45,12 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
   }
 
   public BoolExpr toBoolExpr(IpAccessList ipAccessList) {
-    BoolExpr expr = _encoder.mkFalse();
+    BoolExpr expr = _context.mkFalse();
     for (IpAccessListLine line : Lists.reverse(ipAccessList.getLines())) {
       BoolExpr matchExpr = line.getMatchCondition().accept(this);
       BoolExpr actionExpr =
-          line.getAction() == LineAction.ACCEPT ? _encoder.mkTrue() : _encoder.mkFalse();
-      expr = _encoder.mkIf(matchExpr, actionExpr, expr);
+          line.getAction() == LineAction.ACCEPT ? _context.mkTrue() : _context.mkFalse();
+      expr = (BoolExpr)_context.mkITE(matchExpr, actionExpr, expr);
     }
     return expr;
   }
@@ -58,7 +59,7 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     if (ipSpace == null) {
       return null;
     }
-    return ipSpace.accept(new IpSpaceToBoolExpr(_encoder, var));
+    return ipSpace.accept(new IpSpaceToBoolExpr(_context, var));
   }
 
   private @Nullable BoolExpr toBoolExpr(Set<IpProtocol> ipProtocols) {
@@ -66,12 +67,12 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
       return null;
     }
 
-    return _encoder.mkOr(
+    return _context.mkOr(
         ipProtocols
             .stream()
             .map(
                 ipProtocol ->
-                    _encoder.mkEq(_packet.getIpProtocol(), _encoder.mkInt(ipProtocol.number())))
+                    _context.mkEq(_packet.getIpProtocol(), _context.mkInt(ipProtocol.number())))
             .toArray(BoolExpr[]::new));
   }
 
@@ -79,31 +80,31 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     if (ranges == null || ranges.isEmpty()) {
       return null;
     }
-    return _encoder.mkOr(
+    return _context.mkOr(
         ranges.stream().map(range -> toBoolExpr(range, var)).toArray(BoolExpr[]::new));
   }
 
   private BoolExpr toBoolExpr(SubRange range, ArithExpr var) {
     int start = range.getStart();
     int end = range.getEnd();
-    ArithExpr startExpr = _encoder.mkInt(start);
-    ArithExpr endExpr = _encoder.mkInt(end);
+    ArithExpr startExpr = _context.mkInt(start);
+    ArithExpr endExpr = _context.mkInt(end);
     return start == end
-        ? _encoder.mkEq(var, startExpr)
-        : _encoder.mkAnd(_encoder.mkGe(var, startExpr), _encoder.mkLe(var, endExpr));
+        ? _context.mkEq(var, startExpr)
+        : _context.mkAnd(_context.mkGe(var, startExpr), _context.mkLe(var, endExpr));
   }
 
   private BoolExpr toBoolExpr(List<TcpFlags> tcpFlags) {
-    return _encoder.mkOr(tcpFlags.stream().map(this::toBoolExpr).toArray(BoolExpr[]::new));
+    return _context.mkOr(tcpFlags.stream().map(this::toBoolExpr).toArray(BoolExpr[]::new));
   }
 
   /** For TcpFlags */
   private BoolExpr toBoolExpr(boolean useFlag, boolean flagValue, BoolExpr flagExpr) {
-    return useFlag ? flagValue ? flagExpr : _encoder.mkNot(flagExpr) : null;
+    return useFlag ? flagValue ? flagExpr : _context.mkNot(flagExpr) : null;
   }
 
   private BoolExpr toBoolExpr(TcpFlags tcpFlags) {
-    return _encoder.mkAnd(
+    return _context.mkAnd(
         toBoolExpr(tcpFlags.getUseAck(), tcpFlags.getAck(), _packet.getTcpAck()),
         toBoolExpr(tcpFlags.getUseCwr(), tcpFlags.getCwr(), _packet.getTcpCwr()),
         toBoolExpr(tcpFlags.getUseEce(), tcpFlags.getEce(), _packet.getTcpEce()),
@@ -128,13 +129,13 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
 
   @Override
   public BoolExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    return _encoder.mkAnd(
+    return _context.mkAnd(
         andMatchExpr.getConjuncts().stream().map(this::toBoolExpr).toArray(BoolExpr[]::new));
   }
 
   @Override
   public BoolExpr visitFalseExpr(FalseExpr falseExpr) {
-    return _encoder.mkFalse();
+    return _context.mkFalse();
   }
 
   @Override
@@ -155,7 +156,7 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     forbidHeaderSpaceField("notSrcPorts", headerSpace.getNotSrcPorts());
     forbidHeaderSpaceField("states", headerSpace.getStates());
 
-    return _encoder.mkAnd(
+    return _context.mkAnd(
         toBoolExpr(headerSpace.getDstIps(), _packet.getDstIp()),
         toBoolExpr(headerSpace.getSrcIps(), _packet.getSrcIp()),
         toBoolExpr(headerSpace.getDstPorts(), _packet.getDstPort()),
@@ -173,12 +174,12 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
 
   @Override
   public BoolExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
-    return _encoder.mkNot(notMatchExpr.getOperand().accept(this));
+    return _context.mkNot(notMatchExpr.getOperand().accept(this));
   }
 
   @Override
   public BoolExpr visitOrMatchExpr(OrMatchExpr orMatchExpr) {
-    return _encoder.mkOr(
+    return _context.mkOr(
         orMatchExpr.getDisjuncts().stream().map(this::toBoolExpr).toArray(BoolExpr[]::new));
   }
 
@@ -189,6 +190,6 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
 
   @Override
   public BoolExpr visitTrueExpr(TrueExpr trueExpr) {
-    return _encoder.mkTrue();
+    return _context.mkTrue();
   }
 }

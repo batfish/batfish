@@ -1676,7 +1676,7 @@ class EncoderSlice {
       return mkTrue();
     }
 
-    return new IpAccessListToBoolExpr(_encoder, _symbolicPacket).toBoolExpr(acl);
+    return new IpAccessListToBoolExpr(_encoder.getCtx(), _symbolicPacket).toBoolExpr(acl);
   }
 
   /*
