@@ -18,7 +18,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.VrrpGroup;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 

@@ -3,7 +3,6 @@ package org.batfish.symbolic.smt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -21,13 +20,13 @@ public class IpSpaceToBoolExprTest {
 
   private static final BitVecExpr VAR = CONTEXT.mkBVConst("IP_VAR", 32);
 
-  private static final IpSpaceToBoolExpr IP_SPACE_TO_BOOL_EXPR = new IpSpaceToBoolExpr(CONTEXT, VAR);
+  private static final IpSpaceToBoolExpr IP_SPACE_TO_BOOL_EXPR =
+      new IpSpaceToBoolExpr(CONTEXT, VAR);
 
   @Test
   public void testAclIpSpace_empty() {
     assertThat(
-        IP_SPACE_TO_BOOL_EXPR.visit(AclIpSpace.builder().build()),
-        equalTo(CONTEXT.mkFalse()));
+        IP_SPACE_TO_BOOL_EXPR.visit(AclIpSpace.builder().build()), equalTo(CONTEXT.mkFalse()));
   }
 
   @Test
@@ -41,8 +40,7 @@ public class IpSpaceToBoolExprTest {
     BoolExpr boolExpr3 = IP_SPACE_TO_BOOL_EXPR.visit(ipSpace3);
 
     IpSpace ipSpace =
-        AclIpSpace
-            .builder()
+        AclIpSpace.builder()
             .thenPermitting(ipSpace1)
             .thenRejecting(ipSpace2)
             .thenPermitting(ipSpace3)
@@ -65,8 +63,7 @@ public class IpSpaceToBoolExprTest {
 
   @Test
   public void testEmptyIpSpace() {
-    assertThat(IP_SPACE_TO_BOOL_EXPR.visit(EmptyIpSpace.INSTANCE),
-        equalTo(CONTEXT.mkFalse()));
+    assertThat(IP_SPACE_TO_BOOL_EXPR.visit(EmptyIpSpace.INSTANCE), equalTo(CONTEXT.mkFalse()));
   }
 
   @Test
@@ -86,28 +83,21 @@ public class IpSpaceToBoolExprTest {
     BitVecExpr maskBV = CONTEXT.mkBV(mask.inverted().asLong(), 32);
     assertThat(
         IP_SPACE_TO_BOOL_EXPR.visit(ipWildcard.toIpSpace()),
-        equalTo(
-            CONTEXT.mkEq(
-                CONTEXT.mkBVAND(VAR, maskBV),
-                CONTEXT.mkBVAND(ipBV, maskBV))));
+        equalTo(CONTEXT.mkEq(CONTEXT.mkBVAND(VAR, maskBV), CONTEXT.mkBVAND(ipBV, maskBV))));
   }
 
   @Test
   public void testPrefixIpSpace() {
     Prefix prefix = Prefix.parse("1.2.0.0/16");
     BitVecExpr subnet = CONTEXT.mkBV(0x01020000, 32);
-    BitVecExpr mask = CONTEXT.mkBV(0xFFFF0000,32);
+    BitVecExpr mask = CONTEXT.mkBV(0xFFFF0000, 32);
     assertThat(
         IP_SPACE_TO_BOOL_EXPR.visit(prefix.toIpSpace()),
-        equalTo(CONTEXT.mkEq(
-            CONTEXT.mkBVAND(VAR, mask),
-            CONTEXT.mkBVAND(subnet, mask))));
+        equalTo(CONTEXT.mkEq(CONTEXT.mkBVAND(VAR, mask), CONTEXT.mkBVAND(subnet, mask))));
   }
 
   @Test
   public void testUniverseIpSpace() {
-    assertThat(
-        IP_SPACE_TO_BOOL_EXPR.visit(UniverseIpSpace.INSTANCE),
-        equalTo(CONTEXT.mkTrue()));
+    assertThat(IP_SPACE_TO_BOOL_EXPR.visit(UniverseIpSpace.INSTANCE), equalTo(CONTEXT.mkTrue()));
   }
 }

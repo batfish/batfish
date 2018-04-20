@@ -30,12 +30,14 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
 public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<BoolExpr> {
+  private final BoolExprOps _boolExprOps;
 
   private final Context _context;
 
   private final SymbolicPacket _packet;
 
   public IpAccessListToBoolExpr(Context context, SymbolicPacket packet) {
+    _boolExprOps = new BoolExprOps(context);
     _context = context;
     _packet = packet;
   }
@@ -50,7 +52,7 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
       BoolExpr matchExpr = line.getMatchCondition().accept(this);
       BoolExpr actionExpr =
           line.getAction() == LineAction.ACCEPT ? _context.mkTrue() : _context.mkFalse();
-      expr = (BoolExpr)_context.mkITE(matchExpr, actionExpr, expr);
+      expr = (BoolExpr) _context.mkITE(matchExpr, actionExpr, expr);
     }
     return expr;
   }
@@ -95,6 +97,10 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
   }
 
   private BoolExpr toBoolExpr(List<TcpFlags> tcpFlags) {
+    if (tcpFlags == null || tcpFlags.isEmpty()) {
+      return null;
+    }
+
     return _context.mkOr(tcpFlags.stream().map(this::toBoolExpr).toArray(BoolExpr[]::new));
   }
 
@@ -104,7 +110,11 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
   }
 
   private BoolExpr toBoolExpr(TcpFlags tcpFlags) {
-    return _context.mkAnd(
+    if (!tcpFlags.anyUsed()) {
+      return null;
+    }
+
+    return _boolExprOps.and(
         toBoolExpr(tcpFlags.getUseAck(), tcpFlags.getAck(), _packet.getTcpAck()),
         toBoolExpr(tcpFlags.getUseCwr(), tcpFlags.getCwr(), _packet.getTcpCwr()),
         toBoolExpr(tcpFlags.getUseEce(), tcpFlags.getEce(), _packet.getTcpEce()),
@@ -156,15 +166,18 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     forbidHeaderSpaceField("notSrcPorts", headerSpace.getNotSrcPorts());
     forbidHeaderSpaceField("states", headerSpace.getStates());
 
-    return _context.mkAnd(
-        toBoolExpr(headerSpace.getDstIps(), _packet.getDstIp()),
-        toBoolExpr(headerSpace.getSrcIps(), _packet.getSrcIp()),
-        toBoolExpr(headerSpace.getDstPorts(), _packet.getDstPort()),
-        toBoolExpr(headerSpace.getSrcPorts(), _packet.getSrcPort()),
-        toBoolExpr(headerSpace.getTcpFlags()),
-        toBoolExpr(headerSpace.getIcmpCodes(), _packet.getIcmpCode()),
-        toBoolExpr(headerSpace.getIcmpTypes(), _packet.getIcmpType()),
-        toBoolExpr(headerSpace.getIpProtocols()));
+    BoolExpr expr =
+        _boolExprOps.and(
+            toBoolExpr(headerSpace.getDstIps(), _packet.getDstIp()),
+            toBoolExpr(headerSpace.getSrcIps(), _packet.getSrcIp()),
+            toBoolExpr(headerSpace.getDstPorts(), _packet.getDstPort()),
+            toBoolExpr(headerSpace.getSrcPorts(), _packet.getSrcPort()),
+            toBoolExpr(headerSpace.getTcpFlags()),
+            toBoolExpr(headerSpace.getIcmpCodes(), _packet.getIcmpCode()),
+            toBoolExpr(headerSpace.getIcmpTypes(), _packet.getIcmpType()),
+            toBoolExpr(headerSpace.getIpProtocols()));
+
+    return headerSpace.getNegate() ? _context.mkNot(expr) : expr;
   }
 
   @Override
