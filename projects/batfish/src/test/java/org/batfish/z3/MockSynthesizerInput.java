@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
@@ -38,6 +39,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Map<String, Map<String, String>> _incomingAcls;
 
     private Map<String, Set<Ip>> _ipsByHostname;
+
+    private Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
     private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
@@ -74,6 +77,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
+      _namedIpSpaces = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
@@ -140,6 +144,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     public Builder setIpsByHostname(Map<String, Set<Ip>> ipsByHostname) {
       _ipsByHostname = ipsByHostname;
+      return this;
+    }
+
+    public Builder setNamedIpSpaces(Map<String, Map<String, IpSpace>> namedIpSpaces) {
+      _namedIpSpaces = namedIpSpaces;
       return this;
     }
 
@@ -233,6 +242,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
+  private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
+
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
   private final Map<String, List<String>> _nodeInterfaces;
@@ -280,6 +291,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
     _vectorizedParameters = builder._vectorizedParameters;
+    _namedIpSpaces = builder._namedIpSpaces;
   }
 
   @Override
@@ -336,6 +348,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Set<Ip>> getIpsByHostname() {
     return _ipsByHostname;
+  }
+
+  @Override
+  public Map<String, Map<String, IpSpace>> getNamedIpSpaces() {
+    return _namedIpSpaces;
   }
 
   @Override

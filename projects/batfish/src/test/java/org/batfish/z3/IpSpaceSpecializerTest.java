@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -19,18 +20,20 @@ import org.junit.Test;
 public class IpSpaceSpecializerTest {
 
   private static final IpSpaceSpecializer universeSpecializer =
-      new IpSpaceSpecializer(UniverseIpSpace.INSTANCE);
+      new IpSpaceSpecializer(UniverseIpSpace.INSTANCE, ImmutableMap.of());
 
   private static final IpSpaceSpecializer emptySpecializer =
-      new IpSpaceSpecializer(EmptyIpSpace.INSTANCE);
+      new IpSpaceSpecializer(EmptyIpSpace.INSTANCE, ImmutableMap.of());
 
   private static final IpSpaceSpecializer whitelistAnySpecializer =
       new IpSpaceSpecializer(
-          IpWildcardSetIpSpace.builder().including(ImmutableSortedSet.of(IpWildcard.ANY)).build());
+          IpWildcardSetIpSpace.builder().including(ImmutableSortedSet.of(IpWildcard.ANY)).build(),
+          ImmutableMap.of());
 
   private static final IpSpaceSpecializer blacklistAnySpecializer =
       new IpSpaceSpecializer(
-          IpWildcardSetIpSpace.builder().excluding(ImmutableSortedSet.of(IpWildcard.ANY)).build());
+          IpWildcardSetIpSpace.builder().excluding(ImmutableSortedSet.of(IpWildcard.ANY)).build(),
+          ImmutableMap.of());
 
   @Test
   public void testSpecializeAclIpSpace() {
@@ -55,7 +58,7 @@ public class IpSpaceSpecializerTest {
 
     // headerspace is contained in all lines
     IpSpaceSpecializer specializer =
-        new IpSpaceSpecializer(new IpWildcard("0.0.1.6/32").toIpSpace());
+        new IpSpaceSpecializer(new IpWildcard("0.0.1.6/32").toIpSpace(), ImmutableMap.of());
     assertThat(
         specializer.visitAclIpSpace(ipSpace),
         equalTo(
@@ -68,7 +71,8 @@ public class IpSpaceSpecializerTest {
     // headerspace is outside of all lines
     specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.1/32")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.1/32")).build(),
+            ImmutableMap.of());
     assertThat(specializer.visitAclIpSpace(ipSpace), equalTo(EmptyIpSpace.INSTANCE));
 
     // not contained in any line, and mayIntersect the first only
@@ -79,7 +83,8 @@ public class IpSpaceSpecializerTest {
 
     specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(specializerWildcard).build());
+            IpWildcardSetIpSpace.builder().including(specializerWildcard).build(),
+            ImmutableMap.of());
     assertThat(
         specializer.visitAclIpSpace(ipSpace),
         equalTo(
@@ -94,7 +99,8 @@ public class IpSpaceSpecializerTest {
     assertThat(ipSpace.accept(blacklistAnySpecializer), equalTo(EmptyIpSpace.INSTANCE));
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().excluding(new IpWildcard("1.1.1.0/24")).build());
+            IpWildcardSetIpSpace.builder().excluding(new IpWildcard("1.1.1.0/24")).build(),
+            ImmutableMap.of());
     assertThat(ipSpace.accept(specializer), equalTo(EmptyIpSpace.INSTANCE));
 
     // blacklist takes priority
@@ -103,7 +109,8 @@ public class IpSpaceSpecializerTest {
             IpWildcardSetIpSpace.builder()
                 .including(new IpWildcard("1.1.1.0/24"))
                 .excluding(new IpWildcard("1.1.1.0/30"))
-                .build());
+                .build(),
+            ImmutableMap.of());
     assertThat(ipSpace.accept(specializer), equalTo(EmptyIpSpace.INSTANCE));
   }
 
@@ -125,7 +132,8 @@ public class IpSpaceSpecializerTest {
     IpWildcard ip = new IpWildcard("1.2.0.0/16");
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.0/24")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.0/24")).build(),
+            ImmutableMap.of());
     assertThat(specializer.specialize(ip), equalTo(UniverseIpSpace.INSTANCE));
   }
 
@@ -134,7 +142,8 @@ public class IpSpaceSpecializerTest {
     IpSpace ipSpace = new IpWildcard("1.2.3.0/24").toIpSpace();
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/16")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/16")).build(),
+            ImmutableMap.of());
     assertThat(specializer.specialize(ipSpace), equalTo(ipSpace));
   }
 
@@ -146,7 +155,8 @@ public class IpSpaceSpecializerTest {
             IpWildcardSetIpSpace.builder()
                 .including(new IpWildcard("1.2.0.0/16"))
                 .excluding(new IpWildcard("1.2.3.4"))
-                .build());
+                .build(),
+            ImmutableMap.of());
     assertThat(specializer.specialize(ipSpace), equalTo(ipSpace));
   }
 
@@ -165,7 +175,8 @@ public class IpSpaceSpecializerTest {
 
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.0/24")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.0/24")).build(),
+            ImmutableMap.of());
     assertThat(
         specializer.visitIpWildcardSetIpSpace(ipSpace),
         equalTo(
@@ -179,7 +190,8 @@ public class IpSpaceSpecializerTest {
      */
     specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/30")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/30")).build(),
+            ImmutableMap.of());
     assertThat(specializer.visitIpWildcardSetIpSpace(ipSpace), equalTo(UniverseIpSpace.INSTANCE));
 
     /*
@@ -188,7 +200,8 @@ public class IpSpaceSpecializerTest {
      */
     specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/16")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/16")).build(),
+            ImmutableMap.of());
     assertThat(
         specializer.visitIpWildcardSetIpSpace(ipSpace),
         equalTo(IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.0.0/24")).build()));
@@ -202,7 +215,8 @@ public class IpSpaceSpecializerTest {
   public void testSpecializeIpWildcardSetIpSpace_specializerWhitelistInBlackAndWhiteLists() {
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.0/24")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.0/24")).build(),
+            ImmutableMap.of());
 
     assertThat(
         specializer.specialize(
@@ -219,7 +233,8 @@ public class IpSpaceSpecializerTest {
      * Entire headerspace is blacklisted
      */
     IpSpaceSpecializer specializer =
-        new IpSpaceSpecializer(IpWildcardSetIpSpace.builder().excluding(IpWildcard.ANY).build());
+        new IpSpaceSpecializer(
+            IpWildcardSetIpSpace.builder().excluding(IpWildcard.ANY).build(), ImmutableMap.of());
     assertThat(
         specializer.specialize(
             IpWildcardSetIpSpace.builder().including(new IpWildcard("1.2.3.0/24")).build()),
@@ -238,7 +253,8 @@ public class IpSpaceSpecializerTest {
      */
     IpSpaceSpecializer specializer =
         new IpSpaceSpecializer(
-            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.4/30")).build());
+            IpWildcardSetIpSpace.builder().including(new IpWildcard("1.1.1.4/30")).build(),
+            ImmutableMap.of());
     assertThat(ipSpace.accept(specializer), equalTo(UniverseIpSpace.INSTANCE));
 
     specializer =
@@ -246,7 +262,8 @@ public class IpSpaceSpecializerTest {
             IpWildcardSetIpSpace.builder()
                 .including(new IpWildcard("1.0.0.0/8"))
                 .excluding(new IpWildcard("1.1.0.0/16"))
-                .build());
+                .build(),
+            ImmutableMap.of());
     assertThat(ipSpace.accept(specializer), equalTo(EmptyIpSpace.INSTANCE));
 
     specializer =
@@ -254,7 +271,8 @@ public class IpSpaceSpecializerTest {
             IpWildcardSetIpSpace.builder()
                 .including(new IpWildcard("1.0.0.0/8"))
                 .excluding(new IpWildcard("1.1.1.1/32"))
-                .build());
+                .build(),
+            ImmutableMap.of());
     assertThat(ipSpace.accept(specializer), equalTo(ipSpace));
   }
 }

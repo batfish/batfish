@@ -1,5 +1,7 @@
 package org.batfish.datamodel.visitors;
 
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
@@ -14,19 +16,25 @@ import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
 public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolean> {
-  IpWildcard _ipWildcard;
+  private final IpWildcard _ipWildcard;
 
-  IpSpaceMayNotContainWildcard _mayNotContain;
+  private final IpSpaceMayNotContainWildcard _mayNotContain;
 
-  public IpSpaceMayIntersectWildcard(IpWildcard ipWildcard) {
+  private final Map<String, IpSpace> _namedIpSpaces;
+
+  public IpSpaceMayIntersectWildcard(IpWildcard ipWildcard, Map<String, IpSpace> namedIpSpaces) {
     _ipWildcard = ipWildcard;
-    _mayNotContain = new IpSpaceMayNotContainWildcard(ipWildcard, this);
+    _mayNotContain = new IpSpaceMayNotContainWildcard(ipWildcard, namedIpSpaces, this);
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
   }
 
   public IpSpaceMayIntersectWildcard(
-      IpWildcard ipWildcard, IpSpaceMayNotContainWildcard mayNotContain) {
+      IpWildcard ipWildcard,
+      Map<String, IpSpace> namedIpSpaces,
+      IpSpaceMayNotContainWildcard mayNotContain) {
     _ipWildcard = ipWildcard;
     _mayNotContain = mayNotContain;
+    _namedIpSpaces = namedIpSpaces;
   }
 
   @Override
@@ -67,6 +75,11 @@ public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolea
   }
 
   @Override
+  public Boolean visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    return _namedIpSpaces.get(ipSpaceReference.getName()).accept(this);
+  }
+
+  @Override
   public Boolean visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
     return _ipWildcard.intersects(ipWildcardIpSpace.getIpWildcard());
   }
@@ -85,11 +98,5 @@ public class IpSpaceMayIntersectWildcard implements GenericIpSpaceVisitor<Boolea
   @Override
   public Boolean visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return true;
-  }
-
-  @Override
-  public Boolean visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

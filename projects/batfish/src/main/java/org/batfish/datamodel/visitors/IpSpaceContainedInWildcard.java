@@ -1,8 +1,11 @@
 package org.batfish.datamodel.visitors;
 
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
@@ -15,7 +18,10 @@ import org.batfish.datamodel.UniverseIpSpace;
 public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean> {
   private final IpWildcard _ipWildcard;
 
-  public IpSpaceContainedInWildcard(IpWildcard ipWildcard) {
+  private final Map<String, IpSpace> _namedIpSpaces;
+
+  public IpSpaceContainedInWildcard(IpWildcard ipWildcard, Map<String, IpSpace> namedIpSpaces) {
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _ipWildcard = ipWildcard;
   }
 
@@ -45,8 +51,7 @@ public class IpSpaceContainedInWildcard implements GenericIpSpaceVisitor<Boolean
 
   @Override
   public Boolean visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return _namedIpSpaces.get(ipSpaceReference.getName()).accept(this);
   }
 
   @Override

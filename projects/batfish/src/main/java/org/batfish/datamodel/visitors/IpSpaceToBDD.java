@@ -61,6 +61,17 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     return firstBitsEqual(_var.getBitvec(), p.getStartIp(), p.getPrefixLength());
   }
 
+  public BDD toBDD(Ip ip) {
+    return toBDD(new Prefix(ip, Prefix.MAX_PREFIX_LENGTH));
+  }
+
+  public BDD toBDD(IpWildcard ipWildcard) {
+    if (!ipWildcard.isPrefix()) {
+      throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
+    }
+    return toBDD(ipWildcard.toPrefix());
+  }
+
   @Override
   public BDD visitAclIpSpace(AclIpSpace aclIpSpace) {
     throw new BatfishException("TODO");
@@ -81,15 +92,10 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     return toBDD(ipWildcardIpSpace.getIpWildcard());
   }
 
-  public BDD toBDD(Ip ip) {
-    return toBDD(new Prefix(ip, Prefix.MAX_PREFIX_LENGTH));
-  }
-
-  public BDD toBDD(IpWildcard ipWildcard) {
-    if (!ipWildcard.isPrefix()) {
-      throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
-    }
-    return toBDD(ipWildcard.toPrefix());
+  @Override
+  public BDD visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   @Override
@@ -109,11 +115,5 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   @Override
   public BDD visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return _factory.one();
-  }
-
-  @Override
-  public BDD visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

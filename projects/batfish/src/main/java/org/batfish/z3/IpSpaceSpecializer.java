@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
@@ -34,8 +35,14 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   private final IpSpace _ipSpace;
 
-  public IpSpaceSpecializer(IpSpace ipSpace) {
-    _ipSpace = IpSpaceSimplifier.simplify(ipSpace);
+  private final IpSpaceSimplifier _simplifier;
+
+  private final Map<String, IpSpace> _namedIpSpaces;
+
+  public IpSpaceSpecializer(IpSpace ipSpace, Map<String, IpSpace> namedIpSpaces) {
+    _simplifier = new IpSpaceSimplifier(namedIpSpaces);
+    _ipSpace = _simplifier.simplify(ipSpace);
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
   }
 
   @Override
@@ -45,11 +52,11 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   public IpSpace specialize(IpSpace ipSpace) {
     if (_ipSpace == null || _ipSpace == UniverseIpSpace.INSTANCE) {
-      return IpSpaceSimplifier.simplify(ipSpace);
+      return _simplifier.simplify(ipSpace);
     } else if (_ipSpace == EmptyIpSpace.INSTANCE) {
       return EmptyIpSpace.INSTANCE;
     } else {
-      return IpSpaceSimplifier.simplify(ipSpace.accept(this));
+      return _simplifier.simplify(ipSpace.accept(this));
     }
   }
 
@@ -62,9 +69,9 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   public IpSpace specialize(IpWildcard ipWildcard) {
-    if (!_ipSpace.accept(new IpSpaceMayIntersectWildcard(ipWildcard))) {
+    if (!_ipSpace.accept(new IpSpaceMayIntersectWildcard(ipWildcard, _namedIpSpaces))) {
       return EmptyIpSpace.INSTANCE;
-    } else if (_ipSpace.accept(new IpSpaceContainedInWildcard(ipWildcard))) {
+    } else if (_ipSpace.accept(new IpSpaceContainedInWildcard(ipWildcard, _namedIpSpaces))) {
       return UniverseIpSpace.INSTANCE;
     } else {
       return ipWildcard.toIpSpace();
@@ -103,6 +110,11 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   @Override
   public IpSpace visitIpIpSpace(IpIpSpace ipIpSpace) {
     return specialize(ipIpSpace.getIp());
+  }
+
+  @Override
+  public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    return _namedIpSpaces.get(ipSpaceReference).accept(this);
   }
 
   @Override
@@ -154,7 +166,8 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
                   IpWildcardSetIpSpace.builder()
                       .including(IpWildcard.ANY)
                       .excluding(blacklist)
-                      .build()));
+                      .build(),
+                  _namedIpSpaces));
 
       /* blacklist covers the entire _ipSpace, so no need to consider the whitelist.
        * TODO is this possible if !blacklistIpSpace.containsIp(UniverseIpSpace.INSTANCE)?
@@ -163,7 +176,7 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
         return EmptyIpSpace.INSTANCE;
       }
 
-      refinedSpecializer = new IpSpaceSpecializer(refinedIpSpace);
+      refinedSpecializer = new IpSpaceSpecializer(refinedIpSpace, _namedIpSpaces);
     }
 
     Set<IpSpace> ipSpaceWhitelist =
@@ -216,11 +229,5 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   @Override
   public IpSpace visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return universeIpSpace;
-  }
-
-  @Override
-  public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

@@ -29,7 +29,8 @@ import org.junit.Test;
 
 public class AclLineMatchExprToBooleanExprTest {
   private static final AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-      new AclLineMatchExprToBooleanExpr(ImmutableMap.of(), null, ImmutableMap.of());
+      new AclLineMatchExprToBooleanExpr(
+          ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of());
 
   @Test
   public void testAndMatchExpr_emptyConjuncts() {
@@ -64,7 +65,7 @@ public class AclLineMatchExprToBooleanExprTest {
     HeaderSpace headerSpace = new HeaderSpace();
     assertThat(
         new MatchHeaderSpace(headerSpace).accept(aclLineMatchExprToBooleanExpr),
-        equalTo(new HeaderSpaceMatchExpr(headerSpace)));
+        equalTo(new HeaderSpaceMatchExpr(headerSpace, ImmutableMap.of()).getExpr()));
   }
 
   @Test
@@ -73,7 +74,7 @@ public class AclLineMatchExprToBooleanExprTest {
         HeaderSpace.builder().setDstIps(ImmutableList.of(new IpWildcard("1.2.3.4"))).build();
     assertThat(
         new MatchHeaderSpace(headerSpace).accept(aclLineMatchExprToBooleanExpr),
-        equalTo(new HeaderSpaceMatchExpr(headerSpace)));
+        equalTo(new HeaderSpaceMatchExpr(headerSpace, ImmutableMap.of()).getExpr()));
   }
 
   @Test
@@ -109,7 +110,8 @@ public class AclLineMatchExprToBooleanExprTest {
     IpAccessList acl = IpAccessList.builder().setName("acl").build();
 
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-        new AclLineMatchExprToBooleanExpr(ImmutableMap.of("acl", acl), null, ImmutableMap.of());
+        new AclLineMatchExprToBooleanExpr(
+            ImmutableMap.of("acl", acl), ImmutableMap.of(), null, ImmutableMap.of());
 
     assertThat(
         new PermittedByAcl("acl").accept(aclLineMatchExprToBooleanExpr),
@@ -142,7 +144,8 @@ public class AclLineMatchExprToBooleanExprTest {
         IpAccessList.builder().setName("acl").setLines(ImmutableList.of(line1, line2)).build();
 
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-        new AclLineMatchExprToBooleanExpr(ImmutableMap.of("acl", acl), null, ImmutableMap.of());
+        new AclLineMatchExprToBooleanExpr(
+            ImmutableMap.of("acl", acl), ImmutableMap.of(), null, ImmutableMap.of());
 
     assertThat(
         new PermittedByAcl("acl").accept(aclLineMatchExprToBooleanExpr),

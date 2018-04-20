@@ -5,6 +5,7 @@ import static org.batfish.datamodel.AclIpSpace.*;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -37,7 +38,7 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
   private final IpSpaceSpecializer _srcIpSpaceSpecializer;
   private final IpSpaceSpecializer _srcOrDstIpSpaceSpecializer;
 
-  public IpAccessListSpecializer(HeaderSpace headerSpace) {
+  public IpAccessListSpecializer(HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
     _headerSpace = headerSpace;
 
     IpSpace dstIps = _headerSpace.getDstIps();
@@ -59,12 +60,13 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
             || notSrcIps != null;
 
     _dstIpSpaceSpecializer =
-        new IpSpaceSpecializer(difference(union(dstIps, srcOrDstIps), notDstIps));
+        new IpSpaceSpecializer(difference(union(dstIps, srcOrDstIps), notDstIps), namedIpSpaces);
     _srcIpSpaceSpecializer =
-        new IpSpaceSpecializer(difference(union(srcIps, srcOrDstIps), notSrcIps));
+        new IpSpaceSpecializer(difference(union(srcIps, srcOrDstIps), notSrcIps), namedIpSpaces);
     _srcOrDstIpSpaceSpecializer =
         new IpSpaceSpecializer(
-            difference(union(srcIps, dstIps, srcOrDstIps), union(notSrcIps, notDstIps)));
+            difference(union(srcIps, dstIps, srcOrDstIps), union(notSrcIps, notDstIps)),
+            namedIpSpaces);
   }
 
   public IpAccessList specialize(IpAccessList ipAccessList) {
@@ -96,92 +98,6 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
 
     return Optional.of(ipAccessListLine.toBuilder().setMatchCondition(aclLineMatchExpr).build());
   }
-
-  /*
-
-  if (aclLineMatchExpr instanceof TrueExpr) {
-    return UniverseIpSpace.INSTANCE;
-  } else if (aclLineMatchExpr instanceof FalseExpr) {
-    return EmptyIpSpace.INSTANCE;
-  }
-
-  HeaderSpace oldHeaderSpace = HeaderSpaceConverter.convert(ipAccessListLine.getMatchCondition());
-  IpWildcardSetIpSpace.Builder srcIpSpaceBuilder =
-      IpWildcardSetIpSpace.builder().excluding(oldHeaderSpace.getNotSrcIps());
-  if (oldHeaderSpace.getSrcIps().isEmpty() && oldHeaderSpace.getSrcOrDstIps().isEmpty()) {
-    srcIpSpaceBuilder.including(IpWildcard.ANY);
-  } else {
-    srcIpSpaceBuilder.including(oldHeaderSpace.getSrcIps());
-    srcIpSpaceBuilder.including(oldHeaderSpace.getSrcOrDstIps());
-  }
-  IpSpace specializedSrcIpSpace = _srcIpSpaceSpecializer.specialize(srcIpSpaceBuilder.build());
-
-  IpWildcardSetIpSpace.Builder dstIpSpaceBuilder =
-      IpWildcardSetIpSpace.builder().excluding(oldHeaderSpace.getNotDstIps());
-  if (oldHeaderSpace.getDstIps().isEmpty() && oldHeaderSpace.getSrcOrDstIps().isEmpty()) {
-    dstIpSpaceBuilder.including(IpWildcard.ANY);
-  } else {
-    dstIpSpaceBuilder.including(oldHeaderSpace.getDstIps());
-    dstIpSpaceBuilder.including(oldHeaderSpace.getSrcOrDstIps());
-  }
-  IpSpace specializedDstIpSpace = _dstIpSpaceSpecializer.specialize(dstIpSpaceBuilder.build());
-
-  if (specializedDstIpSpace instanceof EmptyIpSpace
-      || specializedSrcIpSpace instanceof EmptyIpSpace) {
-    return Optional.empty();
-  }
-
-  Set<IpWildcard> specializedDstIps;
-  Set<IpWildcard> specializedNotDstIps;
-  if (specializedDstIpSpace instanceof UniverseIpSpace) {
-    // for a HeaderSpace, empty dstIps means Universe
-    specializedDstIps = ImmutableSet.of();
-    specializedNotDstIps = ImmutableSet.of();
-  } else if (specializedDstIpSpace instanceof IpWildcardSetIpSpace) {
-    IpWildcardSetIpSpace dstIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedDstIpSpace;
-    specializedDstIps = dstIpWildcardSetIpSpace.getWhitelist();
-    specializedNotDstIps = dstIpWildcardSetIpSpace.getBlacklist();
-  } else if (specializedDstIpSpace instanceof IpWildcard) {
-    specializedDstIps = ImmutableSet.of((IpWildcard) specializedDstIpSpace);
-    specializedNotDstIps = ImmutableSet.of();
-  } else {
-    throw new BatfishException("unexpected specializedDstIpSpace type");
-  }
-
-  Set<IpWildcard> specializedSrcIps;
-  Set<IpWildcard> specializedNotSrcIps;
-  if (specializedSrcIpSpace instanceof UniverseIpSpace) {
-    specializedSrcIps = ImmutableSet.of();
-    specializedNotSrcIps = ImmutableSet.of();
-  } else if (specializedSrcIpSpace instanceof IpWildcardSetIpSpace) {
-    IpWildcardSetIpSpace srcIpWildcardSetIpSpace = (IpWildcardSetIpSpace) specializedSrcIpSpace;
-    specializedSrcIps = srcIpWildcardSetIpSpace.getWhitelist();
-    specializedNotSrcIps = srcIpWildcardSetIpSpace.getBlacklist();
-  } else if (specializedSrcIpSpace instanceof IpWildcard) {
-    specializedSrcIps = ImmutableSet.of((IpWildcard) specializedSrcIpSpace);
-    specializedNotSrcIps = ImmutableSet.of();
-  } else {
-    throw new BatfishException("unexpected specializedSrcIpSpace type");
-  }
-
-  HeaderSpace newHeaderSpace =
-      oldHeaderSpace
-          .toBuilder()
-          .setDstIps(specializedDstIps)
-          .setNotDstIps(specializedNotDstIps)
-          .setSrcIps(specializedSrcIps)
-          .setNotSrcIps(specializedNotSrcIps)
-          .build();
-  AclLineMatchExpr matchCondition =
-      newHeaderSpace.unrestricted() ? TrueExpr.INSTANCE : new MatchHeaderSpace(newHeaderSpace);
-
-  return Optional.of(
-      IpAccessListLine.builder()
-          .setAction(ipAccessListLine.getAction())
-          .setMatchCondition(matchCondition)
-          .setName(ipAccessListLine.getName())
-          .build()
-  */
 
   @Override
   public AclLineMatchExpr visitAndMatchExpr(AndMatchExpr andMatchExpr) {
