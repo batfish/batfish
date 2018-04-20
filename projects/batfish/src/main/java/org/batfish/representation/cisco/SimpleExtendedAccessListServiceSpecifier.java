@@ -133,7 +133,8 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
                 _icmpCode != null ? ImmutableSet.of(new SubRange(_icmpCode)) : ImmutableSet.of())
             .setIcmpTypes(
                 _icmpType != null ? ImmutableSet.of(new SubRange(_icmpType)) : ImmutableSet.of())
-            .setIpProtocols(ImmutableSet.of(_protocol))
+            .setIpProtocols(
+                _protocol != IpProtocol.IP ? ImmutableSet.of(_protocol) : ImmutableSet.of())
             .setSrcPorts(_srcPortRanges)
             .setStates(_states)
             .setTcpFlags(_tcpFlags)
