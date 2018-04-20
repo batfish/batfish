@@ -1017,7 +1017,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       String nextHopInt = sr.getNextHopInterface();
       if (!nextHopInt.equals(Route.UNSET_NEXT_HOP_INTERFACE)
           && !Interface.NULL_INTERFACE_NAME.equals(nextHopInt)
-          && !_vrf.getInterfaces().get(nextHopInt).getActive()) {
+          && (_c.getInterfaces().get(nextHopInt) == null
+              || !_c.getInterfaces().get(nextHopInt).getActive())) {
         continue;
       }
       // interface route
@@ -1052,7 +1053,7 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
       Prefix remotePrefix = neighbor.getPrefix();
-      if (remotePrefix.getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+      if (neighbor.getDynamic() || Ip.AUTO.equals(neighbor.getLocalIp())) {
         // Do not support dynamic outside neighbors
         continue;
       }
@@ -1065,7 +1066,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       int localAs = neighbor.getLocalAs();
       int remoteAs = neighbor.getRemoteAs();
       String remoteHostname = remoteIp.toString();
-      String remoteVrfName = Configuration.DEFAULT_VRF_NAME;
+      String remoteVrfName = _vrf.getName();
       RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(neighbor.getExportPolicy());
       boolean ebgpSession = localAs != remoteAs;
       RoutingProtocol targetProtocol = ebgpSession ? RoutingProtocol.BGP : RoutingProtocol.IBGP;
@@ -1233,7 +1234,12 @@ public class VirtualRouter extends ComparableStructure<String> {
          */
         boolean acceptOutgoing =
             exportPolicy.process(
-                route, transformedOutgoingRouteBuilder, remoteIp, remoteVrfName, Direction.OUT);
+                route,
+                transformedOutgoingRouteBuilder,
+                remoteIp,
+                remotePrefix,
+                remoteVrfName,
+                Direction.OUT);
         if (acceptOutgoing) {
           BgpRoute transformedOutgoingRoute = transformedOutgoingRouteBuilder.build();
           // Record sent advertisement
@@ -1320,6 +1326,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     // Process updates from each neighbor
 
     for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
+      if (!bgpTopology.nodes().contains(neighbor)) {
+        continue;
+      }
       for (BgpSession session : bgpTopology.inEdges(neighbor)) {
         BgpNeighbor remoteBgpNeighbor = session.getSrc();
 
@@ -1513,6 +1522,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                   remoteRoute,
                   transformedOutgoingRouteBuilder,
                   localIp,
+                  remoteBgpNeighbor.getPrefix(),
                   remoteVrfName,
                   Direction.OUT);
           if (acceptOutgoing) {
@@ -1637,6 +1647,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                         transformedOutgoingRoute,
                         transformedIncomingRouteBuilder,
                         remoteBgpNeighbor.getLocalIp(),
+                        remoteBgpNeighbor.getPrefix(),
                         _key,
                         Direction.IN);
               }
@@ -2229,6 +2240,9 @@ public class VirtualRouter extends ComparableStructure<String> {
       final Map<String, Node> allNodes,
       Network<BgpNeighbor, BgpSession> bgpTopology) {
     for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
+      if (!bgpTopology.nodes().contains(neighbor)) {
+        continue;
+      }
       for (BgpSession session : bgpTopology.incidentEdges(neighbor)) {
         BgpNeighbor remoteNeighbor = session.getSrc();
         if (neighbor == remoteNeighbor) {
@@ -2555,6 +2569,9 @@ public class VirtualRouter extends ComparableStructure<String> {
       return;
     }
     for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
+      if (!bgpTopology.nodes().contains(neighbor)) {
+        continue;
+      }
       for (BgpSession session : bgpTopology.inEdges(neighbor)) {
         newBgpSessionEstablishedHook(session, allNodes);
       }

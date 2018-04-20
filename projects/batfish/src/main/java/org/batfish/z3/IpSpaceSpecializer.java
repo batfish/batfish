@@ -9,11 +9,12 @@ import java.util.stream.Stream;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -77,21 +78,23 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   @Override
-  public IpSpace visitIp(Ip ip) {
-    if (_blacklist.stream().noneMatch(ipWildcard -> ipWildcard.containsIp(ip))
-        && _whitelist.stream().anyMatch(ipWildcard -> ipWildcard.containsIp(ip))) {
-      return ip;
+  public IpSpace visitIpIpSpace(IpIpSpace ipIpSpace) {
+    if (_blacklist.stream().noneMatch(ipWildcard -> ipWildcard.containsIp(ipIpSpace.getIp()))
+        && _whitelist.stream().anyMatch(ipWildcard -> ipWildcard.containsIp(ipIpSpace.getIp()))) {
+      return ipIpSpace;
     } else {
       return EmptyIpSpace.INSTANCE;
     }
   }
 
   @Override
-  public IpSpace visitIpWildcard(IpWildcard ipWildcard) {
-    return visitIpWildcard(ipWildcard, _whitelist);
+  public IpSpace visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+    return visitIpWildcardIpSpace(ipWildcardIpSpace, _whitelist);
   }
 
-  public IpSpace visitIpWildcard(IpWildcard ipWildcard, Set<IpWildcard> whitelist) {
+  public IpSpace visitIpWildcardIpSpace(
+      IpWildcardIpSpace ipWildcardIpSpace, Set<IpWildcard> whitelist) {
+    IpWildcard ipWildcard = ipWildcardIpSpace.getIpWildcard();
     if (_blacklist.stream().anyMatch(ipWildcard::subsetOf)) {
       // blacklisted
       return EmptyIpSpace.INSTANCE;
@@ -102,7 +105,7 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
       return UniverseIpSpace.INSTANCE;
     } else if (whitelist.stream().anyMatch(ipWildcard::intersects)) {
       // some match
-      return ipWildcard;
+      return ipWildcardIpSpace;
     } else {
       return EmptyIpSpace.INSTANCE;
     }
@@ -144,7 +147,7 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
         ipWildcardSetIpSpace
             .getWhitelist()
             .stream()
-            .map(ipWildcard -> visitIpWildcard(ipWildcard, newWhitelist))
+            .map(ipWildcard -> visitIpWildcardIpSpace(ipWildcard.toIpSpace(), newWhitelist))
             .filter(ipSpace -> !(ipSpace instanceof EmptyIpSpace))
             .collect(Collectors.toSet());
 
@@ -166,7 +169,11 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
        * is an IpWildcard.
        */
       Set<IpWildcard> ipWildcardWhitelist =
-          ipSpaceWhitelist.stream().map(IpWildcard.class::cast).collect(Collectors.toSet());
+          ipSpaceWhitelist
+              .stream()
+              .map(IpWildcardIpSpace.class::cast)
+              .map(IpWildcardIpSpace::getIpWildcard)
+              .collect(Collectors.toSet());
       return IpWildcardSetIpSpace.builder()
           .including(ipWildcardWhitelist)
           .excluding(blacklist)
@@ -175,14 +182,15 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   }
 
   @Override
-  public IpSpace visitPrefix(Prefix prefix) {
-    IpSpace specialized = visitIpWildcard(new IpWildcard(prefix));
+  public IpSpace visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+    IpSpace specialized =
+        visitIpWildcardIpSpace(new IpWildcard(prefixIpSpace.getPrefix()).toIpSpace());
     /*
      * visitIpWildcard can return EmptyIpSpace, UniverseIpSpace, or IpWildcard
      * If it returns IpWildcard, it will be unchanged, so return prefix instead.
      */
-    if (specialized instanceof IpWildcard) {
-      return prefix;
+    if (specialized instanceof IpWildcardIpSpace) {
+      return prefixIpSpace;
     } else {
       return specialized;
     }

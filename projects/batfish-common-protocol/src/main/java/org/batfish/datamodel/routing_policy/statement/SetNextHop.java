@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.statement;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
@@ -50,7 +51,11 @@ public class SetNextHop extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    environment.getOutputRoute().setNextHopIp(_expr.getNextHopIp(environment));
+    Ip nextHop = _expr.getNextHopIp(environment);
+    if (nextHop == null) {
+      return result;
+    }
+    environment.getOutputRoute().setNextHopIp(nextHop);
     return result;
   }
 

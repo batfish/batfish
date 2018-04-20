@@ -10,7 +10,7 @@ public class IpWildcardTest {
 
   @Test
   public void testContains() {
-    IpWildcard ipWildcard = new IpWildcard(new Ip(0x01010001L), new Ip(0x0000FF00L));
+    IpSpace ipWildcard = new IpWildcard(new Ip(0x01010001L), new Ip(0x0000FF00L)).toIpSpace();
     assertThat(ipWildcard, containsIp(new Ip("1.1.1.1")));
     assertThat(ipWildcard, containsIp(new Ip("1.1.255.1")));
     assertThat(ipWildcard, not(containsIp(new Ip("1.1.0.0"))));
@@ -18,7 +18,8 @@ public class IpWildcardTest {
 
   @Test
   public void testComplement() {
-    IpSpace ipSpace = new IpWildcard(new Ip(0x01010001L), new Ip(0x0000FF00L)).complement();
+    IpSpace ipSpace =
+        new IpWildcard(new Ip(0x01010001L), new Ip(0x0000FF00L)).toIpSpace().complement();
     assertThat(ipSpace, not(containsIp(new Ip("1.1.1.1"))));
     assertThat(ipSpace, not(containsIp(new Ip("1.1.255.1"))));
     assertThat(ipSpace, containsIp(new Ip("1.1.0.0")));

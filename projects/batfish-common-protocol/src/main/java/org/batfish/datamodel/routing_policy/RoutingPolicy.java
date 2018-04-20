@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.AbstractRoute;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
@@ -155,11 +157,28 @@ public class RoutingPolicy extends ComparableStructure<String> {
   public boolean process(
       AbstractRoute inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
-      Ip peerAddress,
+      @Nullable Ip peerAddress,
+      String vrf,
+      Direction direction) {
+    return process(inputRoute, outputRoute, peerAddress, null, vrf, direction);
+  }
+
+  public boolean process(
+      AbstractRoute inputRoute,
+      AbstractRouteBuilder<?, ?> outputRoute,
+      @Nullable Ip peerAddress,
+      @Nullable Prefix peerPrefix,
       String vrf,
       Direction direction) {
     Environment environment =
-        new Environment(_owner, vrf, inputRoute, null, outputRoute, peerAddress, direction);
+        Environment.builder(_owner)
+            .setVrf(vrf)
+            .setOriginalRoute(inputRoute)
+            .setOutputRoute(outputRoute)
+            .setPeerAddress(peerAddress)
+            .setDirection(direction)
+            .setPeerPrefix(peerPrefix)
+            .build();
     Result result = call(environment);
     return result.getBooleanValue();
   }

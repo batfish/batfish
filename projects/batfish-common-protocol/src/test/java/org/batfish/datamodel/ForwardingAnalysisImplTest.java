@@ -269,8 +269,8 @@ public class ForwardingAnalysisImplTest {
                         ImmutableMap.of(
                             P1,
                             AclIpSpace.rejecting(
-                                    new Prefix(P1.getEndIp(), Prefix.MAX_PREFIX_LENGTH))
-                                .thenPermitting(P1)
+                                    new Prefix(P1.getEndIp(), Prefix.MAX_PREFIX_LENGTH).toIpSpace())
+                                .thenPermitting(P1.toIpSpace())
                                 .build()))
                     .build()));
     Edge edge = new Edge(c1.getName(), i1.getName(), c2.getName(), i2.getName());
@@ -280,7 +280,10 @@ public class ForwardingAnalysisImplTest {
         ImmutableMap.of(
             c2.getName(),
             ImmutableMap.of(
-                i2.getName(), AclIpSpace.permitting(i2Ip).thenPermitting(P1.getEndIp()).build()));
+                i2.getName(),
+                AclIpSpace.permitting(i2Ip.toIpSpace())
+                    .thenPermitting(P1.getEndIp().toIpSpace())
+                    .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, IpSpace> result =
         forwardingAnalysisImpl.computeArpTrueEdgeDestIp(configurations, ribs);
@@ -322,8 +325,8 @@ public class ForwardingAnalysisImplTest {
                         ImmutableMap.of(
                             P1,
                             AclIpSpace.rejecting(
-                                    new Prefix(P1.getEndIp(), Prefix.MAX_PREFIX_LENGTH))
-                                .thenPermitting(P1)
+                                    new Prefix(P1.getEndIp(), Prefix.MAX_PREFIX_LENGTH).toIpSpace())
+                                .thenPermitting(P1.toIpSpace())
                                 .build()))
                     .build()));
     _routesWithNextHopIpArpTrue =
@@ -412,7 +415,10 @@ public class ForwardingAnalysisImplTest {
         ImmutableSortedMap.of(
             c1,
             ImmutableSortedMap.of(
-                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1, P2, P2)).build()));
+                v1,
+                MockRib.builder()
+                    .setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace(), P2, P2.toIpSpace()))
+                    .build()));
     _routesWithNextHop =
         ImmutableMap.of(
             c1,
@@ -443,9 +449,9 @@ public class ForwardingAnalysisImplTest {
     String v1 = "v1";
     String i1 = "i1";
     _neighborUnreachableArpDestIp =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getStartIp())));
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getStartIp().toIpSpace())));
     _neighborUnreachableArpNextHopIp =
-        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getEndIp())));
+        ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace())));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
         forwardingAnalysisImpl.computeNeighborUnreachable();
@@ -478,10 +484,10 @@ public class ForwardingAnalysisImplTest {
         ImmutableSortedMap.of(
             c1,
             ImmutableSortedMap.of(
-                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1)).build()));
+                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
     _routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
-    _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp()));
+    _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P1.getEndIp().toIpSpace()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
         forwardingAnalysisImpl.computeNeighborUnreachableArpDestIp(ribs);
@@ -517,7 +523,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableSortedMap.of(
             c1,
             ImmutableSortedMap.of(
-                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1)).build()));
+                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
     _routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(ifaceRoute))));
     _someoneReplies = ImmutableMap.of();
@@ -561,7 +567,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableSortedMap.of(
             c1,
             ImmutableSortedMap.of(
-                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1)).build()));
+                v1, MockRib.builder().setMatchingIps(ImmutableMap.of(P1, P1.toIpSpace())).build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, IpSpace>>> result =
         forwardingAnalysisImpl.computeNeighborUnreachableArpNextHopIp(ribs);
@@ -593,7 +599,10 @@ public class ForwardingAnalysisImplTest {
         MockRib.builder()
             .setMatchingIps(
                 ImmutableMap.of(
-                    P1, AclIpSpace.permitting(P1).build(), P2, AclIpSpace.permitting(P2).build()))
+                    P1,
+                    AclIpSpace.permitting(P1.toIpSpace()).build(),
+                    P2,
+                    AclIpSpace.permitting(P2.toIpSpace()).build()))
             .build();
     SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
         ImmutableSortedMap.of(c1, ImmutableSortedMap.of(v1, rib1));
@@ -768,7 +777,7 @@ public class ForwardingAnalysisImplTest {
     _routesWhereDstIpCanBeArpIp =
         ImmutableMap.of(c1, ImmutableMap.of(v1, ImmutableMap.of(i1, ImmutableSet.of(r1))));
     Edge e1 = new Edge(c1, i1, c2, i2);
-    _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp()));
+    _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp().toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     Map<String, Map<String, Fib>> fibs =
         ImmutableMap.of(
@@ -835,7 +844,7 @@ public class ForwardingAnalysisImplTest {
                                 i1,
                                 ImmutableMap.of(r1.getNextHopIp(), ImmutableSet.of(ifaceRoute)))))
                     .build()));
-    _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp()));
+    _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp().toIpSpace()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
         forwardingAnalysisImpl.computeRoutesWithNextHopIpArpFalse(fibs);
@@ -858,7 +867,8 @@ public class ForwardingAnalysisImplTest {
     Entry<String, Set<AbstractRoute>> routesWithNextHopByOutInterfaceEntry =
         Maps.immutableEntry(
             outInterface, ImmutableSet.of(nextHopIpRoute1, nextHopIpRoute2, ifaceRoute));
-    _someoneReplies = ImmutableMap.of(hostname, ImmutableMap.of(outInterface, P2.getStartIp()));
+    _someoneReplies =
+        ImmutableMap.of(hostname, ImmutableMap.of(outInterface, P2.getStartIp().toIpSpace()));
     Fib fib =
         MockFib.builder()
             .setNextHopInterfaces(
@@ -944,7 +954,7 @@ public class ForwardingAnalysisImplTest {
     String c2 = "c2";
     String i2 = "i2";
     Edge e1 = new Edge(c1, i1, c2, i2);
-    _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp()));
+    _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P2.getStartIp().toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     String v1 = "v1";
     AbstractRoute r1 = StaticRoute.builder().setNetwork(P1).setNextHopIp(P2.getStartIp()).build();
@@ -969,7 +979,7 @@ public class ForwardingAnalysisImplTest {
                                 i1,
                                 ImmutableMap.of(r2.getNextHopIp(), ImmutableSet.of(ifaceRoute)))))
                     .build()));
-    _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp()));
+    _someoneReplies = ImmutableMap.of(c1, ImmutableMap.of(i1, P2.getEndIp().toIpSpace()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<Edge, Set<AbstractRoute>> result =
         forwardingAnalysisImpl.computeRoutesWithNextHopIpArpTrue(fibs, topology);
@@ -985,7 +995,7 @@ public class ForwardingAnalysisImplTest {
     String c2 = "c2";
     String i2 = "i2";
     Edge e1 = new Edge(c1, i1, c2, i2);
-    _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P1));
+    _arpReplies = ImmutableMap.of(c2, ImmutableMap.of(i2, P1.toIpSpace()));
     Topology topology = new Topology(ImmutableSortedSet.of(e1));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, IpSpace>> result =
