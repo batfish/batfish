@@ -114,7 +114,7 @@ public class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
 
   @Override
   public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    return _namedIpSpaces.get(ipSpaceReference).accept(this);
+    return _namedIpSpaces.get(ipSpaceReference.getName()).accept(this);
   }
 
   @Override
