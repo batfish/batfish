@@ -30,6 +30,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
@@ -169,6 +170,14 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   @Override
   public List<StateParameter> visitNodeDropNullRoute(NodeDropNullRoute nodeDropNullRoute) {
     return ImmutableList.of(new StateParameter(nodeDropNullRoute.getHostname(), NODE));
+  }
+
+  @Override
+  public List<StateParameter> visitNodeInterfaceNeighborUnreachable(
+      NodeInterfaceNeighborUnreachable nodeIfaceNeighborUnreachable) {
+    return ImmutableList.of(
+        new StateParameter(nodeIfaceNeighborUnreachable.getHostname(), NODE),
+        new StateParameter(nodeIfaceNeighborUnreachable.getIface(), INTERFACE));
   }
 
   @Override
