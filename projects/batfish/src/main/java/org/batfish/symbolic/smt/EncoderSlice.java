@@ -1,5 +1,8 @@
 package org.batfish.symbolic.smt;
 
+import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
@@ -24,7 +27,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RoutingProtocol;
@@ -2452,8 +2454,7 @@ class EncoderSlice {
 
     if (_headerSpace.getDstIps() != null) {
       acc = mkFalse();
-      for (IpWildcard ipWildcard :
-          ((IpWildcardSetIpSpace) _headerSpace.getDstIps()).getWhitelist()) {
+      for (IpWildcard ipWildcard : asPositiveIpWildcards(_headerSpace.getDstIps())) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getDstIp(), ipWildcard);
         acc = mkOr(acc, bound);
       }
@@ -2462,8 +2463,7 @@ class EncoderSlice {
 
     if (_headerSpace.getNotDstIps() != null) {
       acc = mkTrue();
-      for (IpWildcard ipWildcard :
-          ((IpWildcardSetIpSpace) _headerSpace.getNotDstIps()).getWhitelist()) {
+      for (IpWildcard ipWildcard : asNegativeIpWildcards(_headerSpace.getNotDstIps())) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getDstIp(), ipWildcard);
         acc = mkAnd(acc, mkNot(bound));
       }
@@ -2472,8 +2472,7 @@ class EncoderSlice {
 
     if (_headerSpace.getSrcIps() != null) {
       acc = mkFalse();
-      for (IpWildcard ipWildcard :
-          ((IpWildcardSetIpSpace) _headerSpace.getSrcIps()).getWhitelist()) {
+      for (IpWildcard ipWildcard : asPositiveIpWildcards(_headerSpace.getSrcIps())) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getSrcIp(), ipWildcard);
         acc = mkOr(acc, bound);
       }
@@ -2482,8 +2481,7 @@ class EncoderSlice {
 
     if (_headerSpace.getNotSrcIps() != null) {
       acc = mkTrue();
-      for (IpWildcard ipWildcard :
-          ((IpWildcardSetIpSpace) _headerSpace.getNotSrcIps()).getWhitelist()) {
+      for (IpWildcard ipWildcard : asNegativeIpWildcards(_headerSpace.getNotSrcIps())) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getSrcIp(), ipWildcard);
         acc = mkAnd(acc, mkNot(bound));
       }
@@ -2492,8 +2490,7 @@ class EncoderSlice {
 
     if (_headerSpace.getSrcOrDstIps() != null) {
       acc = mkFalse();
-      for (IpWildcard ipWildcard :
-          ((IpWildcardSetIpSpace) _headerSpace.getSrcOrDstIps()).getWhitelist()) {
+      for (IpWildcard ipWildcard : asPositiveIpWildcards(_headerSpace.getSrcOrDstIps())) {
         BoolExpr bound1 = ipWildCardBound(_symbolicPacket.getDstIp(), ipWildcard);
         BoolExpr bound2 = ipWildCardBound(_symbolicPacket.getSrcIp(), ipWildcard);
         acc = mkOr(acc, bound1, bound2);

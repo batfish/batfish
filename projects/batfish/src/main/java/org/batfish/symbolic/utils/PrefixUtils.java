@@ -1,10 +1,11 @@
 package org.batfish.symbolic.utils;
 
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+
 import java.util.Collection;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 
 public class PrefixUtils {
@@ -16,7 +17,7 @@ public class PrefixUtils {
     if (h.getDstIps() == null) {
       return true;
     }
-    for (IpWildcard ipWildcard : ((IpWildcardSetIpSpace) h.getDstIps()).getWhitelist()) {
+    for (IpWildcard ipWildcard : asPositiveIpWildcards(h.getDstIps())) {
       Prefix p2 = ipWildcard.toPrefix();
       if (overlap(p, p2)) {
         return true;

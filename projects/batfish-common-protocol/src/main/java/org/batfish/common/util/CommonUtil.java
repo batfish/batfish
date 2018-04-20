@@ -87,6 +87,7 @@ import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Edge;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
@@ -95,6 +96,7 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecVpn;
@@ -105,6 +107,7 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
@@ -114,6 +117,28 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 public class CommonUtil {
+
+  public static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
+    if (ipSpace instanceof IpWildcardSetIpSpace) {
+      return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
+    } else if (ipSpace instanceof UniverseIpSpace) {
+      return ImmutableSortedSet.of();
+    } else {
+      throw new BatfishException(
+          String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
+    }
+  }
+
+  public static SortedSet<IpWildcard> asNegativeIpWildcards(IpSpace ipSpace) {
+    if (ipSpace instanceof IpWildcardSetIpSpace) {
+      return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
+    } else if (ipSpace instanceof EmptyIpSpace) {
+      return ImmutableSortedSet.of();
+    } else {
+      throw new BatfishException(
+          String.format("Cannot represent as SortedSet<IpWildcard>: %s", ipSpace));
+    }
+  }
 
   public static <M extends Map<?, ?>> M nullIfEmpty(M map) {
     return map == null ? null : map.isEmpty() ? null : map;

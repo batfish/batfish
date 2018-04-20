@@ -1,17 +1,19 @@
 package org.batfish.datamodel.questions.smt;
 
+import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 
@@ -143,8 +145,8 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_DST_IPS)
-  public IpSpace getDstIps() {
-    return _headerSpace.getDstIps();
+  public SortedSet<IpWildcard> getDstIps() {
+    return asPositiveIpWildcards(_headerSpace.getDstIps());
   }
 
   @JsonProperty(PROP_DST_PORTS)
@@ -188,8 +190,8 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_NOT_DST_IPS)
-  public IpSpace getNotDstIps() {
-    return _headerSpace.getNotDstIps();
+  public SortedSet<IpWildcard> getNotDstIps() {
+    return asNegativeIpWildcards(_headerSpace.getNotDstIps());
   }
 
   @JsonProperty(PROP_NOT_DST_PORTS)
@@ -218,8 +220,8 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_NOT_SRC_IPS)
-  public Set<IpWildcard> getNotSrcIps() {
-    return ((IpWildcardSetIpSpace) _headerSpace.getNotSrcIps()).getWhitelist();
+  public SortedSet<IpWildcard> getNotSrcIps() {
+    return asNegativeIpWildcards(_headerSpace.getNotSrcIps());
   }
 
   @JsonProperty(PROP_NOT_SRC_PORTS)
@@ -228,13 +230,13 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_SRC_IPS)
-  public IpSpace getSrcIps() {
-    return _headerSpace.getSrcIps();
+  public SortedSet<IpWildcard> getSrcIps() {
+    return asPositiveIpWildcards(_headerSpace.getSrcIps());
   }
 
   @JsonProperty(PROP_SRC_OR_DST_IPS)
-  public IpSpace getSrcOrDstIps() {
-    return _headerSpace.getSrcOrDstIps();
+  public SortedSet<IpWildcard> getSrcOrDstIps() {
+    return asPositiveIpWildcards(_headerSpace.getSrcOrDstIps());
   }
 
   @JsonProperty(PROP_SRC_OR_DST_PORTS)
@@ -353,7 +355,7 @@ public class HeaderQuestion extends Question {
       if (getNotIpProtocols() != null && getNotIpProtocols().size() != 0) {
         retString += String.format(", notIpProtocols=%s", getNotIpProtocols().toString());
       }
-      if (getNotSrcIps() != null && getNotSrcIps().size() != 0) {
+      if (getNotSrcIps() != null) {
         retString += String.format(", notSrcIps=%s", getNotSrcIps());
       }
       if (getNotSrcPorts() != null && getNotSrcPorts().size() != 0) {
