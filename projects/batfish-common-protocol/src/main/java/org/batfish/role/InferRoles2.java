@@ -417,7 +417,7 @@ public class InferRoles2 implements Callable<Map<String, NodeRoleDimension>> {
     String[] roleParts = role.split("-");
     String result = regex;
     for (String rolePart : roleParts) {
-      result = result.replaceFirst("\\(.*\\)", rolePart);
+      result = result.replaceFirst("\\([^\\)]*\\)", rolePart);
     }
     return result;
   }
