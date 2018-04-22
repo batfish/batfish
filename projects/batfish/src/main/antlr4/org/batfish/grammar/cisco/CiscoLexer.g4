@@ -3802,6 +3802,11 @@ ESP_SHA256_HMAC
    'esp-sha256-hmac'
 ;
 
+ESP_SHA512_HMAC
+:
+   'esp-sha512-hmac'
+;
+
 ESSID
 :
    'essid'
@@ -5074,6 +5079,11 @@ IGRP
 IGNORE
 :
    'ignore'
+;
+
+IGNORE_ATTACHED_BIT
+:
+   'ignore-attached-bit'
 ;
 
 IGP
@@ -12286,7 +12296,19 @@ YELLOW
 ZONE
 :
    'zone'
-; // Other Tokens
+;
+
+ZONE_MEMBER
+:
+   'zone-member'
+;
+
+ZONE_PAIR
+:
+  'zone-pair'
+;
+
+/* Other Tokens */
 
 MULTICONFIGPART
 :

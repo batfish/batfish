@@ -29,6 +29,12 @@ object-group network dns_servers
 object-group network ntp_servers
  description External NTP Servers
  network-object host 1.1.1.1
+policy-map type inspect pminspect
+ class type inspect cinspect
+  inspect
+ class class-default
+  drop log
+  pass
 policy-map type network-qos default-ploosh-policy
  description gawff
   class type network-qos bippetyboo-drop
