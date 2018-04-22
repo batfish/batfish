@@ -1187,7 +1187,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private IpsecProtocol toProtocol(Ipsec_authenticationContext ctx) {
-    if (ctx.ESP_MD5_HMAC() != null || ctx.ESP_SHA256_HMAC() != null || ctx.ESP_SHA_HMAC() != null) {
+    if (ctx.ESP_MD5_HMAC() != null
+        || ctx.ESP_SHA256_HMAC() != null
+        || ctx.ESP_SHA512_HMAC() != null
+        || ctx.ESP_SHA_HMAC() != null) {
       return IpsecProtocol.ESP;
     } else {
       throw convError(IpsecProtocol.class, ctx);
@@ -2912,7 +2915,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitExtended_access_list_tail(Extended_access_list_tailContext ctx) {
-
+    if (ctx.ogs != null) {
+      /* TODO: support reference to service object-group */
+      return;
+    }
     LineAction action = toLineAction(ctx.ala);
     IpProtocol protocol = toIpProtocol(ctx.prot);
     Ip srcIp = getIp(ctx.srcipr);
@@ -6599,6 +6605,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return IpsecAuthenticationAlgorithm.HMAC_SHA1_96;
     } else if (ctx.ESP_SHA256_HMAC() != null) {
       return IpsecAuthenticationAlgorithm.HMAC_SHA_256_128;
+    } else if (ctx.ESP_SHA512_HMAC() != null) {
+      return IpsecAuthenticationAlgorithm.HMAC_SHA_512;
     } else {
       throw convError(IpsecAuthenticationAlgorithm.class, ctx);
     }
@@ -6746,7 +6754,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private EncryptionAlgorithm toEncryptionAlgorithm(Ike_encryptionContext ctx) {
     if (ctx.AES() != null) {
-      return EncryptionAlgorithm.AES_128_CBC;
+      int strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
+      switch (strength) {
+        case 128:
+          return EncryptionAlgorithm.AES_128_CBC;
+        case 192:
+          return EncryptionAlgorithm.AES_192_CBC;
+        case 256:
+          return EncryptionAlgorithm.AES_256_CBC;
+        default:
+          throw convError(EncryptionAlgorithm.class, ctx);
+      }
     } else if (ctx.THREE_DES() != null) {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {

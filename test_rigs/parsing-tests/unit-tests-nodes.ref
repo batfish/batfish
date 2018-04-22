@@ -3975,6 +3975,23 @@
           }
         }
       },
+      "cisco-zone" : {
+        "configurationFormat" : "CISCO_NX",
+        "name" : "cisco-zone",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "cisco" : {
+            "hostname" : "cisco-zone"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "cisco_aaa" : {
         "configurationFormat" : "CISCO_NX",
         "name" : "cisco_aaa",
@@ -5399,6 +5416,18 @@
           "IPSEC_AES_256" : {
             "name" : "IPSEC_AES_256",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "protocol" : "ESP"
+          },
+          "cipts1" : {
+            "name" : "cipts1",
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "protocol" : "ESP"
+          },
+          "cipts2" : {
+            "name" : "cipts2",
+            "authenticationAlgorithm" : "HMAC_SHA_512",
             "encryptionAlgorithm" : "AES_256_CBC",
             "protocol" : "ESP"
           }
@@ -7068,7 +7097,7 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
+            "isisL1InterfaceMode" : "passive",
             "isisL2InterfaceMode" : "passive",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -7099,7 +7128,7 @@
               "GigabitEthernet0/0/1"
             ],
             "isisCost" : 15,
-            "isisL1InterfaceMode" : "unset",
+            "isisL1InterfaceMode" : "passive",
             "isisL2InterfaceMode" : "passive",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -7127,7 +7156,7 @@
             "declaredNames" : [
               "GigabitEthernet0/1"
             ],
-            "isisL1InterfaceMode" : "unset",
+            "isisL1InterfaceMode" : "active",
             "isisL2InterfaceMode" : "active",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -7154,7 +7183,7 @@
             "declaredNames" : [
               "HundredGigE0/0/0/0.2302"
             ],
-            "isisL1InterfaceMode" : "unset",
+            "isisL1InterfaceMode" : "active",
             "isisL2InterfaceMode" : "active",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -7172,6 +7201,33 @@
             "type" : "PHYSICAL",
             "vrf" : "default"
           },
+          "Loopback0" : {
+            "name" : "Loopback0",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E12,
+            "declaredNames" : [
+              "Loopback0"
+            ],
+            "isisL1InterfaceMode" : "passive",
+            "isisL2InterfaceMode" : "passive",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "proxyArp" : true,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "LOOPBACK",
+            "vrf" : "default"
+          },
           "Serial4/0" : {
             "name" : "Serial4/0",
             "accessVlan" : 0,
@@ -7181,7 +7237,7 @@
             "declaredNames" : [
               "Serial4/0"
             ],
-            "isisL1InterfaceMode" : "unset",
+            "isisL1InterfaceMode" : "active",
             "isisL2InterfaceMode" : "active",
             "mtu" : 1500,
             "nativeVlan" : 1,
@@ -7223,11 +7279,12 @@
               "GigabitEthernet0/0/1",
               "GigabitEthernet0/1",
               "HundredGigabitEthernet0/0/0/0.2302",
+              "Loopback0",
               "Serial4/0"
             ],
             "isisProcess" : {
-              "level" : "LEVEL_2",
-              "netAddress" : "49.2152.1371.6403.9016.1371.6403.9016.00"
+              "level" : "LEVEL_1_2",
+              "netAddress" : "12.1234.1234.1234.1234.12"
             }
           }
         }
