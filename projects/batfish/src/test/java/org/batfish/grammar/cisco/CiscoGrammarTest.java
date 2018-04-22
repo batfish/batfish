@@ -197,6 +197,11 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosAclObjectGroup() throws IOException {
+    parseConfig("ios-acl-object-group");
+  }
+
+  @Test
   public void testIosObjectGroupNetwork() throws IOException {
     Configuration c = parseConfig("ios-object-group-network");
     Ip ogn1TestIp = new Ip("1.128.0.0");
@@ -210,6 +215,11 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
     assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
+  }
+
+  @Test
+  public void testIosObjectGroupService() throws IOException {
+    parseConfig("ios-object-group-service");
   }
 
   @Test

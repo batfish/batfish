@@ -698,40 +698,37 @@ kk_null
 ike_encryption
 :
    (
-      AES
-      | THREE_DES
+      AES strength = DEC?
    )
+   | THREE_DES
 ;
 
 ike_encryption_aruba
 :
-   (
-      AES128
-      | AES192
-      | AES256
-   )
+   AES128
+   | AES192
+   | AES256
 ;
 
 ipsec_authentication
 :
-   (
-      ESP_MD5_HMAC
-      | ESP_SHA_HMAC
-      | ESP_SHA256_HMAC
-   )
+   ESP_MD5_HMAC
+   | ESP_SHA_HMAC
+   | ESP_SHA256_HMAC
+   | ESP_SHA512_HMAC
 ;
 
 ipsec_encryption
 :
    (
-      (ESP_AES strength = DEC?)
-      | ESP_DES
-      | ESP_3DES
-      | ESP_GCM
-      | ESP_GMAC
-      | ESP_NULL
-      | ESP_SEAL
+      ESP_AES strength = DEC?
    )
+   | ESP_DES
+   | ESP_3DES
+   | ESP_GCM
+   | ESP_GMAC
+   | ESP_NULL
+   | ESP_SEAL
 ;
 
 s_crypto
