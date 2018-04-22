@@ -90,6 +90,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -1015,7 +1016,11 @@ public class CommonUtil {
         initPrivateIpsByPublicIp(configurations);
     for (Configuration c : configurations.values()) {
       for (IpsecVpn ipsecVpn : c.getIpsecVpns().values()) {
-        Ip remoteIp = ipsecVpn.getIkeGateway().getAddress();
+        IkeGateway ikeGateway = ipsecVpn.getIkeGateway();
+        if (ikeGateway == null) {
+          continue;
+        }
+        Ip remoteIp = ikeGateway.getAddress();
         vpnRemoteIps.put(ipsecVpn, remoteIp);
         Set<InterfaceAddress> externalAddresses =
             ipsecVpn.getIkeGateway().getExternalInterface().getAllAddresses();
