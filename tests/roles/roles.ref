@@ -19,6 +19,10 @@
         {
           "name" : "dist",
           "regex" : ".*dist.*"
+        },
+        {
+          "name" : "host",
+          "regex" : ".*host.*"
         }
       ],
       "type" : "CUSTOM"
@@ -44,6 +48,10 @@
       "dist" : [
         "as2dist1",
         "as2dist2"
+      ],
+      "host" : [
+        "host1",
+        "host2"
       ]
     }
   }

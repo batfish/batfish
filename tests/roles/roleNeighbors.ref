@@ -59,11 +59,19 @@
         "role2" : "dist"
       },
       {
+        "role1" : "dept",
+        "role2" : "host"
+      },
+      {
         "role1" : "dist",
         "role2" : "core"
       },
       {
         "role1" : "dist",
+        "role2" : "dept"
+      },
+      {
+        "role1" : "host",
         "role2" : "dept"
       }
     ],

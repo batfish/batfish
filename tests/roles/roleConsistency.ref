@@ -44,6 +44,14 @@
         ],
         "name" : "LoggingServers",
         "role" : "dist"
+      },
+      {
+        "conformers" : [
+          "host1",
+          "host2"
+        ],
+        "name" : "LoggingServers",
+        "role" : "host"
       }
     ]
   }

@@ -3121,42 +3121,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  //  /**
-  //   * Set the roles of each configuration. Use an explicitly provided {@link NodeRoleSpecifier}
-  // if
-  //   * one exists; otherwise use the results of our node-role inference. Also set the inferred
-  // role
-  //   * dimensions of each node, based on its name.
-  //   */
-  //  private void processNodeRoles(
-  //      Map<String, Configuration> configurations, ValidateEnvironmentAnswerElement veae) {
-  //    NodeRoleSpecifier specifier = getNodeRoleSpecifier(false);
-  //    SortedMap<String, SortedSet<String>> nodeRoles =
-  //        specifier.createNodeRolesMap(configurations.keySet());
-  //    for (Entry<String, SortedSet<String>> nodeRolesEntry : nodeRoles.entrySet()) {
-  //      String hostname = nodeRolesEntry.getKey();
-  //      Configuration config = configurations.get(hostname);
-  //      if (config == null) {
-  //        veae.setValid(false);
-  //        veae.getUndefinedNodeRoleSpecifierNodes().add(hostname);
-  //      } else {
-  //        SortedSet<String> roles = nodeRolesEntry.getValue();
-  //        // config.setRoles(roles);
-  //      }
-  //    }
-  //    Map<String, NavigableMap<Integer, String>> roleDimensions =
-  //        InferRoles.getRoleDimensions(configurations);
-  //    for (Map.Entry<String, NavigableMap<Integer, String>> entry : roleDimensions.entrySet()) {
-  //      String nodeName = entry.getKey();
-  //      Configuration config = configurations.get(nodeName);
-  //      if (config == null) {
-  //        veae.setValid(false);
-  //      } else {
-  //        // config.setRoleDimensions(entry.getValue());
-  //      }
-  //    }
-  //  }
-
   private Topology processTopologyFile(Path topologyFilePath) {
     Topology topology = parseTopology(topologyFilePath);
     return topology;

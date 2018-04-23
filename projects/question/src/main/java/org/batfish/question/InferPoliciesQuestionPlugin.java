@@ -340,7 +340,8 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       innerQ.setHypothesis(hypothesis);
       innerQ.setVerbose(true);
 
-      PerRoleQuestion outerQ = new PerRoleQuestion(null, innerQ, null, null);
+      InferPoliciesQuestion question = (InferPoliciesQuestion) _question;
+      PerRoleQuestion outerQ = new PerRoleQuestion(null, innerQ, question.getRoleDimension(), null);
 
       PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
       PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
@@ -376,6 +377,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     private <T extends RoleBasedOutlierSet>
         List<AbstractRoleConsistencyQuestion> policiesAboveThreshold(
             Multimap<String, T> outliersPerPropertyName, OutliersHypothesis hypothesis) {
+      InferPoliciesQuestion question = (InferPoliciesQuestion) _question;
       List<AbstractRoleConsistencyQuestion> policies = new LinkedList<>();
       for (String name : outliersPerPropertyName.keySet()) {
         Collection<T> outlierSets = outliersPerPropertyName.get(name);
@@ -387,11 +389,13 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
             case SAME_DEFINITION:
             case SAME_NAME:
               NamedStructureRoleConsistencyQuestion policy =
-                  new NamedStructureRoleConsistencyQuestion(name, hypothesis, null);
+                  new NamedStructureRoleConsistencyQuestion(
+                      name, hypothesis, question.getRoleDimension());
               policies.add(policy);
               break;
             case SAME_SERVERS:
-              RoleConsistencyQuestion rcpolicy = new RoleConsistencyQuestion(null, name);
+              RoleConsistencyQuestion rcpolicy =
+                  new RoleConsistencyQuestion(question.getRoleDimension(), name);
               policies.add(rcpolicy);
               break;
             default:

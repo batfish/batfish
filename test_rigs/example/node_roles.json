@@ -18,6 +18,10 @@
 				{
 					"name": "dist",
 					"regex": ".*dist.*"
+				},
+				{
+					"name": "host",
+					"regex": ".*host.*"
 				}
 			]
 		}
