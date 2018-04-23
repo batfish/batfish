@@ -98,6 +98,7 @@ import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NamedPort;
@@ -119,8 +120,11 @@ import org.skyscreamer.jsonassert.JSONAssert;
 public class CommonUtil {
 
   public static SortedSet<IpWildcard> asPositiveIpWildcards(IpSpace ipSpace) {
+    // TODO use an IpSpace visitor
     if (ipSpace == null) {
       return null;
+    } else if (ipSpace instanceof IpWildcardIpSpace) {
+      return ImmutableSortedSet.of(((IpWildcardIpSpace) ipSpace).getIpWildcard());
     } else if (ipSpace instanceof IpWildcardSetIpSpace) {
       return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
     } else if (ipSpace instanceof UniverseIpSpace) {
@@ -132,8 +136,11 @@ public class CommonUtil {
   }
 
   public static SortedSet<IpWildcard> asNegativeIpWildcards(IpSpace ipSpace) {
+    // TODO use an IpSpace visitor
     if (ipSpace == null) {
       return null;
+    } else if (ipSpace instanceof IpWildcardIpSpace) {
+      return ImmutableSortedSet.of(((IpWildcardIpSpace) ipSpace).getIpWildcard());
     } else if (ipSpace instanceof IpWildcardSetIpSpace) {
       return ((IpWildcardSetIpSpace) ipSpace).getWhitelist();
     } else if (ipSpace instanceof EmptyIpSpace) {

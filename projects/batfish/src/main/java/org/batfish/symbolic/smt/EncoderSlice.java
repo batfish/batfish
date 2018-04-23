@@ -3,6 +3,7 @@ package org.batfish.symbolic.smt;
 import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
 import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 
+import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
@@ -33,19 +34,20 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.datamodel.visitors.IpSpaceMayIntersectWildcard;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.collections.Table2;
-import org.batfish.symbolic.utils.PrefixUtils;
 
 /**
  * A class responsible for building a symbolic encoding of the network for a particular packet. The
@@ -406,7 +408,11 @@ class EncoderSlice {
    * Checks if a prefix could possible be relevant for encoding
    */
   boolean relevantPrefix(Prefix p) {
-    return PrefixUtils.overlap(_headerSpace, p);
+    if (_headerSpace.getDstIps() == null) {
+      return true;
+    }
+    return new IpSpaceMayIntersectWildcard(new IpWildcard(p), ImmutableMap.of())
+        .visit(_headerSpace.getDstIps());
   }
 
   /*
@@ -2449,7 +2455,13 @@ class EncoderSlice {
    * This can include restrictions on any packet field such as dstIp, protocol etc.
    */
   private void addHeaderSpaceConstraint() {
+    Context ctx = _encoder.getCtx();
+    add(
+        new IpAccessListToBoolExpr(ctx, _symbolicPacket)
+            .visitMatchHeaderSpace(new MatchHeaderSpace(_headerSpace)));
+  }
 
+  private void addHeaderSpaceConstraint_old() {
     BoolExpr acc;
 
     if (_headerSpace.getDstIps() != null) {

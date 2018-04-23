@@ -42,6 +42,10 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     _packet = packet;
   }
 
+  private BoolExpr not(BoolExpr expr) {
+    return expr == null ? null : _context.mkNot(expr);
+  }
+
   private BoolExpr toBoolExpr(AclLineMatchExpr matchExpr) {
     return matchExpr.accept(this);
   }
@@ -155,15 +159,11 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
     forbidHeaderSpaceField("ecns", headerSpace.getEcns());
     forbidHeaderSpaceField("fragmentOffsets", headerSpace.getFragmentOffsets());
     forbidHeaderSpaceField("notDscps", headerSpace.getNotDscps());
-    forbidHeaderSpaceField("notDstIps", headerSpace.getNotDstIps());
-    forbidHeaderSpaceField("notDstPorts", headerSpace.getNotDstPorts());
     forbidHeaderSpaceField("notEcns", headerSpace.getNotEcns());
     forbidHeaderSpaceField("notFragmentOffsets", headerSpace.getNotFragmentOffsets());
     forbidHeaderSpaceField("notIcmpCodes", headerSpace.getNotIcmpCodes());
     forbidHeaderSpaceField("notIcmpTypes", headerSpace.getNotIcmpTypes());
     forbidHeaderSpaceField("notIpProtocols", headerSpace.getNotIpProtocols());
-    forbidHeaderSpaceField("notSrcIps", headerSpace.getNotSrcIps());
-    forbidHeaderSpaceField("notSrcPorts", headerSpace.getNotSrcPorts());
     forbidHeaderSpaceField("srcOrDstIps", headerSpace.getSrcOrDstIps());
     forbidHeaderSpaceField("srcOrDstPorts", headerSpace.getSrcOrDstPorts());
     forbidHeaderSpaceField("srcOrDstProtocols", headerSpace.getSrcOrDstProtocols());
@@ -175,6 +175,10 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
             toBoolExpr(headerSpace.getSrcIps(), _packet.getSrcIp()),
             toBoolExpr(headerSpace.getDstPorts(), _packet.getDstPort()),
             toBoolExpr(headerSpace.getSrcPorts(), _packet.getSrcPort()),
+            not(toBoolExpr(headerSpace.getNotDstIps(), _packet.getDstIp())),
+            not(toBoolExpr(headerSpace.getNotDstPorts(), _packet.getDstPort())),
+            not(toBoolExpr(headerSpace.getNotSrcIps(), _packet.getSrcIp())),
+            not(toBoolExpr(headerSpace.getSrcPorts(), _packet.getSrcPort())),
             toBoolExpr(headerSpace.getTcpFlags()),
             toBoolExpr(headerSpace.getIcmpCodes(), _packet.getIcmpCode()),
             toBoolExpr(headerSpace.getIcmpTypes(), _packet.getIcmpType()),
