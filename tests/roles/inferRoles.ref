@@ -8,6 +8,9 @@
       "roleDimensions" : [
         {
           "name" : "auto0",
+          "roleRegexes" : [
+            "\\p{Alnum}+\\Q-\\E(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+          ],
           "roles" : [
             {
               "name" : "border",
