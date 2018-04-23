@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
@@ -25,7 +25,6 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NeighborType;
-import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
@@ -41,6 +40,7 @@ import org.batfish.datamodel.collections.VerboseOspfEdge;
 import org.batfish.datamodel.collections.VerboseRipEdge;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.role.NodeRoleDimension;
 
 @AutoService(Plugin.class)
 public class NeighborsQuestionPlugin extends QuestionPlugin {
@@ -439,18 +439,17 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       NeighborsAnswerElement answerElement = new NeighborsAnswerElement();
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(configurations);
-      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(configurations);
+      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
+      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
 
       if (question.getStyle() == EdgeStyle.ROLE) {
-        NodeRoleSpecifier roleSpecifier = question.getRoleSpecifier();
-        if (roleSpecifier != null) {
-          _nodeRolesMap = roleSpecifier.createNodeRolesMap(configurations.keySet());
+        NodeRoleDimension roleDimension =
+            _batfish.getNodeRoleDimension(question.getRoleDimension());
+        if (roleDimension != null) {
+          _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
         } else {
-          _nodeRolesMap = new TreeMap<>();
-          for (Map.Entry<String, Configuration> entry : configurations.entrySet()) {
-            _nodeRolesMap.put(entry.getKey(), entry.getValue().getRoles());
-          }
+          throw new IllegalArgumentException(
+              "Role dimension not found: " + question.getRoleDimension());
         }
       }
 
@@ -800,25 +799,33 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE2_REGEX = "node2Regex";
 
-    private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
+    private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
     private static final String PROP_STYLE = "style";
 
-    private SortedSet<NeighborType> _neighborTypes;
+    @Nonnull private final SortedSet<NeighborType> _neighborTypes;
 
-    private NodesSpecifier _node1Regex;
+    @Nonnull private final NodesSpecifier _node1Regex;
 
-    private NodesSpecifier _node2Regex;
+    @Nonnull private final NodesSpecifier _node2Regex;
 
-    private NodeRoleSpecifier _roleSpecifier;
+    @Nullable private final String _roleDimension;
 
-    private EdgeStyle _style;
+    @Nonnull private final EdgeStyle _style;
 
-    public NeighborsQuestion() {
-      _node1Regex = NodesSpecifier.ALL;
-      _node2Regex = NodesSpecifier.ALL;
-      _neighborTypes = new TreeSet<>();
-      _style = EdgeStyle.SUMMARY;
+    @JsonCreator
+    public NeighborsQuestion(
+        @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier nodes1,
+        @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier nodes2,
+        @JsonProperty(PROP_NEIGHBOR_TYPES) SortedSet<NeighborType> neighborTypes,
+        @JsonProperty(PROP_STYLE) EdgeStyle style,
+        @JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
+      _node1Regex = nodes1 == null ? NodesSpecifier.ALL : nodes1;
+      _node2Regex = nodes2 == null ? NodesSpecifier.ALL : nodes2;
+      _neighborTypes = neighborTypes == null ? new TreeSet<>() : neighborTypes;
+      _style = style == null ? EdgeStyle.SUMMARY : style;
+      _roleDimension =
+          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
     }
 
     @Override
@@ -846,9 +853,9 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       return _node2Regex;
     }
 
-    @JsonProperty(PROP_ROLE_SPECIFIER)
-    public NodeRoleSpecifier getRoleSpecifier() {
-      return _roleSpecifier;
+    @JsonProperty(PROP_ROLE_DIMENSION)
+    public String getRoleDimension() {
+      return _roleDimension;
     }
 
     @JsonProperty(PROP_STYLE)
@@ -880,31 +887,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
         }
       }
     }
-
-    @JsonProperty(PROP_NEIGHBOR_TYPES)
-    public void setNeighborTypes(SortedSet<NeighborType> neighborTypes) {
-      _neighborTypes = neighborTypes;
-    }
-
-    @JsonProperty(PROP_NODE1_REGEX)
-    public void setNode1Regex(NodesSpecifier regex) {
-      _node1Regex = regex;
-    }
-
-    @JsonProperty(PROP_NODE2_REGEX)
-    public void setNode2Regex(NodesSpecifier regex) {
-      _node2Regex = regex;
-    }
-
-    @JsonProperty(PROP_ROLE_SPECIFIER)
-    public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
-      _roleSpecifier = roleSpecifier;
-    }
-
-    @JsonProperty(PROP_STYLE)
-    public void setStyle(EdgeStyle style) {
-      _style = style;
-    }
   }
 
   @Override
@@ -914,6 +896,6 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new NeighborsQuestion();
+    return new NeighborsQuestion(null, null, null, null, null);
   }
 }

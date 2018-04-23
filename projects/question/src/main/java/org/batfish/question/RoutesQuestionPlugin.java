@@ -336,8 +336,7 @@ public class RoutesQuestionPlugin extends QuestionPlugin {
     @Override
     public RoutesAnswerElement answer() {
       RoutesQuestion question = (RoutesQuestion) _question;
-      Set<String> includeNodes =
-          question.getNodeRegex().getMatchingNodes(_batfish.loadConfigurations());
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
       RoutesAnswerElement answerElement;
       RoutesAnswerElement environmentAnswerElement = null;
       RoutesAnswerElement batfishAnswerElement = null;

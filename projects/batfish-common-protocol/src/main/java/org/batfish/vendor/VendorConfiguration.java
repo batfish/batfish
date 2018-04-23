@@ -75,8 +75,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     return _overlayConfiguration;
   }
 
-  public abstract SortedSet<String> getRoles();
-
   public abstract Set<String> getUnimplementedFeatures();
 
   public boolean getUnrecognized() {
@@ -159,8 +157,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   public void setOverlayConfiguration(VendorConfiguration overlayConfiguration) {
     _overlayConfiguration = overlayConfiguration;
   }
-
-  public abstract void setRoles(SortedSet<String> roles);
 
   public void setUnrecognized(boolean unrecognized) {
     _unrecognized = unrecognized;

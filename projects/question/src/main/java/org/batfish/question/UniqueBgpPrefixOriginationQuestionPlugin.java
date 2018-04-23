@@ -68,7 +68,7 @@ public class UniqueBgpPrefixOriginationQuestionPlugin extends QuestionPlugin {
       UniqueBgpPrefixOriginationAnswerElement answerElement =
           new UniqueBgpPrefixOriginationAnswerElement();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
       _batfish.initBgpOriginationSpaceExplicit(configurations);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String node1 = e.getKey();

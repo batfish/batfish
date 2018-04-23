@@ -93,7 +93,7 @@ public class SelfAdjacenciesQuestionPlugin extends QuestionPlugin {
 
       SelfAdjacenciesAnswerElement answerElement = new SelfAdjacenciesAnswerElement();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
       configurations.forEach(
           (hostname, c) -> {
             if (includeNodes.contains(hostname)) {
