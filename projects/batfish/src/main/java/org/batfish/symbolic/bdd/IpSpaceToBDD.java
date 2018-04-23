@@ -15,7 +15,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
-import org.batfish.symbolic.bdd.BDDInteger;
 
 public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 

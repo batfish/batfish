@@ -116,7 +116,12 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    return _bddOps.and(andMatchExpr.getConjuncts().stream().map(this::visit).collect(ImmutableList.toImmutableList()));
+    return _bddOps.and(
+        andMatchExpr
+            .getConjuncts()
+            .stream()
+            .map(this::visit)
+            .collect(ImmutableList.toImmutableList()));
   }
 
   @Override
