@@ -8,6 +8,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Date;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -113,10 +115,12 @@ public class NodeRolesData {
   public static NodeRoleDimension getNodeRoleDimensionByName(Path dataPath, String dimension)
       throws IOException {
     NodeRolesData data = read(dataPath);
-    return data._roleDimensions
-        .stream()
-        .filter(d -> d.getName().equals(dimension))
-        .findFirst()
-        .get();
+    Optional<NodeRoleDimension> opt =
+        data._roleDimensions.stream().filter(d -> d.getName().equals(dimension)).findFirst();
+    if (opt.isPresent()) {
+      return opt.get();
+    } else {
+      throw new NoSuchElementException(String.format("Role dimension '%s' not found", dimension));
+    }
   }
 }
