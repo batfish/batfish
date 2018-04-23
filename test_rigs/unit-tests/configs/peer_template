@@ -1,6 +1,8 @@
 !
 hostname peer_template
 !
+feature bgp
+!
 router bgp 64601
   address-family ipv4 unicast
     network 10.98.25.0/25

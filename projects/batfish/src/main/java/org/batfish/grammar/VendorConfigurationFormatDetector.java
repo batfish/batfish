@@ -46,14 +46,9 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)");
   private static final Pattern CISCO_STYLE_ACL_PATTERN =
       Pattern.compile("(?m)(^(ip )?access-list.*$)");
-  private static final Pattern IOS_BOOTFLASH_PATTERN = Pattern.compile("bootflash:(asr|cat)\\d+");
-  private static final Pattern NEIGHBOR_ACTIVATE_PATTERN =
-      Pattern.compile("(?m)^ *neighbor.*activate$");
-  private static final Pattern NEIGHBOR_PEER_GROUP_MATCHER =
-      Pattern.compile("(?m)^ *neighbor.*peer-group$");
   private static final Pattern NEXUS_COMMIT_LINE_PATTERN = Pattern.compile("(?m)^ *commit *$");
   private static final Pattern NEXUS_FEATURE_LINE_PATTERN =
-      Pattern.compile("(?m)^ *(no)?  *feature  *[^ ].*$");
+      Pattern.compile("(?m)^\\s*(no\\s*)?feature\\s+[^\\s+].*$");
   private static final Pattern NEXUS_BOOTFLASH_PATTERN = Pattern.compile("bootflash:(n\\d+|nxos)");
 
   // checkJuniper patterns
@@ -130,14 +125,7 @@ public final class VendorConfigurationFormatDetector {
     if (fileTextMatches(CISCO_LIKE_PATTERN)
         || _firstChar == '!'
         || fileTextMatches(CISCO_STYLE_ACL_PATTERN)) {
-      if (_fileText.contains("exit-address-family")
-          || fileTextMatches(NEIGHBOR_ACTIVATE_PATTERN)
-          || fileTextMatches(NEIGHBOR_PEER_GROUP_MATCHER)
-          || fileTextMatches(IOS_BOOTFLASH_PATTERN)) {
-        return ConfigurationFormat.CISCO_IOS;
-      } else {
-        return ConfigurationFormat.CISCO_NX;
-      }
+      return ConfigurationFormat.CISCO_IOS;
     } else if (fileTextMatches(NEXUS_COMMIT_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
     }

@@ -90,12 +90,13 @@
             "            IP_ADDRESS:'10.20.255.1'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
-            "        (neighbor_block_rb_stanza",
+            "        (neighbor_flat_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.10.20.1'  <== mode:M_NEIGHBOR",
-            "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "          DEC:'10'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          (remote_as_bgp_tail",
+            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -2183,12 +2184,13 @@
             "            (null_rest_of_line",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "      (router_bgp_stanza_tail",
-            "        (neighbor_block_rb_stanza",
+            "        (neighbor_flat_rb_stanza",
             "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
             "          IP_ADDRESS:'10.10.30.1'  <== mode:M_NEIGHBOR",
-            "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
-            "          DEC:'10'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          (remote_as_bgp_tail",
+            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         }
