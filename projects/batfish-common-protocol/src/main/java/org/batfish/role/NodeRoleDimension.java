@@ -1,65 +1,145 @@
 package org.batfish.role;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import java.util.Map;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-import org.batfish.common.BatfishException;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-public class NodeRoleDimension {
+public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
 
-  private Map<String, NodeRole> _nodeRoles;
-
-  @JsonCreator
-  public NodeRoleDimension(Map<String, NodeRole> nodeRoles) {
-    _nodeRoles = nodeRoles;
+  public enum Type {
+    AUTO,
+    CUSTOM
   }
 
+  public static final String AUTO_DIMENSION_PREFIX = "auto";
+
+  public static final String AUTO_DIMENSION_PRIMARY = "auto0";
+
+  private static final String PROP_NAME = "name";
+
+  private static final String PROP_ROLES = "roles";
+
+  private static final String PROP_ROLE_REGEXES = "roleRegexes";
+
+  private static final String PROP_TYPE = "type";
+
+  @Nonnull private String _name;
+
+  /**
+   * an ordered list of regexes used to identify roles from node names. each regex in regexes has at
+   * least one group in it that locates the role name within a node name. there are multiple regexes
+   * to handle node names that have different formats. this value is usually populated by auto role
+   * inferences and may null for custom role dimensions.
+   */
+  @Nullable private List<String> _roleRegexes;
+
+  @Nonnull private SortedSet<NodeRole> _roles;
+
+  @Nonnull private Type _type;
+
+  @JsonCreator
+  public NodeRoleDimension(
+      @Nonnull @JsonProperty(PROP_NAME) String name,
+      @Nonnull @JsonProperty(PROP_ROLES) SortedSet<NodeRole> roles,
+      @Nullable @JsonProperty(PROP_TYPE) Type type,
+      @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes) {
+    _name = name;
+    _roles = roles;
+    _type = type == null ? Type.CUSTOM : type;
+    _roleRegexes = roleRegexes;
+    if (_type == Type.CUSTOM && _name.startsWith(AUTO_DIMENSION_PREFIX)) {
+      throw new IllegalArgumentException(
+          "Name for a CUSTOM role dimension cannot begin with: " + AUTO_DIMENSION_PREFIX);
+    }
+    if (_type == Type.AUTO && !_name.startsWith(AUTO_DIMENSION_PREFIX)) {
+      throw new IllegalArgumentException(
+          "Name for a AUTO role dimension must begin with: " + AUTO_DIMENSION_PREFIX);
+    }
+  }
+
+  @Override
+  public int compareTo(NodeRoleDimension o) {
+    return _name.compareTo(o._name);
+  }
+
+  /** If names are equal the NodeRoleDimension objects are considered equal */
   @Override
   public boolean equals(Object o) {
     if (o == null || !(o instanceof NodeRoleDimension)) {
       return false;
     }
-    return _nodeRoles.equals(((NodeRoleDimension) o)._nodeRoles);
+    NodeRoleDimension other = (NodeRoleDimension) o;
+    return Objects.equals(_name, other._name);
   }
 
   @Override
   public int hashCode() {
-    return _nodeRoles.hashCode();
+    return _name.hashCode();
   }
 
-  @JsonValue
-  public Map<String, NodeRole> getNodeRoles() {
-    return _nodeRoles;
+  @JsonProperty(PROP_NAME)
+  public String getName() {
+    return _name;
   }
 
-  // return a map from each role name to the set of nodes that play that role
-  public SortedMap<String, SortedSet<String>> createRoleNodesMap(Set<String> nodes) {
+  @JsonProperty(PROP_ROLE_REGEXES)
+  public List<String> getRoleRegexes() {
+    return _roleRegexes;
+  }
+
+  @JsonProperty(PROP_ROLES)
+  public SortedSet<NodeRole> getRoles() {
+    return _roles;
+  }
+
+  @JsonProperty(PROP_TYPE)
+  public Type getType() {
+    return _type;
+  }
+
+  /**
+   * Create a map from each node name to its set of roles
+   *
+   * @param nodeNames The universe of nodes that we need to classify
+   * @return The created map
+   */
+  public SortedMap<String, SortedSet<String>> createNodeRolesMap(Set<String> nodeNames) {
+
+    SortedMap<String, SortedSet<String>> nodeRolesMap = new TreeMap<>();
+    for (String node : nodeNames) {
+      for (NodeRole role : _roles) {
+        if (role.matches(node)) {
+          SortedSet<String> nodeRoles = nodeRolesMap.computeIfAbsent(node, k -> new TreeSet<>());
+          nodeRoles.add(role.getName());
+        }
+      }
+    }
+    return nodeRolesMap;
+  }
+
+  /**
+   * Create a map from each role name to the set of nodes that play that role
+   *
+   * @param nodeNames The universe of nodes that we need to classify
+   * @return The created map
+   */
+  public SortedMap<String, SortedSet<String>> createRoleNodesMap(Set<String> nodeNames) {
 
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
-    for (Map.Entry<String, NodeRole> entry : _nodeRoles.entrySet()) {
-      String roleName = entry.getKey();
-      String roleRegex = entry.getValue().toString();
-      Pattern pattern;
-      try {
-        pattern = Pattern.compile(roleRegex);
-      } catch (PatternSyntaxException e) {
-        throw new BatfishException(
-            "Supplied regex is not a valid Java regex: \"" + roleRegex + "\"", e);
-      }
-      for (String node : nodes) {
-        Matcher matcher = pattern.matcher(node);
-        if (matcher.matches()) {
-          SortedSet<String> currNodes =
-              roleNodesMap.computeIfAbsent(roleName, k -> new TreeSet<>());
-          currNodes.add(node);
+    for (NodeRole role : _roles) {
+      for (String node : nodeNames) {
+        if (role.matches(node)) {
+          SortedSet<String> roleNodes =
+              roleNodesMap.computeIfAbsent(role.getName(), k -> new TreeSet<>());
+          roleNodes.add(node);
         }
       }
     }

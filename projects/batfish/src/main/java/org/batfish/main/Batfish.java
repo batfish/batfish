@@ -104,7 +104,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
@@ -173,10 +172,9 @@ import org.batfish.job.ParseVendorConfigurationJob;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
-import org.batfish.role.InferRoles2;
+import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
-import org.batfish.role.NodeRolesData.NodeRoleType;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -1752,26 +1750,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return blacklistNodes;
   }
 
-  /* Gets the NodeRoleSpecifier that specifies the roles for each node.
-     If inferred is true, it returns the inferred roles;
-     otherwise it prefers the user-specified roles if they exist.
-  */
+  /**
+   * Gets the {@link NodeRoleDimension} object give dimension name
+   *
+   * @param dimension The dimension name
+   * @return The {@link NodeRoleDimension} object. Throws {@link java.util.NoSuchElementException}
+   *     if the dimension with the provided name does not exist
+   */
   @Override
-  public NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred) {
-    NodeRoleSpecifier result;
-    boolean inferredRoles = false;
-    TestrigSettings settings = _settings.getActiveTestrigSettings();
-    Path nodeRolesPath = settings.getNodeRolesPath();
-    if (!Files.exists(nodeRolesPath) || inferred) {
-      inferredRoles = true;
-      nodeRolesPath = settings.getInferredNodeRolesPath();
-      if (!Files.exists(nodeRolesPath)) {
-        return new NodeRoleSpecifier();
-      }
+  public NodeRoleDimension getNodeRoleDimension(String dimension) {
+    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    NodeRoleDimension nodeRoleDimension = null;
+    try {
+      nodeRoleDimension = NodeRolesData.getNodeRoleDimensionByName(nodeRoleDataPath, dimension);
+    } catch (IOException e) {
+      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
     }
-    result = parseNodeRoles(nodeRolesPath);
-    result.setInferred(inferredRoles);
-    return result;
+    return nodeRoleDimension;
   }
 
   @Override
@@ -1895,11 +1890,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       int count = histogram.count(feature);
       _logger.outputf("%s: %s\n", feature, count);
     }
-  }
-
-  private Map<String, NodeRoleDimension> inferNodeRoles(Map<String, Configuration> configurations) {
-    InferRoles2 ir = new InferRoles2(configurations.keySet(), configurations, this);
-    return ir.call();
   }
 
   private void initAnalysisQuestionPath(String analysisName, String questionName) {
@@ -2775,20 +2765,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return nodes;
   }
 
-  private NodeRoleSpecifier parseNodeRoles(Path nodeRolesPath) {
-    _logger.infof("Parsing: \"%s\"\n", nodeRolesPath.toAbsolutePath());
-    String roleFileText = CommonUtil.readFile(nodeRolesPath);
-    NodeRoleSpecifier specifier;
-    try {
-      specifier =
-          BatfishObjectMapper.mapper()
-              .readValue(roleFileText, new TypeReference<NodeRoleSpecifier>() {});
-    } catch (IOException e) {
-      throw new BatfishException("Failed to parse node roles", e);
-    }
-    return specifier;
-  }
-
   public Topology parseTopology(Path topologyFilePath) {
     _logger.info("*** PARSING TOPOLOGY ***\n");
     _logger.resetTimer();
@@ -3326,28 +3302,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
 
+    Set<String> baseActiveIngressNodes = null;
+    Set<String> diffActiveIngressNodes = null;
+
     // load base configurations and generate base data plane
     pushBaseEnvironment();
     Map<String, Configuration> baseConfigurations = loadConfigurations();
+    try {
+      baseActiveIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
+    } catch (InvalidReachabilitySettingsException e) {
+      return e.getInvalidSettingsAnswer();
+    }
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
     popEnvironment();
 
     // load diff configurations and generate diff data plane
     pushDeltaEnvironment();
-    Map<String, Configuration> diffConfigurations = loadConfigurations();
+    try {
+      diffActiveIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
+    } catch (InvalidReachabilitySettingsException e) {
+      return e.getInvalidSettingsAnswer();
+    }
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
     popEnvironment();
 
     Set<String> ingressNodes;
-    try {
-      ingressNodes =
-          ImmutableSet.copyOf(
-              Sets.intersection(
-                  reachabilitySettings.computeActiveIngressNodes(baseConfigurations),
-                  reachabilitySettings.computeActiveIngressNodes(diffConfigurations)));
-    } catch (InvalidReachabilitySettingsException e) {
-      return e.getInvalidSettingsAnswer();
-    }
+    ingressNodes =
+        ImmutableSet.copyOf(Sets.intersection(baseActiveIngressNodes, diffActiveIngressNodes));
 
     pushDeltaEnvironment();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
@@ -3879,10 +3860,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
         "environment topology");
 
     // Compute new auto role data and updates existing auto data with it
-    Map<String, NodeRoleDimension> autoRoles = inferNodeRoles(configurations);
+    SortedSet<NodeRoleDimension> autoRoles =
+        new InferRoles(configurations.keySet(), configurations, this).call();
     Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      NodeRolesData.replaceNodeRoleDimensions(nodeRoleDataPath, autoRoles, NodeRoleType.AUTO);
+      NodeRolesData.replaceNodeRoleDimensions(
+          nodeRoleDataPath, autoRoles, NodeRoleDimension.Type.AUTO);
     } catch (IOException e) {
       _logger.warnf("Could not update node roles in %s: %s", nodeRoleDataPath, e);
     }
@@ -4060,13 +4043,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     int maxChunkSize;
 
     try {
-      activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(configurations);
-      activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(configurations);
+      activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
+      activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(this);
       headerSpace = reachabilitySettings.getHeaderSpace();
-      transitNodes = reachabilitySettings.computeActiveTransitNodes(configurations);
-      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(configurations);
+      transitNodes = reachabilitySettings.computeActiveTransitNodes(this);
+      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(this);
       maxChunkSize = reachabilitySettings.getMaxChunkSize();
-      reachabilitySettings.validateTransitNodes(configurations);
+      reachabilitySettings.validateTransitNodes(this);
     } catch (InvalidReachabilitySettingsException e) {
       return e.getInvalidSettingsAnswer();
     }

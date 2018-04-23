@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Random;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -17,6 +18,7 @@ import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.batfish.common.BatfishException;
@@ -24,18 +26,17 @@ import org.batfish.common.Pair;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
-import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.RoleEdge;
 import org.batfish.datamodel.Topology;
+import org.batfish.role.NodeRoleDimension.Type;
 
-public class InferRoles implements Callable<NodeRoleSpecifier> {
+public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
 
   // During role inference we compute the possible role dimensions of a node based on its name.
   // Later these dimensions will be stored in each node's Configuration object.
   private static SortedMap<String, NavigableMap<Integer, String>> _roleDimensions = new TreeMap<>();
 
   private IBatfish _batfish;
-  private Map<String, Configuration> _configurations;
   private Collection<String> _nodes;
 
   // the node name that is used to infer a regex
@@ -61,7 +62,6 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   public InferRoles(
       Collection<String> nodes, Map<String, Configuration> configurations, IBatfish batfish) {
     _nodes = ImmutableSortedSet.copyOf(nodes);
-    _configurations = configurations;
     _batfish = batfish;
   }
 
@@ -92,27 +92,27 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   }
 
   @Override
-  public NodeRoleSpecifier call() {
+  public SortedSet<NodeRoleDimension> call() {
 
-    NodeRoleSpecifier emptySpecifier = new NodeRoleSpecifier(true);
+    SortedSet<NodeRoleDimension> emptyNodeRoles = new TreeSet<>();
 
     int allNodesCount = _nodes.size();
 
     if (allNodesCount == 0) {
-      return emptySpecifier;
+      return emptyNodeRoles;
     }
 
     boolean commonRegexFound = inferCommonRegex(_nodes);
 
     if (!commonRegexFound) {
-      return emptySpecifier;
+      return emptyNodeRoles;
     }
 
     // find the possible candidates that have a single role group
     List<List<String>> candidateRegexes = possibleRoleGroups();
 
     if (candidateRegexes.size() == 0) {
-      return emptySpecifier;
+      return emptyNodeRoles;
     }
 
     // record the set of role "dimensions" for each node, which is a part of its name
@@ -123,8 +123,8 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
     Pair<Integer, Double> bestRegexAndScore = findBestRegex(candidateRegexes);
 
     // select the regex of maximum score, if that score is above threshold
-    Optional<NodeRoleSpecifier> optResult =
-        toRoleSpecifierIfAboveThreshold(bestRegexAndScore, candidateRegexes);
+    Optional<SortedSet<NodeRoleDimension>> optResult =
+        toNodeRoleDimensionsIfAboveThreshold(bestRegexAndScore, candidateRegexes);
     if (optResult.isPresent()) {
       return optResult.get();
     }
@@ -142,10 +142,10 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
     candidateRegexes = possibleSecondRoleGroups(candidateRegexes.get(bestRegexAndScore.getFirst()));
 
     if (candidateRegexes.size() == 0) {
-      return emptySpecifier;
+      return emptyNodeRoles;
     } else {
       // return the best one according to our metric, even if it's below threshold
-      return toRoleSpecifier(findBestRegex(candidateRegexes), candidateRegexes);
+      return toNodeRoleDimensions(findBestRegex(candidateRegexes), candidateRegexes);
     }
   }
 
@@ -234,9 +234,8 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
       _roleDimensions.put(node, new TreeMap<>());
     }
     for (int i = 0; i < regexes.size(); i++) {
-      NodeRoleSpecifier specifier = regexToRoleSpecifier(regexTokensToRegex(regexes.get(i)));
       SortedMap<String, SortedSet<String>> nodeRolesMap =
-          specifier.createNodeRolesMap(new TreeSet<>(_matchingNodes));
+          regexToNodeRolesMap(regexTokensToRegex(regexes.get(i)), _matchingNodes);
       for (Map.Entry<String, SortedSet<String>> entry : nodeRolesMap.entrySet()) {
         String nodeName = entry.getKey();
         String roleName = entry.getValue().first();
@@ -265,8 +264,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
 
   private double computeRoleScore(String regex) {
 
-    SortedMap<String, SortedSet<String>> nodeRolesMap =
-        regexToRoleSpecifier(regex).createNodeRolesMap(new TreeSet<>(_nodes));
+    SortedMap<String, SortedSet<String>> nodeRolesMap = regexToNodeRolesMap(regex, _nodes);
 
     Topology topology = _batfish.getEnvironmentTopology();
 
@@ -301,8 +299,7 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
     // the percentage of nodes playing the source role that have an edge
     // to a node in the target role.
     // the score of this regex is then the average support across all role edges
-    SortedMap<String, SortedSet<String>> roleNodesMap =
-        regexToRoleSpecifier(regex).createRoleNodesMap(_configurations.keySet());
+    SortedMap<String, SortedSet<String>> roleNodesMap = regexToRoleNodesMap(regex, _nodes);
 
     double supportSum = 0.0;
     for (Map.Entry<RoleEdge, SortedSet<String>> roleEdgeCount : roleEdges.entrySet()) {
@@ -311,6 +308,62 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
       supportSum += (double) count / roleNodesMap.get(redge.getRole1()).size();
     }
     return supportSum / numEdges;
+  }
+
+  private SortedMap<String, SortedSet<String>> regexToRoleNodesMap(
+      String regex, Collection<String> nodes) {
+    SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
+    Pattern pattern;
+    try {
+      pattern = Pattern.compile(regex);
+    } catch (PatternSyntaxException e) {
+      throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
+    }
+    for (String node : nodes) {
+      Matcher matcher = pattern.matcher(node);
+      int numGroups = matcher.groupCount();
+      if (matcher.matches()) {
+        try {
+          List<String> roleParts =
+              IntStream.range(1, numGroups + 1)
+                  .mapToObj(matcher::group)
+                  .collect(Collectors.toList());
+          String role = String.join("-", roleParts);
+
+          SortedSet<String> currNodes = roleNodesMap.computeIfAbsent(role, k -> new TreeSet<>());
+          currNodes.add(node);
+        } catch (IndexOutOfBoundsException e) {
+          throw new BatfishException(
+              "Supplied regex does not contain "
+                  + numGroups
+                  + "groups: \""
+                  + pattern.pattern()
+                  + "\"",
+              e);
+        }
+      }
+    }
+    return roleNodesMap;
+  }
+
+  // return a map from each node name to the set of roles that it plays
+  public SortedMap<String, SortedSet<String>> regexToNodeRolesMap(
+      String regex, Collection<String> allNodes) {
+
+    SortedMap<String, SortedSet<String>> roleNodesMap = regexToRoleNodesMap(regex, allNodes);
+
+    // invert the map from roles to nodes, to create a map from nodes to roles
+    SortedMap<String, SortedSet<String>> nodeRolesMap = new TreeMap<>();
+
+    roleNodesMap.forEach(
+        (role, nodes) -> {
+          for (String node : nodes) {
+            SortedSet<String> nodeRoles = nodeRolesMap.computeIfAbsent(node, k -> new TreeSet<>());
+            nodeRoles.add(role);
+          }
+        });
+
+    return nodeRolesMap;
   }
 
   // the list of candidates must have at least one element
@@ -323,29 +376,49 @@ public class InferRoles implements Callable<NodeRoleSpecifier> {
   }
 
   // the list of candidates must have at least one element
-  private Optional<NodeRoleSpecifier> toRoleSpecifierIfAboveThreshold(
+  private Optional<SortedSet<NodeRoleDimension>> toNodeRoleDimensionsIfAboveThreshold(
       Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
     if (bestRegexAndScore.getSecond() >= ROLE_THRESHOLD) {
-      NodeRoleSpecifier bestNRS = toRoleSpecifier(bestRegexAndScore, candidates);
-      return Optional.of(bestNRS);
+      SortedSet<NodeRoleDimension> bestNRD = toNodeRoleDimensions(bestRegexAndScore, candidates);
+      return Optional.of(bestNRD);
     } else {
       return Optional.empty();
     }
   }
 
   // the list of candidates must have at least one element
-  private NodeRoleSpecifier toRoleSpecifier(
+  private SortedSet<NodeRoleDimension> toNodeRoleDimensions(
       Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
     List<String> bestRegexTokens = candidates.get(bestRegexAndScore.getFirst());
     String bestRegex = regexTokensToRegex(bestRegexTokens);
-    return regexToRoleSpecifier(bestRegex);
+    return regexToNodeRoleDimensions(bestRegex);
   }
 
-  NodeRoleSpecifier regexToRoleSpecifier(String regex) {
-    List<String> regexes = new ArrayList<>();
-    regexes.add(regex);
-    NodeRoleSpecifier result = new NodeRoleSpecifier(true);
-    result.setRoleRegexes(regexes);
+  SortedSet<NodeRoleDimension> regexToNodeRoleDimensions(String regex) {
+    SortedSet<NodeRole> inferredRoles = new TreeSet<>();
+
+    Set<String> roles = regexToRoleNodesMap(regex, _nodes).keySet();
+    for (String role : roles) {
+      inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex)));
+    }
+
+    SortedSet<NodeRoleDimension> nodeRolesMap = new TreeSet<>();
+    nodeRolesMap.add(
+        new NodeRoleDimension(
+            NodeRoleDimension.AUTO_DIMENSION_PRIMARY, inferredRoles, Type.AUTO, null));
+
+    return nodeRolesMap;
+  }
+
+  // regex is a regular expression that uses one or more groups to indicate the role
+  // role is a particular choice of values for those groups, delimited by -
+  // the result is a version of regex specialized to these particular values
+  String specializeRegexForRole(String role, String regex) {
+    String[] roleParts = role.split("-");
+    String result = regex;
+    for (String rolePart : roleParts) {
+      result = result.replaceFirst("\\([^\\)]*\\)", rolePart);
+    }
     return result;
   }
 }

@@ -5,13 +5,14 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.questions.NodesSpecifier.Type;
+import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
 import org.junit.Test;
 
 public class NodesSpecifierTest {
@@ -32,56 +33,57 @@ public class NodesSpecifierTest {
 
   @Test
   public void constructorRole() {
-    NodesSpecifier specifier = new NodesSpecifier("role:svr.*");
+    NodesSpecifier specifier = new NodesSpecifier("role:dim:svr.*");
     assertThat(specifier.getType(), equalTo(Type.ROLE));
+    assertThat(specifier.getRoleDimension(), equalTo("dim"));
     assertThat(specifier.getRegex().pattern(), equalTo(Pattern.compile("svr.*").pattern()));
   }
 
   @Test
-  public void getMatchingNodesName() {
+  public void getMatchingNodesByName() {
     NodesSpecifier specifier = new NodesSpecifier("name:lhr-.*");
 
-    Map<String, Configuration> configurations = new HashMap<>();
     String matchingRouter = "lhr-border1";
-    String nonMatchingRouter1 = "svr-border1";
-    String nonMatchingRouter2 = "svr-border2";
-    Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN);
-    Configuration nonMatching1 = new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN);
-    Configuration nonMatching2 = new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN);
-    // TODO: nonMatching2.getRoles().add("lhr-border1"); // to check for accidental role matching
-    configurations.put(matchingRouter, matching);
-    configurations.put(nonMatchingRouter1, nonMatching1);
-    configurations.put(nonMatchingRouter2, nonMatching2);
+    String nonMatchingRouter = "svr-border1";
+    Set<String> nodes =
+        new ImmutableSet.Builder<String>().add(matchingRouter).add(nonMatchingRouter).build();
 
-    Set<String> matchingNodes = specifier.getMatchingNodes(configurations);
+    Set<String> matchingNodes = specifier.getMatchingNodesByName(nodes);
 
     assertThat(matchingNodes, hasItem(matchingRouter));
-    assertThat(matchingNodes, not(hasItem(nonMatchingRouter1)));
-    assertThat(matchingNodes, not(hasItem(nonMatchingRouter2)));
+    assertThat(matchingNodes, not(hasItem(nonMatchingRouter)));
   }
 
   @Test
-  public void getMatchingNodesRole() {
-    NodesSpecifier specifier = new NodesSpecifier("role:svr.*");
+  public void getMatchingNodesByRole() {
+    NodesSpecifier specifier = new NodesSpecifier("role:dim:match.*");
 
-    Map<String, Configuration> configurations = new HashMap<>();
-    String matchingRouter = "lhr-border1";
-    String nonMatchingRouter1 = "svr-border1"; // name shouldn't match role
-    String nonMatchingRouter2 = "lhr-border2";
-    Configuration matching = new Configuration(matchingRouter, ConfigurationFormat.UNKNOWN);
-    // TODO matching.getRoles().add("svr-web");
-    Configuration nonMatching1 = new Configuration(nonMatchingRouter1, ConfigurationFormat.UNKNOWN);
-    // TODO matching.getRoles().add("web");
-    Configuration nonMatching2 = new Configuration(nonMatchingRouter2, ConfigurationFormat.UNKNOWN);
-    // TODO nonMatching2.getRoles().add("rtr");
-    configurations.put(matchingRouter, matching);
-    configurations.put(nonMatchingRouter1, nonMatching1);
-    configurations.put(nonMatchingRouter2, nonMatching2);
+    String matchingNode1 = "lhr-border-01";
+    String matchingNode2 = "svr-border-02";
+    String nonMatchingNode1 = "svr-core-1";
+    Set<String> nodes =
+        new ImmutableSet.Builder<String>()
+            .add(matchingNode1)
+            .add(matchingNode2)
+            .add(nonMatchingNode1)
+            .build();
 
-    Set<String> matchingNodes = specifier.getMatchingNodes(configurations);
+    NodeRole role1 = new NodeRole("match1", "lhr-border.*");
+    NodeRole role2 = new NodeRole("match2", "svr-border.*");
+    NodeRole role3 = new NodeRole("dumb0", "lhr-core.*");
+    SortedSet<NodeRole> roles =
+        new ImmutableSortedSet.Builder<NodeRole>(NodeRole::compareTo)
+            .add(role1)
+            .add(role2)
+            .add(role3)
+            .build();
 
-    assertThat(matchingNodes, hasItem(matchingRouter));
-    assertThat(matchingNodes, not(hasItem(nonMatchingRouter1)));
-    assertThat(matchingNodes, not(hasItem(nonMatchingRouter2)));
+    NodeRoleDimension roleDimension = new NodeRoleDimension("dim", roles, null, null);
+
+    Set<String> matchingNodes = specifier.getMatchingNodesByRole(roleDimension, nodes);
+
+    assertThat(matchingNodes, hasItem(matchingNode1));
+    assertThat(matchingNodes, hasItem(matchingNode2));
+    assertThat(matchingNodes, not(hasItem(nonMatchingNode1)));
   }
 }

@@ -216,7 +216,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       _answerElement = new OutliersAnswerElement();
 
       _configurations = _batfish.loadConfigurations();
-      _nodes = question.getNodeRegex().getMatchingNodes(_configurations);
+      _nodes = question.getNodeRegex().getMatchingNodes(_batfish);
       _verbose = question.getVerbose();
 
       switch (question.getHypothesis()) {

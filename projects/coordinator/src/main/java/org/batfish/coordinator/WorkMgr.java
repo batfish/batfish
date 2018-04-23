@@ -67,8 +67,8 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
-import org.batfish.role.NodeRolesData.NodeRoleType;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -1077,7 +1077,7 @@ public class WorkMgr extends AbstractCoordinator {
             NodeRolesData testrigData = NodeRolesData.read(subFile);
             Path nodeRolesPath = containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
             NodeRolesData.replaceNodeRoleDimensions(
-                nodeRolesPath, testrigData.getNodeRoleDimensions(), NodeRoleType.CUSTOM);
+                nodeRolesPath, testrigData.getNodeRoleDimensions(), NodeRoleDimension.Type.CUSTOM);
           } catch (IOException e) {
             throw new BatfishException("Could not process node role data", e);
           }

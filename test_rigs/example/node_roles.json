@@ -1,16 +1,43 @@
 {
-	"lastModifiedTime" : "2018-04-20T08:24:30.224Z",
-	"roleDimensions": { 
- 		".autoas": {
- 			"as1": "as1.*", 
- 			"as2": "as2.*",
- 			"as3": "as3.*"
- 		},
-		"func": {
-			"border": "as2border(1|2)",
-			"core": "as2core1|as2core2",
-			"dept": "as2dept1",
-			"dist": "as2dist(1|2)" 
+	"roleDimensions": [
+		{
+			"name": "auto0",
+			"type": "auto",
+			"roles": [
+				{
+					"name": "as1",
+					"regex": "as1.*"
+				},
+				{
+					"name": "as2",
+					"regex": "as2.*"
+				},
+				{
+					"name": "as3",
+					"regex": "as3.*"
+				}
+			]
+		},
+		{
+			"name": "func",
+			"roles": [
+				{
+					"name": "border",
+					"regex": "as2border(1|2)"
+				},
+				{
+					"name": "core",
+					"regex": "as2core1|as2core2"
+				},
+				{
+					"name": "dept",
+					"regex": "as2dept1"
+				},
+				{
+					"name": "dist",
+					"regex": "as2dist(1|2)"
+				}
+			]
 		}
-	}
+	]
 }

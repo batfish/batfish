@@ -32,10 +32,6 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
         + "firewall.")
 public final class Configuration extends ComparableStructure<String> {
 
-  public SortedSet<String> getRoles() {
-    return null;
-  }
-
   public static class Builder extends NetworkFactoryBuilder<Configuration> {
 
     private ConfigurationFormat _configurationFormat;

@@ -144,11 +144,9 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       innerQ.setNamedStructTypes(question.getNamedStructTypes());
       innerQ.setHypothesis(question.getHypothesis());
 
-      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
-      PerRoleQuestion outerQ = outerPlugin.createQuestion();
-      outerQ.setRoles(question.getRoles());
-      outerQ.setQuestion(innerQ);
+      PerRoleQuestion outerQ = new PerRoleQuestion(null, innerQ, null, question.getRoles());
 
+      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
       PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
 
       SortedMap<String, AnswerElement> roleAnswers = roleAE.getAnswers();

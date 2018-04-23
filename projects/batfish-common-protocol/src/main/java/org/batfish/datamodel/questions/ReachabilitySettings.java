@@ -2,11 +2,10 @@ package org.batfish.datamodel.questions;
 
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import org.batfish.datamodel.Configuration;
+import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 
@@ -194,10 +193,10 @@ public class ReachabilitySettings {
     _srcNatted = builder._srcNatted;
   }
 
-  public Set<String> computeActiveFinalNodes(Map<String, Configuration> configurations)
+  public Set<String> computeActiveFinalNodes(IBatfish batfish)
       throws InvalidReachabilitySettingsException {
-    Set<String> matchingFinalNodes = _finalNodes.getMatchingNodes(configurations);
-    Set<String> matchingNotFinalNodes = _notFinalNodes.getMatchingNodes(configurations);
+    Set<String> matchingFinalNodes = _finalNodes.getMatchingNodes(batfish);
+    Set<String> matchingNotFinalNodes = _notFinalNodes.getMatchingNodes(batfish);
     Set<String> activeFinalNodes = Sets.difference(matchingFinalNodes, matchingNotFinalNodes);
     if (activeFinalNodes.isEmpty()) {
       throw new InvalidReachabilitySettingsException(
@@ -210,10 +209,10 @@ public class ReachabilitySettings {
     return activeFinalNodes;
   }
 
-  public Set<String> computeActiveIngressNodes(Map<String, Configuration> configurations)
+  public Set<String> computeActiveIngressNodes(IBatfish batfish)
       throws InvalidReachabilitySettingsException {
-    Set<String> matchingIngressNodes = _ingressNodes.getMatchingNodes(configurations);
-    Set<String> matchingNotIngressNodes = _notIngressNodes.getMatchingNodes(configurations);
+    Set<String> matchingIngressNodes = _ingressNodes.getMatchingNodes(batfish);
+    Set<String> matchingNotIngressNodes = _notIngressNodes.getMatchingNodes(batfish);
     Set<String> activeIngressNodes = Sets.difference(matchingIngressNodes, matchingNotIngressNodes);
     if (activeIngressNodes.isEmpty()) {
       throw new InvalidReachabilitySettingsException(
@@ -226,12 +225,12 @@ public class ReachabilitySettings {
     return activeIngressNodes;
   }
 
-  public Set<String> computeActiveNonTransitNodes(Map<String, Configuration> configurations) {
-    return _nonTransitNodes.getMatchingNodes(configurations);
+  public Set<String> computeActiveNonTransitNodes(IBatfish batfish) {
+    return _nonTransitNodes.getMatchingNodes(batfish);
   }
 
-  public Set<String> computeActiveTransitNodes(Map<String, Configuration> configurations) {
-    return _transitNodes.getMatchingNodes(configurations);
+  public Set<String> computeActiveTransitNodes(IBatfish batfish) {
+    return _transitNodes.getMatchingNodes(batfish);
   }
 
   @Override
@@ -311,12 +310,10 @@ public class ReachabilitySettings {
         _useCompression);
   }
 
-  public void validateTransitNodes(Map<String, Configuration> configurations)
-      throws InvalidReachabilitySettingsException {
+  public void validateTransitNodes(IBatfish batfish) throws InvalidReachabilitySettingsException {
     Set<String> commonNodes =
         Sets.intersection(
-            computeActiveTransitNodes(configurations),
-            computeActiveNonTransitNodes(configurations));
+            computeActiveTransitNodes(batfish), computeActiveNonTransitNodes(batfish));
     if (!commonNodes.isEmpty()) {
       throw new InvalidReachabilitySettingsException(
           "The following nodes illegally match both transitNodes and nonTransitNodes: "

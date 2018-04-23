@@ -194,8 +194,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Map<String, PrefixList> _prefixLists;
 
-  private final SortedSet<String> _roles;
-
   private final Map<String, RouteFilter> _routeFilters;
 
   private final Map<String, RoutingInstance> _routingInstances;
@@ -237,7 +235,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _ntpServers = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _policyStatements = new TreeMap<>();
-    _roles = new TreeSet<>();
     _routeFilters = new TreeMap<>();
     _routingInstances = new TreeMap<>();
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
