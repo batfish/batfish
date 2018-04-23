@@ -189,12 +189,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "es"
-        },
-        "roles" : [
-          "es-domain"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -266,12 +260,6 @@
             "vrf" : "default"
           }
         },
-        "roleDimensions" : {
-          "0" : "igw"
-        },
-        "roles" : [
-          "igw-068fee63"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2"
@@ -333,12 +321,6 @@
             "vrf" : "default"
           }
         },
-        "roleDimensions" : {
-          "0" : "igw"
-        },
-        "roles" : [
-          "igw-9b93ddfc"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2"
@@ -400,12 +382,6 @@
             "vrf" : "default"
           }
         },
-        "roleDimensions" : {
-          "0" : "igw"
-        },
-        "roles" : [
-          "igw-fac5839d"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2"
@@ -1984,12 +1960,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-073b8061"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -2136,12 +2106,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-1641fa70"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -2297,12 +2261,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-1f315846"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -2449,12 +2407,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-30398256"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -2601,12 +2553,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-62f14104"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -2753,12 +2699,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-7044ff16"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -2905,12 +2845,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-8d0cbdeb"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -3066,12 +3000,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-9c8adceb"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -3227,12 +3155,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-d9cafabc"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -3379,12 +3301,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "subnet"
-        },
-        "roles" : [
-          "subnet-f73a8191"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -3589,12 +3505,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "test"
-        },
-        "roles" : [
-          "test-rds"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -3867,12 +3777,6 @@
             "ipsecPolicy" : "vpn-ba2e34a8-2"
           }
         },
-        "roleDimensions" : {
-          "0" : "vgw"
-        },
-        "roles" : [
-          "vgw-81fd279f"
-        ],
         "routeFilterLists" : {
           "vpn-ba2e34a8-1_origination" : {
             "name" : "vpn-ba2e34a8-1_origination",
@@ -4163,12 +4067,6 @@
             "vrf" : "default"
           }
         },
-        "roleDimensions" : {
-          "0" : "vpc"
-        },
-        "roles" : [
-          "vpc-815775e7"
-        ],
         "routingPolicies" : {
           "~ACCEPT_ALL~" : {
             "name" : "~ACCEPT_ALL~",
@@ -4334,12 +4232,6 @@
             "vrf" : "default"
           }
         },
-        "roleDimensions" : {
-          "0" : "vpc"
-        },
-        "roles" : [
-          "vpc-925131f4"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -4560,12 +4452,6 @@
             "vrf" : "default"
           }
         },
-        "roleDimensions" : {
-          "0" : "vpc"
-        },
-        "roles" : [
-          "vpc-b390fad5"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",
@@ -4757,12 +4643,6 @@
             "vrf" : "default"
           }
         },
-        "roleDimensions" : {
-          "0" : "vpc"
-        },
-        "roles" : [
-          "vpc-f8fad69d"
-        ],
         "vendorFamily" : {
           "aws" : {
             "region" : "us-west-2",

@@ -32,9 +32,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:5.6.7.8~",
           "~OSPF_EXPORT_POLICY:default~"
         ],
-        "roles" : [
-          "border"
-        ],
         "routeFilterLists" : [
           "101",
           "102",
@@ -80,9 +77,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:10.14.22.4~",
           "~OSPF_EXPORT_POLICY:default~"
         ],
-        "roles" : [
-          "border"
-        ],
         "routeFilterLists" : [
           "101",
           "102",
@@ -108,9 +102,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
           "~BGP_PEER_EXPORT_POLICY:default:1.2.2.2~",
           "~OSPF_EXPORT_POLICY:default~"
-        ],
-        "roles" : [
-          "core"
         ],
         "routingProtocols" : [
           "bgp",
@@ -148,9 +139,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
           "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
           "~OSPF_EXPORT_POLICY:default~"
-        ],
-        "roles" : [
-          "border"
         ],
         "routeFilterLists" : [
           "101",
@@ -197,9 +185,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
           "~OSPF_EXPORT_POLICY:default~"
         ],
-        "roles" : [
-          "border"
-        ],
         "routeFilterLists" : [
           "101",
           "103",
@@ -234,9 +219,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
           "~OSPF_EXPORT_POLICY:default~"
         ],
-        "roles" : [
-          "core"
-        ],
         "routingProtocols" : [
           "bgp",
           "ospf"
@@ -259,9 +241,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:2.1.3.1~",
           "~BGP_PEER_EXPORT_POLICY:default:2.1.3.2~",
           "~OSPF_EXPORT_POLICY:default~"
-        ],
-        "roles" : [
-          "core"
         ],
         "routingProtocols" : [
           "bgp",
@@ -293,9 +272,6 @@
           "~BGP_COMMON_EXPORT_POLICY:default~",
           "~BGP_PEER_EXPORT_POLICY:default:2.34.101.3~",
           "~BGP_PEER_EXPORT_POLICY:default:2.34.201.3~"
-        ],
-        "roles" : [
-          "dept"
         ],
         "routeFilterLists" : [
           "102"
@@ -329,9 +305,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:2.34.101.4~",
           "~OSPF_EXPORT_POLICY:default~"
         ],
-        "roles" : [
-          "dist"
-        ],
         "routeFilterLists" : [
           "105"
         ],
@@ -364,9 +337,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
           "~BGP_PEER_EXPORT_POLICY:default:2.34.201.4~",
           "~OSPF_EXPORT_POLICY:default~"
-        ],
-        "roles" : [
-          "dist"
         ],
         "routeFilterLists" : [
           "105"
@@ -403,9 +373,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:10.23.21.2~",
           "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
           "~OSPF_EXPORT_POLICY:default~"
-        ],
-        "roles" : [
-          "border"
         ],
         "routeFilterLists" : [
           "101",
@@ -447,9 +414,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:3.10.1.1~",
           "~OSPF_EXPORT_POLICY:default~"
         ],
-        "roles" : [
-          "border"
-        ],
         "routeFilterLists" : [
           "101",
           "102",
@@ -477,9 +441,6 @@
           "~BGP_PEER_EXPORT_POLICY:default:3.2.2.2~",
           "~OSPF_EXPORT_POLICY:default~"
         ],
-        "roles" : [
-          "core"
-        ],
         "routingProtocols" : [
           "bgp",
           "ospf"
@@ -503,9 +464,6 @@
           "nat::POSTROUTING",
           "nat::PREROUTING"
         ],
-        "roles" : [
-          "host"
-        ],
         "routingProtocols" : [
           "static"
         ]
@@ -527,9 +485,6 @@
           "nat::OUTPUT",
           "nat::POSTROUTING",
           "nat::PREROUTING"
-        ],
-        "roles" : [
-          "host"
         ],
         "routingProtocols" : [
           "static"

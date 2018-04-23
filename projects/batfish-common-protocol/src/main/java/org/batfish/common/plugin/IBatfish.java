@@ -18,7 +18,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -39,6 +38,7 @@ import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.role.NodeRoleDimension;
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -69,7 +69,7 @@ public interface IBatfish extends IPluginConsumer {
 
   FlowHistory getHistory();
 
-  NodeRoleSpecifier getNodeRoleSpecifier(boolean inferred);
+  NodeRoleDimension getNodeRoleDimension(String roleDimension);
 
   Map<String, String> getQuestionTemplates();
 

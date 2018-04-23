@@ -130,10 +130,6 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_NTP_SOURCE_INTERFACE = "ntpSourceInterface";
 
-  private static final String PROP_ROLES = "roles";
-
-  private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
-
   private static final String PROP_ROUTE_FILTER_LISTS = "routeFilterLists";
 
   private static final String PROP_ROUTING_POLICIES = "routingPolicies";
@@ -219,10 +215,6 @@ public final class Configuration extends ComparableStructure<String> {
 
   private transient NavigableSet<BgpAdvertisement> _receivedIbgpAdvertisements;
 
-  private SortedSet<String> _roles;
-
-  private NavigableMap<Integer, String> _roleDimensions;
-
   private NavigableMap<String, Route6FilterList> _route6FilterLists;
 
   private NavigableMap<String, RouteFilterList> _routeFilterLists;
@@ -278,7 +270,6 @@ public final class Configuration extends ComparableStructure<String> {
     _loggingServers = new TreeSet<>();
     _normalVlanRange = new SubRange(VLAN_NORMAL_MIN_DEFAULT, VLAN_NORMAL_MAX_DEFAULT);
     _ntpServers = new TreeSet<>();
-    _roles = new TreeSet<>();
     _routeFilterLists = new TreeMap<>();
     _route6FilterLists = new TreeMap<>();
     _routingPolicies = new TreeMap<>();
@@ -523,18 +514,6 @@ public final class Configuration extends ComparableStructure<String> {
     return _receivedIbgpAdvertisements;
   }
 
-  @JsonProperty(PROP_ROLES)
-  @JsonPropertyDescription("Set of all roles in which this node serves.")
-  public SortedSet<String> getRoles() {
-    return _roles;
-  }
-
-  @JsonProperty(PROP_ROLE_DIMENSIONS)
-  @JsonPropertyDescription("Set of possible role dimensions based on the node name.")
-  public NavigableMap<Integer, String> getRoleDimensions() {
-    return _roleDimensions;
-  }
-
   @JsonPropertyDescription("Dictionary of all IPV6 route filter lists for this node.")
   public NavigableMap<String, Route6FilterList> getRoute6FilterLists() {
     return _route6FilterLists;
@@ -750,14 +729,6 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_NTP_SOURCE_INTERFACE)
   public void setNtpSourceInterface(String ntpSourceInterface) {
     _ntpSourceInterface = ntpSourceInterface;
-  }
-
-  public void setRoles(SortedSet<String> roles) {
-    _roles = roles;
-  }
-
-  public void setRoleDimensions(NavigableMap<Integer, String> roleDimensions) {
-    _roleDimensions = roleDimensions;
   }
 
   public void setRoute6FilterLists(NavigableMap<String, Route6FilterList> route6FilterLists) {

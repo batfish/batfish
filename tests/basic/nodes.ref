@@ -280,12 +280,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "border"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -1547,12 +1541,6 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "border"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -2657,12 +2645,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "core"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -3315,12 +3297,6 @@
         "ntpServers" : [
           "18.18.18.18",
           "23.23.23.23"
-        ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "border"
         ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -4565,12 +4541,6 @@
         "ntpServers" : [
           "18.18.18.18"
         ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "border"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -5693,12 +5663,6 @@
           "1.1.1.1",
           "2.1.2.2"
         ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "core"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -6274,12 +6238,6 @@
         "loggingServers" : [
           "1.1.1.1",
           "2.2.2.2"
-        ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "core"
         ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -7074,12 +7032,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "dept"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -7872,12 +7824,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "dist"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -8639,12 +8585,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "dist"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -9417,12 +9357,6 @@
         "ntpServers" : [
           "18.18.18.18",
           "23.23.23.23"
-        ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "border"
         ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
@@ -10572,12 +10506,6 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "border"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -11588,12 +11516,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "roleDimensions" : {
-          "0" : "as"
-        },
-        "roles" : [
-          "core"
-        ],
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -12210,12 +12132,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "host"
-        },
-        "roles" : [
-          "host"
-        ],
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {
@@ -12440,12 +12356,6 @@
             ]
           }
         },
-        "roleDimensions" : {
-          "0" : "host"
-        },
-        "roles" : [
-          "host"
-        ],
         "vendorFamily" : { },
         "vrfs" : {
           "default" : {

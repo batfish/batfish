@@ -6,13 +6,11 @@ import com.google.auto.service.AutoService;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.questions.AbstractRoleConsistencyQuestion;
@@ -21,6 +19,7 @@ import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
 import org.batfish.question.OutliersQuestionPlugin.OutliersQuestion;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleAnswerElement;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleQuestion;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.OutliersHypothesis;
 
 @AutoService(Plugin.class)
@@ -77,12 +76,9 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
       innerQ.setNamedStructTypes(structTypes);
       innerQ.setVerbose(true);
 
-      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
-      PerRoleQuestion outerQ = outerPlugin.createQuestion();
-      outerQ.setRoleSpecifier(
-          question.getRoleSpecifier().orElse(_batfish.getNodeRoleSpecifier(false)));
-      outerQ.setQuestion(innerQ);
+      PerRoleQuestion outerQ = new PerRoleQuestion(null, innerQ, question.getRoleDimension(), null);
 
+      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
       PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
       List<NamedStructureOutlierSet<?>> answers = new LinkedList<>();
       for (Map.Entry<String, AnswerElement> entry : roleAE.getAnswers().entrySet()) {
@@ -106,28 +102,36 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
    * value for some particular configuration property (e.g., DnsServers).
    *
    * @type NamedStructureRoleConsistency multifile
-   * @param roleSpecifier A NodeRoleSpecifier that specifies the role(s) of each node. If not
-   *     specified then by default the currently installed NodeRoleSpecifier is used.
+   * @param roleDimension The name of the role dimension to us. If not specified then the default
+   *     auto inferred dimension.
    * @param structType A string representing the type of named structure to check.
    * @param hypothesis The hypothesis to check. Allowed values are "sameName" and "sameDefinition".
    */
   public static final class NamedStructureRoleConsistencyQuestion
       extends AbstractRoleConsistencyQuestion {
 
-    private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
+    private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
     private static final String PROP_STRUCT_TYPE = "structType";
 
     private static final String PROP_HYPOTHESIS = "hypothesis";
 
-    private NodeRoleSpecifier _roleSpecifier;
+    private String _roleDimension;
 
     private String _structType;
 
     private OutliersHypothesis _hypothesis;
 
     @JsonCreator
-    public NamedStructureRoleConsistencyQuestion() {}
+    public NamedStructureRoleConsistencyQuestion(
+        @JsonProperty(PROP_STRUCT_TYPE) String structType,
+        @JsonProperty(PROP_HYPOTHESIS) OutliersHypothesis hypothesis,
+        @JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
+      _structType = structType;
+      _hypothesis = hypothesis;
+      _roleDimension =
+          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+    }
 
     @Override
     public boolean getDataPlane() {
@@ -146,29 +150,14 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
     }
 
     @Override
-    @JsonProperty(PROP_ROLE_SPECIFIER)
-    public Optional<NodeRoleSpecifier> getRoleSpecifier() {
-      return Optional.ofNullable(_roleSpecifier);
+    @JsonProperty(PROP_ROLE_DIMENSION)
+    public String getRoleDimension() {
+      return _roleDimension;
     }
 
     @JsonProperty(PROP_STRUCT_TYPE)
     public String getStructType() {
       return _structType;
-    }
-
-    @JsonProperty(PROP_HYPOTHESIS)
-    public void setHypothesis(OutliersHypothesis hypothesis) {
-      _hypothesis = hypothesis;
-    }
-
-    @JsonProperty(PROP_ROLE_SPECIFIER)
-    public void setRoleSpecifier(NodeRoleSpecifier roleSpecifier) {
-      _roleSpecifier = roleSpecifier;
-    }
-
-    @JsonProperty(PROP_STRUCT_TYPE)
-    public void setStructType(String structType) {
-      _structType = structType;
     }
   }
 
@@ -180,6 +169,6 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
 
   @Override
   protected NamedStructureRoleConsistencyQuestion createQuestion() {
-    return new NamedStructureRoleConsistencyQuestion();
+    return new NamedStructureRoleConsistencyQuestion(null, null, null);
   }
 }

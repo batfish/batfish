@@ -407,12 +407,6 @@
                 "18.18.18.18",
                 "23.23.23.23"
               ],
-              "roleDimensions" : {
-                "0" : "as"
-              },
-              "roles" : [
-                "border"
-              ],
               "route6FilterLists" : {
                 "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
                   "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"

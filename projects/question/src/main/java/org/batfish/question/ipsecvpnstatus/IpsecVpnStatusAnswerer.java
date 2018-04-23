@@ -52,8 +52,8 @@ public class IpsecVpnStatusAnswerer extends Answerer {
     IpsecVpnStatusQuestion question = (IpsecVpnStatusQuestion) _question;
 
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(configurations);
-    Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(configurations);
+    Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
+    Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
 
     CommonUtil.initRemoteIpsecVpns(configurations);
 

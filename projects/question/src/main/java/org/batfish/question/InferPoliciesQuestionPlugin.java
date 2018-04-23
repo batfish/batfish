@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,16 +15,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableSet;
-import java.util.Optional;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.collections.OutlierSet;
@@ -44,6 +43,7 @@ import org.batfish.question.jsonpath.JsonPathExtractionHint;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
 import org.batfish.question.jsonpath.JsonPathQuery;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathQuestion;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.OutliersHypothesis;
 
 @AutoService(Plugin.class)
@@ -257,60 +257,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       _roleConsistencyQuestions = new LinkedList<>();
     }
 
-    @Override
-    public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for infer policies\n");
-
-      for (JsonPathQuestion q : _roleConsistencyQuestions) {
-        AbstractRoleConsistencyQuestion question =
-            (AbstractRoleConsistencyQuestion) q.getInnerQuestion();
-
-        sb.append("Policy: nodes in the same role should have ");
-        switch (question.getHypothesis()) {
-          case SAME_DEFINITION:
-            NamedStructureRoleConsistencyQuestion nsrcq =
-                (NamedStructureRoleConsistencyQuestion) question;
-            sb.append(
-                "the same definition for same-named structures of type " + nsrcq.getStructType());
-            break;
-          case SAME_NAME:
-            NamedStructureRoleConsistencyQuestion nsrcq2 =
-                (NamedStructureRoleConsistencyQuestion) question;
-            sb.append("same-named structures of type " + nsrcq2.getStructType());
-            break;
-          case SAME_SERVERS:
-            RoleConsistencyQuestion rcq = (RoleConsistencyQuestion) question;
-            sb.append("the same " + rcq.getPropertyName());
-            break;
-          default:
-            throw new BatfishException("Unrecognized hypothesis " + question.getHypothesis());
-        }
-        sb.append("\n");
-        Optional<NodeRoleSpecifier> specifierOpt = question.getRoleSpecifier();
-        if (specifierOpt.isPresent()) {
-          NodeRoleSpecifier specifier = specifierOpt.get();
-          List<String> roleRegexes = specifier.getRoleRegexes();
-          SortedMap<String, SortedSet<String>> roleMap = specifier.getRoleMap();
-
-          sb.append("Role specifier:\n");
-          if (!roleRegexes.isEmpty()) {
-            sb.append("  Role regexes: \n");
-            for (String regex : roleRegexes) {
-              sb.append("    " + regex + "\n");
-            }
-          }
-          if (!roleMap.isEmpty()) {
-            sb.append("  Role map: \n");
-            for (Map.Entry<String, SortedSet<String>> entry : specifier.getRoleMap().entrySet()) {
-              sb.append("    " + entry + "\n");
-            }
-          }
-        }
-      }
-
-      return sb.toString();
-    }
-
     public void addRoleConsistencyQuestions(
         List<AbstractRoleConsistencyQuestion> roleConsistencyQuestions) {
       roleConsistencyQuestions
@@ -394,10 +340,10 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       innerQ.setHypothesis(hypothesis);
       innerQ.setVerbose(true);
 
-      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
-      PerRoleQuestion outerQ = outerPlugin.createQuestion();
-      outerQ.setQuestion(innerQ);
+      InferPoliciesQuestion question = (InferPoliciesQuestion) _question;
+      PerRoleQuestion outerQ = new PerRoleQuestion(null, innerQ, question.getRoleDimension(), null);
 
+      PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
       PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
 
       SortedMap<String, AnswerElement> answers = roleAE.getAnswers();
@@ -431,7 +377,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     private <T extends RoleBasedOutlierSet>
         List<AbstractRoleConsistencyQuestion> policiesAboveThreshold(
             Multimap<String, T> outliersPerPropertyName, OutliersHypothesis hypothesis) {
-      NodeRoleSpecifier nodeRoleSpecifier = _batfish.getNodeRoleSpecifier(false);
+      InferPoliciesQuestion question = (InferPoliciesQuestion) _question;
       List<AbstractRoleConsistencyQuestion> policies = new LinkedList<>();
       for (String name : outliersPerPropertyName.keySet()) {
         Collection<T> outlierSets = outliersPerPropertyName.get(name);
@@ -443,16 +389,13 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
             case SAME_DEFINITION:
             case SAME_NAME:
               NamedStructureRoleConsistencyQuestion policy =
-                  new NamedStructureRoleConsistencyQuestion();
-              policy.setHypothesis(hypothesis);
-              policy.setRoleSpecifier(nodeRoleSpecifier);
-              policy.setStructType(name);
+                  new NamedStructureRoleConsistencyQuestion(
+                      name, hypothesis, question.getRoleDimension());
               policies.add(policy);
               break;
             case SAME_SERVERS:
-              RoleConsistencyQuestion rcpolicy = new RoleConsistencyQuestion();
-              rcpolicy.setRoleSpecifier(nodeRoleSpecifier);
-              rcpolicy.setPropertyName(name);
+              RoleConsistencyQuestion rcpolicy =
+                  new RoleConsistencyQuestion(question.getRoleDimension(), name);
               policies.add(rcpolicy);
               break;
             default:
@@ -480,7 +423,15 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
    */
   public static final class InferPoliciesQuestion extends Question {
 
-    public InferPoliciesQuestion() {}
+    private static final String PROP_ROLE_DIMENSION = "roleDimension";
+
+    @Nonnull private String _roleDimension;
+
+    @JsonCreator
+    public InferPoliciesQuestion(@JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
+      _roleDimension =
+          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+    }
 
     @Override
     public boolean getDataPlane() {
@@ -491,6 +442,11 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "InferPolicies";
     }
+
+    @JsonProperty(PROP_ROLE_DIMENSION)
+    public String getRoleDimension() {
+      return _roleDimension;
+    }
   }
 
   @Override
@@ -500,6 +456,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new InferPoliciesQuestion();
+    return new InferPoliciesQuestion(null);
   }
 }

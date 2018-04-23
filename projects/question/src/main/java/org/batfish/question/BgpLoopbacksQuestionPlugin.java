@@ -105,7 +105,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
       BgpLoopbacksAnswerElement answerElement = new BgpLoopbacksAnswerElement();
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();

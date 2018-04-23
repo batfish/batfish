@@ -1,0 +1,48 @@
+{
+  "answerElements" : [
+    {
+      "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
+      "matchingNodesCount" : {
+        "auto0" : 13
+      },
+      "roleDimensions" : [
+        {
+          "name" : "auto0",
+          "roleRegexes" : [
+            "\\p{Alnum}+\\Q-\\E(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+          ],
+          "roles" : [
+            {
+              "name" : "border",
+              "regex" : "\\p{Alnum}+\\Q-\\Eborder\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+            },
+            {
+              "name" : "core",
+              "regex" : "\\p{Alnum}+\\Q-\\Ecore\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+            },
+            {
+              "name" : "leaf",
+              "regex" : "\\p{Alnum}+\\Q-\\Eleaf\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+            },
+            {
+              "name" : "spine",
+              "regex" : "\\p{Alnum}+\\Q-\\Espine\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+            }
+          ],
+          "type" : "AUTO"
+        }
+      ]
+    }
+  ],
+  "question" : {
+    "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesQuestion",
+    "differential" : false,
+    "nodeRegex" : ".*"
+  },
+  "status" : "SUCCESS",
+  "summary" : {
+    "numFailed" : 0,
+    "numPassed" : 0,
+    "numResults" : 0
+  }
+}

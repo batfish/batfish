@@ -88,7 +88,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> nodes = question.getNodeRegex().getMatchingNodes(configurations);
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
       MultiSet<Ip> duplicateIps = new TreeMultiSet<>();
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
