@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -21,6 +24,7 @@ import org.batfish.question.OutliersQuestionPlugin.OutliersAnswerElement;
 import org.batfish.question.OutliersQuestionPlugin.OutliersQuestion;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleAnswerElement;
 import org.batfish.question.PerRoleQuestionPlugin.PerRoleQuestion;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.OutliersHypothesis;
 
 @AutoService(Plugin.class)
@@ -144,7 +148,8 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       innerQ.setNamedStructTypes(question.getNamedStructTypes());
       innerQ.setHypothesis(question.getHypothesis());
 
-      PerRoleQuestion outerQ = new PerRoleQuestion(null, innerQ, null, question.getRoles());
+      PerRoleQuestion outerQ =
+          new PerRoleQuestion(null, innerQ, question.getRoleDimension(), question.getRoles());
 
       PerRoleQuestionPlugin outerPlugin = new PerRoleQuestionPlugin();
       PerRoleAnswerElement roleAE = outerPlugin.createAnswerer(outerQ, _batfish).answer();
@@ -197,17 +202,29 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NAMED_STRUCT_TYPES = "namedStructTypes";
 
+    private static final String PROP_ROLE_DIMENSION = "roleDimension";
+
     private static final String PROP_ROLES = "roles";
 
-    private OutliersHypothesis _hypothesis;
+    @Nonnull private OutliersHypothesis _hypothesis;
 
-    private SortedSet<String> _namedStructTypes;
+    @Nonnull private SortedSet<String> _namedStructTypes;
 
-    private List<String> _roles;
+    @Nonnull private String _roleDimension;
 
-    public PerRoleOutliersQuestion() {
-      _namedStructTypes = new TreeSet<>();
-      _hypothesis = OutliersHypothesis.SAME_DEFINITION;
+    @Nullable private List<String> _roles;
+
+    @JsonCreator
+    public PerRoleOutliersQuestion(
+        @JsonProperty(PROP_NAMED_STRUCT_TYPES) SortedSet<String> namedStructTypes,
+        @JsonProperty(PROP_HYPOTHESIS) OutliersHypothesis hypothesis,
+        @JsonProperty(PROP_ROLE_DIMENSION) String roleDimension,
+        @JsonProperty(PROP_ROLES) List<String> roles) {
+      _namedStructTypes = namedStructTypes == null ? new TreeSet<>() : namedStructTypes;
+      _hypothesis = hypothesis == null ? OutliersHypothesis.SAME_DEFINITION : hypothesis;
+      _roleDimension =
+          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+      _roles = roles;
     }
 
     @Override
@@ -230,24 +247,14 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
       return _namedStructTypes;
     }
 
+    @JsonProperty(PROP_ROLE_DIMENSION)
+    public String getRoleDimension() {
+      return _roleDimension;
+    }
+
     @JsonProperty(PROP_ROLES)
     public List<String> getRoles() {
       return _roles;
-    }
-
-    @JsonProperty(PROP_HYPOTHESIS)
-    public void setHypothesis(OutliersHypothesis hypothesis) {
-      _hypothesis = hypothesis;
-    }
-
-    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
-    public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
-      _namedStructTypes = namedStructTypes;
-    }
-
-    @JsonProperty(PROP_ROLES)
-    public void setRoles(List<String> roles) {
-      _roles = roles;
     }
   }
 
@@ -258,6 +265,6 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new PerRoleOutliersQuestion();
+    return new PerRoleOutliersQuestion(null, null, null, null);
   }
 }

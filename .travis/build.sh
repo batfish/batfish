@@ -26,6 +26,9 @@ allinone -cmdfile test_rigs/parsing-errors-tests/commands || exit 1
 echo -e "\n  ..... Running basic client tests"
 allinone -cmdfile tests/basic/commands || exit 1
 
+echo -e "\n  ..... Running role functionality tests"
+allinone -cmdfile tests/roles/commands || exit 1
+
 echo -e "\n  ..... Running jsonpath-addons tests"
 allinone -cmdfile tests/jsonpath-addons/commands || exit 1
 

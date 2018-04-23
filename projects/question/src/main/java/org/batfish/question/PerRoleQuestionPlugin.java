@@ -80,22 +80,16 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       // collect the desired nodes in a list
       Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      NodeRoleDimension roleSpecifier =
-          _batfish.getNodeRoleDimension(NodeRoleDimension.AUTO_DIMENSION_PRIMARY);
+      NodeRoleDimension roleDimension = _batfish.getNodeRoleDimension(question.getRoleDimension());
       SortedMap<String, SortedSet<String>> roleNodeMap =
-          roleSpecifier.createRoleNodesMap(includeNodes);
+          roleDimension.createRoleNodesMap(includeNodes);
 
       List<String> desiredRoles = question.getRoles();
       if (desiredRoles != null) {
         // only keep the roles that the user specified
-        SortedMap<String, SortedSet<String>> newMap = new TreeMap<>();
-        for (String desiredRole : desiredRoles) {
-          SortedSet<String> members = roleNodeMap.get(desiredRole);
-          if (members != null) {
-            newMap.put(desiredRole, members);
-          }
-        }
-        roleNodeMap = newMap;
+        roleNodeMap
+            .entrySet()
+            .removeIf(e -> !desiredRoles.contains(e.getKey()) || e.getValue() == null);
       }
 
       SortedMap<String, AnswerElement> results = new TreeMap<>();
@@ -127,7 +121,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
 
   // <question_page_comment>
   /**
-   * Answers a given question separately on each "role" within the network.
+   * Answers a given question separately on each "role" within the specified dimension.
    *
    * <p>It is common for the nodes in a network to be partitioned into roles that each have a
    * specific function in the network. For example, border routers are responsible for mediating the
@@ -141,8 +135,8 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
    * @param roles List of the role names to include in the answer. Default is to use all role names.
    * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
    *     nodes). *
-   * @param roleSpecifier Specifies the mapping from roles to nodes. If not provided, the default is
-   *     to use the role specifier that was installed when the test rig was initialized.
+   * @param roleDimension Specifies the role dimension to use. If not provided, the default is to
+   *     use the primary auto inferred role dimension.
    */
   public static final class PerRoleQuestion extends Question {
 

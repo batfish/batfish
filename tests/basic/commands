@@ -26,11 +26,8 @@ test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status
 test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
-test tests/basic/roleNeighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
 test tests/basic/ospfSessionCheck.ref get ospfsessioncheck
 test tests/basic/ospfStatus.ref get ospfstatus interfacesSpecifier="Loopback.*", status=".*passive"
-test tests/basic/roles.ref get roles
-test tests/basic/roles2.ref get roles inferred=true
 test tests/basic/routes-diff.ref get routes differential=true
 test tests/basic/selfAdjacencies.ref get selfAdjacencies
 test tests/basic/traceroute-1-2.ref get traceroute ingressNode="as1core1", dst="host1"
@@ -46,11 +43,6 @@ test tests/basic/outliers.ref get outliers
 test tests/basic/outliers2.ref get outliers hypothesis="sameName"
 test tests/basic/outliers3.ref get outliers hypothesis="sameServers"
 test tests/basic/outliers-verbose.ref get outliers verbose=True
-test tests/basic/perRole.ref get perRole question={"class": "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion"}
-test tests/basic/perRoleOutliers.ref get perRoleOutliers hypothesis="sameName"
-test tests/basic/inferPolicies.ref get inferPolicies
-test tests/basic/roleConsistency.ref get roleConsistency propertyName="LoggingServers"
-test tests/basic/nsRoleConsistency.ref get namedStructureRoleConsistency hypothesis="sameName", structType="CommunityList"
 
 # takes toooo long. need to constrain to be useful.
 # test -comparesummary tests/basic/reachability-pathdiff.ref get reachability type=pathdiff
@@ -60,11 +52,6 @@ test -compareall tests/basic/init-env.ref init-environment newEnvironmentName="n
 test -compareall tests/basic/genDp-env.ref generate-delta-dataplane
 # failure case with non-existent interface -- but the stack trace returned in the answer is bad mojo the test
 #test tests/basic/init-env-bad.ref init-environment newEnvironmentName="newenv-bad", interfaceBlacklist=[{hostname="as2border2",interface="GigabitEthernet"}]
-
-# example2 testrig
-test -compareall tests/basic/init-example2.ref init-testrig test_rigs/example2 basic-example2
-test -compareall tests/basic/inferRoles.ref get inferRoles
-test tests/basic/roleNeighbors2.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
 
 # disable-as-reuse
 test -compareall tests/basic/init-dc-as-reuse.ref init-testrig test_rigs/dc-as-reuse basic-dc-as-reuse

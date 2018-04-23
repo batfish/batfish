@@ -1,0 +1,23 @@
+[
+  {
+    "class" : "org.batfish.common.BatfishException$BatfishStackTrace",
+    "answer" : [
+      "org.batfish.common.BatfishException: Failed to answer question",
+      "   at org.batfish.main.Batfish.answer(Batfish.java:634)",
+      "   at org.batfish.main.Batfish.run(Batfish.java:3647)",
+      "   at org.batfish.main.Driver$2.run(Driver.java:591)",
+      "Caused by: java.util.NoSuchElementException: No value present",
+      "   at java.util.Optional.get(Optional.java:135)",
+      "   at org.batfish.role.NodeRolesData.getNodeRoleDimensionByName(NodeRolesData.java:120)",
+      "   at org.batfish.main.Batfish.getNodeRoleDimension(Batfish.java:1765)",
+      "   at org.batfish.question.PerRoleQuestionPlugin$PerRoleAnswerer.answer(PerRoleQuestionPlugin.java:83)",
+      "   at org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerer.perRoleOutlierInfo(InferPoliciesQuestionPlugin.java:346)",
+      "   at org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerer.serverConsistencyPolicies(InferPoliciesQuestionPlugin.java:299)",
+      "   at org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerer.answer(InferPoliciesQuestionPlugin.java:286)",
+      "   at org.batfish.question.InferPoliciesQuestionPlugin$InferPoliciesAnswerer.answer(InferPoliciesQuestionPlugin.java:269)",
+      "   at org.batfish.main.Batfish.answer(Batfish.java:631)",
+      "   ... 2 more",
+      ""
+    ]
+  }
+]

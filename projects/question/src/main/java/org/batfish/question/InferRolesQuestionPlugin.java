@@ -1,12 +1,15 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -24,21 +27,19 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_ROLE_DIMENSIONS = "roleDimensions";
 
-    private static final String PROP_ALL_NODES = "allNodes";
-
-    private static final String PROP_ALL_NODES_COUNT = "allNodesCount";
-
     private static final String PROP_MATCHING_NODES_COUNT = "matchingNodesCount";
 
-    private SortedSet<NodeRoleDimension> _roleDimensions;
+    @Nonnull private final SortedSet<NodeRoleDimension> _roleDimensions;
 
-    private Set<String> _allNodes;
+    @Nonnull private final SortedMap<String, Integer> _matchingNodesCount;
 
-    private int _allNodesCount;
-
-    private SortedMap<String, Integer> _matchingNodesCount;
-
-    public InferRolesAnswerElement() {}
+    @JsonCreator
+    public InferRolesAnswerElement(
+        @JsonProperty(PROP_ROLE_DIMENSIONS) SortedSet<NodeRoleDimension> roleDimensions,
+        @JsonProperty(PROP_MATCHING_NODES_COUNT) SortedMap<String, Integer> matchingNodesCount) {
+      _roleDimensions = roleDimensions == null ? new TreeSet<>() : roleDimensions;
+      _matchingNodesCount = matchingNodesCount == null ? new TreeMap<>() : matchingNodesCount;
+    }
 
     @JsonProperty(PROP_MATCHING_NODES_COUNT)
     public SortedMap<String, Integer> getMatchingNodesCount() {
@@ -46,28 +47,8 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_ROLE_DIMENSIONS)
-    public SortedSet<NodeRoleDimension> getRoleSpecifier() {
+    public SortedSet<NodeRoleDimension> getRoleDimensions() {
       return _roleDimensions;
-    }
-
-    @JsonProperty(PROP_ROLE_DIMENSIONS)
-    public void setRoleDimensions(SortedSet<NodeRoleDimension> roleDimensions) {
-      _roleDimensions = roleDimensions;
-    }
-
-    @JsonProperty(PROP_ALL_NODES)
-    public void setAllNodes(Set<String> allNodes) {
-      _allNodes = allNodes;
-    }
-
-    @JsonProperty(PROP_ALL_NODES_COUNT)
-    public void setAllNodesCount(int allNodesCount) {
-      _allNodesCount = allNodesCount;
-    }
-
-    @JsonProperty(PROP_MATCHING_NODES_COUNT)
-    public void setMatchingNodesCount(SortedMap<String, Integer> matchingNodesCount) {
-      _matchingNodesCount = matchingNodesCount;
     }
   }
 
@@ -81,20 +62,15 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     public InferRolesAnswerElement answer() {
 
       InferRolesQuestion question = (InferRolesQuestion) _question;
-      InferRolesAnswerElement answerElement = new InferRolesAnswerElement();
+      InferRolesAnswerElement answerElement = new InferRolesAnswerElement(null, null);
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      int allNodesCount = nodes.size();
-
-      answerElement.setAllNodes(nodes);
-      answerElement.setAllNodesCount(allNodesCount);
-
       SortedSet<NodeRoleDimension> roleDimensions =
           new InferRoles(nodes, configurations, _batfish).call();
-      answerElement.setRoleDimensions(roleDimensions);
+      answerElement.getRoleDimensions().addAll(roleDimensions);
 
       for (NodeRoleDimension dimension : roleDimensions) {
         SortedMap<String, SortedSet<String>> roleNodesMap = dimension.createRoleNodesMap(nodes);

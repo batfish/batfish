@@ -1,41 +1,23 @@
 {
 	"roleDimensions": [
 		{
-			"name": "auto0",
-			"type": "auto",
-			"roles": [
-				{
-					"name": "as1",
-					"regex": "as1.*"
-				},
-				{
-					"name": "as2",
-					"regex": "as2.*"
-				},
-				{
-					"name": "as3",
-					"regex": "as3.*"
-				}
-			]
-		},
-		{
-			"name": "func",
+			"name": "default",
 			"roles": [
 				{
 					"name": "border",
-					"regex": "as2border(1|2)"
+					"regex": ".*border.*"
 				},
 				{
 					"name": "core",
-					"regex": "as2core1|as2core2"
+					"regex": ".*core.*"
 				},
 				{
 					"name": "dept",
-					"regex": "as2dept1"
+					"regex": ".*dept.*"
 				},
 				{
 					"name": "dist",
-					"regex": "as2dist(1|2)"
+					"regex": ".*dist.*"
 				}
 			]
 		}

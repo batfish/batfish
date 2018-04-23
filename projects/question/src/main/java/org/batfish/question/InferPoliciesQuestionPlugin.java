@@ -1,5 +1,6 @@
 package org.batfish.question;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.NavigableSet;
 import java.util.SortedMap;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -41,6 +43,7 @@ import org.batfish.question.jsonpath.JsonPathExtractionHint;
 import org.batfish.question.jsonpath.JsonPathExtractionHint.UseType;
 import org.batfish.question.jsonpath.JsonPathQuery;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathQuestion;
+import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.OutliersHypothesis;
 
 @AutoService(Plugin.class)
@@ -416,7 +419,15 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
    */
   public static final class InferPoliciesQuestion extends Question {
 
-    public InferPoliciesQuestion() {}
+    private static final String PROP_ROLE_DIMENSION = "roleDimension";
+
+    @Nonnull private String _roleDimension;
+
+    @JsonCreator
+    public InferPoliciesQuestion(@JsonProperty(PROP_ROLE_DIMENSION) String roleDimension) {
+      _roleDimension =
+          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+    }
 
     @Override
     public boolean getDataPlane() {
@@ -427,6 +438,11 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     public String getName() {
       return "InferPolicies";
     }
+
+    @JsonProperty(PROP_ROLE_DIMENSION)
+    public String getRoleDimension() {
+      return _roleDimension;
+    }
   }
 
   @Override
@@ -436,6 +452,6 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new InferPoliciesQuestion();
+    return new InferPoliciesQuestion(null);
   }
 }
