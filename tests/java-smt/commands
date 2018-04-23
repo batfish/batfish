@@ -100,7 +100,7 @@ test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True, min
 # Ensure ACLs are applied to data forwarding
 init-testrig test_rigs/smt-examples/ACL1 tr-smt-acl1
 test tests/java-smt/acl1-forwarding.ref get smt-forwarding dstIps=["70.70.70.70"], fullModel=True
-test tests/java-smt/acl1-multipath.ref get smt-multipath-consistency finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
+test tests/java-smt/acl1-multipath.ref get smt-multipath-consistency dstIps=[70.70.70.70], finalNodeRegex="R3", finalIfaceRegex="Loopback.*", fullModel=True
 test tests/java-smt/acl1-differential1.ref get smt-reachability diffType=any, failures=1, failNode1Regex="R2", failNode2Regex="R3"
 test tests/java-smt/acl1-differential2.ref get smt-reachability diffType=reduced, failures=1, failNode1Regex="R0", failNode2Regex="R1"
 test tests/java-smt/acl1-differential3.ref get smt-reachability dstIps=[70.70.70.70], diffType=increased, failures=1

@@ -1,4 +1,4 @@
-package org.batfish.datamodel.visitors;
+package org.batfish.symbolic.bdd;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -14,6 +14,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 import org.batfish.symbolic.bdd.BDDInteger;
 
 public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
@@ -105,7 +106,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    throw new BatfishException("TODO");
+    return toBDD(prefixIpSpace.getPrefix());
   }
 
   public BDD toBDD(Prefix prefix) {

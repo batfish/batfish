@@ -24,7 +24,6 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.visitors.IpSpaceToBDD;
 
 public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD> {
 
@@ -91,6 +90,10 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
   }
 
   private BDD toBDD(List<TcpFlags> tcpFlags) {
+    if (tcpFlags == null || tcpFlags.isEmpty()) {
+      return null;
+    }
+
     return _bddOps.or(tcpFlags.stream().map(this::toBDD).collect(ImmutableList.toImmutableList()));
   }
 
@@ -113,11 +116,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitAndMatchExpr(AndMatchExpr andMatchExpr) {
-    BDD result = _factory.one();
-    for (AclLineMatchExpr aclLineMatchExpr : andMatchExpr.getConjuncts()) {
-      result = result.and(aclLineMatchExpr.accept(this));
-    }
-    return result;
+    return _bddOps.and(andMatchExpr.getConjuncts().stream().map(this::visit).collect(ImmutableList.toImmutableList()));
   }
 
   @Override
@@ -176,11 +175,11 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    return null;
+    throw new BatfishException("TODO: PermittedByAcl");
   }
 
   @Override
   public BDD visitTrueExpr(TrueExpr trueExpr) {
-    return null;
+    return _factory.one();
   }
 }
