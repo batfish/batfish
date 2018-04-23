@@ -181,18 +181,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -208,18 +199,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -240,18 +222,9 @@
                       "ipWildcard" : "255.0.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -267,18 +240,9 @@
                       "ipWildcard" : "255.255.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -299,18 +263,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -326,18 +281,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1526,18 +1472,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1553,18 +1490,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1585,18 +1513,9 @@
                       "ipWildcard" : "255.0.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1612,18 +1531,9 @@
                       "ipWildcard" : "255.255.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1644,18 +1554,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3265,18 +3166,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3292,18 +3184,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3324,18 +3207,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3351,18 +3225,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3383,18 +3248,9 @@
                       "ipWildcard" : "1.0.0.0/8"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0/8"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3410,18 +3266,9 @@
                       "ipWildcard" : "10.12.11.1"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "10.12.11.2"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3437,18 +3284,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3469,18 +3307,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0/8"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3496,18 +3325,9 @@
                       "ipWildcard" : "2.128.1.101"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3523,18 +3343,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4641,18 +4452,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4668,18 +4470,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4700,18 +4493,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4727,18 +4511,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4759,18 +4534,9 @@
                       "ipWildcard" : "3.0.0.0/8"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0/8"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4786,18 +4552,9 @@
                       "ipWildcard" : "10.23.21.3"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "10.23.21.2"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4813,18 +4570,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4845,18 +4593,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0/8"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -4872,18 +4611,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -5994,18 +5724,9 @@
                       "TCP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -6021,18 +5742,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7223,18 +6935,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7250,18 +6953,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7282,18 +6976,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7309,18 +6994,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7336,18 +7012,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7363,18 +7030,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7395,18 +7053,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0/16"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7422,18 +7071,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7452,18 +7092,9 @@
                       "ICMP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7484,18 +7115,9 @@
                       "ipWildcard" : "2.128.0.0/16"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7511,18 +7133,9 @@
                       "ipWildcard" : "2.128.0.0/16"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.128.0.0/16"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -7538,18 +7151,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -8278,18 +7882,9 @@
                       "ipWildcard" : "255.255.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -8310,18 +7905,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -8337,18 +7923,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -8364,18 +7941,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -8391,18 +7959,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9100,18 +8659,9 @@
                       "ipWildcard" : "255.255.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9132,18 +8682,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9159,18 +8700,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9186,18 +8718,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9213,18 +8736,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9909,18 +9423,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9936,18 +9441,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9968,18 +9464,9 @@
                       "ipWildcard" : "255.0.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -9995,18 +9482,9 @@
                       "ipWildcard" : "255.255.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -10027,18 +9505,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -10054,18 +9523,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -11129,18 +10589,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -11156,18 +10607,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "1.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -11188,18 +10630,9 @@
                       "ipWildcard" : "255.0.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.0.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -11215,18 +10648,9 @@
                       "ipWildcard" : "255.255.0.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -11247,18 +10671,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.1.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -11274,18 +10689,9 @@
                       "ipWildcard" : "255.255.255.0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "3.0.2.0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -12791,28 +12197,13 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "dstPorts" : [
                       "53-53"
                     ],
                     "ipProtocols" : [
                       "UDP"
                     ],
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "-p udp --dport 53 -j ACCEPT"
@@ -12822,28 +12213,13 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "dstPorts" : [
                       "22-22"
                     ],
                     "ipProtocols" : [
                       "TCP"
                     ],
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "-p tcp --dport 22 -j ACCEPT"
@@ -13054,28 +12430,13 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "dstPorts" : [
                       "22-22"
                     ],
                     "ipProtocols" : [
                       "TCP"
                     ],
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "-p tcp --dport 22 -j ACCEPT"
@@ -13101,19 +12462,7 @@
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "2.128.0.101"
                     },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "-d 2.128.0.101 -j DROP"

@@ -86,19 +86,7 @@
                         "0.0.0.0/0"
                       ]
                     },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 }
               },
@@ -107,22 +95,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "tcpFlags" : [
                       {
                         "ack" : false,
@@ -157,19 +130,7 @@
                         "192.168.1.3"
                       ]
                     },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 }
               }
@@ -183,24 +144,12 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
                         "192.168.1.3"
                       ]
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 }
@@ -210,22 +159,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "tcpFlags" : [
                       {
                         "ack" : false,
@@ -254,24 +188,12 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
                         "0.0.0.0/0"
                       ]
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 }
@@ -1019,18 +941,9 @@
                       "ICMP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "10.100.0.0/16"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1049,18 +962,9 @@
                       "ICMP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1081,18 +985,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "10.1.30.0/24"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1108,18 +1003,9 @@
                       "ipWildcard" : "10.10.30.1"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "10.10.30.2"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -1140,18 +1026,9 @@
                       "ipWildcard" : "0.0.0.0/0"
                     },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardIpSpace",
                       "ipWildcard" : "0.0.0.0/0"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -2086,22 +1963,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2111,22 +1973,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2141,22 +1988,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2166,22 +1998,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2298,22 +2115,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2323,22 +2125,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2353,22 +2140,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2378,22 +2150,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2510,22 +2267,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2535,22 +2277,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2565,9 +2292,6 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "dstPorts" : [
                       "3306-3306"
                     ],
@@ -2575,20 +2299,11 @@
                       "TCP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
                         "162.243.144.192"
                       ]
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -2599,22 +2314,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2731,22 +2431,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2756,22 +2441,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2786,22 +2456,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2811,22 +2466,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2943,22 +2583,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -2968,22 +2593,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -2998,22 +2608,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -3023,22 +2618,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3155,22 +2735,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -3180,22 +2745,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3210,22 +2760,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -3235,22 +2770,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3367,22 +2887,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -3392,22 +2897,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3422,22 +2912,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -3447,22 +2922,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3579,22 +3039,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -3604,22 +3049,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3634,9 +3064,6 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "dstPorts" : [
                       "3306-3306"
                     ],
@@ -3644,20 +3071,11 @@
                       "TCP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
                         "162.243.144.192"
                       ]
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3668,22 +3086,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3800,22 +3203,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -3825,22 +3213,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -3855,9 +3228,6 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "dstPorts" : [
                       "3306-3306"
                     ],
@@ -3865,20 +3235,11 @@
                       "TCP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
                         "162.243.144.192"
                       ]
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 },
@@ -3889,22 +3250,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -4021,22 +3367,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -4046,22 +3377,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -4076,22 +3392,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "100 ALL ALL 0.0.0.0/0 ALLOW"
@@ -4101,22 +3402,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 },
                 "name" : "* ALL ALL 0.0.0.0/0 DENY"
@@ -4211,19 +3497,7 @@
                         "0.0.0.0/0"
                       ]
                     },
-                    "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    }
+                    "negate" : false
                   }
                 }
               },
@@ -4232,22 +3506,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "tcpFlags" : [
                       {
                         "ack" : false,
@@ -4290,18 +3549,6 @@
                       "TCP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "srcPorts" : [
                       "3306-3306"
                     ]
@@ -4318,9 +3565,6 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "dstPorts" : [
                       "3306-3306"
                     ],
@@ -4328,12 +3572,6 @@
                       "TCP"
                     ],
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
@@ -4343,9 +3581,6 @@
                         "107.170.243.58",
                         "162.243.144.192"
                       ]
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 }
@@ -4355,22 +3590,7 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "tcpFlags" : [
                       {
                         "ack" : false,
@@ -4399,24 +3619,12 @@
                 "matchCondition" : {
                   "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
                   "headerSpace" : {
-                    "dstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
-                    },
                     "negate" : false,
-                    "notDstIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
-                    "notSrcIps" : {
-                      "class" : "org.batfish.datamodel.EmptyIpSpace"
-                    },
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
                         "0.0.0.0/0"
                       ]
-                    },
-                    "srcOrDstIps" : {
-                      "class" : "org.batfish.datamodel.UniverseIpSpace"
                     }
                   }
                 }
