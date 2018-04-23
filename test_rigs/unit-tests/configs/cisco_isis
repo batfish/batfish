@@ -91,4 +91,18 @@ router isis
  address-family ipv6
  exit-address-family
 !
+router isis xyz
+ fast-flood 10
+ ignore-attached-bit
+ log-adjacency-changes
+ lsp-gen-interval 5 1 20
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+ metric 12345
+ metric-style wide
+ net 12.1234.1234.1234.1234.12
+ passive-interface Loopback0
+ prc-interval 5 1 20
+ spf-interval 5 1 20
+!
 

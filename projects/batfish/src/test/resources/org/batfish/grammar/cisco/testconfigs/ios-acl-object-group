@@ -1,0 +1,19 @@
+!
+hostname ios-acl-object-group
+!
+object-group network ogn1
+!
+object-group network ogn2
+!
+object-group network ognunused1
+!
+object-group service ogsunused1
+!
+object-group service ogs1
+!
+ip access-list extended acl1
+ permit object-group ogs1 object-group ogn1 object-group ogn2
+!
+ip access-list extended acl-undefined
+ permit object-group ogsfake object-group ognfake1 object-group ognfake2
+!

@@ -184,6 +184,7 @@ null_is_stanza
       | ENABLE
       | FAST_FLOOD
       | HELLO
+      | IGNORE_ATTACHED_BIT
       | ISPF
       | LOG
       | LOG_ADJACENCY_CHANGES

@@ -251,7 +251,7 @@ if_ip_proxy_arp
 
 if_ip_router_isis
 :
-   IP ROUTER ISIS NEWLINE
+   IP ROUTER ISIS null_rest_of_line
 ;
 
 if_ip_router_ospf_area
@@ -950,6 +950,11 @@ if_vrrp
    )
 ;
 
+if_zone_member
+:
+   ZONE_MEMBER SECURITY name = variable_permissive NEWLINE
+;
+
 ifdhcp_null
 :
    (
@@ -1195,6 +1200,7 @@ s_interface
       | if_vrf
       | if_vrf_member
       | if_vrrp
+      | if_zone_member
       // do not rearrange items below
 
       | if_null_single
