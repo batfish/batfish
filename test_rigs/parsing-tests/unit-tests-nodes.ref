@@ -3792,14 +3792,17 @@
         }
       },
       "cisco-zone" : {
-        "configurationFormat" : "CISCO_NX",
+        "configurationFormat" : "CISCO_IOS",
         "name" : "cisco-zone",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "cisco-zone"
+            "hostname" : "cisco-zone",
+            "logging" : {
+              "on" : true
+            }
           }
         },
         "vrfs" : {
