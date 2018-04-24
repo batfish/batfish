@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
@@ -89,10 +90,10 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the BGP neighbor is configured as a listening end of a
-   * dynamic BGP peering.
+   * Provides a matcher that matches if the {@link BgpNeighbor} is configured as a listening end of
+   * a dynamic BGP peering.
    */
-  public static IsDynamic isDynamic() {
+  public static @Nonnull Matcher<BgpNeighbor> isDynamic() {
     return new IsDynamic(equalTo(true));
   }
 
