@@ -1,13 +1,12 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.matchers.AclLineMatchExprMatchers.matches;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.HashSet;
 import java.util.Set;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
 import org.junit.Test;
 
 public class MatchSrcInterfaceTest {
@@ -27,13 +26,9 @@ public class MatchSrcInterfaceTest {
     MatchSrcInterface exprSrcInterface = new MatchSrcInterface(interfaceNames);
 
     // Confirm the same interface name is matched
-    assertThat(
-        exprSrcInterface,
-        AclLineMatchExprMatchers.matches(createFlow(), "test", ImmutableMap.of()));
+    assertThat(exprSrcInterface, matches(createFlow(), "test"));
 
     // Confirm a different interface name is not matched
-    assertThat(
-        exprSrcInterface,
-        not(AclLineMatchExprMatchers.matches(createFlow(), "fail", ImmutableMap.of())));
+    assertThat(exprSrcInterface, not(matches(createFlow(), "fail")));
   }
 }

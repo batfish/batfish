@@ -209,7 +209,8 @@ public class IncrementalDataPlanePluginTest {
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
-        IncrementalBdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
+        IncrementalBdpEngine.applySourceNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -222,7 +223,8 @@ public class IncrementalDataPlanePluginTest {
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
-        IncrementalBdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
+        IncrementalBdpEngine.applySourceNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed, is(flow));
   }
 
@@ -240,7 +242,7 @@ public class IncrementalDataPlanePluginTest {
 
     Flow transformed =
         IncrementalBdpEngine.applySourceNat(
-            flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -258,7 +260,7 @@ public class IncrementalDataPlanePluginTest {
 
     Flow transformed =
         IncrementalBdpEngine.applySourceNat(
-            flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
 
@@ -271,7 +273,8 @@ public class IncrementalDataPlanePluginTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
-    IncrementalBdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
+    IncrementalBdpEngine.applySourceNat(
+        flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
   }
 
   private void testBgpAsPathMultipathHelper(

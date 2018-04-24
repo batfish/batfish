@@ -55,7 +55,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       HeaderSpace headerSpace = ipPerms.toEgressIpAccessListLine(region);
       // Destination IPs should have been populated using either SG or IP ranges,  if not then this
       // Ip perm is incomplete
-      if (!headerSpace.getDstIps().isEmpty()) {
+      if (headerSpace.getDstIps() != null) {
         accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
       }
     }
@@ -67,7 +67,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
       HeaderSpace headerSpace = ipPerms.toIngressIpAccessListLine(region);
       // Source IPs should have been populated using either SG or IP ranges, if not then this Ip
       // perm is incomplete
-      if (!headerSpace.getSrcIps().isEmpty()) {
+      if (headerSpace.getSrcIps() != null) {
         accessList.add(IpAccessListLine.acceptingHeaderSpace(headerSpace));
       }
     }

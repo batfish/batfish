@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
@@ -60,6 +61,9 @@ public interface SynthesizerInput {
 
   /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
+
+  /** Mapping: hostname -> IpSpace name -> IpSpace */
+  Map<String, Map<String, IpSpace>> getNamedIpSpaces();
 
   /** Mapping: hostname -> vrfName -> outInterface -> dstIpConstraintForWhichNoArpReplySent */
   Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();

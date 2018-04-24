@@ -1,9 +1,13 @@
 package org.batfish.datamodel.questions.smt;
 
+import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.EnumSet;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
@@ -141,8 +145,8 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_DST_IPS)
-  public Set<IpWildcard> getDstIps() {
-    return _headerSpace.getDstIps();
+  public SortedSet<IpWildcard> getDstIps() {
+    return asPositiveIpWildcards(_headerSpace.getDstIps());
   }
 
   @JsonProperty(PROP_DST_PORTS)
@@ -186,8 +190,8 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_NOT_DST_IPS)
-  public Set<IpWildcard> getNotDstIps() {
-    return _headerSpace.getNotDstIps();
+  public SortedSet<IpWildcard> getNotDstIps() {
+    return asNegativeIpWildcards(_headerSpace.getNotDstIps());
   }
 
   @JsonProperty(PROP_NOT_DST_PORTS)
@@ -216,8 +220,8 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_NOT_SRC_IPS)
-  public Set<IpWildcard> getNotSrcIps() {
-    return _headerSpace.getNotSrcIps();
+  public SortedSet<IpWildcard> getNotSrcIps() {
+    return asNegativeIpWildcards(_headerSpace.getNotSrcIps());
   }
 
   @JsonProperty(PROP_NOT_SRC_PORTS)
@@ -226,13 +230,13 @@ public class HeaderQuestion extends Question {
   }
 
   @JsonProperty(PROP_SRC_IPS)
-  public Set<IpWildcard> getSrcIps() {
-    return _headerSpace.getSrcIps();
+  public SortedSet<IpWildcard> getSrcIps() {
+    return asPositiveIpWildcards(_headerSpace.getSrcIps());
   }
 
   @JsonProperty(PROP_SRC_OR_DST_IPS)
-  public Set<IpWildcard> getSrcOrDstIps() {
-    return _headerSpace.getSrcOrDstIps();
+  public SortedSet<IpWildcard> getSrcOrDstIps() {
+    return asPositiveIpWildcards(_headerSpace.getSrcOrDstIps());
   }
 
   @JsonProperty(PROP_SRC_OR_DST_PORTS)
@@ -306,7 +310,7 @@ public class HeaderQuestion extends Question {
       if (getDstPorts() != null && getDstPorts().size() != 0) {
         retString += String.format(", dstPorts=%s", getDstPorts());
       }
-      if (getDstIps() != null && getDstIps().size() != 0) {
+      if (getDstIps() != null) {
         retString += String.format(", dstIps=%s", getDstIps());
       }
       if (getFragmentOffsets() != null && getFragmentOffsets().size() != 0) {
@@ -324,10 +328,10 @@ public class HeaderQuestion extends Question {
       if (getSrcOrDstPorts() != null && getSrcOrDstPorts().size() != 0) {
         retString += String.format(", srcOrDstPorts=%s", getSrcOrDstPorts());
       }
-      if (getSrcOrDstIps() != null && getSrcOrDstIps().size() != 0) {
+      if (getSrcOrDstIps() != null) {
         retString += String.format(", srcOrDstIps=%s", getSrcOrDstIps());
       }
-      if (getSrcIps() != null && getSrcIps().size() != 0) {
+      if (getSrcIps() != null) {
         retString += String.format(", srcIps=%s", getSrcIps());
       }
       if (getSrcPorts() != null && getSrcPorts().size() != 0) {
@@ -336,7 +340,7 @@ public class HeaderQuestion extends Question {
       if (getNotDstPorts() != null && getNotDstPorts().size() != 0) {
         retString += String.format(", notDstPorts=%s", getNotDstPorts());
       }
-      if (getNotDstIps() != null && getNotDstIps().size() != 0) {
+      if (getNotDstIps() != null) {
         retString += String.format(", notDstIps=%s", getNotDstIps());
       }
       if (getNotFragmentOffsets() != null && getNotFragmentOffsets().size() != 0) {
@@ -351,7 +355,7 @@ public class HeaderQuestion extends Question {
       if (getNotIpProtocols() != null && getNotIpProtocols().size() != 0) {
         retString += String.format(", notIpProtocols=%s", getNotIpProtocols().toString());
       }
-      if (getNotSrcIps() != null && getNotSrcIps().size() != 0) {
+      if (getNotSrcIps() != null) {
         retString += String.format(", notSrcIps=%s", getNotSrcIps());
       }
       if (getNotSrcPorts() != null && getNotSrcPorts().size() != 0) {

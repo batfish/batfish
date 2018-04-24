@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.matchers.AclLineMatchExprMatchers.matches;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
@@ -15,7 +16,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
-import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,15 +68,13 @@ public class PermittedByAclTest {
     PermittedByAcl exprMatch = new PermittedByAcl("acl1");
 
     // Confirm a flow matching the ACL is correctly identified as accepted
-    assertThat(exprMatch, AclLineMatchExprMatchers.matches(createFlow("1.2.3.4"), "", acceptAcl));
+    assertThat(exprMatch, matches(createFlow("1.2.3.4"), "", acceptAcl));
 
     // Confirm a flow NOT matching the ACL is correctly identified as NOT accepted
-    assertThat(
-        exprMatch, not(AclLineMatchExprMatchers.matches(createFlow("10.10.10.10"), "", acceptAcl)));
+    assertThat(exprMatch, not(matches(createFlow("10.10.10.10"), "", acceptAcl)));
 
     // Confirm a flow matching the ACL is correctly identified as NOT accepted (line action is
     // reject)
-    assertThat(
-        exprMatch, not(AclLineMatchExprMatchers.matches(createFlow("1.2.3.4"), "", rejectAcl)));
+    assertThat(exprMatch, not(matches(createFlow("1.2.3.4"), "", rejectAcl)));
   }
 }

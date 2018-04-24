@@ -1,5 +1,7 @@
 package org.batfish.symbolic.utils;
 
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+
 import java.util.Collection;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
@@ -12,10 +14,10 @@ public class PrefixUtils {
    * Checks if a prefix overlaps with the destination in a headerspace
    */
   public static boolean overlap(HeaderSpace h, Prefix p) {
-    if (h.getDstIps().isEmpty()) {
+    if (h.getDstIps() == null) {
       return true;
     }
-    for (IpWildcard ipWildcard : h.getDstIps()) {
+    for (IpWildcard ipWildcard : asPositiveIpWildcards(h.getDstIps())) {
       Prefix p2 = ipWildcard.toPrefix();
       if (overlap(p, p2)) {
         return true;

@@ -4,6 +4,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.Evaluator;
 import org.hamcrest.Description;
@@ -14,14 +15,17 @@ class AclLineMatchExprMatchersImpl {
     private final Flow _flow;
     private final String _srcInterface;
     private final Map<String, IpAccessList> _availableAcls;
+    private final Map<String, IpSpace> _namedIpSpaces;
 
     Matches(
         @Nonnull Flow flow,
         @Nonnull String srcInterface,
-        @Nonnull Map<String, IpAccessList> availableAcls) {
+        @Nonnull Map<String, IpAccessList> availableAcls,
+        @Nonnull Map<String, IpSpace> namedIpSpaces) {
       _flow = flow;
       _srcInterface = srcInterface;
       _availableAcls = availableAcls;
+      _namedIpSpaces = namedIpSpaces;
     }
 
     @Override
@@ -33,7 +37,8 @@ class AclLineMatchExprMatchersImpl {
 
     @Override
     protected boolean matchesSafely(AclLineMatchExpr item, Description mismatchDescription) {
-      boolean matches = Evaluator.matches(item, _flow, _srcInterface, _availableAcls);
+      boolean matches =
+          Evaluator.matches(item, _flow, _srcInterface, _availableAcls, _namedIpSpaces);
       if (!matches) {
         mismatchDescription.appendText(String.format("did not match and was %s", item));
       }
