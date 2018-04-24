@@ -1,7 +1,5 @@
-!
+! This is an IOS XR formatted file.
 hostname bgp_route_policy
-!
-feature bgp
 !
 router bgp 2152
  nsr
