@@ -53175,7 +53175,7 @@
         },
         "bgp-enforce-first-as" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 1.1.1.1/32"
+            "1" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 1.1.1.1"
           }
         },
         "bgp_address_family" : {
