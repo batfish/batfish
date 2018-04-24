@@ -3,6 +3,9 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -13,15 +16,11 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
-import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -38,15 +37,6 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     public UniqueIpAssignmentsAnswerElement() {
       _summary = new AnswerSummary();
       _duplicateIps = new TreeMap<>();
-    }
-
-    public void add(Ip ip, String hostname, String interfaceName) {
-      if (!_duplicateIps.containsKey(ip)) {
-        _summary.setNumResults(_summary.getNumResults() + 1);
-      }
-      SortedSet<NodeInterfacePair> interfaces =
-          _duplicateIps.computeIfAbsent(ip, k -> new TreeSet<>());
-      interfaces.add(new NodeInterfacePair(hostname, interfaceName));
     }
 
     @JsonProperty(PROP_DUPLICATE_IPS)
@@ -76,65 +66,67 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_DUPLICATE_IPS)
     public void setDuplicateIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> duplicateIps) {
+      _summary.setNumResults(duplicateIps.size());
       _duplicateIps = duplicateIps;
     }
   }
 
   public static class UniqueIpAssignmentsAnswerer extends Answerer {
+    private final UniqueIpAssignmentsQuestion _question;
 
     public UniqueIpAssignmentsAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
+      _question = (UniqueIpAssignmentsQuestion) question;
     }
 
     @Override
     public AnswerElement answer() {
-
-      UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
-      Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
-      MultiSet<Ip> duplicateIps = new TreeMultiSet<>();
-      for (Entry<String, Configuration> e : configurations.entrySet()) {
-        String hostname = e.getKey();
-        if (!nodes.contains(hostname)) {
-          continue;
-        }
-        Configuration c = e.getValue();
-        for (Interface iface : c.getInterfaces().values()) {
-          if (!question.getInterfacesSpecifier().matches(iface)) {
-            continue;
-          }
-          for (InterfaceAddress address : iface.getAllAddresses()) {
-            Ip ip = address.getIp();
-            if (!question.getEnabledIpsOnly() || iface.getActive()) {
-              duplicateIps.add(ip);
-            }
-          }
-        }
-      }
-      for (Entry<String, Configuration> e : configurations.entrySet()) {
-        String hostname = e.getKey();
-        if (!nodes.contains(hostname)) {
-          continue;
-        }
-        Configuration c = e.getValue();
-        for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
-          String interfaceName = e2.getKey();
-          Interface iface = e2.getValue();
-          if (!question.getInterfacesSpecifier().matches(iface)) {
-            continue;
-          }
-          for (InterfaceAddress address : iface.getAllAddresses()) {
-            Ip ip = address.getIp();
-            if ((!question.getEnabledIpsOnly() || iface.getActive())
-                && duplicateIps.count(ip) != 1) {
-              answerElement.add(ip, hostname, interfaceName);
-            }
-          }
-        }
-      }
+      answerElement.setDuplicateIps(getDuplicateIps());
       return answerElement;
+    }
+
+    private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
+      Set<String> nodes = _question.getNodeRegex().getMatchingNodes(_batfish);
+      Map<Ip, Set<NodeInterfacePair>> ipInterfaces = new TreeMap<>();
+      _batfish
+          .loadConfigurations()
+          .values()
+          .stream()
+          .filter(config -> nodes.contains(config.getName()))
+          .forEach(
+              config ->
+                  config
+                      .getInterfaces()
+                      .values()
+                      .stream()
+                      .filter(
+                          iface ->
+                              _question.getInterfacesSpecifier().matches(iface)
+                                  && (!_question.getEnabledIpsOnly() || iface.getActive()))
+                      .forEach(
+                          iface ->
+                              iface
+                                  .getAllAddresses()
+                                  .stream()
+                                  .map(InterfaceAddress::getIp)
+                                  .forEach(
+                                      ip ->
+                                          ipInterfaces
+                                              .computeIfAbsent(ip, k -> new TreeSet<>())
+                                              .add(
+                                                  new NodeInterfacePair(
+                                                      config.getHostname(), iface.getName())))));
+
+      return ipInterfaces
+          .entrySet()
+          .stream()
+          .filter(entry -> entry.getValue().size() > 1)
+          .collect(
+              ImmutableSortedMap.toImmutableSortedMap(
+                  Comparator.naturalOrder(),
+                  Entry::getKey,
+                  entry -> ImmutableSortedSet.copyOf(entry.getValue())));
     }
   }
 
