@@ -3,7 +3,8 @@
     {
       "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesAnswerElement",
       "matchingNodesCount" : {
-        "auto0" : 13
+        "auto0" : 13,
+        "auto1" : 13
       },
       "roleDimensions" : [
         {
@@ -27,6 +28,23 @@
             {
               "name" : "spine",
               "regex" : "\\p{Alnum}+\\Q-\\Espine\\p{Alnum}*\\Q-\\E\\p{Alnum}+"
+            }
+          ],
+          "type" : "AUTO"
+        },
+        {
+          "name" : "auto1",
+          "roleRegexes" : [
+            "(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Alnum}+"
+          ],
+          "roles" : [
+            {
+              "name" : "bb",
+              "regex" : "bb\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Alnum}+"
+            },
+            {
+              "name" : "dc",
+              "regex" : "dc\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Alnum}+"
             }
           ],
           "type" : "AUTO"
