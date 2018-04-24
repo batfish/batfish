@@ -2415,7 +2415,7 @@
         }
       },
       "bgp_route_policy" : {
-        "configurationFormat" : "CISCO_NX",
+        "configurationFormat" : "CISCO_IOS_XR",
         "name" : "bgp_route_policy",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
@@ -2534,9 +2534,6 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "features" : {
-              "bgp" : true
-            },
             "hostname" : "bgp_route_policy"
           }
         },
