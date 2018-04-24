@@ -1,8 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.TreeMap;
 import org.batfish.datamodel.Ip;
 
 public abstract class BgpPeerGroup implements Serializable {
@@ -18,8 +16,6 @@ public abstract class BgpPeerGroup implements Serializable {
   protected Boolean _additionalPathsSend;
 
   protected Boolean _advertiseInactive;
-
-  private Map<String, String> _afGroups;
 
   protected Boolean _allowAsIn;
 
@@ -101,9 +97,7 @@ public abstract class BgpPeerGroup implements Serializable {
 
   protected int _updateSourceLine;
 
-  public BgpPeerGroup() {
-    _afGroups = new TreeMap<>();
-  }
+  public BgpPeerGroup() {}
 
   public Boolean getActive() {
     return _active;
@@ -123,10 +117,6 @@ public abstract class BgpPeerGroup implements Serializable {
 
   public Boolean getAdvertiseInactive() {
     return _advertiseInactive;
-  }
-
-  public Map<String, String> getAfGroups() {
-    return _afGroups;
   }
 
   public Boolean getAllowAsIn() {
