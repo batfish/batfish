@@ -12792,14 +12792,14 @@
                           "action" : "ACCEPT",
                           "ipSpace" : {
                             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "1.2.3.5"
+                            "ipWildcard" : "1.2.3.4"
                           }
                         },
                         {
                           "action" : "ACCEPT",
                           "ipSpace" : {
                             "class" : "org.batfish.datamodel.IpWildcardIpSpace",
-                            "ipWildcard" : "1.2.3.4"
+                            "ipWildcard" : "1.2.3.5"
                           }
                         }
                       ]
