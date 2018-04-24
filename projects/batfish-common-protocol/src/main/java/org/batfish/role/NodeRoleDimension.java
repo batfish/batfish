@@ -34,10 +34,10 @@ public class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   @Nonnull private String _name;
 
   /**
-   * an ordered list of regexes used to identify roles from node names. each regex in regexes has at
-   * least one group in it that locates the role name within a node name. there are multiple regexes
-   * to handle node names that have different formats. this value is usually populated by auto role
-   * inferences and may null for custom role dimensions.
+   * a list of regexes used to identify roles from node names. each regex in regexes has at least
+   * one group in it that locates the role name within a node name. there are multiple regexes to
+   * handle node names that have different formats, and to allow a node to have multple roles. this
+   * value is usually populated by auto role inference and may be null for custom role dimensions.
    */
   @Nullable private List<String> _roleRegexes;
 

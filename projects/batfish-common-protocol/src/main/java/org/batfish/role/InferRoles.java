@@ -8,7 +8,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.NavigableMap;
 import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
@@ -32,10 +31,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.role.NodeRoleDimension.Type;
 
 public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
-
-  // During role inference we compute the possible role dimensions of a node based on its name.
-  // Later these dimensions will be stored in each node's Configuration object.
-  private static SortedMap<String, NavigableMap<Integer, String>> _roleDimensions = new TreeMap<>();
 
   private IBatfish _batfish;
   private Collection<String> _nodes;
@@ -116,38 +111,57 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
       return emptyNodeRoles;
     }
 
-    // record the set of role "dimensions" for each node, which is a part of its name
-    // that may indicate a useful grouping of nodes
-    // (e.g., the node's function, location, device type, etc.)
-    createRoleDimensions(candidateRegexes);
+    // if there is at least one role group, let's fine the best role dimension according
+    // to our metric, and also keep all the others.
+
+    SortedSet<NodeRoleDimension> allDims;
 
     Pair<Integer, Double> bestRegexAndScore = findBestRegex(candidateRegexes);
 
     // select the regex of maximum score, if that score is above threshold
-    Optional<SortedSet<NodeRoleDimension>> optResult =
-        toNodeRoleDimensionsIfAboveThreshold(bestRegexAndScore, candidateRegexes);
-    if (optResult.isPresent()) {
-      return optResult.get();
+    Optional<NodeRoleDimension> optResult =
+        toPrimaryNodeRoleDimensionIfAboveThreshold(bestRegexAndScore, candidateRegexes);
+    boolean bestIsAboveThreshold = optResult.isPresent();
+    if (bestIsAboveThreshold) {
+      // remove the dimension that has been selected as the primary inferred role dimension,
+      // so we do not duplicate it when creating the other role dimensions
+      candidateRegexes.remove(bestRegexAndScore.getFirst().intValue());
     }
 
-    // otherwise we attempt to make the best role found so far more specific
-    // NOTE: we could try to refine all possible roles we've considered, rather than
-    // greedily only refining the best one, if the greedy approach fails often.
+    // record the set of role "dimensions" for each node, which is a part of its name
+    // that may indicate a useful grouping of nodes
+    // (e.g., the node's function, location, device type, etc.)
+    allDims = createRoleDimensions(candidateRegexes);
 
-    // try adding a second group around any alphanumeric sequence in the regex;
-    // now the role is a concatenation of the strings of both groups
-    // NOTE: We could also consider just using the leading alphabetic portion of an alphanumeric
-    // sequence as the second group, which would result in less specific groups and could
-    // be appropriate for some naming schemes.
-
-    candidateRegexes = possibleSecondRoleGroups(candidateRegexes.get(bestRegexAndScore.getFirst()));
-
-    if (candidateRegexes.size() == 0) {
-      return emptyNodeRoles;
+    if (bestIsAboveThreshold) {
+      allDims.add(optResult.get());
     } else {
-      // return the best one according to our metric, even if it's below threshold
-      return toNodeRoleDimensions(findBestRegex(candidateRegexes), candidateRegexes);
+
+      // if no single role group is aboe threshold, we attempt to make the best role found so far
+      // more specific.
+      // NOTE: we could try to refine all possible roles we've considered, rather than
+      // greedily only refining the best one, if the greedy approach fails often.
+
+      // try adding a second group around any alphanumeric sequence in the regex;
+      // now the role is a concatenation of the strings of both groups
+      // NOTE: We could also consider just using the leading alphabetic portion of an alphanumeric
+      // sequence as the second group, which would result in less specific groups and could
+      // be appropriate for some naming schemes.
+
+      candidateRegexes =
+          possibleSecondRoleGroups(candidateRegexes.get(bestRegexAndScore.getFirst()));
+
+      if (candidateRegexes.size() != 0) {
+        // determine the best one according to our metric, even if it's below threshold
+        allDims.add(
+            toNodeRoleDimension(
+                findBestRegex(candidateRegexes),
+                candidateRegexes,
+                NodeRoleDimension.AUTO_DIMENSION_PRIMARY));
+      }
     }
+
+    return allDims;
   }
 
   // try to identify a regex that most node names match
@@ -230,24 +244,15 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     return candidateRegexes;
   }
 
-  private void createRoleDimensions(List<List<String>> regexes) {
-    for (String node : _matchingNodes) {
-      _roleDimensions.put(node, new TreeMap<>());
-    }
-    for (int i = 0; i < regexes.size(); i++) {
-      SortedMap<String, SortedSet<String>> nodeRolesMap =
-          regexToNodeRolesMap(regexTokensToRegex(regexes.get(i)), _matchingNodes);
-      for (Map.Entry<String, SortedSet<String>> entry : nodeRolesMap.entrySet()) {
-        String nodeName = entry.getKey();
-        String roleName = entry.getValue().first();
-        _roleDimensions.get(nodeName).put(i, roleName);
-      }
-    }
-  }
+  private SortedSet<NodeRoleDimension> createRoleDimensions(List<List<String>> regexes) {
 
-  public static SortedMap<String, NavigableMap<Integer, String>> getRoleDimensions(
-      Map<String, Configuration> configurations) {
-    return _roleDimensions;
+    SortedSet<NodeRoleDimension> result = new TreeSet<>();
+    for (int i = 0; i < regexes.size(); i++) {
+      String dimName = NodeRoleDimension.AUTO_DIMENSION_PREFIX + (i + 1);
+      String regex = regexTokensToRegex(regexes.get(i));
+      result.add(regexToNodeRoleDimension(regex, dimName));
+    }
+    return result;
   }
 
   private List<List<String>> possibleSecondRoleGroups(List<String> tokens) {
@@ -377,10 +382,12 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   }
 
   // the list of candidates must have at least one element
-  private Optional<SortedSet<NodeRoleDimension>> toNodeRoleDimensionsIfAboveThreshold(
+  private Optional<NodeRoleDimension> toPrimaryNodeRoleDimensionIfAboveThreshold(
       Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
     if (bestRegexAndScore.getSecond() >= ROLE_THRESHOLD) {
-      SortedSet<NodeRoleDimension> bestNRD = toNodeRoleDimensions(bestRegexAndScore, candidates);
+      NodeRoleDimension bestNRD =
+          toNodeRoleDimension(
+              bestRegexAndScore, candidates, NodeRoleDimension.AUTO_DIMENSION_PRIMARY);
       return Optional.of(bestNRD);
     } else {
       return Optional.empty();
@@ -388,14 +395,15 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   }
 
   // the list of candidates must have at least one element
-  private SortedSet<NodeRoleDimension> toNodeRoleDimensions(
-      Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates) {
+  private NodeRoleDimension toNodeRoleDimension(
+      Pair<Integer, Double> bestRegexAndScore, List<List<String>> candidates, String dimName) {
     List<String> bestRegexTokens = candidates.get(bestRegexAndScore.getFirst());
     String bestRegex = regexTokensToRegex(bestRegexTokens);
-    return regexToNodeRoleDimensions(bestRegex);
+    return regexToNodeRoleDimension(bestRegex, dimName);
   }
 
-  SortedSet<NodeRoleDimension> regexToNodeRoleDimensions(String regex) {
+  // converts a regex containing one or more groups indicating roles into a NodeRoleDimension
+  NodeRoleDimension regexToNodeRoleDimension(String regex, String dimName) {
     SortedSet<NodeRole> inferredRoles = new TreeSet<>();
 
     Set<String> roles = regexToRoleNodesMap(regex, _nodes).keySet();
@@ -403,15 +411,8 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
       inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex)));
     }
 
-    SortedSet<NodeRoleDimension> nodeRolesMap = new TreeSet<>();
-    nodeRolesMap.add(
-        new NodeRoleDimension(
-            NodeRoleDimension.AUTO_DIMENSION_PRIMARY,
-            inferredRoles,
-            Type.AUTO,
-            Collections.singletonList(regex)));
-
-    return nodeRolesMap;
+    return new NodeRoleDimension(
+        dimName, inferredRoles, Type.AUTO, Collections.singletonList(regex));
   }
 
   // regex is a regular expression that uses one or more groups to indicate the role
