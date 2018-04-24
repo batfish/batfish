@@ -12,7 +12,6 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.map.LRUMap;
-import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Snapshot;
@@ -27,6 +26,7 @@ import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
+import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
