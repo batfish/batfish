@@ -40,10 +40,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
       _duplicateIps = new TreeMap<>();
     }
 
-    public void add(
-        Ip ip,
-        String hostname,
-        String interfaceName) {
+    public void add(Ip ip, String hostname, String interfaceName) {
       if (!_duplicateIps.containsKey(ip)) {
         _summary.setNumResults(_summary.getNumResults() + 1);
       }
