@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.Collection;
 import java.util.Objects;
 import java.util.SortedSet;
 import org.batfish.common.util.CommonUtil;
@@ -16,7 +15,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
   private final SortedSet<AclLineMatchExpr> _disjuncts;
 
   @JsonCreator
-  public OrMatchExpr(@JsonProperty(PROP_DISJUNCTS) Collection<AclLineMatchExpr> disjuncts) {
+  public OrMatchExpr(@JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts) {
     _disjuncts = disjuncts != null ? ImmutableSortedSet.copyOf(disjuncts) : ImmutableSortedSet.of();
   }
 
