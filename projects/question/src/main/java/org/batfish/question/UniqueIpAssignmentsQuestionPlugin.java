@@ -18,6 +18,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.TreeMultiSet;
@@ -30,32 +31,38 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
   public static class UniqueIpAssignmentsAnswerElement extends AnswerElement {
 
+    private static final String PROP_DUPLICATE_IPS = "duplicateIps";
+
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> _duplicateIps;
 
     public UniqueIpAssignmentsAnswerElement() {
+      _summary = new AnswerSummary();
       _duplicateIps = new TreeMap<>();
     }
 
     public void add(
-        SortedMap<Ip, SortedSet<NodeInterfacePair>> map,
         Ip ip,
         String hostname,
         String interfaceName) {
-      SortedSet<NodeInterfacePair> interfaces = map.computeIfAbsent(ip, k -> new TreeSet<>());
+      if (!_duplicateIps.containsKey(ip)) {
+        _summary.setNumResults(_summary.getNumResults() + 1);
+      }
+      SortedSet<NodeInterfacePair> interfaces =
+          _duplicateIps.computeIfAbsent(ip, k -> new TreeSet<>());
       interfaces.add(new NodeInterfacePair(hostname, interfaceName));
     }
 
+    @JsonProperty(PROP_DUPLICATE_IPS)
     public SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
       return _duplicateIps;
     }
 
-    private Object ipsToString(
-        String indent, String header, SortedMap<Ip, SortedSet<NodeInterfacePair>> ips) {
-      StringBuilder sb = new StringBuilder(indent + header + "\n");
-      for (Ip ip : ips.keySet()) {
-        sb.append(indent + indent + ip + "\n");
-        for (NodeInterfacePair nip : ips.get(ip)) {
-          sb.append(indent + indent + indent + nip + "\n");
+    private Object ipsToString() {
+      StringBuilder sb = new StringBuilder("  Duplicate IPs\n");
+      for (Ip ip : _duplicateIps.keySet()) {
+        sb.append(String.format("    %s\n", ip));
+        for (NodeInterfacePair nip : _duplicateIps.get(ip)) {
+          sb.append(String.format("      %s\n", nip));
         }
       }
       return sb.toString();
@@ -63,13 +70,14 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for unique IP assignment check\n");
+      StringBuilder sb = new StringBuilder("Results for unique IP assignment check hey\n");
       if (_duplicateIps != null) {
-        sb.append(ipsToString("  ", "Duplicate IPs", _duplicateIps));
+        sb.append(ipsToString());
       }
       return sb.toString();
     }
 
+    @JsonProperty(PROP_DUPLICATE_IPS)
     public void setDuplicateIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> duplicateIps) {
       _duplicateIps = duplicateIps;
     }
@@ -124,7 +132,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
             Ip ip = address.getIp();
             if ((!question.getEnabledIpsOnly() || iface.getActive())
                 && duplicateIps.count(ip) != 1) {
-              answerElement.add(answerElement.getDuplicateIps(), ip, hostname, interfaceName);
+              answerElement.add(ip, hostname, interfaceName);
             }
           }
         }
