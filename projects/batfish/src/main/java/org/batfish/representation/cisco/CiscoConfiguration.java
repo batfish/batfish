@@ -214,6 +214,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
+  public static String computeServiceObjectGroupAclName(String name) {
+    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
+  }
+
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
     Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
@@ -397,6 +401,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _wccpAcls;
 
+  private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -437,6 +443,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
+    _serviceObjectGroups = new TreeMap<>();
     _snmpAccessLists = new TreeSet<>();
     _sshAcls = new TreeSet<>();
     _sshIpv6Acls = new TreeSet<>();
@@ -1093,6 +1100,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markStructure(CiscoStructureType.L2TP_CLASS, usage, _cf.getL2tpClasses());
   }
 
+  private void markNetworkObjectGroups(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage, _networkObjectGroups);
+  }
+
   private void markRouteMaps(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.ROUTE_MAP, usage, _routeMaps);
   }
@@ -1101,6 +1112,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Cable cable = _cf.getCable();
     markStructure(
         CiscoStructureType.SERVICE_CLASS, usage, cable != null ? cable.getServiceClasses() : null);
+  }
+
+  private void markServiceObjectGroups(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.SERVICE_OBJECT_GROUP, usage, _serviceObjectGroups);
   }
 
   private void processFailoverSettings() {
@@ -3841,6 +3856,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
+    // object-group
+    markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
+    markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
+
     // warn about unreferenced data structures
     warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     warnUnusedCommunityLists();
@@ -3863,6 +3882,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
     warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
+    warnUnusedStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
     warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
 
@@ -4092,5 +4112,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
+    return _serviceObjectGroups;
   }
 }

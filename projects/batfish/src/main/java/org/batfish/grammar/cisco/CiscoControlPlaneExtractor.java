@@ -395,8 +395,12 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_expr_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_iis_stanzaContext;
@@ -607,6 +611,7 @@ import org.batfish.representation.cisco.ExtendedAccessList;
 import org.batfish.representation.cisco.ExtendedAccessListLine;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
+import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Interface;
 import org.batfish.representation.cisco.IpAsPathAccessList;
 import org.batfish.representation.cisco.IpAsPathAccessListLine;
@@ -711,6 +716,7 @@ import org.batfish.representation.cisco.RoutePolicySetTag;
 import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
+import org.batfish.representation.cisco.ServiceObjectGroup;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
 import org.batfish.representation.cisco.StandardCommunityList;
@@ -718,8 +724,10 @@ import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.StandardIpv6AccessList;
 import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
+import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
@@ -1006,6 +1014,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private final Warnings _w;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
+
+  private ServiceObjectGroup _currentServiceObjectGroup;
 
   public CiscoControlPlaneExtractor(
       String text,
@@ -1820,6 +1830,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterOg_service(Og_serviceContext ctx) {
+    String name = ctx.name.getText();
+    int definitionLine = ctx.name.getStart().getLine();
+    _currentServiceObjectGroup =
+        _configuration
+            .getServiceObjectGroups()
+            .computeIfAbsent(name, n -> new ServiceObjectGroup(n, definitionLine));
+  }
+
+  @Override
+  public void exitOg_service(Og_serviceContext ctx) {
+    _currentServiceObjectGroup = null;
+  }
+
+  @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)));
   }
@@ -1829,6 +1854,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)));
+  }
+
+  @Override
+  public void exitOgs_icmp(Ogs_icmpContext ctx) {
+    _currentServiceObjectGroup.getLines().add(new IcmpServiceObjectGroupLine());
+  }
+
+  @Override
+  public void exitOgs_tcp(Ogs_tcpContext ctx) {
+    _currentServiceObjectGroup.getLines().add(new TcpServiceObjectGroupLine(toPortRanges(ctx.ps)));
+  }
+
+  @Override
+  public void exitOgs_udp(Ogs_udpContext ctx) {
+    _currentServiceObjectGroup.getLines().add(new UdpServiceObjectGroupLine(toPortRanges(ctx.ps)));
   }
 
   @Override
@@ -2915,8 +2955,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitExtended_access_list_tail(Extended_access_list_tailContext ctx) {
+    referenceNetworkObjectGroup(ctx.srcipr);
+    referenceNetworkObjectGroup(ctx.dstipr);
     if (ctx.ogs != null) {
       /* TODO: support reference to service object-group */
+      String name = ctx.ogs.getText();
+      int line = ctx.ogs.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.SERVICE_OBJECT_GROUP,
+          name,
+          CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+          line);
       return;
     }
     LineAction action = toLineAction(ctx.ala);
@@ -3084,6 +3133,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             states,
             tcpFlags);
     _currentExtendedAcl.addLine(line);
+  }
+
+  private void referenceNetworkObjectGroup(Access_list_ip_rangeContext ctx) {
+    if (ctx.og != null) {
+      String name = ctx.og.getText();
+      int line = ctx.og.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.NETWORK_OBJECT_GROUP,
+          name,
+          CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
+          line);
+    }
   }
 
   @Override

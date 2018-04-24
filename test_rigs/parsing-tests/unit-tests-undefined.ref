@@ -789,6 +789,14 @@
           ]
         }
       },
+      "undefined:object-group network:usage:extended access-list network object-group:drawbridge_hosts" : {
+        "description" : "Undefined reference to structure of type: 'object-group network' with usage: 'extended access-list network object-group' named 'drawbridge_hosts'",
+        "files" : {
+          "asa_acl" : [
+            6
+          ]
+        }
+      },
       "undefined:policy-statement:usage:bgp export policy-statement:someexportpolicy" : {
         "description" : "Undefined reference to structure of type: 'policy-statement' with usage: 'bgp export policy-statement' named 'someexportpolicy'",
         "files" : {
@@ -979,7 +987,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 121
+      "numResults" : 122
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1008,6 +1016,15 @@
           "abc" : {
             "management telnet ip access-group" : [
               36
+            ]
+          }
+        }
+      },
+      "asa_acl" : {
+        "object-group network" : {
+          "drawbridge_hosts" : {
+            "extended access-list network object-group" : [
+              6
             ]
           }
         }

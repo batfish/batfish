@@ -677,6 +677,14 @@
           ]
         }
       },
+      "unused:object-group service:SVCGRP-ICMP" : {
+        "description" : "Unused structure of type: 'object-group service' with name: 'SVCGRP-ICMP'",
+        "files" : {
+          "cisco_misc" : [
+            176
+          ]
+        }
+      },
       "unused:policy-statement:route-filter-test-v4" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
         "files" : {
@@ -895,7 +903,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 118
+      "numResults" : 119
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1159,6 +1167,13 @@
           ],
           "copp-system-p-acl-mac-cdp-udld-vtp" : [
             6
+          ]
+        }
+      },
+      "cisco_misc" : {
+        "object-group service" : {
+          "SVCGRP-ICMP" : [
+            176
           ]
         }
       },

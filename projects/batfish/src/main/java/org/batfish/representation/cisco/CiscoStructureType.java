@@ -34,7 +34,8 @@ public enum CiscoStructureType implements StructureType {
   PREFIX6_LIST("ipv6 prefix-list"),
   ROUTE_MAP("route-map"),
   ROUTE_MAP_CLAUSE("route-map-clause"),
-  SERVICE_CLASS("cable service-class");
+  SERVICE_CLASS("cable service-class"),
+  SERVICE_OBJECT_GROUP("object-group service");
 
   private final String _description;
 
