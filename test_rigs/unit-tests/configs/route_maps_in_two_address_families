@@ -1,6 +1,8 @@
 !
 hostname route_maps_in_two_address_families
 !
+feature bgp
+!
 router bgp 1
    template peer ABC
     address-family ipv4 unicast

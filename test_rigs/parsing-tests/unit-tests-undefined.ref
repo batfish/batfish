@@ -827,7 +827,7 @@
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'PROTECT-LEAF'",
         "files" : {
           "peer_template" : [
-            16
+            18
           ]
         }
       },
@@ -1678,7 +1678,7 @@
         "route-map" : {
           "PROTECT-LEAF" : {
             "bgp inbound route-map" : [
-              16
+              18
             ]
           }
         }
