@@ -51542,6 +51542,15 @@
             }
           }
         },
+        "asa_acl" : {
+          "object-group network" : {
+            "drawbridge_hosts" : {
+              "extended access-list network object-group" : [
+                6
+              ]
+            }
+          }
+        },
         "bgp_address_family" : {
           "interface" : {
             "Loopback0" : {
@@ -52623,6 +52632,13 @@
             ],
             "copp-system-p-acl-mac-cdp-udld-vtp" : [
               6
+            ]
+          }
+        },
+        "cisco_misc" : {
+          "object-group service" : {
+            "SVCGRP-ICMP" : [
+              176
             ]
           }
         },
