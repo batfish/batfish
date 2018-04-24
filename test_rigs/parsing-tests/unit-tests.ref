@@ -53239,8 +53239,8 @@
         "juniper_bgp_authentication" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Both authentication-key and authentication-key-chain specified for neighbor 172.16.2.1/32",
-            "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1/32",
-            "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2/32"
+            "2" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.1",
+            "3" : "MISCELLANEOUS: Could not determine local ip for bgp peering with neighbor ip: 172.16.2.2"
           }
         },
         "juniper_firewall" : {

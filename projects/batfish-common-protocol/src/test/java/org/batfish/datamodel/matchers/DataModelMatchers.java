@@ -10,6 +10,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
@@ -85,6 +86,14 @@ public final class DataModelMatchers {
       @Nonnull String hostname, @Nonnull StructureType type, @Nonnull String structureName) {
     return new ConvertConfigurationAnswerElementMatchers.HasUnusedStructure(
         hostname, type, structureName);
+  }
+
+  /**
+   * Provides a matcher that matches if the BGP neighbor is configured as a listening end of a
+   * dynamic BGP peering.
+   */
+  public static IsDynamic isDynamic() {
+    return new IsDynamic(equalTo(true));
   }
 
   /**

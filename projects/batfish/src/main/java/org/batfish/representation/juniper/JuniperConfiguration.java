@@ -555,7 +555,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
       if (localIp == null) {
-        _w.redFlag("Could not determine local ip for bgp peering with neighbor ip: " + prefix);
+        if (neighbor.getDynamic()) {
+          _w.redFlag(
+              "Could not determine local ip for bgp peering with neighbor prefix: " + prefix);
+        } else {
+          _w.redFlag(
+              "Could not determine local ip for bgp peering with neighbor ip: "
+                  + prefix.getStartIp());
+        }
       } else {
         neighbor.setLocalIp(localIp);
       }

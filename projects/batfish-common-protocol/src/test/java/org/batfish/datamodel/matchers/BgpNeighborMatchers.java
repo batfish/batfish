@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEnforceFirstAs;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
-import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.hamcrest.Matcher;
 
 public class BgpNeighborMatchers {
@@ -36,13 +35,5 @@ public class BgpNeighborMatchers {
    */
   public static HasEnforceFirstAs hasEnforceFirstAs() {
     return new HasEnforceFirstAs(equalTo(true));
-  }
-
-  /**
-   * Provides a matcher that matches if the BGP neighbor is configured as a listening end of a
-   * dynamic BGP peering.
-   */
-  public static IsDynamic isDynamic() {
-    return new IsDynamic(equalTo(true));
   }
 }
