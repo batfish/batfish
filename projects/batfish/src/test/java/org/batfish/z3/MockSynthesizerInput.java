@@ -47,6 +47,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Set<String> _nodesWithSrcInterfaceConstraints;
 
+    private SortedSet<String> _nonTransitNodes;
+
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
     private Map<String, Map<String, String>> _outgoingAcls;
@@ -67,7 +69,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private SortedSet<String> _transitNodes;
 
-    private Field _transitNodesField;
+    private Field _transitedNonTransitNodesField;
+
+    private Field _transitedTransitNodesField;
 
     private Builder() {
       _aclActions = ImmutableMap.of();
@@ -83,6 +87,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _neighborUnreachable = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
+      _nonTransitNodes = ImmutableSortedSet.of();
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
@@ -91,7 +96,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
       _transitNodes = ImmutableSortedSet.of();
-      _transitNodesField = new Field("mock_transit_nodes_field", 0);
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -168,6 +172,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setNonTransitNodes(SortedSet<String> nonTransitNodes) {
+      _nonTransitNodes = nonTransitNodes;
+      return this;
+    }
+
     public Builder setNullRoutedIps(Map<String, Map<String, BooleanExpr>> nullRoutedIps) {
       _nullRoutedIps = nullRoutedIps;
       return this;
@@ -210,8 +219,23 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setTransitedTransitNodesField(Field transitedNodesField) {
+      _transitedTransitNodesField = transitedNodesField;
+      return this;
+    }
+
     public Builder setVectorizedParameters(Set<Type> vectorizedParameters) {
       _vectorizedParameters = vectorizedParameters;
+      return this;
+    }
+
+    public Builder setTransitNodes(SortedSet<String> transitNodes) {
+      _transitNodes = transitNodes;
+      return this;
+    }
+
+    public Builder setTransitedNonTransitNodesField(Field transitedNonTransitNodesField) {
+      _transitedNonTransitNodesField = transitedNonTransitNodesField;
       return this;
     }
   }
@@ -247,6 +271,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
 
+  private final SortedSet<String> _nonTransitNodes;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -265,7 +291,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private SortedSet<String> _transitNodes;
 
-  private Field _transitNodesField;
+  private Field _transitedNonTransitNodesField;
+
+  private Field _transitedTransitNodesField;
 
   private final Set<Type> _vectorizedParameters;
 
@@ -284,6 +312,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = builder._nullRoutedIps;
+    _nonTransitNodes = builder._nonTransitNodes;
     _outgoingAcls = builder._outgoingAcls;
     _routableIps = builder._routableIps;
     _simplify = builder._simplify;
@@ -292,7 +321,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
     _transitNodes = builder._transitNodes;
-    _transitNodesField = builder._transitNodesField;
+    _transitedNonTransitNodesField = builder._transitedNonTransitNodesField;
+    _transitedTransitNodesField = builder._transitedTransitNodesField;
     _vectorizedParameters = builder._vectorizedParameters;
   }
 
@@ -393,8 +423,13 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public Field getTransitNodesField() {
-    return _transitNodesField;
+  public Field getTransitedNonTransitNodesField() {
+    return _transitedNonTransitNodesField;
+  }
+
+  @Override
+  public Field getTransitedTransitNodesField() {
+    return _transitedTransitNodesField;
   }
 
   @Override
@@ -410,6 +445,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<String> getNodesWithSrcInterfaceConstraints() {
     return _nodesWithSrcInterfaceConstraints;
+  }
+
+  @Override
+  public SortedSet<String> getNonTransitNodes() {
+    return _nonTransitNodes;
   }
 
   @Override

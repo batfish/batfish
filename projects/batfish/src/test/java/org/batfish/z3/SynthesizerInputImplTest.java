@@ -604,15 +604,33 @@ public class SynthesizerInputImplTest {
   }
 
   @Test
-  public void testComputeTransitNodesField() {
+  public void testComputeTransitedTransitNodesField() {
     SynthesizerInput input =
         _inputBuilder
             .setConfigurations(ImmutableMap.of())
             .setTransitNodes(ImmutableSortedSet.of("a", "b", "c"))
             .build();
     assertThat(
-        input.getTransitNodesField(),
-        equalTo(new Field(SynthesizerInputImpl.TRANSITED_NODES_FIELD_NAME, 3)));
+        input.getTransitedNonTransitNodesField(),
+        equalTo(new Field(SynthesizerInputImpl.TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, 0)));
+    assertThat(
+        input.getTransitedTransitNodesField(),
+        equalTo(new Field(SynthesizerInputImpl.TRANSITED_TRANSIT_NODES_FIELD_NAME, 3)));
+  }
+
+  @Test
+  public void testComputeTransitedNonTransitNodesField() {
+    SynthesizerInput input =
+        _inputBuilder
+            .setConfigurations(ImmutableMap.of())
+            .setNonTransitNodes(ImmutableSortedSet.of("a", "b", "c"))
+            .build();
+    assertThat(
+        input.getTransitedNonTransitNodesField(),
+        equalTo(new Field(SynthesizerInputImpl.TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, 3)));
+    assertThat(
+        input.getTransitedTransitNodesField(),
+        equalTo(new Field(SynthesizerInputImpl.TRANSITED_TRANSIT_NODES_FIELD_NAME, 0)));
   }
 
   @Test

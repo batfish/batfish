@@ -48,7 +48,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
 
-  static final String TRANSITED_NODES_FIELD_NAME = "TRANSITED_NODES";
+  static final String TRANSITED_TRANSIT_NODES_FIELD_NAME = "TRANSITED_NODES";
+
+  static final String TRANSITED_NON_TRANSIT_NODES_FIELD_NAME = "NON_TRANSIT_NODES";
 
   public static class Builder {
     private ForwardingAnalysis _forwardingAnalysis;
@@ -64,6 +66,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     private Map<String, Set<String>> _disabledVrfs;
 
     @Nullable private HeaderSpace _headerSpace;
+
+    private SortedSet<String> _nonTransitNodes;
 
     private boolean _simplify;
 
@@ -81,6 +85,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _disabledNodes = ImmutableSet.of();
       _disabledVrfs = ImmutableMap.of();
       _headerSpace = null;
+      _nonTransitNodes = ImmutableSortedSet.of();
       _simplify = false;
       _specialize = false;
       _transitNodes = ImmutableSortedSet.of();
@@ -96,6 +101,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           _disabledNodes,
           _disabledVrfs,
           _headerSpace != null ? _headerSpace : new HeaderSpace(),
+          _nonTransitNodes,
           _simplify,
           _specialize,
           _topology,
@@ -162,6 +168,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _vectorizedParameters = vectorizedParameters;
       return this;
     }
+
+    public Builder setNonTransitNodes(SortedSet<String> nonTransitNodes) {
+      _nonTransitNodes = nonTransitNodes;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -213,6 +224,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
 
+  private final SortedSet<String> _nonTransitNodes;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -229,7 +242,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
-  private final Field _transitedNodesField;
+  private final Field _transitedNonTransitNodesField;
+
+  private final Field _transitedTransitNodesField;
 
   private final SortedSet<String> _transitNodes;
 
@@ -243,6 +258,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       Set<String> disabledNodes,
       Map<String, Set<String>> disabledVrfs,
       HeaderSpace headerSpace,
+      SortedSet<String> nonTransitNodes,
       boolean simplify,
       boolean specialize,
       Topology topology,
@@ -297,8 +313,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _nodesWithSrcInterfaceConstraints = computeNodesWithSrcInterfaceConstraints();
     _sourceInterfaceField = computeSourceInterfaceField();
     _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues();
+    _nonTransitNodes = ImmutableSortedSet.copyOf(nonTransitNodes);
+    _transitedNonTransitNodesField = computeTransitedNonTransitNodesField();
     _transitNodes = ImmutableSortedSet.copyOf(transitNodes);
-    _transitedNodesField = computeTransitedNodesField();
+    _transitedTransitNodesField = computeTransitedTransitNodesField();
     _aclConditions = computeAclConditions();
   }
 
@@ -337,9 +355,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return new Field(SRC_INTERFACE_FIELD_NAME, fieldBits);
   }
 
-  private Field computeTransitedNodesField() {
+  private Field computeTransitedTransitNodesField() {
     /* Need a bit for each transit node */
-    return new Field(TRANSITED_NODES_FIELD_NAME, _transitNodes.size());
+    return new Field(TRANSITED_TRANSIT_NODES_FIELD_NAME, _transitNodes.size());
+  }
+
+  private Field computeTransitedNonTransitNodesField() {
+    /* Need a bit for each non-transit node */
+    return new Field(TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, _nonTransitNodes.size());
   }
 
   private Map<String, List<String>> computeNodeInterfaces() {
@@ -816,8 +839,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public Field getTransitNodesField() {
-    return _transitedNodesField;
+  public Field getTransitedNonTransitNodesField() {
+    return _transitedNonTransitNodesField;
+  }
+
+  @Override
+  public Field getTransitedTransitNodesField() {
+    return _transitedTransitNodesField;
   }
 
   @Override
@@ -848,5 +876,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Set<String> getNodesWithSrcInterfaceConstraints() {
     return _nodesWithSrcInterfaceConstraints;
+  }
+
+  @Override
+  public SortedSet<String> getNonTransitNodes() {
+    return _nonTransitNodes;
   }
 }

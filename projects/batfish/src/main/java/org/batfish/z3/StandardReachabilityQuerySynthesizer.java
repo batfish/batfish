@@ -225,15 +225,21 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     /*
      * If transit nodes are specified, make sure at least one was transited by constraining the
      * field to be nonzero.
-     * TODO: we can easiy handle negation by constraining the field to be zero.
      */
     BooleanExpr transitNodesConstraint =
         input.getTransitNodes().isEmpty()
             ? TrueExpr.INSTANCE
             : new NotExpr(
                 new EqExpr(
-                    new VarIntExpr(input.getTransitNodesField()),
-                    new LitIntExpr(0, input.getTransitNodesField().getSize())));
+                    new VarIntExpr(input.getTransitedTransitNodesField()),
+                    new LitIntExpr(0, input.getTransitedTransitNodesField().getSize())));
+
+    BooleanExpr notTransitNodesConstraint =
+        input.getNonTransitNodes().isEmpty()
+            ? TrueExpr.INSTANCE
+            : new EqExpr(
+                new VarIntExpr(input.getTransitedNonTransitNodesField()),
+                new LitIntExpr(0, input.getTransitedNonTransitNodesField().getSize()));
 
     return ReachabilityProgram.builder()
         .setInput(input)
@@ -245,7 +251,8 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
                     new HeaderSpaceMatchExpr(_headerSpace, true),
                     getSrcNattedConstraint(),
                     SaneExpr.INSTANCE,
-                    transitNodesConstraint)))
+                    transitNodesConstraint,
+                    notTransitNodesConstraint)))
         .build();
   }
 }

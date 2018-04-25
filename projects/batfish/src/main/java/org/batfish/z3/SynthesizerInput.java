@@ -65,6 +65,12 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> vrfName -> outInterface -> dstIpConstraintForWhichNoArpReplySent */
   Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
 
+  /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
+  Set<String> getNodesWithSrcInterfaceConstraints();
+
+  /** Set of nodes that should not be transited */
+  SortedSet<String> getNonTransitNodes();
+
   /** Mapping: hostname -> vrfName -> nullRoutedIps */
   Map<String, Map<String, BooleanExpr>> getNullRoutedIps();
 
@@ -85,8 +91,10 @@ public interface SynthesizerInput {
   /** The set of nodes for which we should track whether they are transited */
   SortedSet<String> getTransitNodes();
 
+  Field getTransitedNonTransitNodesField();
+
   /** The field used to track which transit nodes are transited */
-  Field getTransitNodesField();
+  Field getTransitedTransitNodesField();
 
   /** Mapping: hostname -> interfacesAllowedToBelongToAnEdge */
   Map<String, Set<String>> getTraversableInterfaces();
@@ -108,7 +116,4 @@ public interface SynthesizerInput {
 
   /** Mapping: hostname -> interface -> constraint on transformed source interface field */
   Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues();
-
-  /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
-  Set<String> getNodesWithSrcInterfaceConstraints();
 }

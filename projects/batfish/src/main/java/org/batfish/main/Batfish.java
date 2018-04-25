@@ -4002,16 +4002,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<String> activeIngressNodes;
     Set<String> activeFinalNodes;
     HeaderSpace headerSpace;
-    Set<String> transitNodes;
-    Set<String> nonTransitNodes;
+    SortedSet<String> transitNodes;
+    SortedSet<String> nonTransitNodes;
     int maxChunkSize;
 
     try {
       activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
       activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(this);
       headerSpace = reachabilitySettings.getHeaderSpace();
-      transitNodes = reachabilitySettings.computeActiveTransitNodes(this);
-      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(this);
+      transitNodes =
+          ImmutableSortedSet.copyOf(reachabilitySettings.computeActiveTransitNodes(this));
+      nonTransitNodes =
+          ImmutableSortedSet.copyOf(reachabilitySettings.computeActiveNonTransitNodes(this));
       maxChunkSize = reachabilitySettings.getMaxChunkSize();
       reachabilitySettings.validateTransitNodes(this);
     } catch (InvalidReachabilitySettingsException e) {
@@ -4044,7 +4046,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             dataPlane,
             loadForwardingAnalysis(configurations, dataPlane),
             headerSpace,
-            reachabilitySettings.getSpecialize());
+            nonTransitNodes,
+            reachabilitySettings.getSpecialize(),
+            transitNodes);
 
     // build query jobs
     List<NodJob> jobs =
@@ -4196,7 +4200,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlane dataPlane = loadDataPlane();
     ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations, dataPlane);
     return synthesizeDataPlane(
-        configurations, dataPlane, forwardingAnalysis, new HeaderSpace(), false);
+        configurations,
+        dataPlane,
+        forwardingAnalysis,
+        new HeaderSpace(),
+        ImmutableSortedSet.of(),
+        false,
+        ImmutableSortedSet.of());
   }
 
   @Nonnull
@@ -4205,7 +4215,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
-      boolean specialize) {
+      SortedSet<String> nonTransitNodes,
+      boolean specialize,
+      SortedSet<String> transitNodes) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4218,8 +4230,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 dataPlane,
                 forwardingAnalysis,
                 headerSpace,
+                nonTransitNodes,
                 _settings.getSimplify(),
-                specialize));
+                specialize,
+                transitNodes));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4239,16 +4253,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
+      SortedSet<String> nonTransitNodes,
       boolean simplify,
-      boolean specialize) {
+      boolean specialize,
+      SortedSet<String> transitNodes) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
-        .setHeaderSpace(headerSpace)
         .setForwardingAnalysis(forwardingAnalysis)
+        .setHeaderSpace(headerSpace)
+        .setNonTransitNodes(nonTransitNodes)
         .setSimplify(simplify)
         .setSpecialize(specialize)
         .setTopology(topology)
+        .setTransitNodes(transitNodes)
         .build();
   }
 

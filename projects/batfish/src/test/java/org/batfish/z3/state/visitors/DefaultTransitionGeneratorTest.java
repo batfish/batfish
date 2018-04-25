@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.hasItem;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.batfish.z3.Field;
 import org.batfish.z3.MockSynthesizerInput;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
@@ -1399,8 +1401,95 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitPostOutEdge_transitNodes() {
+  public void testVisitPostOutEdge_nonTransitNodes() {
+    Field transitedNonTransitNodesField = new Field("TestTransitedNonTransitNodesField", 1);
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setEnabledEdges(
+                ImmutableSet.of(
+                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+            .setOutgoingAcls(
+                ImmutableMap.of(
+                    NODE1, ImmutableMap.of(),
+                    NODE2, ImmutableMap.of()))
+            .setNonTransitNodes(ImmutableSortedSet.of(NODE1))
+            .setTransitedNonTransitNodesField(transitedNonTransitNodesField)
+            .setTopologyInterfaces(
+                ImmutableMap.of(
+                    NODE1, ImmutableSet.of(INTERFACE1), NODE2, ImmutableSet.of(INTERFACE1)))
+            .build();
 
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(PostOutEdge.State.INSTANCE)));
+
+    // node1 is a non-transit node, so set its flag in the transitedNonTransitNodesField
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(
+                    new TransformedVarIntExpr(transitedNonTransitNodesField),
+                    new BitwiseOrExpr(
+                        new VarIntExpr(transitedNonTransitNodesField), new LitIntExpr(1, 1))),
+                new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
+
+    // node2 is not a non-transit node, so don't update transitedNodesField
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                new PostOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1))));
+  }
+
+  @Test
+  public void testVisitPostOutEdge_transitNodes() {
+    Field transitedTransitNodesField = new Field("TestTransitedTransitNodesField", 1);
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setEnabledEdges(
+                ImmutableSet.of(
+                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+            .setOutgoingAcls(
+                ImmutableMap.of(
+                    NODE1, ImmutableMap.of(),
+                    NODE2, ImmutableMap.of()))
+            .setTransitNodes(ImmutableSortedSet.of(NODE1))
+            .setTransitedTransitNodesField(transitedTransitNodesField)
+            .setTopologyInterfaces(
+                ImmutableMap.of(
+                    NODE1, ImmutableSet.of(INTERFACE1), NODE2, ImmutableSet.of(INTERFACE1)))
+            .build();
+
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(PostOutEdge.State.INSTANCE)));
+
+    // node1 is a transit node, so set its flag in the transitedTransitNodesField
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(
+                    new TransformedVarIntExpr(transitedTransitNodesField),
+                    new BitwiseOrExpr(
+                        new VarIntExpr(transitedTransitNodesField), new LitIntExpr(1, 1))),
+                new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
+
+    // node2 is not a transit node, so don't update transitedNodesField
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                new PostOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1))));
   }
 
   @Test
