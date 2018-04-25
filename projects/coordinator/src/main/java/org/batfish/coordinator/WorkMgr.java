@@ -67,7 +67,6 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -1076,10 +1075,12 @@ public class WorkMgr extends AbstractCoordinator {
           try {
             NodeRolesData testrigData = NodeRolesData.read(subFile);
             Path nodeRolesPath = containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-            NodeRolesData.replaceNodeRoleDimensions(
-                nodeRolesPath, testrigData.getNodeRoleDimensions(), NodeRoleDimension.Type.CUSTOM);
+            NodeRolesData.mergeNodeRoleDimensions(
+                nodeRolesPath, testrigData.getNodeRoleDimensions(), false);
           } catch (IOException e) {
-            throw new BatfishException("Could not process node role data", e);
+            // lets not stop the upload because that file is busted.
+            // TODO: figure out a way to surface this error to the user
+            _logger.errorf("Could not process node role data: %s", e);
           }
         }
       } else {
