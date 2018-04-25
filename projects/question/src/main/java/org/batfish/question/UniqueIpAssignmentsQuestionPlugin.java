@@ -5,6 +5,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.TreeMultimap;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -12,11 +15,10 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
@@ -57,7 +59,7 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String prettyPrint() {
-      StringBuilder sb = new StringBuilder("Results for unique IP assignment check hey\n");
+      StringBuilder sb = new StringBuilder("Results for unique IP assignment check\n");
       if (_duplicateIps != null) {
         sb.append(ipsToString());
       }
@@ -72,11 +74,11 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
   }
 
   public static class UniqueIpAssignmentsAnswerer extends Answerer {
-    private final UniqueIpAssignmentsQuestion _question;
+    private final UniqueIpAssignmentsQuestion _uniqueIpAssignmentsQuestion;
 
     public UniqueIpAssignmentsAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
-      _question = (UniqueIpAssignmentsQuestion) question;
+      _uniqueIpAssignmentsQuestion = (UniqueIpAssignmentsQuestion) question;
     }
 
     @Override
@@ -87,40 +89,36 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     }
 
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
-      Set<String> nodes = _question.getNodeRegex().getMatchingNodes(_batfish);
-      Map<Ip, Set<NodeInterfacePair>> ipInterfaces = new TreeMap<>();
-      _batfish
-          .loadConfigurations()
-          .values()
+      Set<String> nodes = _uniqueIpAssignmentsQuestion.getNodeRegex().getMatchingNodes(_batfish);
+      Map<String, Configuration> configs = _batfish.loadConfigurations();
+      return nodes
           .stream()
-          .filter(config -> nodes.contains(config.getName()))
-          .forEach(
-              config ->
-                  config
-                      .getInterfaces()
-                      .values()
+          // convert to stream of interfaces
+          .flatMap(node -> configs.get(node).getInterfaces().values().stream())
+          // narrow to interfaces of interest
+          .filter(
+              iface ->
+                  _uniqueIpAssignmentsQuestion.getInterfacesSpecifier().matches(iface)
+                      && (!_uniqueIpAssignmentsQuestion.getEnabledIpsOnly() || iface.getActive()))
+          // convert to stream of Entry<Ip, NodeInterfacePair>
+          .flatMap(
+              iface ->
+                  iface
+                      .getAllAddresses()
                       .stream()
-                      .filter(
-                          iface ->
-                              _question.getInterfacesSpecifier().matches(iface)
-                                  && (!_question.getEnabledIpsOnly() || iface.getActive()))
-                      .forEach(
-                          iface ->
-                              iface
-                                  .getAllAddresses()
-                                  .stream()
-                                  .map(InterfaceAddress::getIp)
-                                  .forEach(
-                                      ip ->
-                                          ipInterfaces
-                                              .computeIfAbsent(ip, k -> new TreeSet<>())
-                                              .add(
-                                                  new NodeInterfacePair(
-                                                      config.getHostname(), iface.getName())))));
-
-      return ipInterfaces
+                      .map(
+                          ifaceAdrr ->
+                              Maps.immutableEntry(
+                                  ifaceAdrr.getIp(),
+                                  new NodeInterfacePair(
+                                      iface.getOwner().getHostname(), iface.getName()))))
+          // group by Ip
+          .collect(Multimaps.toMultimap(Entry::getKey, Entry::getValue, TreeMultimap::create))
+          // convert to stream of Entry<Ip, Set<NodeInterfacePair>>
+          .asMap()
           .entrySet()
           .stream()
+          // narrow to entries with multiple NodeInterfacePairs
           .filter(entry -> entry.getValue().size() > 1)
           .collect(
               ImmutableSortedMap.toImmutableSortedMap(
