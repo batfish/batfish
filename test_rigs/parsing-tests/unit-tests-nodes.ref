@@ -13413,6 +13413,67 @@
           }
         }
       },
+      "juniper_isis" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_isis",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "interfaces" : {
+          "ge-0/0/0.0" : {
+            "name" : "ge-0/0/0.0",
+            "accessVlan" : 0,
+            "active" : true,
+            "autostate" : true,
+            "bandwidth" : 1.0E9,
+            "declaredNames" : [
+              "ge-0/0/0.0"
+            ],
+            "isisL1InterfaceMode" : "unset",
+            "isisL2InterfaceMode" : "unset",
+            "mtu" : 1500,
+            "nativeVlan" : 1,
+            "ospfDeadInterval" : 0,
+            "ospfEnabled" : false,
+            "ospfHelloMultiplier" : 0,
+            "ospfPassive" : false,
+            "ospfPointToPoint" : false,
+            "ripEnabled" : false,
+            "ripPassive" : false,
+            "spanningTreePortfast" : false,
+            "switchportMode" : "NONE",
+            "switchportTrunkEncapsulation" : "DOT1Q",
+            "type" : "PHYSICAL",
+            "vrf" : "default"
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "interfaces" : [
+              "ge-0/0/0.0"
+            ]
+          }
+        }
+      },
+      "juniper_l2_learning" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_l2_learning",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "juniper_misc" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_misc",
@@ -13721,6 +13782,94 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "routeFilterLists" : {
+          "~AGGREGATE_10_0_0_0_8_RF~" : {
+            "name" : "~AGGREGATE_10_0_0_0_8_RF~",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "9-32",
+                "prefix" : "10.0.0.0/8"
+              }
+            ]
+          }
+        },
+        "routingPolicies" : {
+          "~AGGREGATE_10_0_0_0_8~" : {
+            "name" : "~AGGREGATE_10_0_0_0_8~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "prefix" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                  },
+                  "prefixSet" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedPrefixSet",
+                    "name" : "~AGGREGATE_10_0_0_0_8_RF~"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "aggregateRoutes" : [
+              {
+                "class" : "org.batfish.datamodel.GeneratedRoute",
+                "administrativeCost" : 0,
+                "asPath" : [ ],
+                "discard" : true,
+                "generationPolicy" : "~AGGREGATE_10_0_0_0_8~",
+                "metric" : 0,
+                "network" : "10.0.0.0/8",
+                "nextHopIp" : "AUTO/NONE(-1l)"
+              }
+            ]
+          }
+        }
+      },
+      "juniper_security" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_security",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "ipAccessLists" : {
+          "~GLOBAL_SECURITY_POLICY~" : {
+            "name" : "~GLOBAL_SECURITY_POLICY~",
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false
+                  }
+                },
+                "name" : "p1"
+              }
+            ]
+          }
+        },
         "vendorFamily" : {
           "juniper" : { }
         },
