@@ -15,15 +15,18 @@
     ],
     "finalNodeRegex" : ".*",
     "ingressNodeRegex" : ".*",
+    "maxChunkSize" : 1,
     "negateHeader" : false,
     "notDstIps" : [
       "10.0.3.1"
     ],
+    "notFinalNodeRegex" : "",
     "notIngressNodeRegex" : "z1-.*",
-    "notTransitNodes" : [
-      "z1-firewall"
-    ],
-    "type" : "standard"
+    "notTransitNodes" : "z1-firewall",
+    "specialize" : false,
+    "transitNodes" : "",
+    "type" : "standard",
+    "useCompression" : false
   },
   "status" : "SUCCESS",
   "summary" : {
