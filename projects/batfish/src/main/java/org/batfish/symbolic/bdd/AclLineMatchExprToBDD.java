@@ -180,7 +180,7 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
 
   @Override
   public BDD visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    throw new BatfishException("TODO: PermittedByAcl");
+    throw new BatfishException("PermittedByAcl is unsupported");
   }
 
   @Override
