@@ -238,8 +238,8 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         input.getNonTransitNodes().isEmpty()
             ? TrueExpr.INSTANCE
             : new EqExpr(
-                new VarIntExpr(input.getTransitedNonTransitNodesField()),
-                new LitIntExpr(0, input.getTransitedNonTransitNodesField().getSize()));
+                new VarIntExpr(input.getTransitedTransitNodesField()),
+                new LitIntExpr(0, input.getTransitedTransitNodesField().getSize()));
 
     return ReachabilityProgram.builder()
         .setInput(input)

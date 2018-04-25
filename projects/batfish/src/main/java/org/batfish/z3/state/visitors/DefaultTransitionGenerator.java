@@ -704,27 +704,19 @@ public class DefaultTransitionGenerator implements StateVisitor {
               /* If node1 is a transit node, set its flag */
               if (_input.getTransitNodes().contains(node1)) {
                 Field transitedTransitNodesField = _input.getTransitedTransitNodesField();
-                int nodeIndex = _input.getTransitNodes().headSet(node1).size();
-                int flag = 1 << nodeIndex;
                 preconditionsBuilder.add(
                     new EqExpr(
                         new TransformedVarIntExpr(transitedTransitNodesField),
-                        new BitwiseOrExpr(
-                            new VarIntExpr(transitedTransitNodesField),
-                            new LitIntExpr(flag, transitedTransitNodesField.getSize()))));
+                        new LitIntExpr(1, 1)));
               }
 
               /* If node1 is a non-transit node, set its flag */
               if (_input.getNonTransitNodes().contains(node1)) {
                 Field transitedNonTransitNodesField = _input.getTransitedNonTransitNodesField();
-                int nodeIndex = _input.getNonTransitNodes().headSet(node1).size();
-                int flag = 1 << nodeIndex;
                 preconditionsBuilder.add(
                     new EqExpr(
                         new TransformedVarIntExpr(transitedNonTransitNodesField),
-                        new BitwiseOrExpr(
-                            new VarIntExpr(transitedNonTransitNodesField),
-                            new LitIntExpr(flag, transitedNonTransitNodesField.getSize()))));
+                        new LitIntExpr(1, 1)));
               }
 
               List<BooleanExpr> preconditions = preconditionsBuilder.build();

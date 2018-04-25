@@ -357,12 +357,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private Field computeTransitedTransitNodesField() {
     /* Need a bit for each transit node */
-    return new Field(TRANSITED_TRANSIT_NODES_FIELD_NAME, _transitNodes.size());
+    return new Field(TRANSITED_TRANSIT_NODES_FIELD_NAME, 1);
   }
 
   private Field computeTransitedNonTransitNodesField() {
     /* Need a bit for each non-transit node */
-    return new Field(TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, _nonTransitNodes.size());
+    return new Field(TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, 1);
   }
 
   private Map<String, List<String>> computeNodeInterfaces() {

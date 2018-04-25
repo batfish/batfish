@@ -604,33 +604,14 @@ public class SynthesizerInputImplTest {
   }
 
   @Test
-  public void testComputeTransitedTransitNodesField() {
-    SynthesizerInput input =
-        _inputBuilder
-            .setConfigurations(ImmutableMap.of())
-            .setTransitNodes(ImmutableSortedSet.of("a", "b", "c"))
-            .build();
+  public void testComputeTransitNodesFields() {
+    SynthesizerInput input = _inputBuilder.setConfigurations(ImmutableMap.of()).build();
     assertThat(
         input.getTransitedNonTransitNodesField(),
-        equalTo(new Field(SynthesizerInputImpl.TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, 0)));
+        equalTo(new Field(SynthesizerInputImpl.TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, 1)));
     assertThat(
         input.getTransitedTransitNodesField(),
-        equalTo(new Field(SynthesizerInputImpl.TRANSITED_TRANSIT_NODES_FIELD_NAME, 3)));
-  }
-
-  @Test
-  public void testComputeTransitedNonTransitNodesField() {
-    SynthesizerInput input =
-        _inputBuilder
-            .setConfigurations(ImmutableMap.of())
-            .setNonTransitNodes(ImmutableSortedSet.of("a", "b", "c"))
-            .build();
-    assertThat(
-        input.getTransitedNonTransitNodesField(),
-        equalTo(new Field(SynthesizerInputImpl.TRANSITED_NON_TRANSIT_NODES_FIELD_NAME, 3)));
-    assertThat(
-        input.getTransitedTransitNodesField(),
-        equalTo(new Field(SynthesizerInputImpl.TRANSITED_TRANSIT_NODES_FIELD_NAME, 0)));
+        equalTo(new Field(SynthesizerInputImpl.TRANSITED_TRANSIT_NODES_FIELD_NAME, 1)));
   }
 
   @Test
