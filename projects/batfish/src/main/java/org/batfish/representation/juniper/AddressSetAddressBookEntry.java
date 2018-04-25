@@ -19,8 +19,8 @@ public final class AddressSetAddressBookEntry extends AddressBookEntry {
   }
 
   @Override
-  public Set<String> getEntryNames() {
-    return _entries.stream().map(AddressSetEntry::getName).collect(Collectors.toSet());
+  public Set<AddressSetEntry> getEntries() {
+    return _entries;
   }
 
   @Override

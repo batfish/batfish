@@ -19,7 +19,7 @@ public final class AddressAddressBookEntry extends AddressBookEntry {
   }
 
   @Override
-  public Set<String> getEntryNames() {
+  public Set<AddressSetEntry> getEntries() {
     return ImmutableSet.of();
   }
 

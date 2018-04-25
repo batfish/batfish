@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -27,6 +26,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
@@ -43,6 +44,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -1581,19 +1583,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecVpn;
   }
 
-  private Map<String, IpSpace> toIpSpaces(String name, AddressBook book) {
+  private Map<String, IpSpace> toIpSpaces(String bookName, AddressBook book) {
     // TODO fix this to make ip spaces for each address, set, and book
     Map<String, IpSpace> ipSpaces = new TreeMap<>();
-    IpWildcardSetIpSpace.Builder ipSpaceBuilder = IpWildcardSetIpSpace.builder();
     book.getEntries()
         .forEach(
             (n, entry) -> {
               // If this address book references other entries, add them to an AclIpSpace
-              entry
-                  .getEntryNames()
+              /*entry
+                  .getEntries()
                   .forEach(
-                      subName -> {
-                        String ipSpaceName = name + "~" + subName;
+                      subEntry -> {
+                        String ipSpaceName = name + "~" + subEntry.getName();
+
                         // TODO add reference to this entry for the base IpSpace
                         // TODO add this entry to ipSpaces
                         // AclIpSpace aclIpSpace = AclIpSpace.permitting(new IpSpaceReference(ipSpaceName));
@@ -1604,9 +1606,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
                                     .including(entry.getIpWildcards(_w))
                                     .build());
                       });
-              ipSpaceBuilder.including(entry.getIpWildcards(_w));
+              ipSpaceBuilder.including(entry.getIpWildcards(_w));*/
+
+              // Simple way to do it, but toIpSpace is coupled with class defs
+              // ipSpaces.put(entry.getName(), entry.toIpSpace());
+
+              String entryName = bookName + "~" + n;
+              if (!entry.getEntries().isEmpty()) {
+                List<AclIpSpaceLine> aclIpSpaceLines = new TreeList<>();
+                entry
+                    .getEntries()
+                    .forEach(
+                        subEntry -> {
+                          aclIpSpaceLines.add(
+                              AclIpSpaceLine.builder()
+                                  .setIpSpace(new IpSpaceReference(entry.getName()))
+                                  .setAction(LineAction.ACCEPT)
+                                  .build());
+                        });
+                ipSpaces.put(entryName, AclIpSpace.builder().setLines(aclIpSpaceLines).build());
+              } else {
+                // ipSpaces.put(entryName,
+                // IpWildcardSetIpSpace.builder().including(entry.getPrefixes(_w)));
+                ipSpaces.put(
+                    entryName,
+                    IpWildcardSetIpSpace.builder().including(entry.getIpWildcards(_w)).build());
+              }
             });
-    return ImmutableMap.of(name, ipSpaceBuilder.build());
+    return ipSpaces;
   }
 
   private RoutingPolicy toRoutingPolicy(FirewallFilter filter) {

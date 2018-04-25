@@ -7,10 +7,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
-import javax.annotation.Nonnull;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -88,6 +88,13 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   }
 
   @Override
+  protected int compareSameClass(IpSpace o) {
+    return Comparator.comparing(IpWildcardSetIpSpace::getBlacklist, CommonUtil::compareIterable)
+        .thenComparing(IpWildcardSetIpSpace::getWhitelist, CommonUtil::compareIterable)
+        .compare(this, (IpWildcardSetIpSpace) o);
+  }
+
+  @Override
   public IpSpace complement() {
     /*
      * the current is first reject everything in blacklist.
@@ -106,9 +113,15 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   }
 
   @Override
-  public boolean containsIp(@Nonnull Ip ip) {
+  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return _blacklist.stream().noneMatch(w -> w.containsIp(ip))
         && _whitelist.stream().anyMatch(w -> w.containsIp(ip));
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
+    IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
+    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
   }
 
   @JsonProperty(PROP_BLACKLIST)
@@ -132,18 +145,5 @@ public final class IpWildcardSetIpSpace extends IpSpace {
         .add(PROP_BLACKLIST, _blacklist)
         .add(PROP_WHITELIST, _whitelist)
         .toString();
-  }
-
-  @Override
-  protected int compareSameClass(IpSpace o) {
-    return Comparator.comparing(IpWildcardSetIpSpace::getBlacklist, CommonUtil::compareIterable)
-        .thenComparing(IpWildcardSetIpSpace::getWhitelist, CommonUtil::compareIterable)
-        .compare(this, (IpWildcardSetIpSpace) o);
-  }
-
-  @Override
-  protected boolean exprEquals(Object o) {
-    IpWildcardSetIpSpace rhs = (IpWildcardSetIpSpace) o;
-    return Objects.equals(_blacklist, rhs._blacklist) && Objects.equals(_whitelist, rhs._whitelist);
   }
 }

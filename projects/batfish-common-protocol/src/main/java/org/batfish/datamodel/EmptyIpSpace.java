@@ -1,13 +1,14 @@
 package org.batfish.datamodel;
 
+import java.util.Map;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class EmptyIpSpace extends IpSpace {
 
+  public static final IpSpace INSTANCE = new EmptyIpSpace();
+
   /** */
   private static final long serialVersionUID = 1L;
-
-  public static final IpSpace INSTANCE = new EmptyIpSpace();
 
   private EmptyIpSpace() {}
 
@@ -17,8 +18,8 @@ public class EmptyIpSpace extends IpSpace {
   }
 
   @Override
-  public boolean containsIp(Ip ip) {
-    return false;
+  protected int compareSameClass(IpSpace o) {
+    return 0;
   }
 
   @Override
@@ -27,8 +28,13 @@ public class EmptyIpSpace extends IpSpace {
   }
 
   @Override
-  public String toString() {
-    return "empty";
+  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
+    return false;
+  }
+
+  @Override
+  protected boolean exprEquals(Object o) {
+    return true;
   }
 
   @Override
@@ -37,12 +43,7 @@ public class EmptyIpSpace extends IpSpace {
   }
 
   @Override
-  protected int compareSameClass(IpSpace o) {
-    return 0;
-  }
-
-  @Override
-  protected boolean exprEquals(Object o) {
-    return true;
+  public String toString() {
+    return "empty";
   }
 }

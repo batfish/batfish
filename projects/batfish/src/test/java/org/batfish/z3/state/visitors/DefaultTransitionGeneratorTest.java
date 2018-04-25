@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.Field;
 import org.batfish.z3.MockSynthesizerInput;
@@ -689,6 +690,7 @@ public class DefaultTransitionGeneratorTest {
             .setEnabledNodes(ImmutableSet.of(NODE1, NODE2))
             .setIpsByHostname(
                 ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
+            .setNamedIpSpaces(ImmutableMap.of(NODE1, ImmutableMap.of(), NODE2, ImmutableMap.of()))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -701,15 +703,21 @@ public class DefaultTransitionGeneratorTest {
         hasItem(
             new BasicRuleStatement(
                 HeaderSpaceMatchExpr.matchDstIp(
-                    ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2))),
-                ImmutableSet.of(new PostIn(NODE1)),
+                    IpWildcardSetIpSpace.builder()
+                        .including(ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))
+                        .build(),
+                    ImmutableMap.of()),
+                new PostIn(NODE1),
                 new NodeAccept(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 HeaderSpaceMatchExpr.matchDstIp(
-                    ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4))),
+                    IpWildcardSetIpSpace.builder()
+                        .including(ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))
+                        .build(),
+                    ImmutableMap.of()),
                 ImmutableSet.of(new PostIn(NODE2)),
                 new NodeAccept(NODE2))));
   }
@@ -1521,6 +1529,7 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setIpsByHostname(
                 ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
+            .setNamedIpSpaces(ImmutableMap.of(NODE1, ImmutableMap.of(), NODE2, ImmutableMap.of()))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -1534,7 +1543,10 @@ public class DefaultTransitionGeneratorTest {
             new BasicRuleStatement(
                 new NotExpr(
                     HeaderSpaceMatchExpr.matchDstIp(
-                        ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))),
+                        IpWildcardSetIpSpace.builder()
+                            .including(ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))
+                            .build(),
+                        ImmutableMap.of())),
                 ImmutableSet.of(new PostIn(NODE1)),
                 new PreOut(NODE1))));
     assertThat(
@@ -1543,7 +1555,10 @@ public class DefaultTransitionGeneratorTest {
             new BasicRuleStatement(
                 new NotExpr(
                     HeaderSpaceMatchExpr.matchDstIp(
-                        ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))),
+                        IpWildcardSetIpSpace.builder()
+                            .including(ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))
+                            .build(),
+                        ImmutableMap.of())),
                 ImmutableSet.of(new PostIn(NODE2)),
                 new PreOut(NODE2))));
   }

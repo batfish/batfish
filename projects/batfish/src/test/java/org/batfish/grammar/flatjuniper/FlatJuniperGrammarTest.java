@@ -45,6 +45,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
@@ -459,13 +460,13 @@ public class FlatJuniperGrammarTest {
 
     // Specifically allowed source address should be accepted
     assertThat(
-        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
     // Source address covered by the wildcard entry should be accepted
     assertThat(
-        aclUntrustOut, accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut, accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
     // Source address covered by neither address-set entry should be rejected
     assertThat(
-        aclUntrustOut, rejects(flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut, rejects(flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
   }
 
   @Test
@@ -551,9 +552,11 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flows should be permitted */
     assertThat(
-        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -643,9 +646,11 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flow in either direction should be blocked */
     assertThat(
-        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -734,17 +739,23 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flow from trust to untrust should be permitted */
     assertThat(
-        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
 
     /* Simple flow from untrust to trust should be blocked */
     assertThat(
-        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
 
     /* Return flow in either direction should be permitted */
     assertThat(
-        aclUntrustOut, accepts(trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        accepts(
+            trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, accepts(untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        accepts(
+            untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -764,8 +775,8 @@ public class FlatJuniperGrammarTest {
 
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
-    // We should have a an IpSpace in the config corresponding to the trust zone
-    assertThat(c.getIpSpaces(), hasKey(equalTo("trust")));
+    // We should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
+    assertThat(c.getIpSpaces(), hasKey(equalTo("trust~ADDR1")));
 
     // It should be the only IpSpace
     assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
@@ -779,10 +790,10 @@ public class FlatJuniperGrammarTest {
 
     // Specifically allowed source address should be accepted
     assertThat(
-        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
     // Source address not covered by the address-book
     assertThat(
-        aclUntrustOut, rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut, rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
   }
 
   @Test
@@ -814,9 +825,11 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flows should be blocked */
     assertThat(
-        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test

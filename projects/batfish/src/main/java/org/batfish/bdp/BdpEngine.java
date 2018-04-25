@@ -49,6 +49,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -77,6 +78,7 @@ public class BdpEngine implements FlowProcessor {
       Flow flow,
       @Nullable String srcInterface,
       Map<String, IpAccessList> aclDefinitions,
+      Map<String, IpSpace> namedIpSpaces,
       @Nullable List<SourceNat> sourceNats) {
     if (CommonUtil.isNullOrEmpty(sourceNats)) {
       return flow;
@@ -87,7 +89,10 @@ public class BdpEngine implements FlowProcessor {
             .filter(
                 sourceNat ->
                     sourceNat.getAcl() != null
-                        && sourceNat.getAcl().filter(flow, srcInterface, aclDefinitions).getAction()
+                        && sourceNat
+                                .getAcl()
+                                .filter(flow, srcInterface, aclDefinitions, namedIpSpaces)
+                                .getAction()
                             != LineAction.REJECT)
             .findFirst();
     if (!matchingSourceNat.isPresent()) {
@@ -157,6 +162,7 @@ public class BdpEngine implements FlowProcessor {
     } else {
       Node currentNode = dp._nodes.get(currentNodeName);
       Map<String, IpAccessList> aclDefinitions = currentNode._c.getIpAccessLists();
+      Map<String, IpSpace> namedIpSpaces = currentNode._c.getIpSpaces();
       String vrfName;
       String srcInterface;
       if (hopsSoFar.isEmpty()) {
@@ -241,6 +247,7 @@ public class BdpEngine implements FlowProcessor {
                     transformedFlow,
                     srcInterface,
                     aclDefinitions,
+                    namedIpSpaces,
                     outgoingInterface.getSourceNats());
 
             SortedSet<Edge> edges = dp._topology.getInterfaceEdges().get(nextHopInterface);
@@ -257,6 +264,7 @@ public class BdpEngine implements FlowProcessor {
                       transformedFlow,
                       srcInterface,
                       aclDefinitions,
+                      namedIpSpaces,
                       dstIp,
                       dstIpOwners,
                       nextHopInterfaceName,
@@ -300,6 +308,7 @@ public class BdpEngine implements FlowProcessor {
                         transformedFlow,
                         srcInterface,
                         aclDefinitions,
+                        namedIpSpaces,
                         newHops,
                         outFilter,
                         disposition);
@@ -1228,11 +1237,13 @@ public class BdpEngine implements FlowProcessor {
       Flow transformedFlow,
       String srcInterface,
       Map<String, IpAccessList> aclDefinitions,
+      Map<String, IpSpace> namedIpSpaces,
       List<FlowTraceHop> newHops,
       IpAccessList filter,
       FlowDisposition disposition) {
     boolean out = disposition == FlowDisposition.DENIED_OUT;
-    FilterResult outResult = filter.filter(transformedFlow, srcInterface, aclDefinitions);
+    FilterResult outResult =
+        filter.filter(transformedFlow, srcInterface, aclDefinitions, namedIpSpaces);
     String outFilterName = filter.getName();
     Integer matchLine = outResult.getMatchLine();
     String lineDesc;
@@ -1547,6 +1558,7 @@ public class BdpEngine implements FlowProcessor {
       Flow transformedFlow,
       String srcInterface,
       Map<String, IpAccessList> aclDefinitions,
+      Map<String, IpSpace> namedIpSpaces,
       Ip dstIp,
       Set<String> dstIpOwners,
       @Nullable String nextHopInterfaceName,
@@ -1656,6 +1668,7 @@ public class BdpEngine implements FlowProcessor {
                   transformedFlow,
                   srcInterface,
                   aclDefinitions,
+                  namedIpSpaces,
                   newHops,
                   outFilter,
                   disposition);
@@ -1676,6 +1689,7 @@ public class BdpEngine implements FlowProcessor {
                 transformedFlow,
                 srcInterface,
                 aclDefinitions,
+                namedIpSpaces,
                 newHops,
                 inFilter,
                 disposition);
@@ -1752,6 +1766,7 @@ public class BdpEngine implements FlowProcessor {
                     flow,
                     ingressInterfaceName,
                     dp._nodes.get(ingressNodeName)._c.getIpAccessLists(),
+                    dp._nodes.get(ingressNodeName)._c.getIpSpaces(),
                     dstIp,
                     dstIpOwners,
                     null,

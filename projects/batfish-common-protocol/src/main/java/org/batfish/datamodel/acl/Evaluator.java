@@ -3,6 +3,7 @@ package org.batfish.datamodel.acl;
 import java.util.Map;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 
 public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
@@ -11,19 +12,26 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
       AclLineMatchExpr item,
       Flow flow,
       String srcInterface,
-      Map<String, IpAccessList> availableAcls) {
-    return item.accept(new Evaluator(flow, srcInterface, availableAcls));
+      Map<String, IpAccessList> availableAcls,
+      Map<String, IpSpace> namedIpSpaces) {
+    return item.accept(new Evaluator(flow, srcInterface, availableAcls, namedIpSpaces));
   }
 
   private final Map<String, IpAccessList> _availableAcls;
   private final Flow _flow;
 
   private final String _srcInterface;
+  private final Map<String, IpSpace> _namedIpSpaces;
 
-  public Evaluator(Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
+  public Evaluator(
+      Flow flow,
+      String srcInterface,
+      Map<String, IpAccessList> availableAcls,
+      Map<String, IpSpace> namedIpSpaces) {
     _srcInterface = srcInterface;
     _flow = flow;
     _availableAcls = availableAcls;
+    _namedIpSpaces = namedIpSpaces;
   }
 
   @Override
@@ -38,7 +46,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    return matchHeaderSpace.getHeaderspace().matches(_flow);
+    return matchHeaderSpace.getHeaderspace().matches(_flow, _namedIpSpaces);
   }
 
   @Override
@@ -60,7 +68,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
     return _availableAcls
             .get(permittedByAcl.getAclName())
-            .filter(_flow, _srcInterface, _availableAcls)
+            .filter(_flow, _srcInterface, _availableAcls, _namedIpSpaces)
             .getAction()
         == LineAction.ACCEPT;
   }

@@ -1,7 +1,9 @@
 package org.batfish.z3;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
@@ -9,6 +11,7 @@ import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
@@ -17,6 +20,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
+import org.batfish.datamodel.visitors.IpSpaceMayIntersectWildcard;
 
 /**
  * Simplify an {@link IpSpace}. For example, there are many ways to express an empty {@link IpSpace}
@@ -24,13 +28,18 @@ import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
  * {@link UniverseIpSpace} respectively.
  */
 public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
+  private Map<String, IpSpace> _namedIpSpaces;
 
-  private static final IpSpaceSimplifier INSTANCE = new IpSpaceSimplifier();
+  public IpSpaceSimplifier(Map<String, IpSpace> namedIpSpaces) {
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+  }
 
-  private IpSpaceSimplifier() {}
+  public IpSpace simplify(IpSpace ipSpace) {
+    if (ipSpace == null) {
+      return null;
+    }
 
-  public static IpSpace simplify(IpSpace ipSpace) {
-    return ipSpace.accept(INSTANCE);
+    return ipSpace.accept(this);
   }
 
   @Override
@@ -53,7 +62,7 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
       if (simplifiedLineIpSpace == EmptyIpSpace.INSTANCE) {
         continue;
       }
-      AclIpSpaceLine simplifiedLine = line.rebuild().setIpSpace(simplifiedLineIpSpace).build();
+      AclIpSpaceLine simplifiedLine = line.toBuilder().setIpSpace(simplifiedLineIpSpace).build();
       simplifiedLines.add(simplifiedLine);
       if (simplifiedLineIpSpace == UniverseIpSpace.INSTANCE) {
         break;
@@ -132,8 +141,14 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
             .getBlacklist()
             .stream()
             .filter(
-                blacklistedIpWildcard ->
-                    whitelist.stream().anyMatch(blacklistedIpWildcard::intersects))
+                blacklistedIpWildcard -> {
+                  IpSpaceMayIntersectWildcard mayIntersect =
+                      new IpSpaceMayIntersectWildcard(blacklistedIpWildcard, _namedIpSpaces);
+                  return whitelist
+                      .stream()
+                      .map(IpWildcard::toIpSpace)
+                      .anyMatch(mayIntersect::visit);
+                })
             .collect(Collectors.toSet());
 
     if (blacklist.isEmpty()) {
@@ -159,5 +174,11 @@ public class IpSpaceSimplifier implements GenericIpSpaceVisitor<IpSpace> {
   @Override
   public IpSpace visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
     return universeIpSpace;
+  }
+
+  @Override
+  public IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    // todo cache simplified named IpSpaces?
+    return _namedIpSpaces.get(ipSpaceReference.getName()).accept(this);
   }
 }

@@ -22,10 +22,9 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RoutingProtocol;
@@ -38,7 +37,6 @@ import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
@@ -1634,38 +1632,6 @@ class EncoderSlice {
   }
 
   /*
-   * Convert a set of wildcards and a packet field to a symbolic boolean expression
-   */
-  private BoolExpr computeWildcardMatch(Set<IpWildcard> wcs, BitVecExpr field) {
-    BoolExpr acc = mkFalse();
-    for (IpWildcard wc : wcs) {
-      ipWildCardBound(field, wc);
-      acc = mkOr(acc, ipWildCardBound(field, wc));
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
-   * Convert a set of ranges and a packet field to a symbolic boolean expression
-   */
-  private BoolExpr computeValidRange(Set<SubRange> ranges, ArithExpr field) {
-    BoolExpr acc = mkFalse();
-    for (SubRange range : ranges) {
-      int start = range.getStart();
-      int end = range.getEnd();
-      if (start == end) {
-        BoolExpr val = mkEq(field, mkInt(start));
-        acc = mkOr(acc, val);
-      } else {
-        BoolExpr val1 = mkGe(field, mkInt(start));
-        BoolExpr val2 = mkLe(field, mkInt(end));
-        acc = mkOr(acc, mkAnd(val1, val2));
-      }
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
    * Convert a Tcp flag to a boolean expression on the symbolic packet
    */
   private BoolExpr computeTcpFlags(TcpFlags flags) {
@@ -1698,38 +1664,20 @@ class EncoderSlice {
   }
 
   /*
-   * Convert Tcp flags to a boolean expression on the symbolic packet
-   */
-  private BoolExpr computeTcpFlags(List<TcpFlags> flags) {
-    BoolExpr acc = mkFalse();
-    for (TcpFlags fs : flags) {
-      acc = mkOr(acc, computeTcpFlags(fs));
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
-   * Convert a set of ip protocols to a boolean expression on the symbolic packet
-   */
-  private BoolExpr computeIpProtocols(Set<IpProtocol> ipProtos) {
-    BoolExpr acc = mkFalse();
-    for (IpProtocol proto : ipProtos) {
-      ArithExpr protoNum = mkInt(proto.number());
-      acc = mkOr(acc, mkEq(protoNum, _symbolicPacket.getIpProtocol()));
-    }
-    return (BoolExpr) acc.simplify();
-  }
-
-  /*
    * Convert an Access Control List (ACL) to a symbolic boolean expression.
    * The default action in an ACL is to deny all traffic.
    */
   private BoolExpr computeACL(IpAccessList acl) {
+
     // Check if there is an ACL first
     if (acl == null) {
       return mkTrue();
     }
 
+    return new IpAccessListToBoolExpr(_encoder, _symbolicPacket).toBoolExpr(acl);
+  }
+
+  /*
     BoolExpr acc = mkFalse();
 
     List<IpAccessListLine> lines = new ArrayList<>(acl.getLines());
@@ -1860,6 +1808,7 @@ class EncoderSlice {
 
     return acc;
   }
+  */
 
   private boolean otherSliceHasEdge(EncoderSlice slice, String r, GraphEdge ge) {
     Map<String, List<GraphEdge>> edgeMap = slice.getGraph().getEdgeMap();
@@ -2501,45 +2450,50 @@ class EncoderSlice {
 
     BoolExpr acc;
 
-    if (_headerSpace.getDstIps().size() > 0) {
+    if (_headerSpace.getDstIps() != null) {
       acc = mkFalse();
-      for (IpWildcard ipWildcard : _headerSpace.getDstIps()) {
+      for (IpWildcard ipWildcard :
+          ((IpWildcardSetIpSpace) _headerSpace.getDstIps()).getWhitelist()) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getDstIp(), ipWildcard);
         acc = mkOr(acc, bound);
       }
       add(acc);
     }
 
-    if (_headerSpace.getNotDstIps().size() > 0) {
+    if (_headerSpace.getNotDstIps() != null) {
       acc = mkTrue();
-      for (IpWildcard ipWildcard : _headerSpace.getNotDstIps()) {
+      for (IpWildcard ipWildcard :
+          ((IpWildcardSetIpSpace) _headerSpace.getNotDstIps()).getWhitelist()) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getDstIp(), ipWildcard);
         acc = mkAnd(acc, mkNot(bound));
       }
       add(acc);
     }
 
-    if (_headerSpace.getSrcIps().size() > 0) {
+    if (_headerSpace.getSrcIps() != null) {
       acc = mkFalse();
-      for (IpWildcard ipWildcard : _headerSpace.getSrcIps()) {
+      for (IpWildcard ipWildcard :
+          ((IpWildcardSetIpSpace) _headerSpace.getSrcIps()).getWhitelist()) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getSrcIp(), ipWildcard);
         acc = mkOr(acc, bound);
       }
       add(acc);
     }
 
-    if (_headerSpace.getNotSrcIps().size() > 0) {
+    if (_headerSpace.getNotSrcIps() != null) {
       acc = mkTrue();
-      for (IpWildcard ipWildcard : _headerSpace.getNotSrcIps()) {
+      for (IpWildcard ipWildcard :
+          ((IpWildcardSetIpSpace) _headerSpace.getNotSrcIps()).getWhitelist()) {
         BoolExpr bound = ipWildCardBound(_symbolicPacket.getSrcIp(), ipWildcard);
         acc = mkAnd(acc, mkNot(bound));
       }
       add(acc);
     }
 
-    if (_headerSpace.getSrcOrDstIps().size() > 0) {
+    if (_headerSpace.getSrcOrDstIps() != null) {
       acc = mkFalse();
-      for (IpWildcard ipWildcard : _headerSpace.getSrcOrDstIps()) {
+      for (IpWildcard ipWildcard :
+          ((IpWildcardSetIpSpace) _headerSpace.getSrcOrDstIps()).getWhitelist()) {
         BoolExpr bound1 = ipWildCardBound(_symbolicPacket.getDstIp(), ipWildcard);
         BoolExpr bound2 = ipWildCardBound(_symbolicPacket.getSrcIp(), ipWildcard);
         acc = mkOr(acc, bound1, bound2);

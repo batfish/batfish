@@ -5,12 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -20,8 +17,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
-import org.batfish.datamodel.visitors.HeaderSpaceConverter;
-import org.batfish.symbolic.Graph;
 
 public class BDDAcl {
 
@@ -47,13 +42,9 @@ public class BDDAcl {
     _pkt = other._pkt;
   }
 
-  public static BDDAcl create(Configuration conf, IpAccessList acl, boolean ignoreNetworks) {
-    Set<Prefix> networks = null;
-    if (ignoreNetworks) {
-      networks = Graph.getOriginatedNetworks(conf);
-    }
+  public static BDDAcl create(IpAccessList acl) {
     BDDAcl abdd = new BDDAcl(acl);
-    abdd.computeACL(networks);
+    abdd.computeACL();
     return abdd;
   }
 
@@ -61,7 +52,7 @@ public class BDDAcl {
    * Convert an Access Control List (ACL) to a symbolic boolean expression.
    * The default action in an ACL is to deny all traffic.
    */
-  private void computeACL(@Nullable Set<Prefix> networks) {
+  private void computeACL() {
     // Check if there is an ACL first
     if (_acl == null) {
       _bdd = _factory.one();
@@ -69,133 +60,15 @@ public class BDDAcl {
 
     _bdd = _factory.zero();
 
+    AclLineMatchExprToBDD aclLineMatchExprToBDD = new AclLineMatchExprToBDD(_factory, _pkt);
+
     List<IpAccessListLine> lines = new ArrayList<>(_acl.getLines());
     Collections.reverse(lines);
 
     for (IpAccessListLine line : lines) {
-      // System.out.println("ACL Line: " + l.getName() + ", " + l.getAction());
-      /* TODO: handle other match types, something much cleaner */
-      HeaderSpace h = HeaderSpaceConverter.convert(line.getMatchCondition());
-      BDD local = null;
-
-      if (h.getDstIps() != null) {
-        BDD val = computeWildcardMatch(h.getDstIps(), _pkt.getDstIp(), networks);
-        val = h.getDstIps().isEmpty() ? _factory.one() : val;
-        local = val;
-      }
-
-      if (h.getSrcIps() != null) {
-        BDD val = computeWildcardMatch(h.getSrcIps(), _pkt.getSrcIp(), null);
-        val = h.getDstIps().isEmpty() ? _factory.one() : val;
-        local = (local == null ? val : local.and(val));
-      }
-
-      if (h.getDscps() != null && !h.getDscps().isEmpty()) {
-        throw new BatfishException("detected dscps");
-      }
-
-      if (h.getDstPorts() != null) {
-        BDD val = computeValidRange(h.getDstPorts(), _pkt.getDstPort());
-        val = h.getDstPorts().isEmpty() ? _factory.one() : val;
-        local = (local == null ? val : local.and(val));
-      }
-
-      if (h.getSrcPorts() != null) {
-        BDD val = computeValidRange(h.getSrcPorts(), _pkt.getSrcPort());
-        val = h.getSrcPorts().isEmpty() ? _factory.one() : val;
-        local = (local == null ? val : local.and(val));
-      }
-
-      if (h.getEcns() != null && !h.getEcns().isEmpty()) {
-        throw new BatfishException("detected ecns");
-      }
-
-      if (h.getTcpFlags() != null) {
-        BDD val = computeTcpFlags(h.getTcpFlags());
-        val = h.getTcpFlags().isEmpty() ? _factory.one() : val;
-        local = (local == null ? val : local.and(val));
-      }
-
-      if (h.getFragmentOffsets() != null && !h.getFragmentOffsets().isEmpty()) {
-        throw new BatfishException("detected fragment offsets");
-      }
-
-      if (h.getIcmpCodes() != null) {
-        BDD val = computeValidRange(h.getIcmpCodes(), _pkt.getIcmpCode());
-        val = h.getIcmpCodes().isEmpty() ? _factory.one() : val;
-        local = (local == null ? val : local.and(val));
-      }
-
-      if (h.getIcmpTypes() != null) {
-        BDD val = computeValidRange(h.getIcmpTypes(), _pkt.getIcmpType());
-        val = h.getIcmpTypes().isEmpty() ? _factory.one() : val;
-        local = (local == null ? val : local.and(val));
-      }
-
-      if (h.getStates() != null && !h.getStates().isEmpty()) {
-        throw new BatfishException("detected states");
-      }
-
-      if (h.getIpProtocols() != null) {
-        BDD val = computeIpProtocols(h.getIpProtocols());
-        val = h.getIpProtocols().isEmpty() ? _factory.one() : val;
-        local = (local == null ? val : local.and(val));
-      }
-
-      if (h.getNotDscps() != null && !h.getNotDscps().isEmpty()) {
-        throw new BatfishException("detected NOT dscps");
-      }
-
-      if (h.getNotDstIps() != null && !h.getNotDstIps().isEmpty()) {
-        throw new BatfishException("detected NOT dst ip");
-      }
-
-      if (h.getNotSrcIps() != null && !h.getNotSrcIps().isEmpty()) {
-        throw new BatfishException("detected NOT src ip");
-      }
-
-      if (h.getNotDstPorts() != null && !h.getNotDstPorts().isEmpty()) {
-        throw new BatfishException("detected NOT dst port");
-      }
-
-      if (h.getNotSrcPorts() != null && !h.getNotSrcPorts().isEmpty()) {
-        throw new BatfishException("detected NOT src port");
-      }
-
-      if (h.getNotEcns() != null && !h.getNotEcns().isEmpty()) {
-        throw new BatfishException("detected NOT ecns");
-      }
-
-      if (h.getNotIcmpCodes() != null && !h.getNotIcmpCodes().isEmpty()) {
-        throw new BatfishException("detected NOT icmp codes");
-      }
-
-      if (h.getNotIcmpTypes() != null && !h.getNotIcmpTypes().isEmpty()) {
-        throw new BatfishException("detected NOT icmp types");
-      }
-
-      if (h.getNotFragmentOffsets() != null && !h.getNotFragmentOffsets().isEmpty()) {
-        throw new BatfishException("detected NOT fragment offset");
-      }
-
-      if (h.getNotIpProtocols() != null && !h.getNotIpProtocols().isEmpty()) {
-        throw new BatfishException("detected NOT ip protocols");
-      }
-
-      if (local != null) {
-        BDD ret;
-        if (line.getAction() == LineAction.ACCEPT) {
-          ret = _factory.one();
-        } else {
-          ret = _factory.zero();
-        }
-
-        if (h.getNegate()) {
-          local = local.not();
-        }
-
-        _bdd = local.ite(ret, _bdd);
-      }
+      BDD lineBDD = aclLineMatchExprToBDD.toBDD(line.getMatchCondition());
+      BDD actionBDD = line.getAction() == LineAction.ACCEPT ? _factory.one() : _factory.zero();
+      _bdd = lineBDD.ite(actionBDD, _bdd);
     }
   }
 
@@ -285,17 +158,14 @@ public class BDDAcl {
   /*
    * Convert a set of wildcards and a packet field to a symbolic boolean expression
    */
-  private BDD computeWildcardMatch(
-      Set<IpWildcard> wcs, BDDInteger field, @Nullable Set<Prefix> ignored) {
+  private BDD computeWildcardMatch(Set<IpWildcard> wcs, BDDInteger field) {
     BDD acc = _factory.zero();
     for (IpWildcard wc : wcs) {
       if (!wc.isPrefix()) {
         throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
       }
       Prefix p = wc.toPrefix();
-      // if (!PrefixUtils.isContainedBy(p, ignored)) {
       acc = acc.or(isRelevantFor(p, field));
-      // }
     }
     return acc;
   }

@@ -81,6 +81,8 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -213,6 +215,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private static final int VLAN_NORMAL_MAX_CISCO = 1005;
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
+
+  public static String computeServiceObjectGroupAclName(String name) {
+    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
+  }
 
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
@@ -399,6 +405,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _wccpAcls;
 
+  private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -440,6 +448,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _roles = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
+    _serviceObjectGroups = new TreeMap<>();
     _snmpAccessLists = new TreeSet<>();
     _sshAcls = new TreeSet<>();
     _sshIpv6Acls = new TreeSet<>();
@@ -1101,6 +1110,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markStructure(CiscoStructureType.L2TP_CLASS, usage, _cf.getL2tpClasses());
   }
 
+  private void markNetworkObjectGroups(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage, _networkObjectGroups);
+  }
+
   private void markRouteMaps(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.ROUTE_MAP, usage, _routeMaps);
   }
@@ -1109,6 +1122,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Cable cable = _cf.getCable();
     markStructure(
         CiscoStructureType.SERVICE_CLASS, usage, cable != null ? cable.getServiceClasses() : null);
+  }
+
+  private void markServiceObjectGroups(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.SERVICE_OBJECT_GROUP, usage, _serviceObjectGroups);
   }
 
   private void processFailoverSettings() {
@@ -2361,42 +2378,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String name = eaList.getName();
     List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-      HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-      IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
-      if (srcIpWildcard != null) {
-        headerSpaceBuilder.setSrcIps(ImmutableSortedSet.of(srcIpWildcard));
+      AclLineMatchExpr match;
+      IpSpace srcIpSpace = fromLine.getSourceAddressSpecifier().toIpSpace();
+      IpSpace dstIpSpace = fromLine.getDestinationAddressSpecifier().toIpSpace();
+      AclLineMatchExpr matchService = fromLine.getServiceSpecifier().toAclLineMatchExpr();
+      if (matchService instanceof MatchHeaderSpace) {
+        match =
+            new MatchHeaderSpace(
+                ((MatchHeaderSpace) matchService)
+                    .getHeaderspace()
+                    .rebuild()
+                    .setSrcIps(srcIpSpace)
+                    .setDstIps(dstIpSpace)
+                    .build());
+      } else {
+        match =
+            new AndMatchExpr(
+                ImmutableList.of(
+                    matchService,
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(srcIpSpace)
+                            .setDstIps(dstIpSpace)
+                            .build())));
       }
-      IpWildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
-      if (dstIpWildcard != null) {
-        headerSpaceBuilder.setDstIps(ImmutableSortedSet.of(dstIpWildcard));
-      }
-      // TODO: src/dst address group
-      IpProtocol protocol = fromLine.getProtocol();
-      if (protocol != IpProtocol.IP) {
-        headerSpaceBuilder.setIpProtocols(ImmutableSortedSet.of(protocol));
-      }
-      headerSpaceBuilder.setDstPorts(fromLine.getDstPorts());
-      headerSpaceBuilder.setSrcPorts(fromLine.getSrcPorts());
-      Integer icmpType = fromLine.getIcmpType();
-      if (icmpType != null) {
-        headerSpaceBuilder.setIcmpTypes(ImmutableSortedSet.of(new SubRange(icmpType)));
-      }
-      Integer icmpCode = fromLine.getIcmpCode();
-      if (icmpCode != null) {
-        headerSpaceBuilder.setIcmpCodes(ImmutableSortedSet.of(new SubRange(icmpCode)));
-      }
-      Set<State> states = fromLine.getStates();
-      headerSpaceBuilder.setStates(states);
-      List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
-      headerSpaceBuilder.setTcpFlags(tcpFlags);
-      Set<Integer> dscps = fromLine.getDscps();
-      headerSpaceBuilder.setDscps(dscps);
-      Set<Integer> ecns = fromLine.getEcns();
-      headerSpaceBuilder.setEcns(ecns);
+
       lines.add(
           IpAccessListLine.builder()
               .setAction(fromLine.getAction())
-              .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+              .setMatchCondition(match)
               .setName(fromLine.getName())
               .build());
     }
@@ -3259,13 +3269,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
     LineAction action = fromLine.getAction();
-    Ip ip = fromLine.getSourceIpWildcard().getIp();
-    long minSubnet = fromLine.getDestinationIpWildcard().getIp().asLong();
-    long maxSubnet = minSubnet | fromLine.getDestinationIpWildcard().getWildcard().asLong();
-    int minPrefixLength = fromLine.getDestinationIpWildcard().getIp().numSubnetBits();
+    IpWildcard srcIpWildcard =
+        ((WildcardAddressSpecifier) fromLine.getSourceAddressSpecifier()).getIpWildcard();
+    Ip ip = srcIpWildcard.getIp();
+    IpWildcard dstIpWildcard =
+        ((WildcardAddressSpecifier) fromLine.getDestinationAddressSpecifier()).getIpWildcard();
+    long minSubnet = dstIpWildcard.getIp().asLong();
+    long maxSubnet = minSubnet | dstIpWildcard.getWildcard().asLong();
+    int minPrefixLength = dstIpWildcard.getIp().numSubnetBits();
     int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-    int statedPrefixLength =
-        fromLine.getSourceIpWildcard().getWildcard().inverted().numSubnetBits();
+    int statedPrefixLength = srcIpWildcard.getWildcard().inverted().numSubnetBits();
     int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
     Prefix prefix = new Prefix(ip, prefixLength);
     return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
@@ -3620,6 +3633,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
 
+    // convert each ServiceObjectGroup to IpAccessList
+    _serviceObjectGroups.forEach(
+        (name, serviceObjectGroup) ->
+            c.getIpAccessLists()
+                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
+
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
     // lists
@@ -3855,6 +3874,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
+    // object-group
+    markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
+    markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
+
     // warn about unreferenced data structures
     warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     warnUnusedCommunityLists();
@@ -3877,12 +3900,24 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
     warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
+    warnUnusedStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
     warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
 
     c.computeRoutingPolicySources(_w);
 
     return c;
+  }
+
+  private IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
+        .build();
   }
 
   private void addIkePoliciesAndGateways(Configuration c) {
@@ -4106,5 +4141,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
+    return _serviceObjectGroups;
   }
 }

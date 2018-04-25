@@ -1,161 +1,110 @@
 package org.batfish.representation.cisco;
 
+import static java.util.Objects.requireNonNull;
+
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import java.util.List;
-import java.util.Set;
-import javax.annotation.Nullable;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpWildcard;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.State;
-import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.TcpFlags;
 
 public class ExtendedAccessListLine implements Serializable {
 
+  public static class Builder {
+
+    private LineAction _action;
+
+    private ExtendedAccessListAddressSpecifier _dstAddressSpecifier;
+
+    private String _name;
+
+    private ExtendedAccessListServiceSpecifier _serviceSpecifier;
+
+    private ExtendedAccessListAddressSpecifier _srcAddressSpecifier;
+
+    private Builder() {}
+
+    public ExtendedAccessListLine build() {
+      return new ExtendedAccessListLine(this);
+    }
+
+    public Builder setAction(@Nonnull LineAction action) {
+      _action = action;
+      return this;
+    }
+
+    public Builder setDstAddressSpecifier(ExtendedAccessListAddressSpecifier dstAddressSpecifier) {
+      _dstAddressSpecifier = dstAddressSpecifier;
+      return this;
+    }
+
+    public Builder setName(String name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setServiceSpecifier(ExtendedAccessListServiceSpecifier serviceSpecifier) {
+      _serviceSpecifier = serviceSpecifier;
+      return this;
+    }
+
+    public Builder setSrcAddressSpecifier(ExtendedAccessListAddressSpecifier srcAddressSpecifier) {
+      _srcAddressSpecifier = srcAddressSpecifier;
+      return this;
+    }
+  }
+
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder();
+  }
 
   private final LineAction _action;
 
-  private final Set<Integer> _dscps;
-
-  private final String _dstAddressGroup;
-
-  private final IpWildcard _dstIpWildcard;
-
-  private final List<SubRange> _dstPortRanges;
-
-  private final Set<Integer> _ecns;
-
-  private final Integer _icmpCode;
-
-  private final Integer _icmpType;
+  private final ExtendedAccessListAddressSpecifier _dstAddressSpecifier;
 
   private final String _name;
 
-  private final IpProtocol _protocol;
+  private final ExtendedAccessListServiceSpecifier _serviceSpecifier;
 
-  private final String _srcAddressGroup;
+  private final ExtendedAccessListAddressSpecifier _srcAddressSpecifier;
 
-  private final IpWildcard _srcIpWildcard;
-
-  private final List<SubRange> _srcPortRanges;
-
-  private Set<State> _states;
-
-  private final List<TcpFlags> _tcpFlags;
-
-  public ExtendedAccessListLine(
-      String name,
-      LineAction action,
-      IpProtocol protocol,
-      IpWildcard srcIpWildcard,
-      @Nullable String srcAddressGroup,
-      IpWildcard dstIpWildcard,
-      @Nullable String dstAddressGroup,
-      List<SubRange> srcPortRanges,
-      List<SubRange> dstPortRanges,
-      Set<Integer> dscps,
-      Set<Integer> ecns,
-      @Nullable Integer icmpType,
-      @Nullable Integer icmpCode,
-      Set<State> states,
-      List<TcpFlags> tcpFlags) {
-    _name = name;
-    _action = action;
-    _protocol = protocol;
-    _srcIpWildcard = srcIpWildcard;
-    _srcAddressGroup = srcAddressGroup;
-    _dscps = dscps;
-    _dstIpWildcard = dstIpWildcard;
-    _dstAddressGroup = dstAddressGroup;
-    _ecns = ecns;
-    _srcPortRanges = srcPortRanges;
-    _dstPortRanges = dstPortRanges;
-    _icmpType = icmpType;
-    _icmpCode = icmpCode;
-    _states = states;
-    _tcpFlags = tcpFlags;
+  private ExtendedAccessListLine(Builder builder) {
+    _action = requireNonNull(builder._action);
+    _dstAddressSpecifier = requireNonNull(builder._dstAddressSpecifier);
+    _name = requireNonNull(builder._name);
+    _serviceSpecifier = requireNonNull(builder._serviceSpecifier);
+    _srcAddressSpecifier = requireNonNull(builder._srcAddressSpecifier);
   }
 
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  public IpWildcard getDestinationIpWildcard() {
-    return _dstIpWildcard;
-  }
-
-  public Set<Integer> getDscps() {
-    return _dscps;
-  }
-
-  public String getDstAddressGroup() {
-    return _dstAddressGroup;
-  }
-
-  public List<SubRange> getDstPorts() {
-    return _dstPortRanges;
-  }
-
-  public Set<Integer> getEcns() {
-    return _ecns;
-  }
-
-  public Integer getIcmpCode() {
-    return _icmpCode;
-  }
-
-  public Integer getIcmpType() {
-    return _icmpType;
+  public ExtendedAccessListAddressSpecifier getDestinationAddressSpecifier() {
+    return _dstAddressSpecifier;
   }
 
   public String getName() {
     return _name;
   }
 
-  public IpProtocol getProtocol() {
-    return _protocol;
+  public ExtendedAccessListServiceSpecifier getServiceSpecifier() {
+    return _serviceSpecifier;
   }
 
-  public IpWildcard getSourceIpWildcard() {
-    return _srcIpWildcard;
-  }
-
-  public String getSrcAddressGroup() {
-    return _srcAddressGroup;
-  }
-
-  public List<SubRange> getSrcPorts() {
-    return _srcPortRanges;
-  }
-
-  public Set<State> getStates() {
-    return _states;
-  }
-
-  public List<TcpFlags> getTcpFlags() {
-    return _tcpFlags;
+  public ExtendedAccessListAddressSpecifier getSourceAddressSpecifier() {
+    return _srcAddressSpecifier;
   }
 
   @Override
   public String toString() {
-    String protocolName = _protocol.name();
-    return "[Name:\""
-        + _name
-        + "\", Action:"
-        + _action
-        + ", Protocol:"
-        + protocolName
-        + "("
-        + _protocol.number()
-        + ")"
-        + ", SourceIpWildcard:"
-        + _srcIpWildcard
-        + ", DestinationIpWildcard:"
-        + _dstIpWildcard
-        + ", PortRange:"
-        + _srcPortRanges
-        + "]";
+    return MoreObjects.toStringHelper(getClass())
+        .add("action", _action)
+        .add("dstAddressSpecicier", _dstAddressSpecifier)
+        .add("name", _name)
+        .add("serviceSpecifier", _serviceSpecifier)
+        .add("srcAddressSpecifier", _srcAddressSpecifier)
+        .toString();
   }
 }
