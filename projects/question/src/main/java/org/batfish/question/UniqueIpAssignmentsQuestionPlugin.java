@@ -74,11 +74,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
   }
 
   public static class UniqueIpAssignmentsAnswerer extends Answerer {
-    private final UniqueIpAssignmentsQuestion _uniqueIpAssignmentsQuestion;
-
     public UniqueIpAssignmentsAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
-      _uniqueIpAssignmentsQuestion = (UniqueIpAssignmentsQuestion) question;
     }
 
     @Override
@@ -89,7 +86,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     }
 
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
-      Set<String> nodes = _uniqueIpAssignmentsQuestion.getNodeRegex().getMatchingNodes(_batfish);
+      UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
       Map<String, Configuration> configs = _batfish.loadConfigurations();
       return nodes
           .stream()
@@ -98,8 +96,8 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
           // narrow to interfaces of interest
           .filter(
               iface ->
-                  _uniqueIpAssignmentsQuestion.getInterfacesSpecifier().matches(iface)
-                      && (!_uniqueIpAssignmentsQuestion.getEnabledIpsOnly() || iface.getActive()))
+                  question.getInterfacesSpecifier().matches(iface)
+                      && (!question.getEnabledIpsOnly() || iface.getActive()))
           // convert to stream of Entry<Ip, NodeInterfacePair>
           .flatMap(
               iface ->
