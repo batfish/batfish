@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -80,6 +81,12 @@ public interface SynthesizerInput {
    * Mapping: hostname -> interface -> [(preconditionPreTransformationState, transformationToApply)]
    */
   Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
+
+  /** The set of nodes for which we should track whether they are transited */
+  SortedSet<String> getTransitNodes();
+
+  /** The field used to track which transit nodes are transited */
+  Field getTransitNodesField();
 
   /** Mapping: hostname -> interfacesAllowedToBelongToAnEdge */
   Map<String, Set<String>> getTraversableInterfaces();

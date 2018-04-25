@@ -2,10 +2,12 @@ package org.batfish.z3;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -63,6 +65,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, IntExpr>> _srcInterfaceFieldValues;
 
+    private SortedSet<String> _transitNodes;
+
+    private Field _transitNodesField;
+
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
@@ -84,6 +90,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
+      _transitNodes = ImmutableSortedSet.of();
+      _transitNodesField = new Field("mock_transit_nodes_field", 0);
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -255,6 +263,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
+  private SortedSet<String> _transitNodes;
+
+  private Field _transitNodesField;
+
   private final Set<Type> _vectorizedParameters;
 
   private MockSynthesizerInput(Builder builder) {
@@ -279,6 +291,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _sourceInterfaceField = builder._srcInterfaceField;
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
+    _transitNodes = builder._transitNodes;
+    _transitNodesField = builder._transitNodesField;
     _vectorizedParameters = builder._vectorizedParameters;
   }
 
@@ -371,6 +385,16 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats() {
     return _sourceNats;
+  }
+
+  @Override
+  public SortedSet<String> getTransitNodes() {
+    return _transitNodes;
+  }
+
+  @Override
+  public Field getTransitNodesField() {
+    return _transitNodesField;
   }
 
   @Override

@@ -1399,6 +1399,11 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
+  public void testVisitPostOutEdge_transitNodes() {
+
+  }
+
+  @Test
   public void testVisitPreInInterface() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()

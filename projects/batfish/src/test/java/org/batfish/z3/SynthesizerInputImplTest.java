@@ -604,6 +604,18 @@ public class SynthesizerInputImplTest {
   }
 
   @Test
+  public void testComputeTransitNodesField() {
+    SynthesizerInput input =
+        _inputBuilder
+            .setConfigurations(ImmutableMap.of())
+            .setTransitNodes(ImmutableSortedSet.of("a", "b", "c"))
+            .build();
+    assertThat(
+        input.getTransitNodesField(),
+        equalTo(new Field(SynthesizerInputImpl.TRANSITED_NODES_FIELD_NAME, 3)));
+  }
+
+  @Test
   public void testComputeTopologyInterfaces() {
     Configuration srcNode = _cb.build();
     Configuration nextHop = _cb.build();

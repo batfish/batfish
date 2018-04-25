@@ -6,6 +6,7 @@ import java.util.stream.Stream;
 import org.batfish.common.BatfishException;
 import org.batfish.z3.Field;
 import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -37,6 +38,13 @@ public class TransformedVarCollector
   @Override
   public Set<Field> castToGenericIntExprVisitorReturnType(Object o) {
     throw new BatfishException("not implemented");
+  }
+
+  @Override
+  public Set<Field> visitBitwiseOrExpr(BitwiseOrExpr bitwiseOrExpr) {
+    return Stream.of(bitwiseOrExpr.getExpr1().accept(this), bitwiseOrExpr.getExpr2().accept(this))
+        .flatMap(Set::stream)
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public static Set<Field> collectTransformedVars(BooleanExpr expr) {

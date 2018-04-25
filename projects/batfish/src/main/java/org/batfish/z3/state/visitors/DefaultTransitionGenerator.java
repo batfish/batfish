@@ -12,7 +12,9 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.Field;
 import org.batfish.z3.SynthesizerInput;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -688,16 +690,38 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       : ImmutableSet.of(
                           new AclPermit(node1, outAcl),
                           new PreOutEdgePostNat(node1, iface1, node2, iface2));
-              boolean nodeHasSrcInterfaceConstraint =
-                  _input.getNodesWithSrcInterfaceConstraints().contains(node1);
+              ImmutableList.Builder<BooleanExpr> preconditionsBuilder = ImmutableList.builder();
+
+              /* If we set the source interface field, reset it now */
+              if (_input.getNodesWithSrcInterfaceConstraints().contains(node1)) {
+                preconditionsBuilder.add(
+                    new EqExpr(
+                        new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+                        new LitIntExpr(
+                            NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize())));
+              }
+
+              /* If node1 is a transit node, set its flag */
+              if (_input.getTransitNodes().contains(node1)) {
+                Field transitNodesField = _input.getTransitNodesField();
+                int nodeIndex = _input.getTransitNodes().headSet(node1).size();
+                int flag = 1 << nodeIndex;
+                preconditionsBuilder.add(
+                    new EqExpr(
+                        new TransformedVarIntExpr(transitNodesField),
+                        new BitwiseOrExpr(
+                            new VarIntExpr(transitNodesField),
+                            new LitIntExpr(flag, transitNodesField.getSize()))));
+              }
+
+              List<BooleanExpr> preconditions = preconditionsBuilder.build();
+
               return new BasicRuleStatement(
-                  /* If we set the source interface field, reset it now */
-                  nodeHasSrcInterfaceConstraint
-                      ? new EqExpr(
-                          new TransformedVarIntExpr(_input.getSourceInterfaceField()),
-                          new LitIntExpr(
-                              NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize()))
-                      : TrueExpr.INSTANCE,
+                  preconditions.isEmpty()
+                      ? TrueExpr.INSTANCE
+                      : preconditions.size() == 1
+                          ? preconditions.get(0)
+                          : new AndExpr(preconditions),
                   aclStates,
                   new PostOutEdge(node1, iface1, node2, iface2));
             })

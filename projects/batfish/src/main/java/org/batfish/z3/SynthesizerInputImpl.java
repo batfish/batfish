@@ -6,6 +6,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -44,7 +46,9 @@ import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
 
-  private static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
+  static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
+
+  static final String TRANSITED_NODES_FIELD_NAME = "TRANSITED_NODES";
 
   public static class Builder {
     private ForwardingAnalysis _forwardingAnalysis;
@@ -67,6 +71,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private Topology _topology;
 
+    private SortedSet<String> _transitNodes;
+
     private Set<Type> _vectorizedParameters;
 
     private Builder() {
@@ -77,6 +83,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _headerSpace = null;
       _simplify = false;
       _specialize = false;
+      _transitNodes = ImmutableSortedSet.of();
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -92,6 +99,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           _simplify,
           _specialize,
           _topology,
+          _transitNodes,
           _vectorizedParameters);
     }
 
@@ -142,6 +150,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     public Builder setTopology(Topology topology) {
       _topology = topology;
+      return this;
+    }
+
+    public Builder setTransitNodes(SortedSet<String> transitNodes) {
+      _transitNodes = ImmutableSortedSet.copyOf(transitNodes);
       return this;
     }
 
@@ -216,6 +229,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
+  private final Field _transitedNodesField;
+
+  private final SortedSet<String> _transitNodes;
+
   private final Set<Type> _vectorizedParameters;
 
   public SynthesizerInputImpl(
@@ -229,6 +246,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       boolean simplify,
       boolean specialize,
       Topology topology,
+      SortedSet<String> transitNodes,
       Set<Type> vectorizedParameters) {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
@@ -279,6 +297,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _nodesWithSrcInterfaceConstraints = computeNodesWithSrcInterfaceConstraints();
     _sourceInterfaceField = computeSourceInterfaceField();
     _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues();
+    _transitNodes = ImmutableSortedSet.copyOf(transitNodes);
+    _transitedNodesField = computeTransitedNodesField();
     _aclConditions = computeAclConditions();
   }
 
@@ -315,6 +335,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             + 1;
     int fieldBits = Math.max(LongMath.log2(numValues, RoundingMode.CEILING), 1);
     return new Field(SRC_INTERFACE_FIELD_NAME, fieldBits);
+  }
+
+  private Field computeTransitedNodesField() {
+    /* Need a bit for each transit node */
+    return new Field(TRANSITED_NODES_FIELD_NAME, _transitNodes.size());
   }
 
   private Map<String, List<String>> computeNodeInterfaces() {
@@ -783,6 +808,16 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats() {
     return _sourceNats;
+  }
+
+  @Override
+  public SortedSet<String> getTransitNodes() {
+    return _transitNodes;
+  }
+
+  @Override
+  public Field getTransitNodesField() {
+    return _transitedNodesField;
   }
 
   @Override

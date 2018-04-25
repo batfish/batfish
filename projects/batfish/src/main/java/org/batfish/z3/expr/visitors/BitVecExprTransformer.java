@@ -3,6 +3,7 @@ package org.batfish.z3.expr.visitors;
 import com.microsoft.z3.BitVecExpr;
 import org.batfish.common.BatfishException;
 import org.batfish.z3.NodContext;
+import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.LitIntExpr;
@@ -25,6 +26,13 @@ public class BitVecExprTransformer implements GenericIntExprVisitor<BitVecExpr> 
   @Override
   public BitVecExpr castToGenericIntExprVisitorReturnType(Object o) {
     return (BitVecExpr) o;
+  }
+
+  @Override
+  public BitVecExpr visitBitwiseOrExpr(BitwiseOrExpr bitwiseOrExpr) {
+    return _nodContext
+        .getContext()
+        .mkBVOR(bitwiseOrExpr.getExpr1().accept(this), bitwiseOrExpr.getExpr2().accept(this));
   }
 
   @Override
