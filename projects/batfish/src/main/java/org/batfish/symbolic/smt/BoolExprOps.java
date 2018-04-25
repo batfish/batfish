@@ -21,7 +21,7 @@ public class BoolExprOps {
   }
 
   public BoolExpr or(BoolExpr... disjuncts) {
-    return andNonNull(Arrays.stream(disjuncts).filter(Objects::nonNull).toArray(BoolExpr[]::new));
+    return orNonNull(Arrays.stream(disjuncts).filter(Objects::nonNull).toArray(BoolExpr[]::new));
   }
 
   private BoolExpr orNonNull(BoolExpr... disjuncts) {
