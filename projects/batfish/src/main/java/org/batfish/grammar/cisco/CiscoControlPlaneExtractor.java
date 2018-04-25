@@ -577,7 +577,6 @@ import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
 import org.batfish.grammar.cisco.CiscoParser.Update_source_bgp_tailContext;
-import org.batfish.grammar.cisco.CiscoParser.Use_af_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.VariableContext;
@@ -900,8 +899,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @SuppressWarnings("unused")
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
-  private String _currentAddressFamily;
-
   private IpAsPathAccessList _currentAsPathAcl;
 
   private final Set<String> _currentBlockNeighborAddressFamilies;
@@ -1156,7 +1153,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (af.IPV6() != null) {
       _inIpv6BgpPeer = true;
     }
-    _currentAddressFamily = addressFamilyStr;
   }
 
   @Override
@@ -2514,7 +2510,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAddress_family_rb_stanza(Address_family_rb_stanzaContext ctx) {
     popPeer();
-    _currentAddressFamily = null;
   }
 
   @Override
@@ -6376,15 +6371,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentPeerGroup.setUpdateSource(source);
       _currentPeerGroup.setUpdateSourceLine(line);
     }
-  }
-
-  @Override
-  public void exitUse_af_group_bgp_tail(Use_af_group_bgp_tailContext ctx) {
-    String groupName = ctx.name.getText();
-    if (_currentIpPeerGroup == null && _currentIpv6PeerGroup == null) {
-      throw new BatfishException("Unexpected context for use neighbor group");
-    }
-    _currentPeerGroup.getAfGroups().put(_currentAddressFamily, groupName);
   }
 
   @Override
