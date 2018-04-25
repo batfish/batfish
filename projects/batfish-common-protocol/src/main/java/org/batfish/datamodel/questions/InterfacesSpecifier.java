@@ -74,14 +74,14 @@ public class InterfacesSpecifier {
 
   public boolean matches(Interface iface) {
     switch (_type) {
-    case DESC:
-      return _regex.matcher(iface.getDescription()).matches();
-    case NAME:
-      return _regex.matcher(iface.getName()).matches();
-    case VRF:
-      return _regex.matcher(iface.getVrfName()).matches();
-    default:
-      throw new BatfishException("Unhandled InterfacesSpecifier type: " + _type);
+      case DESC:
+        return _regex.matcher(iface.getDescription()).matches();
+      case NAME:
+        return _regex.matcher(iface.getName()).matches();
+      case VRF:
+        return _regex.matcher(iface.getVrfName()).matches();
+      default:
+        throw new BatfishException("Unhandled InterfacesSpecifier type: " + _type);
     }
   }
 
