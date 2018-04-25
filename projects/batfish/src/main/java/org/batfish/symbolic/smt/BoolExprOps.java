@@ -25,6 +25,6 @@ public class BoolExprOps {
   }
 
   private BoolExpr orNonNull(BoolExpr... disjuncts) {
-    return disjuncts.length == 0 ? _context.mkFalse() : _context.mkAnd(disjuncts);
+    return disjuncts.length == 0 ? _context.mkFalse() : _context.mkOr(disjuncts);
   }
 }
