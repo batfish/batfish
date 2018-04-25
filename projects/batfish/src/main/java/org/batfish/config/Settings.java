@@ -7,7 +7,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
-import org.batfish.bdp.BdpSettings;
 import org.batfish.common.BaseSettings;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -17,6 +16,7 @@ import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
+import org.batfish.dataplane.bdp.BdpSettings;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Driver.RunMode;
 
