@@ -3806,6 +3806,14 @@
           "default" : {
             "name" : "default"
           }
+        },
+        "zones" : {
+          "z1" : {
+            "name" : "z1"
+          },
+          "z2" : {
+            "name" : "z2"
+          }
         }
       },
       "cisco_aaa" : {

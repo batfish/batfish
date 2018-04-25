@@ -6,8 +6,10 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUnusedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -31,6 +33,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -295,6 +298,75 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosClassMapInspect() throws IOException {
+    String hostname = "ios-class-map-inspect";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expected the only unused acl to be aclunused
+     */
+    assertThat(
+        ccae,
+        not(
+            hasUnusedStructure(
+                hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "acldefined")));
+    assertThat(
+        ccae,
+        hasUnusedStructure(hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "aclunused"));
+
+    /*
+     * We expect an undefined reference only to aclundefined
+     */
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.IP_ACCESS_LIST, "acldefined")));
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.IP_ACCESS_LIST, "aclundefined"));
+  }
+
+  @Test
+  public void testIosPolicyMapInspect() throws IOException {
+    String hostname = "ios-policy-map-inspect";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expected the only unused class-map to be cmunused
+     */
+    assertThat(
+        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmdefined")));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmunused"));
+
+    /*
+     * We expect the only unused policy-map to be pmiunused
+     */
+    assertThat(
+        ccae,
+        not(hasUnusedStructure(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmidefined")));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmiunused"));
+
+    /*
+     * We expect undefined references only to cmundefined and pmmiundefined
+     */
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmdefined")));
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmundefined"));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmidefined")));
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmiundefined"));
+  }
+
+  @Test
   public void testIosProxyArp() throws IOException {
     Configuration proxyArpOmitted = parseConfig("iosProxyArp");
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/0"), isProxyArp())));
@@ -302,6 +374,41 @@ public class CiscoGrammarTest {
     assertThat(
         proxyArpOmitted,
         hasInterfaces(hasEntry(equalTo("Ethernet0/2"), isProxyArp(equalTo(false)))));
+  }
+
+  @Test
+  public void testIosZoneSecurity() throws IOException {
+    String hostname = "ios-zone-security";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expected the only unused zone to be zunreferenced
+     */
+    assertThat(ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "z1")));
+    assertThat(ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "z2")));
+    assertThat(ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "zempty")));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "zunreferenced"));
+
+    /*
+     * We expect an undefined reference only to zundefined
+     */
+    assertThat(ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "z1")));
+    assertThat(ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "z2")));
+    assertThat(
+        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "zempty")));
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "zundefined"));
+
+    /*
+     * We only expect zempty to be empty (have no interfaces)
+     */
+    assertThat(c, hasZone("z1", hasMemberInterfaces(not(empty()))));
+    assertThat(c, hasZone("z1", hasMemberInterfaces(not(empty()))));
+    assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
   }
 
   @Test

@@ -4,12 +4,15 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
@@ -24,6 +27,15 @@ public final class DataModelMatchers {
   public static @Nonnull Matcher<PermittedByAcl> hasAclName(
       @Nonnull Matcher<? super String> subMatcher) {
     return new PermittedByAclMatchers.HasAclName(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * {@link Zone} with specified name.
+   */
+  public static Matcher<Configuration> hasZone(
+      @Nonnull String name, @Nonnull Matcher<? super Zone> subMatcher) {
+    return new HasZone(name, subMatcher);
   }
 
   /**
@@ -50,6 +62,15 @@ public final class DataModelMatchers {
   public static @Nonnull Matcher<HeaderSpace> hasIpProtocols(
       @Nonnull Matcher<? super SortedSet<IpProtocol>> subMatcher) {
     return new HeaderSpaceMatchersImpl.HasIpProtocols(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link Zone}'s
+   * interfaces.
+   */
+  public static @Nonnull Matcher<Zone> hasMemberInterfaces(
+      @Nonnull Matcher<? super SortedSet<String>> subMatcher) {
+    return new ZoneMatchers.HasInterfaces(subMatcher);
   }
 
   /**

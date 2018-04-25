@@ -122,6 +122,14 @@
           ]
         }
       },
+      "undefined:class-map type inspect:usage:policy-map type inspect class type inspect:cinspect" : {
+        "description" : "Undefined reference to structure of type: 'class-map type inspect' with usage: 'policy-map type inspect class type inspect' named 'cinspect'",
+        "files" : {
+          "cisco_qos" : [
+            33
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:ipsec profile set transform-set:hijklmnop" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'ipsec profile set transform-set' named 'hijklmnop'",
         "files" : {
@@ -797,6 +805,14 @@
           ]
         }
       },
+      "undefined:policy-map type inspect:usage:zone-pair service-policy type inspect:p1" : {
+        "description" : "Undefined reference to structure of type: 'policy-map type inspect' with usage: 'zone-pair service-policy type inspect' named 'p1'",
+        "files" : {
+          "cisco_zone" : [
+            5
+          ]
+        }
+      },
       "undefined:policy-statement:usage:bgp export policy-statement:someexportpolicy" : {
         "description" : "Undefined reference to structure of type: 'policy-statement' with usage: 'bgp export policy-statement' named 'someexportpolicy'",
         "files" : {
@@ -982,12 +998,20 @@
             10
           ]
         }
+      },
+      "undefined:zone security:usage:interface zone-member:z1" : {
+        "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
+        "files" : {
+          "cisco_interface" : [
+            271
+          ]
+        }
       }
     },
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 122
+      "numResults" : 125
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1140,6 +1164,15 @@
           }
         }
       },
+      "cisco-zone" : {
+        "policy-map type inspect" : {
+          "p1" : {
+            "zone-pair service-policy type inspect" : [
+              5
+            ]
+          }
+        }
+      },
       "cisco_bgp" : {
         "bgp group" : {
           "p3" : {
@@ -1258,6 +1291,13 @@
               87
             ]
           }
+        },
+        "zone security" : {
+          "z1" : {
+            "interface zone-member" : [
+              271
+            ]
+          }
         }
       },
       "cisco_ip" : {
@@ -1338,6 +1378,13 @@
           "boop" : {
             "class-map access-group" : [
               14
+            ]
+          }
+        },
+        "class-map type inspect" : {
+          "cinspect" : {
+            "policy-map type inspect class type inspect" : [
+              33
             ]
           }
         }

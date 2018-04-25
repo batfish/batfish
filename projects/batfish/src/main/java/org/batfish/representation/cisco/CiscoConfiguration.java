@@ -81,6 +81,7 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -313,6 +314,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _igmpAcls;
 
+  private final Map<String, InspectClassMap> _inspectClassMaps;
+
+  private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
+
   private final Map<String, Interface> _interfaces;
 
   private final Set<String> _ipNatDestinationAccessLists;
@@ -403,6 +408,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
+  private final Map<String, SecurityZone> _securityZones;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -422,6 +429,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _igmpAcls = new TreeSet<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
+    _inspectClassMaps = new TreeMap<>();
+    _inspectPolicyMaps = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipNatDestinationAccessLists = new TreeSet<>();
     _ipPimNeighborFilters = new TreeSet<>();
@@ -443,6 +452,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
+    _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
     _snmpAccessLists = new TreeSet<>();
     _sshAcls = new TreeSet<>();
@@ -1058,6 +1068,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
         cable != null ? cable.getDocsisPolicyRules() : null);
   }
 
+  private void markInspectClassMaps(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.INSPECT_CLASS_MAP, usage, _inspectClassMaps);
+  }
+
+  private void markInspectPolicyMaps(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.INSPECT_POLICY_MAP, usage, _inspectPolicyMaps);
+  }
+
   private void markIpOrMacAcls(CiscoStructureUsage usage) {
     markStructure(
         CiscoStructureType.ACCESS_LIST,
@@ -1106,6 +1124,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markRouteMaps(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.ROUTE_MAP, usage, _routeMaps);
+  }
+
+  private void markSecurityZones(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.SECURITY_ZONE, usage, _securityZones);
   }
 
   private void markServiceClasses(CiscoStructureUsage usage) {
@@ -2158,6 +2180,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
+
+    String zoneName = iface.getSecurityZone();
+    if (zoneName != null) {
+      Zone zone = c.getZones().get(zoneName);
+      if (zone != null) {
+        zone.setInterfaces(
+            ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(name).build());
+      }
+    }
 
     // All prefixes is the combination of the interface prefix + any secondary prefixes.
     ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
@@ -3661,6 +3692,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
     }
 
+    // create zones
+    _securityZones.forEach(
+        (name, securityZone) -> {
+          c.getZones().put(name, new Zone(name));
+        });
+
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
@@ -3796,6 +3833,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
+    markAcls(CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL);
     markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP);
@@ -3856,9 +3894,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
+    // class-map
+    markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
+
+    // policy-map
+    markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+
     // object-group
     markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
     markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
+
+    // zone
+    markSecurityZones(CiscoStructureUsage.INTERFACE_ZONE_MEMBER);
+    markSecurityZones(CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE);
+    markSecurityZones(CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
     // warn about unreferenced data structures
     warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
@@ -3869,6 +3918,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedDocsisPolicyRules();
     warnUnusedStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
     warnUnusedIpAccessLists();
+    warnUnusedStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
+    warnUnusedStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
     warnUnusedStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     warnUnusedStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     warnUnusedIpv6AccessLists();
@@ -3882,6 +3933,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
     warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
+    warnUnusedStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
     warnUnusedStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
     warnUnusedServiceClasses();
     c.simplifyRoutingPolicies();
@@ -4116,5 +4168,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
     return _serviceObjectGroups;
+  }
+
+  public Map<String, InspectClassMap> getInspectClassMaps() {
+    return _inspectClassMaps;
+  }
+
+  public Map<String, InspectPolicyMap> getInspectPolicyMaps() {
+    return _inspectPolicyMaps;
+  }
+
+  public Map<String, SecurityZone> getSecurityZones() {
+    return _securityZones;
   }
 }

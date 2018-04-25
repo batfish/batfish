@@ -221,6 +221,8 @@ import org.batfish.grammar.cisco.CiscoParser.Clb_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_ruleContext;
 import org.batfish.grammar.cisco.CiscoParser.Clbdg_docsis_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cluster_id_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Cm_ios_inspectContext;
+import org.batfish.grammar.cisco.CiscoParser.Cm_iosi_matchContext;
 import org.batfish.grammar.cisco.CiscoParser.Cmm_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlr_rf_channelContext;
 import org.batfish.grammar.cisco.CiscoParser.Cntlrrfc_depi_tunnelContext;
@@ -305,6 +307,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_encapsulationCo
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_trunk_nativeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
+import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifdhcpr_clientContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
@@ -321,6 +324,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ike_encryptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Ike_encryption_arubaContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_policy_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Inherit_peer_session_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Inspect_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Int_compContext;
 import org.batfish.grammar.cisco.CiscoParser.Int_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.Interface_is_stanzaContext;
@@ -371,6 +375,7 @@ import org.batfish.grammar.cisco.CiscoParser.Match_ip_access_list_rm_stanzaConte
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_prefix_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_prefix_list_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Match_semanticsContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_source_protocol_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_tag_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Maximum_paths_bgp_tailContext;
@@ -416,6 +421,9 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
+import org.batfish.grammar.cisco.CiscoParser.Pm_ios_inspectContext;
+import org.batfish.grammar.cisco.CiscoParser.Pm_iosi_class_type_inspectContext;
+import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -515,6 +523,8 @@ import org.batfish.grammar.cisco.CiscoParser.S_tacacs_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_usernameContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_contextContext;
 import org.batfish.grammar.cisco.CiscoParser.S_vrf_definitionContext;
+import org.batfish.grammar.cisco.CiscoParser.S_zoneContext;
+import org.batfish.grammar.cisco.CiscoParser.S_zone_pairContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_blankContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Send_community_bgp_tailContext;
@@ -591,6 +601,7 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfc_ip_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
 import org.batfish.representation.cisco.AsPathSet;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco.BgpAggregateIpv6Network;
@@ -612,6 +623,13 @@ import org.batfish.representation.cisco.ExtendedAccessListLine;
 import org.batfish.representation.cisco.ExtendedIpv6AccessList;
 import org.batfish.representation.cisco.ExtendedIpv6AccessListLine;
 import org.batfish.representation.cisco.IcmpServiceObjectGroupLine;
+import org.batfish.representation.cisco.InspectClassMap;
+import org.batfish.representation.cisco.InspectClassMapMatch;
+import org.batfish.representation.cisco.InspectClassMapMatchAccessGroup;
+import org.batfish.representation.cisco.InspectClassMapMatchProtocol;
+import org.batfish.representation.cisco.InspectClassMapProtocol;
+import org.batfish.representation.cisco.InspectPolicyMap;
+import org.batfish.representation.cisco.InspectPolicyMapInspectClass;
 import org.batfish.representation.cisco.Interface;
 import org.batfish.representation.cisco.IpAsPathAccessList;
 import org.batfish.representation.cisco.IpAsPathAccessListLine;
@@ -626,6 +644,7 @@ import org.batfish.representation.cisco.IsisRedistributionPolicy;
 import org.batfish.representation.cisco.Keyring;
 import org.batfish.representation.cisco.MacAccessList;
 import org.batfish.representation.cisco.MasterBgpPeerGroup;
+import org.batfish.representation.cisco.MatchSemantics;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObjectGroup;
@@ -716,6 +735,7 @@ import org.batfish.representation.cisco.RoutePolicySetTag;
 import org.batfish.representation.cisco.RoutePolicySetVarMetricType;
 import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
+import org.batfish.representation.cisco.SecurityZone;
 import org.batfish.representation.cisco.ServiceObjectGroup;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -1016,6 +1036,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
   private ServiceObjectGroup _currentServiceObjectGroup;
+
+  private InspectClassMap _currentInspectClassMap;
+
+  private InspectPolicyMap _currentInspectPolicyMap;
+
+  private InspectPolicyMapInspectClass _currentInspectPolicyMapInspectClass;
 
   public CiscoControlPlaneExtractor(
       String text,
@@ -2725,6 +2751,122 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       clusterId = toIp(ctx.IP_ADDRESS());
     }
     _currentPeerGroup.setClusterId(clusterId);
+  }
+
+  @Override
+  public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _currentInspectClassMap =
+        _configuration
+            .getInspectClassMaps()
+            .computeIfAbsent(name, n -> new InspectClassMap(n, line));
+    MatchSemantics matchSemantics =
+        ctx.match_semantics() != null
+            ? toMatchSemantics(ctx.match_semantics())
+            : MatchSemantics.MATCH_ALL;
+    _currentInspectClassMap.setMatchSemantics(matchSemantics);
+  }
+
+  private MatchSemantics toMatchSemantics(Match_semanticsContext ctx) {
+    if (ctx.MATCH_ALL() != null) {
+      return MatchSemantics.MATCH_ALL;
+    } else if (ctx.MATCH_ANY() != null) {
+      return MatchSemantics.MATCH_ANY;
+    } else {
+      throw convError(MatchSemantics.class, ctx);
+    }
+  }
+
+  @Override
+  public void exitS_zone(S_zoneContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.getSecurityZones().computeIfAbsent(name, n -> new SecurityZone(n, line));
+  }
+
+  @Override
+  public void exitS_zone_pair(S_zone_pairContext ctx) {
+    String srcName = ctx.source.getText();
+    int srcLine = ctx.source.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.SECURITY_ZONE,
+        srcName,
+        CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE,
+        srcLine);
+    String dstName = ctx.destination.getText();
+    int dstLine = ctx.destination.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.SECURITY_ZONE,
+        dstName,
+        CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
+        dstLine);
+  }
+
+  @Override
+  public void exitZp_service_policy_inspect(Zp_service_policy_inspectContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.INSPECT_POLICY_MAP,
+        name,
+        CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY,
+        line);
+  }
+
+  @Override
+  public void exitIf_zone_member(If_zone_memberContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.SECURITY_ZONE, name, CiscoStructureUsage.INTERFACE_ZONE_MEMBER, line);
+    _currentInterfaces.forEach(iface -> iface.setSecurityZone(name));
+  }
+
+  @Override
+  public void exitCm_ios_inspect(Cm_ios_inspectContext ctx) {
+    _currentInspectClassMap = null;
+  }
+
+  @Override
+  public void exitCm_iosi_match(Cm_iosi_matchContext ctx) {
+    _currentInspectClassMap.getMatches().add(toInspectClassMapMatch(ctx));
+  }
+
+  private InspectClassMapMatch toInspectClassMapMatch(Cm_iosi_matchContext ctx) {
+    if (ctx.cm_iosim_access_group() != null) {
+      String name = ctx.cm_iosim_access_group().name.getText();
+      int line = ctx.cm_iosim_access_group().name.getStart().getLine();
+      _configuration.referenceStructure(
+          CiscoStructureType.IP_ACCESS_LIST,
+          name,
+          CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
+          line);
+      return new InspectClassMapMatchAccessGroup(name);
+    } else if (ctx.cm_iosim_protocol() != null) {
+      return new InspectClassMapMatchProtocol(
+          toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
+    } else {
+      throw convError(InspectClassMapMatch.class, ctx);
+    }
+  }
+
+  private InspectClassMapProtocol toInspectClassMapProtocol(Inspect_protocolContext ctx) {
+    if (ctx.HTTP() != null) {
+      return InspectClassMapProtocol.HTTP;
+    } else if (ctx.HTTPS() != null) {
+      return InspectClassMapProtocol.HTTPS;
+    } else if (ctx.HTTPS() != null) {
+      return InspectClassMapProtocol.ICMP;
+    } else if (ctx.HTTPS() != null) {
+      return InspectClassMapProtocol.TCP;
+    } else if (ctx.HTTPS() != null) {
+      return InspectClassMapProtocol.TFTP;
+    } else if (ctx.HTTPS() != null) {
+      return InspectClassMapProtocol.UDP;
+    } else {
+      throw convError(InspectClassMapProtocol.class, ctx);
+    }
   }
 
   @Override
@@ -4924,6 +5066,46 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
           line);
     }
+  }
+
+  @Override
+  public void enterPm_ios_inspect(Pm_ios_inspectContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _currentInspectPolicyMap =
+        _configuration
+            .getInspectPolicyMaps()
+            .computeIfAbsent(name, n -> new InspectPolicyMap(n, line));
+  }
+
+  @Override
+  public void exitPm_ios_inspect(Pm_ios_inspectContext ctx) {
+    _currentInspectPolicyMap = null;
+  }
+
+  @Override
+  public void enterPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        CiscoStructureType.INSPECT_CLASS_MAP,
+        name,
+        CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS,
+        line);
+    _currentInspectPolicyMapInspectClass =
+        _currentInspectPolicyMap
+            .getInspectClasses()
+            .computeIfAbsent(name, n -> new InspectPolicyMapInspectClass());
+  }
+
+  @Override
+  public void exitPm_iosi_class_type_inspect(Pm_iosi_class_type_inspectContext ctx) {
+    _currentInspectPolicyMapInspectClass = null;
+  }
+
+  @Override
+  public void exitPm_iosict_inspect(Pm_iosict_inspectContext ctx) {
+    _currentInspectPolicyMapInspectClass.setInspect(true);
   }
 
   @Override

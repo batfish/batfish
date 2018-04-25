@@ -1796,14 +1796,19 @@ CLASS
    'class'
 ;
 
-CLASSLESS
+CLASS_DEFAULT
 :
-   'classless'
+   'class-default'
 ;
 
 CLASS_MAP
 :
    'class-map'
+;
+
+CLASSLESS
+:
+   'classless'
 ;
 
 CLEANUP
@@ -7183,6 +7188,11 @@ NETWORK_OBJECT
    'network-object'
 ;
 
+NETWORK_QOS
+:
+   'network-qos'
+;
+
 NETWORK_UNKNOWN
 :
    'network-unknown'
@@ -7861,6 +7871,11 @@ PATHS_OF_STATISTICS_KEPT
 PAUSE
 :
    'pause'
+;
+
+PBR
+:
+  'pbr'
 ;
 
 PCANYWHERE_DATA
@@ -8661,6 +8676,11 @@ QUEUE_MONITOR
 QUEUE_SET
 :
    'queue-set'
+;
+
+QUEUEING
+:
+   'queueing'
 ;
 
 QUIT
