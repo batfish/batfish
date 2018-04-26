@@ -117,13 +117,9 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         COL_ESTABLISHED_NEIGHBORS,
         BatfishObjectMapper.mapper().valueToTree(info._establishedNeighbors));
     row.set(COL_LOCAL_IP, BatfishObjectMapper.mapper().valueToTree(info._localIp));
-    row.set(
-        COL_NODE,
-        BatfishObjectMapper.mapper().valueToTree(new Node(info.getNodeName(), null, null)));
+    row.set(COL_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info.getNodeName())));
     row.set(COL_ON_LOOPBACK, BatfishObjectMapper.mapper().valueToTree(info._onLoopback));
-    row.set(
-        COL_REMOTE_NODE,
-        BatfishObjectMapper.mapper().valueToTree(new Node(info._remoteNode, null, null)));
+    row.set(COL_REMOTE_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info._remoteNode)));
     row.set(COL_REMOTE_PREFIX, BatfishObjectMapper.mapper().valueToTree(info.getRemotePrefix()));
     row.set(COL_SESSION_TYPE, BatfishObjectMapper.mapper().valueToTree(info._sessionType));
     row.set(COL_VRF_NAME, BatfishObjectMapper.mapper().valueToTree(info.getVrfName()));
