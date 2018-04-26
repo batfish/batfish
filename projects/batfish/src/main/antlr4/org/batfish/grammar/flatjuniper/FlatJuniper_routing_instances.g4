@@ -1,6 +1,7 @@
 parser grammar FlatJuniper_routing_instances;
 
-import FlatJuniper_common, FlatJuniper_forwarding_options, FlatJuniper_protocols, FlatJuniper_snmp;
+import
+FlatJuniper_common, FlatJuniper_forwarding_options, FlatJuniper_protocols, FlatJuniper_snmp;
 
 options {
    tokenVocab = FlatJuniperLexer;
@@ -275,7 +276,8 @@ roa_as_path
 :
    AS_PATH?
    (
-      roaa_origin
+      roaa_aggregator
+      | roaa_origin
       | roaa_path
    )
 ;
@@ -293,6 +295,11 @@ roa_preference
 roa_tag
 :
    TAG tag = DEC
+;
+
+roaa_aggregator
+:
+   AGGREGATOR as = DEC ip = IP_ADDRESS
 ;
 
 roaa_origin

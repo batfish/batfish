@@ -1148,6 +1148,7 @@ sepctxp_match
    (
       sepctxpm_application
       | sepctxpm_destination_address
+      | sepctxpm_destination_address_excluded
       | sepctxpm_source_address
       | sepctxpm_source_identity
    )
@@ -1176,6 +1177,11 @@ sepctxpm_application
 sepctxpm_destination_address
 :
    DESTINATION_ADDRESS address_specifier
+;
+
+sepctxpm_destination_address_excluded
+:
+   DESTINATION_ADDRESS_EXCLUDED
 ;
 
 sepctxpm_source_address
