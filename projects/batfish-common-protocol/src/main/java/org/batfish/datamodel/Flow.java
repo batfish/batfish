@@ -894,10 +894,6 @@ public final class Flow implements Comparable<Flow>, Serializable {
         + tcpFlagsStr;
   }
 
-  public Builder rebuild() {
-    return new Builder(this);
-  }
-
   @JsonProperty(PROP_INGRESS_INTERFACE)
   public void setIngressInterface(String ingressInterface) {
     _ingressInterface = ingressInterface;

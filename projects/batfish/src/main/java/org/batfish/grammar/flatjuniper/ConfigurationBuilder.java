@@ -4028,7 +4028,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static IpWildcard toIpWildcard(Wildcard_addressContext ctx) {
     Ip address = new Ip(ctx.ip_address.getText());
     Ip mask = new Ip(ctx.wildcard_mask.getText());
-    // Mask needs to be inverted since 0's are don't-cares
+    // Mask needs to be inverted since 0's are don't-cares in this context
     return new IpWildcard(address, mask.inverted());
   }
 

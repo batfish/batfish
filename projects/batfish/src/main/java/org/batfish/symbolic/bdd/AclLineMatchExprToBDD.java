@@ -24,7 +24,6 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.datamodel.visitors.IpSpaceToBDD;
 
 public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD> {
 
