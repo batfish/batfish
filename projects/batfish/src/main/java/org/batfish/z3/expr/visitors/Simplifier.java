@@ -7,7 +7,6 @@ import java.util.stream.Stream;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.EqExpr;
@@ -61,12 +60,6 @@ public class Simplifier
   @Override
   public IntExpr castToGenericIntExprVisitorReturnType(Object o) {
     return (IntExpr) o;
-  }
-
-  @Override
-  public IntExpr visitBitwiseOrExpr(BitwiseOrExpr bitwiseOrExpr) {
-    return new BitwiseOrExpr(
-        bitwiseOrExpr.getExpr1().accept(this), bitwiseOrExpr.getExpr2().accept(this));
   }
 
   @Override

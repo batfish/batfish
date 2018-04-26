@@ -12,7 +12,6 @@ import org.batfish.z3.ReachabilityProgram;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
@@ -93,12 +92,6 @@ public class VariableSizeCollector implements ExprVisitor, VoidStatementVisitor 
   public void visitBitVecExpr(BitVecExpr bitVecExpr) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
-  @Override
-  public void visitBitwiseOrExpr(BitwiseOrExpr bitwiseOrExpr) {
-    bitwiseOrExpr.getExpr1().accept(this);
-    bitwiseOrExpr.getExpr2().accept(this);
   }
 
   @Override

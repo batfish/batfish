@@ -15,7 +15,6 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.LitIntExpr;
-import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
@@ -223,23 +222,23 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     addOriginateRules(rules);
 
     /*
-     * If transit nodes are specified, make sure at least one was transited by constraining the
-     * field to be nonzero.
+     * If transit nodes are specified, make sure one was transited.
      */
     BooleanExpr transitNodesConstraint =
         input.getTransitNodes().isEmpty()
             ? TrueExpr.INSTANCE
-            : new NotExpr(
-                new EqExpr(
-                    new VarIntExpr(input.getTransitedTransitNodesField()),
-                    new LitIntExpr(0, input.getTransitedTransitNodesField().getSize())));
+            : new EqExpr(
+                new VarIntExpr(input.getTransitedTransitNodesField()), new LitIntExpr(1, 1));
 
+    /*
+     * If nonTransit nodes are specified, make sure none was transited. This could be always
+     * enabled, but this way we can remove the nonTransitNodes field if there are no nonTransitNodes
+     */
     BooleanExpr notTransitNodesConstraint =
         input.getNonTransitNodes().isEmpty()
             ? TrueExpr.INSTANCE
             : new EqExpr(
-                new VarIntExpr(input.getTransitedTransitNodesField()),
-                new LitIntExpr(0, input.getTransitedTransitNodesField().getSize()));
+                new VarIntExpr(input.getTransitedNonTransitNodesField()), new LitIntExpr(0, 1));
 
     return ReachabilityProgram.builder()
         .setInput(input)

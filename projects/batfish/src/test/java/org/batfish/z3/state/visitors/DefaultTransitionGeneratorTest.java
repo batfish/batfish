@@ -23,7 +23,6 @@ import org.batfish.z3.Field;
 import org.batfish.z3.MockSynthesizerInput;
 import org.batfish.z3.SynthesizerInput;
 import org.batfish.z3.expr.BasicRuleStatement;
-import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.FalseExpr;
@@ -1431,9 +1430,7 @@ public class DefaultTransitionGeneratorTest {
         hasItem(
             new BasicRuleStatement(
                 new EqExpr(
-                    new TransformedVarIntExpr(transitedNonTransitNodesField),
-                    new BitwiseOrExpr(
-                        new VarIntExpr(transitedNonTransitNodesField), new LitIntExpr(1, 1))),
+                    new TransformedVarIntExpr(transitedNonTransitNodesField), new LitIntExpr(1, 1)),
                 new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1),
                 new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
 
@@ -1477,9 +1474,7 @@ public class DefaultTransitionGeneratorTest {
         hasItem(
             new BasicRuleStatement(
                 new EqExpr(
-                    new TransformedVarIntExpr(transitedTransitNodesField),
-                    new BitwiseOrExpr(
-                        new VarIntExpr(transitedTransitNodesField), new LitIntExpr(1, 1))),
+                    new TransformedVarIntExpr(transitedTransitNodesField), new LitIntExpr(1, 1)),
                 new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1),
                 new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
 

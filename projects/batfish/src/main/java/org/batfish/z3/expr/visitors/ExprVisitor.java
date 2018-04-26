@@ -2,7 +2,6 @@ package org.batfish.z3.expr.visitors;
 
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.ExtractExpr;
 import org.batfish.z3.expr.FalseExpr;
@@ -27,8 +26,6 @@ public interface ExprVisitor {
   void visitAndExpr(AndExpr andExpr);
 
   void visitBitVecExpr(BitVecExpr bitVecExpr);
-
-  void visitBitwiseOrExpr(BitwiseOrExpr bitwiseOrExpr);
 
   void visitEqExpr(EqExpr eqExpr);
 

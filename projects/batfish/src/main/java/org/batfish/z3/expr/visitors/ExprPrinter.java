@@ -6,7 +6,6 @@ import java.util.List;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BitVecExpr;
-import org.batfish.z3.expr.BitwiseOrExpr;
 import org.batfish.z3.expr.Comment;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.Expr;
@@ -129,13 +128,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
             new IdExpr("BitVec"),
             new IdExpr(Integer.toString(bitVecExpr.getSize())));
     printCollapsedComplexExpr(subExpressions);
-  }
-
-  @Override
-  public void visitBitwiseOrExpr(BitwiseOrExpr bitwiseOrExpr) {
-    printCollapsedComplexExpr(
-        ImmutableList.of(
-            new IdExpr("bitwise-or"), bitwiseOrExpr.getExpr1(), bitwiseOrExpr.getExpr2()));
   }
 
   @Override
