@@ -1,5 +1,8 @@
 package org.batfish.question;
 
+import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSortedSet;
@@ -234,7 +237,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_DST_IPS)
     public SortedSet<IpWildcard> getDstIps() {
-      return _reachabilitySettings.getHeaderSpace().getDstIps();
+      return asPositiveIpWildcards(_reachabilitySettings.getHeaderSpace().getDstIps());
     }
 
     @JsonProperty(PROP_DST_PORTS)
@@ -299,7 +302,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_DST_IPS)
     public SortedSet<IpWildcard> getNotDstIps() {
-      return _reachabilitySettings.getHeaderSpace().getNotDstIps();
+      return asNegativeIpWildcards(_reachabilitySettings.getHeaderSpace().getNotDstIps());
     }
 
     @JsonProperty(PROP_NOT_DST_PORTS)
@@ -349,7 +352,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_NOT_SRC_IPS)
     public SortedSet<IpWildcard> getNotSrcIps() {
-      return _reachabilitySettings.getHeaderSpace().getNotSrcIps();
+      return asNegativeIpWildcards(_reachabilitySettings.getHeaderSpace().getNotSrcIps());
     }
 
     @JsonProperty(PROP_NOT_SRC_PORTS)
@@ -374,7 +377,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_IPS)
     public SortedSet<IpWildcard> getSrcIps() {
-      return _reachabilitySettings.getHeaderSpace().getSrcIps();
+      return asPositiveIpWildcards(_reachabilitySettings.getHeaderSpace().getSrcIps());
     }
 
     @JsonProperty(PROP_SRC_NATTED)
@@ -384,7 +387,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @JsonProperty(PROP_SRC_OR_DST_IPS)
     public SortedSet<IpWildcard> getSrcOrDstIps() {
-      return _reachabilitySettings.getHeaderSpace().getSrcOrDstIps();
+      return asPositiveIpWildcards(_reachabilitySettings.getHeaderSpace().getSrcOrDstIps());
     }
 
     @JsonProperty(PROP_SRC_OR_DST_PORTS)

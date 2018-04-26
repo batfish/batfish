@@ -1,12 +1,22 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Test;
 
 public class IpWildcardTest {
+  @Test
+  public void testConstructors() {
+    assertThat(
+        new IpWildcard(new Ip("1.2.3.4")), equalTo(new IpWildcard(new Ip(0x01020304L), Ip.ZERO)));
+
+    assertThat(new IpWildcard("1.2.3.4"), equalTo(new IpWildcard(new Ip(0x01020304L), Ip.ZERO)));
+
+    assertThat(new IpWildcard("1.2.3.4/8"), equalTo(new IpWildcard("1.0.0.0/8")));
+  }
 
   @Test
   public void testContains() {
@@ -52,6 +62,9 @@ public class IpWildcardTest {
   public void testSupersetOf() {
     IpWildcard wc1 = new IpWildcard("1.2.0.0/16");
     IpWildcard wc2 = new IpWildcard("1.2.3.0/24");
+
+    assertThat("IpWildcard.supersetOf should not be strict", wc1.supersetOf(wc1));
+
     assertThat("wc1 should be a superset of wc2", wc1.supersetOf(wc2));
     assertThat("wc2 should not be a superset of wc1", !wc2.supersetOf(wc1));
 

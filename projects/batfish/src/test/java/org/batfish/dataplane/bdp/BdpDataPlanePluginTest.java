@@ -233,7 +233,9 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("accept", LineAction.ACCEPT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
+    Flow transformed =
+        BdpEngine.applySourceNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -245,7 +247,9 @@ public class BdpDataPlanePluginTest {
     nat.setAcl(makeAcl("reject", LineAction.REJECT));
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
-    Flow transformed = BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
+    Flow transformed =
+        BdpEngine.applySourceNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed, is(flow));
   }
 
@@ -262,7 +266,8 @@ public class BdpDataPlanePluginTest {
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
-        BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+        BdpEngine.applySourceNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
 
@@ -279,7 +284,8 @@ public class BdpDataPlanePluginTest {
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
-        BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
+        BdpEngine.applySourceNat(
+            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
 
@@ -292,7 +298,7 @@ public class BdpDataPlanePluginTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
-    BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), singletonList(nat));
+    BdpEngine.applySourceNat(flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
   }
 
   private void testBgpAsPathMultipathHelper(

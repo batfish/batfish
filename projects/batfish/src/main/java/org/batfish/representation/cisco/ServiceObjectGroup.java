@@ -1,8 +1,11 @@
 package org.batfish.representation.cisco;
 
+import com.google.common.collect.ImmutableSet;
 import java.util.LinkedList;
 import java.util.List;
 import org.batfish.common.util.DefinedStructure;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 
 public class ServiceObjectGroup extends DefinedStructure<String> {
 
@@ -18,5 +21,13 @@ public class ServiceObjectGroup extends DefinedStructure<String> {
 
   public List<ServiceObjectGroupLine> getLines() {
     return _lines;
+  }
+
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    return new OrMatchExpr(
+        _lines
+            .stream()
+            .map(ServiceObjectGroupLine::toAclLineMatchExpr)
+            .collect(ImmutableSet.toImmutableSet()));
   }
 }

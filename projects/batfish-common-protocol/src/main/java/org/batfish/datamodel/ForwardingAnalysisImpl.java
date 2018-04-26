@@ -679,7 +679,9 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
                     .keySet()
                     .stream()
                     .filter(ip -> !ip.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
-                    .anyMatch(Predicates.not(someoneReplies::containsIp)))
+                    .anyMatch(
+                        Predicates.not(
+                            nextHopIp -> someoneReplies.containsIp(nextHopIp, ImmutableMap.of()))))
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -716,7 +718,10 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
                                                         ip ->
                                                             !ip.equals(
                                                                 Route.UNSET_ROUTE_NEXT_HOP_IP))
-                                                    .anyMatch(recvReplies::containsIp))
+                                                    .anyMatch(
+                                                        nextHopIp ->
+                                                            recvReplies.containsIp(
+                                                                nextHopIp, ImmutableMap.of())))
                                         .collect(ImmutableSet.toImmutableSet());
                                 routesByEdgeBuilder.put(edge, routes);
                               });

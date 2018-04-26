@@ -105,8 +105,11 @@ public class IpAccessList extends ComparableStructure<String> {
   }
 
   public FilterResult filter(
-      Flow flow, String srcInterface, Map<String, IpAccessList> availableAcls) {
-    Evaluator evaluator = new Evaluator(flow, srcInterface, availableAcls);
+      Flow flow,
+      String srcInterface,
+      Map<String, IpAccessList> availableAcls,
+      Map<String, IpSpace> namedIpSpaces) {
+    Evaluator evaluator = new Evaluator(flow, srcInterface, availableAcls, namedIpSpaces);
     for (int i = 0; i < _lines.size(); i++) {
       IpAccessListLine line = _lines.get(i);
       if (line.getMatchCondition().accept(evaluator)) {

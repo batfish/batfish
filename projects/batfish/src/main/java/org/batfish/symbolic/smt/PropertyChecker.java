@@ -1,6 +1,5 @@
 package org.batfish.symbolic.smt;
 
-import com.google.common.collect.Iterables;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
@@ -31,7 +30,9 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.HeaderSpace;
@@ -88,7 +89,8 @@ public class PropertyChecker {
   private void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
     // Skip inference if the destination IP headerspace does not need to be inferred.
-    if (!q.getHeaderSpace().getDstIps().isEmpty()) {
+    if (q.getHeaderSpace().getDstIps() != null
+        && q.getHeaderSpace().getDstIps() != EmptyIpSpace.INSTANCE) {
       return;
     }
 
@@ -106,25 +108,21 @@ public class PropertyChecker {
       if (ge.getPeer() == null) {
         Prefix pfx = ge.getStart().getAddress().getPrefix();
         IpWildcard dst = new IpWildcard(pfx);
-        headerSpace.setDstIps(
-            Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
+        headerSpace.setDstIps(AclIpSpace.union(headerSpace.getDstIps(), dst.toIpSpace()));
       } else {
         // If host, add the subnet but not the neighbor's address
         if (g.isHost(ge.getRouter())) {
           Prefix pfx = ge.getStart().getAddress().getPrefix();
           IpWildcard dst = new IpWildcard(pfx);
-          headerSpace.setDstIps(
-              Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
+          headerSpace.setDstIps(AclIpSpace.union(headerSpace.getDstIps(), dst.toIpSpace()));
           Ip ip = ge.getEnd().getAddress().getIp();
           IpWildcard dst2 = new IpWildcard(ip);
-          headerSpace.setNotDstIps(
-              Iterables.concat(headerSpace.getNotDstIps(), Collections.singleton(dst2)));
+          headerSpace.setNotDstIps(AclIpSpace.union(headerSpace.getNotDstIps(), dst2.toIpSpace()));
         } else {
           // Otherwise, we add the exact address
           Ip ip = ge.getStart().getAddress().getIp();
           IpWildcard dst = new IpWildcard(ip);
-          headerSpace.setDstIps(
-              Iterables.concat(headerSpace.getDstIps(), Collections.singleton(dst)));
+          headerSpace.setDstIps(AclIpSpace.union(headerSpace.getDstIps(), dst.toIpSpace()));
         }
       }
     }
@@ -338,12 +336,12 @@ public class PropertyChecker {
    *
    */
   private AnswerElement checkProperty(
-      HeaderLocationQuestion q,
+      HeaderLocationQuestion qOrig,
       TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
       Function<VerifyParam, AnswerElement> answer) {
 
     long totalTime = System.currentTimeMillis();
-    PathRegexes p = new PathRegexes(q);
+    PathRegexes p = new PathRegexes(qOrig);
     Graph graph = new Graph(_batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
@@ -355,7 +353,11 @@ public class PropertyChecker {
       throw new BatfishException("Set of valid ingress nodes is empty");
     }
 
+    // copy before updating header space, so these changes don't get propagated to the answer
+    HeaderLocationQuestion q = new HeaderLocationQuestion(qOrig);
+    q.setHeaderSpace(q.getHeaderSpace().rebuild().build());
     inferDestinationHeaderSpace(graph, destPorts, q);
+
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
     Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, graph, true);
     Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();
