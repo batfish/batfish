@@ -3,13 +3,16 @@ package org.batfish.symbolic.smt;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableList;
 import com.microsoft.z3.Context;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.junit.Test;
 
@@ -23,7 +26,12 @@ public class IpAccessListToBoolExprTest {
       new IpAccessListToBoolExpr(CONTEXT, PKT);
 
   @Test
-  public void testAndMatchExpr() {}
+  public void testAndMatchExpr() {
+    assertThat(
+        IP_ACCESS_LIST_TO_BOOL_EXPR.visit(
+            new AndMatchExpr(ImmutableList.of(FalseExpr.INSTANCE, TrueExpr.INSTANCE))),
+        equalTo(CONTEXT.mkAnd(CONTEXT.mkFalse(), CONTEXT.mkTrue())));
+  }
 
   @Test
   public void testFalseMatchExpr() {
@@ -76,7 +84,12 @@ public class IpAccessListToBoolExprTest {
   }
 
   @Test
-  public void testOrMatchExpr() {}
+  public void testOrMatchExpr() {
+    assertThat(
+        IP_ACCESS_LIST_TO_BOOL_EXPR.visit(
+            new OrMatchExpr(ImmutableList.of(FalseExpr.INSTANCE, TrueExpr.INSTANCE))),
+        equalTo(CONTEXT.mkOr(CONTEXT.mkFalse(), CONTEXT.mkTrue())));
+  }
 
   @Test
   public void testTrueMatchExpr() {
