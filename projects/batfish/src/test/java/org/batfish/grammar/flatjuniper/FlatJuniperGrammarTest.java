@@ -34,6 +34,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -444,8 +445,8 @@ public class FlatJuniperGrammarTest {
 
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
-    // We should have a global IpSpace in the config
-    assertThat(c.getIpSpaces(), hasKey(equalTo("global")));
+    // We should have three global IpSpaces in the config
+    assertThat(c.getIpSpaces().keySet(), containsInAnyOrder("global~ADDR1", "global~ADDR2", "global~ADDRSET"));
 
     // It should be the only IpSpace
     assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
