@@ -90,11 +90,6 @@ public interface SynthesizerInput {
   /** The set of nodes for which we should track whether they are transited */
   Set<String> getTransitNodes();
 
-  Field getTransitedNonTransitNodesField();
-
-  /** The field used to track which transit nodes are transited */
-  Field getTransitedTransitNodesField();
-
   /** Mapping: hostname -> interfacesAllowedToBelongToAnEdge */
   Map<String, Set<String>> getTraversableInterfaces();
 

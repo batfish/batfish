@@ -14,7 +14,6 @@ import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
-import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
@@ -39,6 +38,7 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.Query;
+import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynthesizer {
 
@@ -228,17 +228,8 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         input.getTransitNodes().isEmpty()
             ? TrueExpr.INSTANCE
             : new EqExpr(
-                new VarIntExpr(input.getTransitedTransitNodesField()), new LitIntExpr(1, 1));
-
-    /*
-     * If nonTransit nodes are specified, make sure none was transited. This could be always
-     * enabled, but this way we can remove the nonTransitNodes field if there are no nonTransitNodes
-     */
-    BooleanExpr notTransitNodesConstraint =
-        input.getNonTransitNodes().isEmpty()
-            ? TrueExpr.INSTANCE
-            : new EqExpr(
-                new VarIntExpr(input.getTransitedNonTransitNodesField()), new LitIntExpr(0, 1));
+                new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+                DefaultTransitionGenerator.TRANSITED);
 
     return ReachabilityProgram.builder()
         .setInput(input)
@@ -250,8 +241,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
                     new HeaderSpaceMatchExpr(_headerSpace, true),
                     getSrcNattedConstraint(),
                     SaneExpr.INSTANCE,
-                    transitNodesConstraint,
-                    notTransitNodesConstraint)))
+                    transitNodesConstraint)))
         .build();
   }
 }

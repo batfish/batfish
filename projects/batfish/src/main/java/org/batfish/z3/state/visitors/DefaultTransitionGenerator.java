@@ -17,6 +17,7 @@ import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
@@ -65,6 +66,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
    * interface (or we no longer care which interface was the source).
    */
   private static final int NO_SOURCE_INTERFACE = 0;
+
+  public static final IntExpr NOT_TRANSITED = new LitIntExpr(0, 1);
+
+  public static final IntExpr TRANSITED = new LitIntExpr(1, 1);
+
+  public static final Field TRANSITED_TRANSIT_NODES_FIELD = new Field("TRANSITED_TRANSIT_NODE", 1);
 
   public static List<RuleStatement> generateTransitions(SynthesizerInput input, Set<State> states) {
     DefaultTransitionGenerator visitor = new DefaultTransitionGenerator(input);
@@ -547,11 +554,25 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .getValue()
                   .stream()
                   .map(
-                      vrfName ->
-                          new BasicRuleStatement(
-                              noSrcInterfaceConstraint(),
-                              new OriginateVrf(hostname, vrfName),
-                              new Originate(hostname)));
+                      vrfName -> {
+                        ImmutableList.Builder<BooleanExpr> preconditionsBuilder =
+                            ImmutableList.builder();
+                        if (!_input.getTransitNodes().isEmpty()) {
+                          preconditionsBuilder.add(transitNodesNotTransitedConstraint());
+                        }
+                        preconditionsBuilder.add(noSrcInterfaceConstraint());
+
+                        List<BooleanExpr> preconditions = preconditionsBuilder.build();
+
+                        return new BasicRuleStatement(
+                            preconditions.isEmpty()
+                                ? TrueExpr.INSTANCE
+                                : preconditions.size() == 1
+                                    ? preconditions.get(0)
+                                    : new AndExpr(preconditionsBuilder.build()),
+                            new OriginateVrf(hostname, vrfName),
+                            new Originate(hostname));
+                      });
             })
         .forEach(_rules::add);
   }
@@ -637,7 +658,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       enabledInterfacesByVrfEntry -> {
                         String vrf = enabledInterfacesByVrfEntry.getKey();
                         return new BasicRuleStatement(
-                            new OriginateVrf(hostname, vrf), new PostInVrf(hostname, vrf));
+                            /*
+                             * TODO probably also need to set src interface constraint as in
+                             * rule for Originate.
+                             */
+                            _input.getTransitNodes().isEmpty()
+                                ? TrueExpr.INSTANCE
+                                : transitNodesNotTransitedConstraint(),
+                            new OriginateVrf(hostname, vrf),
+                            new PostInVrf(hostname, vrf));
                       });
             })
         .forEach(_rules::add);
@@ -676,6 +705,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
     _input
         .getEnabledEdges()
         .stream()
+        /*
+         * Don't generate PostOutEdge rules edges where node1 is a nonTransitNode, because
+         * PostOutEdge is where the node1 becomes transited.
+         */
+        .filter(edge -> !_input.getNonTransitNodes().contains(edge.getNode1()))
         .map(
             edge -> {
               String node1 = edge.getNode1();
@@ -702,20 +736,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
               /* If node1 is a transit node, set its flag */
               if (_input.getTransitNodes().contains(node1)) {
-                Field transitedTransitNodesField = _input.getTransitedTransitNodesField();
                 preconditionsBuilder.add(
                     new EqExpr(
-                        new TransformedVarIntExpr(transitedTransitNodesField),
-                        new LitIntExpr(1, 1)));
-              }
-
-              /* If node1 is a non-transit node, set its flag */
-              if (_input.getNonTransitNodes().contains(node1)) {
-                Field transitedNonTransitNodesField = _input.getTransitedNonTransitNodesField();
-                preconditionsBuilder.add(
-                    new EqExpr(
-                        new TransformedVarIntExpr(transitedNonTransitNodesField),
-                        new LitIntExpr(1, 1)));
+                        new TransformedVarIntExpr(
+                            DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+                        TRANSITED));
               }
 
               List<BooleanExpr> preconditions = preconditionsBuilder.build();
@@ -763,11 +788,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
     return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
   }
 
-  private BooleanExpr transformSrcInterface(String node, String iface) {
-    int id = _input.getNodeInterfaceId(node, iface);
-    Field srcInterface = _input.getSourceInterfaceField();
+  private BooleanExpr transitNodesNotTransitedConstraint() {
     return new EqExpr(
-        new TransformedVarIntExpr(srcInterface), new LitIntExpr(id, srcInterface.getSize()));
+        new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD), NOT_TRANSITED);
   }
 
   @Override

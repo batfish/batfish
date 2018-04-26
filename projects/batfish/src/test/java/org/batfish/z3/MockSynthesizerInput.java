@@ -68,10 +68,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Set<String> _transitNodes;
 
-    private Field _transitedNonTransitNodesField;
-
-    private Field _transitedTransitNodesField;
-
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
@@ -218,11 +214,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setTransitedTransitNodesField(Field transitedNodesField) {
-      _transitedTransitNodesField = transitedNodesField;
-      return this;
-    }
-
     public Builder setVectorizedParameters(Set<Type> vectorizedParameters) {
       _vectorizedParameters = vectorizedParameters;
       return this;
@@ -230,11 +221,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     public Builder setTransitNodes(Set<String> transitNodes) {
       _transitNodes = transitNodes;
-      return this;
-    }
-
-    public Builder setTransitedNonTransitNodesField(Field transitedNonTransitNodesField) {
-      _transitedNonTransitNodesField = transitedNonTransitNodesField;
       return this;
     }
   }
@@ -290,10 +276,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private Set<String> _transitNodes;
 
-  private Field _transitedNonTransitNodesField;
-
-  private Field _transitedTransitNodesField;
-
   private final Set<Type> _vectorizedParameters;
 
   private MockSynthesizerInput(Builder builder) {
@@ -320,8 +302,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
     _transitNodes = builder._transitNodes;
-    _transitedNonTransitNodesField = builder._transitedNonTransitNodesField;
-    _transitedTransitNodesField = builder._transitedTransitNodesField;
     _vectorizedParameters = builder._vectorizedParameters;
   }
 
@@ -419,16 +399,6 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<String> getTransitNodes() {
     return _transitNodes;
-  }
-
-  @Override
-  public Field getTransitedNonTransitNodesField() {
-    return _transitedNonTransitNodesField;
-  }
-
-  @Override
-  public Field getTransitedTransitNodesField() {
-    return _transitedTransitNodesField;
   }
 
   @Override
