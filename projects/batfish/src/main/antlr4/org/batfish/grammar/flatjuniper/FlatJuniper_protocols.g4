@@ -29,6 +29,7 @@ s_protocols
       | ICCP
       | IGMP
       | IGMP_SNOOPING
+      | L2_LEARNING
       | L2CIRCUIT
       | L2VPN
       | LACP

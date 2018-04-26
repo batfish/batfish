@@ -85,6 +85,7 @@ fft_from
       | fftf_prefix_list
       | fftf_protocol
       | fftf_source_address
+      | fftf_source_mac_address
       | fftf_source_port
       | fftf_source_prefix_list
       | fftf_tcp_established
@@ -271,6 +272,11 @@ fftf_source_address
       | IPV6_ADDRESS
       | IPV6_PREFIX
    ) EXCEPT?
+;
+
+fftf_source_mac_address
+:
+   SOURCE_MAC_ADDRESS address = MAC_ADDRESS FORWARD_SLASH length = DEC
 ;
 
 fftf_source_port

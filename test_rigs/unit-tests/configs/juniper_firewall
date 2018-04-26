@@ -1,6 +1,7 @@
 #
 set system host-name juniper_firewall
 #
+set firewall family ethernet-switching filter f1 term t1 from source-mac-address 00:11:22:33:44:55/48
 set firewall family inet filter blah term blorp from destination-address 1.2.3.4
 set firewall family inet filter blah term blorp from destination-address 1.2.3.5/32
 set firewall family inet filter blah term blorp from packet-length 70-12000
