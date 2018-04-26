@@ -24,7 +24,7 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
     _addressBookEntryName = addressBookEntryName;
   }
 
-    @Override
+  @Override
   public void applyTo(
       HeaderSpace.Builder headerSpaceBuilder,
       JuniperConfiguration jc,

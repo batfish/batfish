@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpWildcard;
 

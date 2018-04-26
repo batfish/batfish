@@ -1,7 +1,6 @@
 package org.batfish.main;
 
 import static java.util.stream.Collectors.toMap;
-import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -104,7 +103,6 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
@@ -2867,9 +2865,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             baseDataPlaneSynthesizer, diffDataPlaneSynthesizer, baseDataPlaneSynthesizer);
 
     List<CompositeNodJob> jobs = new ArrayList<>();
-
-    Map<String, Map<String, IpSpace>> namedIpSpaces =
-        toImmutableMap(baseConfigurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
 
     // generate local edge reachability and black hole queries
     SortedSet<Edge> diffEdges = diffTopology.getEdges();

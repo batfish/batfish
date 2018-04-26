@@ -2,8 +2,6 @@ package org.batfish.representation.cisco;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
-import java.util.Set;
-import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 

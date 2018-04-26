@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Set;
@@ -8,9 +7,8 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.IpWildcard;
 
 public final class FwFromDestinationAddressBookEntry extends FwFrom {
 

@@ -6,7 +6,6 @@ import java.util.Collection;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 
 public class PrefixUtils {

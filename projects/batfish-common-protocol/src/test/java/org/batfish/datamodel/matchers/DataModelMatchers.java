@@ -109,19 +109,16 @@ public final class DataModelMatchers {
   }
 
   /**
-<<<<<<< HEAD
-=======
-   * Provides a matcher that matches if the {@link BgpNeighbor} is configured as a listening end of
-   * a dynamic BGP peering.
+   * Provides a matcher that matches if the {@link BgpNeighbor} is configured
+   * as a listening end of a dynamic BGP peering.
    */
   public static @Nonnull Matcher<BgpNeighbor> isDynamic() {
     return new IsDynamic(equalTo(true));
   }
 
   /**
->>>>>>> master
-   * Provides a matcher that matches if the object is an {@link IpSpaceReference} matched by the
-   * provided {@code subMatcher}.
+   * Provides a matcher that matches if the object is an {@link IpSpaceReference}
+   * matched by the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<IpSpace> isIpSpaceReferenceThat(
       @Nonnull Matcher<? super IpSpaceReference> subMatcher) {

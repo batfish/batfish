@@ -1648,7 +1648,6 @@ class EncoderSlice {
     return new IpAccessListToBoolExpr(_encoder.getCtx(), _symbolicPacket).toBoolExpr(acl);
   }
 
-
   private boolean otherSliceHasEdge(EncoderSlice slice, String r, GraphEdge ge) {
     Map<String, List<GraphEdge>> edgeMap = slice.getGraph().getEdgeMap();
     List<GraphEdge> edges = edgeMap.get(r);

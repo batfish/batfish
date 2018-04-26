@@ -35,7 +35,6 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -459,7 +458,9 @@ public class FlatJuniperGrammarTest {
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     // We should have three global IpSpaces in the config
-    assertThat(c.getIpSpaces().keySet(), containsInAnyOrder(specificSpaceName, wildcardSpaceName, indirectSpaceName));
+    assertThat(
+        c.getIpSpaces().keySet(),
+        containsInAnyOrder(specificSpaceName, wildcardSpaceName, indirectSpaceName));
 
     IpSpace specificSpace = c.getIpSpaces().get(specificSpaceName);
     IpSpace wildcardSpace = c.getIpSpaces().get(wildcardSpaceName);
@@ -480,13 +481,17 @@ public class FlatJuniperGrammarTest {
 
     // Specifically allowed source address should be accepted
     assertThat(
-        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+        aclUntrustOut,
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
     // Source address covered by the wildcard entry should be accepted
     assertThat(
-        aclUntrustOut, accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+        aclUntrustOut,
+        accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
     // Source address covered by neither address-set entry should be rejected
     assertThat(
-        aclUntrustOut, rejects(flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+        aclUntrustOut,
+        rejects(
+            flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
   }
 
   @Test
@@ -810,16 +815,13 @@ public class FlatJuniperGrammarTest {
 
     // Specifically allowed source address should be accepted
     assertThat(
-        aclUntrustOut, accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
-    // Source address not covered by the address-book
+        aclUntrustOut,
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+    // Source address not covered by the address-book should be rejected
     assertThat(
-        aclUntrustOut, rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
-/*=======
-    assertThat(
-        aclTrustOut,
-        accepts(
-            untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
->>>>>>> master*/
+        aclUntrustOut,
+        rejects(
+            flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
   }
 
   @Test

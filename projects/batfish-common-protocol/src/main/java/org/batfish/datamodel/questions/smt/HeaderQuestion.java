@@ -13,9 +13,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.questions.Question;
 

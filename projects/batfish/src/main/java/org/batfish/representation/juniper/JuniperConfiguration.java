@@ -1584,27 +1584,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .forEach(
             (n, entry) -> {
               // If this address book references other entries, add them to an AclIpSpace
-              /*entry
-                  .getEntries()
-                  .forEach(
-                      subEntry -> {
-                        String ipSpaceName = name + "~" + subEntry.getName();
-
-                        // TODO add reference to this entry for the base IpSpace
-                        // TODO add this entry to ipSpaces
-                        // AclIpSpace aclIpSpace = AclIpSpace.permitting(new IpSpaceReference(ipSpaceName));
-                        ipSpaces.computeIfAbsent(
-                            ipSpaceName,
-                            i ->
-                                IpWildcardSetIpSpace.builder()
-                                    .including(entry.getIpWildcards(_w))
-                                    .build());
-                      });
-              ipSpaceBuilder.including(entry.getIpWildcards(_w));*/
-
-              // Simple way to do it, but toIpSpace is coupled with class defs
-              // ipSpaces.put(entry.getName(), entry.toIpSpace());
-
               String entryName = bookName + "~" + n;
               if (!entry.getEntries().isEmpty()) {
                 List<AclIpSpaceLine> aclIpSpaceLines = new TreeList<>();
@@ -1621,8 +1600,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                         });
                 ipSpaces.put(entryName, AclIpSpace.builder().setLines(aclIpSpaceLines).build());
               } else {
-                // ipSpaces.put(entryName,
-                // IpWildcardSetIpSpace.builder().including(entry.getPrefixes(_w)));
                 ipSpaces.put(
                     entryName,
                     IpWildcardSetIpSpace.builder().including(entry.getIpWildcards(_w)).build());

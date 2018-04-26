@@ -15,7 +15,6 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Protocol;
 import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.SubRange;
