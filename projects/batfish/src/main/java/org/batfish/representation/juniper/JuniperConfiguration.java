@@ -1577,9 +1577,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecVpn;
   }
 
-  /**
-   * Convert address book into corresponding IpSpaces
-   */
+  /** Convert address book into corresponding IpSpaces */
   private Map<String, IpSpace> toIpSpaces(String bookName, AddressBook book) {
     Map<String, IpSpace> ipSpaces = new TreeMap<>();
     book.getEntries()
