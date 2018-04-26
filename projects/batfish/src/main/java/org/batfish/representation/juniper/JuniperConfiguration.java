@@ -3,7 +3,6 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -1582,7 +1581,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * Convert address book into corresponding IpSpaces
    */
   private Map<String, IpSpace> toIpSpaces(String bookName, AddressBook book) {
-    Map<String, IpSpace> ipSpaces = ImmutableMap.of();
+    Map<String, IpSpace> ipSpaces = new TreeMap<>();
     book.getEntries()
         .forEach(
             (n, entry) -> {
