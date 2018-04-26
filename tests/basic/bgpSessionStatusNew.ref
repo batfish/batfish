@@ -32,10 +32,12 @@
         "establishedNeighbors" : 1,
         "localIp" : "10.23.21.2",
         "node" : {
+          "id" : "node-as2border2",
           "name" : "as2border2"
         },
         "onLoopback" : false,
         "remoteNode" : {
+          "id" : "node-as3border1",
           "name" : "as3border1"
         },
         "remotePrefix" : "10.23.21.3/32",
