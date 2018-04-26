@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -1577,14 +1578,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecVpn;
   }
 
+  /**
+   * Convert address book into corresponding IpSpaces
+   */
   private Map<String, IpSpace> toIpSpaces(String bookName, AddressBook book) {
-    // TODO fix this to make ip spaces for each address, set, and book
-    Map<String, IpSpace> ipSpaces = new TreeMap<>();
+    Map<String, IpSpace> ipSpaces = ImmutableMap.of();
     book.getEntries()
         .forEach(
             (n, entry) -> {
-              // If this address book references other entries, add them to an AclIpSpace
               String entryName = bookName + "~" + n;
+
+              // If this address book references other entries, add them to an AclIpSpace
               if (!entry.getEntries().isEmpty()) {
                 List<AclIpSpaceLine> aclIpSpaceLines = new TreeList<>();
                 entry
