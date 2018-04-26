@@ -134,7 +134,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
 
       IsisLoopbacksAnswerElement answerElement = new IsisLoopbacksAnswerElement();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
         if (!includeNodes.contains(hostname)) {

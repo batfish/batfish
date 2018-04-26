@@ -444,7 +444,7 @@ os_description
 os_service
 :
    SERVICE protocol NEWLINE
-   //todo: change to os_service_typoe allowing tcp and udp port ranges
+   //todo: change to os_service_type allowing tcp and udp port ranges
 
 ;
 
@@ -486,9 +486,11 @@ pmc_null
       BANDWIDTH
       | CONGESTION_CONTROL
       | DBL
+      | DROP
       | FAIR_QUEUE
       | INSPECT
       | MTU
+      | PASS
       | PAUSE
       | PRIORITY
       | QUEUE_BUFFERS

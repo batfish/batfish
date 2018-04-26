@@ -241,21 +241,20 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       throw new BatfishException("Must supply configurations");
     }
     _namedIpSpaces =
-        CommonUtil.toImmutableMap(
-            configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
+        toImmutableMap(configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
     _specializationIpSpace =
         specialize
             ? AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps())
             : UniverseIpSpace.INSTANCE;
     _ipSpaceSpecializers =
-        CommonUtil.toImmutableMap(
+        toImmutableMap(
             _namedIpSpaces,
             Entry::getKey,
             namedIpSpacesEntry ->
                 new IpSpaceSpecializer(_specializationIpSpace, namedIpSpacesEntry.getValue()));
     _ipAccessListSpecializers =
         specialize
-            ? CommonUtil.toImmutableMap(
+            ? toImmutableMap(
                 _namedIpSpaces,
                 Entry::getKey,
                 namedIpSpacesEntry ->

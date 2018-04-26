@@ -138,6 +138,11 @@ AGGREGATED_ETHER_OPTIONS
    'aggregated-ether-options'
 ;
 
+AGGREGATOR
+:
+  'aggregator'
+;
+
 AGGRESSIVE
 :
    'aggressive'
@@ -198,6 +203,11 @@ ALLOW
    'allow'
 ;
 
+ALLOW_SNOOPED_CLIENTS
+:
+   'allow-snooped-clients'
+;
+
 ALLOW_V4MAPPED_PACKETS
 :
    'allow-v4mapped-packets'
@@ -211,6 +221,16 @@ ALWAYS_COMPARE_MED
 ALWAYS_SEND
 :
    'always-send'
+;
+
+ALWAYS_WRITE_GIADDR
+:
+   'always-write-giaddr'
+;
+
+ANALYZER
+:
+  'analyzer'
 ;
 
 ANY
@@ -373,11 +393,6 @@ AUTHENTICATION_ORDER
    'authentication-order'
 ;
 
-AUTONOMOUS_SYSTEM
-:
-   'autonomous-system'
-;
-
 AUTHENTICATION_TYPE
 :
    'authentication-type'
@@ -400,7 +415,12 @@ AUTO_NEGOTIATION
 
 AUTO_SNAPSHOT
 :
-   'auto-snapshot'
+  'auto-snapshot'
+;
+
+AUTONOMOUS_SYSTEM
+:
+   'autonomous-system'
 ;
 
 BACKUP_ROUTER
@@ -456,6 +476,11 @@ BOOT_SERVER
 BOOTP
 :
    'bootp'
+;
+
+BOOTP_SUPPORT
+:
+   'bootp-support'
 ;
 
 BOOTPC
@@ -692,6 +717,11 @@ DELETE
    'delete'
 ;
 
+DELETE_BINDING_ON_RENEGOTIATION
+:
+   'delete-binding-on-renegotiation'
+;
+
 DENY
 :
    'deny'
@@ -715,6 +745,11 @@ DESCRIPTION
 DESTINATION_ADDRESS
 :
    'destination-address'
+;
+
+DESTINATION_ADDRESS_EXCLUDED
+:
+   'destination-address-excluded'
 ;
 
 DESTINATION_HOST_UNKNOWN
@@ -860,6 +895,11 @@ ECHO_REQUEST
 EGP
 :
    'egp'
+;
+
+EGRESS
+:
+  'egress'
 ;
 
 EIGHT02_3AD
@@ -1095,6 +1135,11 @@ FORWARDING
 FORWARDING_CLASS
 :
    'forwarding-class'
+;
+
+FORWARDING_CLASS_ACCOUNTING
+:
+   'forwarding-class-accounting'
 ;
 
 FORWARDING_OPTIONS
@@ -1510,6 +1555,11 @@ INET_VPN
 INET6_VPN
 :
    'inet6-vpn'
+;
+
+INGRESS
+:
+  'ingress'
 ;
 
 INNER
@@ -2712,6 +2762,11 @@ L2_INTERFACE
   'l2-interface'
 ;
 
+L2_LEARNING
+:
+  'l2-learning'
+;
+
 L3_INTERFACE
 :
    'l3-interface'
@@ -3272,6 +3327,11 @@ NO_ANTI_REPLAY
    'no-anti-replay'
 ;
 
+NO_ARP
+:
+  'no-arp'
+;
+
 NO_AUTO_NEGOTIATION
 :
    'no-auto-negotiation'
@@ -3370,6 +3430,11 @@ NODE_DEVICE
 NODE_GROUP
 :
    'node-group'
+;
+
+NODE_LINK_PROTECTION
+:
+  'node-link-protection'
 ;
 
 NONSTOP_ROUTING
@@ -4357,6 +4422,11 @@ SOURCE_INTERFACE
    'source-interface'
 ;
 
+SOURCE_MAC_ADDRESS
+:
+   'source-mac-address' -> pushMode ( M_MacAddress )
+;
+
 SOURCE_NAT
 :
    'source-nat'
@@ -4400,6 +4470,11 @@ STANDARD
 STATIC
 :
    'static'
+;
+
+STATIC_HOST_MAPPING
+:
+   'static-host-mapping'
 ;
 
 STATIC_NAT
@@ -5336,6 +5411,11 @@ M_AsPath_NEWLINE
    {enableIPV6_ADDRESS = true;}
 
    -> type ( NEWLINE ) , popMode
+;
+
+M_AsPath_AGGREGATOR
+:
+   'aggregator' -> type ( AGGREGATOR ) , popMode
 ;
 
 M_AsPath_ORIGIN

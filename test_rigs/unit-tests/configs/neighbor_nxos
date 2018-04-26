@@ -1,4 +1,6 @@
 !
+feature bgp
+!
 hostname neighbor_nxos
 !
 router bgp 2

@@ -1,7 +1,7 @@
 parser grammar CiscoParser;
 
 import
-Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static;
+Cisco_common, Cisco_aaa, Cisco_acl, Cisco_bgp, Cisco_cable, Cisco_crypto, Cisco_callhome, Cisco_eigrp, Cisco_hsrp, Cisco_ignored, Cisco_interface, Cisco_isis, Cisco_line, Cisco_logging, Cisco_mpls, Cisco_ntp, Cisco_ospf, Cisco_pim, Cisco_qos, Cisco_rip, Cisco_routemap, Cisco_snmp, Cisco_static, Cisco_zone;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -3565,6 +3565,8 @@ stanza
    | s_wlan
    | s_wsma
    | s_xconnect_logging
+   | s_zone
+   | s_zone_pair
    | srlg_stanza
    | standard_access_list_stanza
    | standard_ipv6_access_list_stanza

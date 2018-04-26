@@ -5,6 +5,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.regex.Pattern;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.questions.InterfacesSpecifier.Type;
 import org.junit.Test;
 
@@ -53,5 +54,14 @@ public class InterfacesSpecifierTest {
 
     assertThat(specifier.matches(secretInterface), equalTo(true));
     assertThat(specifier.matches(nonSecretInterface), equalTo(false));
+  }
+
+  @Test
+  public void matchesVrf() {
+    InterfacesSpecifier specifier = new InterfacesSpecifier("vrf:vrf1");
+    Interface vrf1Iface = Interface.builder().setName("iface").setVrf(new Vrf("vrf1")).build();
+    Interface vrf2Iface = Interface.builder().setName("iface").setVrf(new Vrf("vrf2")).build();
+    assertThat(specifier.matches(vrf1Iface), equalTo(true));
+    assertThat(specifier.matches(vrf2Iface), equalTo(false));
   }
 }

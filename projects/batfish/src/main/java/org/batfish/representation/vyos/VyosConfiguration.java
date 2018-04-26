@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
@@ -60,8 +59,6 @@ public class VyosConfiguration extends VendorConfiguration {
 
   private final Map<String, PrefixList> _prefixLists;
 
-  private final SortedSet<String> _roles;
-
   private final Map<String, RouteMap> _routeMaps;
 
   private final Set<StaticNextHopRoute> _staticNextHopRoutes;
@@ -69,7 +66,6 @@ public class VyosConfiguration extends VendorConfiguration {
   private transient Set<String> _unimplementedFeatures;
 
   public VyosConfiguration() {
-    _roles = new TreeSet<>();
     _espGroups = new TreeMap<>();
     _ikeGroups = new TreeMap<>();
     _interfaces = new TreeMap<>();
@@ -263,11 +259,6 @@ public class VyosConfiguration extends VendorConfiguration {
     return _prefixLists;
   }
 
-  @Override
-  public SortedSet<String> getRoles() {
-    return _roles;
-  }
-
   public Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
@@ -288,11 +279,6 @@ public class VyosConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(String hostname) {
     _hostname = hostname;
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
   }
 
   @Override

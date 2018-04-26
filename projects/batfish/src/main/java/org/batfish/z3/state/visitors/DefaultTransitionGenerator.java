@@ -45,6 +45,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
@@ -488,7 +489,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitNodeNeighborUnreachable(NodeNeighborUnreachable.State state) {
+  public void visitNodeInterfaceNeighborUnreachable(NodeInterfaceNeighborUnreachable.State state) {
     _input
         .getNeighborUnreachable()
         .forEach(
@@ -496,7 +497,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                 neighborUnreachableByVrf.forEach(
                     (vrf, neighborUnreachableByOutInterface) ->
                         neighborUnreachableByOutInterface.forEach(
-                            (outInterface, dstIpConstraint) -> {
+                            (outIface, dstIpConstraint) -> {
                               ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
                               preStates.add(new PostInVrf(hostname, vrf), new PreOut(hostname));
 
@@ -505,7 +506,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                   _input
                                       .getOutgoingAcls()
                                       .getOrDefault(hostname, ImmutableMap.of())
-                                      .get(outInterface);
+                                      .get(outIface);
                               if (outAcl != null) {
                                 preStates.add(new AclPermit(hostname, outAcl));
                               }
@@ -514,6 +515,23 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                   new BasicRuleStatement(
                                       dstIpConstraint,
                                       preStates.build(),
+                                      new NodeInterfaceNeighborUnreachable(hostname, outIface)));
+                            })));
+  }
+
+  @Override
+  public void visitNodeNeighborUnreachable(NodeNeighborUnreachable.State state) {
+    _input
+        .getNeighborUnreachable()
+        .forEach(
+            (hostname, neighborUnreachableByVrf) ->
+                neighborUnreachableByVrf.forEach(
+                    (vrf, neighborUnreachableByOutInterface) ->
+                        neighborUnreachableByOutInterface.forEach(
+                            (outIface, dstIpConstraint) -> {
+                              _rules.add(
+                                  new BasicRuleStatement(
+                                      new NodeInterfaceNeighborUnreachable(hostname, outIface),
                                       new NodeNeighborUnreachable(hostname)));
                             })));
   }
@@ -749,9 +767,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                               Field.DST_IP)
                           .getExpr());
               return new BasicRuleStatement(
-                  ipForeignToCurrentNode,
-                  ImmutableSet.of(new PostIn(hostname)),
-                  new PreOut(hostname));
+                  ipForeignToCurrentNode, new PostIn(hostname), new PreOut(hostname));
             })
         .forEach(_rules::add);
   }

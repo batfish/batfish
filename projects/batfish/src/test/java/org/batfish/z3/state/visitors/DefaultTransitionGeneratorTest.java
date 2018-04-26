@@ -55,6 +55,7 @@ import org.batfish.z3.state.NodeDropAclIn;
 import org.batfish.z3.state.NodeDropAclOut;
 import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
+import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
@@ -991,6 +992,56 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
+  public void testVisitNodeInterfaceNeighborUnreachable() {
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setNeighborUnreachable(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        VRF1,
+                        ImmutableMap.of(INTERFACE1, b(1), INTERFACE2, b(2)),
+                        VRF2,
+                        ImmutableMap.of(INTERFACE3, b(3))),
+                    NODE2,
+                    ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(4)))))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(NodeInterfaceNeighborUnreachable.State.INSTANCE)));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(1),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(2),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE2))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(3),
+                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE3))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                b(4),
+                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new NodeInterfaceNeighborUnreachable(NODE2, INTERFACE1))));
+  }
+
+  @Test
   public void testVisitNodeNeighborUnreachable() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
@@ -1014,29 +1065,25 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(1),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE1),
                 new NodeNeighborUnreachable(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(2),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE2),
                 new NodeNeighborUnreachable(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(3),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE3),
                 new NodeNeighborUnreachable(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                b(4),
-                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new NodeInterfaceNeighborUnreachable(NODE2, INTERFACE1),
                 new NodeNeighborUnreachable(NODE2))));
   }
 

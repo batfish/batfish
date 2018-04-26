@@ -903,6 +903,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
     _ingressInterface = ingressInterface;
   }
 
+  public Builder toBuilder() {
+    return new Builder(this);
+  }
+
   @Override
   public String toString() {
     boolean icmp = _ipProtocol == IpProtocol.ICMP;

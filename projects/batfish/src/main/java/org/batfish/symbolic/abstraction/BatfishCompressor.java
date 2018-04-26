@@ -1,5 +1,7 @@
 package org.batfish.symbolic.abstraction;
 
+import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import java.util.ArrayList;
@@ -132,8 +134,7 @@ public class BatfishCompressor {
 
     // get the set of prefixes for this equivalence class.
     TreeSet<Prefix> prefixSet =
-        ((IpWildcardSetIpSpace) slice.getHeaderSpace().getDstIps())
-            .getWhitelist()
+        asPositiveIpWildcards(slice.getHeaderSpace().getDstIps())
             .stream()
             .map(IpWildcard::toPrefix)
             .collect(Collectors.toCollection(TreeSet::new));

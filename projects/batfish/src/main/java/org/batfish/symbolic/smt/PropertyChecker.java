@@ -89,7 +89,8 @@ public class PropertyChecker {
   private void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
     // Skip inference if the destination IP headerspace does not need to be inferred.
-    if (q.getHeaderSpace().getDstIps() != EmptyIpSpace.INSTANCE) {
+    if (q.getHeaderSpace().getDstIps() != null
+        && q.getHeaderSpace().getDstIps() != EmptyIpSpace.INSTANCE) {
       return;
     }
 
@@ -335,12 +336,12 @@ public class PropertyChecker {
    *
    */
   private AnswerElement checkProperty(
-      HeaderLocationQuestion q,
+      HeaderLocationQuestion qOrig,
       TriFunction<Encoder, Set<String>, Set<GraphEdge>, Map<String, BoolExpr>> instrument,
       Function<VerifyParam, AnswerElement> answer) {
 
     long totalTime = System.currentTimeMillis();
-    PathRegexes p = new PathRegexes(q);
+    PathRegexes p = new PathRegexes(qOrig);
     Graph graph = new Graph(_batfish);
     Set<GraphEdge> destPorts = findFinalInterfaces(graph, p);
     List<String> sourceRouters = PatternUtils.findMatchingSourceNodes(graph, p);
@@ -352,7 +353,11 @@ public class PropertyChecker {
       throw new BatfishException("Set of valid ingress nodes is empty");
     }
 
+    // copy before updating header space, so these changes don't get propagated to the answer
+    HeaderLocationQuestion q = new HeaderLocationQuestion(qOrig);
+    q.setHeaderSpace(q.getHeaderSpace().rebuild().build());
     inferDestinationHeaderSpace(graph, destPorts, q);
+
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
     Tuple<Stream<Supplier<NetworkSlice>>, Long> ecs = findAllNetworkSlices(q, graph, true);
     Stream<Supplier<NetworkSlice>> stream = ecs.getFirst();

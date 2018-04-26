@@ -1,7 +1,7 @@
 !
 hostname ios-object-group-service
 !
-object-group service og-icmp                                                                                                                                                                                         
+object-group service og-icmp
  icmp
 !
 object-group service og-tcp

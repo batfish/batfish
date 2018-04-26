@@ -74,7 +74,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-import org.batfish.bdp.BdpDataPlanePlugin;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
@@ -99,6 +98,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -366,39 +366,33 @@ public class CiscoGrammarTest {
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
                                                         hasSrcOrDstPorts(
-                                                            hasItem(
-                                                                equalTo(new SubRange(65500))))))),
+                                                            hasItem(new SubRange(65500)))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
                                                         hasSrcOrDstPorts(
                                                             hasItem(
-                                                                equalTo(
-                                                                    new SubRange(
-                                                                        NamedPort.DOMAIN
-                                                                            .number()))))))),
+                                                                new SubRange(
+                                                                    NamedPort.DOMAIN.number())))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
                                                         hasSrcOrDstPorts(
                                                             hasItem(
-                                                                equalTo(
-                                                                    new SubRange(
-                                                                        NamedPort
-                                                                            .CMDtcp_OR_SYSLOGudp
-                                                                            .number()))))))),
+                                                                new SubRange(
+                                                                    NamedPort.CMDtcp_OR_SYSLOGudp
+                                                                        .number())))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.TCP)),
                                                         hasSrcOrDstPorts(
                                                             hasItem(
-                                                                equalTo(
-                                                                    new SubRange(
-                                                                        NamedPort.HTTP
-                                                                            .number())))))))))))))))));
+                                                                new SubRange(
+                                                                    NamedPort.HTTP
+                                                                        .number()))))))))))))))));
     /* og-udp */
     assertThat(
         c,
@@ -417,49 +411,42 @@ public class CiscoGrammarTest {
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
                                                         hasSrcOrDstPorts(
-                                                            hasItem(
-                                                                equalTo(new SubRange(65501))))))),
+                                                            hasItem(new SubRange(65501)))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
                                                         hasSrcOrDstPorts(
                                                             hasItem(
-                                                                equalTo(
-                                                                    new SubRange(
-                                                                        NamedPort.NTP
-                                                                            .number()))))))),
+                                                                new SubRange(
+                                                                    NamedPort.NTP.number())))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
                                                         hasSrcOrDstPorts(
                                                             hasItem(
-                                                                equalTo(
-                                                                    new SubRange(
-                                                                        NamedPort.SNMPTRAP
-                                                                            .number()))))))),
+                                                                new SubRange(
+                                                                    NamedPort.SNMPTRAP
+                                                                        .number())))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
                                                         hasSrcOrDstPorts(
                                                             hasItem(
-                                                                equalTo(
-                                                                    new SubRange(
-                                                                        NamedPort
-                                                                            .CMDtcp_OR_SYSLOGudp
-                                                                            .number()))))))),
+                                                                new SubRange(
+                                                                    NamedPort.CMDtcp_OR_SYSLOGudp
+                                                                        .number())))))),
                                             isMatchHeaderSpaceThat(
                                                 hasHeaderSpace(
                                                     allOf(
                                                         hasIpProtocols(contains(IpProtocol.UDP)),
                                                         hasSrcOrDstPorts(
                                                             hasItem(
-                                                                equalTo(
-                                                                    new SubRange(
-                                                                        NamedPort.TFTP
-                                                                            .number())))))))))))))))));
+                                                                new SubRange(
+                                                                    NamedPort.TFTP
+                                                                        .number()))))))))))))))));
   }
 
   @Test

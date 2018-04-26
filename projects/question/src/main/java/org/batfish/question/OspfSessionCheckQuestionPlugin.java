@@ -195,8 +195,8 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       OspfSessionCheckQuestion question = (OspfSessionCheckQuestion) _question;
 
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(configurations);
-      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(configurations);
+      Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
+      Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
 
       SortedSet<Prefix> foreignPrefixes =
           MoreObjects.firstNonNull(question._foreignOspfNetworks, Collections.emptySortedSet());

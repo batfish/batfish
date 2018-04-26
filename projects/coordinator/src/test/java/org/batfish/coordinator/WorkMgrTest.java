@@ -1,5 +1,6 @@
 package org.batfish.coordinator;
 
+import static org.batfish.coordinator.WorkMgr.generateFileDateString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.hamcrest.Matchers.hasSize;
@@ -15,6 +16,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -395,5 +398,20 @@ public class WorkMgrTest {
     } catch (IOException e) {
       throw new BatfishException("Failed to read metadata", e);
     }
+  }
+
+  @Test
+  public void testGenerateDateString() {
+    assertThat(
+        generateFileDateString("foo", Instant.parse("2018-04-19T12:34:56Z")),
+        equalTo("foo_2018-04-19T12-34-56.000"));
+
+    assertThat(
+        generateFileDateString(
+            "foo",
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME
+                .parse("2018-04-19T12:34:56-08:00")
+                .query(Instant::from)),
+        equalTo("foo_2018-04-19T20-34-56.000"));
   }
 }

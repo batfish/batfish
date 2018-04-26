@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -144,11 +143,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   }
 
   @Override
-  public SortedSet<String> getRoles() {
-    return _roles;
-  }
-
-  @Override
   public Set<String> getUnimplementedFeatures() {
     return _unimplementedFeatures;
   }
@@ -160,11 +154,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
   @Override
   public void setHostname(String hostname) {
     _hostname = hostname;
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
   }
 
   @Override

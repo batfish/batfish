@@ -199,8 +199,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private final Map<String, PrefixList> _prefixLists;
 
-  private final SortedSet<String> _roles;
-
   private final Map<String, RouteFilter> _routeFilters;
 
   private final Map<String, RoutingInstance> _routingInstances;
@@ -242,7 +240,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _ntpServers = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _policyStatements = new TreeMap<>();
-    _roles = new TreeSet<>();
     _routeFilters = new TreeMap<>();
     _routingInstances = new TreeMap<>();
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
@@ -327,17 +324,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
       NamedBgpGroup group = e.getValue();
       if (!group.getIpv6() && !group.getInherited()) {
         _unreferencedBgpGroups.put(name, group.getDefinitionLine());
-        Ip fakeIp = new Ip(-1 * fakeIpCounter);
+        Prefix fakeIp = new Prefix(new Ip(-1 * fakeIpCounter), Prefix.MAX_PREFIX_LENGTH);
         IpBgpGroup dummy = new IpBgpGroup(fakeIp);
         dummy.setParent(group);
         dummy.cascadeInheritance();
         routingInstance.getIpBgpGroups().put(fakeIp, dummy);
       }
     }
-    for (Entry<Ip, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
-      Ip ip = e.getKey();
+    for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
+      Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpNeighbor neighbor = new BgpNeighbor(ip, _c, false);
+      BgpNeighbor neighbor = new BgpNeighbor(prefix, _c, ig.getDynamic());
       neighbor.setVrf(vrfName);
 
       // route reflection
@@ -546,7 +543,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         outerloop:
         for (org.batfish.datamodel.Interface iface : vrf.getInterfaces().values()) {
           for (InterfaceAddress address : iface.getAllAddresses()) {
-            if (address.getPrefix().containsIp(ip)) {
+            if (address.getPrefix().containsPrefix(prefix)) {
               localIp = address.getIp();
               break outerloop;
             }
@@ -562,8 +559,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
           }
         }
       }
-      if (localIp == null && ip.valid()) {
-        _w.redFlag("Could not determine local ip for bgp peering with neighbor ip: " + ip);
+      if (localIp == null) {
+        if (neighbor.getDynamic()) {
+          _w.redFlag(
+              "Could not determine local ip for bgp peering with neighbor prefix: " + prefix);
+        } else {
+          _w.redFlag(
+              "Could not determine local ip for bgp peering with neighbor ip: "
+                  + prefix.getStartIp());
+        }
       } else {
         neighbor.setLocalIp(localIp);
       }
@@ -767,11 +771,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _prefixLists;
   }
 
-  @Override
-  public SortedSet<String> getRoles() {
-    return _roles;
-  }
-
   public Map<String, RouteFilter> getRouteFilters() {
     return _routeFilters;
   }
@@ -970,11 +969,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
     }
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    _roles.addAll(roles);
   }
 
   public void setSyslogHosts(NavigableSet<String> syslogHosts) {
@@ -1618,9 +1612,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     .getEntries()
                     .forEach(
                         subEntry -> {
+                          String subEntryName = bookName + "~" + subEntry.getName();
                           aclIpSpaceLines.add(
                               AclIpSpaceLine.builder()
-                                  .setIpSpace(new IpSpaceReference(entry.getName()))
+                                  .setIpSpace(new IpSpaceReference(subEntryName))
                                   .setAction(LineAction.ACCEPT)
                                   .build());
                         });
@@ -1853,7 +1848,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setAuthenticationKeyChains(convertAuthenticationKeyChains(_authenticationKeyChains));
-    _c.setRoles(_roles);
     _c.setDnsServers(_dnsServers);
     _c.setDomainName(_defaultRoutingInstance.getDomainName());
     _c.setLoggingServers(_syslogHosts);

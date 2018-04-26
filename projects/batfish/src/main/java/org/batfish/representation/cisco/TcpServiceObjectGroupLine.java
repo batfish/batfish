@@ -16,10 +16,14 @@ public class TcpServiceObjectGroupLine implements ServiceObjectGroupLine {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<SubRange> _ports;
+  private final List<SubRange> _ports;
 
   public TcpServiceObjectGroupLine(@Nonnull List<SubRange> ports) {
-    _ports = requireNonNull(ports);
+    _ports = ImmutableList.copyOf(requireNonNull(ports));
+  }
+
+  public List<SubRange> getPorts() {
+    return _ports;
   }
 
   @Override

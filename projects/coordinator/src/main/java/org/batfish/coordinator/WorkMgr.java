@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
 import io.opentracing.References;
@@ -13,11 +14,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -63,6 +67,8 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -78,9 +84,17 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  private static final Set<String> CONTAINER_FILENAMES = initContainerFilenames();
+
   private static final Set<String> ENV_FILENAMES = initEnvFilenames();
 
   private static final int MAX_SHOWN_TESTRIG_INFO_SUBDIR_ENTRIES = 10;
+
+  private static Set<String> initContainerFilenames() {
+    Set<String> envFilenames =
+        new ImmutableSet.Builder<String>().add(BfConsts.RELPATH_NODE_ROLES_PATH).build();
+    return envFilenames;
+  }
 
   private static Set<String> initEnvFilenames() {
     Set<String> envFilenames = new HashSet<>();
@@ -1043,25 +1057,39 @@ public class WorkMgr extends AbstractCoordinator {
     // things look ok, now make the move
     boolean routingTables = false;
     boolean bgpTables = false;
+    boolean roleData = false;
     for (Path subFile : subFileList) {
-      Path target;
+      String name = subFile.getFileName().toString();
       if (isEnvFile(subFile)) {
-        String name = subFile.getFileName().toString();
+        // copy environment level files to the environment directory
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_ROUTING_TABLES)) {
           routingTables = true;
         }
         if (name.equals(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES)) {
           bgpTables = true;
         }
-        target = defaultEnvironmentLeafDir.resolve(subFile.getFileName());
+        CommonUtil.copy(subFile, defaultEnvironmentLeafDir.resolve(subFile.getFileName()));
+      } else if (isContainerFile(subFile)) {
+        // derive and write the new container level file from the input
+        if (name.equals(BfConsts.RELPATH_NODE_ROLES_PATH)) {
+          roleData = true;
+          try {
+            NodeRolesData testrigData = NodeRolesData.read(subFile);
+            Path nodeRolesPath = containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+            NodeRolesData.replaceNodeRoleDimensions(
+                nodeRolesPath, testrigData.getNodeRoleDimensions(), NodeRoleDimension.Type.CUSTOM);
+          } catch (IOException e) {
+            throw new BatfishException("Could not process node role data", e);
+          }
+        }
       } else {
-        target = srcTestrigDir.resolve(subFile.getFileName());
+        // rest is plain copy
+        CommonUtil.copy(subFile, srcTestrigDir.resolve(subFile.getFileName()));
       }
-      CommonUtil.copy(subFile, target);
     }
     _logger.infof(
-        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s\n",
-        testrigName, bgpTables, routingTables);
+        "Environment data for testrig:%s; bgpTables:%s, routingTables:%s, roleData:%s\n",
+        testrigName, bgpTables, routingTables, roleData);
 
     if (autoAnalyze) {
       for (WorkItem workItem : getAutoWorkQueue(containerName, testrigName)) {
@@ -1094,6 +1122,11 @@ public class WorkMgr extends AbstractCoordinator {
       autoWorkQueue.add(analyzeWork);
     }
     return autoWorkQueue;
+  }
+
+  private boolean isContainerFile(Path path) {
+    String name = path.getFileName().toString();
+    return CONTAINER_FILENAMES.contains(name);
   }
 
   private boolean isEnvFile(Path path) {
@@ -1526,6 +1559,19 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.writeFile(file, questionJson);
   }
 
+  private static final DateTimeFormatter FORMATTER =
+      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH-mm-ss.SSS")
+          .withLocale(Locale.getDefault())
+          .withZone(ZoneOffset.UTC);
+
+  static String generateFileDateString(String base, Instant instant) {
+    return base + "_" + FORMATTER.format(instant);
+  }
+
+  private static String generateFileDateString(String base) {
+    return generateFileDateString(base, Instant.now());
+  }
+
   public void uploadTestrig(
       String containerName, String testrigName, InputStream fileStream, boolean autoAnalyze) {
     Path containerDir = getdirContainer(containerName);
@@ -1540,7 +1586,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path originalDir =
         containerDir
             .resolve(BfConsts.RELPATH_ORIGINAL_DIR)
-            .resolve(testrigName + "_" + Instant.now());
+            .resolve(generateFileDateString(testrigName));
     if (!originalDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + originalDir + "'");
     }

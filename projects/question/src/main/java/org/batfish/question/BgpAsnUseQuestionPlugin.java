@@ -65,7 +65,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
       BgpAsnUseAnswerElement answerElement = new BgpAsnUseAnswerElement(null);
       SortedSetMultimap<Integer, String> asns = TreeMultimap.create();
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> nodes = question.getNodeRegex().getMatchingNodes(configurations);
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
       for (Entry<String, Configuration> e : configurations.entrySet()) {
         String hostname = e.getKey();
         if (!nodes.contains(hostname)) {

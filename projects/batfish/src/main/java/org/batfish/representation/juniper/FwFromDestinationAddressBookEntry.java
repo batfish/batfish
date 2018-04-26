@@ -36,11 +36,11 @@ public final class FwFromDestinationAddressBookEntry extends FwFrom {
     Set<IpWildcard> prefixes = _localAddressBook.getIpWildcards(_addressBookEntryName, w);
     List<IpSpace> wildcards =
         prefixes.stream().map(IpWildcard::toIpSpace).collect(ImmutableList.toImmutableList());
-    headerSpaceBuilder.setDstIps(
-        AclIpSpace.union(
-            ImmutableList.<IpSpace>builder()
-                .add(headerSpaceBuilder.getDstIps())
-                .addAll(wildcards)
-                .build()));
+    ImmutableList.Builder<IpSpace> ipSpacesBuilder =
+        ImmutableList.<IpSpace>builder().addAll(wildcards);
+    if (headerSpaceBuilder.getSrcIps() != null) {
+      ipSpacesBuilder.add(headerSpaceBuilder.getSrcIps());
+    }
+    headerSpaceBuilder.setDstIps(AclIpSpace.union(ipSpacesBuilder.build()));
   }
 }

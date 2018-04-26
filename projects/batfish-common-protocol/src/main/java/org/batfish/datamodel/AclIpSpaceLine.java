@@ -4,11 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
+public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable {
 
   public static class Builder {
 
@@ -41,6 +42,9 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine> {
   private static final String PROP_ACTION = "action";
 
   private static final String PROP_IP_SPACE = "ipSpace";
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   public static Builder builder() {
     return new Builder();

@@ -152,7 +152,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     public BgpAdvertisementsAnswerElement answer() {
       BgpAdvertisementsQuestion question = (BgpAdvertisementsQuestion) _question;
       Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
+      Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
       BgpAdvertisementsAnswerElement answerElement;
       if (question._fromEnvironment) {
         Set<BgpAdvertisement> externalAdverts =

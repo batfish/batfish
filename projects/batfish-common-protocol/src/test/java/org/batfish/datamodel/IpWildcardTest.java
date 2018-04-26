@@ -62,6 +62,9 @@ public class IpWildcardTest {
   public void testSupersetOf() {
     IpWildcard wc1 = new IpWildcard("1.2.0.0/16");
     IpWildcard wc2 = new IpWildcard("1.2.3.0/24");
+
+    assertThat("IpWildcard.supersetOf should not be strict", wc1.supersetOf(wc1));
+
     assertThat("wc1 should be a superset of wc2", wc1.supersetOf(wc2));
     assertThat("wc2 should not be a superset of wc1", !wc2.supersetOf(wc1));
 

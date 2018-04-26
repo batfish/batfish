@@ -3,24 +3,26 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.TreeMultimap;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.collections.MultiSet;
+import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.collections.NodeInterfacePair;
-import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -30,32 +32,26 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
   public static class UniqueIpAssignmentsAnswerElement extends AnswerElement {
 
+    private static final String PROP_DUPLICATE_IPS = "duplicateIps";
+
     private SortedMap<Ip, SortedSet<NodeInterfacePair>> _duplicateIps;
 
     public UniqueIpAssignmentsAnswerElement() {
+      _summary = new AnswerSummary();
       _duplicateIps = new TreeMap<>();
     }
 
-    public void add(
-        SortedMap<Ip, SortedSet<NodeInterfacePair>> map,
-        Ip ip,
-        String hostname,
-        String interfaceName) {
-      SortedSet<NodeInterfacePair> interfaces = map.computeIfAbsent(ip, k -> new TreeSet<>());
-      interfaces.add(new NodeInterfacePair(hostname, interfaceName));
-    }
-
+    @JsonProperty(PROP_DUPLICATE_IPS)
     public SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
       return _duplicateIps;
     }
 
-    private Object ipsToString(
-        String indent, String header, SortedMap<Ip, SortedSet<NodeInterfacePair>> ips) {
-      StringBuilder sb = new StringBuilder(indent + header + "\n");
-      for (Ip ip : ips.keySet()) {
-        sb.append(indent + indent + ip + "\n");
-        for (NodeInterfacePair nip : ips.get(ip)) {
-          sb.append(indent + indent + indent + nip + "\n");
+    private Object ipsToString() {
+      StringBuilder sb = new StringBuilder("  Duplicate IPs\n");
+      for (Ip ip : _duplicateIps.keySet()) {
+        sb.append(String.format("    %s\n", ip));
+        for (NodeInterfacePair nip : _duplicateIps.get(ip)) {
+          sb.append(String.format("      %s\n", nip));
         }
       }
       return sb.toString();
@@ -65,71 +61,68 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder("Results for unique IP assignment check\n");
       if (_duplicateIps != null) {
-        sb.append(ipsToString("  ", "Duplicate IPs", _duplicateIps));
+        sb.append(ipsToString());
       }
       return sb.toString();
     }
 
+    @JsonProperty(PROP_DUPLICATE_IPS)
     public void setDuplicateIps(SortedMap<Ip, SortedSet<NodeInterfacePair>> duplicateIps) {
+      _summary.setNumResults(duplicateIps.size());
       _duplicateIps = duplicateIps;
     }
   }
 
   public static class UniqueIpAssignmentsAnswerer extends Answerer {
-
     public UniqueIpAssignmentsAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-
-      UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
-
       UniqueIpAssignmentsAnswerElement answerElement = new UniqueIpAssignmentsAnswerElement();
-      Map<String, Configuration> configurations = _batfish.loadConfigurations();
-      Set<String> nodes = question.getNodeRegex().getMatchingNodes(configurations);
-      MultiSet<Ip> duplicateIps = new TreeMultiSet<>();
-      for (Entry<String, Configuration> e : configurations.entrySet()) {
-        String hostname = e.getKey();
-        if (!nodes.contains(hostname)) {
-          continue;
-        }
-        Configuration c = e.getValue();
-        for (Interface iface : c.getInterfaces().values()) {
-          if (!question.getInterfacesSpecifier().matches(iface)) {
-            continue;
-          }
-          for (InterfaceAddress address : iface.getAllAddresses()) {
-            Ip ip = address.getIp();
-            if (!question.getEnabledIpsOnly() || iface.getActive()) {
-              duplicateIps.add(ip);
-            }
-          }
-        }
-      }
-      for (Entry<String, Configuration> e : configurations.entrySet()) {
-        String hostname = e.getKey();
-        if (!nodes.contains(hostname)) {
-          continue;
-        }
-        Configuration c = e.getValue();
-        for (Entry<String, Interface> e2 : c.getInterfaces().entrySet()) {
-          String interfaceName = e2.getKey();
-          Interface iface = e2.getValue();
-          if (!question.getInterfacesSpecifier().matches(iface)) {
-            continue;
-          }
-          for (InterfaceAddress address : iface.getAllAddresses()) {
-            Ip ip = address.getIp();
-            if ((!question.getEnabledIpsOnly() || iface.getActive())
-                && duplicateIps.count(ip) != 1) {
-              answerElement.add(answerElement.getDuplicateIps(), ip, hostname, interfaceName);
-            }
-          }
-        }
-      }
+      answerElement.setDuplicateIps(getDuplicateIps());
       return answerElement;
+    }
+
+    private SortedMap<Ip, SortedSet<NodeInterfacePair>> getDuplicateIps() {
+      UniqueIpAssignmentsQuestion question = (UniqueIpAssignmentsQuestion) _question;
+      Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
+      Map<String, Configuration> configs = _batfish.loadConfigurations();
+      return nodes
+          .stream()
+          // convert to stream of interfaces
+          .flatMap(node -> configs.get(node).getInterfaces().values().stream())
+          // narrow to interfaces of interest
+          .filter(
+              iface ->
+                  question.getInterfacesSpecifier().matches(iface)
+                      && (!question.getEnabledIpsOnly() || iface.getActive()))
+          // convert to stream of Entry<Ip, NodeInterfacePair>
+          .flatMap(
+              iface ->
+                  iface
+                      .getAllAddresses()
+                      .stream()
+                      .map(
+                          ifaceAdrr ->
+                              Maps.immutableEntry(
+                                  ifaceAdrr.getIp(),
+                                  new NodeInterfacePair(
+                                      iface.getOwner().getHostname(), iface.getName()))))
+          // group by Ip
+          .collect(Multimaps.toMultimap(Entry::getKey, Entry::getValue, TreeMultimap::create))
+          // convert to stream of Entry<Ip, Set<NodeInterfacePair>>
+          .asMap()
+          .entrySet()
+          .stream()
+          // narrow to entries with multiple NodeInterfacePairs
+          .filter(entry -> entry.getValue().size() > 1)
+          .collect(
+              ImmutableSortedMap.toImmutableSortedMap(
+                  Comparator.naturalOrder(),
+                  Entry::getKey,
+                  entry -> ImmutableSortedSet.copyOf(entry.getValue())));
     }
   }
 

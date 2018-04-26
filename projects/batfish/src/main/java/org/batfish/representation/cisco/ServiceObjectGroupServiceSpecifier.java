@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 
-public class ServiceObjectGroupServiceSpecifier implements ExtendedAccessListServiceSpecifier {
+public class ServiceObjectGroupServiceSpecifier implements AccessListServiceSpecifier {
 
   /** */
   private static final long serialVersionUID = 1L;

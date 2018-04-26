@@ -3,7 +3,6 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import org.batfish.datamodel.NodeRoleSpecifier;
 import org.batfish.role.OutliersHypothesis;
 
 /**
@@ -13,13 +12,13 @@ import org.batfish.role.OutliersHypothesis;
  */
 public class RoleConsistencyPolicy {
 
-  private static final String PROP_ROLE_SPECIFIER = "roleSpecifier";
+  private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
   private static final String PROP_NAME = "name";
 
   private static final String PROP_HYPOTHESIS = "hypothesis";
 
-  private NodeRoleSpecifier _nodeRoleSpecifier;
+  private String _nodeRoleDimension;
 
   /** The name of the configuration property. */
   private String _name;
@@ -29,10 +28,10 @@ public class RoleConsistencyPolicy {
 
   @JsonCreator
   public RoleConsistencyPolicy(
-      @JsonProperty(PROP_ROLE_SPECIFIER) NodeRoleSpecifier nodeRoleSpecifier,
+      @JsonProperty(PROP_ROLE_DIMENSION) String nodeRoleDimension,
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_HYPOTHESIS) OutliersHypothesis hypothesis) {
-    _nodeRoleSpecifier = nodeRoleSpecifier;
+    _nodeRoleDimension = nodeRoleDimension;
     _name = name;
     _hypothesis = hypothesis;
   }
@@ -42,9 +41,9 @@ public class RoleConsistencyPolicy {
     return _name;
   }
 
-  @JsonProperty(PROP_ROLE_SPECIFIER)
-  public NodeRoleSpecifier getNodeRoleSpecifier() {
-    return _nodeRoleSpecifier;
+  @JsonProperty(PROP_ROLE_DIMENSION)
+  public String getNodeRoleDimension() {
+    return _nodeRoleDimension;
   }
 
   @JsonProperty(PROP_HYPOTHESIS)
@@ -54,6 +53,6 @@ public class RoleConsistencyPolicy {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_nodeRoleSpecifier, _name);
+    return Objects.hash(_nodeRoleDimension, _name);
   }
 }

@@ -249,11 +249,27 @@
           ]
         }
       },
+      "unused:crypto ipsec transform-set:cipts1" : {
+        "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts1'",
+        "files" : {
+          "cisco_crypto" : [
+            149
+          ]
+        }
+      },
+      "unused:crypto ipsec transform-set:cipts2" : {
+        "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts2'",
+        "files" : {
+          "cisco_crypto" : [
+            150
+          ]
+        }
+      },
       "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            185
+            187
           ]
         }
       },
@@ -269,7 +285,7 @@
         "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'dhcpgrp'",
         "files" : {
           "juniper_forwarding_options" : [
-            15
+            24
           ]
         }
       },
@@ -285,7 +301,7 @@
         "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'test2'",
         "files" : {
           "juniper_forwarding_options" : [
-            17
+            26
           ]
         }
       },
@@ -449,6 +465,14 @@
         "description" : "Unused structure of type: 'firewall filter' with name: 'blah'",
         "files" : {
           "juniper_firewall" : [
+            5
+          ]
+        }
+      },
+      "unused:firewall filter:f1" : {
+        "description" : "Unused structure of type: 'firewall filter' with name: 'f1'",
+        "files" : {
+          "juniper_firewall" : [
             4
           ]
         }
@@ -458,6 +482,14 @@
         "files" : {
           "juniper-tcpflags" : [
             4
+          ]
+        }
+      },
+      "unused:firewall filter:~GLOBAL_SECURITY_POLICY~" : {
+        "description" : "Unused structure of type: 'firewall filter' with name: '~GLOBAL_SECURITY_POLICY~'",
+        "files" : {
+          "juniper_security" : [
+            -1
           ]
         }
       },
@@ -658,6 +690,14 @@
         "files" : {
           "cisco_qos" : [
             29
+          ]
+        }
+      },
+      "unused:object-group service:SVCGRP-ICMP" : {
+        "description" : "Unused structure of type: 'object-group service' with name: 'SVCGRP-ICMP'",
+        "files" : {
+          "cisco_misc" : [
+            176
           ]
         }
       },
@@ -879,7 +919,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 116
+      "numResults" : 121
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1076,11 +1116,17 @@
           ],
           "IPSEC_AES_256" : [
             148
+          ],
+          "cipts1" : [
+            149
+          ],
+          "cipts2" : [
+            150
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            185
+            187
           ]
         }
       },
@@ -1137,6 +1183,13 @@
           ],
           "copp-system-p-acl-mac-cdp-udld-vtp" : [
             6
+          ]
+        }
+      },
+      "cisco_misc" : {
+        "object-group service" : {
+          "SVCGRP-ICMP" : [
+            176
           ]
         }
       },
@@ -1276,6 +1329,9 @@
       "juniper_firewall" : {
         "firewall filter" : {
           "blah" : [
+            5
+          ],
+          "f1" : [
             4
           ]
         }
@@ -1283,10 +1339,10 @@
       "juniper_forwarding_options" : {
         "dhcp-relay server-group" : {
           "dhcpgrp" : [
-            15
+            24
           ],
           "test2" : [
-            17
+            26
           ]
         }
       },
@@ -1304,6 +1360,13 @@
           ],
           "route-filter-test-v6" : [
             11
+          ]
+        }
+      },
+      "juniper_security" : {
+        "firewall filter" : {
+          "~GLOBAL_SECURITY_POLICY~" : [
+            -1
           ]
         }
       },

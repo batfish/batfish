@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
@@ -311,6 +312,14 @@ public class FlatJuniperGrammarTest {
                                 .build()))))));
   }
 
+  /** Tests support for dynamic bgp parsing using "bgp allow" command */
+  @Test
+  public void testBgpAllow() throws IOException {
+    Configuration c = parseConfig("bgp-allow");
+    assertThat(
+        c, hasDefaultVrf(hasBgpProcess(hasNeighbor(Prefix.parse("10.1.1.0/24"), isDynamic()))));
+  }
+
   @Test
   public void testAutonomousSystem() throws IOException {
     String testrigName = "autonomous-system";
@@ -430,6 +439,10 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("firewall-global-address-book");
     String interfaceNameTrust = "ge-0/0/0.0";
     String interfaceNameUntrust = "ge-0/0/1.0";
+    String specificSpaceName = "global~ADDR1";
+    String wildcardSpaceName = "global~ADDR2";
+    String indirectSpaceName = "global~ADDRSET";
+
     // Address on untrust interface's subnet
     String untrustIpAddr = "1.2.4.5";
     // Specific address allowed by the address-set
@@ -446,18 +459,24 @@ public class FlatJuniperGrammarTest {
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     // We should have three global IpSpaces in the config
-    assertThat(c.getIpSpaces().keySet(), containsInAnyOrder("global~ADDR1", "global~ADDR2", "global~ADDRSET"));
+    assertThat(c.getIpSpaces().keySet(), containsInAnyOrder(specificSpaceName, wildcardSpaceName, indirectSpaceName));
 
-    // It should be the only IpSpace
-    assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
-    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+    IpSpace specificSpace = c.getIpSpaces().get(specificSpaceName);
+    IpSpace wildcardSpace = c.getIpSpaces().get(wildcardSpaceName);
+    IpSpace indirectSpace = c.getIpSpaces().get(indirectSpaceName);
 
-    // It should contain the specific and wildcard addresses
-    assertThat(ipSpace, containsIp(new Ip(specificAddr)));
-    assertThat(ipSpace, containsIp(new Ip(wildcardAddr)));
+    // Specific space should contain the specific addr and not others
+    assertThat(specificSpace, containsIp(new Ip(specificAddr)));
+    assertThat(specificSpace, not(containsIp(new Ip(wildcardAddr))));
 
-    // It should not contain the notWildcard address
-    assertThat(ipSpace, not(containsIp(new Ip(notWildcardAddr))));
+    // Wildcard space should contain the wildcard addr and not others
+    assertThat(wildcardSpace, containsIp(new Ip(wildcardAddr)));
+    assertThat(wildcardSpace, not(containsIp(new Ip(notWildcardAddr))));
+
+    // Indirect space should contain both specific and wildcard addr, but not others
+    assertThat(indirectSpace, containsIp(new Ip(specificAddr), c.getIpSpaces()));
+    assertThat(indirectSpace, containsIp(new Ip(wildcardAddr), c.getIpSpaces()));
+    assertThat(indirectSpace, not(containsIp(new Ip(notWildcardAddr), c.getIpSpaces())));
 
     // Specifically allowed source address should be accepted
     assertThat(
@@ -795,6 +814,12 @@ public class FlatJuniperGrammarTest {
     // Source address not covered by the address-book
     assertThat(
         aclUntrustOut, rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+/*=======
+    assertThat(
+        aclTrustOut,
+        accepts(
+            untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+>>>>>>> master*/
   }
 
   @Test

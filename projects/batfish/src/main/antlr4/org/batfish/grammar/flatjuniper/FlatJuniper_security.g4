@@ -646,12 +646,12 @@ sead_address_set
 
 seada_address
 :
-   ADDRESS name = variable
+   ADDRESS addr_name = variable
 ;
 
 seada_address_set
 :
-   ADDRESS_SET name = variable
+   ADDRESS_SET addr_set_name = variable
 ;
 
 sec_local
@@ -1190,6 +1190,7 @@ sepctxp_match
    (
       sepctxpm_application
       | sepctxpm_destination_address
+      | sepctxpm_destination_address_excluded
       | sepctxpm_source_address
       | sepctxpm_source_identity
    )
@@ -1218,6 +1219,11 @@ sepctxpm_application
 sepctxpm_destination_address
 :
    DESTINATION_ADDRESS address_specifier
+;
+
+sepctxpm_destination_address_excluded
+:
+   DESTINATION_ADDRESS_EXCLUDED
 ;
 
 sepctxpm_source_address
@@ -1353,12 +1359,12 @@ sezsa_address_set
 
 sezsaad_address
 :
-   ADDRESS name = variable
+   ADDRESS addr_name = variable
 ;
 
 sezsaad_address_set
 :
-   ADDRESS_SET name = variable
+   ADDRESS_SET addr_set_name = variable
 ;
 
 sezsh_protocols

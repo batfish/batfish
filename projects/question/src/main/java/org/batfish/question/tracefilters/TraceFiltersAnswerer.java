@@ -25,7 +25,7 @@ public class TraceFiltersAnswerer extends Answerer {
     TraceFiltersQuestion question = (TraceFiltersQuestion) _question;
 
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
-    Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(configurations);
+    Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
     TraceFiltersAnswerElement answer = TraceFiltersAnswerElement.create(question);
     for (Configuration c : configurations.values()) {

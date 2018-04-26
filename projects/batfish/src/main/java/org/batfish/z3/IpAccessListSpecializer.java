@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
-import static org.batfish.datamodel.AclIpSpace.*;
+import static org.batfish.datamodel.AclIpSpace.difference;
+import static org.batfish.datamodel.AclIpSpace.union;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;

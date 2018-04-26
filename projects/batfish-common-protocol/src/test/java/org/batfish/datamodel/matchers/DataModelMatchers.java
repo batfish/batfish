@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -12,6 +13,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
@@ -107,6 +109,17 @@ public final class DataModelMatchers {
   }
 
   /**
+<<<<<<< HEAD
+=======
+   * Provides a matcher that matches if the {@link BgpNeighbor} is configured as a listening end of
+   * a dynamic BGP peering.
+   */
+  public static @Nonnull Matcher<BgpNeighbor> isDynamic() {
+    return new IsDynamic(equalTo(true));
+  }
+
+  /**
+>>>>>>> master
    * Provides a matcher that matches if the object is an {@link IpSpaceReference} matched by the
    * provided {@code subMatcher}.
    */

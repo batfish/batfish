@@ -1,7 +1,6 @@
 package org.batfish.representation.mrv;
 
 import java.util.Set;
-import java.util.SortedSet;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -25,12 +24,6 @@ public class MrvConfiguration extends VendorConfiguration {
   }
 
   @Override
-  public SortedSet<String> getRoles() {
-    throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
-  }
-
-  @Override
   public Set<String> getUnimplementedFeatures() {
     throw new UnsupportedOperationException("no implementation for generated method");
     // TODO Auto-generated method stub
@@ -43,12 +36,6 @@ public class MrvConfiguration extends VendorConfiguration {
   @Override
   public void setHostname(String hostname) {
     _hostname = hostname;
-  }
-
-  @Override
-  public void setRoles(SortedSet<String> roles) {
-    throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
   }
 
   @Override

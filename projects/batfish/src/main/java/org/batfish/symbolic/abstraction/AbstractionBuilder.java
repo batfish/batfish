@@ -458,7 +458,6 @@ class AbstractionBuilder {
     abstractConf.setNormalVlanRange(conf.getNormalVlanRange());
     abstractConf.setNtpServers(conf.getNtpServers());
     abstractConf.setNtpSourceInterface(conf.getNtpSourceInterface());
-    abstractConf.setRoles(conf.getRoles());
     abstractConf.setSnmpSourceInterface(conf.getSnmpSourceInterface());
     abstractConf.setSnmpTrapServers(conf.getSnmpTrapServers());
     abstractConf.setTacacsServers(conf.getTacacsServers());
