@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
@@ -238,7 +239,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         .setSmtConstraint(
             new AndExpr(
                 ImmutableList.of(
-                    new HeaderSpaceMatchExpr(_headerSpace, true),
+                    new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
                     getSrcNattedConstraint(),
                     SaneExpr.INSTANCE,
                     transitNodesConstraint)))

@@ -91,8 +91,10 @@ isi_null
    (
       BFD_LIVENESS_DETECTION
       | HELLO_PADDING
+      | LDP_SYNCHRONIZATION
       | LSP_INTERVAL
       | NO_ADJACENCY_DOWN_NOTIFICATION
+      | NODE_LINK_PROTECTION
    ) null_filler
 ;
 

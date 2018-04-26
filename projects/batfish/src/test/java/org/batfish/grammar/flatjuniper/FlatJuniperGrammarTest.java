@@ -513,9 +513,11 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flows should be permitted */
     assertThat(
-        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -605,9 +607,11 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flow in either direction should be blocked */
     assertThat(
-        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -696,17 +700,23 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flow from trust to untrust should be permitted */
     assertThat(
-        aclUntrustOut, accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
 
     /* Simple flow from untrust to trust should be blocked */
     assertThat(
-        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
 
     /* Return flow in either direction should be permitted */
     assertThat(
-        aclUntrustOut, accepts(trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        accepts(
+            trustToUntrustReturnFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, accepts(untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        accepts(
+            untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -738,9 +748,11 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flows should be blocked */
     assertThat(
-        aclUntrustOut, rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists()));
+        aclUntrustOut,
+        rejects(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustOut, rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists()));
+        aclTrustOut,
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test

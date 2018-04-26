@@ -9,6 +9,7 @@ import java.util.Map;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
@@ -36,6 +37,8 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
 
   private IpAccessList _list;
 
+  private Map<String, IpSpace> _namedIpSpaces;
+
   private final Map<String, IpAccessList> _nodeAcls;
 
   private Map<String, IntExpr> _sourceInterfaceFieldValues;
@@ -48,6 +51,7 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
       AclLine unreachableLine,
       List<AclLine> earlierReachableLines,
       IpAccessList list,
+      Map<String, IpSpace> namedIpSpaces,
       Map<String, IpAccessList> nodeAcls,
       List<String> nodeInterfaces) {
     super(unreachableLine);
@@ -56,7 +60,8 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
     _hostname = _unreachableLine.getHostname();
     _aclName = _unreachableLine.getAclName();
     _list = list;
-    _nodeAcls = nodeAcls;
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
+    _nodeAcls = ImmutableMap.copyOf(nodeAcls);
     int fieldBits = Math.max(LongMath.log2(nodeInterfaces.size() + 1, RoundingMode.CEILING), 1);
     _sourceInterfaceField = new Field("SRC_INTERFACE", fieldBits);
     _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues(nodeInterfaces);
@@ -78,7 +83,7 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
     IpAccessListLine unreachableLine = _list.getLines().get(unreachableLineIndex);
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
         new AclLineMatchExprToBooleanExpr(
-            _nodeAcls, _sourceInterfaceField, _sourceInterfaceFieldValues);
+            _nodeAcls, _namedIpSpaces, _sourceInterfaceField, _sourceInterfaceFieldValues);
     BooleanExpr matchUnreachableLineHeaderSpace =
         aclLineMatchExprToBooleanExpr.toBooleanExpr(unreachableLine.getMatchCondition());
     ImmutableList.Builder<QueryStatement> queries = ImmutableList.builder();

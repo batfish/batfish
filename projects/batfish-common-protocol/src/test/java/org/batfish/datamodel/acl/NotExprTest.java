@@ -1,11 +1,10 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.matchers.AclLineMatchExprMatchers.matches;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
-import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
 import org.junit.Test;
 
 public class NotExprTest {
@@ -24,10 +23,9 @@ public class NotExprTest {
     NotMatchExpr exprNotFalse = new NotMatchExpr(FalseExpr.INSTANCE);
 
     // Confirm boolean expr NOT true = false
-    assertThat(
-        exprNotTrue, not(AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of())));
+    assertThat(exprNotTrue, not(matches(createFlow(), "")));
 
     // Confirm boolean expr NOT false = true
-    assertThat(exprNotFalse, AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of()));
+    assertThat(exprNotFalse, matches(createFlow(), ""));
   }
 }

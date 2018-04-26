@@ -16,7 +16,7 @@ public class OrMatchExpr extends AclLineMatchExpr {
 
   @JsonCreator
   public OrMatchExpr(@JsonProperty(PROP_DISJUNCTS) Iterable<AclLineMatchExpr> disjuncts) {
-    _disjuncts = ImmutableSortedSet.copyOf(disjuncts);
+    _disjuncts = disjuncts != null ? ImmutableSortedSet.copyOf(disjuncts) : ImmutableSortedSet.of();
   }
 
   @Override

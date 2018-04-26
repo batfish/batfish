@@ -1,6 +1,10 @@
 #
 set system host-name juniper_forwarding_options
 #
+set forwarding-options apply-groups g1
+set forwarding-options analyzer analyzer input ingress interface ge-0/0/0.0
+set forwarding-options analyzer analyzer input egress interface ge-0/0/1.0
+set forwarding-options analyzer analyzer output interface ge-0/0/2.0
 set forwarding-options dhcp-relay active-server-group site-dhcp
 set forwarding-options dhcp-relay active-server-group test2
 set forwarding-options dhcp-relay group clientgrp interface xe-1/0/0.0
@@ -12,6 +16,11 @@ set forwarding-options dhcp-relay group relay interface et-0/0/10.0
 set forwarding-options dhcp-relay group relay overrides allow-snooped-clients
 set forwarding-options dhcp-relay group test2 active-server-group test2
 set forwarding-options dhcp-relay group test2 interface ge-0/2/5.0
+set forwarding-options dhcp-relay overrides allow-snooped-clients
+set forwarding-options dhcp-relay overrides always-write-giaddr
+set forwarding-options dhcp-relay overrides bootp-support
+set forwarding-options dhcp-relay overrides delete-binding-on-renegotiation
+set forwarding-options dhcp-relay overrides no-arp
 set forwarding-options dhcp-relay server-group dhcpgrp 1.2.3.4
 set forwarding-options dhcp-relay server-group dhcpgrp 2.3.4.5
 set forwarding-options dhcp-relay server-group test2 3.4.5.6

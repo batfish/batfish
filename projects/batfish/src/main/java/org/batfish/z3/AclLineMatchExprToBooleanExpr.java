@@ -7,6 +7,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -29,6 +30,8 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
 public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVisitor<BooleanExpr> {
+  private final Map<String, IpSpace> _namedIpSpaces;
+
   private final Map<String, IpAccessList> _nodeAcls;
 
   private final Field _sourceInterfaceField;
@@ -37,8 +40,10 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
 
   public AclLineMatchExprToBooleanExpr(
       Map<String, IpAccessList> nodeAcls,
+      Map<String, IpSpace> namedIpSpaces,
       Field sourceInterfaceField,
       Map<String, IntExpr> sourceInterfaceFieldValues) {
+    _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _nodeAcls = ImmutableMap.copyOf(nodeAcls);
     _sourceInterfaceField = sourceInterfaceField;
     _sourceInterfaceFieldValues = ImmutableMap.copyOf(sourceInterfaceFieldValues);
@@ -71,7 +76,7 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
 
   @Override
   public BooleanExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
-    return new HeaderSpaceMatchExpr(matchHeaderSpace.getHeaderspace());
+    return new HeaderSpaceMatchExpr(matchHeaderSpace.getHeaderspace(), _namedIpSpaces).getExpr();
   }
 
   @Override

@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.Field;
 import org.batfish.z3.SynthesizerInput;
@@ -16,7 +17,7 @@ import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
@@ -343,13 +344,19 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .map(
             hostname ->
                 new BasicRuleStatement(
-                    HeaderSpaceMatchExpr.matchDstIp(
-                        _input
-                            .getIpsByHostname()
-                            .get(hostname)
-                            .stream()
-                            .map(IpWildcard::new)
-                            .collect(ImmutableSet.toImmutableSet())),
+                    new IpSpaceMatchExpr(
+                            IpWildcardSetIpSpace.builder()
+                                .including(
+                                    _input
+                                        .getIpsByHostname()
+                                        .get(hostname)
+                                        .stream()
+                                        .map(IpWildcard::new)
+                                        .collect(ImmutableSet.toImmutableSet()))
+                                .build(),
+                            _input.getNamedIpSpaces().get(hostname),
+                            Field.DST_IP)
+                        .getExpr(),
                     ImmutableSet.of(new PostIn(hostname)),
                     new NodeAccept(hostname)))
         .forEach(_rules::add);
@@ -805,16 +812,20 @@ public class DefaultTransitionGenerator implements StateVisitor {
               String hostname = ipsByHostnameEntry.getKey();
               BooleanExpr ipForeignToCurrentNode =
                   new NotExpr(
-                      HeaderSpaceMatchExpr.matchDstIp(
-                          ipsByHostnameEntry
-                              .getValue()
-                              .stream()
-                              .map(IpWildcard::new)
-                              .collect(ImmutableSet.toImmutableSet())));
+                      new IpSpaceMatchExpr(
+                              IpWildcardSetIpSpace.builder()
+                                  .including(
+                                      ipsByHostnameEntry
+                                          .getValue()
+                                          .stream()
+                                          .map(IpWildcard::new)
+                                          .collect(ImmutableSet.toImmutableSet()))
+                                  .build(),
+                              _input.getNamedIpSpaces().get(hostname),
+                              Field.DST_IP)
+                          .getExpr());
               return new BasicRuleStatement(
-                  ipForeignToCurrentNode,
-                  ImmutableSet.of(new PostIn(hostname)),
-                  new PreOut(hostname));
+                  ipForeignToCurrentNode, new PostIn(hostname), new PreOut(hostname));
             })
         .forEach(_rules::add);
   }
