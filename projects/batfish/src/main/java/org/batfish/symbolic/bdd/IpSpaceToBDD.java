@@ -74,12 +74,12 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitAclIpSpace(AclIpSpace aclIpSpace) {
-    throw new BatfishException("TODO");
+    throw new BatfishException("AclIpSpace is unsupported");
   }
 
   @Override
   public BDD visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-    throw new BatfishException("TODO");
+    throw new BatfishException("EmptyIpSpace is unsupported");
   }
 
   @Override
@@ -94,13 +94,12 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    throw new BatfishException("IpSpaceReference is unsupported");
   }
 
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    throw new BatfishException("TODO");
+    throw new BatfishException("IpWildcardSetIpSpace is unsupported");
   }
 
   @Override
