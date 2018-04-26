@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -47,7 +46,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Set<String> _nodesWithSrcInterfaceConstraints;
 
-    private SortedSet<String> _nonTransitNodes;
+    private Set<String> _nonTransitNodes;
 
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
@@ -67,7 +66,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, IntExpr>> _srcInterfaceFieldValues;
 
-    private SortedSet<String> _transitNodes;
+    private Set<String> _transitNodes;
 
     private Field _transitedNonTransitNodesField;
 
@@ -172,7 +171,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setNonTransitNodes(SortedSet<String> nonTransitNodes) {
+    public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
       _nonTransitNodes = nonTransitNodes;
       return this;
     }
@@ -229,7 +228,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
-    public Builder setTransitNodes(SortedSet<String> transitNodes) {
+    public Builder setTransitNodes(Set<String> transitNodes) {
       _transitNodes = transitNodes;
       return this;
     }
@@ -271,7 +270,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
 
-  private final SortedSet<String> _nonTransitNodes;
+  private final Set<String> _nonTransitNodes;
 
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
@@ -289,7 +288,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
-  private SortedSet<String> _transitNodes;
+  private Set<String> _transitNodes;
 
   private Field _transitedNonTransitNodesField;
 
@@ -418,7 +417,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public SortedSet<String> getTransitNodes() {
+  public Set<String> getTransitNodes() {
     return _transitNodes;
   }
 
@@ -448,7 +447,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
-  public SortedSet<String> getNonTransitNodes() {
+  public Set<String> getNonTransitNodes() {
     return _nonTransitNodes;
   }
 

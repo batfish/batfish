@@ -4002,18 +4002,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<String> activeIngressNodes;
     Set<String> activeFinalNodes;
     HeaderSpace headerSpace;
-    SortedSet<String> transitNodes;
-    SortedSet<String> nonTransitNodes;
+    Set<String> transitNodes;
+    Set<String> nonTransitNodes;
     int maxChunkSize;
 
     try {
       activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
       activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(this);
       headerSpace = reachabilitySettings.getHeaderSpace();
-      transitNodes =
-          ImmutableSortedSet.copyOf(reachabilitySettings.computeActiveTransitNodes(this));
-      nonTransitNodes =
-          ImmutableSortedSet.copyOf(reachabilitySettings.computeActiveNonTransitNodes(this));
+      transitNodes = reachabilitySettings.computeActiveTransitNodes(this);
+      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(this);
       maxChunkSize = reachabilitySettings.getMaxChunkSize();
       reachabilitySettings.validateTransitNodes(this);
     } catch (InvalidReachabilitySettingsException e) {
@@ -4204,9 +4202,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         dataPlane,
         forwardingAnalysis,
         new HeaderSpace(),
-        ImmutableSortedSet.of(),
+        ImmutableSet.of(),
         false,
-        ImmutableSortedSet.of());
+        ImmutableSet.of());
   }
 
   @Nonnull
@@ -4215,9 +4213,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
-      SortedSet<String> nonTransitNodes,
+      Set<String> nonTransitNodes,
       boolean specialize,
-      SortedSet<String> transitNodes) {
+      Set<String> transitNodes) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4253,10 +4251,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
-      SortedSet<String> nonTransitNodes,
+      Set<String> nonTransitNodes,
       boolean simplify,
       boolean specialize,
-      SortedSet<String> transitNodes) {
+      Set<String> transitNodes) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)

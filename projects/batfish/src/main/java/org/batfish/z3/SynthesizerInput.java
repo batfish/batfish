@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
@@ -69,7 +68,7 @@ public interface SynthesizerInput {
   Set<String> getNodesWithSrcInterfaceConstraints();
 
   /** Set of nodes that should not be transited */
-  SortedSet<String> getNonTransitNodes();
+  Set<String> getNonTransitNodes();
 
   /** Mapping: hostname -> vrfName -> nullRoutedIps */
   Map<String, Map<String, BooleanExpr>> getNullRoutedIps();
@@ -89,7 +88,7 @@ public interface SynthesizerInput {
   Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
 
   /** The set of nodes for which we should track whether they are transited */
-  SortedSet<String> getTransitNodes();
+  Set<String> getTransitNodes();
 
   Field getTransitedNonTransitNodesField();
 

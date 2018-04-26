@@ -8,7 +8,6 @@ import static org.hamcrest.Matchers.hasItem;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import java.util.List;
@@ -1412,7 +1411,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
-            .setNonTransitNodes(ImmutableSortedSet.of(NODE1))
+            .setNonTransitNodes(ImmutableSet.of(NODE1))
             .setTransitedNonTransitNodesField(transitedNonTransitNodesField)
             .setTopologyInterfaces(
                 ImmutableMap.of(
@@ -1456,7 +1455,7 @@ public class DefaultTransitionGeneratorTest {
                 ImmutableMap.of(
                     NODE1, ImmutableMap.of(),
                     NODE2, ImmutableMap.of()))
-            .setTransitNodes(ImmutableSortedSet.of(NODE1))
+            .setTransitNodes(ImmutableSet.of(NODE1))
             .setTransitedTransitNodesField(transitedTransitNodesField)
             .setTopologyInterfaces(
                 ImmutableMap.of(

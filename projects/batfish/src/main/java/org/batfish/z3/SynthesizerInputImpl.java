@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Function;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -67,7 +66,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     @Nullable private HeaderSpace _headerSpace;
 
-    private SortedSet<String> _nonTransitNodes;
+    private Set<String> _nonTransitNodes;
 
     private boolean _simplify;
 
@@ -75,7 +74,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private Topology _topology;
 
-    private SortedSet<String> _transitNodes;
+    private Set<String> _transitNodes;
 
     private Set<Type> _vectorizedParameters;
 
@@ -159,7 +158,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
-    public Builder setTransitNodes(SortedSet<String> transitNodes) {
+    public Builder setTransitNodes(Set<String> transitNodes) {
       _transitNodes = ImmutableSortedSet.copyOf(transitNodes);
       return this;
     }
@@ -169,7 +168,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
-    public Builder setNonTransitNodes(SortedSet<String> nonTransitNodes) {
+    public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
       _nonTransitNodes = nonTransitNodes;
       return this;
     }
@@ -224,7 +223,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
 
-  private final SortedSet<String> _nonTransitNodes;
+  private final Set<String> _nonTransitNodes;
 
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
@@ -246,7 +245,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Field _transitedTransitNodesField;
 
-  private final SortedSet<String> _transitNodes;
+  private final Set<String> _transitNodes;
 
   private final Set<Type> _vectorizedParameters;
 
@@ -258,11 +257,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       Set<String> disabledNodes,
       Map<String, Set<String>> disabledVrfs,
       HeaderSpace headerSpace,
-      SortedSet<String> nonTransitNodes,
+      Set<String> nonTransitNodes,
       boolean simplify,
       boolean specialize,
       Topology topology,
-      SortedSet<String> transitNodes,
+      Set<String> transitNodes,
       Set<Type> vectorizedParameters) {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
@@ -834,7 +833,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public SortedSet<String> getTransitNodes() {
+  public Set<String> getTransitNodes() {
     return _transitNodes;
   }
 
@@ -879,7 +878,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
-  public SortedSet<String> getNonTransitNodes() {
+  public Set<String> getNonTransitNodes() {
     return _nonTransitNodes;
   }
 }
