@@ -91,7 +91,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
       Integer matchLine,
       String lineContent) {
     ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
-    row.set(COLUMN_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(nodeName)));
+    row.set(COLUMN_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(nodeName, null, null)));
     row.set(COLUMN_FILTER_NAME, BatfishObjectMapper.mapper().valueToTree(filterName));
     row.set(COLUMN_FLOW, BatfishObjectMapper.mapper().valueToTree(flow));
     row.set(COLUMN_ACTION, BatfishObjectMapper.mapper().valueToTree(action));

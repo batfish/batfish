@@ -22,13 +22,13 @@ import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
 public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
-  private static final String COL_DYNAMIC_NEIGHBORS = "dynamicNeighbors";
+  private static final String COL_CONFIGURED_STATUS = "configuredStatus";
+  private static final String COL_ESTABLISHED_NEIGHBORS = "establishedNeighbors";
   private static final String COL_LOCAL_IP = "localIp";
   private static final String COL_NODE = "node";
   private static final String COL_ON_LOOPBACK = "onLoopback";
   private static final String COL_REMOTE_NODE = "remoteNode";
   private static final String COL_REMOTE_PREFIX = "remotePrefix";
-  private static final String COL_STATIC_STATUS = "staticStatus";
   private static final String COL_SESSION_TYPE = "sessionType";
   private static final String COL_VRF_NAME = "vrfName";
 
@@ -41,14 +41,14 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   public static BgpSessionStatusAnswerElement create(BgpSessionStatusQuestion question) {
     Map<String, Schema> columnSchemas =
         new ImmutableMap.Builder<String, Schema>()
-            .put(COL_DYNAMIC_NEIGHBORS, new Schema("Integer"))
+            .put(COL_CONFIGURED_STATUS, new Schema("String"))
+            .put(COL_ESTABLISHED_NEIGHBORS, new Schema("Integer"))
             .put(COL_LOCAL_IP, new Schema("Ip"))
             .put(COL_NODE, new Schema("Node"))
             .put(COL_ON_LOOPBACK, new Schema("Boolean"))
             .put(COL_REMOTE_NODE, new Schema("Node"))
             .put(COL_REMOTE_PREFIX, new Schema("Prefix"))
             .put(COL_SESSION_TYPE, new Schema("String"))
-            .put(COL_STATIC_STATUS, new Schema("String"))
             .put(COL_VRF_NAME, new Schema("String"))
             .build();
     List<String> primaryKey =
@@ -57,14 +57,23 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
             .add(COL_REMOTE_PREFIX)
             .add(COL_VRF_NAME)
             .build();
-    List<String> primaryValue = new ImmutableList.Builder<String>().add(COL_STATIC_STATUS).build();
+    List<String> primaryValue =
+        new ImmutableList.Builder<String>()
+            .add(COL_CONFIGURED_STATUS)
+            .add(COL_ESTABLISHED_NEIGHBORS)
+            .build();
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();
       dhints.setTextDesc(
           String.format(
-              "On ${%s} session ${%s}:${%s} has static status ${%s} and dynamic count ${%s}",
-              COL_NODE, COL_VRF_NAME, COL_REMOTE_PREFIX, COL_STATIC_STATUS, COL_DYNAMIC_NEIGHBORS));
+              "On ${%s} session ${%s}:${%s} has configured status ${%s}"
+                  + " and established count ${%s}",
+              COL_NODE,
+              COL_VRF_NAME,
+              COL_REMOTE_PREFIX,
+              COL_CONFIGURED_STATUS,
+              COL_ESTABLISHED_NEIGHBORS));
     }
     TableMetadata metadata = new TableMetadata(columnSchemas, primaryKey, primaryValue, dhints);
     return new BgpSessionStatusAnswerElement(metadata);
@@ -72,8 +81,11 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
   public static BgpSessionInfo fromRow(ObjectNode row) throws JsonProcessingException {
     Ip localIp = BatfishObjectMapper.mapper().treeToValue(row.get(COL_LOCAL_IP), Ip.class);
-    Integer dynNeighbors =
-        BatfishObjectMapper.mapper().treeToValue(row.get(COL_DYNAMIC_NEIGHBORS), Integer.class);
+    SessionStatus status =
+        BatfishObjectMapper.mapper()
+            .treeToValue(row.get(COL_CONFIGURED_STATUS), SessionStatus.class);
+    Integer establishedNeighbors =
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_ESTABLISHED_NEIGHBORS), Integer.class);
     Boolean onLoopback =
         BatfishObjectMapper.mapper().treeToValue(row.get(COL_ON_LOOPBACK), Boolean.class);
     Node node = BatfishObjectMapper.mapper().treeToValue(row.get(COL_NODE), Node.class);
@@ -83,8 +95,6 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         BatfishObjectMapper.mapper().treeToValue(row.get(COL_REMOTE_PREFIX), Prefix.class);
     SessionType sessionType =
         BatfishObjectMapper.mapper().treeToValue(row.get(COL_SESSION_TYPE), SessionType.class);
-    SessionStatus status =
-        BatfishObjectMapper.mapper().treeToValue(row.get(COL_STATIC_STATUS), SessionStatus.class);
     String vrfName = BatfishObjectMapper.mapper().treeToValue(row.get(COL_VRF_NAME), String.class);
 
     return new BgpSessionInfo(
@@ -95,21 +105,27 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         onLoopback,
         remoteNode.getName(),
         status,
-        dynNeighbors,
+        establishedNeighbors,
         sessionType);
   }
 
   public static ObjectNode toRow(BgpSessionInfo info) {
     ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
     row.set(
-        COL_DYNAMIC_NEIGHBORS, BatfishObjectMapper.mapper().valueToTree(info._dynamicNeighbors));
+        COL_CONFIGURED_STATUS, BatfishObjectMapper.mapper().valueToTree(info._configuredStatus));
+    row.set(
+        COL_ESTABLISHED_NEIGHBORS,
+        BatfishObjectMapper.mapper().valueToTree(info._establishedNeighbors));
     row.set(COL_LOCAL_IP, BatfishObjectMapper.mapper().valueToTree(info._localIp));
-    row.set(COL_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info.getNodeName())));
+    row.set(
+        COL_NODE,
+        BatfishObjectMapper.mapper().valueToTree(new Node(info.getNodeName(), null, null)));
     row.set(COL_ON_LOOPBACK, BatfishObjectMapper.mapper().valueToTree(info._onLoopback));
-    row.set(COL_REMOTE_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info._remoteNode)));
+    row.set(
+        COL_REMOTE_NODE,
+        BatfishObjectMapper.mapper().valueToTree(new Node(info._remoteNode, null, null)));
     row.set(COL_REMOTE_PREFIX, BatfishObjectMapper.mapper().valueToTree(info.getRemotePrefix()));
     row.set(COL_SESSION_TYPE, BatfishObjectMapper.mapper().valueToTree(info._sessionType));
-    row.set(COL_STATIC_STATUS, BatfishObjectMapper.mapper().valueToTree(info._staticStatus));
     row.set(COL_VRF_NAME, BatfishObjectMapper.mapper().valueToTree(info.getVrfName()));
     return row;
   }

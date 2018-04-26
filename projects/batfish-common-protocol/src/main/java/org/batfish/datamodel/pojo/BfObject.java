@@ -1,10 +1,12 @@
 package org.batfish.datamodel.pojo;
 
 import java.util.Map;
+import java.util.Objects;
+import javax.annotation.Nullable;
 
 public abstract class BfObject {
 
-  private final String _id;
+  @Nullable private final String _id;
 
   private Map<String, String> _properties;
 
@@ -14,7 +16,9 @@ public abstract class BfObject {
 
   @Override
   public boolean equals(Object o) {
-    return (o != null && o.getClass() == this.getClass() && _id.equals(((BfObject) o).getId()));
+    return (o != null
+        && o.getClass() == this.getClass()
+        && Objects.equals(_id, ((BfObject) o).getId()));
   }
 
   public String getId() {
@@ -27,7 +31,7 @@ public abstract class BfObject {
 
   @Override
   public int hashCode() {
-    return _id.hashCode();
+    return Objects.hash(_id);
   }
 
   public void setProperties(Map<String, String> properties) {

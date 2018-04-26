@@ -29,7 +29,7 @@ public class BgpSessionStatusQuestion extends Question {
 
   private static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
 
-  private static final String PROP_INCLUDE_DYNAMIC_COUNT = "includeDynamicCount";
+  private static final String PROP_INCLUDE_ESTABLISHED_COUNT = "includeEstablishedCount";
 
   private static final String PROP_NODE1_REGEX = "node1Regex";
 
@@ -41,7 +41,7 @@ public class BgpSessionStatusQuestion extends Question {
 
   @Nonnull private SortedSet<String> _foreignBgpGroups;
 
-  @Nonnull private boolean _includeDynamicCount;
+  @Nonnull private boolean _includeEstablishedCount;
 
   @Nonnull private NodesSpecifier _node1Regex;
 
@@ -53,13 +53,13 @@ public class BgpSessionStatusQuestion extends Question {
 
   public BgpSessionStatusQuestion(
       @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
-      @JsonProperty(PROP_INCLUDE_DYNAMIC_COUNT) Boolean includeDynamicCount,
+      @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT) Boolean includeEstablishedCount,
       @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier regex1,
       @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier regex2,
       @JsonProperty(PROP_STATUS) String statusRegex,
       @JsonProperty(PROP_TYPE_REGEX) String type) {
     _foreignBgpGroups = foreignBgpGroups == null ? new TreeSet<>() : foreignBgpGroups;
-    _includeDynamicCount = includeDynamicCount != null && includeDynamicCount;
+    _includeEstablishedCount = includeEstablishedCount != null && includeEstablishedCount;
     _node1Regex = regex1 == null ? NodesSpecifier.ALL : regex1;
     _node2Regex = regex2 == null ? NodesSpecifier.ALL : regex2;
     _statusRegex =
@@ -72,7 +72,7 @@ public class BgpSessionStatusQuestion extends Question {
 
   @Override
   public boolean getDataPlane() {
-    return _includeDynamicCount;
+    return _includeEstablishedCount;
   }
 
   @JsonProperty(PROP_FOREIGN_BGP_GROUPS)
@@ -80,9 +80,9 @@ public class BgpSessionStatusQuestion extends Question {
     return _foreignBgpGroups;
   }
 
-  @JsonProperty(PROP_INCLUDE_DYNAMIC_COUNT)
-  public boolean getIncludeDynamicCount() {
-    return _includeDynamicCount;
+  @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT)
+  public boolean getIncludeEstablishedCount() {
+    return _includeEstablishedCount;
   }
 
   @Override

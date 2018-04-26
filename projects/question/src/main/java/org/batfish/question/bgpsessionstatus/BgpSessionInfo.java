@@ -17,7 +17,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   public enum SessionStatus {
     // ordered by how we evaluate status
-    PASSIVE,
+    DYNAMIC_LISTEN,
     MISSING_LOCAL_IP,
     UNKNOWN_LOCAL_IP,
     UNKNOWN_REMOTE_IP,
@@ -26,18 +26,21 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     UNIQUE_MATCH,
   }
 
-  private static final String PROP_DYNAMIC_NEIGHBORS = "dynamicNeighbors";
+  private static final String PROP_CONFIGURED_STATUS = "configuredStatus";
+  private static final String PROP_ESTABLISHED_NEIGHBORS = "establishedNeighbors";
   private static final String PROP_LOCAL_IP = "localIp";
   private static final String PROP_NODE_NAME = "nodeName";
   private static final String PROP_ON_LOOPBACK = "onLoopback";
   private static final String PROP_REMOTE_PREFIX = "remotePrefix";
   private static final String PROP_REMOTE_NODE = "remoteNode";
   private static final String PROP_SESSION_TYPE = "sessionType";
-  private static final String PROP_STATIC_STATUS = "status";
   private static final String PROP_VRF_NAME = "vrfName";
 
-  @JsonProperty(PROP_DYNAMIC_NEIGHBORS)
-  Integer _dynamicNeighbors;
+  @JsonProperty(PROP_CONFIGURED_STATUS)
+  SessionStatus _configuredStatus;
+
+  @JsonProperty(PROP_ESTABLISHED_NEIGHBORS)
+  Integer _establishedNeighbors;
 
   @JsonProperty(PROP_NODE_NAME)
   private String _nodeName;
@@ -60,9 +63,6 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   @JsonProperty(PROP_SESSION_TYPE)
   SessionType _sessionType;
 
-  @JsonProperty(PROP_STATIC_STATUS)
-  SessionStatus _staticStatus;
-
   @JsonCreator
   public BgpSessionInfo(
       @JsonProperty(PROP_NODE_NAME) String nodeName,
@@ -71,8 +71,8 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
       @JsonProperty(PROP_LOCAL_IP) Ip localIp,
       @JsonProperty(PROP_ON_LOOPBACK) Boolean onLoopback,
       @JsonProperty(PROP_REMOTE_NODE) String remoteNode,
-      @JsonProperty(PROP_STATIC_STATUS) SessionStatus staticStatus,
-      @JsonProperty(PROP_DYNAMIC_NEIGHBORS) Integer dynamicNeighbors,
+      @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus staticStatus,
+      @JsonProperty(PROP_ESTABLISHED_NEIGHBORS) Integer dynamicNeighbors,
       @JsonProperty(PROP_SESSION_TYPE) SessionType sessionType) {
     _nodeName = nodeName;
     _vrfName = vrfName;
@@ -80,8 +80,8 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     _localIp = localIp;
     _onLoopback = onLoopback;
     _remoteNode = remoteNode;
-    _staticStatus = staticStatus;
-    _dynamicNeighbors = dynamicNeighbors;
+    _configuredStatus = staticStatus;
+    _establishedNeighbors = dynamicNeighbors;
     _sessionType = sessionType;
   }
 
@@ -122,8 +122,8 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
         _remotePrefix,
         _sessionType,
         _onLoopback,
-        _staticStatus,
-        _dynamicNeighbors,
+        _configuredStatus,
+        _establishedNeighbors,
         _localIp,
         _remoteNode);
   }
