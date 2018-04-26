@@ -2194,7 +2194,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeada_address(Seada_addressContext ctx) {
-    String name = ctx.addr_name.getText();
+    String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
         .add(new AddressSetEntry(name, _currentAddressBook));
@@ -2202,7 +2202,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeada_address_set(Seada_address_setContext ctx) {
-    String name = ctx.addr_set_name.getText();
+    String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
         .add(new AddressSetEntry(name, _currentAddressBook));
@@ -4056,7 +4056,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSezsaad_address(Sezsaad_addressContext ctx) {
-    String name = ctx.addr_name.getText();
+    String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
         .add(new AddressSetEntry(name, _currentAddressBook));
@@ -4064,7 +4064,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSezsaad_address_set(Sezsaad_address_setContext ctx) {
-    String name = ctx.addr_set_name.getText();
+    String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
         .add(new AddressSetEntry(name, _currentAddressBook));

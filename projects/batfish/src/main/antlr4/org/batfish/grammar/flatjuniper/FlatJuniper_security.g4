@@ -646,12 +646,12 @@ sead_address_set
 
 seada_address
 :
-   ADDRESS addr_name = variable
+   ADDRESS name = variable
 ;
 
 seada_address_set
 :
-   ADDRESS_SET addr_set_name = variable
+   ADDRESS_SET name = variable
 ;
 
 sec_local
@@ -1359,12 +1359,12 @@ sezsa_address_set
 
 sezsaad_address
 :
-   ADDRESS addr_name = variable
+   ADDRESS name = variable
 ;
 
 sezsaad_address_set
 :
-   ADDRESS_SET addr_set_name = variable
+   ADDRESS_SET name = variable
 ;
 
 sezsh_protocols
