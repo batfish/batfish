@@ -305,7 +305,9 @@ public class SecurityGroupsTest {
     _flowBuilder.setTcpFlagsSyn(1);
 
     assertThat(
-        outFilter.filter(_flowBuilder.build(), null, ImmutableMap.of()).getAction(),
+        outFilter
+            .filter(_flowBuilder.build(), null, ImmutableMap.of(), ImmutableMap.of())
+            .getAction(),
         equalTo(LineAction.REJECT));
   }
 
@@ -327,7 +329,9 @@ public class SecurityGroupsTest {
     _flowBuilder.setTcpFlagsSyn(1);
 
     assertThat(
-        outFilter.filter(_flowBuilder.build(), null, ImmutableMap.of()).getAction(),
+        outFilter
+            .filter(_flowBuilder.build(), null, ImmutableMap.of(), ImmutableMap.of())
+            .getAction(),
         equalTo(LineAction.ACCEPT));
   }
 
@@ -349,7 +353,9 @@ public class SecurityGroupsTest {
     _flowBuilder.setTcpFlagsSyn(1);
 
     assertThat(
-        outFilter.filter(_flowBuilder.build(), null, ImmutableMap.of()).getAction(),
+        outFilter
+            .filter(_flowBuilder.build(), null, ImmutableMap.of(), ImmutableMap.of())
+            .getAction(),
         equalTo(LineAction.REJECT));
   }
 }

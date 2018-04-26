@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
@@ -78,7 +79,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
         .setSmtConstraint(
             new AndExpr(
                 ImmutableList.of(
-                    new HeaderSpaceMatchExpr(_headerSpace, true),
+                    new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
                     getSrcNattedConstraint(),
                     SaneExpr.INSTANCE)))
         .build();

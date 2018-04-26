@@ -7,6 +7,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
@@ -230,7 +231,8 @@ public class BoolExprTransformerTest {
                     ImmutableSet.of(
                         TcpFlags.builder().setAck(true).setUseAck(true).build(),
                         TcpFlags.builder().setUseCwr(true).build()))
-                .build());
+                .build(),
+            ImmutableMap.of());
 
     NodContext nodContext =
         new NodContext(

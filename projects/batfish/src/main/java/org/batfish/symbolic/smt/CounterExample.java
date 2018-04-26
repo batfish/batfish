@@ -333,7 +333,7 @@ class CounterExample {
           if (isFalse(aexpr)) {
             Interface i = ge.getEnd();
             IpAccessList acl = i.getIncomingFilter();
-            FilterResult fr = acl.filter(f, null, ImmutableMap.of());
+            FilterResult fr = acl.filter(f, null, ImmutableMap.of(), ImmutableMap.of());
             String line = "default deny";
             if (fr.getMatchLine() != null) {
               line = acl.getLines().get(fr.getMatchLine()).getName();
@@ -374,7 +374,7 @@ class CounterExample {
           hops.add(buildFlowTraceHop(ge, route));
           Interface i = ge.getStart();
           IpAccessList acl = i.getOutgoingFilter();
-          FilterResult fr = acl.filter(f, null, ImmutableMap.of());
+          FilterResult fr = acl.filter(f, null, ImmutableMap.of(), ImmutableMap.of());
           IpAccessListLine line = acl.getLines().get(fr.getMatchLine());
           String note = String.format("DENIED_OUT{%s}{%s}", acl.getName(), line.getName());
           FlowTrace ft = new FlowTrace(FlowDisposition.DENIED_OUT, hops, note);

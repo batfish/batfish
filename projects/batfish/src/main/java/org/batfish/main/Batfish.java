@@ -745,7 +745,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
             }
             EarliestMoreGeneralReachableLineQuerySynthesizer query =
                 new EarliestMoreGeneralReachableLineQuerySynthesizer(
-                    line, toCheck, ipAccessList, c.getIpAccessLists(), nodeInterfaces);
+                    line,
+                    toCheck,
+                    ipAccessList,
+                    c.getIpSpaces(),
+                    c.getIpAccessLists(),
+                    nodeInterfaces);
             NodFirstUnsatJob<AclLine, Integer> job =
                 new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
             step2Jobs.add(job);

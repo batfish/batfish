@@ -38,7 +38,8 @@ public class TraceFiltersAnswerer extends Answerer {
         }
         Flow flow = getFlow(c.getHostname(), question, configurations);
         FilterResult result =
-            filter.filter(flow, question.getIngressInterface(), c.getIpAccessLists());
+            filter.filter(
+                flow, question.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
         Integer matchLine = result.getMatchLine();
         String lineDesc = "no-match";
         if (matchLine != null) {

@@ -241,6 +241,10 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
     _useUrg = useUrg;
   }
 
+  public boolean anyUsed() {
+    return _useAck || _useCwr || _useEce || _useFin || _usePsh || _useRst || _useSyn || _useUrg;
+  }
+
   @Override
   public int compareTo(TcpFlags o) {
     return COMPARATOR.compare(this, o);

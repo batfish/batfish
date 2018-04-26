@@ -1,8 +1,7 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -27,7 +26,7 @@ public final class FwFromSourceAddressExcept extends FwFrom {
       Configuration c) {
     IpWildcard wildcard = new IpWildcard(_prefix);
     headerSpaceBuilder.setNotSrcIps(
-        Iterables.concat(headerSpaceBuilder.getNotSrcIps(), ImmutableSet.of(wildcard)));
+        AclIpSpace.union(headerSpaceBuilder.getNotSrcIps(), wildcard.toIpSpace()));
   }
 
   public Prefix getPrefix() {

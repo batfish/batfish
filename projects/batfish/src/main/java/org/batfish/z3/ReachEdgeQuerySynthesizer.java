@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.HeaderSpace;
@@ -36,11 +37,11 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
       Edge edge,
       boolean requireAcceptance,
       HeaderSpace headerSpace) {
-    _originationNode = originationNode;
-    _ingressVrf = ingressVrf;
     _edge = edge;
-    _requireAcceptance = requireAcceptance;
     _headerSpace = headerSpace;
+    _ingressVrf = ingressVrf;
+    _originationNode = originationNode;
+    _requireAcceptance = requireAcceptance;
   }
 
   @Override
@@ -62,7 +63,7 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
                         ImmutableList.of(
                             new EqExpr(
                                 new VarIntExpr(Field.ORIG_SRC_IP), new VarIntExpr(Field.SRC_IP)),
-                            new HeaderSpaceMatchExpr(_headerSpace),
+                            new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of()),
                             SaneExpr.INSTANCE)),
                     new OriginateVrf(_originationNode, _ingressVrf)),
                 new BasicRuleStatement(

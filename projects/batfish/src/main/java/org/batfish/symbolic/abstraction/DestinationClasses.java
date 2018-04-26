@@ -15,6 +15,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.Graph;
@@ -160,21 +161,25 @@ public class DestinationClasses {
   }
 
   private void extractPrefixesFromHeaderSpace(List<Prefix> dstIps, List<Prefix> notDstIps) {
-    if (_headerspace == null || _headerspace.getDstIps().isEmpty()) {
+    /* TODO this should be updated to handle arbitrary IpSpaces better.
+     * Consider whether there is a better encoding of an IpSpace than PrefixTrie.
+     */
+    if (_headerspace == null || _headerspace.getDstIps() == null) {
       dstIps.add(Prefix.parse("0.0.0.0/0"));
     } else {
-      for (IpWildcard ip : _headerspace.getDstIps()) {
-        if (!ip.isPrefix()) {
-          throw new BatfishException("Unimplemented: IpWildcard that is not prefix: " + ip);
-        }
-        dstIps.add(ip.toPrefix());
+      IpSpace dstIpSpace = _headerspace.getDstIps();
+      IpSpacePrefixCollector dstPrefixCollector = new IpSpacePrefixCollector();
+      dstPrefixCollector.collectPrefixes(dstIpSpace);
+      dstIps.addAll(dstPrefixCollector.getPrefixes());
+      notDstIps.addAll(dstPrefixCollector.getNotPrefixes());
+
+      IpSpace notDstIpSpace = _headerspace.getNotDstIps();
+      IpSpacePrefixCollector notDstPrefixCollector = new IpSpacePrefixCollector();
+      notDstPrefixCollector.collectPrefixes(notDstIpSpace);
+      if (!notDstPrefixCollector.getNotPrefixes().isEmpty()) {
+        throw new BatfishException("Unimplemented: not not destination prefixes");
       }
-      for (IpWildcard ip : _headerspace.getNotDstIps()) {
-        if (!ip.isPrefix()) {
-          throw new BatfishException("Unimplemented: IpWildcard that is not prefix: " + ip);
-        }
-        notDstIps.add(ip.toPrefix());
-      }
+      notDstIps.addAll(notDstPrefixCollector.getPrefixes());
     }
   }
 

@@ -5,7 +5,11 @@ import static java.util.Objects.requireNonNull;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 public class UdpServiceObjectGroupLine implements ServiceObjectGroupLine {
 
@@ -20,5 +24,14 @@ public class UdpServiceObjectGroupLine implements ServiceObjectGroupLine {
 
   public List<SubRange> getPorts() {
     return _ports;
+  }
+
+  @Override
+  public AclLineMatchExpr toAclLineMatchExpr() {
+    return new MatchHeaderSpace(
+        HeaderSpace.builder()
+            .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
+            .setSrcOrDstPorts(_ports)
+            .build());
   }
 }

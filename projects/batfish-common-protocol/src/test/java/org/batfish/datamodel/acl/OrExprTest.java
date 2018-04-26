@@ -1,13 +1,12 @@
 package org.batfish.datamodel.acl;
 
+import static org.batfish.datamodel.matchers.AclLineMatchExprMatchers.matches;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.matchers.AclLineMatchExprMatchers;
 import org.junit.Test;
 
 public class OrExprTest {
@@ -31,10 +30,9 @@ public class OrExprTest {
     OrMatchExpr exprFalse = new OrMatchExpr(setFalse);
 
     // Confirm true boolean expr matches
-    assertThat(exprTrue, AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of()));
+    assertThat(exprTrue, matches(createFlow(), ""));
     // Confirm false boolean expr does not match
-    assertThat(
-        exprFalse, not(AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of())));
+    assertThat(exprFalse, not(matches(createFlow(), "")));
   }
 
   @Test
@@ -51,12 +49,10 @@ public class OrExprTest {
     OrMatchExpr exprFalseFalse = new OrMatchExpr(setFalseFalse);
 
     // Confirm boolean expr true OR true = true
-    assertThat(exprTrueTrue, AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of()));
+    assertThat(exprTrueTrue, matches(createFlow(), ""));
     // Confirm boolean expr true OR false = true
-    assertThat(
-        exprTrueFalse, AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of()));
+    assertThat(exprTrueFalse, matches(createFlow(), ""));
     // Confirm boolean expr false OR false = false
-    assertThat(
-        exprFalseFalse, not(AclLineMatchExprMatchers.matches(createFlow(), "", ImmutableMap.of())));
+    assertThat(exprFalseFalse, not(matches(createFlow(), "")));
   }
 }

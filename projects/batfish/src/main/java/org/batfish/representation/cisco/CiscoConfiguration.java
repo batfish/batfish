@@ -81,6 +81,8 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -2363,42 +2365,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String name = eaList.getName();
     List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
     for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-      HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
-      IpWildcard srcIpWildcard = fromLine.getSourceIpWildcard();
-      if (srcIpWildcard != null) {
-        headerSpaceBuilder.setSrcIps(ImmutableSortedSet.of(srcIpWildcard));
+      AclLineMatchExpr match;
+      IpSpace srcIpSpace = fromLine.getSourceAddressSpecifier().toIpSpace();
+      IpSpace dstIpSpace = fromLine.getDestinationAddressSpecifier().toIpSpace();
+      AclLineMatchExpr matchService = fromLine.getServiceSpecifier().toAclLineMatchExpr();
+      if (matchService instanceof MatchHeaderSpace) {
+        match =
+            new MatchHeaderSpace(
+                ((MatchHeaderSpace) matchService)
+                    .getHeaderspace()
+                    .rebuild()
+                    .setSrcIps(srcIpSpace)
+                    .setDstIps(dstIpSpace)
+                    .build());
+      } else {
+        match =
+            new AndMatchExpr(
+                ImmutableList.of(
+                    matchService,
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(srcIpSpace)
+                            .setDstIps(dstIpSpace)
+                            .build())));
       }
-      IpWildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
-      if (dstIpWildcard != null) {
-        headerSpaceBuilder.setDstIps(ImmutableSortedSet.of(dstIpWildcard));
-      }
-      // TODO: src/dst address group
-      IpProtocol protocol = fromLine.getProtocol();
-      if (protocol != IpProtocol.IP) {
-        headerSpaceBuilder.setIpProtocols(ImmutableSortedSet.of(protocol));
-      }
-      headerSpaceBuilder.setDstPorts(fromLine.getDstPorts());
-      headerSpaceBuilder.setSrcPorts(fromLine.getSrcPorts());
-      Integer icmpType = fromLine.getIcmpType();
-      if (icmpType != null) {
-        headerSpaceBuilder.setIcmpTypes(ImmutableSortedSet.of(new SubRange(icmpType)));
-      }
-      Integer icmpCode = fromLine.getIcmpCode();
-      if (icmpCode != null) {
-        headerSpaceBuilder.setIcmpCodes(ImmutableSortedSet.of(new SubRange(icmpCode)));
-      }
-      Set<State> states = fromLine.getStates();
-      headerSpaceBuilder.setStates(states);
-      List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
-      headerSpaceBuilder.setTcpFlags(tcpFlags);
-      Set<Integer> dscps = fromLine.getDscps();
-      headerSpaceBuilder.setDscps(dscps);
-      Set<Integer> ecns = fromLine.getEcns();
-      headerSpaceBuilder.setEcns(ecns);
+
       lines.add(
           IpAccessListLine.builder()
               .setAction(fromLine.getAction())
-              .setMatchCondition(new MatchHeaderSpace(headerSpaceBuilder.build()))
+              .setMatchCondition(match)
               .setName(fromLine.getName())
               .build());
     }
@@ -3261,13 +3256,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
     LineAction action = fromLine.getAction();
-    Ip ip = fromLine.getSourceIpWildcard().getIp();
-    long minSubnet = fromLine.getDestinationIpWildcard().getIp().asLong();
-    long maxSubnet = minSubnet | fromLine.getDestinationIpWildcard().getWildcard().asLong();
-    int minPrefixLength = fromLine.getDestinationIpWildcard().getIp().numSubnetBits();
+    IpWildcard srcIpWildcard =
+        ((WildcardAddressSpecifier) fromLine.getSourceAddressSpecifier()).getIpWildcard();
+    Ip ip = srcIpWildcard.getIp();
+    IpWildcard dstIpWildcard =
+        ((WildcardAddressSpecifier) fromLine.getDestinationAddressSpecifier()).getIpWildcard();
+    long minSubnet = dstIpWildcard.getIp().asLong();
+    long maxSubnet = minSubnet | dstIpWildcard.getWildcard().asLong();
+    int minPrefixLength = dstIpWildcard.getIp().numSubnetBits();
     int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-    int statedPrefixLength =
-        fromLine.getSourceIpWildcard().getWildcard().inverted().numSubnetBits();
+    int statedPrefixLength = srcIpWildcard.getWildcard().inverted().numSubnetBits();
     int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
     Prefix prefix = new Prefix(ip, prefixLength);
     return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
@@ -3621,6 +3619,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
 
+    // convert each ServiceObjectGroup to IpAccessList
+    _serviceObjectGroups.forEach(
+        (name, serviceObjectGroup) ->
+            c.getIpAccessLists()
+                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
+
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
     // lists
@@ -3889,6 +3893,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.computeRoutingPolicySources(_w);
 
     return c;
+  }
+
+  private IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
+        .build();
   }
 
   private void addIkePoliciesAndGateways(Configuration c) {
