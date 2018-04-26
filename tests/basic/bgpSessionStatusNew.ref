@@ -1,0 +1,55 @@
+[
+  {
+    "class" : "org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerElement",
+    "metadata" : {
+      "columnSchemas" : {
+        "dynamicNeighbors" : "Integer",
+        "localIp" : "Ip",
+        "node" : "Node",
+        "onLoopback" : "Boolean",
+        "remoteNode" : "Node",
+        "remotePrefix" : "Prefix",
+        "sessionType" : "String",
+        "staticStatus" : "String",
+        "vrfName" : "String"
+      },
+      "displayHints" : {
+        "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has static status ${staticStatus} and dynamic count ${dynamicNeighbors}"
+      },
+      "primaryKey" : [
+        "node",
+        "remotePrefix",
+        "vrfName"
+      ],
+      "primaryValue" : [
+        "staticStatus"
+      ]
+    },
+    "rows" : [
+      {
+        "dynamicNeighbors" : 1,
+        "localIp" : "10.23.21.2",
+        "node" : {
+          "name" : "as2border2",
+          "id" : "node-as2border2",
+          "type" : "UNKNOWN"
+        },
+        "onLoopback" : false,
+        "remoteNode" : {
+          "name" : "as3border1",
+          "id" : "node-as3border1",
+          "type" : "UNKNOWN"
+        },
+        "remotePrefix" : "10.23.21.3/32",
+        "sessionType" : "EBGP_SINGLEHOP",
+        "staticStatus" : "UNIQUE_MATCH",
+        "vrfName" : "default"
+      }
+    ],
+    "summary" : {
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 1
+    }
+  }
+]

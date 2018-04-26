@@ -1578,6 +1578,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getContainerDir().getFileName().toString();
   }
 
+  @Override
   public DataPlanePlugin getDataPlanePlugin() {
     DataPlanePlugin plugin = _dataPlanePlugins.get(_settings.getDataPlaneEngineName());
     if (plugin == null) {
