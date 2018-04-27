@@ -442,13 +442,13 @@ public class FlatJuniperGrammarTest {
     String wildcardSpaceName = "global~ADDR2";
     String indirectSpaceName = "global~ADDRSET";
 
-    /* Address on untrust interface's subnet */
+    // Address on untrust interface's subnet
     String untrustIpAddr = "1.2.4.5";
-    /* Specific address allowed by the address-set */
+    // Specific address allowed by the address-set
     String specificAddr = "2.2.2.2";
-    /* Address allowed by the wildcard-address in the address-set */
+    // Address allowed by the wildcard-address in the address-set
     String wildcardAddr = "1.3.3.4";
-    /* Address not allowed by either entry in the address-set */
+    // Address not allowed by either entry in the address-set
     String notWildcardAddr = "1.2.3.5";
 
     Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
@@ -457,7 +457,7 @@ public class FlatJuniperGrammarTest {
     IpAccessList untrustCombinedAcl =
         c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
-    /* Should have three global IpSpaces in the config */
+    // Should have three global IpSpaces in the config
     assertThat(
         c.getIpSpaces().keySet(),
         containsInAnyOrder(specificSpaceName, wildcardSpaceName, indirectSpaceName));
@@ -466,28 +466,28 @@ public class FlatJuniperGrammarTest {
     IpSpace wildcardSpace = c.getIpSpaces().get(wildcardSpaceName);
     IpSpace indirectSpace = c.getIpSpaces().get(indirectSpaceName);
 
-    /* Specific space should contain the specific addr and not others */
+    // Specific space should contain the specific addr and not others
     assertThat(specificSpace, containsIp(new Ip(specificAddr)));
     assertThat(specificSpace, not(containsIp(new Ip(wildcardAddr))));
 
-    /* Wildcard space should contain the wildcard addr and not others */
+    // Wildcard space should contain the wildcard addr and not others
     assertThat(wildcardSpace, containsIp(new Ip(wildcardAddr)));
     assertThat(wildcardSpace, not(containsIp(new Ip(notWildcardAddr))));
 
-    /* Indirect space should contain both specific and wildcard addr, but not others */
+    // Indirect space should contain both specific and wildcard addr, but not others
     assertThat(indirectSpace, containsIp(new Ip(specificAddr), c.getIpSpaces()));
     assertThat(indirectSpace, containsIp(new Ip(wildcardAddr), c.getIpSpaces()));
     assertThat(indirectSpace, not(containsIp(new Ip(notWildcardAddr), c.getIpSpaces())));
 
-    /* Specifically allowed source addr should be accepted */
+    // Specifically allowed source addr should be accepted
     assertThat(
         untrustCombinedAcl,
         accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
-    /* Source addr covered by the wildcard entry should be accepted */
+    // Source addr covered by the wildcard entry should be accepted
     assertThat(
         untrustCombinedAcl,
         accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
-    /* Source addr covered by neither addr-set entry should be rejected */
+    // Source addr covered by neither addr-set entry should be rejected
     assertThat(
         untrustCombinedAcl,
         rejects(
@@ -505,9 +505,8 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList trustCombinedAcl = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
-    IpAccessList untrustCombinedAcl =
-        c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+    IpAccessList aclTrustCombinedOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /*
      * Should have six ACLs:
@@ -524,8 +523,8 @@ public class FlatJuniperGrammarTest {
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             ACL_NAME_GLOBAL_POLICY,
-            trustCombinedAcl.getName(),
-            untrustCombinedAcl.getName(),
+            aclTrustCombinedOut.getName(),
+            aclUntrustOut.getName(),
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
@@ -578,10 +577,10 @@ public class FlatJuniperGrammarTest {
 
     /* Simple flows should be permitted */
     assertThat(
-        untrustCombinedAcl,
+        aclUntrustOut,
         accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        trustCombinedAcl,
+        aclTrustCombinedOut,
         accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
