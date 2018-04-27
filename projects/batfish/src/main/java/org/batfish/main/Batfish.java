@@ -540,13 +540,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             _settings.setQuestionPath(analysisQuestionPath);
             Answer currentAnswer;
             try (ActiveSpan analysisQuestionSpan =
-                GlobalTracer.get()
-                    .buildSpan(
-                        String.format(
-                            "Getting answer to question %s from analysis %s",
-                            questionName, analysisName))
-                    .startActive()) {
+                GlobalTracer.get().buildSpan("Getting answer to analysis question").startActive()) {
               assert analysisQuestionSpan != null; // make span not show up as unused
+              analysisQuestionSpan.setTag("analysis-name", analysisName);
               currentAnswer = answer();
             }
             // Ensuring that question was parsed successfully
@@ -597,6 +593,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.setStatus(AnswerStatus.FAILURE);
       answer.addAnswerElement(exception.getBatfishStackTrace());
       return answer;
+    }
+
+    if (GlobalTracer.get().activeSpan() != null) {
+      ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
+      activeSpan
+          .setTag("container-name", getContainerName())
+          .setTag("testrig_name", getTestrigName());
+      if (question.getInstance() != null) {
+        activeSpan.setTag("question-name", question.getInstance().getInstanceName());
+      }
     }
 
     if (_settings.getDifferential()) {
@@ -969,7 +975,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
     // Since compression mutates the configurations, we must clone them before that happens.
     // A simple way to do this is to create a deep clone of each entry using Java serialization.
-    _logger.info("Computing compressed dataplane");
+    _logger.info("Computing compressed dataplane\n");
     Map<String, Configuration> clonedConfigs =
         loadConfigurations()
             .entrySet()
@@ -2213,7 +2219,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
     Snapshot snapshot = getSnapshot();
-    _logger.debugf("Loading configurations for %s", snapshot);
+    _logger.debugf("Loading configurations for %s\n", snapshot);
     return loadConfigurations(snapshot);
   }
 
@@ -3613,8 +3619,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getAnswer()) {
-      answer.append(answer());
-      action = true;
+      try (ActiveSpan questionSpan =
+          GlobalTracer.get().buildSpan("Getting answer to question").startActive()) {
+        assert questionSpan != null; // avoid unused warning
+        answer.append(answer());
+        action = true;
+      }
     }
 
     if (_settings.getAnalyze()) {
