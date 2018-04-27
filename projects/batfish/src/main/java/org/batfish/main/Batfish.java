@@ -595,10 +595,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
       return answer;
     }
 
-    if (GlobalTracer.get().activeSpan() != null && question.getInstance() != null) {
-      GlobalTracer.get()
-          .activeSpan()
-          .setTag("question-name", question.getInstance().getInstanceName());
+    if (GlobalTracer.get().activeSpan() != null) {
+      ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
+      activeSpan.setTag("container-name", getContainerName());
+      activeSpan.setTag("testrig_name", getTestrigName());
+      if (question.getInstance() != null) {
+        activeSpan.setTag("question-name", question.getInstance().getInstanceName());
+      }
     }
 
     if (_settings.getDifferential()) {
