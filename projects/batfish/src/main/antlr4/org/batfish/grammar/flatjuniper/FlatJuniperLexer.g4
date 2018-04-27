@@ -5150,14 +5150,6 @@ IP_PREFIX
    F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
 ;
 
-IP_WILDCARD
-:
-   F_DecByte '.'
-   {enableIP_ADDRESS}?
-
-   F_DecByte '.' F_DecByte '.' F_DecByte '/' F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
-;
-
 IPV6_ADDRESS
 :
    (

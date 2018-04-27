@@ -30,11 +30,11 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    Set<IpWildcard> prefixes = _localAddressBook.getIpWildcards(_addressBookEntryName, w);
-    List<IpSpace> wildcards =
-        prefixes.stream().map(IpWildcard::toIpSpace).collect(ImmutableList.toImmutableList());
+    Set<IpWildcard> wildcards = _localAddressBook.getIpWildcards(_addressBookEntryName, w);
+    List<IpSpace> ipSpaces =
+        wildcards.stream().map(IpWildcard::toIpSpace).collect(ImmutableList.toImmutableList());
     ImmutableList.Builder<IpSpace> ipSpacesBuilder =
-        ImmutableList.<IpSpace>builder().addAll(wildcards);
+        ImmutableList.<IpSpace>builder().addAll(ipSpaces);
     if (headerSpaceBuilder.getSrcIps() != null) {
       ipSpacesBuilder.add(headerSpaceBuilder.getSrcIps());
     }

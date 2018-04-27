@@ -2285,7 +2285,6 @@ class EncoderSlice {
    * This can include restrictions on any packet field such as dstIp, protocol etc.
    */
   private void addHeaderSpaceConstraint() {
-
     Context ctx = _encoder.getCtx();
     add(
         new IpAccessListToBoolExpr(ctx, _symbolicPacket)

@@ -18,13 +18,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrie;
 import org.batfish.datamodel.RoutingProtocol;
@@ -127,10 +125,6 @@ public class BatfishCompressor {
    */
   private Map<GraphEdge, EquivalenceClassFilter> processSlice(NetworkSlice slice) {
     Map<GraphEdge, EquivalenceClassFilter> filters = new HashMap<>();
-
-    if (!(slice.getHeaderSpace().getDstIps() instanceof IpWildcardSetIpSpace)) {
-      throw new BatfishException("Expected IpWildcardSetIpSpace");
-    }
 
     // get the set of prefixes for this equivalence class.
     TreeSet<Prefix> prefixSet =
