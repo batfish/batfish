@@ -3,6 +3,7 @@ package org.batfish.z3;
 import static org.batfish.common.util.CommonUtil.computeIpOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -246,7 +247,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         toImmutableMap(configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
     _specializationIpSpace =
         specialize
-            ? CommonUtil.nonNullOrElse(
+            ? MoreObjects.firstNonNull(
                 AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps()),
                 UniverseIpSpace.INSTANCE)
             : UniverseIpSpace.INSTANCE;

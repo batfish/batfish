@@ -63,7 +63,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
@@ -1158,10 +1157,6 @@ public class CommonUtil {
       copyFile(srcPath, dstPath);
       delete(srcPath);
     }
-  }
-
-  public static <T> @Nonnull T nonNullOrElse(@Nullable T nullableValue, @Nonnull T defaultValue) {
-    return nullableValue == null ? defaultValue : nullableValue;
   }
 
   public static int nullChecker(Object a, Object b) {
