@@ -671,18 +671,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configurations = loadConfigurations();
 
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
+    Set<String> aclsToSkip = new TreeSet<>();
 
     for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {
       String aclName = e.getKey();
       if (!aclNameRegex.matcher(aclName).matches()) {
+        System.out.println("Acl name " + aclName + " doesn't match pattern " + aclNameRegexStr);
         continue;
       }
+      System.out.println("Acl name " + aclName + " matches pattern " + aclNameRegexStr);
       // skip juniper srx inbound filters, as they can't really contain
       // operator error
       if (aclName.contains("~ZONE_INTERFACE_FILTER~")
           || aclName.contains("~INBOUND_ZONE_FILTER~")) {
         continue;
       }
+      aclEqSets.getSameNamedStructures().keySet().remove(aclName);
+      aclsToSkip = ImmutableSet.copyOf(aclEqSets.getSameNamedStructures().keySet());
+      aclEqSets.getSameNamedStructures().keySet().add(aclName);
+      assert (!aclsToSkip.contains(aclName));
+      assert (aclEqSets.getSameNamedStructures().keySet().contains(aclName));
       Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
@@ -698,7 +706,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
         AclReachabilityQuerySynthesizer query =
             new AclReachabilityQuerySynthesizer(hostname, aclName, numLines);
-        Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
+        Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclsToSkip);
         NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query);
         jobs.add(job);
       }
@@ -731,7 +739,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .stream()
                   .map(Interface::getName)
                   .collect(Collectors.toList()));
-      Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
+      Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclsToSkip);
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
@@ -4184,15 +4192,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
   }
 
-  private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
+  private Synthesizer synthesizeAcls(String hostname, Configuration c, Set<String> aclsToSkip) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 ACL logic...");
+    System.out.println("Disabling the following acls:");
+    System.out.println(aclsToSkip);
     Synthesizer s =
         new Synthesizer(
             SynthesizerInputImpl.builder()
-                .setConfigurations(configurations)
+                .setConfigurations(Collections.singletonMap(hostname, c))
+                .setDisabledAcls(Collections.singletonMap(hostname, aclsToSkip))
                 .setSimplify(_settings.getSimplify())
                 .build());
 
