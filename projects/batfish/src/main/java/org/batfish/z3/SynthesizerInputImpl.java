@@ -6,6 +6,7 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
@@ -47,7 +48,7 @@ import org.batfish.z3.state.StateParameter.Type;
 
 public final class SynthesizerInputImpl implements SynthesizerInput {
 
-  private static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
+  static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
 
   public static class Builder {
     private ForwardingAnalysis _forwardingAnalysis;
@@ -64,11 +65,15 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     @Nullable private HeaderSpace _headerSpace;
 
+    private Set<String> _nonTransitNodes;
+
     private boolean _simplify;
 
     private boolean _specialize;
 
     private Topology _topology;
+
+    private Set<String> _transitNodes;
 
     private Set<Type> _vectorizedParameters;
 
@@ -78,8 +83,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _disabledNodes = ImmutableSet.of();
       _disabledVrfs = ImmutableMap.of();
       _headerSpace = null;
+      _nonTransitNodes = ImmutableSortedSet.of();
       _simplify = false;
       _specialize = false;
+      _transitNodes = ImmutableSortedSet.of();
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -92,9 +99,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
           _disabledNodes,
           _disabledVrfs,
           _headerSpace != null ? _headerSpace : new HeaderSpace(),
+          _nonTransitNodes,
           _simplify,
           _specialize,
           _topology,
+          _transitNodes,
           _vectorizedParameters);
     }
 
@@ -148,8 +157,18 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
+    public Builder setTransitNodes(Set<String> transitNodes) {
+      _transitNodes = ImmutableSortedSet.copyOf(transitNodes);
+      return this;
+    }
+
     public Builder setVectorizedParameters(Set<Type> vectorizedParameters) {
       _vectorizedParameters = vectorizedParameters;
+      return this;
+    }
+
+    public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
+      _nonTransitNodes = ImmutableSet.copyOf(nonTransitNodes);
       return this;
     }
   }
@@ -205,6 +224,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
 
+  private final Set<String> _nonTransitNodes;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -223,6 +244,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
+  private final Set<String> _transitNodes;
+
   private final Set<Type> _vectorizedParameters;
 
   public SynthesizerInputImpl(
@@ -233,9 +256,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       Set<String> disabledNodes,
       Map<String, Set<String>> disabledVrfs,
       HeaderSpace headerSpace,
+      Set<String> nonTransitNodes,
       boolean simplify,
       boolean specialize,
       Topology topology,
+      Set<String> transitNodes,
       Set<Type> vectorizedParameters) {
     if (configurations == null) {
       throw new BatfishException("Must supply configurations");
@@ -301,6 +326,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _nodesWithSrcInterfaceConstraints = computeNodesWithSrcInterfaceConstraints();
     _sourceInterfaceField = computeSourceInterfaceField();
     _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues();
+    _nonTransitNodes = ImmutableSortedSet.copyOf(nonTransitNodes);
+    _transitNodes = ImmutableSortedSet.copyOf(transitNodes);
     _aclConditions = computeAclConditions();
   }
 
@@ -832,6 +859,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
+  public Set<String> getTransitNodes() {
+    return _transitNodes;
+  }
+
+  @Override
   public Map<String, Set<String>> getTraversableInterfaces() {
     return _topologyInterfaces;
   }
@@ -859,5 +891,10 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Set<String> getNodesWithSrcInterfaceConstraints() {
     return _nodesWithSrcInterfaceConstraints;
+  }
+
+  @Override
+  public Set<String> getNonTransitNodes() {
+    return _nonTransitNodes;
   }
 }

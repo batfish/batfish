@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,6 +49,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Set<String> _nodesWithSrcInterfaceConstraints;
 
+    private Set<String> _nonTransitNodes;
+
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
     private Map<String, Map<String, String>> _outgoingAcls;
@@ -66,6 +69,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, IntExpr>> _srcInterfaceFieldValues;
 
+    private Set<String> _transitNodes;
+
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
@@ -81,6 +86,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _neighborUnreachable = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
+      _nonTransitNodes = ImmutableSortedSet.of();
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
@@ -88,6 +94,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
+      _transitNodes = ImmutableSortedSet.of();
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -169,6 +176,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
+      _nonTransitNodes = nonTransitNodes;
+      return this;
+    }
+
     public Builder setNullRoutedIps(Map<String, Map<String, BooleanExpr>> nullRoutedIps) {
       _nullRoutedIps = nullRoutedIps;
       return this;
@@ -215,6 +227,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _vectorizedParameters = vectorizedParameters;
       return this;
     }
+
+    public Builder setTransitNodes(Set<String> transitNodes) {
+      _transitNodes = transitNodes;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -250,6 +267,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
 
+  private final Set<String> _nonTransitNodes;
+
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final Map<String, Map<String, String>> _outgoingAcls;
@@ -265,6 +284,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
   private final Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
 
   private final Map<String, Set<String>> _topologyInterfaces;
+
+  private Set<String> _transitNodes;
 
   private final Set<Type> _vectorizedParameters;
 
@@ -283,6 +304,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = builder._nullRoutedIps;
+    _nonTransitNodes = builder._nonTransitNodes;
     _outgoingAcls = builder._outgoingAcls;
     _routableIps = builder._routableIps;
     _simplify = builder._simplify;
@@ -290,6 +312,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _sourceInterfaceField = builder._srcInterfaceField;
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
+    _transitNodes = builder._transitNodes;
     _vectorizedParameters = builder._vectorizedParameters;
     _namedIpSpaces = builder._namedIpSpaces;
   }
@@ -391,6 +414,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Set<String> getTransitNodes() {
+    return _transitNodes;
+  }
+
+  @Override
   public Field getSourceInterfaceField() {
     return _sourceInterfaceField;
   }
@@ -403,6 +431,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<String> getNodesWithSrcInterfaceConstraints() {
     return _nodesWithSrcInterfaceConstraints;
+  }
+
+  @Override
+  public Set<String> getNonTransitNodes() {
+    return _nonTransitNodes;
   }
 
   @Override
