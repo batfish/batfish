@@ -24,6 +24,7 @@ import org.batfish.symbolic.answers.RoleAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRoute;
+import org.batfish.symbolic.bdd.BDDRouteConfig;
 import org.batfish.symbolic.utils.Tuple;
 
 public class Roles {
@@ -55,7 +56,7 @@ public class Roles {
 
   private Roles(IBatfish batfish, NodesSpecifier nodesSpecifier) {
     _graph = new Graph(batfish);
-    _network = BDDNetwork.create(_graph, nodesSpecifier);
+    _network = BDDNetwork.create(_graph, nodesSpecifier, new BDDRouteConfig(false));
     _nodeSpecifier = nodesSpecifier;
     _bgpInEcs = null;
     _bgpOutEcs = null;

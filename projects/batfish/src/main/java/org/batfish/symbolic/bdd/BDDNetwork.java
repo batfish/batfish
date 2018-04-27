@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
+import net.sf.javabdd.BDD;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -18,11 +19,14 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.TransferResult;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
 
 public class BDDNetwork {
 
   private Graph _graph;
+
+  private BDDRouteConfig _config;
 
   private NodesSpecifier _nodeSpecifier;
 
@@ -40,20 +44,11 @@ public class BDDNetwork {
 
   private Map<GraphEdge, BDDAcl> _outAcls;
 
-  public static BDDNetwork create(Graph g) {
-    return create(g, NodesSpecifier.ALL);
-  }
-
-  public static BDDNetwork create(Graph g, NodesSpecifier nodesSpecifier) {
-    PolicyQuotient pq = new PolicyQuotient(g);
-    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, pq);
-    network.computeInterfacePolicies();
-    return network;
-  }
-
-  private BDDNetwork(Graph graph, NodesSpecifier nodesSpecifier, PolicyQuotient pq) {
+  private BDDNetwork(
+      Graph graph, NodesSpecifier nodesSpecifier, BDDRouteConfig config, PolicyQuotient pq) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
+    _config = config;
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
@@ -61,6 +56,17 @@ public class BDDNetwork {
     _exportBgpPolicies = new HashMap<>();
     _inAcls = new HashMap<>();
     _outAcls = new HashMap<>();
+  }
+
+  public static BDDNetwork create(Graph g, BDDRouteConfig config) {
+    return create(g, NodesSpecifier.ALL, config);
+  }
+
+  public static BDDNetwork create(Graph g, NodesSpecifier nodesSpecifier, BDDRouteConfig config) {
+    PolicyQuotient pq = new PolicyQuotient(g);
+    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, config, pq);
+    network.computeInterfacePolicies();
+    return network;
   }
 
   /*
@@ -73,7 +79,8 @@ public class BDDNetwork {
       networks = Graph.getOriginatedNetworks(conf);
     }
     TransferBDD t = new TransferBDD(g, conf, pol.getStatements(), _policyQuotient);
-    return t.compute(networks);
+    TransferResult<TransferReturn, BDD> result = t.compute(_config, networks);
+    return result.getReturnValue().getFirst();
   }
 
   /*

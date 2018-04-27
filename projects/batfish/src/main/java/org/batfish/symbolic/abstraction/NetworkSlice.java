@@ -10,6 +10,7 @@ import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.bdd.BDDNetwork;
+import org.batfish.symbolic.bdd.BDDRouteConfig;
 import org.batfish.symbolic.utils.Tuple;
 
 public class NetworkSlice {
@@ -33,7 +34,7 @@ public class NetworkSlice {
   }
 
   public static ArrayList<Supplier<NetworkSlice>> allSlices(DestinationClasses dcs, int fails) {
-    BDDNetwork network = BDDNetwork.create(dcs.getGraph());
+    BDDNetwork network = BDDNetwork.create(dcs.getGraph(), new BDDRouteConfig(false));
     ArrayList<Supplier<NetworkSlice>> classes = new ArrayList<>();
     for (Entry<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> entry :
         dcs.getHeaderspaceMap().entrySet()) {

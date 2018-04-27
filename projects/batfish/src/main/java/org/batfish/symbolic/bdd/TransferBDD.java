@@ -88,6 +88,8 @@ class TransferBDD {
 
   private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
+  private BDDRouteConfig _config;
+
   private Set<CommunityVar> _comms;
 
   private Configuration _conf;
@@ -536,90 +538,102 @@ class TransferBDD {
 
       } else if (stmt instanceof SetMetric) {
         p.debug("SetMetric");
-        SetMetric sm = (SetMetric) stmt;
-        LongExpr ie = sm.getMetric();
-        BDD isBGP = p.getData().getProtocolHistory().value(Protocol.BGP);
-        BDD updateMed = isBGP.and(result.getReturnAssignedValue());
-        BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
-        BDDInteger newValue = applyLongExprModification(p.indent(), p.getData().getMetric(), ie);
-        BDDInteger med = ite(updateMed, p.getData().getMed(), newValue);
-        BDDInteger met = ite(updateMet, p.getData().getMetric(), newValue);
-        p.getData().setMetric(met);
-        p.getData().setMetric(med);
+        if (p.getData().getConfig().getKeepMetric()) {
+          SetMetric sm = (SetMetric) stmt;
+          LongExpr ie = sm.getMetric();
+          BDD isBGP = p.getData().getProtocolHistory().value(Protocol.BGP);
+          BDD updateMed = isBGP.and(result.getReturnAssignedValue());
+          BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
+          BDDInteger newValue = applyLongExprModification(p.indent(), p.getData().getMetric(), ie);
+          BDDInteger med = ite(updateMed, p.getData().getMed(), newValue);
+          BDDInteger met = ite(updateMet, p.getData().getMetric(), newValue);
+          p.getData().setMetric(met);
+          p.getData().setMetric(med);
+        }
 
       } else if (stmt instanceof SetOspfMetricType) {
         p.debug("SetOspfMetricType");
-        SetOspfMetricType somt = (SetOspfMetricType) stmt;
-        OspfMetricType mt = somt.getMetricType();
-        BDDDomain<OspfType> current = result.getReturnValue().getFirst().getOspfMetric();
-        BDDDomain<OspfType> newValue = new BDDDomain<>(current);
-        if (mt == OspfMetricType.E1) {
-          p.indent().debug("Value: E1");
-          newValue.setValue(OspfType.E1);
-        } else {
-          p.indent().debug("Value: E2");
-          newValue.setValue(OspfType.E1);
+        if (p.getData().getConfig().getKeepOspfMetric()) {
+          SetOspfMetricType somt = (SetOspfMetricType) stmt;
+          OspfMetricType mt = somt.getMetricType();
+          BDDDomain<OspfType> current = result.getReturnValue().getFirst().getOspfMetric();
+          BDDDomain<OspfType> newValue = new BDDDomain<>(current);
+          if (mt == OspfMetricType.E1) {
+            p.indent().debug("Value: E1");
+            newValue.setValue(OspfType.E1);
+          } else {
+            p.indent().debug("Value: E2");
+            newValue.setValue(OspfType.E1);
+          }
+          newValue = ite(result.getReturnAssignedValue(), p.getData().getOspfMetric(), newValue);
+          p.getData().setOspfMetric(newValue);
         }
-        newValue = ite(result.getReturnAssignedValue(), p.getData().getOspfMetric(), newValue);
-        p.getData().setOspfMetric(newValue);
 
       } else if (stmt instanceof SetLocalPreference) {
         p.debug("SetLocalPreference");
-        SetLocalPreference slp = (SetLocalPreference) stmt;
-        IntExpr ie = slp.getLocalPreference();
-        BDDInteger newValue = applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
-        newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
-        p.getData().setLocalPref(newValue);
+        if (p.getData().getConfig().getKeepLp()) {
+          SetLocalPreference slp = (SetLocalPreference) stmt;
+          IntExpr ie = slp.getLocalPreference();
+          BDDInteger newValue = applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
+          newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
+          p.getData().setLocalPref(newValue);
+        }
 
       } else if (stmt instanceof AddCommunity) {
         p.debug("AddCommunity");
-        AddCommunity ac = (AddCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
-        for (CommunityVar cvar : comms) {
-          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            p.indent().debug("Value: " + cvar);
-            BDD comm = p.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-            p.indent().debug("New Value: " + newValue);
-            p.getData().getCommunities().put(cvar, newValue);
+        if (p.getData().getConfig().getKeepCommunities()) {
+          AddCommunity ac = (AddCommunity) stmt;
+          Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
+          for (CommunityVar cvar : comms) {
+            if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
+              p.indent().debug("Value: " + cvar);
+              BDD comm = p.getData().getCommunities().get(cvar);
+              BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+              p.indent().debug("New Value: " + newValue);
+              p.getData().getCommunities().put(cvar, newValue);
+            }
           }
         }
 
       } else if (stmt instanceof SetCommunity) {
         p.debug("SetCommunity");
-        SetCommunity sc = (SetCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, sc.getExpr());
-        for (CommunityVar cvar : comms) {
-          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            p.indent().debug("Value: " + cvar);
-            BDD comm = p.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-            p.indent().debug("New Value: " + newValue);
-            p.getData().getCommunities().put(cvar, newValue);
+        if (p.getData().getConfig().getKeepCommunities()) {
+          SetCommunity sc = (SetCommunity) stmt;
+          Set<CommunityVar> comms = _graph.findAllCommunities(_conf, sc.getExpr());
+          for (CommunityVar cvar : comms) {
+            if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
+              p.indent().debug("Value: " + cvar);
+              BDD comm = p.getData().getCommunities().get(cvar);
+              BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
+              p.indent().debug("New Value: " + newValue);
+              p.getData().getCommunities().put(cvar, newValue);
+            }
           }
         }
 
       } else if (stmt instanceof DeleteCommunity) {
         p.debug("DeleteCommunity");
-        DeleteCommunity ac = (DeleteCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
-        Set<CommunityVar> toDelete = new HashSet<>();
-        // Find comms to delete
-        for (CommunityVar cvar : comms) {
-          if (cvar.getType() == Type.REGEX) {
-            toDelete.addAll(_commDeps.get(cvar));
-          } else {
-            toDelete.add(cvar);
+        if (p.getData().getConfig().getKeepCommunities()) {
+          DeleteCommunity ac = (DeleteCommunity) stmt;
+          Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
+          Set<CommunityVar> toDelete = new HashSet<>();
+          // Find comms to delete
+          for (CommunityVar cvar : comms) {
+            if (cvar.getType() == Type.REGEX) {
+              toDelete.addAll(_commDeps.get(cvar));
+            } else {
+              toDelete.add(cvar);
+            }
           }
-        }
-        // Delete the comms
-        for (CommunityVar cvar : toDelete) {
-          if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            p.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
-            BDD comm = p.getData().getCommunities().get(cvar);
-            BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
-            p.indent().debug("New Value: " + newValue);
-            p.getData().getCommunities().put(cvar, newValue);
+          // Delete the comms
+          for (CommunityVar cvar : toDelete) {
+            if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
+              p.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
+              BDD comm = p.getData().getCommunities().get(cvar);
+              BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
+              p.indent().debug("New Value: " + newValue);
+              p.getData().getCommunities().put(cvar, newValue);
+            }
           }
         }
 
@@ -629,13 +643,15 @@ class TransferBDD {
 
       } else if (stmt instanceof PrependAsPath) {
         p.debug("PrependAsPath");
-        PrependAsPath pap = (PrependAsPath) stmt;
-        Integer prependCost = prependLength(pap.getExpr());
-        p.indent().debug("Cost: " + prependCost);
-        BDDInteger met = p.getData().getMetric();
-        BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
-        newValue = ite(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
-        p.getData().setMetric(newValue);
+        if (p.getData().getConfig().getKeepMetric()) {
+          PrependAsPath pap = (PrependAsPath) stmt;
+          Integer prependCost = prependLength(pap.getExpr());
+          p.indent().debug("Cost: " + prependCost);
+          BDDInteger met = p.getData().getMetric();
+          BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
+          newValue = ite(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
+          p.getData().setMetric(newValue);
+        }
 
       } else if (stmt instanceof SetOrigin) {
         p.debug("SetOrigin");
@@ -740,7 +756,7 @@ class TransferBDD {
   }
 
   private BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
-    BDDRoute ret = new BDDRoute(_comms);
+    BDDRoute ret = new BDDRoute(_config, _comms);
 
     BDDInteger x;
     BDDInteger y;
@@ -936,7 +952,7 @@ class TransferBDD {
    * outputs if the route is filtered / dropped in the policy
    */
   private BDDRoute zeroedRecord() {
-    BDDRoute rec = new BDDRoute(_comms);
+    BDDRoute rec = new BDDRoute(_config, _comms);
     rec.getMetric().setValue(0);
     rec.getLocalPref().setValue(0);
     rec.getAdminDist().setValue(0);
@@ -965,16 +981,15 @@ class TransferBDD {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input variables.
    */
-  public BDDRoute compute(@Nullable Set<Prefix> ignoredNetworks) {
+  public TransferResult<TransferReturn, BDD> compute(
+      BDDRouteConfig config, @Nullable Set<Prefix> ignoredNetworks) {
+    _config = config;
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.getAllCommunities();
-    BDDRoute o = new BDDRoute(_comms);
+    BDDRoute o = new BDDRoute(_config, _comms);
     addCommunityAssumptions(o);
     TransferParam<BDDRoute> p = new TransferParam<>(o, false);
-    TransferResult<TransferReturn, BDD> result = compute(_statements, p);
-    // BDDRoute route = result.getReturnValue().getFirst();
-    // System.out.println("DOT: \n" + route.dot(route.getLocalPref().getBitvec()[31]));
-    return result.getReturnValue().getFirst();
+    return compute(_statements, p);
   }
 }

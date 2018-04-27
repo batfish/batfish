@@ -70,6 +70,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     pairing = factory.makePair();
   }
 
+  private int _numVars;
+
+  private BDDRouteConfig _config;
+
   private BDDInteger _adminDist;
 
   private Map<Integer, String> _bitNames;
@@ -94,51 +98,70 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * Creates a collection of BDD variables representing the
    * various attributes of a control plane advertisement.
    */
-  public BDDRoute(Set<CommunityVar> comms) {
+  public BDDRoute(BDDRouteConfig config, Set<CommunityVar> comms) {
+    _config = config;
     int numVars = factory.varNum();
-    int numNeeded = 32 * 5 + 5 + comms.size() + 4;
+    int numNeeded = 2 * (32 * 5 + 5 + comms.size() + 4);
     if (numVars < numNeeded) {
-      factory.setVarNum(numNeeded);
+      factory.setVarNum(numNeeded); // allow for temporary variables
     }
+    _numVars = factory.varNum();
+
     _bitNames = new HashMap<>();
 
     int idx = 0;
-    _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
-    int len = _protocolHistory.getInteger().getBitvec().length;
-    addBitNames("proto", len, idx, false);
-    idx += len;
-    // Initialize integer values
-    _metric = BDDInteger.makeFromIndex(factory, 32, idx, false);
-    addBitNames("metric", 32, idx, false);
-    idx += 32;
-    _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
-    addBitNames("med", 32, idx, false);
-    idx += 32;
-    _adminDist = BDDInteger.makeFromIndex(factory, 32, idx, false);
-    addBitNames("ad", 32, idx, false);
-    idx += 32;
-    _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
-    addBitNames("lp", 32, idx, false);
-    idx += 32;
+    int len;
+    if (_config.getKeepHistory()) {
+      _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
+      len = _protocolHistory.getInteger().getBitvec().length;
+      addBitNames("proto", len, idx, false);
+      idx += len;
+    } else {
+      _protocolHistory = null;
+    }
+    if (_config.getKeepMetric()) {
+      _metric = BDDInteger.makeFromIndex(factory, 32, idx, false);
+      addBitNames("metric", 32, idx, false);
+      idx += 32;
+    }
+    if (_config.getKeepMed()) {
+      _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
+      addBitNames("med", 32, idx, false);
+      idx += 32;
+    }
+    if (_config.getKeepAd()) {
+      _adminDist = BDDInteger.makeFromIndex(factory, 32, idx, false);
+      addBitNames("ad", 32, idx, false);
+      idx += 32;
+    }
+    if (_config.getKeepLp()) {
+      _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
+      addBitNames("lp", 32, idx, false);
+      idx += 32;
+    }
     _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx, true);
     addBitNames("pfxLen", 5, idx, true);
     idx += 5;
     _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;
-    // Initialize communities
-    _communities = new TreeMap<>();
-    for (CommunityVar comm : comms) {
-      if (comm.getType() != Type.REGEX) {
-        _communities.put(comm, factory.ithVar(idx));
-        _bitNames.put(idx, comm.getValue());
-        idx++;
+
+    if (_config.getKeepCommunities()) {
+      _communities = new TreeMap<>();
+      for (CommunityVar comm : comms) {
+        if (comm.getType() != Type.REGEX) {
+          _communities.put(comm, factory.ithVar(idx));
+          _bitNames.put(idx, comm.getValue());
+          idx++;
+        }
       }
     }
     // Initialize OSPF type
-    _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
-    len = _ospfMetric.getInteger().getBitvec().length;
-    addBitNames("ospfMetric", len, idx, false);
+    if (_config.getKeepOspfMetric()) {
+      _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
+      len = _ospfMetric.getInteger().getBitvec().length;
+      addBitNames("ospfMetric", len, idx, false);
+    }
   }
 
   /*
@@ -146,15 +169,32 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * there is no need for a deep copy.
    */
   public BDDRoute(BDDRoute other) {
-    _communities = new TreeMap<>(other._communities);
+    _config = other._config;
     _prefixLength = new BDDInteger(other._prefixLength);
     _prefix = new BDDInteger(other._prefix);
-    _metric = new BDDInteger(other._metric);
-    _adminDist = new BDDInteger(other._adminDist);
-    _med = new BDDInteger(other._med);
-    _localPref = new BDDInteger(other._localPref);
-    _protocolHistory = new BDDDomain<>(other._protocolHistory);
-    _ospfMetric = new BDDDomain<>(other._ospfMetric);
+    if (_config.getKeepCommunities()) {
+      _communities = new TreeMap<>(other._communities);
+    }
+    if (_config.getKeepMetric()) {
+      _metric = new BDDInteger(other._metric);
+    }
+    if (_config.getKeepAd()) {
+      _adminDist = new BDDInteger(other._adminDist);
+    }
+    if (_config.getKeepMed()) {
+      _med = new BDDInteger(other._med);
+    }
+    if (_config.getKeepLp()) {
+      _localPref = new BDDInteger(other._localPref);
+    }
+    if (_config.getKeepHistory()) {
+      _protocolHistory = new BDDDomain<>(other._protocolHistory);
+    } else {
+      _protocolHistory = null;
+    }
+    if (_config.getKeepOspfMetric()) {
+      _ospfMetric = new BDDDomain<>(other._ospfMetric);
+    }
     _bitNames = other._bitNames;
   }
 
@@ -170,6 +210,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         _bitNames.put(i, s + (i - index + 1));
       }
     }
+  }
+
+  public BDD getTemporary(BDD var) {
+    return factory.ithVar(2 * var.var());
   }
 
   /*
@@ -225,6 +269,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     visited.add(bdd);
     dotRec(sb, bdd.low(), visited);
     dotRec(sb, bdd.high(), visited);
+  }
+
+  public BDDRouteConfig getConfig() {
+    return _config;
   }
 
   public BDDInteger getAdminDist() {
@@ -320,33 +368,53 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * Take the point-wise disjunction of two BDDRecords
    */
   public void orWith(BDDRoute other) {
-    BDD[] metric = getMetric().getBitvec();
-    BDD[] adminDist = getAdminDist().getBitvec();
-    BDD[] med = getMed().getBitvec();
-    BDD[] localPref = getLocalPref().getBitvec();
-    BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
 
-    BDD[] metric2 = other.getMetric().getBitvec();
-    BDD[] adminDist2 = other.getAdminDist().getBitvec();
-    BDD[] med2 = other.getMed().getBitvec();
-    BDD[] localPref2 = other.getLocalPref().getBitvec();
-    BDD[] ospfMet2 = other.getOspfMetric().getInteger().getBitvec();
+    if (_config.getKeepMetric()) {
+      BDD[] metric = getMetric().getBitvec();
+      BDD[] metric2 = other.getMetric().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        metric[i].orWith(metric2[i]);
+      }
+    }
 
-    for (int i = 0; i < 32; i++) {
-      metric[i].orWith(metric2[i]);
-      adminDist[i].orWith(adminDist2[i]);
-      med[i].orWith(med2[i]);
-      localPref[i].orWith(localPref2[i]);
+    if (_config.getKeepAd()) {
+      BDD[] adminDist = getAdminDist().getBitvec();
+      BDD[] adminDist2 = other.getAdminDist().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        adminDist[i].orWith(adminDist2[i]);
+      }
     }
-    for (int i = 0; i < ospfMet.length; i++) {
-      ospfMet[i].orWith(ospfMet2[i]);
+
+    if (_config.getKeepMed()) {
+      BDD[] med = getMed().getBitvec();
+      BDD[] med2 = other.getMed().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        med[i].orWith(med2[i]);
+      }
     }
-    getCommunities()
-        .forEach(
-            (cvar, bdd1) -> {
-              BDD bdd2 = other.getCommunities().get(cvar);
-              bdd1.orWith(bdd2);
-            });
+
+    if (_config.getKeepLp()) {
+      BDD[] localPref = getLocalPref().getBitvec();
+      BDD[] localPref2 = other.getLocalPref().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        localPref[i].orWith(localPref2[i]);
+      }
+    }
+
+    if (_config.getKeepOspfMetric()) {
+      BDD[] ospfMet = getOspfMetric().getInteger().getBitvec();
+      BDD[] ospfMet2 = other.getOspfMetric().getInteger().getBitvec();
+      for (int i = 0; i < ospfMet.length; i++) {
+        ospfMet[i].orWith(ospfMet2[i]);
+      }
+    }
+
+    if (_config.getKeepCommunities()) {
+      getCommunities().forEach((cvar, bdd1) -> {
+        BDD bdd2 = other.getCommunities().get(cvar);
+        bdd1.orWith(bdd2);
+      });
+    }
   }
 
   public BDDRoute restrict(Prefix pfx) {
@@ -366,21 +434,46 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     pairing.set(vars, vals);
 
     BDDRoute rec = new BDDRoute(this);
-    BDD[] metric = rec.getMetric().getBitvec();
-    BDD[] adminDist = rec.getAdminDist().getBitvec();
-    BDD[] med = rec.getMed().getBitvec();
-    BDD[] localPref = rec.getLocalPref().getBitvec();
-    BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
-    for (int i = 0; i < 32; i++) {
-      metric[i] = metric[i].veccompose(pairing);
-      adminDist[i] = adminDist[i].veccompose(pairing);
-      med[i] = med[i].veccompose(pairing);
-      localPref[i] = localPref[i].veccompose(pairing);
+
+    if (_config.getKeepMetric()) {
+      BDD[] metric = rec.getMetric().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        metric[i] = metric[i].veccompose(pairing);
+      }
     }
-    for (int i = 0; i < ospfMet.length; i++) {
-      ospfMet[i] = ospfMet[i].veccompose(pairing);
+
+    if (_config.getKeepAd()) {
+      BDD[] adminDist = rec.getAdminDist().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        adminDist[i] = adminDist[i].veccompose(pairing);
+      }
     }
-    rec.getCommunities().replaceAll((k, v) -> v.veccompose(pairing));
+
+    if (_config.getKeepMed()) {
+      BDD[] med = rec.getMed().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        med[i] = med[i].veccompose(pairing);
+      }
+    }
+
+    if (_config.getKeepLp()) {
+      BDD[] localPref = rec.getLocalPref().getBitvec();
+      for (int i = 0; i < 32; i++) {
+        localPref[i] = localPref[i].veccompose(pairing);
+      }
+    }
+
+    if (_config.getKeepOspfMetric()) {
+      BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
+      for (int i = 0; i < ospfMet.length; i++) {
+        ospfMet[i] = ospfMet[i].veccompose(pairing);
+      }
+    }
+
+    if (_config.getKeepCommunities()) {
+      rec.getCommunities().replaceAll((k, v) -> v.veccompose(pairing));
+    }
+
     return rec;
   }
 
