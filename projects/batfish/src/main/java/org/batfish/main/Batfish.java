@@ -597,8 +597,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     if (GlobalTracer.get().activeSpan() != null) {
       ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
-      activeSpan.setTag("container-name", getContainerName());
-      activeSpan.setTag("testrig_name", getTestrigName());
+      activeSpan
+          .setTag("container-name", getContainerName())
+          .setTag("testrig_name", getTestrigName());
       if (question.getInstance() != null) {
         activeSpan.setTag("question-name", question.getInstance().getInstanceName());
       }

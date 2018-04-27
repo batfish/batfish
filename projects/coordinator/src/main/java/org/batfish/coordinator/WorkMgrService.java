@@ -1740,8 +1740,10 @@ public class WorkMgrService {
       }
 
       if (GlobalTracer.get().activeSpan() != null) {
-        GlobalTracer.get().activeSpan().setTag("container-name", containerName);
-        GlobalTracer.get().activeSpan().setTag("testrig-name", testrigName);
+        GlobalTracer.get()
+            .activeSpan()
+            .setTag("container-name", containerName)
+            .setTag("testrig-name", testrigName);
       }
 
       Main.getWorkMgr().uploadTestrig(containerName, testrigName, fileStream, autoAnalyze);
