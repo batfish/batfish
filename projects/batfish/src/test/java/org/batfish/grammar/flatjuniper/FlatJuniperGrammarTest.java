@@ -46,7 +46,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
@@ -68,6 +67,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
@@ -482,16 +482,16 @@ public class FlatJuniperGrammarTest {
     // Specifically allowed source addr should be accepted
     assertThat(
         untrustCombinedAcl,
-        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     // Source addr covered by the wildcard entry should be accepted
     assertThat(
         untrustCombinedAcl,
-        accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+        accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     // Source addr covered by neither addr-set entry should be rejected
     assertThat(
         untrustCombinedAcl,
         rejects(
-            flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+            flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -501,6 +501,7 @@ public class FlatJuniperGrammarTest {
     String interfaceNameUntrust = "ge-0/0/1.0";
     String trustedIpAddr = "1.2.3.5";
     String untrustedIpAddr = "1.2.4.5";
+    String specificSpaceName = "global~ADDR1";
 
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
@@ -532,10 +533,15 @@ public class FlatJuniperGrammarTest {
     IpAccessListLine aclGlobalPolicyLine =
         Iterables.getOnlyElement(c.getIpAccessLists().get(ACL_NAME_GLOBAL_POLICY).getLines());
 
-    /* Global policy should permit all traffic as defined in the config */
+    /* Global policy should permit the specific src address defined in the config */
     assertThat(
         aclGlobalPolicyLine,
-        hasMatchCondition(equalTo(new MatchHeaderSpace(HeaderSpace.builder().build()))));
+        hasMatchCondition(
+            equalTo(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(new IpSpaceReference(specificSpaceName))
+                        .build()))));
     assertThat(aclGlobalPolicyLine, hasAction(equalTo(LineAction.ACCEPT)));
 
     List<IpAccessListLine> aclTrustSPLines =
@@ -575,13 +581,14 @@ public class FlatJuniperGrammarTest {
     assertThat(aclUntrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
     assertThat(aclUntrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
 
-    /* Simple flows should be permitted */
+    /* Flow from ADDR1 to untrust should be permitted */
     assertThat(
         aclUntrustOut,
         accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Flow from not ADDR1 to trust should be rejected */
     assertThat(
         aclTrustOut,
-        accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -816,12 +823,11 @@ public class FlatJuniperGrammarTest {
     // Specifically allowed source address should be accepted
     assertThat(
         aclUntrustOut,
-        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     // Source address not covered by the address-book should be rejected
     assertThat(
         aclUntrustOut,
-        rejects(
-            flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), ImmutableMap.of()));
+        rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test

@@ -1503,6 +1503,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private int _disjunctionPolicyIndex;
 
+  private AddressBook _globalAddressBook;
+
   private boolean _hasZones;
 
   private FlatJuniperCombinedParser _parser;
@@ -1535,6 +1537,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
+    _configuration
+        .getGlobalAddressBooks()
+        .put("global", new AddressBook("global", new TreeMap<>()));
+    _globalAddressBook = _configuration.getGlobalAddressBooks().get("global");
   }
 
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
@@ -3954,9 +3960,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
-      FwFrom match =
-          new FwFromDestinationAddressBookEntry(
-              _currentToZone.getAddressBook(), addressBookEntryName);
+      // Use global address book for global policies (no toZone)
+      AddressBook addressBook =
+          (_currentToZone == null) ? _globalAddressBook : _currentToZone.getAddressBook();
+      FwFrom match = new FwFromDestinationAddressBookEntry(addressBook, addressBookEntryName);
       _currentFwTerm.getFroms().add(match);
     } else {
       throw new BatfishException("Invalid address-specifier");
@@ -3974,8 +3981,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
-      FwFrom match =
-          new FwFromSourceAddressBookEntry(_currentFromZone.getAddressBook(), addressBookEntryName);
+      // Use global address book for global policies (no fromZone)
+      AddressBook addressBook =
+          (_currentFromZone == null) ? _globalAddressBook : _currentFromZone.getAddressBook();
+      FwFrom match = new FwFromSourceAddressBookEntry(addressBook, addressBookEntryName);
       _currentFwTerm.getFroms().add(match);
     } else {
       throw new BatfishException("Invalid address-specifier");

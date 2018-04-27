@@ -1,14 +1,12 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
-import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpSpaceReference;
 
 public final class FwFromSourceAddressBookEntry extends FwFrom {
 
@@ -30,14 +28,17 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    Set<IpWildcard> wildcards = _localAddressBook.getIpWildcards(_addressBookEntryName, w);
-    List<IpSpace> ipSpaces =
-        wildcards.stream().map(IpWildcard::toIpSpace).collect(ImmutableList.toImmutableList());
-    ImmutableList.Builder<IpSpace> ipSpacesBuilder =
-        ImmutableList.<IpSpace>builder().addAll(ipSpaces);
+    // Address book name may be the local address book name or the global name
+    String addressBookName = _localAddressBook.getAddressBookName(_addressBookEntryName);
+    String ipSpaceName = addressBookName + "~" + _addressBookEntryName;
+    IpSpaceReference ipSpaceReference = new IpSpaceReference(ipSpaceName);
     if (headerSpaceBuilder.getSrcIps() != null) {
+      ImmutableList.Builder<IpSpace> ipSpacesBuilder =
+          ImmutableList.<IpSpace>builder().add(ipSpaceReference);
       ipSpacesBuilder.add(headerSpaceBuilder.getSrcIps());
+      headerSpaceBuilder.setSrcIps(AclIpSpace.union(ipSpacesBuilder.build()));
+    } else {
+      headerSpaceBuilder.setSrcIps(AclIpSpace.union(ipSpaceReference));
     }
-    headerSpaceBuilder.setSrcIps(AclIpSpace.union(ipSpacesBuilder.build()));
   }
 }
