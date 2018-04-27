@@ -29,7 +29,7 @@ import org.batfish.symbolic.Protocol;
  */
 public class BDDRoute implements IDeepCopy<BDDRoute> {
 
-  static BDDFactory factory;
+  public static BDDFactory factory;
 
   private static List<Protocol> allProtos;
 
@@ -105,7 +105,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded); // allow for temporary variables
     }
-    _numVars = factory.varNum();
+    _numVars = factory.varNum() / 2;
 
     _bitNames = new HashMap<>();
 
@@ -213,7 +213,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   public BDD getTemporary(BDD var) {
-    return factory.ithVar(2 * var.var());
+    return factory.ithVar(var.var() + _numVars);
   }
 
   /*
@@ -227,7 +227,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   /*
    * Converts a BDD to the graphviz DOT format for debugging.
    */
-  String dot(BDD bdd) {
+  public String dot(BDD bdd) {
     StringBuilder sb = new StringBuilder();
     sb.append("digraph G {\n");
     sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
@@ -410,10 +410,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
 
     if (_config.getKeepCommunities()) {
-      getCommunities().forEach((cvar, bdd1) -> {
-        BDD bdd2 = other.getCommunities().get(cvar);
-        bdd1.orWith(bdd2);
-      });
+      getCommunities()
+          .forEach(
+              (cvar, bdd1) -> {
+                BDD bdd2 = other.getCommunities().get(cvar);
+                bdd1.orWith(bdd2);
+              });
     }
   }
 

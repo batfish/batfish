@@ -574,7 +574,8 @@ class TransferBDD {
         if (p.getData().getConfig().getKeepLp()) {
           SetLocalPreference slp = (SetLocalPreference) stmt;
           IntExpr ie = slp.getLocalPreference();
-          BDDInteger newValue = applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
+          BDDInteger newValue =
+              applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
           newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
           p.getData().setLocalPref(newValue);
         }
@@ -648,7 +649,8 @@ class TransferBDD {
           Integer prependCost = prependLength(pap.getExpr());
           p.indent().debug("Cost: " + prependCost);
           BDDInteger met = p.getData().getMetric();
-          BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
+          BDDInteger newValue =
+              met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
           newValue = ite(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
           p.getData().setMetric(newValue);
         }
@@ -761,37 +763,38 @@ class TransferBDD {
     BDDInteger x;
     BDDInteger y;
 
-    // update integer values based on condition
-    // x = r1.getPrefixLength();
-    // y = r2.getPrefixLength();
-    // ret.getPrefixLength().setValue(ite(guard, x, y));
+    if (_config.getKeepAd()) {
+      x = r1.getAdminDist();
+      y = r2.getAdminDist();
+      ret.getAdminDist().setValue(ite(guard, x, y));
+    }
 
-    // x = r1.getIp();
-    // y = r2.getIp();
-    // ret.getIp().setValue(ite(guard, x, y));
+    if (_config.getKeepLp()) {
+      x = r1.getLocalPref();
+      y = r2.getLocalPref();
+      ret.getLocalPref().setValue(ite(guard, x, y));
+    }
 
-    x = r1.getAdminDist();
-    y = r2.getAdminDist();
-    ret.getAdminDist().setValue(ite(guard, x, y));
+    if (_config.getKeepMetric()) {
+      x = r1.getMetric();
+      y = r2.getMetric();
+      ret.getMetric().setValue(ite(guard, x, y));
+    }
 
-    x = r1.getLocalPref();
-    y = r2.getLocalPref();
-    ret.getLocalPref().setValue(ite(guard, x, y));
+    if (_config.getKeepMed()) {
+      x = r1.getMed();
+      y = r2.getMed();
+      ret.getMed().setValue(ite(guard, x, y));
+    }
 
-    x = r1.getMetric();
-    y = r2.getMetric();
-    ret.getMetric().setValue(ite(guard, x, y));
-
-    x = r1.getMed();
-    y = r2.getMed();
-    ret.getMed().setValue(ite(guard, x, y));
-
-    r1.getCommunities()
-        .forEach(
-            (c, var1) -> {
-              BDD var2 = r2.getCommunities().get(c);
-              ret.getCommunities().put(c, ite(guard, var1, var2));
-            });
+    if (_config.getKeepCommunities()) {
+      r1.getCommunities()
+          .forEach(
+              (c, var1) -> {
+                BDD var2 = r2.getCommunities().get(c);
+                ret.getCommunities().put(c, ite(guard, var1, var2));
+              });
+    }
 
     // BDDInteger i =
     //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
@@ -953,16 +956,28 @@ class TransferBDD {
    */
   private BDDRoute zeroedRecord() {
     BDDRoute rec = new BDDRoute(_config, _comms);
-    rec.getMetric().setValue(0);
-    rec.getLocalPref().setValue(0);
-    rec.getAdminDist().setValue(0);
-    rec.getPrefixLength().setValue(0);
-    rec.getMed().setValue(0);
-    rec.getPrefix().setValue(0);
-    for (CommunityVar comm : _comms) {
-      rec.getCommunities().put(comm, factory.zero());
+    if (_config.getKeepMetric()) {
+      rec.getMetric().setValue(0);
     }
-    rec.getProtocolHistory().getInteger().setValue(0);
+    if (_config.getKeepLp()) {
+      rec.getLocalPref().setValue(0);
+    }
+    if (_config.getKeepAd()) {
+      rec.getAdminDist().setValue(0);
+    }
+    if (_config.getKeepMed()) {
+      rec.getMed().setValue(0);
+    }
+    if (_config.getKeepCommunities()) {
+      for (CommunityVar comm : _comms) {
+        rec.getCommunities().put(comm, factory.zero());
+      }
+    }
+    if (_config.getKeepHistory()) {
+      rec.getProtocolHistory().getInteger().setValue(0);
+    }
+    rec.getPrefixLength().setValue(0);
+    rec.getPrefix().setValue(0);
     return rec;
   }
 

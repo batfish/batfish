@@ -114,7 +114,7 @@ public class Roles {
       for (GraphEdge ge : ges) {
         String s = ge.toString();
 
-        BDDRoute x1 = _network.getImportBgpPolicies().get(ge);
+        BDDRoute x1 = _network.getImportBgpPolicies().get(ge).getFirst();
         if (x1 == null) {
           importBgpNull.add(s);
         } else {
@@ -123,7 +123,7 @@ public class Roles {
           ec.add(s);
         }
 
-        BDDRoute x2 = _network.getExportBgpPolicies().get(ge);
+        BDDRoute x2 = _network.getExportBgpPolicies().get(ge).getFirst();
         if (x2 == null) {
           exportBgpNull.add(s);
         } else {
