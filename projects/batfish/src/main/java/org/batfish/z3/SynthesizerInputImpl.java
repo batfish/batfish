@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
@@ -158,72 +159,73 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return new Builder();
   }
 
-  private final Map<String, Map<String, List<LineAction>>> _aclActions;
+  private final @Nonnull Map<String, Map<String, List<LineAction>>> _aclActions;
 
-  private final Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
+  private final @Nonnull Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
 
-  private final Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
+  private final @Nonnull Map<
+          String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       _arpTrueEdge;
 
-  private final Map<String, Configuration> _configurations;
+  private final @Nonnull Map<String, Configuration> _configurations;
 
-  private final Map<String, Set<String>> _disabledAcls;
+  private final @Nonnull Map<String, Set<String>> _disabledAcls;
 
-  private final Map<String, Set<String>> _disabledInterfaces;
+  private final @Nonnull Map<String, Set<String>> _disabledInterfaces;
 
-  private final Set<String> _disabledNodes;
+  private final @Nonnull Set<String> _disabledNodes;
 
-  private final Map<String, Set<String>> _disabledVrfs;
+  private final @Nonnull Map<String, Set<String>> _disabledVrfs;
 
-  private final Set<Edge> _edges;
+  private final @Nonnull Set<Edge> _edges;
 
-  private final Map<String, Map<String, IpAccessList>> _enabledAcls;
+  private final @Nonnull Map<String, Map<String, IpAccessList>> _enabledAcls;
 
-  private final Set<Edge> _enabledEdges;
+  private final @Nonnull Set<Edge> _enabledEdges;
 
-  private final Map<String, Set<String>> _enabledInterfaces;
+  private final @Nonnull Map<String, Set<String>> _enabledInterfaces;
 
-  private final Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
+  private final @Nonnull Map<String, Map<String, Set<String>>> _enabledInterfacesByNodeVrf;
 
-  private final Set<String> _enabledNodes;
+  private final @Nonnull Set<String> _enabledNodes;
 
-  private final Map<String, Set<String>> _enabledVrfs;
+  private final @Nonnull Map<String, Set<String>> _enabledVrfs;
 
-  private final Map<String, Map<String, String>> _incomingAcls;
+  private final @Nonnull Map<String, Map<String, String>> _incomingAcls;
 
-  private final Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
+  private final @Nonnull Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
 
-  private final Map<String, Set<Ip>> _ipsByHostname;
+  private final @Nonnull Map<String, Set<Ip>> _ipsByHostname;
 
-  private final Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
+  private final @Nonnull Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
 
-  private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
+  private final @Nonnull Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
-  private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+  private final @Nonnull Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
-  private final Map<String, List<String>> _nodeInterfaces;
+  private final @Nonnull Map<String, List<String>> _nodeInterfaces;
 
-  private final Set<String> _nodesWithSrcInterfaceConstraints;
+  private final @Nonnull Set<String> _nodesWithSrcInterfaceConstraints;
 
-  private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
+  private final @Nonnull Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
-  private final Map<String, Map<String, String>> _outgoingAcls;
+  private final @Nonnull Map<String, Map<String, String>> _outgoingAcls;
 
-  private final Map<String, Map<String, BooleanExpr>> _routableIps;
+  private final @Nonnull Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
 
-  private final IpSpace _specializationIpSpace;
+  private final @Nonnull IpSpace _specializationIpSpace;
 
-  private final Field _sourceInterfaceField;
+  private final @Nonnull Field _sourceInterfaceField;
 
-  private final Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
+  private final @Nonnull Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
 
-  private final Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
+  private final @Nonnull Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
-  private final Map<String, Set<String>> _topologyInterfaces;
+  private final @Nonnull Map<String, Set<String>> _topologyInterfaces;
 
-  private final Set<Type> _vectorizedParameters;
+  private final @Nonnull Set<Type> _vectorizedParameters;
 
   public SynthesizerInputImpl(
       ForwardingAnalysis forwardingAnalysis,
@@ -244,7 +246,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         toImmutableMap(configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
     _specializationIpSpace =
         specialize
-            ? AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps())
+            ? CommonUtil.nonNullOrElse(
+                AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps()),
+                UniverseIpSpace.INSTANCE)
             : UniverseIpSpace.INSTANCE;
     _ipSpaceSpecializers =
         toImmutableMap(
