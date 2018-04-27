@@ -161,8 +161,10 @@ public class NodJobChunkingTest {
                     _dataPlane.getFibs(),
                     new Topology(_dataPlane.getTopologyEdges())),
                 new HeaderSpace(),
+                ImmutableSortedSet.of(),
                 true,
-                false));
+                false,
+                ImmutableSortedSet.of()));
   }
 
   private NodJob getNodJob() {

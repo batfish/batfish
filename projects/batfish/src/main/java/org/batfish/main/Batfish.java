@@ -4049,7 +4049,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             dataPlane,
             loadForwardingAnalysis(configurations, dataPlane),
             headerSpace,
-            reachabilitySettings.getSpecialize());
+            nonTransitNodes,
+            reachabilitySettings.getSpecialize(),
+            transitNodes);
 
     // build query jobs
     List<NodJob> jobs =
@@ -4201,7 +4203,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlane dataPlane = loadDataPlane();
     ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations, dataPlane);
     return synthesizeDataPlane(
-        configurations, dataPlane, forwardingAnalysis, new HeaderSpace(), false);
+        configurations,
+        dataPlane,
+        forwardingAnalysis,
+        new HeaderSpace(),
+        ImmutableSet.of(),
+        false,
+        ImmutableSet.of());
   }
 
   @Nonnull
@@ -4210,7 +4218,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
-      boolean specialize) {
+      Set<String> nonTransitNodes,
+      boolean specialize,
+      Set<String> transitNodes) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4223,8 +4233,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 dataPlane,
                 forwardingAnalysis,
                 headerSpace,
+                nonTransitNodes,
                 _settings.getSimplify(),
-                specialize));
+                specialize,
+                transitNodes));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4244,16 +4256,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
+      Set<String> nonTransitNodes,
       boolean simplify,
-      boolean specialize) {
+      boolean specialize,
+      Set<String> transitNodes) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
-        .setHeaderSpace(headerSpace)
         .setForwardingAnalysis(forwardingAnalysis)
+        .setHeaderSpace(headerSpace)
+        .setNonTransitNodes(nonTransitNodes)
         .setSimplify(simplify)
         .setSpecialize(specialize)
         .setTopology(topology)
+        .setTransitNodes(transitNodes)
         .build();
   }
 
