@@ -505,7 +505,7 @@ public class FlatJuniperGrammarTest {
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
 
-    IpAccessList aclTrustCombinedOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
 
     /*
@@ -523,7 +523,7 @@ public class FlatJuniperGrammarTest {
         c.getIpAccessLists().keySet(),
         containsInAnyOrder(
             ACL_NAME_GLOBAL_POLICY,
-            aclTrustCombinedOut.getName(),
+            aclTrustOut.getName(),
             aclUntrustOut.getName(),
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
@@ -580,7 +580,7 @@ public class FlatJuniperGrammarTest {
         aclUntrustOut,
         accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclTrustCombinedOut,
+        aclTrustOut,
         accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
