@@ -63,6 +63,8 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   public abstract Set<BgpAdvertisement> getAdvertisements();
 
+  public abstract FlowProcessor getFlowProcessor();
+
   public abstract List<Flow> getHistoryFlows(DataPlane dataPlane);
 
   public abstract List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane);
