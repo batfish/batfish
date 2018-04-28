@@ -21,6 +21,7 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.IbgpTopology;
+import org.batfish.dataplane.TracerouteEngineImpl;
 
 @AutoService(Plugin.class)
 public class BdpDataPlanePlugin extends DataPlanePlugin {
@@ -145,7 +146,8 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   @Override
   public void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
     BdpDataPlane dp = (BdpDataPlane) dataPlane;
-    _flowTraces.put(dp, _engine.processFlows(dp, flows, ignoreAcls));
+    _flowTraces.put(
+        dp, TracerouteEngineImpl.getInstance().processFlows(dp, flows, dp.getFibs(), ignoreAcls));
   }
 
   @Override
