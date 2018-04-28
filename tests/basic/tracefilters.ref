@@ -27,6 +27,7 @@
     "rows" : [
       {
         "node" : {
+          "id" : "node-host2",
           "name" : "host2"
         },
         "filterName" : "filter::OUTPUT",
@@ -72,7 +73,7 @@
           "fragmentOffset" : 0,
           "icmpCode" : 255,
           "icmpVar" : 255,
-          "ingressNode" : "host1",
+          "ingressNode" : "host2",
           "ingressVrf" : "default",
           "ipProtocol" : "IP",
           "packetLength" : 0,
@@ -95,6 +96,7 @@
       },
       {
         "node" : {
+          "id" : "node-host1",
           "name" : "host1"
         },
         "filterName" : "filter::FORWARD",
@@ -129,6 +131,7 @@
       },
       {
         "node" : {
+          "id" : "node-host1",
           "name" : "host1"
         },
         "filterName" : "filter::INPUT",
@@ -197,6 +200,7 @@
       },
       {
         "node" : {
+          "id" : "node-host2",
           "name" : "host2"
         },
         "filterName" : "filter::INPUT",

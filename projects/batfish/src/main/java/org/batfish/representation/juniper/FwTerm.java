@@ -1,50 +1,50 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class FwTerm implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final Set<FwFromApplication> _fromApplications;
+  private final List<FwFromApplication> _fromApplications;
 
-  private final Set<FwFromHostProtocol> _fromHostProtocols;
+  private final List<FwFromHostProtocol> _fromHostProtocols;
 
-  private final Set<FwFromHostService> _fromHostServices;
+  private final List<FwFromHostService> _fromHostServices;
 
-  private final Set<FwFrom> _froms;
+  private final List<FwFrom> _froms;
 
   private boolean _ipv6;
 
   private final String _name;
 
-  private final Set<FwThen> _thens;
+  private final List<FwThen> _thens;
 
   public FwTerm(String name) {
-    _froms = new HashSet<>();
-    _fromApplications = new HashSet<>();
-    _fromHostProtocols = new HashSet<>();
-    _fromHostServices = new HashSet<>();
+    _froms = new ArrayList<>();
+    _fromApplications = new ArrayList<>();
+    _fromHostProtocols = new ArrayList<>();
+    _fromHostServices = new ArrayList<>();
     _name = name;
-    _thens = new HashSet<>();
+    _thens = new ArrayList<>();
   }
 
-  public Set<FwFromApplication> getFromApplications() {
+  public List<FwFromApplication> getFromApplications() {
     return _fromApplications;
   }
 
-  public Set<FwFromHostProtocol> getFromHostProtocols() {
+  public List<FwFromHostProtocol> getFromHostProtocols() {
     return _fromHostProtocols;
   }
 
-  public Set<FwFromHostService> getFromHostServices() {
+  public List<FwFromHostService> getFromHostServices() {
     return _fromHostServices;
   }
 
-  public Set<FwFrom> getFroms() {
+  public List<FwFrom> getFroms() {
     return _froms;
   }
 
@@ -56,7 +56,7 @@ public final class FwTerm implements Serializable {
     return _name;
   }
 
-  public Set<FwThen> getThens() {
+  public List<FwThen> getThens() {
     return _thens;
   }
 

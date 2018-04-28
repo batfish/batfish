@@ -58,6 +58,7 @@ sy_null
       | ALLOW_V4MAPPED_PACKETS
       | ARP
       | AUTHENTICATION_ORDER
+      | AUTO_SNAPSHOT
       | BACKUP_ROUTER
       | COMMIT
       | COMPRESS_CONFIGURATION_FILES
@@ -80,6 +81,7 @@ sy_null
       | SAVED_CORE_FILES
       | SCRIPTS
       | SERVICES
+      | STATIC_HOST_MAPPING
       | SWITCHOVER_ON_ROUTING_CRASH
       | TIME_ZONE
    ) null_filler
@@ -168,6 +170,7 @@ sysh_null
       | KERNEL
       | LOG_PREFIX
       | MATCH
+      | PORT
       | SOURCE_ADDRESS
       | USER
    ) null_filler

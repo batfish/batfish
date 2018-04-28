@@ -48,7 +48,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
   public Multiset<BgpSessionInfo> rawAnswer(BgpSessionStatusQuestion question) {
     Multiset<BgpSessionInfo> sessions = HashMultiset.create();
-
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
     Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);

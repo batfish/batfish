@@ -9,13 +9,16 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.Field;
 import org.batfish.z3.SynthesizerInput;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
-import org.batfish.z3.expr.HeaderSpaceMatchExpr;
+import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.IpSpaceMatchExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
@@ -64,6 +67,12 @@ public class DefaultTransitionGenerator implements StateVisitor {
    * interface (or we no longer care which interface was the source).
    */
   private static final int NO_SOURCE_INTERFACE = 0;
+
+  public static final IntExpr NOT_TRANSITED = new LitIntExpr(0, 1);
+
+  public static final IntExpr TRANSITED = new LitIntExpr(1, 1);
+
+  public static final Field TRANSITED_TRANSIT_NODES_FIELD = new Field("TRANSITED_TRANSIT_NODE", 1);
 
   public static List<RuleStatement> generateTransitions(SynthesizerInput input, Set<State> states) {
     DefaultTransitionGenerator visitor = new DefaultTransitionGenerator(input);
@@ -335,13 +344,19 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .map(
             hostname ->
                 new BasicRuleStatement(
-                    HeaderSpaceMatchExpr.matchDstIp(
-                        _input
-                            .getIpsByHostname()
-                            .get(hostname)
-                            .stream()
-                            .map(IpWildcard::new)
-                            .collect(ImmutableSet.toImmutableSet())),
+                    new IpSpaceMatchExpr(
+                            IpWildcardSetIpSpace.builder()
+                                .including(
+                                    _input
+                                        .getIpsByHostname()
+                                        .get(hostname)
+                                        .stream()
+                                        .map(IpWildcard::new)
+                                        .collect(ImmutableSet.toImmutableSet()))
+                                .build(),
+                            _input.getNamedIpSpaces().get(hostname),
+                            Field.DST_IP)
+                        .getExpr(),
                     ImmutableSet.of(new PostIn(hostname)),
                     new NodeAccept(hostname)))
         .forEach(_rules::add);
@@ -546,11 +561,25 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .getValue()
                   .stream()
                   .map(
-                      vrfName ->
-                          new BasicRuleStatement(
-                              noSrcInterfaceConstraint(),
-                              new OriginateVrf(hostname, vrfName),
-                              new Originate(hostname)));
+                      vrfName -> {
+                        ImmutableList.Builder<BooleanExpr> preconditionsBuilder =
+                            ImmutableList.builder();
+                        if (!_input.getTransitNodes().isEmpty()) {
+                          preconditionsBuilder.add(transitNodesNotTransitedConstraint());
+                        }
+                        preconditionsBuilder.add(noSrcInterfaceConstraint());
+
+                        List<BooleanExpr> preconditions = preconditionsBuilder.build();
+
+                        return new BasicRuleStatement(
+                            preconditions.isEmpty()
+                                ? TrueExpr.INSTANCE
+                                : preconditions.size() == 1
+                                    ? preconditions.get(0)
+                                    : new AndExpr(preconditionsBuilder.build()),
+                            new OriginateVrf(hostname, vrfName),
+                            new Originate(hostname));
+                      });
             })
         .forEach(_rules::add);
   }
@@ -636,7 +665,15 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       enabledInterfacesByVrfEntry -> {
                         String vrf = enabledInterfacesByVrfEntry.getKey();
                         return new BasicRuleStatement(
-                            new OriginateVrf(hostname, vrf), new PostInVrf(hostname, vrf));
+                            /*
+                             * TODO probably also need to set src interface constraint as in
+                             * rule for Originate.
+                             */
+                            _input.getTransitNodes().isEmpty()
+                                ? TrueExpr.INSTANCE
+                                : transitNodesNotTransitedConstraint(),
+                            new OriginateVrf(hostname, vrf),
+                            new PostInVrf(hostname, vrf));
                       });
             })
         .forEach(_rules::add);
@@ -675,6 +712,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
     _input
         .getEnabledEdges()
         .stream()
+        /*
+         * Don't generate PostOutEdge rules edges where node1 is a nonTransitNode, because
+         * PostOutEdge is where the node1 becomes transited.
+         */
+        .filter(edge -> !_input.getNonTransitNodes().contains(edge.getNode1()))
         .map(
             edge -> {
               String node1 = edge.getNode1();
@@ -688,16 +730,34 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       : ImmutableSet.of(
                           new AclPermit(node1, outAcl),
                           new PreOutEdgePostNat(node1, iface1, node2, iface2));
-              boolean nodeHasSrcInterfaceConstraint =
-                  _input.getNodesWithSrcInterfaceConstraints().contains(node1);
+              ImmutableList.Builder<BooleanExpr> preconditionsBuilder = ImmutableList.builder();
+
+              /* If we set the source interface field, reset it now */
+              if (_input.getNodesWithSrcInterfaceConstraints().contains(node1)) {
+                preconditionsBuilder.add(
+                    new EqExpr(
+                        new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+                        new LitIntExpr(
+                            NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize())));
+              }
+
+              /* If node1 is a transit node, set its flag */
+              if (_input.getTransitNodes().contains(node1)) {
+                preconditionsBuilder.add(
+                    new EqExpr(
+                        new TransformedVarIntExpr(
+                            DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+                        TRANSITED));
+              }
+
+              List<BooleanExpr> preconditions = preconditionsBuilder.build();
+
               return new BasicRuleStatement(
-                  /* If we set the source interface field, reset it now */
-                  nodeHasSrcInterfaceConstraint
-                      ? new EqExpr(
-                          new TransformedVarIntExpr(_input.getSourceInterfaceField()),
-                          new LitIntExpr(
-                              NO_SOURCE_INTERFACE, _input.getSourceInterfaceField().getSize()))
-                      : TrueExpr.INSTANCE,
+                  preconditions.isEmpty()
+                      ? TrueExpr.INSTANCE
+                      : preconditions.size() == 1
+                          ? preconditions.get(0)
+                          : new AndExpr(preconditions),
                   aclStates,
                   new PostOutEdge(node1, iface1, node2, iface2));
             })
@@ -735,11 +795,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
     return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
   }
 
-  private BooleanExpr transformSrcInterface(String node, String iface) {
-    int id = _input.getNodeInterfaceId(node, iface);
-    Field srcInterface = _input.getSourceInterfaceField();
+  private BooleanExpr transitNodesNotTransitedConstraint() {
     return new EqExpr(
-        new TransformedVarIntExpr(srcInterface), new LitIntExpr(id, srcInterface.getSize()));
+        new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD), NOT_TRANSITED);
   }
 
   @Override
@@ -754,16 +812,20 @@ public class DefaultTransitionGenerator implements StateVisitor {
               String hostname = ipsByHostnameEntry.getKey();
               BooleanExpr ipForeignToCurrentNode =
                   new NotExpr(
-                      HeaderSpaceMatchExpr.matchDstIp(
-                          ipsByHostnameEntry
-                              .getValue()
-                              .stream()
-                              .map(IpWildcard::new)
-                              .collect(ImmutableSet.toImmutableSet())));
+                      new IpSpaceMatchExpr(
+                              IpWildcardSetIpSpace.builder()
+                                  .including(
+                                      ipsByHostnameEntry
+                                          .getValue()
+                                          .stream()
+                                          .map(IpWildcard::new)
+                                          .collect(ImmutableSet.toImmutableSet()))
+                                  .build(),
+                              _input.getNamedIpSpaces().get(hostname),
+                              Field.DST_IP)
+                          .getExpr());
               return new BasicRuleStatement(
-                  ipForeignToCurrentNode,
-                  ImmutableSet.of(new PostIn(hostname)),
-                  new PreOut(hostname));
+                  ipForeignToCurrentNode, new PostIn(hostname), new PreOut(hostname));
             })
         .forEach(_rules::add);
   }

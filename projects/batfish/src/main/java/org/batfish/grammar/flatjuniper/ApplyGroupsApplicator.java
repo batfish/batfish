@@ -46,6 +46,13 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
     _w = warnings;
   }
 
+  private String applyGroupsExceptionMessage(
+      HierarchyPath currentPath, String groupName, Throwable e) {
+    return String.format(
+        "Exception processing apply-groups statement at %s with group '%s': %s: caused by: %s",
+        pathString(), groupName, e.getMessage(), ExceptionUtils.getStackTrace(e));
+  }
+
   @Override
   public void enterApply_groups(Apply_groupsContext ctx) {
     if (_inGroup) {
@@ -58,35 +65,16 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
       int insertionIndex = _newConfigurationLines.indexOf(_currentSetLine);
       _newConfigurationLines.addAll(insertionIndex, applyGroupsLines);
     } catch (PartialGroupMatchException e) {
-      String message =
-          "Exception processing apply-groups statement at path: \""
-              + _currentPath.pathString()
-              + "\" with group \""
-              + groupName
-              + "\": "
-              + e.getMessage()
-              + ": caused by: "
-              + ExceptionUtils.getStackTrace(e);
-      _w.pedantic(message);
+      _w.pedantic(applyGroupsExceptionMessage(_currentPath, groupName, e));
     } catch (UndefinedGroupBatfishException e) {
       String message =
-          "apply-groups statement at path: \""
-              + _currentPath.pathString()
-              + "\" refers to non-existent group \""
-              + groupName
-              + "\n";
+          String.format(
+              "apply-groups statement at %s refers to non-existent group: '%s'\n",
+              pathString(), groupName);
+
       _w.redFlag(message);
     } catch (BatfishException e) {
-      String message =
-          "Exception processing apply-groups statement at path: \""
-              + _currentPath.pathString()
-              + "\" with group \""
-              + groupName
-              + "\": "
-              + e.getMessage()
-              + ": caused by: "
-              + ExceptionUtils.getStackTrace(e);
-      _w.redFlag(message);
+      _w.redFlag(applyGroupsExceptionMessage(_currentPath, groupName, e));
     }
     _newConfigurationLines.remove(_currentSetLine);
     _changed = true;
@@ -164,6 +152,13 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
 
   public boolean getChanged() {
     return _changed;
+  }
+
+  private String pathString() {
+    String currentPathString = _currentPath.pathString();
+    return currentPathString.isEmpty()
+        ? "top level"
+        : String.format("path: '%s'", currentPathString);
   }
 
   @Override

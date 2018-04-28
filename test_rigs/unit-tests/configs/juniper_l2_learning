@@ -1,0 +1,6 @@
+#
+set system host-name juniper_l2_learning
+#
+set protocols l2-learning global-mac-table-aging-time 300
+#
+

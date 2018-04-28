@@ -2,6 +2,7 @@
 #
 set system host-name juniper_routing_options
 #
+set routing-options aggregate route 10.0.0.0/8 as-path aggregator 65500 10.0.0.1
 set routing-options forwarding-table no-ecmp-fast-reroute
 
 #

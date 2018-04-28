@@ -109,12 +109,12 @@ public class BDDNetwork {
 
         // Incoming ACL
         if (in != null) {
-          BDDAcl x = BDDAcl.create(conf, in, true);
+          BDDAcl x = BDDAcl.create(in);
           _inAcls.put(ge, x);
         }
         // Outgoing ACL
         if (out != null) {
-          BDDAcl x = BDDAcl.create(conf, out, true);
+          BDDAcl x = BDDAcl.create(out);
           _outAcls.put(ge, x);
         }
       }

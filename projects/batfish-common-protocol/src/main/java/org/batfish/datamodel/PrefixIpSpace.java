@@ -3,14 +3,15 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import java.util.Map;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class PrefixIpSpace extends IpSpace {
 
+  private static final String PROP_PREFIX = "prefix";
+
   /** */
   private static final long serialVersionUID = 1L;
-
-  private static final String PROP_PREFIX = "prefix";
 
   private final Prefix _prefix;
 
@@ -38,7 +39,7 @@ public class PrefixIpSpace extends IpSpace {
   }
 
   @Override
-  public boolean containsIp(Ip ip) {
+  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return _prefix.containsIp(ip);
   }
 
