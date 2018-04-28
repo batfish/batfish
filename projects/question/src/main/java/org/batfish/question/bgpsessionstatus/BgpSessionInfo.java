@@ -148,6 +148,20 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   }
 
   @Override
+  public int hashCode() {
+    return Objects.hash(
+        _nodeName,
+        _vrfName,
+        _remotePrefix,
+        _sessionType,
+        _onLoopback,
+        _configuredStatus,
+        _establishedNeighbors,
+        _localIp,
+        _remoteNode);
+  }
+
+  @Override
   public String toString() {
     return String.format(
         "%s vrf=%s remote=%s type=%s loopback=%s staticStatus=%s "
