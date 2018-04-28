@@ -1537,10 +1537,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
-    _configuration
-        .getGlobalAddressBooks()
-        .put("global", new AddressBook("global", new TreeMap<>()));
-    _globalAddressBook = _configuration.getGlobalAddressBooks().get("global");
+    _globalAddressBook =
+        _configuration
+            .getGlobalAddressBooks()
+            .computeIfAbsent("global", n -> new AddressBook(n, new TreeMap<>()));
   }
 
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {

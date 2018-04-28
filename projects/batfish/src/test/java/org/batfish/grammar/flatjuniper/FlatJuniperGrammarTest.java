@@ -67,7 +67,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
@@ -501,7 +500,6 @@ public class FlatJuniperGrammarTest {
     String interfaceNameUntrust = "ge-0/0/1.0";
     String trustedIpAddr = "1.2.3.5";
     String untrustedIpAddr = "1.2.4.5";
-    String specificSpaceName = "global~ADDR1";
 
     Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
     Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
@@ -536,12 +534,7 @@ public class FlatJuniperGrammarTest {
     /* Global policy should permit the specific src address defined in the config */
     assertThat(
         aclGlobalPolicyLine,
-        hasMatchCondition(
-            equalTo(
-                new MatchHeaderSpace(
-                    HeaderSpace.builder()
-                        .setSrcIps(new IpSpaceReference(specificSpaceName))
-                        .build()))));
+        hasMatchCondition(equalTo(new MatchHeaderSpace(HeaderSpace.builder().build()))));
     assertThat(aclGlobalPolicyLine, hasAction(equalTo(LineAction.ACCEPT)));
 
     List<IpAccessListLine> aclTrustSPLines =
@@ -580,6 +573,45 @@ public class FlatJuniperGrammarTest {
     assertThat(aclTrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
     assertThat(aclUntrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
     assertThat(aclUntrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
+
+    /* Flows in either direction should be permitted by the global policy */
+    assertThat(
+        aclUntrustOut,
+        accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclTrustOut,
+        accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testFirewallGlobalPolicyGlobalAddressBook() throws IOException {
+    /*
+     * Test address book behavior when used in a global policy
+     * i.e. a policy that does not have fromZone or toZone
+     */
+    Configuration c = parseConfig("firewall-global-policy-global-address-book");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+    String trustedSpaceName = "global~ADDR1";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    /* Make sure the global-address-book address is the only config ipSpace */
+    assertThat(c.getIpSpaces().keySet(), containsInAnyOrder(trustedSpaceName));
+
+    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+
+    // It should contain the specific address
+    assertThat(ipSpace, containsIp(new Ip(trustedIpAddr)));
+
+    // It should not contain the address that is not allowed
+    assertThat(ipSpace, not(containsIp(new Ip(untrustedIpAddr))));
 
     /* Flow from ADDR1 to untrust should be permitted */
     assertThat(
