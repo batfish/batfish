@@ -32,9 +32,9 @@ public class BDDNetwork {
 
   private PolicyQuotient _policyQuotient;
 
-  private Map<GraphEdge, TransferReturn> _exportBgpPolicies;
+  private Map<GraphEdge, BDDTransferFunction> _exportBgpPolicies;
 
-  private Map<GraphEdge, TransferReturn> _importBgpPolicies;
+  private Map<GraphEdge, BDDTransferFunction> _importBgpPolicies;
 
   private Map<GraphEdge, InterfacePolicy> _exportPolicyMap;
 
@@ -72,14 +72,14 @@ public class BDDNetwork {
   /*
    * Compute a BDD representation of a routing policy.
    */
-  private TransferReturn computeBDD(
+  private BDDTransferFunction computeBDD(
       Graph g, Configuration conf, RoutingPolicy pol, boolean ignoreNetworks) {
     Set<Prefix> networks = null;
     if (ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);
     }
-    TransferBDD t = new TransferBDD(g, conf, pol.getStatements(), _policyQuotient);
-    TransferResult<TransferReturn, BDD> result = t.compute(_config, networks);
+    TransferBuilder t = new TransferBuilder(g, conf, pol.getStatements(), _policyQuotient);
+    TransferResult<BDDTransferFunction, BDD> result = t.compute(_config, networks);
     return result.getReturnValue();
   }
 
@@ -101,13 +101,13 @@ public class BDDNetwork {
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         if (importBgp != null) {
-          TransferReturn rec = computeBDD(_graph, conf, importBgp, true);
+          BDDTransferFunction rec = computeBDD(_graph, conf, importBgp, true);
           _importBgpPolicies.put(ge, rec);
         }
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
         if (exportBgp != null) {
-          TransferReturn rec = computeBDD(_graph, conf, exportBgp, true);
+          BDDTransferFunction rec = computeBDD(_graph, conf, exportBgp, true);
           _exportBgpPolicies.put(ge, rec);
         }
 
@@ -137,8 +137,8 @@ public class BDDNetwork {
       List<GraphEdge> edges = entry.getValue();
       Configuration conf = _graph.getConfigurations().get(router);
       for (GraphEdge ge : edges) {
-        TransferReturn bgpIn = _importBgpPolicies.get(ge);
-        TransferReturn bgpOut = _exportBgpPolicies.get(ge);
+        BDDTransferFunction bgpIn = _importBgpPolicies.get(ge);
+        BDDTransferFunction bgpOut = _exportBgpPolicies.get(ge);
         BDDAcl aclIn = _inAcls.get(ge);
         BDDAcl aclOut = _outAcls.get(ge);
         Integer ospfCost = ge.getStart().getOspfCost();
@@ -160,11 +160,11 @@ public class BDDNetwork {
     }
   }
 
-  public Map<GraphEdge, TransferReturn> getExportBgpPolicies() {
+  public Map<GraphEdge, BDDTransferFunction> getExportBgpPolicies() {
     return _exportBgpPolicies;
   }
 
-  public Map<GraphEdge, TransferReturn> getImportBgpPolicies() {
+  public Map<GraphEdge, BDDTransferFunction> getImportBgpPolicies() {
     return _importBgpPolicies;
   }
 

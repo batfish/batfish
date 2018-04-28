@@ -2,20 +2,20 @@ package org.batfish.symbolic.interpreter;
 
 import java.util.function.Function;
 import net.sf.javabdd.BDD;
-import org.batfish.symbolic.bdd.TransferReturn;
+import org.batfish.symbolic.bdd.BDDTransferFunction;
 
 public class Transformer {
 
-  private TransferReturn _transfer;
+  private BDDTransferFunction _transfer;
 
   private Function<BDD, BDD> _function;
 
-  public Transformer(TransferReturn transfer, Function<BDD, BDD> function) {
+  public Transformer(BDDTransferFunction transfer, Function<BDD, BDD> function) {
     this._transfer = transfer;
     this._function = function;
   }
 
-  public TransferReturn getTransfer() {
+  public BDDTransferFunction getTransfer() {
     return _transfer;
   }
 

@@ -1,14 +1,16 @@
 package org.batfish.symbolic.interpreter;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
-import org.batfish.symbolic.bdd.TransferReturn;
+import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.collections.Table2;
 
 public class AtomOps {
@@ -89,10 +91,22 @@ public class AtomOps {
     return map;
   }
 
+  private static Map<BDD, BitSet> toBitSet(Map<BDD, Set<Integer>> input) {
+    Map<BDD, BitSet> ret = new HashMap<>();
+    for (Entry<BDD, Set<Integer>> e : input.entrySet()) {
+      BitSet b = new BitSet();
+      for (Integer i : e.getValue()) {
+        b.set(i);
+      }
+      ret.put(e.getKey(), b);
+    }
+    return ret;
+  }
+
   public static AtomicPredicates computeAtomicPredicates(List<BDD> atoms) {
     List<BDD> disjoint = new ArrayList<>(computeAtomicPredicatesAux(atoms));
     Map<BDD, Set<Integer>> map = computeMapping(atoms, disjoint);
-    return new AtomicPredicates(map, new Table2<>(), disjoint);
+    return new AtomicPredicates(toBitSet(map), new Table2<>(), disjoint);
   }
 
   public static AtomicPredicates computeAtomicPredicates(
@@ -101,7 +115,7 @@ public class AtomOps {
 
     Map<BDD, Set<Integer>> map = computeMapping(atoms, disjoint);
 
-    Table2<TransferReturn, BDD, Integer> intMap = new Table2<>();
+    Table2<BDDTransferFunction, BDD, Integer> intMap = new Table2<>();
     Set<BDD> allTransformed = new HashSet<>();
     for (Transformer t : transformers) {
       for (int j = 0; j < disjoint.size(); j++) {
@@ -113,12 +127,12 @@ public class AtomOps {
     }
 
     Map<BDD, Set<Integer>> tmap = computeMapping(new ArrayList<>(allTransformed), disjoint);
-    Table2<TransferReturn, Integer, Set<Integer>> transformMap = new Table2<>();
+    Table2<BDDTransferFunction, Integer, Set<Integer>> transformMap = new Table2<>();
     intMap.forEach(
         (tr, bdd, idx) -> {
           transformMap.put(tr, idx, tmap.get(bdd));
         });
 
-    return new AtomicPredicates(map, transformMap, disjoint);
+    return new AtomicPredicates(toBitSet(map), transformMap, disjoint);
   }
 }

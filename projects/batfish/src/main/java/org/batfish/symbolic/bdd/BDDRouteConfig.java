@@ -22,7 +22,7 @@ public class BDDRouteConfig {
       _keepOspfMetric = false;
       _keepMed = false;
       _keepLp = false;
-      _keepHistory = true;
+      _keepHistory = false;
       _keepCommunities = true;
       _keepMetric = false;
     } else {

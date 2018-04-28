@@ -230,8 +230,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public String dot(BDD bdd) {
     StringBuilder sb = new StringBuilder();
     sb.append("digraph G {\n");
-    sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
-    sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    if (!bdd.isOne()) {
+      sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    }
+    if (!bdd.isZero()) {
+      sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    }
     dotRec(sb, bdd, new HashSet<>());
     sb.append("}");
     return sb.toString();
