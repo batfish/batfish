@@ -4,13 +4,13 @@
     "metadata" : {
       "columnSchemas" : {
         "configuredStatus" : "String",
-        "establishedNeighbors" : "Integer",
-        "localIp" : "Ip",
         "node" : "Node",
         "onLoopback" : "Boolean",
         "remoteNode" : "Node",
         "remotePrefix" : "Prefix",
+        "localIp" : "Ip",
         "sessionType" : "String",
+        "establishedNeighbors" : "Integer",
         "vrfName" : "String"
       },
       "displayHints" : {
@@ -46,6 +46,7 @@
       }
     ],
     "summary" : {
+      "notes" : "Found 1 results",
       "numFailed" : 0,
       "numPassed" : 0,
       "numResults" : 1

@@ -3,6 +3,7 @@ package org.batfish.question.bgpsessionstatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -130,6 +131,23 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   }
 
   @Override
+  public boolean equals(Object o) {
+    if (o == null || !(o instanceof BgpSessionInfo)) {
+      return false;
+    }
+    BgpSessionInfo other = (BgpSessionInfo) o;
+    return Objects.equals(_nodeName, other._nodeName)
+        && Objects.equals(_vrfName, other._vrfName)
+        && Objects.equals(_remotePrefix, other._remotePrefix)
+        && Objects.equals(_sessionType, other._sessionType)
+        && Objects.equals(_onLoopback, other._onLoopback)
+        && Objects.equals(_configuredStatus, other._configuredStatus)
+        && Objects.equals(_establishedNeighbors, other._establishedNeighbors)
+        && Objects.equals(_localIp, other._localIp)
+        && Objects.equals(_remoteNode, other._remoteNode);
+  }
+
+  @Override
   public String toString() {
     return String.format(
         "%s vrf=%s remote=%s type=%s loopback=%s staticStatus=%s "
@@ -156,69 +174,54 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     private SessionType _sessionType;
     private String _vrfName;
 
-    public BgpSessionInfoBuilder(String _nodeName, String _vfrName, Prefix _remotePrefix) {
-      this._nodeName = _nodeName;
-      this._vrfName = _vfrName;
-      this._remotePrefix = _remotePrefix;
+    public BgpSessionInfoBuilder(String nodeName, String vfrName, Prefix remotePrefix) {
+      _nodeName = nodeName;
+      _vrfName = vfrName;
+      _remotePrefix = remotePrefix;
     }
 
-    public BgpSessionInfoBuilder with_configuredStatus(SessionStatus _configuredStatus) {
-      this._configuredStatus = _configuredStatus;
+    public BgpSessionInfoBuilder withConfiguredStatus(SessionStatus configuredStatus) {
+      _configuredStatus = configuredStatus;
       return this;
     }
 
-    public BgpSessionInfoBuilder with_establishedNeighbors(Integer _establishedNeighbors) {
-      this._establishedNeighbors = _establishedNeighbors;
+    public BgpSessionInfoBuilder withEstablishedNeighbors(Integer establishedNeighbors) {
+      _establishedNeighbors = establishedNeighbors;
       return this;
     }
 
-    public BgpSessionInfoBuilder with_nodeName(String _nodeName) {
-      this._nodeName = _nodeName;
+    public BgpSessionInfoBuilder withLocalIp(Ip localIp) {
+      _localIp = localIp;
       return this;
     }
 
-    public BgpSessionInfoBuilder with_localIp(Ip _localIp) {
-      this._localIp = _localIp;
+    public BgpSessionInfoBuilder withOnLoopback(Boolean onLoopback) {
+      _onLoopback = onLoopback;
       return this;
     }
 
-    public BgpSessionInfoBuilder with_onLoopback(Boolean _onLoopback) {
-      this._onLoopback = _onLoopback;
+    public BgpSessionInfoBuilder withRemoteNode(String remoteNode) {
+      _remoteNode = remoteNode;
       return this;
     }
 
-    public BgpSessionInfoBuilder with_remoteNode(String _remoteNode) {
-      this._remoteNode = _remoteNode;
-      return this;
-    }
-
-    public BgpSessionInfoBuilder with_remotePrefix(Prefix _remotePrefix) {
-      this._remotePrefix = _remotePrefix;
-      return this;
-    }
-
-    public BgpSessionInfoBuilder with_sessionType(SessionType _sessionType) {
-      this._sessionType = _sessionType;
-      return this;
-    }
-
-    public BgpSessionInfoBuilder with_vrfName(String _vrfName) {
-      this._vrfName = _vrfName;
+    public BgpSessionInfoBuilder withSessionType(SessionType sessionType) {
+      _sessionType = sessionType;
       return this;
     }
 
     public BgpSessionInfo build() {
       BgpSessionInfo bgpSessionInfo =
           new BgpSessionInfo(null, null, null, null, null, null, null, null, null);
-      bgpSessionInfo._vrfName = this._vrfName;
-      bgpSessionInfo._remoteNode = this._remoteNode;
-      bgpSessionInfo._sessionType = this._sessionType;
-      bgpSessionInfo._onLoopback = this._onLoopback;
-      bgpSessionInfo._configuredStatus = this._configuredStatus;
-      bgpSessionInfo._nodeName = this._nodeName;
-      bgpSessionInfo._establishedNeighbors = this._establishedNeighbors;
-      bgpSessionInfo._localIp = this._localIp;
-      bgpSessionInfo._remotePrefix = this._remotePrefix;
+      bgpSessionInfo._vrfName = _vrfName;
+      bgpSessionInfo._remoteNode = _remoteNode;
+      bgpSessionInfo._sessionType = _sessionType;
+      bgpSessionInfo._onLoopback = _onLoopback;
+      bgpSessionInfo._configuredStatus = _configuredStatus;
+      bgpSessionInfo._nodeName = _nodeName;
+      bgpSessionInfo._establishedNeighbors = _establishedNeighbors;
+      bgpSessionInfo._localIp = _localIp;
+      bgpSessionInfo._remotePrefix = _remotePrefix;
       return bgpSessionInfo;
     }
   }

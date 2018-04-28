@@ -23,15 +23,15 @@ import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
 public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
-  private static final String COL_CONFIGURED_STATUS = "configuredStatus";
-  private static final String COL_ESTABLISHED_NEIGHBORS = "establishedNeighbors";
-  private static final String COL_LOCAL_IP = "localIp";
-  private static final String COL_NODE = "node";
-  private static final String COL_ON_LOOPBACK = "onLoopback";
-  private static final String COL_REMOTE_NODE = "remoteNode";
-  private static final String COL_REMOTE_PREFIX = "remotePrefix";
-  private static final String COL_SESSION_TYPE = "sessionType";
-  private static final String COL_VRF_NAME = "vrfName";
+  public static final String COL_CONFIGURED_STATUS = "configuredStatus";
+  public static final String COL_ESTABLISHED_NEIGHBORS = "establishedNeighbors";
+  public static final String COL_LOCAL_IP = "localIp";
+  public static final String COL_NODE = "node";
+  public static final String COL_ON_LOOPBACK = "onLoopback";
+  public static final String COL_REMOTE_NODE = "remoteNode";
+  public static final String COL_REMOTE_PREFIX = "remotePrefix";
+  public static final String COL_SESSION_TYPE = "sessionType";
+  public static final String COL_VRF_NAME = "vrfName";
 
   @JsonCreator
   public BgpSessionStatusAnswerElement(
@@ -65,8 +65,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
       dhints = new DisplayHints();
       dhints.setTextDesc(
           String.format(
-              "On ${%s} session ${%s}:${%s} has configured status ${%s}"
-                  + " and established count ${%s}",
+              "On ${%s} session ${%s}:${%s} has configured status ${%s}.",
               COL_NODE,
               COL_VRF_NAME,
               COL_REMOTE_PREFIX,

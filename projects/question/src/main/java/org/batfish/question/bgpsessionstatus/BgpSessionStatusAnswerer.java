@@ -98,7 +98,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
       if (!question.matchesType(sessionType)) {
         continue;
       }
-      bsiBuilder.with_sessionType(sessionType);
+      bsiBuilder.withSessionType(sessionType);
       SessionStatus configuredStatus;
 
       Ip localIp = bgpNeighbor.getLocalIp();
@@ -107,8 +107,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
       } else if (localIp == null) {
         configuredStatus = SessionStatus.NO_LOCAL_IP;
       } else {
-        bsiBuilder.with_localIp(localIp);
-        bsiBuilder.with_onLoopback(
+        bsiBuilder.withLocalIp(localIp);
+        bsiBuilder.withOnLoopback(
             CommonUtil.isActiveLoopbackIp(localIp, configurations.get(hostname)));
 
         Ip remoteIp = bgpNeighbor.getAddress();
@@ -129,7 +129,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
           } else {
             BgpNeighbor remoteNeighbor =
                 configuredBgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
-            bsiBuilder.with_remoteNode(remoteNeighbor.getOwner().getHostname());
+            bsiBuilder.withRemoteNode(remoteNeighbor.getOwner().getHostname());
             configuredStatus = SessionStatus.UNIQUE_MATCH;
           }
         }
@@ -138,9 +138,9 @@ public class BgpSessionStatusAnswerer extends Answerer {
         continue;
       }
 
-      bsiBuilder.with_configuredStatus(configuredStatus);
+      bsiBuilder.withConfiguredStatus(configuredStatus);
 
-      bsiBuilder.with_establishedNeighbors(
+      bsiBuilder.withEstablishedNeighbors(
           establishedBgpTopology != null && establishedBgpTopology.nodes().contains(bgpNeighbor)
               ? establishedBgpTopology.inDegree(bgpNeighbor)
               : -1);
