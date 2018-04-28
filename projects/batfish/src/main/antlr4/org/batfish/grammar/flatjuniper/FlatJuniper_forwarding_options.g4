@@ -29,7 +29,8 @@ fo_helpers
 fo_null
 :
    (
-      ENHANCED_HASH_KEY
+      ANALYZER
+      | ENHANCED_HASH_KEY
       | FAMILY
       | HASH_KEY
       | LOAD_BALANCE
@@ -62,10 +63,10 @@ fod_group
 
 fod_null
 :
-    (
-        FORWARD_SNOOPED_CLIENTS
-    ) null_filler
-
+   (
+      FORWARD_SNOOPED_CLIENTS
+      | OVERRIDES
+   ) null_filler
 ;
 
 fod_server_group
@@ -145,7 +146,8 @@ s_forwarding_options
 :
    FORWARDING_OPTIONS
    (
-      fo_dhcp_relay
+      apply
+      | fo_dhcp_relay
       | fo_helpers
       | fo_null
    )

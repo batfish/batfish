@@ -45,9 +45,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.z3.expr.IpSpaceMatchExpr;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
+import org.batfish.z3.expr.visitors.IpSpaceBooleanExprTransformer;
 import org.batfish.z3.state.AclPermit;
 import org.junit.Before;
 import org.junit.Test;
@@ -186,7 +187,8 @@ public class SynthesizerInputImplTest {
     SynthesizerInput input =
         _inputBuilder.setConfigurations(ImmutableMap.of(c.getName(), c)).build();
     AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
-        new AclLineMatchExprToBooleanExpr(ImmutableMap.of(), null, ImmutableMap.of());
+        new AclLineMatchExprToBooleanExpr(
+            ImmutableMap.of(), ImmutableMap.of(), null, ImmutableMap.of());
 
     assertThat(
         input,
@@ -265,8 +267,10 @@ public class SynthesizerInputImplTest {
     String nextHopInterface2 = "nextHopInterface2";
     IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
     IpSpace ipSpace2 = Ip.MAX.toIpSpace();
-    IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
-    IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
+    BooleanExpr m1 =
+        ipSpace1.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
+    BooleanExpr m2 =
+        ipSpace2.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
     Edge edge1 =
         new Edge(srcNode.getHostname(), srcInterface.getName(), nextHop1, nextHopInterface1);
     Edge edge2 =
@@ -478,10 +482,12 @@ public class SynthesizerInputImplTest {
     Vrf vrf = _vb.setOwner(node).build();
     Interface iface1 = _ib.setOwner(node).setVrf(vrf).build();
     Interface iface2 = _ib.build();
-    IpSpace ipSpace1 = Ip.ZERO.toIpSpace();
-    IpSpace ipSpace2 = Ip.MAX.toIpSpace();
-    IpSpaceMatchExpr m1 = new IpSpaceMatchExpr(ipSpace1, false, true);
-    IpSpaceMatchExpr m2 = new IpSpaceMatchExpr(ipSpace2, false, true);
+    IpSpace srcIpSpace = Ip.ZERO.toIpSpace();
+    IpSpace dstIpSpace = Ip.MAX.toIpSpace();
+    BooleanExpr m1 =
+        srcIpSpace.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
+    BooleanExpr m2 =
+        dstIpSpace.accept(new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.DST_IP));
 
     SynthesizerInput inputWithoutDataPlane =
         _inputBuilder.setConfigurations(ImmutableMap.of(node.getName(), node)).build();
@@ -495,7 +501,7 @@ public class SynthesizerInputImplTest {
                             ImmutableMap.of(
                                 vrf.getName(),
                                 ImmutableMap.of(
-                                    iface1.getName(), ipSpace1, iface2.getName(), ipSpace2))))
+                                    iface1.getName(), srcIpSpace, iface2.getName(), dstIpSpace))))
                     .build())
             .setTopology(new Topology(ImmutableSortedSet.of()))
             .build();

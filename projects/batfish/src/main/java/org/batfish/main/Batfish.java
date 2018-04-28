@@ -540,13 +540,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             _settings.setQuestionPath(analysisQuestionPath);
             Answer currentAnswer;
             try (ActiveSpan analysisQuestionSpan =
-                GlobalTracer.get()
-                    .buildSpan(
-                        String.format(
-                            "Getting answer to question %s from analysis %s",
-                            questionName, analysisName))
-                    .startActive()) {
+                GlobalTracer.get().buildSpan("Getting answer to analysis question").startActive()) {
               assert analysisQuestionSpan != null; // make span not show up as unused
+              analysisQuestionSpan.setTag("analysis-name", analysisName);
               currentAnswer = answer();
             }
             // Ensuring that question was parsed successfully
@@ -597,6 +593,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.setStatus(AnswerStatus.FAILURE);
       answer.addAnswerElement(exception.getBatfishStackTrace());
       return answer;
+    }
+
+    if (GlobalTracer.get().activeSpan() != null) {
+      ActiveSpan activeSpan = GlobalTracer.get().activeSpan();
+      activeSpan
+          .setTag("container-name", getContainerName())
+          .setTag("testrig_name", getTestrigName());
+      if (question.getInstance() != null) {
+        activeSpan.setTag("question-name", question.getInstance().getInstanceName());
+      }
     }
 
     if (_settings.getDifferential()) {
@@ -745,7 +751,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
             }
             EarliestMoreGeneralReachableLineQuerySynthesizer query =
                 new EarliestMoreGeneralReachableLineQuerySynthesizer(
-                    line, toCheck, ipAccessList, c.getIpAccessLists(), nodeInterfaces);
+                    line,
+                    toCheck,
+                    ipAccessList,
+                    c.getIpSpaces(),
+                    c.getIpAccessLists(),
+                    nodeInterfaces);
             NodFirstUnsatJob<AclLine, Integer> job =
                 new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
             step2Jobs.add(job);
@@ -964,7 +975,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
     // Since compression mutates the configurations, we must clone them before that happens.
     // A simple way to do this is to create a deep clone of each entry using Java serialization.
-    _logger.info("Computing compressed dataplane");
+    _logger.info("Computing compressed dataplane\n");
     Map<String, Configuration> clonedConfigs =
         loadConfigurations()
             .entrySet()
@@ -1578,6 +1589,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _settings.getContainerDir().getFileName().toString();
   }
 
+  @Override
   public DataPlanePlugin getDataPlanePlugin() {
     DataPlanePlugin plugin = _dataPlanePlugins.get(_settings.getDataPlaneEngineName());
     if (plugin == null) {
@@ -2208,7 +2220,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
     Snapshot snapshot = getSnapshot();
-    _logger.debugf("Loading configurations for %s", snapshot);
+    _logger.debugf("Loading configurations for %s\n", snapshot);
     return loadConfigurations(snapshot);
   }
 
@@ -3608,8 +3620,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (_settings.getAnswer()) {
-      answer.append(answer());
-      action = true;
+      try (ActiveSpan questionSpan =
+          GlobalTracer.get().buildSpan("Getting answer to question").startActive()) {
+        assert questionSpan != null; // avoid unused warning
+        answer.append(answer());
+        action = true;
+      }
     }
 
     if (_settings.getAnalyze()) {
@@ -4044,7 +4060,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
             dataPlane,
             loadForwardingAnalysis(configurations, dataPlane),
             headerSpace,
-            reachabilitySettings.getSpecialize());
+            nonTransitNodes,
+            reachabilitySettings.getSpecialize(),
+            transitNodes);
 
     // build query jobs
     List<NodJob> jobs =
@@ -4196,7 +4214,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     DataPlane dataPlane = loadDataPlane();
     ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations, dataPlane);
     return synthesizeDataPlane(
-        configurations, dataPlane, forwardingAnalysis, new HeaderSpace(), false);
+        configurations,
+        dataPlane,
+        forwardingAnalysis,
+        new HeaderSpace(),
+        ImmutableSet.of(),
+        false,
+        ImmutableSet.of());
   }
 
   @Nonnull
@@ -4205,7 +4229,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
-      boolean specialize) {
+      Set<String> nonTransitNodes,
+      boolean specialize,
+      Set<String> transitNodes) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4218,8 +4244,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 dataPlane,
                 forwardingAnalysis,
                 headerSpace,
+                nonTransitNodes,
                 _settings.getSimplify(),
-                specialize));
+                specialize,
+                transitNodes));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4239,16 +4267,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
+      Set<String> nonTransitNodes,
       boolean simplify,
-      boolean specialize) {
+      boolean specialize,
+      Set<String> transitNodes) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
-        .setHeaderSpace(headerSpace)
         .setForwardingAnalysis(forwardingAnalysis)
+        .setHeaderSpace(headerSpace)
+        .setNonTransitNodes(nonTransitNodes)
         .setSimplify(simplify)
         .setSpecialize(specialize)
         .setTopology(topology)
+        .setTransitNodes(transitNodes)
         .build();
   }
 

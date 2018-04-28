@@ -24,7 +24,8 @@ public class InterfacesSpecifier {
 
   public enum Type {
     DESC,
-    NAME
+    NAME,
+    VRF
   }
 
   public static InterfacesSpecifier ALL = new InterfacesSpecifier(".*");
@@ -77,6 +78,8 @@ public class InterfacesSpecifier {
         return _regex.matcher(iface.getDescription()).matches();
       case NAME:
         return _regex.matcher(iface.getName()).matches();
+      case VRF:
+        return _regex.matcher(iface.getVrfName()).matches();
       default:
         throw new BatfishException("Unhandled InterfacesSpecifier type: " + _type);
     }

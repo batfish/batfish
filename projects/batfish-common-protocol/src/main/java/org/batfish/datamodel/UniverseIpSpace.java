@@ -1,14 +1,14 @@
 package org.batfish.datamodel;
 
-import javax.annotation.Nonnull;
+import java.util.Map;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class UniverseIpSpace extends IpSpace {
 
+  public static final UniverseIpSpace INSTANCE = new UniverseIpSpace();
+
   /** */
   private static final long serialVersionUID = 1L;
-
-  public static final UniverseIpSpace INSTANCE = new UniverseIpSpace();
 
   private UniverseIpSpace() {}
 
@@ -18,18 +18,23 @@ public class UniverseIpSpace extends IpSpace {
   }
 
   @Override
+  protected int compareSameClass(IpSpace o) {
+    return 0;
+  }
+
+  @Override
   public IpSpace complement() {
     return EmptyIpSpace.INSTANCE;
   }
 
   @Override
-  public boolean containsIp(@Nonnull Ip ip) {
+  public boolean containsIp(Ip ip, Map<String, IpSpace> namedIpSpaces) {
     return true;
   }
 
   @Override
-  public String toString() {
-    return "universe";
+  protected boolean exprEquals(Object o) {
+    return true;
   }
 
   @Override
@@ -38,12 +43,7 @@ public class UniverseIpSpace extends IpSpace {
   }
 
   @Override
-  protected int compareSameClass(IpSpace o) {
-    return 0;
-  }
-
-  @Override
-  protected boolean exprEquals(Object o) {
-    return true;
+  public String toString() {
+    return "universe";
   }
 }

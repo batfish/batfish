@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Accepts;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.HasLines;
 import org.batfish.datamodel.matchers.IpAccessListMatchersImpl.Rejects;
@@ -21,8 +22,9 @@ public final class IpAccessListMatchers {
   public static Accepts accepts(
       @Nonnull Flow flow,
       @Nullable String srcInterface,
-      @Nonnull Map<String, IpAccessList> availableAcls) {
-    return new Accepts(flow, srcInterface, availableAcls);
+      @Nonnull Map<String, IpAccessList> availableAcls,
+      @Nonnull Map<String, IpSpace> namedIpSpaces) {
+    return new Accepts(flow, srcInterface, availableAcls, namedIpSpaces);
   }
 
   /**
@@ -40,8 +42,9 @@ public final class IpAccessListMatchers {
   public static Rejects rejects(
       @Nonnull Flow flow,
       @Nullable String srcInterface,
-      @Nonnull Map<String, IpAccessList> availableAcls) {
-    return new Rejects(flow, srcInterface, availableAcls);
+      @Nonnull Map<String, IpAccessList> availableAcls,
+      @Nonnull Map<String, IpSpace> namedIpSpaces) {
+    return new Rejects(flow, srcInterface, availableAcls, namedIpSpaces);
   }
 
   private IpAccessListMatchers() {}

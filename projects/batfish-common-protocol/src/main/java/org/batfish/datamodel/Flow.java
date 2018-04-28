@@ -6,9 +6,6 @@ import java.io.Serializable;
 import org.batfish.common.BatfishException;
 
 public final class Flow implements Comparable<Flow>, Serializable {
-  /** */
-  private static final long serialVersionUID = 1L;
-
   public static class Builder {
 
     private Integer _dscp;
@@ -236,108 +233,134 @@ public final class Flow implements Comparable<Flow>, Serializable {
       return _tcpFlagsUrg;
     }
 
-    public void setDscp(Integer dscp) {
+    public Builder setDscp(Integer dscp) {
       _dscp = dscp;
+      return this;
     }
 
-    public void setDstIp(Ip dstIp) {
+    public Builder setDstIp(Ip dstIp) {
       _dstIp = dstIp;
+      return this;
     }
 
-    public void setDstPort(int dstPort) {
+    public Builder setDstPort(int dstPort) {
       _dstPort = dstPort;
+      return this;
     }
 
-    public void setDstPort(Integer dstPort) {
+    public Builder setDstPort(Integer dstPort) {
       _dstPort = dstPort;
+      return this;
     }
 
-    public void setEcn(Integer ecn) {
+    public Builder setEcn(Integer ecn) {
       _ecn = ecn;
+      return this;
     }
 
-    public void setFragmentOffset(int fragmentOffset) {
+    public Builder setFragmentOffset(int fragmentOffset) {
       _fragmentOffset = fragmentOffset;
+      return this;
     }
 
-    public void setIcmpCode(Integer icmpCode) {
+    public Builder setIcmpCode(Integer icmpCode) {
       _icmpCode = icmpCode;
+      return this;
     }
 
-    public void setIcmpType(Integer icmpType) {
+    public Builder setIcmpType(Integer icmpType) {
       _icmpType = icmpType;
+      return this;
     }
 
-    public void setIngressInterface(String ingressInterface) {
+    public Builder setIngressInterface(String ingressInterface) {
       _ingressInterface = ingressInterface;
+      return this;
     }
 
-    public void setIngressNode(String ingressNode) {
+    public Builder setIngressNode(String ingressNode) {
       _ingressNode = ingressNode;
+      return this;
     }
 
-    public void setIngressVrf(String ingressVrf) {
+    public Builder setIngressVrf(String ingressVrf) {
       _ingressVrf = ingressVrf;
+      return this;
     }
 
-    public void setIpProtocol(IpProtocol ipProtocol) {
+    public Builder setIpProtocol(IpProtocol ipProtocol) {
       _ipProtocol = ipProtocol;
+      return this;
     }
 
-    public void setPacketLength(Integer packetLength) {
+    public Builder setPacketLength(Integer packetLength) {
       _packetLength = packetLength;
+      return this;
     }
 
-    public void setSrcIp(Ip srcIp) {
+    public Builder setSrcIp(Ip srcIp) {
       _srcIp = srcIp;
+      return this;
     }
 
-    public void setSrcPort(int srcPort) {
+    public Builder setSrcPort(int srcPort) {
       _srcPort = srcPort;
+      return this;
     }
 
-    public void setSrcPort(Integer srcPort) {
+    public Builder setSrcPort(Integer srcPort) {
       _srcPort = srcPort;
+      return this;
     }
 
-    public void setState(State state) {
+    public Builder setState(State state) {
       _state = state;
+      return this;
     }
 
-    public void setTag(String tag) {
+    public Builder setTag(String tag) {
       _tag = tag;
+      return this;
     }
 
-    public void setTcpFlagsAck(Integer tcpFlagsAck) {
+    public Builder setTcpFlagsAck(Integer tcpFlagsAck) {
       _tcpFlagsAck = tcpFlagsAck;
+      return this;
     }
 
-    public void setTcpFlagsCwr(Integer tcpFlagsCwr) {
+    public Builder setTcpFlagsCwr(Integer tcpFlagsCwr) {
       _tcpFlagsCwr = tcpFlagsCwr;
+      return this;
     }
 
-    public void setTcpFlagsEce(Integer tcpFlagsEce) {
+    public Builder setTcpFlagsEce(Integer tcpFlagsEce) {
       _tcpFlagsEce = tcpFlagsEce;
+      return this;
     }
 
-    public void setTcpFlagsFin(Integer tcpFlagsFin) {
+    public Builder setTcpFlagsFin(Integer tcpFlagsFin) {
       _tcpFlagsFin = tcpFlagsFin;
+      return this;
     }
 
-    public void setTcpFlagsPsh(Integer tcpFlagsPsh) {
+    public Builder setTcpFlagsPsh(Integer tcpFlagsPsh) {
       _tcpFlagsPsh = tcpFlagsPsh;
+      return this;
     }
 
-    public void setTcpFlagsRst(Integer tcpFlagsRst) {
+    public Builder setTcpFlagsRst(Integer tcpFlagsRst) {
       _tcpFlagsRst = tcpFlagsRst;
+      return this;
     }
 
-    public void setTcpFlagsSyn(Integer tcpFlagsSyn) {
+    public Builder setTcpFlagsSyn(Integer tcpFlagsSyn) {
       _tcpFlagsSyn = tcpFlagsSyn;
+      return this;
     }
 
-    public void setTcpFlagsUrg(Integer tcpFlagsUrg) {
+    public Builder setTcpFlagsUrg(Integer tcpFlagsUrg) {
       _tcpFlagsUrg = tcpFlagsUrg;
+      return this;
     }
   }
 
@@ -388,6 +411,13 @@ public final class Flow implements Comparable<Flow>, Serializable {
   private static final String PROP_TCP_FLAGS_SYN = "tcpFlagsSyn";
 
   private static final String PROP_TCP_FLAGS_URG = "tcpFlagsUrg";
+
+  /** */
+  private static final long serialVersionUID = 1L;
+
+  public static Builder builder() {
+    return new Builder();
+  }
 
   private final int _dscp;
 
@@ -867,6 +897,10 @@ public final class Flow implements Comparable<Flow>, Serializable {
   @JsonProperty(PROP_INGRESS_INTERFACE)
   public void setIngressInterface(String ingressInterface) {
     _ingressInterface = ingressInterface;
+  }
+
+  public Builder toBuilder() {
+    return new Builder(this);
   }
 
   @Override

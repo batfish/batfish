@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.Field;
 import org.batfish.z3.MockSynthesizerInput;
@@ -122,7 +124,7 @@ public class DefaultTransitionGeneratorTest {
     return new MockIntAtom(num);
   }
 
-  private Map<String, Map<String, List<LineAction>>> aclActions() {
+  private static Map<String, Map<String, List<LineAction>>> aclActions() {
     List<LineAction> acl1ActionsByLine =
         ImmutableList.of(
             LineAction.ACCEPT, LineAction.REJECT, LineAction.ACCEPT, LineAction.REJECT);
@@ -136,7 +138,7 @@ public class DefaultTransitionGeneratorTest {
     return aclActionss;
   }
 
-  private Map<String, Map<String, List<BooleanExpr>>> aclConditions() {
+  private static Map<String, Map<String, List<BooleanExpr>>> aclConditions() {
     List<BooleanExpr> acl1Conditions =
         ImmutableList.of(
             TrueExpr.INSTANCE, FalseExpr.INSTANCE, TrueExpr.INSTANCE, FalseExpr.INSTANCE);
@@ -690,6 +692,7 @@ public class DefaultTransitionGeneratorTest {
             .setEnabledNodes(ImmutableSet.of(NODE1, NODE2))
             .setIpsByHostname(
                 ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
+            .setNamedIpSpaces(ImmutableMap.of(NODE1, ImmutableMap.of(), NODE2, ImmutableMap.of()))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -702,15 +705,21 @@ public class DefaultTransitionGeneratorTest {
         hasItem(
             new BasicRuleStatement(
                 HeaderSpaceMatchExpr.matchDstIp(
-                    ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2))),
-                ImmutableSet.of(new PostIn(NODE1)),
+                    IpWildcardSetIpSpace.builder()
+                        .including(ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))
+                        .build(),
+                    ImmutableMap.of()),
+                new PostIn(NODE1),
                 new NodeAccept(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 HeaderSpaceMatchExpr.matchDstIp(
-                    ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4))),
+                    IpWildcardSetIpSpace.builder()
+                        .including(ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))
+                        .build(),
+                    ImmutableMap.of()),
                 ImmutableSet.of(new PostIn(NODE2)),
                 new NodeAccept(NODE2))));
   }
@@ -1399,6 +1408,117 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
+  public void testVisitPostOutEdge_nonTransitNodes() {
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setEnabledEdges(
+                ImmutableSet.of(
+                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+            .setOutgoingAcls(
+                ImmutableMap.of(
+                    NODE1, ImmutableMap.of(),
+                    NODE2, ImmutableMap.of()))
+            .setNonTransitNodes(ImmutableSet.of(NODE1))
+            .setTopologyInterfaces(
+                ImmutableMap.of(
+                    NODE1, ImmutableSet.of(INTERFACE1), NODE2, ImmutableSet.of(INTERFACE1)))
+            .build();
+
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(PostOutEdge.State.INSTANCE)));
+
+    // node1 is a non-transit node, so set its flag in the transitedNonTransitNodesField
+    assertThat(
+        rules,
+        not(
+            hasItem(
+                new BasicRuleStatement(
+                    new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1)))));
+
+    // node2 is not a non-transit node, so don't update transitedNodesField
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                new PostOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1))));
+  }
+
+  @Test
+  public void testVisitPostOutEdge_transitNodes() {
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setEnabledInterfacesByNodeVrf(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(VRF1, ImmutableSet.of(INTERFACE1)),
+                    NODE2,
+                    ImmutableMap.of(VRF1, ImmutableSet.of(INTERFACE1))))
+            .setEnabledEdges(
+                ImmutableSet.of(
+                    new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                    new Edge(NODE2, INTERFACE1, NODE1, INTERFACE1)))
+            .setOutgoingAcls(
+                ImmutableMap.of(
+                    NODE1, ImmutableMap.of(),
+                    NODE2, ImmutableMap.of()))
+            .setTransitNodes(ImmutableSet.of(NODE1))
+            .setTopologyInterfaces(
+                ImmutableMap.of(
+                    NODE1, ImmutableSet.of(INTERFACE1), NODE2, ImmutableSet.of(INTERFACE1)))
+            .build();
+
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(PostInVrf.State.INSTANCE, PostOutEdge.State.INSTANCE)));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(
+                    new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+                    DefaultTransitionGenerator.NOT_TRANSITED),
+                new OriginateVrf(NODE1, VRF1),
+                new PostInVrf(NODE1, VRF1))));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(
+                    new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+                    DefaultTransitionGenerator.NOT_TRANSITED),
+                new OriginateVrf(NODE2, VRF1),
+                new PostInVrf(NODE2, VRF1))));
+
+    // node1 is a transit node, so set its flag in the transitedTransitNodesField
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(
+                    new TransformedVarIntExpr(
+                        DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+                    new LitIntExpr(1, 1)),
+                new PreOutEdgePostNat(NODE1, INTERFACE1, NODE2, INTERFACE1),
+                new PostOutEdge(NODE1, INTERFACE1, NODE2, INTERFACE1))));
+
+    // node2 is not a transit node, so don't update transitedNodesField
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new PreOutEdgePostNat(NODE2, INTERFACE1, NODE1, INTERFACE1),
+                new PostOutEdge(NODE2, INTERFACE1, NODE1, INTERFACE1))));
+  }
+
+  @Test
   public void testVisitPreInInterface() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
@@ -1568,6 +1688,7 @@ public class DefaultTransitionGeneratorTest {
         MockSynthesizerInput.builder()
             .setIpsByHostname(
                 ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
+            .setNamedIpSpaces(ImmutableMap.of(NODE1, ImmutableMap.of(), NODE2, ImmutableMap.of()))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -1581,7 +1702,10 @@ public class DefaultTransitionGeneratorTest {
             new BasicRuleStatement(
                 new NotExpr(
                     HeaderSpaceMatchExpr.matchDstIp(
-                        ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))),
+                        IpWildcardSetIpSpace.builder()
+                            .including(ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))
+                            .build(),
+                        ImmutableMap.of())),
                 ImmutableSet.of(new PostIn(NODE1)),
                 new PreOut(NODE1))));
     assertThat(
@@ -1590,7 +1714,10 @@ public class DefaultTransitionGeneratorTest {
             new BasicRuleStatement(
                 new NotExpr(
                     HeaderSpaceMatchExpr.matchDstIp(
-                        ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))),
+                        IpWildcardSetIpSpace.builder()
+                            .including(ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))
+                            .build(),
+                        ImmutableMap.of())),
                 ImmutableSet.of(new PostIn(NODE2)),
                 new PreOut(NODE2))));
   }

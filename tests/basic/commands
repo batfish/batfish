@@ -23,6 +23,7 @@ test tests/basic/nodes-diff.ref get nodes summary=false, differential=true
 test tests/basic/aclReachability.ref get aclReachability
 test tests/basic/assert.ref get assert assertions=[{"assertion":"(eq 15 (pathsize '$.nodes[*]'))"},{"assertion":"(eq 0 (pathsize '$.nodes[\"as1border\"]'))"},{"assertion":"(not (eq 0 (pathsize '$.nodes[\"as1border1\"]')))"}, {"assertion":"(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))"}]
 test tests/basic/bgpSessionStatus.ref get bgpsessionstatus type="ebgp.*", status="missing.*"
+test tests/basic/bgpSessionStatusNew.ref get bgpsessionstatusnew node1Regex="as2.*", node2Regex="as3.*", includeEstablishedCount=true
 test tests/basic/compareSameName.ref get compareSameName
 test tests/basic/error.ref -error get error
 test tests/basic/isisLoopbacks.ref get isisLoopbacks
@@ -64,8 +65,7 @@ test tests/basic/traceroute-snat.ref get traceroute ingressNode=host1, dst="1.2.
 # iptables
 test -compareall tests/basic/example-iptables-init.ref init-testrig test_rigs/example-iptables
 test tests/basic/example-iptables-reachability.ref get reachability ingressNodeRegex="z1-.*", dstIps=["10.0.4.20","10.0.4.21"], srcIps=["10.0.3.0/24"], actions=["DROP"]
-# TODO fix notTransitNodes #993
-# test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes=["z1-firewall"], actions=["ACCEPT"]
+test tests/basic/example-iptables-transit.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.0/24"], notDstIps=["10.0.3.1"], notTransitNodes="z1-firewall", actions=["ACCEPT"]
 test tests/basic/example-iptables-protection.ref get reachability notIngressNodeRegex="z1-.*", dstIps=["10.0.3.20","10.0.3.21"], notSrcIps=["10.0.3.0/24", "10.0.4.0/24"], notIpProtocols=["OSPF"], actions=["ACCEPT"]
 
 # z3 timeout - 1 millisecond

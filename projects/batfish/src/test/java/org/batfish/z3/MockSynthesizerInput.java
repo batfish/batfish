@@ -2,12 +2,14 @@ package org.batfish.z3;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
@@ -39,11 +41,15 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Set<Ip>> _ipsByHostname;
 
+    private Map<String, Map<String, IpSpace>> _namedIpSpaces;
+
     private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
     private Map<String, List<String>> _nodeInterfaces;
 
     private Set<String> _nodesWithSrcInterfaceConstraints;
+
+    private Set<String> _nonTransitNodes;
 
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
@@ -63,6 +69,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, IntExpr>> _srcInterfaceFieldValues;
 
+    private Set<String> _transitNodes;
+
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
@@ -74,9 +82,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
+      _namedIpSpaces = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
+      _nonTransitNodes = ImmutableSortedSet.of();
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
@@ -84,6 +94,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
+      _transitNodes = ImmutableSortedSet.of();
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -143,6 +154,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setNamedIpSpaces(Map<String, Map<String, IpSpace>> namedIpSpaces) {
+      _namedIpSpaces = namedIpSpaces;
+      return this;
+    }
+
     public Builder setNeighborUnreachable(
         Map<String, Map<String, Map<String, BooleanExpr>>> neighborUnreachable) {
       _neighborUnreachable = neighborUnreachable;
@@ -157,6 +173,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
     public Builder setNodesWithSrcInterfaceConstraints(
         Set<String> nodesWithSrcInterfaceConstraints) {
       _nodesWithSrcInterfaceConstraints = nodesWithSrcInterfaceConstraints;
+      return this;
+    }
+
+    public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
+      _nonTransitNodes = nonTransitNodes;
       return this;
     }
 
@@ -206,6 +227,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _vectorizedParameters = vectorizedParameters;
       return this;
     }
+
+    public Builder setTransitNodes(Set<String> transitNodes) {
+      _transitNodes = transitNodes;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -233,11 +259,15 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
+  private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
+
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
   private final Map<String, List<String>> _nodeInterfaces;
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
+
+  private final Set<String> _nonTransitNodes;
 
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
@@ -254,6 +284,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
   private final Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
 
   private final Map<String, Set<String>> _topologyInterfaces;
+
+  private Set<String> _transitNodes;
 
   private final Set<Type> _vectorizedParameters;
 
@@ -272,6 +304,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = builder._nullRoutedIps;
+    _nonTransitNodes = builder._nonTransitNodes;
     _outgoingAcls = builder._outgoingAcls;
     _routableIps = builder._routableIps;
     _simplify = builder._simplify;
@@ -279,7 +312,9 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _sourceInterfaceField = builder._srcInterfaceField;
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
+    _transitNodes = builder._transitNodes;
     _vectorizedParameters = builder._vectorizedParameters;
+    _namedIpSpaces = builder._namedIpSpaces;
   }
 
   @Override
@@ -339,6 +374,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, IpSpace>> getNamedIpSpaces() {
+    return _namedIpSpaces;
+  }
+
+  @Override
   public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
     return _neighborUnreachable;
   }
@@ -374,6 +414,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Set<String> getTransitNodes() {
+    return _transitNodes;
+  }
+
+  @Override
   public Field getSourceInterfaceField() {
     return _sourceInterfaceField;
   }
@@ -386,6 +431,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<String> getNodesWithSrcInterfaceConstraints() {
     return _nodesWithSrcInterfaceConstraints;
+  }
+
+  @Override
+  public Set<String> getNonTransitNodes() {
+    return _nonTransitNodes;
   }
 
   @Override

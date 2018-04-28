@@ -601,6 +601,8 @@ import org.batfish.grammar.cisco.CiscoParser.Vrfd_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrrp_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Wccp_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Zp_service_policy_inspectContext;
+import org.batfish.representation.cisco.AccessListAddressSpecifier;
+import org.batfish.representation.cisco.AccessListServiceSpecifier;
 import org.batfish.representation.cisco.AsPathSet;
 import org.batfish.representation.cisco.BgpAggregateIpv4Network;
 import org.batfish.representation.cisco.BgpAggregateIpv6Network;
@@ -647,6 +649,7 @@ import org.batfish.representation.cisco.MatchSemantics;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObjectGroup;
+import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
@@ -736,8 +739,11 @@ import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.SecurityZone;
 import org.batfish.representation.cisco.ServiceObjectGroup;
+import org.batfish.representation.cisco.ServiceObjectGroupServiceSpecifier;
+import org.batfish.representation.cisco.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
+import org.batfish.representation.cisco.StandardAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardCommunityList;
 import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.StandardIpv6AccessList;
@@ -750,6 +756,7 @@ import org.batfish.representation.cisco.UdpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Vrf;
 import org.batfish.representation.cisco.VrrpGroup;
 import org.batfish.representation.cisco.VrrpInterface;
+import org.batfish.representation.cisco.WildcardAddressSpecifier;
 import org.batfish.vendor.VendorConfiguration;
 
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
@@ -802,20 +809,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_TTL = "acl ttl eq number";
 
+  private static final String F_ACL_ADDRESS_GROUP = "acl match address-group";
+
+  private static final String F_ACL_INTERFACE = "acl match interface";
+
+  private static final String F_ACL_OBJECT = "acl match object";
+
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
       iface.setOspfPointToPoint(true);
-    }
-  }
-
-  private static Ip getIp(Access_list_ip_rangeContext ctx) {
-    if (ctx.ip != null) {
-      return toIp(ctx.ip);
-    } else if (ctx.prefix != null) {
-      return Prefix.parse(ctx.prefix.getText()).getStartIp();
-    } else {
-      return Ip.ZERO;
     }
   }
 
@@ -3092,10 +3095,176 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitExtended_access_list_tail(Extended_access_list_tailContext ctx) {
-    referenceNetworkObjectGroup(ctx.srcipr);
-    referenceNetworkObjectGroup(ctx.dstipr);
-    if (ctx.ogs != null) {
-      /* TODO: support reference to service object-group */
+    LineAction action = toLineAction(ctx.ala);
+    AccessListAddressSpecifier srcAddressSpecifier = toAccessListAddressSpecifier(ctx.srcipr);
+    AccessListAddressSpecifier dstAddressSpecifier = toAccessListAddressSpecifier(ctx.dstipr);
+    AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
+    String name = getFullText(ctx).trim();
+    ExtendedAccessListLine line =
+        ExtendedAccessListLine.builder()
+            .setAction(action)
+            .setDstAddressSpecifier(dstAddressSpecifier)
+            .setName(name)
+            .setServiceSpecifier(serviceSpecifier)
+            .setSrcAddressSpecifier(srcAddressSpecifier)
+            .build();
+    _currentExtendedAcl.addLine(line);
+  }
+
+  private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
+      Extended_access_list_tailContext ctx) {
+    if (ctx.prot != null) {
+      IpProtocol protocol = toIpProtocol(ctx.prot);
+      List<SubRange> srcPortRanges =
+          ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.<SubRange>emptyList();
+      List<SubRange> dstPortRanges =
+          ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.<SubRange>emptyList();
+      Integer icmpType = null;
+      Integer icmpCode = null;
+      List<TcpFlags> tcpFlags = new ArrayList<>();
+      Set<Integer> dscps = new TreeSet<>();
+      Set<Integer> ecns = new TreeSet<>();
+      Set<State> states = EnumSet.noneOf(State.class);
+      for (Extended_access_list_additional_featureContext feature : ctx.features) {
+        if (feature.ACK() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseAck(true);
+          alt.setAck(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.DSCP() != null) {
+          int dscpType = toDscpType(feature.dscp_type());
+          dscps.add(dscpType);
+        }
+        if (feature.ECE() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseEce(true);
+          alt.setEce(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.ECHO_REPLY() != null) {
+          icmpType = IcmpType.ECHO_REPLY;
+          icmpCode = IcmpCode.ECHO_REPLY;
+        }
+        if (feature.ECHO() != null) {
+          icmpType = IcmpType.ECHO_REQUEST;
+          icmpCode = IcmpCode.ECHO_REQUEST;
+        }
+        if (feature.ECN() != null) {
+          int ecn = toInteger(feature.ecn);
+          ecns.add(ecn);
+        }
+        if (feature.ESTABLISHED() != null) {
+          // must contain ACK or RST
+          TcpFlags alt1 = new TcpFlags();
+          TcpFlags alt2 = new TcpFlags();
+          alt1.setUseAck(true);
+          alt1.setAck(true);
+          alt2.setUseRst(true);
+          alt2.setRst(true);
+          tcpFlags.add(alt1);
+          tcpFlags.add(alt2);
+        }
+        if (feature.FIN() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseFin(true);
+          alt.setFin(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.FRAGMENTS() != null) {
+          todo(ctx, F_FRAGMENTS);
+        }
+        if (feature.HOST_UNKNOWN() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
+        }
+        if (feature.HOST_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_HOST_UNREACHABLE;
+        }
+        if (feature.NETWORK_UNKNOWN() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
+        }
+        if (feature.NET_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_NETWORK_UNREACHABLE;
+        }
+        if (feature.PACKET_TOO_BIG() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.PACKET_TOO_BIG;
+        }
+        if (feature.PARAMETER_PROBLEM() != null) {
+          icmpType = IcmpType.PARAMETER_PROBLEM;
+        }
+        if (feature.PORT_UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+          icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
+        }
+        if (feature.PSH() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUsePsh(true);
+          alt.setPsh(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.REDIRECT() != null) {
+          icmpType = IcmpType.REDIRECT_MESSAGE;
+        }
+        if (feature.RST() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseRst(true);
+          alt.setRst(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.SOURCE_QUENCH() != null) {
+          icmpType = IcmpType.SOURCE_QUENCH;
+          icmpCode = IcmpCode.SOURCE_QUENCH;
+        }
+        if (feature.SYN() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseSyn(true);
+          alt.setSyn(true);
+          tcpFlags.add(alt);
+        }
+        if (feature.TIME_EXCEEDED() != null) {
+          icmpType = IcmpType.TIME_EXCEEDED;
+        }
+        if (feature.TTL() != null) {
+          todo(ctx, F_TTL);
+        }
+        if (feature.TTL_EXCEEDED() != null) {
+          icmpType = IcmpType.TIME_EXCEEDED;
+          icmpCode = IcmpCode.TTL_EXCEEDED;
+        }
+        if (feature.TRACEROUTE() != null) {
+          icmpType = IcmpType.TRACEROUTE;
+          icmpCode = IcmpCode.TRACEROUTE;
+        }
+        if (feature.TRACKED() != null) {
+          states.add(State.ESTABLISHED);
+        }
+        if (feature.UNREACHABLE() != null) {
+          icmpType = IcmpType.DESTINATION_UNREACHABLE;
+        }
+        if (feature.URG() != null) {
+          TcpFlags alt = new TcpFlags();
+          alt.setUseUrg(true);
+          alt.setUrg(true);
+          tcpFlags.add(alt);
+        }
+      }
+      return SimpleExtendedAccessListServiceSpecifier.builder()
+          .setDscps(dscps)
+          .setDstPortRanges(dstPortRanges)
+          .setEcns(ecns)
+          .setIcmpCode(icmpCode)
+          .setIcmpType(icmpType)
+          .setProtocol(protocol)
+          .setSrcPortRanges(srcPortRanges)
+          .setStates(states)
+          .setTcpFlags(tcpFlags)
+          .build();
+    } else if (ctx.ogs != null) {
       String name = ctx.ogs.getText();
       int line = ctx.ogs.getStart().getLine();
       _configuration.referenceStructure(
@@ -3103,177 +3272,39 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           name,
           CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
           line);
-      return;
+      return new ServiceObjectGroupServiceSpecifier(name);
+    } else {
+      throw convError(AccessListServiceSpecifier.class, ctx);
     }
-    LineAction action = toLineAction(ctx.ala);
-    IpProtocol protocol = toIpProtocol(ctx.prot);
-    Ip srcIp = getIp(ctx.srcipr);
-    Ip srcWildcard = getWildcard(ctx.srcipr);
-    Ip dstIp = getIp(ctx.dstipr);
-    Ip dstWildcard = getWildcard(ctx.dstipr);
-    String srcAddressGroup = getAddressGroup(ctx.srcipr);
-    String dstAddressGroup = getAddressGroup(ctx.dstipr);
-    List<SubRange> srcPortRanges =
-        ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.<SubRange>emptyList();
-    List<SubRange> dstPortRanges =
-        ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.<SubRange>emptyList();
-    Integer icmpType = null;
-    Integer icmpCode = null;
-    List<TcpFlags> tcpFlags = new ArrayList<>();
-    Set<Integer> dscps = new TreeSet<>();
-    Set<Integer> ecns = new TreeSet<>();
-    Set<State> states = EnumSet.noneOf(State.class);
-    for (Extended_access_list_additional_featureContext feature : ctx.features) {
-      if (feature.ACK() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseAck(true);
-        alt.setAck(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.DSCP() != null) {
-        int dscpType = toDscpType(feature.dscp_type());
-        dscps.add(dscpType);
-      }
-      if (feature.ECE() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseEce(true);
-        alt.setEce(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.ECHO_REPLY() != null) {
-        icmpType = IcmpType.ECHO_REPLY;
-        icmpCode = IcmpCode.ECHO_REPLY;
-      }
-      if (feature.ECHO() != null) {
-        icmpType = IcmpType.ECHO_REQUEST;
-        icmpCode = IcmpCode.ECHO_REQUEST;
-      }
-      if (feature.ECN() != null) {
-        int ecn = toInteger(feature.ecn);
-        ecns.add(ecn);
-      }
-      if (feature.ESTABLISHED() != null) {
-        // must contain ACK or RST
-        TcpFlags alt1 = new TcpFlags();
-        TcpFlags alt2 = new TcpFlags();
-        alt1.setUseAck(true);
-        alt1.setAck(true);
-        alt2.setUseRst(true);
-        alt2.setRst(true);
-        tcpFlags.add(alt1);
-        tcpFlags.add(alt2);
-      }
-      if (feature.FIN() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseFin(true);
-        alt.setFin(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.FRAGMENTS() != null) {
-        todo(ctx, F_FRAGMENTS);
-      }
-      if (feature.HOST_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_HOST_UNKNOWN;
-      }
-      if (feature.HOST_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_HOST_UNREACHABLE;
-      }
-      if (feature.NETWORK_UNKNOWN() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_NETWORK_UNKNOWN;
-      }
-      if (feature.NET_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_NETWORK_UNREACHABLE;
-      }
-      if (feature.PACKET_TOO_BIG() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.PACKET_TOO_BIG;
-      }
-      if (feature.PARAMETER_PROBLEM() != null) {
-        icmpType = IcmpType.PARAMETER_PROBLEM;
-      }
-      if (feature.PORT_UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-        icmpCode = IcmpCode.DESTINATION_PORT_UNREACHABLE;
-      }
-      if (feature.PSH() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUsePsh(true);
-        alt.setPsh(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.REDIRECT() != null) {
-        icmpType = IcmpType.REDIRECT_MESSAGE;
-      }
-      if (feature.RST() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseRst(true);
-        alt.setRst(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.SOURCE_QUENCH() != null) {
-        icmpType = IcmpType.SOURCE_QUENCH;
-        icmpCode = IcmpCode.SOURCE_QUENCH;
-      }
-      if (feature.SYN() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseSyn(true);
-        alt.setSyn(true);
-        tcpFlags.add(alt);
-      }
-      if (feature.TIME_EXCEEDED() != null) {
-        icmpType = IcmpType.TIME_EXCEEDED;
-      }
-      if (feature.TTL() != null) {
-        todo(ctx, F_TTL);
-      }
-      if (feature.TTL_EXCEEDED() != null) {
-        icmpType = IcmpType.TIME_EXCEEDED;
-        icmpCode = IcmpCode.TTL_EXCEEDED;
-      }
-      if (feature.TRACEROUTE() != null) {
-        icmpType = IcmpType.TRACEROUTE;
-        icmpCode = IcmpCode.TRACEROUTE;
-      }
-      if (feature.TRACKED() != null) {
-        states.add(State.ESTABLISHED);
-      }
-      if (feature.UNREACHABLE() != null) {
-        icmpType = IcmpType.DESTINATION_UNREACHABLE;
-      }
-      if (feature.URG() != null) {
-        TcpFlags alt = new TcpFlags();
-        alt.setUseUrg(true);
-        alt.setUrg(true);
-        tcpFlags.add(alt);
-      }
-    }
-    String name = getFullText(ctx).trim();
-    ExtendedAccessListLine line =
-        new ExtendedAccessListLine(
-            name,
-            action,
-            protocol,
-            new IpWildcard(srcIp, srcWildcard),
-            srcAddressGroup,
-            new IpWildcard(dstIp, dstWildcard),
-            dstAddressGroup,
-            srcPortRanges,
-            dstPortRanges,
-            dscps,
-            ecns,
-            icmpType,
-            icmpCode,
-            states,
-            tcpFlags);
-    _currentExtendedAcl.addLine(line);
   }
 
-  private void referenceNetworkObjectGroup(Access_list_ip_rangeContext ctx) {
-    if (ctx.og != null) {
+  private AccessListAddressSpecifier toAccessListAddressSpecifier(Access_list_ip_rangeContext ctx) {
+    if (ctx.ip != null) {
+      if (ctx.wildcard != null) {
+        // IP and mask
+        Ip wildcard = toIp(ctx.wildcard);
+        if (_format == CISCO_ASA) {
+          wildcard = wildcard.inverted();
+        }
+        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip), wildcard));
+      } else {
+        // Just IP. Same as if 'host' was specified
+        return new WildcardAddressSpecifier(new IpWildcard(toIp(ctx.ip)));
+      }
+    } else if (ctx.ANY() != null || ctx.ANY4() != null) {
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.prefix != null) {
+      return new WildcardAddressSpecifier(new IpWildcard(Prefix.parse(ctx.prefix.getText())));
+    } else if (ctx.address_group != null) {
+      todo(ctx, F_ACL_ADDRESS_GROUP);
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.iface != null) {
+      todo(ctx, F_ACL_INTERFACE);
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.obj != null) {
+      todo(ctx, F_ACL_OBJECT);
+      return new WildcardAddressSpecifier(IpWildcard.ANY);
+    } else if (ctx.og != null) {
       String name = ctx.og.getText();
       int line = ctx.og.getStart().getLine();
       _configuration.referenceStructure(
@@ -3281,6 +3312,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           name,
           CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
           line);
+      return new NetworkObjectGroupAddressSpecifier(name);
+    } else {
+      throw convError(AccessListAddressSpecifier.class, ctx);
     }
   }
 
@@ -6331,8 +6365,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitStandard_access_list_tail(Standard_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
-    Ip srcIp = getIp(ctx.ipr);
-    Ip srcWildcard = getWildcard(ctx.ipr);
+    AccessListAddressSpecifier srcAddressSpecifier = toAccessListAddressSpecifier(ctx.ipr);
+    StandardAccessListServiceSpecifier serviceSpecifer =
+        computeStandardAccessListServiceSpecifier(ctx);
+    String name = getFullText(ctx).trim();
+    StandardAccessListLine line =
+        new StandardAccessListLine(action, name, serviceSpecifer, srcAddressSpecifier);
+    _currentStandardAcl.addLine(line);
+  }
+
+  private StandardAccessListServiceSpecifier computeStandardAccessListServiceSpecifier(
+      Standard_access_list_tailContext ctx) {
     Set<Integer> dscps = new TreeSet<>();
     Set<Integer> ecns = new TreeSet<>();
     for (Standard_access_list_additional_featureContext feature : ctx.features) {
@@ -6344,10 +6387,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ecns.add(ecn);
       }
     }
-    String name = getFullText(ctx).trim();
-    StandardAccessListLine line =
-        new StandardAccessListLine(name, action, new IpWildcard(srcIp, srcWildcard), dscps, ecns);
-    _currentStandardAcl.addLine(line);
+    return new StandardAccessListServiceSpecifier(dscps, ecns);
   }
 
   @Override
@@ -6674,33 +6714,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public VendorConfiguration getVendorConfiguration() {
     return _configuration;
-  }
-
-  private Ip getWildcard(Access_list_ip_rangeContext ctx) {
-    // TODO: fix for address-group, object, object-group, interface
-    if (ctx.wildcard != null) {
-      Ip wildcard = toIp(ctx.wildcard);
-      if (_format == CISCO_ASA) {
-        wildcard = wildcard.inverted();
-      }
-      return wildcard;
-    } else if (ctx.ANY() != null
-        || ctx.ANY4() != null
-        || ctx.address_group != null
-        || ctx.obj != null
-        || ctx.og != null
-        || ctx.iface != null) {
-      return Ip.MAX;
-    } else if (ctx.HOST() != null) {
-      return Ip.ZERO;
-    } else if (ctx.prefix != null) {
-      return Prefix.parse(ctx.prefix.getText()).getPrefixWildcard();
-    } else if (ctx.ip != null) {
-      // basically same as host
-      return Ip.ZERO;
-    } else {
-      throw convError(Ip.class, ctx);
-    }
   }
 
   private Ip6 getWildcard(Access_list_ip6_rangeContext ctx) {

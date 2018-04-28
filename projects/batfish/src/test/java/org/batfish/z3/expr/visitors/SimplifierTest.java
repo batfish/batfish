@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
 
+import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -310,7 +311,8 @@ public class SimplifierTest {
   /** Test that wrapper expressions are changed by simplification */
   @Test
   public void testSimplifyWrappers() {
-    BooleanExpr headerSpaceMatchExpr = new HeaderSpaceMatchExpr(HeaderSpace.builder().build());
+    BooleanExpr headerSpaceMatchExpr =
+        new HeaderSpaceMatchExpr(HeaderSpace.builder().build(), ImmutableMap.of());
     BooleanExpr prefixMatchExpr = new PrefixMatchExpr(new VarIntExpr(Field.DST_IP), Prefix.ZERO);
     BooleanExpr rangeMatchExpr = RangeMatchExpr.greaterThanOrEqualTo(Field.DST_IP, 123456L, 10);
 

@@ -2,6 +2,10 @@ package org.batfish.datamodel.acl;
 
 public interface GenericAclLineMatchExprVisitor<R> {
 
+  default R visit(AclLineMatchExpr expr) {
+    return expr.accept(this);
+  }
+
   R visitAndMatchExpr(AndMatchExpr andMatchExpr);
 
   R visitFalseExpr(FalseExpr falseExpr);
