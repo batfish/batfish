@@ -14,7 +14,7 @@
         "vrfName" : "String"
       },
       "displayHints" : {
-        "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus} and established count ${establishedNeighbors}"
+        "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
       },
       "primaryKey" : [
         "node",
