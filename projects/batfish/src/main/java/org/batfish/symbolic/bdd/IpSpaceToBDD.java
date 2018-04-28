@@ -20,11 +20,11 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final BDDFactory _factory;
 
-  private final BDDInteger _var;
+  private final BDD[] _bitBDDs;
 
   public IpSpaceToBDD(BDDFactory factory, BDDInteger var) {
     _factory = factory;
-    _var = var;
+    _bitBDDs = var.getBitvec();
   }
 
   @Override
@@ -40,15 +40,15 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
    * be a bitvector containing only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  private BDD firstBitsEqual(BDD[] bits, Ip ip, int length) {
+  private BDD firstBitsEqual(Ip ip, int length) {
     long b = ip.asLong();
     BDD acc = _factory.one();
     for (int i = 0; i < length; i++) {
-      boolean res = Ip.getBitAtPosition(b, i);
-      if (res) {
-        acc = acc.and(bits[i]);
+      boolean bitValue = Ip.getBitAtPosition(b, i);
+      if (bitValue) {
+        acc = acc.and(_bitBDDs[i]);
       } else {
-        acc = acc.and(bits[i].not());
+        acc = acc.and(_bitBDDs[i].not());
       }
     }
     return acc;
@@ -58,7 +58,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
    * Does the 32 bit integer match the prefix using lpm?
    */
   private BDD isRelevantFor(Prefix p) {
-    return firstBitsEqual(_var.getBitvec(), p.getStartIp(), p.getPrefixLength());
+    return firstBitsEqual(p.getStartIp(), p.getPrefixLength());
   }
 
   public BDD toBDD(Ip ip) {
@@ -66,10 +66,21 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   }
 
   public BDD toBDD(IpWildcard ipWildcard) {
-    if (!ipWildcard.isPrefix()) {
-      throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
+    long ip = ipWildcard.getIp().asLong();
+    long wildcard = ipWildcard.getWildcard().asLong();
+    BDD acc = _factory.one();
+    for (int i = 0; i < 32; i++) {
+      boolean significant = !Ip.getBitAtPosition(wildcard, i);
+      if (significant) {
+        boolean bitValue = Ip.getBitAtPosition(ip, i);
+        if (bitValue) {
+          acc = acc.and(_bitBDDs[i]);
+        } else {
+          acc = acc.and(_bitBDDs[i].not());
+        }
+      }
     }
-    return toBDD(ipWildcard.toPrefix());
+    return acc;
   }
 
   @Override
