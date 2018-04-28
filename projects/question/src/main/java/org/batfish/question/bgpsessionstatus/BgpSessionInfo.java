@@ -18,9 +18,9 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   public enum SessionStatus {
     // ordered by how we evaluate status
     DYNAMIC_LISTEN,
-    MISSING_LOCAL_IP,
-    UNKNOWN_LOCAL_IP,
-    UNKNOWN_REMOTE_IP,
+    NO_LOCAL_IP,
+    INVALID_LOCAL_IP,
+    UNKNOWN_REMOTE,
     HALF_OPEN,
     MULTIPLE_REMOTES,
     UNIQUE_MATCH,
@@ -36,32 +36,23 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   private static final String PROP_SESSION_TYPE = "sessionType";
   private static final String PROP_VRF_NAME = "vrfName";
 
-  @JsonProperty(PROP_CONFIGURED_STATUS)
-  SessionStatus _configuredStatus;
+  private SessionStatus _configuredStatus;
 
-  @JsonProperty(PROP_ESTABLISHED_NEIGHBORS)
-  Integer _establishedNeighbors;
+  private Integer _establishedNeighbors;
 
-  @JsonProperty(PROP_NODE_NAME)
   private String _nodeName;
 
-  @JsonProperty(PROP_VRF_NAME)
-  private String _vrfName;
+  private Ip _localIp;
 
-  @JsonProperty(PROP_REMOTE_PREFIX)
+  private Boolean _onLoopback;
+
+  private String _remoteNode;
+
   private Prefix _remotePrefix;
 
-  @JsonProperty(PROP_LOCAL_IP)
-  Ip _localIp;
+  private SessionType _sessionType;
 
-  @JsonProperty(PROP_ON_LOOPBACK)
-  Boolean _onLoopback;
-
-  @JsonProperty(PROP_REMOTE_NODE)
-  String _remoteNode;
-
-  @JsonProperty(PROP_SESSION_TYPE)
-  SessionType _sessionType;
+  private String _vrfName;
 
   @JsonCreator
   public BgpSessionInfo(
@@ -85,8 +76,24 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     _sessionType = sessionType;
   }
 
-  BgpSessionInfo(String hostname, String vrfName, Prefix remotePrefix) {
-    this(hostname, vrfName, remotePrefix, null, null, null, null, null, null);
+  @JsonProperty(PROP_CONFIGURED_STATUS)
+  public SessionStatus getConfiguredStatus() {
+    return _configuredStatus;
+  }
+
+  @JsonProperty(PROP_ESTABLISHED_NEIGHBORS)
+  public Integer getEstablishedNeighbors() {
+    return _establishedNeighbors;
+  }
+
+  @JsonProperty(PROP_LOCAL_IP)
+  public Ip getLocalIp() {
+    return _localIp;
+  }
+
+  @JsonProperty(PROP_ON_LOOPBACK)
+  public Boolean getOnLoopback() {
+    return _onLoopback;
   }
 
   @JsonProperty(PROP_NODE_NAME)
@@ -94,14 +101,24 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     return _nodeName;
   }
 
-  @JsonProperty(PROP_VRF_NAME)
-  public String getVrfName() {
-    return _vrfName;
+  @JsonProperty(PROP_REMOTE_NODE)
+  public String getRemoteNode() {
+    return _remoteNode;
   }
 
   @JsonProperty(PROP_REMOTE_PREFIX)
   public Prefix getRemotePrefix() {
     return _remotePrefix;
+  }
+
+  @JsonProperty(PROP_SESSION_TYPE)
+  public SessionType getSessionType() {
+    return _sessionType;
+  }
+
+  @JsonProperty(PROP_VRF_NAME)
+  public String getVrfName() {
+    return _vrfName;
   }
 
   @Override
@@ -126,5 +143,83 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
         _establishedNeighbors,
         _localIp,
         _remoteNode);
+  }
+
+  public static final class BgpSessionInfoBuilder {
+    private SessionStatus _configuredStatus;
+    private Integer _establishedNeighbors;
+    private String _nodeName;
+    private Ip _localIp;
+    private Boolean _onLoopback;
+    private String _remoteNode;
+    private Prefix _remotePrefix;
+    private SessionType _sessionType;
+    private String _vrfName;
+
+    public BgpSessionInfoBuilder(String _nodeName, String _vfrName, Prefix _remotePrefix) {
+      this._nodeName = _nodeName;
+      this._vrfName = _vfrName;
+      this._remotePrefix = _remotePrefix;
+    }
+
+    public BgpSessionInfoBuilder with_configuredStatus(SessionStatus _configuredStatus) {
+      this._configuredStatus = _configuredStatus;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_establishedNeighbors(Integer _establishedNeighbors) {
+      this._establishedNeighbors = _establishedNeighbors;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_nodeName(String _nodeName) {
+      this._nodeName = _nodeName;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_localIp(Ip _localIp) {
+      this._localIp = _localIp;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_onLoopback(Boolean _onLoopback) {
+      this._onLoopback = _onLoopback;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_remoteNode(String _remoteNode) {
+      this._remoteNode = _remoteNode;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_remotePrefix(Prefix _remotePrefix) {
+      this._remotePrefix = _remotePrefix;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_sessionType(SessionType _sessionType) {
+      this._sessionType = _sessionType;
+      return this;
+    }
+
+    public BgpSessionInfoBuilder with_vrfName(String _vrfName) {
+      this._vrfName = _vrfName;
+      return this;
+    }
+
+    public BgpSessionInfo build() {
+      BgpSessionInfo bgpSessionInfo =
+          new BgpSessionInfo(null, null, null, null, null, null, null, null, null);
+      bgpSessionInfo._vrfName = this._vrfName;
+      bgpSessionInfo._remoteNode = this._remoteNode;
+      bgpSessionInfo._sessionType = this._sessionType;
+      bgpSessionInfo._onLoopback = this._onLoopback;
+      bgpSessionInfo._configuredStatus = this._configuredStatus;
+      bgpSessionInfo._nodeName = this._nodeName;
+      bgpSessionInfo._establishedNeighbors = this._establishedNeighbors;
+      bgpSessionInfo._localIp = this._localIp;
+      bgpSessionInfo._remotePrefix = this._remotePrefix;
+      return bgpSessionInfo;
+    }
   }
 }

@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -15,6 +15,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
@@ -38,30 +39,27 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
     super(tableMetadata);
   }
 
-  public static BgpSessionStatusAnswerElement create(BgpSessionStatusQuestion question) {
-    Map<String, Schema> columnSchemas =
-        new ImmutableMap.Builder<String, Schema>()
-            .put(COL_CONFIGURED_STATUS, new Schema("String"))
-            .put(COL_ESTABLISHED_NEIGHBORS, new Schema("Integer"))
-            .put(COL_LOCAL_IP, new Schema("Ip"))
-            .put(COL_NODE, new Schema("Node"))
-            .put(COL_ON_LOOPBACK, new Schema("Boolean"))
-            .put(COL_REMOTE_NODE, new Schema("Node"))
-            .put(COL_REMOTE_PREFIX, new Schema("Prefix"))
-            .put(COL_SESSION_TYPE, new Schema("String"))
-            .put(COL_VRF_NAME, new Schema("String"))
-            .build();
-    List<String> primaryKey =
-        new ImmutableList.Builder<String>()
-            .add(COL_NODE)
-            .add(COL_REMOTE_PREFIX)
-            .add(COL_VRF_NAME)
-            .build();
-    List<String> primaryValue =
-        new ImmutableList.Builder<String>()
-            .add(COL_CONFIGURED_STATUS)
-            .add(COL_ESTABLISHED_NEIGHBORS)
-            .build();
+  public static TableMetadata createMetadata(Question question) {
+    Map<String, Schema> columnSchemas = new HashMap<>();
+    columnSchemas.put(COL_CONFIGURED_STATUS, new Schema("String"));
+    columnSchemas.put(COL_ESTABLISHED_NEIGHBORS, new Schema("Integer"));
+    columnSchemas.put(COL_LOCAL_IP, new Schema("Ip"));
+    columnSchemas.put(COL_NODE, new Schema("Node"));
+    columnSchemas.put(COL_ON_LOOPBACK, new Schema("Boolean"));
+    columnSchemas.put(COL_REMOTE_NODE, new Schema("Node"));
+    columnSchemas.put(COL_REMOTE_PREFIX, new Schema("Prefix"));
+    columnSchemas.put(COL_SESSION_TYPE, new Schema("String"));
+    columnSchemas.put(COL_VRF_NAME, new Schema("String"));
+
+    List<String> primaryKey = new LinkedList<>();
+    primaryKey.add(COL_NODE);
+    primaryKey.add(COL_REMOTE_PREFIX);
+    primaryKey.add(COL_VRF_NAME);
+
+    List<String> primaryValue = new LinkedList<>();
+    primaryValue.add(COL_CONFIGURED_STATUS);
+    primaryValue.add(COL_ESTABLISHED_NEIGHBORS);
+
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();
@@ -75,11 +73,15 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
               COL_CONFIGURED_STATUS,
               COL_ESTABLISHED_NEIGHBORS));
     }
-    TableMetadata metadata = new TableMetadata(columnSchemas, primaryKey, primaryValue, dhints);
-    return new BgpSessionStatusAnswerElement(metadata);
+    return new TableMetadata(columnSchemas, primaryKey, primaryValue, dhints);
   }
 
-  public static BgpSessionInfo fromRow(ObjectNode row) throws JsonProcessingException {
+  @Override
+  public Object fromRow(ObjectNode row) throws JsonProcessingException {
+    return fromRowStatic(row);
+  }
+
+  public static BgpSessionInfo fromRowStatic(ObjectNode row) throws JsonProcessingException {
     Ip localIp = BatfishObjectMapper.mapper().treeToValue(row.get(COL_LOCAL_IP), Ip.class);
     SessionStatus status =
         BatfishObjectMapper.mapper()
@@ -109,19 +111,26 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         sessionType);
   }
 
-  public static ObjectNode toRow(BgpSessionInfo info) {
+  @Override
+  public ObjectNode toRow(Object o) {
+    return toRowStatic((BgpSessionInfo) o);
+  }
+
+  public static ObjectNode toRowStatic(BgpSessionInfo info) {
     ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
     row.set(
-        COL_CONFIGURED_STATUS, BatfishObjectMapper.mapper().valueToTree(info._configuredStatus));
+        COL_CONFIGURED_STATUS,
+        BatfishObjectMapper.mapper().valueToTree(info.getConfiguredStatus()));
     row.set(
         COL_ESTABLISHED_NEIGHBORS,
-        BatfishObjectMapper.mapper().valueToTree(info._establishedNeighbors));
-    row.set(COL_LOCAL_IP, BatfishObjectMapper.mapper().valueToTree(info._localIp));
+        BatfishObjectMapper.mapper().valueToTree(info.getEstablishedNeighbors()));
+    row.set(COL_LOCAL_IP, BatfishObjectMapper.mapper().valueToTree(info.getLocalIp()));
     row.set(COL_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info.getNodeName())));
-    row.set(COL_ON_LOOPBACK, BatfishObjectMapper.mapper().valueToTree(info._onLoopback));
-    row.set(COL_REMOTE_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info._remoteNode)));
+    row.set(COL_ON_LOOPBACK, BatfishObjectMapper.mapper().valueToTree(info.getOnLoopback()));
+    row.set(
+        COL_REMOTE_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info.getRemoteNode())));
     row.set(COL_REMOTE_PREFIX, BatfishObjectMapper.mapper().valueToTree(info.getRemotePrefix()));
-    row.set(COL_SESSION_TYPE, BatfishObjectMapper.mapper().valueToTree(info._sessionType));
+    row.set(COL_SESSION_TYPE, BatfishObjectMapper.mapper().valueToTree(info.getSessionType()));
     row.set(COL_VRF_NAME, BatfishObjectMapper.mapper().valueToTree(info.getVrfName()));
     return row;
   }
