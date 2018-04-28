@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -674,6 +675,27 @@ public class CommonUtil {
     long h = (millis / (1000 * 60 * 60)) % 24;
     String time = String.format("%02d:%02d:%02d.%02d", h, m, s, cs);
     return time;
+  }
+
+  /**
+   * Checks if an IP address is associated with a loopback interface for the configuration.
+   *
+   * @param ipAddress The IP address to check
+   * @param c The configuration object in which to check
+   * @return The result
+   */
+  public static boolean isActiveLoopbackIp(Ip ipAddress, Configuration c) {
+    return c.getInterfaces()
+        .values()
+        .stream()
+        .anyMatch(
+            iface ->
+                iface.getActive()
+                    && iface.isLoopback(c.getConfigurationFormat())
+                    && iface
+                        .getAllAddresses()
+                        .stream()
+                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)));
   }
 
   /**
