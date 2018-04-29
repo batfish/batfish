@@ -50,7 +50,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
                 ipOwners,
                 false,
                 true,
-                _batfish.getDataPlanePlugin().getFlowProcessor(),
+                _batfish.getDataPlanePlugin().getTracerouteEngine(),
                 _batfish.loadDataPlane())
             : null;
 
