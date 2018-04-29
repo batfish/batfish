@@ -11,7 +11,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.plugin.DataPlanePlugin;
-import org.batfish.common.plugin.FlowProcessor;
+import org.batfish.common.plugin.ITracerouteEngine;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
@@ -92,8 +92,8 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public FlowProcessor getFlowProcessor() {
-    return _engine;
+  public ITracerouteEngine getTracerouteEngine() {
+    return TracerouteEngineImpl.getInstance();
   }
 
   @Override
