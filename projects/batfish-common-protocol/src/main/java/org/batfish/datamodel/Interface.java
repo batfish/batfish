@@ -578,7 +578,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private InterfaceAddress _address;
 
-  private Boolean _proxyArp;
+  private boolean _proxyArp;
 
   private boolean _ripEnabled;
 
