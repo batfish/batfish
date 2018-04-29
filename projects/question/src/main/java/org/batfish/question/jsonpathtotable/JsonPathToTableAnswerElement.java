@@ -2,11 +2,14 @@ package org.batfish.question.jsonpathtotable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class JsonPathToTableAnswerElement extends TableAnswerElement {
 
@@ -26,6 +29,11 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
     this(metadata, new HashMap<>());
   }
 
+  @Override
+  public Object fromRow(ObjectNode o) throws JsonProcessingException {
+    throw new NotImplementedException();
+  }
+
   public void addDebugInfo(String key, Object value) {
     _debug.put(key, value);
   }
@@ -33,5 +41,10 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
   @JsonProperty(PROP_DEBUG)
   public Map<String, Object> getDebug() {
     return _debug;
+  }
+
+  @Override
+  public ObjectNode toRow(Object object) {
+    throw new NotImplementedException();
   }
 }

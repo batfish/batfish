@@ -37,35 +37,35 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   private static final String PROP_SESSION_TYPE = "sessionType";
   private static final String PROP_VRF_NAME = "vrfName";
 
-  private SessionStatus _configuredStatus;
+  private final SessionStatus _configuredStatus;
 
-  private Integer _establishedNeighbors;
+  private final Integer _establishedNeighbors;
 
-  private String _nodeName;
+  private final String _nodeName;
 
-  private Ip _localIp;
+  private final Ip _localIp;
 
-  private Boolean _onLoopback;
+  private final Boolean _onLoopback;
 
-  private String _remoteNode;
+  private final String _remoteNode;
 
-  private Prefix _remotePrefix;
+  private final Prefix _remotePrefix;
 
-  private SessionType _sessionType;
+  private final SessionType _sessionType;
 
-  private String _vrfName;
+  private final String _vrfName;
 
   @JsonCreator
   public BgpSessionInfo(
+      @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus staticStatus,
+      @JsonProperty(PROP_ESTABLISHED_NEIGHBORS) Integer dynamicNeighbors,
       @JsonProperty(PROP_NODE_NAME) String nodeName,
-      @JsonProperty(PROP_VRF_NAME) String vrfName,
-      @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
       @JsonProperty(PROP_LOCAL_IP) Ip localIp,
       @JsonProperty(PROP_ON_LOOPBACK) Boolean onLoopback,
       @JsonProperty(PROP_REMOTE_NODE) String remoteNode,
-      @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus staticStatus,
-      @JsonProperty(PROP_ESTABLISHED_NEIGHBORS) Integer dynamicNeighbors,
-      @JsonProperty(PROP_SESSION_TYPE) SessionType sessionType) {
+      @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
+      @JsonProperty(PROP_SESSION_TYPE) SessionType sessionType,
+      @JsonProperty(PROP_VRF_NAME) String vrfName) {
     _nodeName = nodeName;
     _vrfName = vrfName;
     _remotePrefix = remotePrefix;
@@ -225,18 +225,16 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     }
 
     public BgpSessionInfo build() {
-      BgpSessionInfo bgpSessionInfo =
-          new BgpSessionInfo(null, null, null, null, null, null, null, null, null);
-      bgpSessionInfo._vrfName = _vrfName;
-      bgpSessionInfo._remoteNode = _remoteNode;
-      bgpSessionInfo._sessionType = _sessionType;
-      bgpSessionInfo._onLoopback = _onLoopback;
-      bgpSessionInfo._configuredStatus = _configuredStatus;
-      bgpSessionInfo._nodeName = _nodeName;
-      bgpSessionInfo._establishedNeighbors = _establishedNeighbors;
-      bgpSessionInfo._localIp = _localIp;
-      bgpSessionInfo._remotePrefix = _remotePrefix;
-      return bgpSessionInfo;
+      return new BgpSessionInfo(
+          _configuredStatus,
+          _establishedNeighbors,
+          _nodeName,
+          _localIp,
+          _onLoopback,
+          _remoteNode,
+          _remotePrefix,
+          _sessionType,
+          _vrfName);
     }
   }
 }

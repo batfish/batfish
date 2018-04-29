@@ -17,15 +17,15 @@ public class BgpSessionStatusAnswerElementTest {
   public void toAndFromRow() throws JsonProcessingException {
     BgpSessionInfo session =
         new BgpSessionInfo(
+            SessionStatus.UNKNOWN_REMOTE,
+            -1,
             "nodeName",
-            "vrfName",
-            new Prefix(new Ip("1.1.1.1"), 32),
             new Ip("2.2.2.2"),
             null,
             "remoteNode",
-            SessionStatus.UNKNOWN_REMOTE,
-            -1,
-            SessionType.EBGP_SINGLEHOP);
+            new Prefix(new Ip("1.1.1.1"), 32),
+            SessionType.EBGP_SINGLEHOP,
+            "vrfName");
 
     ObjectNode row = BgpSessionStatusAnswerElement.toRowStatic(session);
     BgpSessionInfo session2 = BgpSessionStatusAnswerElement.fromRowStatic(row);

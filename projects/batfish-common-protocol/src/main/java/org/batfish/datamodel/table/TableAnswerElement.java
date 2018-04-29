@@ -18,7 +18,7 @@ import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 
 /** A base class for tabular answers */
-public class TableAnswerElement extends AnswerElement {
+public abstract class TableAnswerElement extends AnswerElement {
 
   protected static final String PROP_EXCLUDED_ROWS = "excludedRows";
 
@@ -123,9 +123,7 @@ public class TableAnswerElement extends AnswerElement {
     }
   }
 
-  public Object fromRow(ObjectNode o) throws JsonProcessingException {
-    throw new BatfishException("This base method should not be called!");
-  }
+  public abstract Object fromRow(ObjectNode o) throws JsonProcessingException;
 
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {
@@ -169,7 +167,5 @@ public class TableAnswerElement extends AnswerElement {
     _rows = rows == null ? new Rows() : rows;
   }
 
-  public ObjectNode toRow(Object object) {
-    throw new BatfishException("This base method should not be called!");
-  }
+  public abstract ObjectNode toRow(Object object);
 }

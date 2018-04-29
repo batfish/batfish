@@ -82,7 +82,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
   public static BgpSessionInfo fromRowStatic(ObjectNode row) throws JsonProcessingException {
     Ip localIp = BatfishObjectMapper.mapper().treeToValue(row.get(COL_LOCAL_IP), Ip.class);
-    SessionStatus status =
+    SessionStatus configuredStatus =
         BatfishObjectMapper.mapper()
             .treeToValue(row.get(COL_CONFIGURED_STATUS), SessionStatus.class);
     Integer establishedNeighbors =
@@ -99,15 +99,15 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
     String vrfName = BatfishObjectMapper.mapper().treeToValue(row.get(COL_VRF_NAME), String.class);
 
     return new BgpSessionInfo(
+        configuredStatus,
+        establishedNeighbors,
         node.getName(),
-        vrfName,
-        remotePrefix,
         localIp,
         onLoopback,
         remoteNode.getName(),
-        status,
-        establishedNeighbors,
-        sessionType);
+        remotePrefix,
+        sessionType,
+        vrfName);
   }
 
   @Override
