@@ -3,6 +3,7 @@ package org.batfish.datamodel.table;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -21,11 +22,28 @@ public class TableAnswerElementTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private class TableAnswerElementChild extends TableAnswerElement {
+
+    public TableAnswerElementChild(TableMetadata metadata) {
+      super(metadata);
+    }
+
+    @Override
+    public Object fromRow(ObjectNode o) throws JsonProcessingException {
+      return null;
+    }
+
+    @Override
+    public ObjectNode toRow(Object object) {
+      return null;
+    }
+  }
+
   /** Does computerSummary compute the correct summary? */
   @Test
   public void testComputeSummary() {
     // generate an answer with two rows
-    TableAnswerElement answer = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement answer = new TableAnswerElementChild(new TableMetadata());
     answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
     answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
 
@@ -42,10 +60,10 @@ public class TableAnswerElementTest {
   public void testEvaluateAssertionCount() throws IOException {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
-    TableAnswerElement oneRow = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement oneRow = new TableAnswerElementChild(new TableMetadata());
     oneRow.addRow(BatfishObjectMapper.mapper().createObjectNode());
 
-    TableAnswerElement twoRows = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement twoRows = new TableAnswerElementChild(new TableMetadata());
     twoRows.addRow(BatfishObjectMapper.mapper().createObjectNode());
     twoRows.addRow(BatfishObjectMapper.mapper().createObjectNode());
 
@@ -63,7 +81,7 @@ public class TableAnswerElementTest {
                 .readValue("[{\"key1\": \"value1\"}, {\"key2\": \"value2\"}]", JsonNode.class));
 
     // adding rows in different order shouldn't matter
-    TableAnswerElement otherRows = new TableAnswerElement(new TableMetadata());
+    TableAnswerElement otherRows = new TableAnswerElementChild(new TableMetadata());
     otherRows.addRow(
         (ObjectNode)
             BatfishObjectMapper.mapper().createObjectNode().set("key2", new TextNode("value2")));
