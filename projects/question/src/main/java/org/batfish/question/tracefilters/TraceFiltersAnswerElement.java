@@ -2,6 +2,7 @@ package org.batfish.question.tracefilters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -16,19 +17,15 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TraceFiltersAnswerElement extends TableAnswerElement {
 
   private static final String COLUMN_NODE = "node";
-
   private static final String COLUMN_FILTER_NAME = "filterName";
-
   private static final String COLUMN_FLOW = "flow";
-
   private static final String COLUMN_ACTION = "action";
-
   private static final String COLUMN_LINE_NUMBER = "lineNumber";
-
   private static final String COLUMN_LINE_CONTENT = "lineContent";
 
   /**
@@ -83,6 +80,11 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
     super(tableMetadata);
   }
 
+  @Override
+  public Object fromRow(ObjectNode o) throws JsonProcessingException {
+    throw new NotImplementedException();
+  }
+
   public ObjectNode getRow(
       String nodeName,
       String filterName,
@@ -98,5 +100,10 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
     row.set(COLUMN_LINE_NUMBER, BatfishObjectMapper.mapper().valueToTree(matchLine));
     row.set(COLUMN_LINE_CONTENT, BatfishObjectMapper.mapper().valueToTree(lineContent));
     return row;
+  }
+
+  @Override
+  public ObjectNode toRow(Object object) {
+    throw new NotImplementedException();
   }
 }

@@ -2,7 +2,9 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Multiset;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,9 +14,11 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.Assertion;
+import org.batfish.datamodel.questions.Exclusion;
+import org.batfish.datamodel.questions.Question;
 
 /** A base class for tabular answers */
-public class TableAnswerElement extends AnswerElement {
+public abstract class TableAnswerElement extends AnswerElement {
 
   protected static final String PROP_EXCLUDED_ROWS = "excludedRows";
 
@@ -62,6 +66,19 @@ public class TableAnswerElement extends AnswerElement {
     _excludedRows.add(rows);
   }
 
+  public AnswerSummary computeSummary(Assertion assertion, String notes) {
+    int numPassed = 0;
+    int numFailed = 0;
+    if (assertion != null) {
+      if (evaluateAssertion(assertion)) {
+        numPassed = 1;
+      } else {
+        numFailed = 1;
+      }
+    }
+    return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
+  }
+
   public AnswerSummary computeSummary(Assertion assertion) {
     int numPassed = 0;
     int numFailed = 0;
@@ -72,7 +89,8 @@ public class TableAnswerElement extends AnswerElement {
         numFailed = 1;
       }
     }
-    return new AnswerSummary(null, numFailed, numPassed, _rows.size());
+    String notes = "Found " + _rows.size() + " results";
+    return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
   }
 
   /**
@@ -105,6 +123,8 @@ public class TableAnswerElement extends AnswerElement {
     }
   }
 
+  public abstract Object fromRow(ObjectNode o) throws JsonProcessingException;
+
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {
     return _excludedRows;
@@ -120,6 +140,23 @@ public class TableAnswerElement extends AnswerElement {
     return _rows;
   }
 
+  public void postProcessAnswer(Question question, Multiset<?> objects) {
+    objects.forEach(
+        object -> {
+          ObjectNode row = toRow(object);
+
+          // exclude or not?
+          Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
+          if (exclusion != null) {
+            addExcludedRow(row, exclusion.getName());
+          } else {
+            addRow(row);
+          }
+        });
+
+    setSummary(computeSummary(question.getAssertion()));
+  }
+
   @JsonProperty(PROP_EXCLUDED_ROWS)
   private void setExcludedRows(List<ExcludedRows> excludedRows) {
     _excludedRows = excludedRows == null ? new LinkedList<>() : excludedRows;
@@ -129,4 +166,6 @@ public class TableAnswerElement extends AnswerElement {
   private void setRows(Rows rows) {
     _rows = rows == null ? new Rows() : rows;
   }
+
+  public abstract ObjectNode toRow(Object object);
 }
