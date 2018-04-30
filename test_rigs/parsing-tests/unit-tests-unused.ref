@@ -701,6 +701,14 @@
           ]
         }
       },
+      "unused:policy-map type inspect:pminspect" : {
+        "description" : "Unused structure of type: 'policy-map type inspect' with name: 'pminspect'",
+        "files" : {
+          "cisco_qos" : [
+            32
+          ]
+        }
+      },
       "unused:policy-statement:route-filter-test-v4" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
         "files" : {
@@ -919,7 +927,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 121
+      "numResults" : 122
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1200,6 +1208,11 @@
           ],
           "ntp_servers" : [
             29
+          ]
+        },
+        "policy-map type inspect" : {
+          "pminspect" : [
+            32
           ]
         }
       },
