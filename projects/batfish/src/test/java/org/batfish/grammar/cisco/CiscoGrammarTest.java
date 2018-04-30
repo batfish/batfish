@@ -573,7 +573,7 @@ public class CiscoGrammarTest {
      * We only expect zempty to be empty (have no interfaces)
      */
     assertThat(c, hasZone("z1", hasMemberInterfaces(not(empty()))));
-    assertThat(c, hasZone("z1", hasMemberInterfaces(not(empty()))));
+    assertThat(c, hasZone("z2", hasMemberInterfaces(not(empty()))));
     assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
   }
 
