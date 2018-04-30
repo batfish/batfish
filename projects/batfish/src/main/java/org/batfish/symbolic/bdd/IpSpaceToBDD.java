@@ -69,7 +69,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcard().asLong();
     BDD acc = _factory.one();
-    for (int i = 0; i < 32; i++) {
+    for (int i = 0; i < Prefix.MAX_PREFIX_LENGTH; i++) {
       boolean significant = !Ip.getBitAtPosition(wildcard, i);
       if (significant) {
         boolean bitValue = Ip.getBitAtPosition(ip, i);
