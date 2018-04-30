@@ -587,7 +587,7 @@ public class Graph {
       BgpProcess p = conf.getDefaultVrf().getBgpProcess();
       if (p != null) {
         for (BgpNeighbor n : p.getNeighbors().values()) {
-          if (n.getLocalAs().equals(n.getRemoteAs())) {
+          if (n.getLocalAs().equals(n.getRemoteAs()) && n.getLocalIp() != null) {
             ips.put(router, n.getLocalIp());
           }
         }
