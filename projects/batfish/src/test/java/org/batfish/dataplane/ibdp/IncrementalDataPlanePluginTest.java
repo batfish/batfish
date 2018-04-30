@@ -63,6 +63,8 @@ import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.dataplane.rib.BgpBestPathRib;
+import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
