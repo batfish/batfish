@@ -40,12 +40,12 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
               .stream()
               .map(IpWildcard::toIpSpace)
               .collect(ImmutableList.toImmutableList());
-      headerSpaceBuilder.setNotSrcIps(
-          AclIpSpace.union(
-              ImmutableList.<IpSpace>builder()
-                  .add(headerSpaceBuilder.getNotSrcIps())
-                  .addAll(wildcards)
-                  .build()));
+
+      ImmutableList.Builder<IpSpace> ipSpaceBuilder = ImmutableList.builder();
+      if (headerSpaceBuilder.getNotSrcIps() != null) {
+        ipSpaceBuilder.add(headerSpaceBuilder.getNotSrcIps());
+      }
+      headerSpaceBuilder.setNotSrcIps(AclIpSpace.union(ipSpaceBuilder.addAll(wildcards).build()));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }
