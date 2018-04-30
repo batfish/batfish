@@ -40,7 +40,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.statement.If;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Test;
@@ -208,9 +207,6 @@ public class BatfishCompressionTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
-    BdpDataPlanePlugin bdpDataPlanePlugin = new BdpDataPlanePlugin();
-    bdpDataPlanePlugin.initialize(batfish);
-    batfish.registerDataPlanePlugin(bdpDataPlanePlugin, "bdp");
     batfish.computeDataPlane(false);
     return batfish.loadDataPlane();
   }
