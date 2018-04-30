@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.common.Pair;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -47,7 +48,6 @@ import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -57,7 +57,7 @@ import org.junit.rules.TemporaryFolder;
 
 public class NodJobTest {
 
-  private BdpDataPlanePlugin _bdpDataPlanePlugin;
+  private DataPlanePlugin _dataPlanePlugin;
   private SortedMap<String, Configuration> _configs;
   private DataPlane _dataPlane;
   private Configuration _dstNode;
@@ -166,9 +166,7 @@ public class NodJobTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(_configs, tmp);
-    _bdpDataPlanePlugin = new BdpDataPlanePlugin();
-    _bdpDataPlanePlugin.initialize(batfish);
-    batfish.registerDataPlanePlugin(_bdpDataPlanePlugin, "bdp");
+    _dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false);
     _dataPlane = batfish.loadDataPlane();
   }
@@ -215,8 +213,8 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
-    _bdpDataPlanePlugin.processFlows(flows, _dataPlane, false);
-    List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
+    _dataPlanePlugin.processFlows(flows, _dataPlane, false);
+    List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
     flowTraces.forEach(
         trace -> {
@@ -279,8 +277,8 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
-    _bdpDataPlanePlugin.processFlows(flows, _dataPlane, false);
-    List<FlowTrace> flowTraces = _bdpDataPlanePlugin.getHistoryFlowTraces(_dataPlane);
+    _dataPlanePlugin.processFlows(flows, _dataPlane, false);
+    List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
     flowTraces.forEach(
         trace -> {

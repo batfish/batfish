@@ -34,7 +34,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -142,9 +141,6 @@ public class NodJobChunkingTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(_configs, tmp);
-    BdpDataPlanePlugin bdpDataPlanePlugin = new BdpDataPlanePlugin();
-    bdpDataPlanePlugin.initialize(batfish);
-    batfish.registerDataPlanePlugin(bdpDataPlanePlugin, "bdp");
     batfish.computeDataPlane(false);
     _dataPlane = batfish.loadDataPlane();
   }
