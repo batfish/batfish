@@ -69,6 +69,8 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   public abstract IbgpTopology getIbgpNeighbors();
 
+  public abstract ITracerouteEngine getTracerouteEngine();
+
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
 

@@ -24,6 +24,7 @@ public class Schema {
 
   private static final Map<String, String> schemaAliases =
       ImmutableMap.<String, String>builder()
+          .put("Boolean", getClassString(Boolean.class))
           .put("Environment", getClassString(Environment.class))
           .put("FileLine", getClassString(FileLinePair.class))
           .put("Flow", getClassString(Flow.class))
