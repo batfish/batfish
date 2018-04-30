@@ -39,6 +39,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   DOCSIS_POLICY_DOCSIS_POLICY_RULE("cable load-balance docsis-policy rule"),
   EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP("extended access-list network object-group"),
   EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP("extended access-list service object-group"),
+  INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP("class-map type inspect match access-group"),
+  INSPECT_POLICY_MAP_INSPECT_CLASS("policy-map type inspect class type inspect"),
   INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
   INTERFACE_IGMP_STATIC_GROUP_ACL("interface igmp static-group acl"),
   INTERFACE_INCOMING_FILTER("interface incoming ip access-list"),
@@ -47,6 +49,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_OUTGOING_FILTER("interface outgoing ip access-list"),
   INTERFACE_PIM_NEIGHBOR_FILTER("interface ip pim neighbor-filter"),
   INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),
+  INTERFACE_ZONE_MEMBER("interface zone-member"),
   IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),
   IP_NAT_SOURCE_ACCESS_LIST("ip nat source dynamic access-list"),
   IP_NAT_SOURCE_POOL("ip nat source pool"),
@@ -103,7 +106,10 @@ public enum CiscoStructureUsage implements StructureUsage {
   TUNNEL_SOURCE("tunnel source"),
   WCCP_GROUP_LIST("ip wccp group-list"),
   WCCP_REDIRECT_LIST("ip wccp redirect-list"),
-  WCCP_SERVICE_LIST("ip wccp service-list");
+  WCCP_SERVICE_LIST("ip wccp service-list"),
+  ZONE_PAIR_DESTINATION_ZONE("zone-pair security destination"),
+  ZONE_PAIR_INSPECT_SERVICE_POLICY("zone-pair service-policy type inspect"),
+  ZONE_PAIR_SOURCE_ZONE("zone-pair security source");
 
   private final String _description;
 
