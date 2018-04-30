@@ -93,7 +93,8 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   private @Nonnull BooleanExpr noSrcInterfaceConstraint() {
     Field srcInterface = _input.getSourceInterfaceField();
-    return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
+    return new EqExpr(
+        new VarIntExpr(srcInterface), new LitIntExpr(NO_SOURCE_INTERFACE, srcInterface.getSize()));
   }
 
   // used to update the source interface field value (used when entering a node).
