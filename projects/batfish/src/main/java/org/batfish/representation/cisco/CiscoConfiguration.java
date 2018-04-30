@@ -130,6 +130,9 @@ import org.batfish.datamodel.vendor_family.cisco.Cable;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
