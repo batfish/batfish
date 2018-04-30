@@ -23,6 +23,7 @@ import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCo
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
+import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
@@ -65,6 +66,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
@@ -431,6 +433,67 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallGlobalAddressBook() throws IOException {
+    Configuration c = parseConfig("firewall-global-address-book");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String specificSpaceName = "global~ADDR1";
+    String wildcardSpaceName = "global~ADDR2";
+    String indirectSpaceName = "global~ADDRSET";
+
+    // Address on untrust interface's subnet
+    String untrustIpAddr = "1.2.4.5";
+    // Specific address allowed by the address-set
+    String specificAddr = "2.2.2.2";
+    // Address allowed by the wildcard-address in the address-set
+    String wildcardAddr = "1.3.3.4";
+    // Address not allowed by either entry in the address-set
+    String notWildcardAddr = "1.2.3.5";
+
+    Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
+    Flow flowFromWildcardAddr = createFlow(wildcardAddr, untrustIpAddr);
+    Flow flowFromNotWildcardAddr = createFlow(notWildcardAddr, untrustIpAddr);
+    IpAccessList untrustCombinedAcl =
+        c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    // Should have three global IpSpaces in the config
+    assertThat(
+        c.getIpSpaces().keySet(),
+        containsInAnyOrder(specificSpaceName, wildcardSpaceName, indirectSpaceName));
+
+    IpSpace specificSpace = c.getIpSpaces().get(specificSpaceName);
+    IpSpace wildcardSpace = c.getIpSpaces().get(wildcardSpaceName);
+    IpSpace indirectSpace = c.getIpSpaces().get(indirectSpaceName);
+
+    // Specific space should contain the specific addr and not others
+    assertThat(specificSpace, containsIp(new Ip(specificAddr)));
+    assertThat(specificSpace, not(containsIp(new Ip(wildcardAddr))));
+
+    // Wildcard space should contain the wildcard addr and not others
+    assertThat(wildcardSpace, containsIp(new Ip(wildcardAddr)));
+    assertThat(wildcardSpace, not(containsIp(new Ip(notWildcardAddr))));
+
+    // Indirect space should contain both specific and wildcard addr, but not others
+    assertThat(indirectSpace, containsIp(new Ip(specificAddr), c.getIpSpaces()));
+    assertThat(indirectSpace, containsIp(new Ip(wildcardAddr), c.getIpSpaces()));
+    assertThat(indirectSpace, not(containsIp(new Ip(notWildcardAddr), c.getIpSpaces())));
+
+    // Specifically allowed source addr should be accepted
+    assertThat(
+        untrustCombinedAcl,
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Source addr covered by the wildcard entry should be accepted
+    assertThat(
+        untrustCombinedAcl,
+        accepts(flowFromWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Source addr covered by neither addr-set entry should be rejected
+    assertThat(
+        untrustCombinedAcl,
+        rejects(
+            flowFromNotWildcardAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
   public void testFirewallGlobalPolicy() throws IOException {
     Configuration c = parseConfig("firewall-global-policy");
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -468,7 +531,7 @@ public class FlatJuniperGrammarTest {
     IpAccessListLine aclGlobalPolicyLine =
         Iterables.getOnlyElement(c.getIpAccessLists().get(ACL_NAME_GLOBAL_POLICY).getLines());
 
-    /* Global policy should permit all traffic as defined in the config */
+    /* Global policy should permit the specific src address defined in the config */
     assertThat(
         aclGlobalPolicyLine,
         hasMatchCondition(equalTo(new MatchHeaderSpace(HeaderSpace.builder().build()))));
@@ -511,13 +574,53 @@ public class FlatJuniperGrammarTest {
     assertThat(aclUntrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
     assertThat(aclUntrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
 
-    /* Simple flows should be permitted */
+    /* Flows in either direction should be permitted by the global policy */
     assertThat(
         aclUntrustOut,
         accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
         aclTrustOut,
         accepts(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testFirewallGlobalPolicyGlobalAddressBook() throws IOException {
+    /*
+     * Test address book behavior when used in a global policy
+     * i.e. a policy that does not have fromZone or toZone
+     */
+    Configuration c = parseConfig("firewall-global-policy-global-address-book");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String trustedIpAddr = "1.2.3.5";
+    String untrustedIpAddr = "1.2.4.5";
+    String trustedSpaceName = "global~ADDR1";
+
+    Flow trustToUntrustFlow = createFlow(trustedIpAddr, untrustedIpAddr);
+    Flow untrustToTrustFlow = createFlow(untrustedIpAddr, trustedIpAddr);
+
+    IpAccessList aclTrustOut = c.getInterfaces().get(interfaceNameTrust).getOutgoingFilter();
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    /* Make sure the global-address-book address is the only config ipSpace */
+    assertThat(c.getIpSpaces().keySet(), containsInAnyOrder(trustedSpaceName));
+
+    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+
+    // It should contain the specific address
+    assertThat(ipSpace, containsIp(new Ip(trustedIpAddr)));
+
+    // It should not contain the address that is not allowed
+    assertThat(ipSpace, not(containsIp(new Ip(untrustedIpAddr))));
+
+    /* Flow from ADDR1 to untrust should be permitted */
+    assertThat(
+        aclUntrustOut,
+        accepts(trustToUntrustFlow, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Flow from not ADDR1 to trust should be rejected */
+    assertThat(
+        aclTrustOut,
+        rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -717,6 +820,46 @@ public class FlatJuniperGrammarTest {
         aclTrustOut,
         accepts(
             untrustToTrustReturnFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testFirewallZoneAddressBook() throws IOException {
+    Configuration c = parseConfig("firewall-zone-address-book");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    // Address on untrust interface's subnet
+    String untrustIpAddr = "1.2.4.5";
+    // Specific address allowed by the address-book
+    String specificAddr = "2.2.2.2";
+    // Address not allowed by the address-book
+    String notAllowedAddr = "3.3.3.3";
+
+    Flow flowFromSpecificAddr = createFlow(specificAddr, untrustIpAddr);
+    Flow flowFromNotAllowedAddr = createFlow(notAllowedAddr, untrustIpAddr);
+
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    // Should have a an IpSpace in the config corresponding to the trust zone's ADDR1 address
+    assertThat(c.getIpSpaces(), hasKey(equalTo("trust~ADDR1")));
+
+    // It should be the only IpSpace
+    assertThat(c.getIpSpaces().keySet(), iterableWithSize(1));
+    IpSpace ipSpace = Iterables.getOnlyElement(c.getIpSpaces().values());
+
+    // It should contain the specific address
+    assertThat(ipSpace, containsIp(new Ip(specificAddr)));
+
+    // It should not contain the address that is not allowed
+    assertThat(ipSpace, not(containsIp(new Ip(notAllowedAddr))));
+
+    // Specifically allowed source address should be accepted
+    assertThat(
+        aclUntrustOut,
+        accepts(flowFromSpecificAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    // Source address not covered by the address-book should be rejected
+    assertThat(
+        aclUntrustOut,
+        rejects(flowFromNotAllowedAddr, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test

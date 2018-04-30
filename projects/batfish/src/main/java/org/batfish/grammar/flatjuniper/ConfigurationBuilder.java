@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecProtocol;
@@ -246,10 +248,15 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_address_bookContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_authentication_key_chainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_zonesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_keyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sea_toleranceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sead_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sead_address_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seada_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seada_address_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Seak_secretContext;
@@ -299,8 +306,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_host_inbound_traff
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezs_interfacesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsa_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsa_address_setContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaa_addressContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaa_address_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaad_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaad_address_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_protocolsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_system_servicesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_communityContext;
@@ -324,6 +331,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Wildcard_addressContext;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
 import org.batfish.representation.juniper.AddressBook;
 import org.batfish.representation.juniper.AddressBookEntry;
@@ -472,6 +480,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static final String F_POLICY_TERM_THEN_NEXT_HOP =
       "policy-statement - term - then - next-hop";
+
+  private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
 
   public static NamedPort getNamedPort(PortContext ctx) {
     if (ctx.AFS() != null) {
@@ -1495,6 +1505,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private int _disjunctionPolicyIndex;
 
+  private AddressBook _globalAddressBook;
+
   private boolean _hasZones;
 
   private FlatJuniperCombinedParser _parser;
@@ -1527,6 +1539,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _w = warnings;
     _conjunctionPolicyIndex = 0;
     _disjunctionPolicyIndex = 0;
+    _globalAddressBook =
+        _configuration
+            .getGlobalAddressBooks()
+            .computeIfAbsent(GLOBAL_ADDRESS_BOOK_NAME, n -> new AddressBook(n, new TreeMap<>()));
   }
 
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
@@ -2133,6 +2149,75 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterSe_address_book(Se_address_bookContext ctx) {
+    String name = ctx.GLOBAL().getText();
+    _currentAddressBook =
+        _configuration
+            .getGlobalAddressBooks()
+            .computeIfAbsent(name, n -> new AddressBook(n, new TreeMap<>()));
+  }
+
+  @Override
+  public void exitSe_address_book(Se_address_bookContext ctx) {
+    _currentAddressBook = null;
+  }
+
+  @Override
+  public void enterSead_address_set(Sead_address_setContext ctx) {
+    String name = ctx.name.getText();
+    AddressBookEntry entry =
+        _currentAddressBook.getEntries().computeIfAbsent(name, AddressSetAddressBookEntry::new);
+    try {
+      _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
+    } catch (ClassCastException e) {
+      _w.redFlag(
+          "Cannot create address-set address-book entry \""
+              + name
+              + "\" because a different type of address-book entry with that name already exists");
+      // Create a throw-away entry so deeper parsing does not fail for this entry
+      _currentAddressSetAddressBookEntry = new AddressSetAddressBookEntry(name);
+    }
+  }
+
+  @Override
+  public void exitSead_address(Sead_addressContext ctx) {
+    String name = ctx.name.getText();
+    IpWildcard ipWildcard = null;
+    if (ctx.wildcard_address() != null) {
+      ipWildcard = toIpWildcard(ctx.wildcard_address());
+    } else if (ctx.address != null) {
+      ipWildcard = new IpWildcard(new Ip(ctx.address.getText()));
+    } else if (ctx.prefix != null) {
+      ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+    } else {
+      throw convError(IpWildcard.class, ctx);
+    }
+    AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
+    _currentAddressBook.getEntries().put(name, addressEntry);
+  }
+
+  @Override
+  public void exitSead_address_set(Sead_address_setContext ctx) {
+    _currentAddressSetAddressBookEntry = null;
+  }
+
+  @Override
+  public void exitSeada_address(Seada_addressContext ctx) {
+    String name = ctx.name.getText();
+    _currentAddressSetAddressBookEntry
+        .getEntries()
+        .add(new AddressSetEntry(name, _currentAddressBook));
+  }
+
+  @Override
+  public void exitSeada_address_set(Seada_address_setContext ctx) {
+    String name = ctx.name.getText();
+    _currentAddressSetAddressBookEntry
+        .getEntries()
+        .add(new AddressSetEntry(name, _currentAddressBook));
+  }
+
+  @Override
   public void enterSe_authentication_key_chain(Se_authentication_key_chainContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -2352,11 +2437,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     try {
       _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
     } catch (ClassCastException e) {
-      throw new BatfishException(
+      _w.redFlag(
           "Cannot create address-set address-book entry \""
               + name
-              + "\" because a different type of address-book entry with that name already exists",
-          e);
+              + "\" because a different type of address-book entry with that name already exists");
+      // Create a throw-away entry so deeper parsing does not fail for this entry
+      _currentAddressSetAddressBookEntry = new AddressSetAddressBookEntry(name);
     }
   }
 
@@ -3878,9 +3964,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
-      FwFrom match =
-          new FwFromDestinationAddressBookEntry(
-              _currentToZone.getAddressBook(), addressBookEntryName);
+      // Use global address book for global policies (no toZone)
+      AddressBook addressBook =
+          (_currentToZone == null) ? _globalAddressBook : _currentToZone.getAddressBook();
+      FwFrom match = new FwFromDestinationAddressBookEntry(addressBook, addressBookEntryName);
       _currentFwTerm.getFroms().add(match);
     } else {
       throw new BatfishException("Invalid address-specifier");
@@ -3898,8 +3985,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return;
     } else if (ctx.address_specifier().variable() != null) {
       String addressBookEntryName = ctx.address_specifier().variable().getText();
-      FwFrom match =
-          new FwFromSourceAddressBookEntry(_currentFromZone.getAddressBook(), addressBookEntryName);
+      // Use global address book for global policies (no fromZone)
+      AddressBook addressBook =
+          (_currentFromZone == null) ? _globalAddressBook : _currentFromZone.getAddressBook();
+      FwFrom match = new FwFromSourceAddressBookEntry(addressBook, addressBookEntryName);
       _currentFwTerm.getFroms().add(match);
     } else {
       throw new BatfishException("Invalid address-specifier");
@@ -3949,11 +4038,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentZoneInterface = null;
   }
 
+  private static IpWildcard toIpWildcard(Wildcard_addressContext ctx) {
+    Ip address = new Ip(ctx.ip_address.getText());
+    Ip mask = new Ip(ctx.wildcard_mask.getText());
+    // Mask needs to be inverted since 0's are don't-cares in this context
+    return new IpWildcard(address, mask.inverted());
+  }
+
   @Override
   public void exitSezsa_address(Sezsa_addressContext ctx) {
     String name = ctx.name.getText();
-    Prefix prefix = Prefix.parse(ctx.IP_PREFIX().getText());
-    AddressBookEntry addressEntry = new AddressAddressBookEntry(name, prefix);
+    IpWildcard ipWildcard = null;
+    if (ctx.wildcard_address() != null) {
+      ipWildcard = toIpWildcard(ctx.wildcard_address());
+    } else if (ctx.address != null) {
+      ipWildcard = new IpWildcard(new Ip(ctx.address.getText()));
+    } else if (ctx.prefix != null) {
+      ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+    } else {
+      throw convError(IpWildcard.class, ctx);
+    }
+    AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
     _currentZone.getAddressBook().getEntries().put(name, addressEntry);
   }
 
@@ -3963,7 +4068,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSezsaa_address(Sezsaa_addressContext ctx) {
+  public void exitSezsaad_address(Sezsaad_addressContext ctx) {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
@@ -3971,7 +4076,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitSezsaa_address_set(Sezsaa_address_setContext ctx) {
+  public void exitSezsaad_address_set(Sezsaad_address_setContext ctx) {
     String name = ctx.name.getText();
     _currentAddressSetAddressBookEntry
         .getEntries()
