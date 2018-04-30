@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
@@ -51,6 +52,7 @@ import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.Originate;
+import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
@@ -66,7 +68,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   /* Dedicated value for the srcInterfaceField used when traffic did not enter the node through any
    * interface (or we no longer care which interface was the source).
    */
-  private static final int NO_SOURCE_INTERFACE = 0;
+  static final int NO_SOURCE_INTERFACE = 0;
 
   public static final IntExpr NOT_TRANSITED = new LitIntExpr(0, 1);
 
@@ -87,6 +89,52 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public DefaultTransitionGenerator(SynthesizerInput input) {
     _input = input;
     _rules = ImmutableList.builder();
+  }
+
+  private @Nonnull BooleanExpr noSrcInterfaceConstraint() {
+    Field srcInterface = _input.getSourceInterfaceField();
+    return new EqExpr(
+        new VarIntExpr(srcInterface), new LitIntExpr(NO_SOURCE_INTERFACE, srcInterface.getSize()));
+  }
+
+  // used to update the source interface field value (used when entering a node).
+  private @Nonnull BooleanExpr transformedSrcInterfaceConstraint(
+      @Nonnull String hostname, @Nonnull String iface) {
+    boolean nodeHasSrcInterfaceConstraint =
+        _input.getNodesWithSrcInterfaceConstraints().contains(hostname);
+
+    return nodeHasSrcInterfaceConstraint
+        ? new EqExpr(
+            new TransformedVarIntExpr(_input.getSourceInterfaceField()),
+            _input.getSourceInterfaceFieldValues().get(hostname).get(iface))
+        : TrueExpr.INSTANCE;
+  }
+
+  // used to initialize the source interface field value (used at origination points).
+  private @Nonnull BooleanExpr srcInterfaceConstraint(
+      @Nonnull String hostname, @Nonnull String iface) {
+    boolean nodeHasSrcInterfaceConstraint =
+        _input.getNodesWithSrcInterfaceConstraints().contains(hostname);
+
+    return nodeHasSrcInterfaceConstraint
+        ? new EqExpr(
+            new VarIntExpr(_input.getSourceInterfaceField()),
+            _input.getSourceInterfaceFieldValues().get(hostname).get(iface))
+        : noSrcInterfaceConstraint();
+  }
+
+  private @Nonnull BooleanExpr srcInterfaceConstraint(
+      @Nonnull String hostname,
+      @Nonnull String iface,
+      @Nonnull IntExpr srcInterfaceVar,
+      @Nonnull BooleanExpr defaultExpr) {
+    boolean nodeHasSrcInterfaceConstraint =
+        _input.getNodesWithSrcInterfaceConstraints().contains(hostname);
+
+    return nodeHasSrcInterfaceConstraint
+        ? new EqExpr(
+            srcInterfaceVar, _input.getSourceInterfaceFieldValues().get(hostname).get(iface))
+        : defaultExpr;
   }
 
   @Override
@@ -549,7 +597,27 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitOriginate(Originate.State originate) {
-    // ProjectOriginateVrf
+    // Project OriginateInterface
+    _input
+        .getEnabledInterfaces()
+        .entrySet()
+        .stream()
+        .flatMap(
+            enabledInterfacesByHostnameEntry -> {
+              String hostname = enabledInterfacesByHostnameEntry.getKey();
+              return enabledInterfacesByHostnameEntry
+                  .getValue()
+                  .stream()
+                  .map(
+                      iface ->
+                          new BasicRuleStatement(
+                              srcInterfaceConstraint(hostname, iface),
+                              new OriginateInterface(hostname, iface),
+                              new Originate(hostname)));
+            })
+        .forEach(_rules::add);
+
+    // Project OriginateVrf
     _input
         .getEnabledVrfs()
         .entrySet()
@@ -583,6 +651,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
             })
         .forEach(_rules::add);
   }
+
+  @Override
+  public void visitOriginateInterface(OriginateInterface.State originateInterface) {}
 
   @Override
   public void visitOriginateVrf(OriginateVrf.State originateVrf) {}
@@ -766,33 +837,37 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPreInInterface(PreInInterface.State preInInterface) {
+    // OriginateInterface
+    _input
+        .getEnabledInterfaces()
+        .entrySet()
+        .stream()
+        .flatMap(
+            enabledInterfacesByHostnameEntry -> {
+              String hostname = enabledInterfacesByHostnameEntry.getKey();
+              return enabledInterfacesByHostnameEntry
+                  .getValue()
+                  .stream()
+                  .map(
+                      iface ->
+                          new BasicRuleStatement(
+                              srcInterfaceConstraint(hostname, iface),
+                              new OriginateInterface(hostname, iface),
+                              new PreInInterface(hostname, iface)));
+            })
+        .forEach(_rules::add);
+
     // PostOutNeighbor
     _input
         .getEnabledEdges()
         .stream()
         .map(
-            edge -> {
-              boolean nodeHasSrcInterfaceConstraint =
-                  _input.getNodesWithSrcInterfaceConstraints().contains(edge.getNode2());
-
-              return new BasicRuleStatement(
-                  nodeHasSrcInterfaceConstraint
-                      ? new EqExpr(
-                          new TransformedVarIntExpr(_input.getSourceInterfaceField()),
-                          _input
-                              .getSourceInterfaceFieldValues()
-                              .get(edge.getNode2())
-                              .get(edge.getInt2()))
-                      : TrueExpr.INSTANCE,
-                  new PostOutEdge(edge),
-                  new PreInInterface(edge.getNode2(), edge.getInt2()));
-            })
+            edge ->
+                new BasicRuleStatement(
+                    transformedSrcInterfaceConstraint(edge.getNode2(), edge.getInt2()),
+                    new PostOutEdge(edge),
+                    new PreInInterface(edge.getNode2(), edge.getInt2())))
         .forEach(_rules::add);
-  }
-
-  private BooleanExpr noSrcInterfaceConstraint() {
-    Field srcInterface = _input.getSourceInterfaceField();
-    return new EqExpr(new VarIntExpr(srcInterface), new LitIntExpr(0, srcInterface.getSize()));
   }
 
   private BooleanExpr transitNodesNotTransitedConstraint() {
