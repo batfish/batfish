@@ -17,7 +17,6 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class TraceFiltersAnswerElement extends TableAnswerElement {
 
@@ -82,7 +81,8 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
 
   @Override
   public Object fromRow(ObjectNode o) throws JsonProcessingException {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   public ObjectNode getRow(
@@ -104,6 +104,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
 
   @Override
   public ObjectNode toRow(Object object) {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }
