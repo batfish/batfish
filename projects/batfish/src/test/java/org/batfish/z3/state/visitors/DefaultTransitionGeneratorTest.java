@@ -59,6 +59,7 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.Originate;
+import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
@@ -1092,10 +1093,24 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitOriginate() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
+            // enabledInterface affects which OriginateInterface rules are generated
+            .setEnabledInterfaces(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableSet.of(INTERFACE1, INTERFACE2),
+                    NODE2,
+                    ImmutableSet.of(INTERFACE1)))
             .setEnabledVrfs(
                 ImmutableMap.of(
                     NODE1, ImmutableSet.of(VRF1, VRF2), NODE2, ImmutableSet.of(VRF1, VRF2)))
+            .setNodesWithSrcInterfaceConstraints(ImmutableSet.of(NODE1))
             .setSrcInterfaceField(SRC_INTERFACE_FIELD)
+            .setSrcInterfaceFieldValues(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(
+                        INTERFACE1, i(1),
+                        INTERFACE2, i(2))))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
@@ -1106,6 +1121,29 @@ public class DefaultTransitionGeneratorTest {
     BooleanExpr noSrcInterfaceExpr =
         new EqExpr(
             new VarIntExpr(srcInterfaceField), new LitIntExpr(0, srcInterfaceField.getSize()));
+
+    // OriginateInterface
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(new VarIntExpr(srcInterfaceField), i(1)),
+                new OriginateInterface(NODE1, INTERFACE1),
+                new Originate(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(new VarIntExpr(srcInterfaceField), i(2)),
+                new OriginateInterface(NODE1, INTERFACE2),
+                new Originate(NODE1))));
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                noSrcInterfaceExpr,
+                new OriginateInterface(NODE2, INTERFACE1),
+                new Originate(NODE2))));
 
     // ProjectOriginateVrf
     assertThat(
@@ -1522,6 +1560,11 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitPreInInterface() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
+            // enabledInterface affects which OriginateInterface rules are generated
+            .setEnabledInterfaces(
+                ImmutableMap.of(
+                    NODE1, ImmutableSet.of(INTERFACE1, INTERFACE2, INTERFACE3),
+                    NODE2, ImmutableSet.of(INTERFACE1, INTERFACE2, INTERFACE3)))
             .setEnabledEdges(
                 ImmutableSet.of(
                     new Edge(NODE1, INTERFACE1, NODE2, INTERFACE1),
@@ -1561,6 +1604,62 @@ public class DefaultTransitionGeneratorTest {
             DefaultTransitionGenerator.generateTransitions(
                 input, ImmutableSet.of(PreInInterface.State.INSTANCE)));
 
+    // PreInInterface
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(new VarIntExpr(SRC_INTERFACE_FIELD), i(1)),
+                new OriginateInterface(NODE1, INTERFACE1),
+                new PreInInterface(NODE1, INTERFACE1))));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(new VarIntExpr(SRC_INTERFACE_FIELD), i(2)),
+                new OriginateInterface(NODE1, INTERFACE2),
+                new PreInInterface(NODE1, INTERFACE2))));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                new EqExpr(new VarIntExpr(SRC_INTERFACE_FIELD), i(3)),
+                new OriginateInterface(NODE1, INTERFACE3),
+                new PreInInterface(NODE1, INTERFACE3))));
+
+    // NODE2 has no src interface constraints, so all rules should set SRC_INTERFACE_FIELD to 0
+    BooleanExpr noSrcInterfaceConstraint =
+        new EqExpr(
+            new VarIntExpr(SRC_INTERFACE_FIELD),
+            new LitIntExpr(
+                DefaultTransitionGenerator.NO_SOURCE_INTERFACE, SRC_INTERFACE_FIELD.getSize()));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                noSrcInterfaceConstraint,
+                new OriginateInterface(NODE2, INTERFACE1),
+                new PreInInterface(NODE2, INTERFACE1))));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                noSrcInterfaceConstraint,
+                new OriginateInterface(NODE2, INTERFACE2),
+                new PreInInterface(NODE2, INTERFACE2))));
+
+    assertThat(
+        rules,
+        hasItem(
+            new BasicRuleStatement(
+                noSrcInterfaceConstraint,
+                new OriginateInterface(NODE2, INTERFACE2),
+                new PreInInterface(NODE2, INTERFACE2))));
+
     // PostOutNeighbor
     assertThat(
         rules,
@@ -1584,7 +1683,7 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                ImmutableSet.of(new PostOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1)),
+                new PostOutEdge(NODE1, INTERFACE2, NODE2, INTERFACE1),
                 new PreInInterface(NODE2, INTERFACE1))));
     assertThat(
         rules,
