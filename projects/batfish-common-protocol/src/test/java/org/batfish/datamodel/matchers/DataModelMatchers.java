@@ -4,9 +4,11 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -40,6 +42,23 @@ public final class DataModelMatchers {
   public static Matcher<Configuration> hasZone(
       @Nonnull String name, @Nonnull Matcher<? super Zone> subMatcher) {
     return new HasZone(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s {@code outgoingFilterName}.
+   */
+  public static @Nonnull Matcher<Interface> hasOutgoingFilterName(
+      @Nonnull Matcher<? super String> subMatcher) {
+    return new InterfaceMatchersImpl.HasOutgoingFilterName(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the {@link Interface}'s {@code outgoingFilterName} is equal
+   * to {@code expectedName}.
+   */
+  public static @Nonnull Matcher<Interface> hasOutgoingFilterName(@Nullable String expectedName) {
+    return new InterfaceMatchersImpl.HasOutgoingFilterName(equalTo(expectedName));
   }
 
   /**
