@@ -1,8 +1,9 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.Collections;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
+import java.util.SortedSet;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.IpWildcard;
 
@@ -28,7 +29,7 @@ public final class AddressAddressBookEntry extends AddressBookEntry {
   }
 
   @Override
-  public Set<IpWildcard> getIpWildcards(Warnings w) {
-    return Collections.singleton(_ipWildcard);
+  public SortedSet<IpWildcard> getIpWildcards(Warnings w) {
+    return ImmutableSortedSet.of(_ipWildcard);
   }
 }

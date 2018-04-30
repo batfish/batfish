@@ -1587,19 +1587,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
               // If this address book references other entries, add them to an AclIpSpace
               if (!entry.getEntries().isEmpty()) {
-                List<AclIpSpaceLine> aclIpSpaceLines = new TreeList<>();
+                ImmutableList.Builder<AclIpSpaceLine> aclIpSpaceLineBuilder =
+                    ImmutableList.builder();
                 entry
                     .getEntries()
                     .forEach(
                         subEntry -> {
                           String subEntryName = bookName + "~" + subEntry.getName();
-                          aclIpSpaceLines.add(
+                          aclIpSpaceLineBuilder.add(
                               AclIpSpaceLine.builder()
                                   .setIpSpace(new IpSpaceReference(subEntryName))
                                   .setAction(LineAction.ACCEPT)
                                   .build());
                         });
-                ipSpaces.put(entryName, AclIpSpace.builder().setLines(aclIpSpaceLines).build());
+                ipSpaces.put(
+                    entryName,
+                    AclIpSpace.builder().setLines(aclIpSpaceLineBuilder.build()).build());
               } else {
                 ipSpaces.put(
                     entryName,

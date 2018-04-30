@@ -481,6 +481,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   private static final String F_POLICY_TERM_THEN_NEXT_HOP =
       "policy-statement - term - then - next-hop";
 
+  private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
+
   public static NamedPort getNamedPort(PortContext ctx) {
     if (ctx.AFS() != null) {
       return NamedPort.AFS;
@@ -1540,7 +1542,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _globalAddressBook =
         _configuration
             .getGlobalAddressBooks()
-            .computeIfAbsent("global", n -> new AddressBook(n, new TreeMap<>()));
+            .computeIfAbsent(GLOBAL_ADDRESS_BOOK_NAME, n -> new AddressBook(n, new TreeMap<>()));
   }
 
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
@@ -2168,11 +2170,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     try {
       _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
     } catch (ClassCastException e) {
-      throw new BatfishException(
+      _w.redFlag(
           "Cannot create address-set address-book entry \""
               + name
-              + "\" because a different type of address-book entry with that name already exists",
-          e);
+              + "\" because a different type of address-book entry with that name already exists");
+      // Create a throw-away entry so deeper parsing does not fail for this entry
+      _currentAddressSetAddressBookEntry = new AddressSetAddressBookEntry(name);
     }
   }
 
@@ -2187,7 +2190,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.prefix != null) {
       ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
     } else {
-      throw new BatfishException("Invalid Address for AddressBook");
+      throw convError(IpWildcard.class, ctx);
     }
     AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
     _currentAddressBook.getEntries().put(name, addressEntry);
@@ -2434,11 +2437,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     try {
       _currentAddressSetAddressBookEntry = (AddressSetAddressBookEntry) entry;
     } catch (ClassCastException e) {
-      throw new BatfishException(
+      _w.redFlag(
           "Cannot create address-set address-book entry \""
               + name
-              + "\" because a different type of address-book entry with that name already exists",
-          e);
+              + "\" because a different type of address-book entry with that name already exists");
+      // Create a throw-away entry so deeper parsing does not fail for this entry
+      _currentAddressSetAddressBookEntry = new AddressSetAddressBookEntry(name);
     }
   }
 
@@ -4052,7 +4056,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.prefix != null) {
       ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
     } else {
-      throw new BatfishException("Invalid Address for AddressBook");
+      throw convError(IpWildcard.class, ctx);
     }
     AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
     _currentZone.getAddressBook().getEntries().put(name, addressEntry);

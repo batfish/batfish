@@ -33,10 +33,12 @@ public final class FwFromSourceAddressBookEntry extends FwFrom {
     String ipSpaceName = addressBookName + "~" + _addressBookEntryName;
     IpSpaceReference ipSpaceReference = new IpSpaceReference(ipSpaceName);
     if (headerSpaceBuilder.getSrcIps() != null) {
-      ImmutableList.Builder<IpSpace> ipSpacesBuilder =
-          ImmutableList.<IpSpace>builder().add(ipSpaceReference);
-      ipSpacesBuilder.add(headerSpaceBuilder.getSrcIps());
-      headerSpaceBuilder.setSrcIps(AclIpSpace.union(ipSpacesBuilder.build()));
+      headerSpaceBuilder.setSrcIps(
+          AclIpSpace.union(
+              ImmutableList.<IpSpace>builder()
+                  .add(ipSpaceReference)
+                  .add(headerSpaceBuilder.getSrcIps())
+                  .build()));
     } else {
       headerSpaceBuilder.setSrcIps(AclIpSpace.union(ipSpaceReference));
     }

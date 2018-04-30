@@ -2,7 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.Collections;
 import java.util.Map;
-import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -49,7 +49,7 @@ public final class AddressBook extends ComparableStructure<String> {
     return _entries;
   }
 
-  Set<IpWildcard> getIpWildcards(String entryName, Warnings w) {
+  SortedSet<IpWildcard> getIpWildcards(String entryName, Warnings w) {
     AddressBook addressBook = getAddressBook(entryName);
     AddressBookEntry entry = null;
     if (addressBook != null) {
@@ -62,7 +62,7 @@ public final class AddressBook extends ComparableStructure<String> {
               + "\" in address book: \""
               + _key
               + "\" or any global address book");
-      return Collections.emptySet();
+      return Collections.emptySortedSet();
     } else {
       return entry.getIpWildcards(w);
     }

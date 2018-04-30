@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.util.Set;
+import java.util.SortedSet;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.IpWildcard;
@@ -16,5 +17,5 @@ public abstract class AddressBookEntry extends ComparableStructure<String> {
 
   public abstract Set<AddressSetEntry> getEntries();
 
-  public abstract Set<IpWildcard> getIpWildcards(Warnings w);
+  public abstract SortedSet<IpWildcard> getIpWildcards(Warnings w);
 }
