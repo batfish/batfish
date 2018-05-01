@@ -316,6 +316,24 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosTestbed() throws IOException {
+    Configuration c = parseConfig("ios-testbed");
+    Ip ogn1TestIp = new Ip("1.128.0.0");
+    Ip ogn2TestIp1 = new Ip("2.0.0.0");
+    Ip ogn2TestIp2 = new Ip("2.0.0.1");
+
+
+
+    /* Each object group should permit an IP iff it is in its space. */
+    assertThat(c, hasIpSpace("ogn1", containsIp(ogn1TestIp)));
+    assertThat(c, hasIpSpace("ogn1", not(containsIp(ogn2TestIp1))));
+    assertThat(c, hasIpSpace("ogn2", not(containsIp(ogn1TestIp))));
+    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
+    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
+    assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
+  }
+
+  @Test
   public void testIosObjectGroupNetwork() throws IOException {
     Configuration c = parseConfig("ios-object-group-network");
     Ip ogn1TestIp = new Ip("1.128.0.0");

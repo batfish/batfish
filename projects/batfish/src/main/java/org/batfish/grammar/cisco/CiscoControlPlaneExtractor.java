@@ -400,9 +400,11 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
@@ -695,6 +697,8 @@ import org.batfish.representation.cisco.Prefix6List;
 import org.batfish.representation.cisco.Prefix6ListLine;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
+import org.batfish.representation.cisco.ProtocolObjectGroup;
+import org.batfish.representation.cisco.ProtocolObjectGroupLine;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
@@ -1084,6 +1088,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private final Warnings _w;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
+
+  private ProtocolObjectGroup _currentProtocolObjectGroup;
 
   private ServiceObjectGroup _currentServiceObjectGroup;
 
@@ -1920,6 +1926,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterOg_protocol(Og_protocolContext ctx) {
+    String name = ctx.name.getText();
+    int definitionLine = ctx.name.getStart().getLine();
+    _currentProtocolObjectGroup =
+        _configuration
+            .getProtocolObjectGroups()
+            .computeIfAbsent(name, n -> new ProtocolObjectGroup(n, definitionLine));
+  }
+
+  @Override
+  public void exitOg_protocol(Og_protocolContext ctx) {
+    _currentProtocolObjectGroup = null;
+  }
+
+  @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)));
   }
@@ -1929,6 +1950,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)));
+  }
+
+  @Override
+  public void exitOgp_protocol_object(Ogp_protocol_objectContext ctx) {
+    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupLine(toIpProtocol(ctx.protocol())));
   }
 
   @Override

@@ -223,6 +223,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
+  public static String computeProtocolObjectGroupAclName(String name) {
+    return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
+  }
+
   public static String computeServiceObjectGroupAclName(String name) {
     return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
@@ -370,6 +374,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, PrefixList> _prefixLists;
 
+  private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
+
   private final Set<String> _referencedRouteMaps;
 
   private final Map<String, RouteMap> _routeMaps;
@@ -460,6 +466,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _pimRouteMaps = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
+    _protocolObjectGroups = new TreeMap<>();
     _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
@@ -1135,6 +1142,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markNetworkObjectGroups(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage, _networkObjectGroups);
+  }
+
+  private void markProtocolObjectGroups(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.PROTOCOL_OBJECT_GROUP, usage, _protocolObjectGroups);
   }
 
   private void markRouteMaps(CiscoStructureUsage usage) {
@@ -3690,6 +3701,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
 
+    // convert each ProtocolObjectGroup to IpAccessList
+    _protocolObjectGroups.forEach(
+        (name, protocolObjectGroup) ->
+            c.getIpAccessLists()
+                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
+
     // convert each ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
@@ -3954,6 +3971,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // object-group
     markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
+    markProtocolObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP);
     markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
 
     // zone
@@ -3982,6 +4000,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     warnUnusedStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
     warnUnusedStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
     warnUnusedStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
+    warnUnusedStructure(_protocolObjectGroups, CiscoStructureType.PROTOCOL_OBJECT_GROUP);
     warnUnusedPeerGroups();
     warnUnusedPeerSessions();
     warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
@@ -3993,6 +4012,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.computeRoutingPolicySources(_w);
 
     return c;
+  }
+
+  private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeServiceObjectGroupAclName(protocolObjectGroup.getName()))
+        .build();
   }
 
   private IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
@@ -4227,6 +4257,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, ProtocolObjectGroup> getProtocolObjectGroups() {
+    return _protocolObjectGroups;
   }
 
   public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
