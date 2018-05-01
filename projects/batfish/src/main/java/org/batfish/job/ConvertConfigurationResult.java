@@ -7,12 +7,12 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 public class ConvertConfigurationResult
-    extends BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement2> {
+    extends BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement> {
 
-  private ConvertConfigurationAnswerElement2 _answerElement;
+  private ConvertConfigurationAnswerElement _answerElement;
 
   private Map<String, Configuration> _configurations;
 
@@ -32,7 +32,7 @@ public class ConvertConfigurationResult
       Map<String, Warnings> warningsByHost,
       String name,
       Map<String, Configuration> configurations,
-      ConvertConfigurationAnswerElement2 answerElement) {
+      ConvertConfigurationAnswerElement answerElement) {
     super(elapsedTime, history);
     _name = name;
     _warningsByHost = warningsByHost;
@@ -55,7 +55,7 @@ public class ConvertConfigurationResult
   public void applyTo(
       Map<String, Configuration> configurations,
       BatfishLogger logger,
-      ConvertConfigurationAnswerElement2 answerElement) {
+      ConvertConfigurationAnswerElement answerElement) {
     appendHistory(logger);
     if (_configurations != null) {
       for (Entry<String, Configuration> hostConfig : _configurations.entrySet()) {
@@ -67,9 +67,6 @@ public class ConvertConfigurationResult
           configurations.put(hostname, config);
           if (_warningsByHost.containsKey(hostname) && !_warningsByHost.get(hostname).isEmpty()) {
             answerElement.getWarnings().put(hostname, _warningsByHost.get(hostname));
-          }
-          if (!_answerElement.getUnusedStructures().isEmpty()) {
-            answerElement.getUnusedStructures().putAll(_answerElement.getUnusedStructures());
           }
           if (!_answerElement.getUndefinedReferences().isEmpty()) {
             answerElement.getUndefinedReferences().putAll(_answerElement.getUndefinedReferences());

@@ -12,7 +12,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.apache.commons.lang3.tuple.MutablePair;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -20,22 +19,20 @@ import org.batfish.common.util.DefinedStructure;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GenericConfigObject;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 public abstract class VendorConfiguration implements Serializable, GenericConfigObject {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private transient ConvertConfigurationAnswerElement2 _answerElement;
+  private transient ConvertConfigurationAnswerElement _answerElement;
 
   protected String _filename;
 
   private VendorConfiguration _overlayConfiguration;
-
-  protected final SortedMap<StructureType, SortedMap<String, SortedSet<Integer>>>
-      _structureDefinitions;
 
   protected final SortedMap<
           StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>>
@@ -46,7 +43,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   protected transient Warnings _w;
 
   public VendorConfiguration() {
-    _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
   }
 
@@ -54,15 +50,8 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     return name;
   }
 
-  public void defineStructure(StructureType type, String name, int line) {
-    SortedMap<String, SortedSet<Integer>> byName =
-        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedSet<Integer> lines = byName.computeIfAbsent(name, k -> new TreeSet<>());
-    lines.add(line);
-  }
-
   @JsonIgnore
-  public final ConvertConfigurationAnswerElement2 getAnswerElement() {
+  public final ConvertConfigurationAnswerElement getAnswerElement() {
     return _answerElement;
   }
 
@@ -145,7 +134,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
-  public final void setAnswerElement(ConvertConfigurationAnswerElement2 answerElement) {
+  public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
     _answerElement = answerElement;
   }
 
@@ -185,31 +174,17 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
-  private void unused(StructureType structureType, String name, int line) {
-    String hostname = getHostname();
-    String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        _answerElement.getUnusedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
-    SortedMap<String, SortedSet<Integer>> byName =
-        byType.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedSet<Integer> lines = byName.computeIfAbsent(name, k -> new TreeSet<>());
-    lines.add(line);
-  }
-
   public void recordStructure(
       StructureType structureType, String name, int numReferrers, int line) {
     String hostname = getHostname();
     String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, MutablePair<Integer, SortedSet<Integer>>>> byType =
+    SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType =
         _answerElement.getDefinedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
-    SortedMap<String, MutablePair<Integer, SortedSet<Integer>>> byName =
+    SortedMap<String, DefinedStructureInfo> byName =
         byType.computeIfAbsent(type, k -> new TreeMap<>());
-    MutablePair<Integer, SortedSet<Integer>> pair =
-        byName.computeIfAbsent(name, k -> new MutablePair<>(numReferrers, new TreeSet<>()));
-    pair.right.add(line);
-    if (numReferrers == 0) {
-      unused(structureType, name, line);
-    }
+    DefinedStructureInfo info =
+        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), numReferrers));
+    info.getDefinitionLines().add(line);
   }
 
   public void recordStructure(

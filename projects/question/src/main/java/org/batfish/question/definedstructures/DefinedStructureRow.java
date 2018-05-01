@@ -7,7 +7,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nonnull;
 
-public class DefinedStructureInfo implements Comparable<DefinedStructureInfo> {
+public class DefinedStructureRow implements Comparable<DefinedStructureRow> {
 
   @Nonnull private final SortedSet<Integer> _definitionLines;
 
@@ -19,7 +19,7 @@ public class DefinedStructureInfo implements Comparable<DefinedStructureInfo> {
 
   private final int _numReferences;
 
-  public DefinedStructureInfo(
+  public DefinedStructureRow(
       String nodeName,
       String structType,
       String structName,
@@ -65,19 +65,19 @@ public class DefinedStructureInfo implements Comparable<DefinedStructureInfo> {
   }
 
   @Override
-  public int compareTo(@Nonnull DefinedStructureInfo o) {
-    return Comparator.comparing(DefinedStructureInfo::getNodeName)
-        .thenComparing(DefinedStructureInfo::getStructType)
-        .thenComparing(DefinedStructureInfo::getStructName)
+  public int compareTo(@Nonnull DefinedStructureRow o) {
+    return Comparator.comparing(DefinedStructureRow::getNodeName)
+        .thenComparing(DefinedStructureRow::getStructType)
+        .thenComparing(DefinedStructureRow::getStructName)
         .compare(this, o);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof DefinedStructureInfo)) {
+    if (o == null || !(o instanceof DefinedStructureRow)) {
       return false;
     }
-    DefinedStructureInfo other = (DefinedStructureInfo) o;
+    DefinedStructureRow other = (DefinedStructureRow) o;
     return Objects.equals(_definitionLines, other._definitionLines)
         && Objects.equals(_nodeName, other._nodeName)
         && Objects.equals(_numReferences, other._numReferences)

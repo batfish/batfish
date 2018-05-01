@@ -12,9 +12,9 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasUnusedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
@@ -138,7 +138,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testAGAclUnused() throws IOException {
+  public void testAGAclReferrers() throws IOException {
     String hostName = "iosAccessGroupAcl";
     String testrigName = "access-group-acl";
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
@@ -150,25 +150,18 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
 
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
-        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    // only mac_acl_unused and ip_acl_unused should exist as unused structures
-    assertThat(unusedStructures, hasKey(hostName));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        unusedStructures.get(hostName);
-
-    assertThat(byType, hasKey(CiscoStructureType.MAC_ACCESS_LIST.getDescription()));
-    assertThat(byType, hasKey(CiscoStructureType.IP_ACCESS_LIST_EXTENDED.getDescription()));
-    SortedMap<String, SortedSet<Integer>> byNameMacAcl =
-        byType.get(CiscoStructureType.MAC_ACCESS_LIST.getDescription());
-    SortedMap<String, SortedSet<Integer>> byNameIpAclExt =
-        byType.get(CiscoStructureType.IP_ACCESS_LIST_EXTENDED.getDescription());
-
-    assertThat(byNameMacAcl.keySet(), hasSize(1));
-    assertThat(byNameIpAclExt.keySet(), hasSize(1));
-    assertThat(byNameMacAcl, hasKey("mac_acl_unused"));
-    assertThat(byNameIpAclExt, hasKey("ip_acl_unused"));
+    // check expected references for {mac,ip}_acl{_unused,}
+    assertThat(
+        ccae, hasNumReferrers(hostName, CiscoStructureType.MAC_ACCESS_LIST, "mac_acl_unused", 0));
+    assertThat(ccae, hasNumReferrers(hostName, CiscoStructureType.MAC_ACCESS_LIST, "mac_acl", 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostName, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "ip_acl_unused", 0));
+    assertThat(
+        ccae, hasNumReferrers(hostName, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "ip_acl", 1));
   }
 
   @Test
@@ -264,18 +257,15 @@ public class CiscoGrammarTest {
                                                 computeServiceObjectGroupAclName("ogs1"))))))))))));
 
     /*
-     * We expected the only unused object-groups to be ogsunused1, ognunused1
+     * We expect only object-groups to be ogsunused1, ognunused1 to have zero referrers
      */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogs1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2", 1));
     assertThat(
-        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogs1")));
+        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogsunused1", 0));
     assertThat(
-        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1")));
-    assertThat(
-        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2")));
-    assertThat(
-        ccae, hasUnusedStructure(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogsunused1"));
-    assertThat(
-        ccae, hasUnusedStructure(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ognunused1"));
+        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ognunused1", 0));
 
     /*
      * We expect undefined references only to object-groups ogsfake, ognfake1, ognfake2

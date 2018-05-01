@@ -16,7 +16,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Version;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class BatfishStorageTest {
     Map<String, Configuration> configs = new HashMap<>();
     configs.put("node1", new Configuration("node1", ConfigurationFormat.CISCO_IOS));
 
-    _storage.storeConfigurations(configs, new ConvertConfigurationAnswerElement2(), "sometr");
+    _storage.storeConfigurations(configs, new ConvertConfigurationAnswerElement(), "sometr");
     Map<String, Configuration> deserialized = _storage.loadConfigurations("sometr");
     assertThat(deserialized, not(nullValue()));
     assertThat(deserialized.keySet(), equalTo(Sets.newHashSet("node1")));
@@ -57,7 +57,7 @@ public class BatfishStorageTest {
 
   @Test
   public void loadOldConfigurationsReturnsNull() {
-    ConvertConfigurationAnswerElement2 oldConvertAnswer = new ConvertConfigurationAnswerElement2();
+    ConvertConfigurationAnswerElement oldConvertAnswer = new ConvertConfigurationAnswerElement();
     oldConvertAnswer.setVersion(INCOMPATIBLE_VERSION);
     assertThat(
         "should not be compatible with current code",

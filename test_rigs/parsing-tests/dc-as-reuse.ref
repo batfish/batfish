@@ -4808,155 +4808,245 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "unusedStructures" : {
+      "definedStructures" : {
         "plane_0_spine_0" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              54
-            ],
-            "IPV4_18_OR_LONGER" : [
-              55
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                54
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                55
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              52
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                52
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "plane_1_spine_0" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              54
-            ],
-            "IPV4_18_OR_LONGER" : [
-              55
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                54
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                55
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              52
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                52
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_0_leaf_0" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_0_leaf_1" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_0_tor_0" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_0_tor_1" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_1_leaf_0" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_1_leaf_1" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_1_tor_0" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "pod_1_tor_1" : {
           "ipv4 prefix-list" : {
-            "DEFAULT_IPV4" : [
-              61
-            ],
-            "IPV4_18_OR_LONGER" : [
-              62
-            ]
+            "DEFAULT_IPV4" : {
+              "definitionLines" : [
+                61
+              ],
+              "numReferrers" : 0
+            },
+            "IPV4_18_OR_LONGER" : {
+              "definitionLines" : [
+                62
+              ],
+              "numReferrers" : 0
+            }
           },
           "standard community-list" : {
-            "LEAK_COMMUNITY" : [
-              59
-            ]
+            "LEAK_COMMUNITY" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            }
           }
         }
       },

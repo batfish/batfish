@@ -20,7 +20,7 @@ import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
@@ -105,7 +105,7 @@ public interface IBatfish extends IPluginConsumer {
 
   SortedMap<String, Configuration> loadConfigurations();
 
-  ConvertConfigurationAnswerElement2 loadConvertConfigurationAnswerElementOrReparse();
+  ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse();
 
   DataPlane loadDataPlane();
 

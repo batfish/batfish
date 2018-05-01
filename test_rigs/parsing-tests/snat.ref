@@ -463,6 +463,66 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "us_border" : {
+          "extended ip access-list" : {
+            "acl-atlantis-nat" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 1
+            },
+            "acl-atlantis-to-us" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : 1
+            },
+            "acl-us-to-atlantis" : {
+              "definitionLines" : [
+                18
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipv4 prefix-list" : {
+            "pl-atlantis-to-us-mcast" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            },
+            "pl-us-to-atlantis" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "nat pool" : {
+            "np-atlantis" : {
+              "definitionLines" : [
+                34
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "route-map" : {
+            "rm-atlantis-to-us" : {
+              "definitionLines" : [
+                41
+              ],
+              "numReferrers" : 1
+            },
+            "rm-us-to-atlantis" : {
+              "definitionLines" : [
+                37
+              ],
+              "numReferrers" : 1
+            }
+          }
+        }
+      },
       "version" : "0.36.0"
     },
     {

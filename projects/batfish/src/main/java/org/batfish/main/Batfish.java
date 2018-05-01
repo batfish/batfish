@@ -117,7 +117,7 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AnswerSummary;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.answers.FlattenVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
@@ -1104,7 +1104,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Map<String, Configuration> convertConfigurations(
       Map<String, GenericConfigObject> vendorConfigurations,
-      ConvertConfigurationAnswerElement2 answerElement) {
+      ConvertConfigurationAnswerElement answerElement) {
     _logger.info("\n*** CONVERTING VENDOR CONFIGURATIONS TO INDEPENDENT FORMAT ***\n");
     _logger.resetTimer();
     Map<String, Configuration> configurations = new TreeMap<>();
@@ -1574,7 +1574,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Map<String, Configuration> getConfigurations(
-      Path serializedVendorConfigPath, ConvertConfigurationAnswerElement2 answerElement) {
+      Path serializedVendorConfigPath, ConvertConfigurationAnswerElement answerElement) {
     Map<String, GenericConfigObject> vendorConfigurations =
         deserializeVendorConfigurations(serializedVendorConfigPath);
     Map<String, Configuration> configurations =
@@ -2287,8 +2287,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public ConvertConfigurationAnswerElement2 loadConvertConfigurationAnswerElementOrReparse() {
-    ConvertConfigurationAnswerElement2 ccae =
+  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElementOrReparse() {
+    ConvertConfigurationAnswerElement ccae =
         _storage.loadConvertConfigurationAnswerElement(_testrigSettings.getName());
     if (ccae != null
         && Version.isCompatibleVersion(
@@ -2526,7 +2526,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void mergeConvertAnswer(
       boolean summary, boolean verboseError, InitInfoAnswerElement answerElement) {
-    ConvertConfigurationAnswerElement2 convertAnswer =
+    ConvertConfigurationAnswerElement convertAnswer =
         loadConvertConfigurationAnswerElementOrReparse();
     mergeInitStepAnswer(answerElement, convertAnswer, summary, verboseError);
     for (String failed : convertAnswer.getFailed()) {
@@ -3816,7 +3816,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Answer serializeIndependentConfigs(Path vendorConfigPath) {
     Answer answer = new Answer();
-    ConvertConfigurationAnswerElement2 answerElement = new ConvertConfigurationAnswerElement2();
+    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
     answerElement.setVersion(Version.getVersion());
     if (_settings.getVerboseParse()) {
       answer.addAnswerElement(answerElement);

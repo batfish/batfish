@@ -2303,15 +2303,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private void warnUnreferencedBgpGroups() {
     for (RoutingInstance ri : _routingInstances.values()) {
       for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
-        recordStructure(
-            JuniperStructureType.BGP_GROUP, group.getName(), -1, group.getDefinitionLine());
+        if (_unreferencedBgpGroups != null && _unreferencedBgpGroups.containsKey(group.getName())) {
+          recordStructure(
+              JuniperStructureType.BGP_GROUP,
+              group.getName(),
+              0,
+              _unreferencedBgpGroups.get(group.getName()));
+        } else {
+          // -1 because we are not counting these references properly
+          recordStructure(
+              JuniperStructureType.BGP_GROUP, group.getName(), -1, group.getDefinitionLine());
+        }
       }
-    }
-    if (_unreferencedBgpGroups != null) {
-      _unreferencedBgpGroups.forEach(
-          (name, line) -> {
-            recordStructure(JuniperStructureType.BGP_GROUP, name, 0, line);
-          });
     }
   }
 

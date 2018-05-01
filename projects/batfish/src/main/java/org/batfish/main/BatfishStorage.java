@@ -33,7 +33,7 @@ import org.batfish.common.Version;
 import org.batfish.common.plugin.PluginConsumer.Format;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
 /** A utility class that abstracts the underlying file system storage used by {@link Batfish}. */
 final class BatfishStorage {
@@ -103,12 +103,12 @@ final class BatfishStorage {
   }
 
   @Nullable
-  public ConvertConfigurationAnswerElement2 loadConvertConfigurationAnswerElement(String testrig) {
+  public ConvertConfigurationAnswerElement loadConvertConfigurationAnswerElement(String testrig) {
     Path ccaePath = getTestrigDir(testrig).resolve(BfConsts.RELPATH_CONVERT_ANSWER_PATH);
     if (!Files.exists(ccaePath)) {
       return null;
     }
-    return deserializeObject(ccaePath, ConvertConfigurationAnswerElement2.class);
+    return deserializeObject(ccaePath, ConvertConfigurationAnswerElement.class);
   }
 
   /**
@@ -139,7 +139,7 @@ final class BatfishStorage {
    */
   public void storeConfigurations(
       Map<String, Configuration> configurations,
-      ConvertConfigurationAnswerElement2 convertAnswerElement,
+      ConvertConfigurationAnswerElement convertAnswerElement,
       String testrig) {
     Path testrigDir = getTestrigDir(testrig);
     if (!testrigDir.toFile().exists() && !testrigDir.toFile().mkdirs()) {
@@ -260,7 +260,7 @@ final class BatfishStorage {
 
   private boolean cachedConfigsAreCompatible(String testrig) {
     try {
-      ConvertConfigurationAnswerElement2 ccae = loadConvertConfigurationAnswerElement(testrig);
+      ConvertConfigurationAnswerElement ccae = loadConvertConfigurationAnswerElement(testrig);
       return ccae != null
           && Version.isCompatibleVersion(
               BatfishStorage.class.getCanonicalName(),

@@ -389,9 +389,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private transient Set<String> _unimplementedFeatures;
 
-  private transient Map<String, Integer> _unusedPeerGroups;
+  private transient Set<NamedBgpPeerGroup> _unusedPeerGroups;
 
-  private transient Map<String, Integer> _unusedPeerSessions;
+  private transient Set<NamedBgpPeerGroup> _unusedPeerSessions;
 
   private ConfigurationFormat _vendor;
 
@@ -1602,14 +1602,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (LeafBgpPeerGroup lpg : leafGroups) {
       lpg.inheritUnsetFields(proc, this);
     }
-    _unusedPeerGroups = new TreeMap<>();
+    _unusedPeerGroups = new HashSet<>();
     int fakePeerCounter = -1;
     // peer groups / peer templates
     for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups().entrySet()) {
       String name = e.getKey();
       NamedBgpPeerGroup namedPeerGroup = e.getValue();
       if (!namedPeerGroup.getInherited()) {
-        _unusedPeerGroups.put(name, namedPeerGroup.getDefinitionLine());
+        _unusedPeerGroups.add(namedPeerGroup);
         Ip fakeIp = new Ip(fakePeerCounter);
         IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
         fakePg.setGroupName(name);
@@ -1622,7 +1622,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       namedPeerGroup.inheritUnsetFields(proc, this);
     }
     // separate because peer sessions can inherit from other peer sessions
-    _unusedPeerSessions = new TreeMap<>();
+    _unusedPeerSessions = new HashSet<>();
     int fakeGroupCounter = 1;
     for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
       namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc, this);
@@ -1631,7 +1631,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String name = e.getKey();
       NamedBgpPeerGroup namedPeerGroup = e.getValue();
       if (!namedPeerGroup.getInherited()) {
-        _unusedPeerSessions.put(name, namedPeerGroup.getDefinitionLine());
+        _unusedPeerSessions.add(namedPeerGroup);
         String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
         NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(fakeNamedPgName, -1);
         fakeNamedPg.setPeerSession(name);
@@ -4103,38 +4103,38 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void recordPeerGroups() {
     for (Vrf vrf : getVrfs().values()) {
       BgpProcess proc = vrf.getBgpProcess();
+      if (proc == null) {
+        continue;
+      }
       for (NamedBgpPeerGroup peerGroup : proc.getNamedPeerGroups().values()) {
+        // use -1 for now; we are not counting references for peerGroups
+        int numReferrers =
+            (_unusedPeerGroups != null && _unusedPeerGroups.contains(peerGroup)) ? 0 : -1;
         recordStructure(
             CiscoStructureType.BGP_PEER_GROUP,
             peerGroup.getName(),
-            -1,
+            numReferrers,
             peerGroup.getDefinitionLine());
       }
-    }
-    if (_unusedPeerGroups != null) {
-      _unusedPeerGroups.forEach(
-          (name, line) -> {
-            recordStructure(CiscoStructureType.BGP_PEER_GROUP, name, 0, line);
-          });
     }
   }
 
   private void recordPeerSessions() {
     for (Vrf vrf : getVrfs().values()) {
       BgpProcess proc = vrf.getBgpProcess();
+      if (proc == null) {
+        continue;
+      }
       for (NamedBgpPeerGroup peerSession : proc.getPeerSessions().values()) {
+        // use -1 for now; we are not counting references for peerSessions
+        int numReferrers =
+            (_unusedPeerSessions != null && _unusedPeerSessions.contains(peerSession)) ? 0 : -1;
         recordStructure(
             CiscoStructureType.BGP_PEER_SESSION,
             peerSession.getName(),
-            -1,
+            numReferrers,
             peerSession.getDefinitionLine());
       }
-    }
-    if (_unusedPeerSessions != null) {
-      _unusedPeerSessions.forEach(
-          (name, line) -> {
-            recordStructure(CiscoStructureType.BGP_PEER_SESSION, name, 0, line);
-          });
     }
   }
 

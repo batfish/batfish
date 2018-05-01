@@ -72,7 +72,7 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
     return fromRowStatic(row);
   }
 
-  public static DefinedStructureInfo fromRowStatic(ObjectNode row) throws JsonProcessingException {
+  public static DefinedStructureRow fromRowStatic(ObjectNode row) throws JsonProcessingException {
     SortedSet<Integer> definitionLines = new TreeSet<>();
     try {
       definitionLines =
@@ -92,16 +92,16 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
     String structType =
         BatfishObjectMapper.mapper().treeToValue(row.get(COL_STRUCT_TYPE), String.class);
 
-    return new DefinedStructureInfo(
+    return new DefinedStructureRow(
         nodeName, structType, structName, numReferences, definitionLines);
   }
 
   @Override
   public ObjectNode toRow(Object o) {
-    return toRowStatic((DefinedStructureInfo) o);
+    return toRowStatic((DefinedStructureRow) o);
   }
 
-  public static ObjectNode toRowStatic(DefinedStructureInfo info) {
+  public static ObjectNode toRowStatic(DefinedStructureRow info) {
     ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
     row.set(
         COL_DEFINITION_LINES, BatfishObjectMapper.mapper().valueToTree(info.getDefinitionLines()));
