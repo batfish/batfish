@@ -47,12 +47,12 @@ public class FwFromDestinationPrefixListTest {
 
   @Test
   public void testApplyTo() {
-    Ip additionalIp = new Ip("2.2.2.2");
+    IpSpace additionalIpSpace = new Ip("2.2.2.2").toIpSpace();
     IpSpace baseIpSpace = new IpWildcard(BASE_IP_PREFIX).toIpSpace();
 
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     HeaderSpace.Builder headerSpaceBuilderWithIpSpaceFilter =
-        HeaderSpace.builder().setDstIps(additionalIp.toIpSpace());
+        HeaderSpace.builder().setDstIps(additionalIpSpace);
     FwFromDestinationPrefixList fwFrom = new FwFromDestinationPrefixList(BASE_PREFIX_LIST_NAME);
 
     // Apply base IP prefix to headerSpace with null IpSpace
@@ -71,7 +71,7 @@ public class FwFromDestinationPrefixListTest {
             isAclIpSpaceThat(
                 hasLines(
                     containsInAnyOrder(
-                        AclIpSpaceLine.permit(additionalIp.toIpSpace()),
+                        AclIpSpaceLine.permit(additionalIpSpace),
                         AclIpSpaceLine.permit(baseIpSpace))))));
   }
 }

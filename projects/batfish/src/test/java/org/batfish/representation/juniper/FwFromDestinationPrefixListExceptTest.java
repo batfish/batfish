@@ -47,12 +47,12 @@ public class FwFromDestinationPrefixListExceptTest {
 
   @Test
   public void testApplyTo() {
-    Ip additionalIp = new Ip("2.2.2.2");
+    IpSpace additionalIpSpace = new Ip("2.2.2.2").toIpSpace();
     IpSpace baseIpSpace = new IpWildcard(BASE_IP_PREFIX).toIpSpace();
 
     HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
     HeaderSpace.Builder headerSpaceBuilderWithIpSpaceFilter =
-        HeaderSpace.builder().setNotDstIps(additionalIp.toIpSpace());
+        HeaderSpace.builder().setNotDstIps(additionalIpSpace);
     FwFromDestinationPrefixListExcept fwFrom =
         new FwFromDestinationPrefixListExcept(BASE_PREFIX_LIST_NAME);
 
@@ -72,7 +72,7 @@ public class FwFromDestinationPrefixListExceptTest {
             isAclIpSpaceThat(
                 hasLines(
                     containsInAnyOrder(
-                        AclIpSpaceLine.permit(additionalIp.toIpSpace()),
+                        AclIpSpaceLine.permit(additionalIpSpace),
                         AclIpSpaceLine.permit(baseIpSpace))))));
   }
 }
