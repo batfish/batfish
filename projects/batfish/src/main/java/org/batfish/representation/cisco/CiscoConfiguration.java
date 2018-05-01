@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -28,6 +30,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
@@ -88,6 +91,9 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
+import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -418,6 +424,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
+  private final Map<String, Map<String, SecurityZonePair>> _securityZonePairs;
+
   private final Map<String, SecurityZone> _securityZones;
 
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
@@ -463,6 +471,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
+    _securityZonePairs = new TreeMap<>();
     _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
     _snmpAccessLists = new TreeSet<>();
@@ -2223,15 +2232,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setSwitchport(iface.getSwitchport());
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
 
-    String zoneName = iface.getSecurityZone();
-    if (zoneName != null) {
-      Zone zone = c.getZones().get(zoneName);
-      if (zone != null) {
-        zone.setInterfaces(
-            ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(name).build());
-      }
-    }
-
     // All prefixes is the combination of the interface prefix + any secondary prefixes.
     ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
     if (iface.getAddress() != null) {
@@ -2357,6 +2357,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setOutgoingFilter(outgoingFilter);
     }
+    // Apply zone outgoing filter if necessary
+    applyZoneFilter(iface, newIface, c);
+
     List<CiscoSourceNat> origSourceNats = iface.getSourceNats();
     if (origSourceNats != null) {
       // Process each of the CiscoSourceNats:
@@ -2387,6 +2390,48 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setRoutingPolicy(routingPolicyName);
     }
     return newIface;
+  }
+
+  private void applyZoneFilter(
+      Interface iface, org.batfish.datamodel.Interface newIface, Configuration c) {
+    String zoneName = iface.getSecurityZone();
+    if (zoneName == null) {
+      return;
+    }
+    SecurityZone securityZone = _securityZones.get(zoneName);
+    if (securityZone == null) {
+      return;
+    }
+    String zoneOutgoingAclName = computeZoneOutgoingAclName(zoneName);
+    IpAccessList zoneOutgoingAcl = c.getIpAccessLists().get(zoneOutgoingAclName);
+    if (zoneOutgoingAcl == null) {
+      return;
+    }
+    String oldOutgoingFilterName = newIface.getOutgoingFilterName();
+    if (oldOutgoingFilterName != null) {
+      String combinedOutgoingAclName = computeCombinedOutgoingAclName(newIface.getName());
+      IpAccessList combinedOutgoingAcl =
+          IpAccessList.builder()
+              .setOwner(c)
+              .setName(combinedOutgoingAclName)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.accepting()
+                          .setMatchCondition(
+                              new AndMatchExpr(
+                                  ImmutableList.of(
+                                      new PermittedByAcl(oldOutgoingFilterName),
+                                      new PermittedByAcl(zoneOutgoingAclName))))
+                          .build()))
+              .build();
+      newIface.setOutgoingFilter(combinedOutgoingAcl);
+    } else {
+      newIface.setOutgoingFilter(zoneOutgoingAcl);
+    }
+  }
+
+  public static String computeCombinedOutgoingAclName(String interfaceName) {
+    return String.format("~COMBINED_OUTGOING_ACL~%s~", interfaceName);
   }
 
   private Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
@@ -3736,11 +3781,34 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
     }
 
+    createInspectClassMapAcls(c);
+
+    // create inspect policy-map ACLs
+    createInspectPolicyMapAcls(c);
+
     // create zones
     _securityZones.forEach(
         (name, securityZone) -> {
           c.getZones().put(name, new Zone(name));
         });
+
+    // populate zone interfaces
+    _interfaces.forEach(
+        (ifaceName, iface) -> {
+          String zoneName = iface.getSecurityZone();
+          if (zoneName == null) {
+            return;
+          }
+          Zone zone = c.getZones().get(zoneName);
+          if (zone == null) {
+            return;
+          }
+          zone.setInterfaces(
+              ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(ifaceName).build());
+        });
+
+    // create zone policies
+    createZoneAcls(c);
 
     // convert interfaces
     _interfaces.forEach(
@@ -3995,6 +4063,153 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return c;
   }
 
+  private void createInspectClassMapAcls(Configuration c) {
+    _inspectClassMaps.forEach(
+        (inspectClassMapName, inspectClassMap) -> {
+          String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassMapName);
+          MatchSemantics matchSemantics = inspectClassMap.getMatchSemantics();
+          List<AclLineMatchExpr> matchConditions =
+              inspectClassMap
+                  .getMatches()
+                  .stream()
+                  .map(
+                      inspectClassMapMatch ->
+                          inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
+                  .collect(ImmutableList.toImmutableList());
+          AclLineMatchExpr matchClassMap;
+          switch (matchSemantics) {
+            case MATCH_ALL:
+              matchClassMap = new AndMatchExpr(matchConditions);
+              break;
+            case MATCH_ANY:
+              matchClassMap = new OrMatchExpr(matchConditions);
+              break;
+            default:
+              throw new BatfishException(
+                  String.format(
+                      "Unsupported %s: %s", MatchSemantics.class.getSimpleName(), matchSemantics));
+          }
+          IpAccessList.builder()
+              .setOwner(c)
+              .setName(inspectClassMapAclName)
+              .setLines(
+                  ImmutableList.of(
+                      IpAccessListLine.accepting().setMatchCondition(matchClassMap).build()))
+              .build();
+        });
+  }
+
+  private void createInspectPolicyMapAcls(Configuration c) {
+    _inspectPolicyMaps.forEach(
+        (inspectPolicyMapName, inspectPolicyMap) -> {
+          String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
+          ImmutableList.Builder<IpAccessListLine> disjuncts = ImmutableList.builder();
+          inspectPolicyMap
+              .getInspectClasses()
+              .forEach(
+                  (inspectClassName, inspectPolicyMapInspectClass) -> {
+                    if (!inspectPolicyMapInspectClass.getInspect()) {
+                      return;
+                    }
+                    String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
+                    if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
+                      return;
+                    }
+                    disjuncts.add(
+                        IpAccessListLine.accepting()
+                            .setMatchCondition(new PermittedByAcl(inspectClassMapAclName))
+                            .build());
+                  });
+          IpAccessList.builder()
+              .setOwner(c)
+              .setName(inspectPolicyMapAclName)
+              .setLines(disjuncts.build())
+              .build();
+        });
+  }
+
+  private void createZoneAcls(Configuration c) {
+    Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone =
+        toImmutableMap(
+            c.getZones(),
+            Entry::getKey,
+            zoneByNameEntry -> new MatchSrcInterface(zoneByNameEntry.getValue().getInterfaces()));
+    _securityZonePairs.forEach(
+        (dstZoneName, zonePairsBySrcZoneName) -> {
+          if (!_securityZones.containsKey(dstZoneName)) {
+            return;
+          }
+          ImmutableList.Builder<IpAccessListLine> zonePairPermits = ImmutableList.builder();
+          zonePairsBySrcZoneName.forEach(
+              (srcZoneName, zonePair) ->
+                  createZonePairAcl(
+                          c,
+                          matchSrcInterfaceBySrcZone.get(srcZoneName),
+                          dstZoneName,
+                          srcZoneName,
+                          zonePair.getInspectPolicyMap())
+                      .ifPresent(zonePairPermits::add));
+          String zoneOutgoingAclName = computeZoneOutgoingAclName(dstZoneName);
+          IpAccessList.builder()
+              .setName(zoneOutgoingAclName)
+              .setOwner(c)
+              .setLines(zonePairPermits.build())
+              .build();
+        });
+  }
+
+  public Optional<IpAccessListLine> createZonePairAcl(
+      Configuration c,
+      MatchSrcInterface matchSrcZoneInterface,
+      String dstZoneName,
+      String srcZoneName,
+      String inspectPolicyMapName) {
+    if (!_securityZones.containsKey(srcZoneName)) {
+      return Optional.empty();
+    }
+    if (inspectPolicyMapName == null) {
+      return Optional.empty();
+    }
+    String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
+    if (!c.getIpAccessLists().containsKey(inspectPolicyMapAclName)) {
+      return Optional.empty();
+    }
+    PermittedByAcl permittedByPolicyMap = new PermittedByAcl(inspectPolicyMapAclName);
+    String zonePairAclName = computeZonePairAclName(srcZoneName, dstZoneName);
+    IpAccessList.builder()
+        .setName(zonePairAclName)
+        .setOwner(c)
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(
+                        new AndMatchExpr(
+                            ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
+                    .build()))
+        .build();
+    return Optional.of(
+        IpAccessListLine.accepting()
+            .setMatchCondition(new PermittedByAcl(zonePairAclName))
+            .build());
+  }
+
+  public static String computeZoneOutgoingAclName(@Nonnull String zoneName) {
+    return String.format("~ZONE_OUTGOING_ACL~%s~", zoneName);
+  }
+
+  public static String computeZonePairAclName(
+      @Nonnull String srcZoneName, @Nonnull String dstZoneName) {
+    return String.format("~ZONE_PAIR_ACL~SRC~%s~DST~%s", srcZoneName, dstZoneName);
+  }
+
+  public static String computeInspectPolicyMapAclName(@Nonnull String inspectPolicyMapName) {
+    return String.format("~INSPECT_POLICY_MAP_ACL~%s~", inspectPolicyMapName);
+  }
+
+  public static String computeInspectClassMapAclName(@Nonnull String inspectClassMapName) {
+    return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
+  }
+
   private IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
     return IpAccessList.builder()
         .setLines(
@@ -4239,6 +4454,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, InspectPolicyMap> getInspectPolicyMaps() {
     return _inspectPolicyMaps;
+  }
+
+  public Map<String, Map<String, SecurityZonePair>> getSecurityZonePairs() {
+    return _securityZonePairs;
   }
 
   public Map<String, SecurityZone> getSecurityZones() {
