@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.Pair;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -51,7 +52,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.z3.state.OriginateVrf;
@@ -135,9 +135,6 @@ public class NodJobAclTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
-    BdpDataPlanePlugin bdpDataPlanePlugin = new BdpDataPlanePlugin();
-    bdpDataPlanePlugin.initialize(batfish);
-    batfish.registerDataPlanePlugin(bdpDataPlanePlugin, "bdp");
     batfish.computeDataPlane(false);
     DataPlane dataPlane = batfish.loadDataPlane();
 
@@ -194,8 +191,9 @@ public class NodJobAclTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
-    bdpDataPlanePlugin.processFlows(flows, dataPlane, false);
-    List<FlowTrace> flowTraces = bdpDataPlanePlugin.getHistoryFlowTraces(dataPlane);
+    DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
+    dpPlugin.processFlows(flows, dataPlane, false);
+    List<FlowTrace> flowTraces = dpPlugin.getHistoryFlowTraces(dataPlane);
     assertThat(flowTraces, hasSize(2));
     assertThat(
         flowTraces,
@@ -273,9 +271,6 @@ public class NodJobAclTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
-    BdpDataPlanePlugin bdpDataPlanePlugin = new BdpDataPlanePlugin();
-    bdpDataPlanePlugin.initialize(batfish);
-    batfish.registerDataPlanePlugin(bdpDataPlanePlugin, "bdp");
     batfish.computeDataPlane(false);
     DataPlane dataPlane = batfish.loadDataPlane();
 

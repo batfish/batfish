@@ -86,6 +86,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -111,7 +112,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -817,8 +817,7 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3
