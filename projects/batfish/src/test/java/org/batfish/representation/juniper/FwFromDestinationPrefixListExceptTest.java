@@ -14,10 +14,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterLine;
@@ -58,10 +56,10 @@ public class FwFromDestinationPrefixListExceptTest {
     FwFromDestinationPrefixListExcept fwFrom =
         new FwFromDestinationPrefixListExcept(BASE_PREFIX_LIST_NAME);
 
-    // Combine base IP prefix with null headerSpace IpSpace
+    // Apply base IP prefix to headerSpace with null IpSpace
     fwFrom.applyTo(headerSpaceBuilder, _jc, _w, _c);
 
-    // Combine base IP prefix with non-null headerSpace IpSpace
+    // Apply base IP prefix to headerSpace with non-null IpSpace
     fwFrom.applyTo(headerSpaceBuilderWithIpSpaceFilter, _jc, _w, _c);
 
     // Confirm combining base with null IpSpace results in just base IpSpace
