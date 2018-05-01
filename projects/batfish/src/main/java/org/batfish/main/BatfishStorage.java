@@ -108,7 +108,12 @@ final class BatfishStorage {
     if (!Files.exists(ccaePath)) {
       return null;
     }
-    return deserializeObject(ccaePath, ConvertConfigurationAnswerElement.class);
+    try {
+      return deserializeObject(ccaePath, ConvertConfigurationAnswerElement.class);
+    } catch (BatfishException e) {
+      _logger.errorf("Failed to deserialize ConvertConfigurationAnswerElement: %s", e);
+      return null;
+    }
   }
 
   /**
