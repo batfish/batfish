@@ -327,6 +327,12 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosTestbed() throws IOException {
+    Configuration c = parseConfig("ios-testbed");
+    String blah = "blah";
+  }
+
+  @Test
   public void testIosInspection() throws IOException {
     Configuration c = parseConfig("ios-inspection");
 
