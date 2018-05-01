@@ -4084,9 +4084,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
     return IpAccessList.builder()
-        .setLines(ImmutableList.of(IpAccessListLine.accepting()
-            .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
-            .build()))
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
+                    .build()))
         .setName(computeServiceObjectGroupAclName(protocolObjectGroup.getName()))
         .build();
   }
