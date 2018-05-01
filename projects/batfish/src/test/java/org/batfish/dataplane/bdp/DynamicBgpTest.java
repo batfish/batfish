@@ -53,8 +53,6 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
@@ -87,8 +85,6 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
@@ -132,8 +128,6 @@ public class DynamicBgpTest {
                 .build(),
             _folder);
 
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();

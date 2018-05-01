@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
@@ -38,9 +39,8 @@ public class RipAndBgpTest {
                 .setConfigurationText(testrigResourcePrefix, configurations)
                 .build(),
             _folder);
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
     batfish.computeDataPlane(false);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
     SortedSet<AbstractRoute> r1Routes = routes.get("r1").get(Configuration.DEFAULT_VRF_NAME);

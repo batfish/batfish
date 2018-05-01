@@ -15,6 +15,8 @@ public enum CiscoStructureType implements StructureType {
   DEPI_TUNNEL("depi-tunnel"),
   DOCSIS_POLICY("docsis-policy"),
   DOCSIS_POLICY_RULE("docsis-policy-rule"),
+  INSPECT_CLASS_MAP("class-map type inspect"),
+  INSPECT_POLICY_MAP("policy-map type inspect"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ipv4/6 acl"),
   IP_ACCESS_LIST_EXTENDED("extended ip access-list"),
@@ -34,6 +36,7 @@ public enum CiscoStructureType implements StructureType {
   PREFIX6_LIST("ipv6 prefix-list"),
   ROUTE_MAP("route-map"),
   ROUTE_MAP_CLAUSE("route-map-clause"),
+  SECURITY_ZONE("zone security"),
   SERVICE_CLASS("cable service-class"),
   SERVICE_OBJECT_GROUP("object-group service");
 

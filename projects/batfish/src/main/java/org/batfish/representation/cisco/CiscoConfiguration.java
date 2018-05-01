@@ -1,5 +1,8 @@
 package org.batfish.representation.cisco;
 
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -81,6 +84,7 @@ import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -120,6 +124,9 @@ import org.batfish.datamodel.vendor_family.cisco.Cable;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
+import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
@@ -315,6 +322,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Set<String> _igmpAcls;
 
+  private final Map<String, InspectClassMap> _inspectClassMaps;
+
+  private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
+
   private final Map<String, Interface> _interfaces;
 
   private final Set<String> _ipNatDestinationAccessLists;
@@ -348,6 +359,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private final Set<String> _ntpAccessGroups;
 
   private String _ntpSourceInterface;
+
+  private CiscoNxBgpGlobalConfiguration _nxBgpGlobalConfiguration;
 
   private final Set<String> _pimAcls;
 
@@ -405,6 +418,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
+  private final Map<String, SecurityZone> _securityZones;
+
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
@@ -424,6 +439,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _igmpAcls = new TreeSet<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
+    _inspectClassMaps = new TreeMap<>();
+    _inspectPolicyMaps = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipNatDestinationAccessLists = new TreeSet<>();
     _ipPimNeighborFilters = new TreeSet<>();
@@ -438,6 +455,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _natPools = new TreeMap<>();
     _networkObjectGroups = new TreeMap<>();
     _ntpAccessGroups = new TreeSet<>();
+    _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
     _pimAcls = new TreeSet<>();
     _pimRouteMaps = new TreeSet<>();
     _prefixLists = new TreeMap<>();
@@ -445,6 +463,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
+    _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
     _snmpAccessLists = new TreeSet<>();
     _sshAcls = new TreeSet<>();
@@ -801,6 +820,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _ntpSourceInterface;
   }
 
+  public CiscoNxBgpGlobalConfiguration getNxBgpGlobalConfiguration() {
+    return _nxBgpGlobalConfiguration;
+  }
+
   public Set<String> getPimAcls() {
     return _pimAcls;
   }
@@ -1060,6 +1083,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
         cable != null ? cable.getDocsisPolicyRules() : null);
   }
 
+  private void markInspectClassMaps(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.INSPECT_CLASS_MAP, usage, _inspectClassMaps);
+  }
+
+  private void markInspectPolicyMaps(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.INSPECT_POLICY_MAP, usage, _inspectPolicyMaps);
+  }
+
   private void markIpOrMacAcls(CiscoStructureUsage usage) {
     markStructure(
         CiscoStructureType.ACCESS_LIST,
@@ -1108,6 +1139,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markRouteMaps(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.ROUTE_MAP, usage, _routeMaps);
+  }
+
+  private void markSecurityZones(CiscoStructureUsage usage) {
+    markStructure(CiscoStructureType.SECURITY_ZONE, usage, _securityZones);
   }
 
   private void markServiceClasses(CiscoStructureUsage usage) {
@@ -1257,6 +1292,35 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return line;
   }
 
+  private org.batfish.datamodel.BgpProcess toNxBgpProcess(
+      Configuration c,
+      CiscoNxBgpGlobalConfiguration nxBgpGlobal,
+      CiscoNxBgpVrfConfiguration nxBgpVrf,
+      String vrfName) {
+    org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
+    org.batfish.datamodel.Vrf v = c.getVrfs().get(vrfName);
+
+    if (nxBgpVrf.getBestpathCompareRouterId()) {
+      newBgpProcess.setTieBreaker(BgpTieBreaker.ROUTER_ID);
+    }
+
+    newBgpProcess.setRouterId(CiscoNxConversions.getNxBgpRouterId(nxBgpVrf, v, _w));
+
+    // From NX-OS docs for `bestpath as-path multipath-relax`
+    //  Allows load sharing across providers with different (but equal-length) autonomous system
+    //  paths. Without this option, the AS paths must be identical for load sharing.
+    newBgpProcess.setMultipathEquivalentAsPathMatchMode(
+        nxBgpVrf.getBestpathAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH);
+
+    CiscoNxBgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
+    if (ipv4af != null) {
+      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
+      newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
+    }
+
+    return newBgpProcess;
+  }
+
   private org.batfish.datamodel.BgpProcess toBgpProcess(
       final Configuration c, BgpProcess proc, String vrfName) {
     org.batfish.datamodel.BgpProcess newBgpProcess = new org.batfish.datamodel.BgpProcess();
@@ -1266,9 +1330,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newBgpProcess.setTieBreaker(tieBreaker);
     }
     MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
-        proc.getAsPathMultipathRelax()
-            ? MultipathEquivalentAsPathMatchMode.PATH_LENGTH
-            : MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+        proc.getAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH;
     newBgpProcess.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
     Integer maximumPaths = proc.getMaximumPaths();
     Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
@@ -2160,6 +2222,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newIface.setSpanningTreePortfast(iface.getSpanningTreePortfast());
     newIface.setSwitchport(iface.getSwitchport());
     newIface.setDeclaredNames(ImmutableSortedSet.copyOf(iface.getDeclaredNames()));
+
+    String zoneName = iface.getSecurityZone();
+    if (zoneName != null) {
+      Zone zone = c.getZones().get(zoneName);
+      if (zone != null) {
+        zone.setInterfaces(
+            ImmutableSet.<String>builder().addAll(zone.getInterfaces()).add(name).build());
+      }
+    }
 
     // All prefixes is the combination of the interface prefix + any secondary prefixes.
     ImmutableSet.Builder<InterfaceAddress> allPrefixes = ImmutableSet.builder();
@@ -3665,6 +3736,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
     }
 
+    // create zones
+    _securityZones.forEach(
+        (name, securityZone) -> {
+          c.getZones().put(name, new Zone(name));
+        });
+
     // convert interfaces
     _interfaces.forEach(
         (ifaceName, iface) -> {
@@ -3776,11 +3853,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
             newVrf.setIsisProcess(newIsisProcess);
           }
 
-          // convert bgp process
+          // convert bgp process (non-NX-OS)
           BgpProcess bgpProcess = vrf.getBgpProcess();
           if (bgpProcess != null) {
             org.batfish.datamodel.BgpProcess newBgpProcess = toBgpProcess(c, bgpProcess, vrfName);
-            c.getVrfs().get(vrfName).setBgpProcess(newBgpProcess);
+            newVrf.setBgpProcess(newBgpProcess);
+          }
+
+          // convert NX-OS BGP configuration
+          CiscoNxBgpVrfConfiguration nxBgp = vrf.getBgpNxConfig();
+          if (nxBgp != null) {
+            org.batfish.datamodel.BgpProcess newBgpProcess =
+                toNxBgpProcess(c, getNxBgpGlobalConfiguration(), nxBgp, vrfName);
+            newVrf.setBgpProcess(newBgpProcess);
           }
         });
 
@@ -3800,6 +3885,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
+    markAcls(CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL);
     markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP);
@@ -3860,9 +3946,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
+    // class-map
+    markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
+
+    // policy-map
+    markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+
     // object-group
     markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
     markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
+
+    // zone
+    markSecurityZones(CiscoStructureUsage.INTERFACE_ZONE_MEMBER);
+    markSecurityZones(CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE);
+    markSecurityZones(CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
     // warn about unreferenced data structures
     recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
@@ -3873,6 +3970,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordDocsisPolicyRules();
     recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
     recordIpAccessLists();
+    recordStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
+    recordStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
     recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordIpv6AccessLists();
@@ -3886,8 +3985,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordPeerGroups();
     recordPeerSessions();
     recordStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
+    recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
     recordStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
     recordServiceClasses();
+
     c.simplifyRoutingPolicies();
 
     c.computeRoutingPolicySources(_w);
@@ -4150,5 +4251,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, ServiceObjectGroup> getServiceObjectGroups() {
     return _serviceObjectGroups;
+  }
+
+  public Map<String, InspectClassMap> getInspectClassMaps() {
+    return _inspectClassMaps;
+  }
+
+  public Map<String, InspectPolicyMap> getInspectPolicyMaps() {
+    return _inspectPolicyMaps;
+  }
+
+  public Map<String, SecurityZone> getSecurityZones() {
+    return _securityZones;
   }
 }
