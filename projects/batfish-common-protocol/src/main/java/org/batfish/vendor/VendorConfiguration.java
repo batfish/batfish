@@ -12,6 +12,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.apache.commons.lang3.tuple.MutablePair;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
@@ -20,14 +21,14 @@ import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.GenericConfigObject;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
 
 public abstract class VendorConfiguration implements Serializable, GenericConfigObject {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private transient ConvertConfigurationAnswerElement _answerElement;
+  private transient ConvertConfigurationAnswerElement2 _answerElement;
 
   protected String _filename;
 
@@ -61,7 +62,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   @JsonIgnore
-  public final ConvertConfigurationAnswerElement getAnswerElement() {
+  public final ConvertConfigurationAnswerElement2 getAnswerElement() {
     return _answerElement;
   }
 
@@ -144,7 +145,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
-  public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
+  public final void setAnswerElement(ConvertConfigurationAnswerElement2 answerElement) {
     _answerElement = answerElement;
   }
 
@@ -184,7 +185,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
-  public void unused(StructureType structureType, String name, int line) {
+  private void unused(StructureType structureType, String name, int line) {
     String hostname = getHostname();
     String type = structureType.getDescription();
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
@@ -195,7 +196,28 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
-  protected <T extends DefinedStructure<String>> void warnUnusedStructure(
+  public void recordStructure(
+      StructureType structureType, String name, int numReferrers, int line) {
+    String hostname = getHostname();
+    String type = structureType.getDescription();
+    SortedMap<String, SortedMap<String, MutablePair<Integer, SortedSet<Integer>>>> byType =
+        _answerElement.getDefinedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
+    SortedMap<String, MutablePair<Integer, SortedSet<Integer>>> byName =
+        byType.computeIfAbsent(type, k -> new TreeMap<>());
+    MutablePair<Integer, SortedSet<Integer>> pair =
+        byName.computeIfAbsent(name, k -> new MutablePair<>(numReferrers, new TreeSet<>()));
+    pair.right.add(line);
+    if (numReferrers == 0) {
+      unused(structureType, name, line);
+    }
+  }
+
+  public void recordStructure(
+      ReferenceCountedStructure structure, StructureType structureType, String name, int line) {
+    recordStructure(structureType, name, structure.getReferers().size(), line);
+  }
+
+  protected <T extends DefinedStructure<String>> void recordStructure(
       Map<String, T> map, StructureType type) {
     for (Entry<String, T> e : map.entrySet()) {
       String name = e.getKey();
@@ -204,9 +226,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
         continue;
       }
       T t = e.getValue();
-      if (t.isUnused()) {
-        unused(type, name, t.getDefinitionLine());
-      }
+      recordStructure(t, type, name, t.getDefinitionLine());
     }
   }
 }

@@ -16,7 +16,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.SourceNat;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.junit.Before;
@@ -93,7 +93,7 @@ public class CiscoConfigurationTest {
     _config = new CiscoConfiguration(Collections.emptySet());
     _config.setVendor(ConfigurationFormat.ARISTA);
     _config.setHostname("host");
-    _config.setAnswerElement(new ConvertConfigurationAnswerElement());
+    _config.setAnswerElement(new ConvertConfigurationAnswerElement2());
     _interface = new Interface("iface", _config);
   }
 

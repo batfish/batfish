@@ -2151,8 +2151,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
 
     // warn about unreferenced data structures
-    warnUnusedStructure(_applications, JuniperStructureType.APPLICATION);
-    warnUnusedStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
+    recordStructure(_applications, JuniperStructureType.APPLICATION);
+    recordStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
     warnUnreferencedAuthenticationKeyChains();
     warnUnreferencedBgpGroups();
     warnUnreferencedDhcpRelayServerGroups();
@@ -2264,13 +2264,15 @@ public final class JuniperConfiguration extends VendorConfiguration {
               .forEach(
                   (name, iface) -> {
                     if (org.batfish.datamodel.Interface.computeInterfaceType(name, _vendor)
-                            == InterfaceType.VPN
-                        && iface.isUnused()) {
-                      unused(
+                        == InterfaceType.VPN) {
+                      recordStructure(
+                          iface,
                           JuniperStructureType.SECURE_TUNNEL_INTERFACE,
                           name,
                           iface.getDefinitionLine());
-                      _c.getVrfs().get(riName).getInterfaces().remove(name);
+                      if (iface.isUnused()) {
+                        _c.getVrfs().get(riName).getInterfaces().remove(name);
+                      }
                     }
                   });
         });
@@ -2290,17 +2292,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, JuniperAuthenticationKeyChain> e : _authenticationKeyChains.entrySet()) {
       String name = e.getKey();
       JuniperAuthenticationKeyChain keyChain = e.getValue();
-      if (keyChain.isUnused()) {
-        unused(JuniperStructureType.AUTHENTICATION_KEY_CHAIN, name, keyChain.getDefinitionLine());
-      }
+      recordStructure(
+          keyChain,
+          JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
+          name,
+          keyChain.getDefinitionLine());
     }
   }
 
   private void warnUnreferencedBgpGroups() {
+    for (RoutingInstance ri : _routingInstances.values()) {
+      for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
+        recordStructure(
+            JuniperStructureType.BGP_GROUP, group.getName(), -1, group.getDefinitionLine());
+      }
+    }
     if (_unreferencedBgpGroups != null) {
       _unreferencedBgpGroups.forEach(
           (name, line) -> {
-            unused(JuniperStructureType.BGP_GROUP, name, line);
+            recordStructure(JuniperStructureType.BGP_GROUP, name, 0, line);
           });
     }
   }
@@ -2310,9 +2320,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (Entry<String, DhcpRelayServerGroup> e : ri.getDhcpRelayServerGroups().entrySet()) {
         String name = e.getKey();
         DhcpRelayServerGroup sg = e.getValue();
-        if (sg.isUnused()) {
-          unused(JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
-        }
+        recordStructure(
+            sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
       }
     }
   }
@@ -2321,9 +2330,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
-      if (filter.isUnused()) {
-        unused(JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
-      }
+      recordStructure(
+          filter, JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
     }
   }
 
@@ -2331,9 +2339,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {
       String name = e.getKey();
       IkeGateway ikeGateway = e.getValue();
-      if (ikeGateway.isUnused()) {
-        unused(JuniperStructureType.IKE_GATEWAY, name, ikeGateway.getDefinitionLine());
-      }
+      recordStructure(
+          ikeGateway, JuniperStructureType.IKE_GATEWAY, name, ikeGateway.getDefinitionLine());
     }
   }
 
@@ -2341,9 +2348,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
       String name = e.getKey();
       IkePolicy ikePolicy = e.getValue();
-      if (ikePolicy.isUnused()) {
-        unused(JuniperStructureType.IKE_POLICY, name, ikePolicy.getDefinitionLine());
-      }
+      recordStructure(
+          ikePolicy, JuniperStructureType.IKE_POLICY, name, ikePolicy.getDefinitionLine());
     }
   }
 
@@ -2351,9 +2357,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, IkeProposal> e : _ikeProposals.entrySet()) {
       String name = e.getKey();
       IkeProposal ikeProposal = e.getValue();
-      if (ikeProposal.isUnused()) {
-        unused(JuniperStructureType.IKE_PROPOSAL, name, ikeProposal.getDefinitionLine());
-      }
+      recordStructure(
+          ikeProposal, JuniperStructureType.IKE_PROPOSAL, name, ikeProposal.getDefinitionLine());
     }
   }
 
@@ -2361,9 +2366,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {
       String name = e.getKey();
       IpsecPolicy ipsecPolicy = e.getValue();
-      if (ipsecPolicy.isUnused()) {
-        unused(JuniperStructureType.IPSEC_POLICY, name, ipsecPolicy.getDefinitionLine());
-      }
+      recordStructure(
+          ipsecPolicy, JuniperStructureType.IPSEC_POLICY, name, ipsecPolicy.getDefinitionLine());
     }
   }
 
@@ -2371,9 +2375,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, IpsecProposal> e : _ipsecProposals.entrySet()) {
       String name = e.getKey();
       IpsecProposal ipsecProposal = e.getValue();
-      if (ipsecProposal.isUnused()) {
-        unused(JuniperStructureType.IPSEC_PROPOSAL, name, ipsecProposal.getDefinitionLine());
-      }
+      recordStructure(
+          ipsecProposal,
+          JuniperStructureType.IPSEC_PROPOSAL,
+          name,
+          ipsecProposal.getDefinitionLine());
     }
   }
 
@@ -2384,9 +2390,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         continue;
       }
       PolicyStatement ps = e.getValue();
-      if (ps.isUnused()) {
-        unused(JuniperStructureType.POLICY_STATEMENT, name, ps.getDefinitionLine());
-      }
+      recordStructure(ps, JuniperStructureType.POLICY_STATEMENT, name, ps.getDefinitionLine());
     }
   }
 
@@ -2394,9 +2398,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
       String name = e.getKey();
       PrefixList prefixList = e.getValue();
-      if (!prefixList.getIpv6() && prefixList.isUnused() && !_ignoredPrefixLists.contains(name)) {
-        unused(JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
-      }
+      // if (!prefixList.getIpv6() && prefixList.isUnused() && !_ignoredPrefixLists.contains(name))
+      // {
+      recordStructure(
+          prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
+      // }
     }
   }
 

@@ -6,7 +6,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
 import org.batfish.main.Batfish;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
@@ -32,7 +32,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     _logger.infof("Processing: \"%s\"", _name);
     Map<String, Configuration> configurations = new HashMap<>();
     Map<String, Warnings> warningsByHost = new HashMap<>();
-    ConvertConfigurationAnswerElement answerElement = new ConvertConfigurationAnswerElement();
+    ConvertConfigurationAnswerElement2 answerElement = new ConvertConfigurationAnswerElement2();
     try {
       // We have only two options: AWS VPCs or router configs
       if (VendorConfiguration.class.isInstance(_configObject)) {
@@ -85,7 +85,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           elapsedTime, _logger.getHistory(), _name, new BatfishException(error, e));
     } finally {
       warningsByHost.forEach((hostname, warnings) -> Batfish.logWarnings(_logger, warnings));
-      ;
     }
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ConvertConfigurationResult(

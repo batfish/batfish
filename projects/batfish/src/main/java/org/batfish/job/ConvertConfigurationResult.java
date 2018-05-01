@@ -7,12 +7,12 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.BatfishLogger.BatfishLoggerHistory;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement2;
 
 public class ConvertConfigurationResult
-    extends BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement> {
+    extends BatfishJobResult<Map<String, Configuration>, ConvertConfigurationAnswerElement2> {
 
-  private ConvertConfigurationAnswerElement _answerElement;
+  private ConvertConfigurationAnswerElement2 _answerElement;
 
   private Map<String, Configuration> _configurations;
 
@@ -32,7 +32,7 @@ public class ConvertConfigurationResult
       Map<String, Warnings> warningsByHost,
       String name,
       Map<String, Configuration> configurations,
-      ConvertConfigurationAnswerElement answerElement) {
+      ConvertConfigurationAnswerElement2 answerElement) {
     super(elapsedTime, history);
     _name = name;
     _warningsByHost = warningsByHost;
@@ -55,7 +55,7 @@ public class ConvertConfigurationResult
   public void applyTo(
       Map<String, Configuration> configurations,
       BatfishLogger logger,
-      ConvertConfigurationAnswerElement answerElement) {
+      ConvertConfigurationAnswerElement2 answerElement) {
     appendHistory(logger);
     if (_configurations != null) {
       for (Entry<String, Configuration> hostConfig : _configurations.entrySet()) {
@@ -73,6 +73,9 @@ public class ConvertConfigurationResult
           }
           if (!_answerElement.getUndefinedReferences().isEmpty()) {
             answerElement.getUndefinedReferences().putAll(_answerElement.getUndefinedReferences());
+          }
+          if (!_answerElement.getDefinedStructures().isEmpty()) {
+            answerElement.getDefinedStructures().putAll(_answerElement.getDefinedStructures());
           }
         }
       }
