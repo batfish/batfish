@@ -41,12 +41,12 @@ public final class FwFromDestinationPrefixListExcept extends FwFrom {
               .stream()
               .map(IpWildcard::toIpSpace)
               .collect(ImmutableList.toImmutableList());
-      headerSpaceBuilder.setNotDstIps(
-          AclIpSpace.union(
-              ImmutableList.<IpSpace>builder()
-                  .add(headerSpaceBuilder.getNotDstIps())
-                  .addAll(wildcards)
-                  .build()));
+
+      ImmutableList.Builder<IpSpace> ipSpaceBuilder = ImmutableList.builder();
+      if (headerSpaceBuilder.getNotDstIps() != null) {
+        ipSpaceBuilder.add(headerSpaceBuilder.getNotDstIps());
+      }
+      headerSpaceBuilder.setNotDstIps(AclIpSpace.union(ipSpaceBuilder.addAll(wildcards).build()));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }
