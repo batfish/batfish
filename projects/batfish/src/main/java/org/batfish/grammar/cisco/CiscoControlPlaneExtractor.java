@@ -698,7 +698,7 @@ import org.batfish.representation.cisco.Prefix6ListLine;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
 import org.batfish.representation.cisco.ProtocolObjectGroup;
-import org.batfish.representation.cisco.ProtocolObjectGroupLine;
+import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
@@ -1957,7 +1957,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgp_protocol_object(Ogp_protocol_objectContext ctx) {
-    _currentProtocolObjectGroup.getLines().add(new ProtocolObjectGroupLine(toIpProtocol(ctx.protocol())));
+    _currentProtocolObjectGroup
+        .getLines()
+        .add(new ProtocolObjectGroupProtocolLine(toIpProtocol(ctx.protocol())));
   }
 
   @Override
