@@ -30,7 +30,6 @@ public class NodSatJob<KeyT> extends Z3ContextJob<NodSatResult<KeyT>> {
       ReachabilityProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer);
       ReachabilityProgram queryProgram = _query.getReachabilityProgram(_synthesizer.getInput());
       NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
-      System.out.println(program.toSmt2String());
       Fixedpoint fix = mkFixedpoint(program, false);
       for (int queryNum = 0; queryNum < program.getQueries().size(); queryNum++) {
         BoolExpr query = program.getQueries().get(queryNum);
@@ -39,7 +38,6 @@ public class NodSatJob<KeyT> extends Z3ContextJob<NodSatResult<KeyT>> {
         switch (status) {
           case SATISFIABLE:
             results.put(key, true);
-            System.out.println("Adding this key as true: " + key.toString());
             break;
           case UNKNOWN:
             return new NodSatResult<>(
@@ -48,7 +46,6 @@ public class NodSatJob<KeyT> extends Z3ContextJob<NodSatResult<KeyT>> {
                 new BatfishException("Query satisfiability unknown"));
           case UNSATISFIABLE:
             results.put(key, false);
-            System.out.println("Adding this key as false: " + key.toString());
             break;
           default:
             return new NodSatResult<>(

@@ -676,16 +676,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<AclLine, Boolean> linesReachableMap = new TreeMap<>();
     computeNodSatOutput(jobs, linesReachableMap);
 
-    // Create arrangedAclLines with hostnames as keys and Map(acl name -> acl lines) as values
-    Map<String, Map<String, List<AclLine>>> arrangedAclLines = new TreeMap<>();
+    // Create hostnamesToAclsMap with hostnames as keys and Map(acl name -> acl lines) as values
+    Map<String, Map<String, List<AclLine>>> hostnamesToAclsMap = new TreeMap<>();
     for (Entry<AclLine, Boolean> e : linesReachableMap.entrySet()) {
       AclLine line = e.getKey();
       String hostname = line.getHostname();
-      // aclsMap = arrangedAclLines.get(hostname), the map of ACL names to lines for this hostname
+      // aclsMap = hostnamesToAclsMap.get(hostname), the map of ACL names to lines for this hostname
       Map<String, List<AclLine>> aclsMap =
-          arrangedAclLines.computeIfAbsent(hostname, k -> new TreeMap<>());
+          hostnamesToAclsMap.computeIfAbsent(hostname, k -> new TreeMap<>());
       String aclName = line.getAclName();
-      // aclLines = arrangedAclLines.get(hostname).get(aclName), the list of lines in this ACL
+      // aclLines = hostnamesToAclsMap.get(hostname).get(aclName), the list of lines in this ACL
       List<AclLine> aclLines = aclsMap.computeIfAbsent(aclName, k -> new ArrayList<>());
       aclLines.add(line);
     }
@@ -693,11 +693,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Run second batch of nod jobs to get earliest more general lines for each unreachable line
     // Produces a map of acl line -> line number of earliest more general reachable line
     List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs =
-        generateNodJobs2(
-            arrangedAclLines,
-            linesReachableMap,
-            configurations,
-            aclEqSets.getSameNamedStructures().keySet());
+        generateNodJobs2(hostnamesToAclsMap, linesReachableMap, configurations);
     Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
     computeNodFirstUnsatOutput(step2Jobs, blockingLinesMap);
 
@@ -793,15 +789,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         continue;
       }
       // skip juniper srx inbound filters, as they can't really contain
-      // operator error (?)
+      // operator error (todo: check that this is actually be the case)
       if (aclName.contains("~ZONE_INTERFACE_FILTER~")
           || aclName.contains("~INBOUND_ZONE_FILTER~")) {
         continue;
       }
 
-      System.out.println("Moving forward with ACL " + aclName);
       aclsToSkip.remove(aclName);
-
       Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
@@ -829,10 +823,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private List<NodFirstUnsatJob<AclLine, Integer>> generateNodJobs2(
       Map<String, Map<String, List<AclLine>>> aclLinesMap,
       Map<AclLine, Boolean> aclLinesReachabilityMap, // map of acl line -> isReachable boolean
-      Map<String, Configuration> configurations,
-      Set<String> aclsSet) {
+      Map<String, Configuration> configurations) {
     List<NodFirstUnsatJob<AclLine, Integer>> jobs = new ArrayList<>();
-    Set<String> aclsToSkip = new TreeSet<>(aclsSet);
     for (Entry<String, Map<String, List<AclLine>>> e : aclLinesMap.entrySet()) {
       String hostname = e.getKey();
       Configuration c = configurations.get(hostname);
@@ -843,13 +835,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .stream()
                   .map(Interface::getName)
                   .collect(Collectors.toList()));
-      //      Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, new TreeSet<>());
+      // No need to skip ACLs here because this synthesizer is used for all the ACLs in this device
+      Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, new TreeSet<>());
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
-        aclsToSkip.remove(aclName);
-        Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclsToSkip);
-        aclsToSkip.add(aclName);
         IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
         List<AclLine> lines = e2.getValue();
         for (int i = 0; i < lines.size(); i++) {
@@ -4228,8 +4218,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.resetTimer();
 
     _logger.info("Synthesizing Z3 ACL logic...");
-    System.out.println("Disabling the following acls:");
-    System.out.println(aclsToSkip);
     Synthesizer s =
         new Synthesizer(
             SynthesizerInputImpl.builder()
