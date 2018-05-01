@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Version;
 import org.batfish.common.Warning;
@@ -22,8 +23,8 @@ import org.batfish.datamodel.DefinedStructureInfo;
 public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
     implements Serializable {
 
-  /** */
-  private static final long serialVersionUID = 1L;
+  /** A non-default number because we changed the class */
+  private static final long serialVersionUID = 2L;
 
   private static final String PROP_DEFINED_STRUCTURES = "definedStructures";
   private static final String PROP_ERRORS = "errors";
@@ -33,20 +34,22 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final String PROP_WARNINGS = "warnings";
 
   // hostname -> structType -> structName -> info
+  @Nonnull
   private SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       _definedStructures;
 
-  private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
+  @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
-  private Set<String> _failed;
+  @Nonnull private Set<String> _failed;
 
+  @Nonnull
   private SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       _undefinedReferences;
 
-  private String _version;
+  @Nonnull private String _version;
 
-  private SortedMap<String, Warnings> _warnings;
+  @Nonnull private SortedMap<String, Warnings> _warnings;
 
   public ConvertConfigurationAnswerElement() {
     this(null, null, null, null, null, null);

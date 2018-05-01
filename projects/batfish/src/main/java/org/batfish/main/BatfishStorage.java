@@ -213,7 +213,7 @@ final class BatfishStorage {
       }
       closer.register(ois);
       return outputClass.cast(ois.readObject());
-    } catch (IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException | ClassCastException e) {
       throw new BatfishException(
           String.format(
               "Failed to deserialize object of type %s from file %s",
