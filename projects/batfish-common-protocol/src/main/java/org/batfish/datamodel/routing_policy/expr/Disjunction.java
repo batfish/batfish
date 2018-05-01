@@ -19,7 +19,11 @@ public class Disjunction extends BooleanExpr {
   private List<BooleanExpr> _disjuncts;
 
   public Disjunction() {
-    _disjuncts = new ArrayList<>();
+    this(new ArrayList<>());
+  }
+
+  public Disjunction(List<BooleanExpr> disjuncts) {
+    _disjuncts = disjuncts;
   }
 
   @Override

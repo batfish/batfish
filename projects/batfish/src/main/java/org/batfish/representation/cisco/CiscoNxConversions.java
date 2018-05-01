@@ -1,30 +1,59 @@
 package org.batfish.representation.cisco;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
+import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
+import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.Statement;
+import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborAddressFamilyConfiguration;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfNeighborConfiguration;
 
 /**
  * A utility class for converting between Cisco NX-OS configurations and the Batfish
  * vendor-independent {@link org.batfish.datamodel}.
  */
+@ParametersAreNonnullByDefault
 final class CiscoNxConversions {
   /** Computes the router ID on Cisco NX-OS. */
   // See CiscoNxosTest#testRouterId for a test that is verifiable using GNS3.
   @Nonnull
-  static Ip getNxBgpRouterId(
-      @Nonnull CiscoNxBgpVrfConfiguration vrfConfig,
-      @Nonnull org.batfish.datamodel.Vrf vrf,
-      @Nonnull Warnings w) {
+  static Ip getNxBgpRouterId(CiscoNxBgpVrfConfiguration vrfConfig, Vrf vrf, Warnings w) {
     // If Router ID is configured in the VRF-Specific BGP config, it always wins.
     if (vrfConfig.getRouterId() != null) {
       return vrfConfig.getRouterId();
@@ -90,6 +119,220 @@ final class CiscoNxConversions {
             "%s. Making a non-deterministic choice from associated interfaces", messageBase));
     assert lowestIp.isPresent(); // This cannot happen if interfaces is non-empty.
     return lowestIp.get();
+  }
+
+  private static boolean isActive(
+      String name, CiscoNxBgpVrfNeighborConfiguration neighbor, Warnings w) {
+    // Shutdown
+    if (firstNonNull(neighbor.getShutdown(), Boolean.FALSE)) {
+      return false;
+    }
+
+    // No active address family that we support.
+    if (neighbor.getIpv4UnicastAddressFamily() == null
+        && neighbor.getIpv6UnicastAddressFamily() == null) {
+      w.redFlag("No supported address-family configured for " + name);
+      return false;
+    }
+
+    // No remote AS set.
+    if (neighbor.getRemoteAs() == null) {
+      w.redFlag("No remote-as configured for " + name);
+    }
+
+    return true;
+  }
+
+  @Nonnull
+  static Map<Ip, BgpNeighbor> getNeighbors(
+      Configuration c,
+      Vrf vrf,
+      org.batfish.datamodel.BgpProcess proc,
+      CiscoNxBgpGlobalConfiguration bgpConfig,
+      CiscoNxBgpVrfConfiguration nxBgpVrf,
+      Warnings warnings) {
+    return nxBgpVrf
+        .getNeighbors()
+        .entrySet()
+        .stream()
+        .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
+        .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                e ->
+                    CiscoNxConversions.toBgpNeighbor(
+                        c,
+                        vrf,
+                        proc,
+                        new Prefix(e.getKey(), Prefix.MAX_PREFIX_LENGTH),
+                        bgpConfig,
+                        nxBgpVrf,
+                        e.getValue(),
+                        false,
+                        warnings)));
+  }
+
+  @Nonnull
+  static Map<Prefix, BgpNeighbor> getPassiveNeighbors(
+      Configuration c,
+      Vrf vrf,
+      org.batfish.datamodel.BgpProcess proc,
+      CiscoNxBgpGlobalConfiguration bgpConfig,
+      CiscoNxBgpVrfConfiguration nxBgpVrf,
+      Warnings warnings) {
+    return nxBgpVrf
+        .getPassiveNeighbors()
+        .entrySet()
+        .stream()
+        .peek(e -> e.getValue().doInherit(bgpConfig, warnings))
+        .filter(e -> isActive(getTextDesc(e.getKey(), vrf), e.getValue(), warnings))
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey,
+                e ->
+                    CiscoNxConversions.toBgpNeighbor(
+                        c,
+                        vrf,
+                        proc,
+                        e.getKey(),
+                        bgpConfig,
+                        nxBgpVrf,
+                        e.getValue(),
+                        true,
+                        warnings)));
+  }
+
+  @Nonnull
+  private static BgpNeighbor toBgpNeighbor(
+      Configuration c,
+      Vrf vrf,
+      BgpProcess proc,
+      Prefix prefix,
+      CiscoNxBgpGlobalConfiguration bgpConfig,
+      CiscoNxBgpVrfConfiguration vrfConfig,
+      CiscoNxBgpVrfNeighborConfiguration neighbor,
+      boolean dynamic,
+      Warnings warnings) {
+    BgpNeighbor newNeighbor = new BgpNeighbor(prefix, c, dynamic);
+
+    newNeighbor.setClusterId(firstNonNull(vrfConfig.getClusterId(), proc.getRouterId()).asLong());
+
+    newNeighbor.setDescription(neighbor.getDescription());
+
+    newNeighbor.setEbgpMultihop(firstNonNull(neighbor.getEbgpMultihopTtl(), 0) > 1);
+
+    newNeighbor.setEnforceFirstAs(bgpConfig.getEnforceFirstAs());
+
+    if (neighbor.getInheritPeer() != null) {
+      newNeighbor.setGroup(neighbor.getInheritPeer());
+    }
+
+    if (neighbor.getLocalAs() != null) {
+      long asn = neighbor.getLocalAs();
+      if (asn >= (1 << 16)) {
+        warnings.redFlag(
+            String.format(
+                "4-byte AS numbers are not fully supported: vrf %s neighbor %s local-as %d",
+                vrf.getName(), prefix, asn));
+      }
+      newNeighbor.setLocalAs((int) asn);
+    } else if (vrfConfig.getLocalAs() != null) {
+      long asn = vrfConfig.getLocalAs();
+      if (asn >= (1 << 16)) {
+        warnings.redFlag(
+            String.format(
+                "4-byte AS numbers are not fully supported: vrf %s neighbor %s local-as %d",
+                vrf.getName(), prefix, asn));
+      }
+      newNeighbor.setLocalAs((int) asn);
+    }
+
+    if (neighbor.getRemoteAs() != null) {
+      long asn = neighbor.getRemoteAs();
+      if (asn >= (1 << 16)) {
+        warnings.redFlag(
+            String.format(
+                "4-byte AS numbers are not fully supported: vrf %s neighbor %s remote-as %d",
+                vrf.getName(), prefix, asn));
+      }
+      newNeighbor.setRemoteAs((int) asn);
+    }
+
+    newNeighbor.setVrf(vrf.getName());
+
+    @Nullable
+    CiscoNxBgpVrfNeighborAddressFamilyConfiguration naf4 = neighbor.getIpv4UnicastAddressFamily();
+    @Nullable CiscoNxBgpVrfAddressFamilyConfiguration af4 = vrfConfig.getIpv4UnicastAddressFamily();
+    @Nullable CiscoNxBgpVrfAddressFamilyConfiguration af6 = vrfConfig.getIpv6UnicastAddressFamily();
+
+    if (naf4 != null) {
+      newNeighbor.setAdvertiseInactive(
+          !firstNonNull(
+              naf4.getSuppressInactive(), af4 != null ? af4.getSuppressInactive() : Boolean.FALSE));
+      newNeighbor.setAllowLocalAsIn(firstNonNull(naf4.getAllowAsIn(), Boolean.FALSE));
+      String inboundMap = naf4.getInboundRouteMap();
+      newNeighbor.setImportPolicy(
+          inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap) ? inboundMap : null);
+      newNeighbor.setSendCommunity(firstNonNull(naf4.getSendCommunityStandard(), Boolean.FALSE));
+      newNeighbor.setRouteReflectorClient(
+          firstNonNull(naf4.getRouteReflectorClient(), Boolean.FALSE));
+    }
+
+    // Export policy
+    List<Statement> exportStatements = new LinkedList<>();
+    if (naf4 != null && firstNonNull(naf4.getNextHopSelf(), Boolean.FALSE)) {
+      exportStatements.add(new SetNextHop(SelfNextHop.getInstance(), false));
+    }
+    if (neighbor.getRemovePrivateAs() != null) {
+      // TODO(handle different types of RemovePrivateAs)
+      exportStatements.add(RemovePrivateAs.toStaticStatement());
+    }
+    // Main export policy is to call the common export policy!
+    Conjunction peerExportGuard = new Conjunction();
+    List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
+    exportStatements.add(
+        new If(
+            "peer-export policy main conditional: exitAccept if true / exitReject if false",
+            peerExportGuard,
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+    List<BooleanExpr> localOrCommonOrigination = new LinkedList<>();
+    localOrCommonOrigination.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
+    if (af4 != null && af4.getDefaultOriginate()) {
+      localOrCommonOrigination.add(MATCH_DEFAULT_ROUTE);
+    }
+    if (af6 != null && af6.getDefaultOriginate()) {
+      localOrCommonOrigination.add(MATCH_DEFAULT_ROUTE6);
+    }
+    peerExportConditions.add(new Disjunction(localOrCommonOrigination));
+
+    if (naf4 != null) {
+      String outboundMap = naf4.getOutboundRouteMap();
+      if (outboundMap != null && c.getRoutingPolicies().containsKey(outboundMap)) {
+        peerExportConditions.add(new CallExpr(outboundMap));
+      }
+    }
+
+    RoutingPolicy exportPolicy =
+        new RoutingPolicy(
+            String.format(
+                "~BGP_PEER_EXPORT_POLICY:%s:%s~",
+                vrf.getName(), dynamic ? prefix : prefix.getStartIp()),
+            c);
+    exportPolicy.setStatements(exportStatements);
+    c.getRoutingPolicies().put(exportPolicy.getName(), exportPolicy);
+    newNeighbor.setExportPolicy(exportPolicy.getName());
+
+    return newNeighbor;
+  }
+
+  private static String getTextDesc(Ip ip, Vrf v) {
+    return String.format("BGP neighbor %s in vrf %s", ip.toString(), v.getName());
+  }
+
+  private static String getTextDesc(Prefix prefix, Vrf v) {
+    return String.format("BGP neighbor %s in vrf %s", prefix.toString(), v.getName());
   }
 
   private CiscoNxConversions() {} // prevent instantiation of utility class.

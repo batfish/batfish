@@ -377,7 +377,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress longer advertisements of summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {
@@ -4955,7 +4955,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress longer advertisements of summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {

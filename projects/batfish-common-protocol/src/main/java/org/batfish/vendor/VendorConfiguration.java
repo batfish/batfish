@@ -176,6 +176,15 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   public void recordStructure(
       StructureType structureType, String name, int numReferrers, int line) {
+    if (_answerElement == null) {
+      if (_w != null) {
+        _w.redFlag("Trying to record a structure when the answer element is null");
+      } else {
+        System.err.println(
+            "Trying to record a structure when both the answer element and warnings are null");
+      }
+      return;
+    }
     String hostname = getHostname();
     String type = structureType.getDescription();
     SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType =
