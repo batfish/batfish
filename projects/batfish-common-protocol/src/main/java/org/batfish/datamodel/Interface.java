@@ -944,7 +944,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
-  public Boolean getProxyArp() {
+  public boolean getProxyArp() {
     return _proxyArp;
   }
 
@@ -1240,7 +1240,7 @@ public final class Interface extends ComparableStructure<String> {
     _address = address;
   }
 
-  public void setProxyArp(Boolean proxyArp) {
+  public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
   }
 

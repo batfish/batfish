@@ -181,6 +181,12 @@ public class Interface extends ComparableStructure<String> {
 
   private SortedSet<String> _declaredNames;
 
+  private String _securityZone;
+
+  public String getSecurityZone() {
+    return _securityZone;
+  }
+
   public Interface(String name, CiscoConfiguration c) {
     super(name);
     _active = true;
@@ -540,5 +546,9 @@ public class Interface extends ComparableStructure<String> {
 
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+  }
+
+  public void setSecurityZone(String securityZone) {
+    _securityZone = securityZone;
   }
 }

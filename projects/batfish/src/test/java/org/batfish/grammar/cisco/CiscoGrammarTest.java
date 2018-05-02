@@ -6,15 +6,19 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUnusedStructure;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
@@ -27,7 +31,9 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
+import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
@@ -42,7 +48,11 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -51,6 +61,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -75,6 +86,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.common.WellKnownCommunity;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -84,10 +96,12 @@ import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
@@ -98,10 +112,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
+import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.hamcrest.Matchers;
@@ -313,6 +327,92 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInspection() throws IOException {
+    Configuration c = parseConfig("ios-inspection");
+
+    String zone1Name = "z1";
+    String zone2Name = "z2";
+    String inspectAclName = "inspectacl";
+    String inspectClassMapName = "ci";
+    String inspectPolicyMapName = "pmi";
+    String eth0Name = "Ethernet0";
+    String eth1Name = "Ethernet1";
+    String eth2Name = "Ethernet2";
+    String eth3Name = "Ethernet3";
+    String eth3OriginalAclName = "acl3out";
+    String eth3CombinedAclName = computeCombinedOutgoingAclName(eth3Name);
+    String zonePairAclName = computeZonePairAclName(zone1Name, zone2Name);
+    String zone2OutgoingAclName = CiscoConfiguration.computeZoneOutgoingAclName(zone2Name);
+
+    /* Check for expected generated ACLs */
+    assertThat(c, hasIpAccessLists(hasKey(inspectAclName)));
+    assertThat(c, hasIpAccessLists(hasKey(computeInspectClassMapAclName(inspectClassMapName))));
+    assertThat(c, hasIpAccessLists(hasKey(computeInspectPolicyMapAclName(inspectPolicyMapName))));
+    assertThat(c, hasIpAccessLists(hasKey(zonePairAclName)));
+    assertThat(c, hasIpAccessLists(hasKey(eth3OriginalAclName)));
+    assertThat(c, hasIpAccessLists(hasKey(eth3CombinedAclName)));
+    assertThat(c, hasIpAccessLists(hasKey(zone2OutgoingAclName)));
+
+    /* Check that interfaces have correct ACLs assigned */
+    assertThat(c, hasInterface(eth2Name, hasOutgoingFilterName(zone2OutgoingAclName)));
+    assertThat(c, hasInterface(eth3Name, hasOutgoingFilterName(eth3CombinedAclName)));
+
+    IpAccessList eth2Acl = c.getInterfaces().get(eth2Name).getOutgoingFilter();
+    IpAccessList eth3Acl = c.getInterfaces().get(eth3Name).getOutgoingFilter();
+
+    /* Check that expected traffic is permitted/denied */
+    Flow permittedByBoth =
+        Flow.builder()
+            .setSrcIp(new Ip("1.1.1.1"))
+            .setDstIp(new Ip("2.2.2.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(80)
+            .setIngressNode("internet")
+            .setTag("none")
+            .build();
+    assertThat(eth2Acl, accepts(permittedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(eth2Acl, accepts(permittedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(eth3Acl, accepts(permittedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(eth3Acl, accepts(permittedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+
+    Flow permittedThroughEth2Only =
+        Flow.builder()
+            .setSrcIp(new Ip("1.1.1.2"))
+            .setDstIp(new Ip("2.2.2.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(80)
+            .setIngressNode("internet")
+            .setTag("none")
+            .build();
+    assertThat(
+        eth2Acl,
+        accepts(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        eth2Acl,
+        accepts(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        eth3Acl,
+        rejects(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        eth3Acl,
+        rejects(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+
+    Flow deniedByBoth =
+        Flow.builder()
+            .setSrcIp(new Ip("1.1.1.1"))
+            .setDstIp(new Ip("2.2.2.2"))
+            .setIpProtocol(IpProtocol.TCP)
+            .setDstPort(81)
+            .setIngressNode("internet")
+            .setTag("none")
+            .build();
+    assertThat(eth2Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(eth3Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
   public void testIosObjectGroupNetwork() throws IOException {
     Configuration c = parseConfig("ios-object-group-network");
     Ip ogn1TestIp = new Ip("1.128.0.0");
@@ -461,6 +561,75 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosClassMapInspect() throws IOException {
+    String hostname = "ios-class-map-inspect";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expected the only unused acl to be aclunused
+     */
+    assertThat(
+        ccae,
+        not(
+            hasUnusedStructure(
+                hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "acldefined")));
+    assertThat(
+        ccae,
+        hasUnusedStructure(hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "aclunused"));
+
+    /*
+     * We expect an undefined reference only to aclundefined
+     */
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.IP_ACCESS_LIST, "acldefined")));
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.IP_ACCESS_LIST, "aclundefined"));
+  }
+
+  @Test
+  public void testIosPolicyMapInspect() throws IOException {
+    String hostname = "ios-policy-map-inspect";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expected the only unused class-map to be cmunused
+     */
+    assertThat(
+        ccae, not(hasUnusedStructure(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmdefined")));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmunused"));
+
+    /*
+     * We expect the only unused policy-map to be pmiunused
+     */
+    assertThat(
+        ccae,
+        not(hasUnusedStructure(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmidefined")));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmiunused"));
+
+    /*
+     * We expect undefined references only to cmundefined and pmmiundefined
+     */
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmdefined")));
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "cmundefined"));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmidefined")));
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmiundefined"));
+  }
+
+  @Test
   public void testIosProxyArp() throws IOException {
     Configuration proxyArpOmitted = parseConfig("iosProxyArp");
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/0"), isProxyArp())));
@@ -468,6 +637,41 @@ public class CiscoGrammarTest {
     assertThat(
         proxyArpOmitted,
         hasInterfaces(hasEntry(equalTo("Ethernet0/2"), isProxyArp(equalTo(false)))));
+  }
+
+  @Test
+  public void testIosZoneSecurity() throws IOException {
+    String hostname = "ios-zone-security";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expected the only unused zone to be zunreferenced
+     */
+    assertThat(ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "z1")));
+    assertThat(ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "z2")));
+    assertThat(ccae, not(hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "zempty")));
+    assertThat(
+        ccae, hasUnusedStructure(hostname, CiscoStructureType.SECURITY_ZONE, "zunreferenced"));
+
+    /*
+     * We expect an undefined reference only to zundefined
+     */
+    assertThat(ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "z1")));
+    assertThat(ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "z2")));
+    assertThat(
+        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "zempty")));
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.SECURITY_ZONE, "zundefined"));
+
+    /*
+     * We only expect zempty to be empty (have no interfaces)
+     */
+    assertThat(c, hasZone("z1", hasMemberInterfaces(not(empty()))));
+    assertThat(c, hasZone("z2", hasMemberInterfaces(not(empty()))));
+    assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
   }
 
   @Test
@@ -613,8 +817,7 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     // Check that 1.1.1.1/32 appears on r3

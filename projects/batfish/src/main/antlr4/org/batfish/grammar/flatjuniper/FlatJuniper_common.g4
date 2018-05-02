@@ -341,3 +341,8 @@ variable_permissive
 :
    ~NEWLINE+
 ;
+
+wildcard_address
+:
+   ip_address = IP_ADDRESS FORWARD_SLASH wildcard_mask = IP_ADDRESS
+;

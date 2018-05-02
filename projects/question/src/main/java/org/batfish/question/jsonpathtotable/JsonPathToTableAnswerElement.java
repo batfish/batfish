@@ -9,7 +9,6 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 public class JsonPathToTableAnswerElement extends TableAnswerElement {
 
@@ -31,7 +30,8 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
 
   @Override
   public Object fromRow(ObjectNode o) throws JsonProcessingException {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
   public void addDebugInfo(String key, Object value) {
@@ -45,6 +45,7 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
 
   @Override
   public ObjectNode toRow(Object object) {
-    throw new NotImplementedException();
+    throw new UnsupportedOperationException(
+        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

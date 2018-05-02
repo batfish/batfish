@@ -7,6 +7,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -133,6 +134,20 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, Vrf> featureValueOf(Configuration actual) {
       return actual.getVrfs();
+    }
+  }
+
+  static final class HasZone extends FeatureMatcher<Configuration, Zone> {
+    private final String _name;
+
+    HasZone(@Nonnull String name, @Nonnull Matcher<? super Zone> subMatcher) {
+      super(subMatcher, "A Configuration with zone " + name + ":", "zone " + name);
+      _name = name;
+    }
+
+    @Override
+    protected Zone featureValueOf(Configuration actual) {
+      return actual.getZones().get(_name);
     }
   }
 

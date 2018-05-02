@@ -27,6 +27,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
+import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
 import org.junit.rules.TemporaryFolder;
 
 public class BatfishTestUtils {
@@ -86,7 +87,15 @@ public class BatfishTestUtils {
           batfish.computeEnvironmentTopology(configurations),
           "environment topology");
     }
+    registerDataPlanePlugins(batfish);
     return batfish;
+  }
+
+  private static void registerDataPlanePlugins(Batfish batfish) {
+    BdpDataPlanePlugin bdpPlugin = new BdpDataPlanePlugin();
+    bdpPlugin.initialize(batfish);
+    IncrementalDataPlanePlugin ibdpPlugin = new IncrementalDataPlanePlugin();
+    ibdpPlugin.initialize(batfish);
   }
 
   /**
@@ -118,7 +127,6 @@ public class BatfishTestUtils {
     settings.setContainerDir(containerDir);
     settings.setTestrig("tempTestrig");
     settings.setEnvironmentName("tempEnvironment");
-    settings.setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
     Batfish.initTestrigSettings(settings);
     Path testrigPath = settings.getBaseTestrigSettings().getTestRigPath();
     settings.setActiveTestrigSettings(settings.getBaseTestrigSettings());
@@ -141,6 +149,7 @@ public class BatfishTestUtils {
             makeEnvBgpCache(),
             makeEnvRouteCache(),
             makeForwardingAnalysisCache());
+    registerDataPlanePlugins(batfish);
     return batfish;
   }
 

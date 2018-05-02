@@ -4961,6 +4961,11 @@ WIDE_METRICS_ONLY
    'wide-metrics-only'
 ;
 
+WILDCARD_ADDRESS
+:
+   'wildcard-address' -> pushMode(M_WildcardAddress)
+;
+
 XAUTH
 :
    'xauth'
@@ -5304,6 +5309,12 @@ fragment
 F_HexDigit
 :
    [0-9a-fA-F]
+;
+
+fragment
+F_IpAddress
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
 ;
 
 fragment
@@ -6118,4 +6129,28 @@ M_VrfTarget_TARGET
 M_VrfTarget_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_WildcardAddress;
+
+M_WildcardAddress_IP_ADDRESS
+:
+    F_IpAddress -> type ( IP_ADDRESS )
+;
+
+M_WildcardAddress_FORWARD_SLASH
+:
+    '/' -> type ( FORWARD_SLASH ) , mode ( M_WildcardAddress2 )
+;
+
+M_WildcardAddress_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_WildcardAddress2;
+
+M_WildcardAddress2_IP_ADDRESS
+:
+    F_IpAddress -> type ( IP_ADDRESS ) , popMode
 ;
