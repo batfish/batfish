@@ -1364,8 +1364,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     MatchPrefixSet matchDefaultRoute =
         new MatchPrefixSet(
             new DestinationNetwork(),
-            new ExplicitPrefixSet(
-                new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))));
+            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.DEFAULT_PREFIX_ONLY)));
     matchDefaultRoute.setComment("match default route");
     MatchPrefix6Set matchDefaultRoute6 =
         new MatchPrefix6Set(
@@ -2816,8 +2815,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       new Not(
           new MatchPrefixSet(
               new DestinationNetwork(),
-              new ExplicitPrefixSet(
-                  new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
+              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.DEFAULT_PREFIX_ONLY))));
 
   // For testing.
   If convertOspfRedistributionPolicy(
@@ -2998,8 +2996,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .add(
               new MatchPrefixSet(
                   new DestinationNetwork(),
-                  new ExplicitPrefixSet(
-                      new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
+                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.DEFAULT_PREFIX_ONLY))));
       long metric = proc.getDefaultInformationMetric();
       ospfExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       OspfMetricType metricType = proc.getDefaultInformationMetricType();
@@ -3153,8 +3150,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .add(
               new MatchPrefixSet(
                   new DestinationNetwork(),
-                  new ExplicitPrefixSet(
-                      new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
+                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.DEFAULT_PREFIX_ONLY))));
       long metric = proc.getDefaultInformationMetric();
       ripExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       // add default export map with metric
@@ -3242,8 +3238,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new Not(
                   new MatchPrefixSet(
                       new DestinationNetwork(),
-                      new ExplicitPrefixSet(
-                          new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
+                      new ExplicitPrefixSet(new PrefixSpace(PrefixRange.DEFAULT_PREFIX_ONLY)))));
 
       Long metric = rsp.getMetric();
       boolean explicitMetric = metric != null;
@@ -3286,8 +3281,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new Not(
                   new MatchPrefixSet(
                       new DestinationNetwork(),
-                      new ExplicitPrefixSet(
-                          new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
+                      new ExplicitPrefixSet(new PrefixSpace(PrefixRange.DEFAULT_PREFIX_ONLY)))));
 
       Long metric = rbp.getMetric();
       boolean explicitMetric = metric != null;

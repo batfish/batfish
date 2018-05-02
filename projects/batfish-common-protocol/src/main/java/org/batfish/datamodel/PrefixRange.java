@@ -13,6 +13,9 @@ public final class PrefixRange implements Serializable, Comparable<PrefixRange> 
   /** */
   private static final long serialVersionUID = 2L;
 
+  public static final PrefixRange DEFAULT_PREFIX_ONLY =
+      new PrefixRange(Prefix.ZERO, new SubRange(0, 0));
+
   public PrefixRange(Prefix prefix, SubRange lengthRange) {
     // Canonicalize the prefix by dropping extra bits in the address that are longer than any
     // relevant length.
