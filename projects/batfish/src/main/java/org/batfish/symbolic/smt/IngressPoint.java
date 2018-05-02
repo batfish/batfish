@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
@@ -13,71 +14,65 @@ public class IngressPoint implements Comparable<IngressPoint> {
 
   private final @Nonnull String _node;
 
-  private final @Nonnull String _interfaceOrVrf;
+  private final @Nonnull String _pointWithinNode;
 
-  private final @Nonnull Type _type;
+  private final @Nonnull Type _pointType;
 
-  private IngressPoint(@Nonnull Type type, @Nonnull String node, @Nonnull String interfaceOrVrf) {
+  private IngressPoint(
+      @Nonnull String node, @Nonnull String pointWithinNode, @Nonnull Type pointType) {
     _node = node;
-    _interfaceOrVrf = interfaceOrVrf;
-    _type = type;
+    _pointWithinNode = pointWithinNode;
+    _pointType = pointType;
   }
 
   public static IngressPoint ingressInterface(@Nonnull String node, @Nonnull String iface) {
-    return new IngressPoint(Type.INTERFACE, node, iface);
+    return new IngressPoint(node, iface, Type.INTERFACE);
   }
 
   public static IngressPoint ingressVrf(@Nonnull String node, @Nonnull String vrf) {
-    return new IngressPoint(Type.VRF, node, vrf);
+    return new IngressPoint(node, vrf, Type.VRF);
   }
 
   public boolean isIngressInterface() {
-    return _type == Type.INTERFACE;
+    return _pointType == Type.INTERFACE;
   }
 
   public boolean isIngressVrf() {
-    return _type == Type.VRF;
+    return _pointType == Type.VRF;
   }
 
   public @Nonnull String getInterface() {
-    if (_type == Type.INTERFACE) {
-      return _interfaceOrVrf;
+    if (_pointType == Type.INTERFACE) {
+      return _pointWithinNode;
     }
-    throw new BatfishException("IngressPoint type is not interface: " + _type);
+    throw new BatfishException("IngressPoint type is not interface: " + _pointType);
   }
 
   public @Nonnull String getNode() {
     return _node;
   }
 
+  private @Nonnull String getPointWithinNode() {
+    return _pointWithinNode;
+  }
+
   public @Nonnull Type getType() {
-    return _type;
+    return _pointType;
   }
 
   public @Nonnull String getVrf() {
-    if (_type == Type.VRF) {
-      return _interfaceOrVrf;
+    if (_pointType == Type.VRF) {
+      return _pointWithinNode;
     }
-    throw new BatfishException("IngressPoint type is not vrf: " + _type);
+    throw new BatfishException("IngressPoint type is not vrf: " + _pointType);
   }
 
   @Override
   public int compareTo(IngressPoint other) {
-    if (other == null) {
-      return 1;
-    }
-
-    int comparison = _type.compareTo(other._type);
-    if (comparison != 0) {
-      return comparison;
-    }
-
-    comparison = _node.compareTo(other._node);
-    if (comparison != 0) {
-      return comparison;
-    }
-
-    return _interfaceOrVrf.compareTo(other._interfaceOrVrf);
+    return Comparator.comparing(IngressPoint::getType)
+        .thenComparing(IngressPoint::getNode)
+        .thenComparing(IngressPoint::getPointWithinNode)
+        .compare(this, other);
   }
 
   @Override
@@ -89,13 +84,13 @@ public class IngressPoint implements Comparable<IngressPoint> {
       return false;
     }
     IngressPoint other = (IngressPoint) o;
-    return this._type == other._type
+    return this._pointType == other._pointType
         && Objects.equals(this._node, other._node)
-        && Objects.equals(this._interfaceOrVrf, other._interfaceOrVrf);
+        && Objects.equals(this._pointWithinNode, other._pointWithinNode);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(this._type, this._node, this._interfaceOrVrf);
+    return Objects.hash(this._pointType, this._node, this._pointWithinNode);
   }
 }
