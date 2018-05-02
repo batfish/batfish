@@ -1,0 +1,14 @@
+!
+hostname ios-object-group-protocol
+!
+!
+object-group protocol ogp1
+ protocol-object icmp
+!
+object-group protocol ogp2
+ protocol-object tcp
+ protocol-object udp
+!
+object-group protocol ogp3
+!
+!

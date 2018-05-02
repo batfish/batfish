@@ -226,16 +226,7 @@ if_ip_ospf_hello_interval
 
 if_ip_ospf_network
 :
-   IP OSPF NETWORK
-   (
-      BROADCAST
-      | NON_BROADCAST
-      |
-      (
-         POINT_TO_MULTIPOINT NON_BROADCAST?
-      )
-      | POINT_TO_POINT
-   ) NEWLINE
+   IP OSPF NETWORK POINT_TO_POINT NEWLINE
 ;
 
 if_ip_ospf_passive_interface

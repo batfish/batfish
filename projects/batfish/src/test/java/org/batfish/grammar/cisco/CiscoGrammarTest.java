@@ -51,6 +51,7 @@ import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
@@ -62,6 +63,7 @@ import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -75,6 +77,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.Arrays;
@@ -327,12 +330,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosTestbed() throws IOException {
-    Configuration c = parseConfig("ios-testbed");
-    String blah = "blah";
-  }
-
-  @Test
   public void testIosInspection() throws IOException {
     Configuration c = parseConfig("ios-inspection");
 
@@ -432,6 +429,61 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
     assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
+  }
+
+  @Test
+  public void testIosObjectGroupProtocol() throws IOException {
+    Configuration c = parseConfig("ios-object-group-protocol");
+
+    // First protocol object group should only have an ICMP IpProtocol
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeProtocolObjectGroupAclName("ogp1"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    contains(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                hasIpProtocols(
+                                                    contains(IpProtocol.ICMP)))))))))))));
+
+    // Combo protocol object group should have both UDP and TCP IpProtocols
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeProtocolObjectGroupAclName("ogp2"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(
+                                    containsInAnyOrder(
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                hasIpProtocols(
+                                                    contains(IpProtocol.TCP)))),
+                                        isMatchHeaderSpaceThat(
+                                            hasHeaderSpace(
+                                                hasIpProtocols(
+                                                    contains(IpProtocol.UDP)))))))))))));
+
+    // Last protocol object group should only have an ICMP IpProtocol
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeProtocolObjectGroupAclName("ogp3"),
+            hasLines(
+                containsInAnyOrder(
+                    ImmutableList.of(
+                        hasMatchCondition(
+                            isOrMatchExprThat(
+                                hasDisjuncts(emptyIterable()))))))));
   }
 
   @Test
