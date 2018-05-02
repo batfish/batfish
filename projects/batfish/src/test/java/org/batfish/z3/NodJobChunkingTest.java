@@ -56,6 +56,8 @@ public class NodJobChunkingTest {
   private Synthesizer _synthesizer;
   private IngressPoint _ingressPoint1;
   private IngressPoint _ingressPoint2;
+  private IngressPoint _ingressPoint3;
+  private String _ifaceName;
 
   @Before
   public void setup() throws IOException {
@@ -93,12 +95,17 @@ public class NodJobChunkingTest {
     Vrf dstVrf = vb.setOwner(_dstNode).build();
 
     Prefix p1 = Prefix.parse("1.0.0.0/31");
-    ib.setOwner(_srcNode1)
-        .setVrf(_srcVrf1)
-        .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-        // require traffic srcNode1 -> dstNode to have srcIp == p1.getStartIp
-        .setOutgoingFilter(mkOutgoingFilter(_srcNode1, p1.getStartIp()))
-        .build();
+    Interface iface =
+        ib.setOwner(_srcNode1)
+            .setVrf(_srcVrf1)
+            .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
+            // require traffic srcNode1 -> dstNode to have srcIp == p1.getStartIp
+            .setOutgoingFilter(mkOutgoingFilter(_srcNode1, p1.getStartIp()))
+            .build();
+
+    _ifaceName = iface.getName();
+    _ingressPoint3 = IngressPoint.ingressInterface(_srcNode1.getHostname(), _ifaceName);
+
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
@@ -168,15 +175,18 @@ public class NodJobChunkingTest {
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
             .setHeaderSpace(new HeaderSpace())
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
+            .setIngressNodeInterfaces(
+                ImmutableMultimap.of(_ingressPoint3.getNode(), _ingressPoint3.getInterface()))
             .setIngressNodeVrfs(
                 ImmutableMultimap.of(
-                    _srcNode1.getHostname(), _srcVrf1.getName(),
-                    _srcNode2.getHostname(), _srcVrf2.getName()))
+                    _ingressPoint1.getNode(), _ingressPoint1.getVrf(),
+                    _ingressPoint2.getNode(), _ingressPoint2.getVrf()))
             .setTransitNodes(ImmutableSet.of())
             .setNonTransitNodes(ImmutableSet.of())
             .build();
     SortedSet<IngressPoint> ingressPoints =
         ImmutableSortedSet.of(
+            IngressPoint.ingressInterface(_srcNode1.getHostname(), _ifaceName),
             IngressPoint.ingressVrf(_srcNode1.getHostname(), _srcVrf1.getName()),
             IngressPoint.ingressVrf(_srcNode2.getHostname(), _srcVrf2.getName()));
     return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressPoints, "tag", true);
@@ -191,19 +201,25 @@ public class NodJobChunkingTest {
 
     Map<IngressPoint, Map<String, Long>> fieldConstraintsByIngressPoint =
         nodJob.getIngressPointConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(2));
+    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(3));
     assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint1));
     assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint2));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint3));
     Map<String, Long> fieldConstraints1 = fieldConstraintsByIngressPoint.get(_ingressPoint1);
     Map<String, Long> fieldConstraints2 = fieldConstraintsByIngressPoint.get(_ingressPoint2);
+    Map<String, Long> fieldConstraints3 = fieldConstraintsByIngressPoint.get(_ingressPoint3);
 
     assertThat(
         fieldConstraints1,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
+        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(1)));
     assertThat(fieldConstraints1, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
     assertThat(
         fieldConstraints2,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(1)));
+        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(2)));
     assertThat(fieldConstraints2, hasEntry(Field.SRC_IP.getName(), new Ip("2.0.0.0").asLong()));
+    assertThat(
+        fieldConstraints3,
+        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
+    assertThat(fieldConstraints3, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
   }
 }
