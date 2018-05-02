@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -2245,39 +2244,6 @@ class EncoderSlice {
       }
       vars.getCommunities().forEach((cvar, e) -> add(mkImplies(notPermitted, mkNot(e))));
     }
-  }
-
-  /*
-   * Create boolean expression for a variable being within a bound.
-   */
-  private BoolExpr boundConstraint(ArithExpr e, long lower, long upper) {
-    if (lower > upper) {
-      throw new BatfishException("Invalid range: " + lower + "-" + upper);
-    } else if (lower == upper) {
-      return mkEq(e, mkInt(lower));
-    } else {
-      BoolExpr x = mkGe(e, mkInt(lower));
-      BoolExpr y = mkLe(e, mkInt(upper));
-      return mkAnd(x, y);
-    }
-  }
-
-  /*
-   * Create a boolean expression for a variable being withing an IpWildCard bound
-   */
-  private BoolExpr ipWildCardBound(BitVecExpr field, IpWildcard wc) {
-    BitVecExpr ip = getCtx().mkBV(wc.getIp().asLong(), 32);
-    BitVecExpr mask = getCtx().mkBV(~wc.getWildcard().asLong(), 32);
-    return mkEq(getCtx().mkBVAND(field, mask), getCtx().mkBVAND(ip, mask));
-  }
-
-  /*
-   * Create a boolean expression for a variable being within a particular subrange.
-   */
-  private BoolExpr subRangeBound(ArithExpr e, SubRange r) {
-    long lower = r.getStart();
-    long upper = r.getEnd();
-    return boundConstraint(e, lower, upper);
   }
 
   /*
