@@ -215,7 +215,6 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     return false;
   }
 
-
   // If delimiters (non-alphanumeric characters) are being used in the node names, we use them
   // to separate the different tokens.
   private List<Pair<String, Token>> preTokensToDelimitedTokens(
@@ -226,24 +225,24 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
       StringBuilder chars = new StringBuilder(pretokens.get(i).getFirst());
       PreToken pt = pretokens.get(i).getSecond();
       switch (pt) {
-      case ALPHA_PLUS:
-        // combine everything up to the next delimiter into a single alphanumeric token
-        int next = i+1;
-        while (next < size && pretokens.get(next).getSecond() != PreToken.DELIMITER) {
-          chars.append(pretokens.get(next).getFirst());
-          next++;
-        }
-        i = next - 1;
-        tokens.add(new Pair<>(chars.toString(), Token.ALNUM_PLUS));
-        break;
-      case DELIMITER:
-        tokens.add(new Pair<>(chars.toString(), Token.DELIMITER));
-        break;
-      case DIGIT_PLUS:
-        tokens.add(new Pair<>(chars.toString(), Token.DIGIT_PLUS));
-        break;
-      default:
-        throw new BatfishException("Unknown pretoken " + pt);
+        case ALPHA_PLUS:
+          // combine everything up to the next delimiter into a single alphanumeric token
+          int next = i + 1;
+          while (next < size && pretokens.get(next).getSecond() != PreToken.DELIMITER) {
+            chars.append(pretokens.get(next).getFirst());
+            next++;
+          }
+          i = next - 1;
+          tokens.add(new Pair<>(chars.toString(), Token.ALNUM_PLUS));
+          break;
+        case DELIMITER:
+          tokens.add(new Pair<>(chars.toString(), Token.DELIMITER));
+          break;
+        case DIGIT_PLUS:
+          tokens.add(new Pair<>(chars.toString(), Token.DIGIT_PLUS));
+          break;
+        default:
+          throw new BatfishException("Unknown pretoken " + pt);
       }
     }
     return tokens;
@@ -259,31 +258,31 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
       String chars = pretokens.get(i).getFirst();
       PreToken pt = pretokens.get(i).getSecond();
       switch (pt) {
-      case ALPHA_PLUS:
-        int next = i+1;
-        if (next >= size) {
-          // generalize a final alphabetic sequence to allow alphanumeric ones
-          tokens.add(new Pair<>(chars, Token.ALNUM_PLUS));
-        } else {
-          // the next token must be DIGIT_PLUS since we know there are no delimiters
-          int third = i+2;
-          String bothChars = chars + pretokens.get(next).getFirst();
-          if (third >= size) {
-            // generalize a final ALPHA+DIGIT+ to ALNUM+
-            tokens.add(new Pair<>(bothChars, Token.ALNUM_PLUS));
+        case ALPHA_PLUS:
+          int next = i + 1;
+          if (next >= size) {
+            // generalize a final alphabetic sequence to allow alphanumeric ones
+            tokens.add(new Pair<>(chars, Token.ALNUM_PLUS));
           } else {
-            // keep ALPHA+DIGIT+ as is, to separate it from the subsequent
-            // alphabetic sequence
-            tokens.add(new Pair<>(bothChars, Token.ALPHA_PLUS_DIGIT_PLUS));
+            // the next token must be DIGIT_PLUS since we know there are no delimiters
+            int third = i + 2;
+            String bothChars = chars + pretokens.get(next).getFirst();
+            if (third >= size) {
+              // generalize a final ALPHA+DIGIT+ to ALNUM+
+              tokens.add(new Pair<>(bothChars, Token.ALNUM_PLUS));
+            } else {
+              // keep ALPHA+DIGIT+ as is, to separate it from the subsequent
+              // alphabetic sequence
+              tokens.add(new Pair<>(bothChars, Token.ALPHA_PLUS_DIGIT_PLUS));
+            }
+            i++;
           }
-          i++;
-        }
-        break;
-      case DIGIT_PLUS:
-        tokens.add(new Pair<>(chars, Token.DIGIT_PLUS));
-        break;
-      default:
-        throw new BatfishException("Unexpected pretoken " + pt);
+          break;
+        case DIGIT_PLUS:
+          tokens.add(new Pair<>(chars, Token.DIGIT_PLUS));
+          break;
+        default:
+          throw new BatfishException("Unexpected pretoken " + pt);
       }
     }
     return tokens;
@@ -318,7 +317,6 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     pattern.add(new Pair<>(new String(curr), currPT));
     return pattern;
   }
-
 
   private static String regexTokensToRegex(List<String> tokens) {
     return String.join("", tokens);
