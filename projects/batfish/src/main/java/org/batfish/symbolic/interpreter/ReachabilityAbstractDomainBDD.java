@@ -3,29 +3,32 @@ package org.batfish.symbolic.interpreter;
 import java.util.Map.Entry;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.SubRange;
 import org.batfish.symbolic.CommunityVar;
-import org.batfish.symbolic.bdd.BDDRoute;
-import org.batfish.symbolic.bdd.BDDRouteConfig;
+import org.batfish.symbolic.bdd.BDDRouteFactory;
+import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 
 public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
 
-  private static BDDPairing pairing = BDDRoute.factory.makePair();
+  private static BDDFactory factory = BDDRouteFactory.factory;
 
-  private BDDRoute _variables;
+  private static BDDPairing pairing = factory.makePair();
 
-  ReachabilityAbstractDomainBDD(BDDRouteConfig config, Set<CommunityVar> comms) {
-    _variables = new BDDRoute(config, comms);
+  private BDDRouteFactory _routeFactory;
+
+  ReachabilityAbstractDomainBDD(BDDRouteFactory routeFactory) {
+    _routeFactory = routeFactory;
   }
 
   private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
     long b = p.getStartIp().asLong();
-    BDD acc = BDDRoute.factory.one();
+    BDD acc = factory.one();
     for (int i = 0; i < length; i++) {
       boolean res = Ip.getBitAtPosition(b, i);
       if (res) {
@@ -53,9 +56,9 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
     int upper = r.getEnd();
 
     BDD lowerBitsMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, len);
-    BDD acc = BDDRoute.factory.zero();
+    BDD acc = factory.zero();
     if (lower == 0 && upper == 32) {
-      acc = BDDRoute.factory.one();
+      acc = factory.one();
     } else {
       for (int i = lower; i <= upper; i++) {
         BDD equalLen = record.getPrefixLength().value(i);
@@ -67,27 +70,28 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
 
   @Override
   public BDD init(String router, Set<Prefix> prefixes) {
-    BDD acc = BDDRoute.factory.zero();
+    BDD acc = factory.zero();
     for (Prefix prefix : prefixes) {
       SubRange r = new SubRange(32, 32);
       PrefixRange range = new PrefixRange(prefix, r);
-      BDD pfx = isRelevantFor(_variables, range);
+      BDD pfx = isRelevantFor(_routeFactory.variables(), range);
       acc = acc.or(pfx);
     }
     return acc;
   }
 
   @Override
-  public BDD transform(BDD input, BDDTransferFunction f) {
-    BDD passThrough = f.getSecond();
+  public BDD transform(BDD input, EdgeTransformer t) {
+    BDDTransferFunction f = t.getBgpTransfer();
+    BDD passThrough = f.getFilter();
     BDD acc = input.and(passThrough);
-    BDDRoute mods = f.getFirst();
+    BDDRoute mods = f.getRoute();
     pairing.reset();
     if (mods.getConfig().getKeepCommunities()) {
-      for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
+      for (Entry<CommunityVar, BDD> e : _routeFactory.variables().getCommunities().entrySet()) {
         CommunityVar cvar = e.getKey();
         BDD x = e.getValue();
-        BDD temp = _variables.getTemporary(x);
+        BDD temp = _routeFactory.variables().getTemporary(x);
         BDD expr = mods.getCommunities().get(cvar);
         BDD equal = temp.biimp(expr);
         acc = acc.and(equal);
@@ -110,6 +114,6 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
   }
 
   public BDDRoute getVariables() {
-    return _variables;
+    return _routeFactory.variables();
   }
 }

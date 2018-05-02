@@ -23,8 +23,8 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.answers.RoleAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetwork;
-import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDRouteConfig;
+import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
 import org.batfish.symbolic.utils.Tuple;
 
 public class Roles {
@@ -114,7 +114,7 @@ public class Roles {
       for (GraphEdge ge : ges) {
         String s = ge.toString();
 
-        BDDRoute x1 = _network.getImportBgpPolicies().get(ge).getFirst();
+        BDDRoute x1 = _network.getImportBgpPolicies().get(ge).getRoute();
         if (x1 == null) {
           importBgpNull.add(s);
         } else {
@@ -123,7 +123,7 @@ public class Roles {
           ec.add(s);
         }
 
-        BDDRoute x2 = _network.getExportBgpPolicies().get(ge).getFirst();
+        BDDRoute x2 = _network.getExportBgpPolicies().get(ge).getRoute();
         if (x2 == null) {
           exportBgpNull.add(s);
         } else {

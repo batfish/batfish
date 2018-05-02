@@ -21,7 +21,9 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRouteConfig;
+import org.batfish.symbolic.bdd.BDDRouteFactory;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
+import org.batfish.symbolic.smt.EdgeType;
 
 public class ReachabilityInterpreter {
 
@@ -113,15 +115,17 @@ public class ReachabilityInterpreter {
           // System.out.println(_variables.dot(nr));
           // System.out.println("\n\n");
 
-          BDDTransferFunction exportFilter = network.getExportBgpPolicies().get(rev);
-          BDDTransferFunction importFilter = network.getImportBgpPolicies().get(ge);
+          BDDTransferFunction exportFilter = network.getExportBgpPolicies().get(ge);
+          BDDTransferFunction importFilter = network.getImportBgpPolicies().get(rev);
 
           if (exportFilter != null) {
-            nr = domain.transform(nr, exportFilter);
+            EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, exportFilter);
+            nr = domain.transform(nr, exp);
           }
 
           if (importFilter != null) {
-            nr = domain.transform(nr, importFilter);
+            EdgeTransformer imp = new EdgeTransformer(ge, EdgeType.IMPORT, importFilter);
+            nr = domain.transform(nr, imp);
           }
 
           rprime = domain.join(rprime, nr);
@@ -157,18 +161,19 @@ public class ReachabilityInterpreter {
   public AnswerElement interpret() {
     Graph g = new Graph(_batfish);
     BDDRouteConfig config = new BDDRouteConfig(true);
+    BDDRouteFactory routeFactory = new BDDRouteFactory(g, config);
+
     NodesSpecifier ns = new NodesSpecifier(_question.getIngressNodeRegex());
 
     long t = System.currentTimeMillis();
     BDDNetwork network = BDDNetwork.create(g, ns, config);
     System.out.println("Time to build BDDs: " + (System.currentTimeMillis() - t));
 
-    ReachabilityAbstractDomainBDD domain =
-        new ReachabilityAbstractDomainBDD(config, g.getAllCommunities());
+    ReachabilityAbstractDomainBDD domain = new ReachabilityAbstractDomainBDD(routeFactory);
 
-    ReachabilityAbstractDomainAP domain2 = new ReachabilityAbstractDomainAP(domain, network);
+    // ReachabilityAbstractDomainAP domain2 = new ReachabilityAbstractDomainAP(domain, network);
 
-    Map<String, BDD> reachable = computeFixedPoint(g, network, domain2);
-    return new StringAnswerElement("Foo");
+    Map<String, BDD> reachable = computeFixedPoint(g, network, domain);
+    return new StringAnswerElement("Foo Bar");
   }
 }

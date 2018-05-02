@@ -6,17 +6,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.bdd.BDDNetwork;
-import org.batfish.symbolic.bdd.BDDRoute;
+import org.batfish.symbolic.bdd.BDDRouteFactory;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
+import org.batfish.symbolic.smt.EdgeType;
 
 public class ReachabilityAbstractDomainAP implements IAbstractDomain<BitSet> {
 
-  private ReachabilityAbstractDomainBDD _domain;
+  private static BDDFactory factory = BDDRouteFactory.factory;
 
   private AtomicPredicates _atomicPredicates;
 
@@ -24,21 +28,33 @@ public class ReachabilityAbstractDomainAP implements IAbstractDomain<BitSet> {
 
   ReachabilityAbstractDomainAP(ReachabilityAbstractDomainBDD domain, BDDNetwork network) {
     Set<BDD> allFilters = new HashSet<>();
-    Set<BDDTransferFunction> allTransforms = new HashSet<>();
-    for (BDDTransferFunction r : network.getExportBgpPolicies().values()) {
-      allFilters.add(r.getSecond());
-      allTransforms.add(r);
+    Map<EdgeTransformer, BDDTransferFunction> allTransforms = new HashMap<>();
+
+    for (Entry<GraphEdge, BDDTransferFunction> e : network.getExportBgpPolicies().entrySet()) {
+      GraphEdge ge = e.getKey();
+      BDDTransferFunction f = e.getValue();
+      EdgeTransformer et = new EdgeTransformer(ge, EdgeType.EXPORT, f);
+      allFilters.add(f.getFilter());
+      allTransforms.put(et, f);
     }
+
+    for (Entry<GraphEdge, BDDTransferFunction> e : network.getImportBgpPolicies().entrySet()) {
+      GraphEdge ge = e.getKey();
+      BDDTransferFunction f = e.getValue();
+      EdgeTransformer et = new EdgeTransformer(ge, EdgeType.IMPORT, f);
+      allFilters.add(f.getFilter());
+      allTransforms.put(et, f);
+    }
+
     List<BDD> filters = new ArrayList<>(allFilters);
-    List<BDDTransferFunction> trans = new ArrayList<>(allTransforms);
+    List<EdgeTransformer> trans = new ArrayList<>(allTransforms.keySet());
     List<Transformer> transforms = new ArrayList<>();
-    for (BDDTransferFunction tr : trans) {
-      Function<BDD, BDD> f = (bdd) -> domain.transform(bdd, tr);
-      Transformer x = new Transformer(tr, f);
+    for (EdgeTransformer et : trans) {
+      Function<BDD, BDD> f = (bdd) -> domain.transform(bdd, et);
+      Transformer x = new Transformer(et.getBgpTransfer(), f);
       transforms.add(x);
     }
 
-    _domain = domain;
     _origins = new HashMap<>();
     _atomicPredicates = AtomOps.computeAtomicPredicates(filters, transforms);
 
@@ -66,8 +82,9 @@ public class ReachabilityAbstractDomainAP implements IAbstractDomain<BitSet> {
   }
 
   @Override
-  public BitSet transform(BitSet input, BDDTransferFunction f) {
-    BDD filter = f.getSecond();
+  public BitSet transform(BitSet input, EdgeTransformer t) {
+    BDDTransferFunction f = t.getBgpTransfer();
+    BDD filter = f.getFilter();
     BitSet atoms = _atomicPredicates.getAtoms().get(filter);
     int size = _atomicPredicates.getDisjoint().size();
 
@@ -97,7 +114,7 @@ public class ReachabilityAbstractDomainAP implements IAbstractDomain<BitSet> {
   // TODO: need to track where it came from
   @Override
   public BDD finalize(BitSet value) {
-    BDD acc = BDDRoute.factory.zero();
+    BDD acc = factory.zero();
     for (int i = value.nextSetBit(0); i != -1; i = value.nextSetBit(i + 1)) {
       BDD b = _atomicPredicates.getDisjoint().get(i);
       acc = acc.or(b);

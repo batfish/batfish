@@ -21,12 +21,13 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferResult;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
+import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
 
 public class BDDNetwork {
 
   private Graph _graph;
 
-  private BDDRouteConfig _config;
+  private BDDRouteFactory _routeFactory;
 
   private NodesSpecifier _nodeSpecifier;
 
@@ -48,7 +49,7 @@ public class BDDNetwork {
       Graph graph, NodesSpecifier nodesSpecifier, BDDRouteConfig config, PolicyQuotient pq) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
-    _config = config;
+    _routeFactory = new BDDRouteFactory(graph, config);
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
@@ -79,7 +80,7 @@ public class BDDNetwork {
       networks = Graph.getOriginatedNetworks(conf);
     }
     TransferBuilder t = new TransferBuilder(g, conf, pol.getStatements(), _policyQuotient);
-    TransferResult<BDDTransferFunction, BDD> result = t.compute(_config, networks);
+    TransferResult<BDDTransferFunction, BDD> result = t.compute(_routeFactory, networks);
     return result.getReturnValue();
   }
 
@@ -150,8 +151,8 @@ public class BDDNetwork {
           Pair<Prefix, Integer> tup = new Pair<>(pfx, adminCost);
           staticPrefixes.add(tup);
         }
-        BDDRoute in = (bgpIn == null) ? null : bgpIn.getFirst();
-        BDDRoute out = (bgpOut == null) ? null : bgpOut.getFirst();
+        BDDRoute in = (bgpIn == null) ? null : bgpIn.getRoute();
+        BDDRoute out = (bgpOut == null) ? null : bgpOut.getRoute();
         InterfacePolicy ipol = new InterfacePolicy(aclIn, in, null, staticPrefixes);
         InterfacePolicy epol = new InterfacePolicy(aclOut, out, ospfCost, null);
         _importPolicyMap.put(ge, ipol);
