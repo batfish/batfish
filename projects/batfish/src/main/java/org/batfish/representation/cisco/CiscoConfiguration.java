@@ -41,6 +41,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
@@ -3961,7 +3962,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markSecurityZones(CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE);
     markSecurityZones(CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
-    // warn about unreferenced data structures
+    // record references to defined structures
     recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     recordCommunityLists();
     recordStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
@@ -4208,9 +4209,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
         continue;
       }
       for (NamedBgpPeerGroup peerGroup : proc.getNamedPeerGroups().values()) {
-        // use -1 for now; we are not counting references for peerGroups
         int numReferrers =
-            (_unusedPeerGroups != null && _unusedPeerGroups.contains(peerGroup)) ? 0 : -1;
+            (_unusedPeerGroups != null && _unusedPeerGroups.contains(peerGroup))
+                ? 0
+                // we are not properly counting references for peer groups
+                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
+
         recordStructure(
             CiscoStructureType.BGP_PEER_GROUP,
             peerGroup.getName(),
@@ -4229,7 +4233,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
       for (NamedBgpPeerGroup peerSession : proc.getPeerSessions().values()) {
         // use -1 for now; we are not counting references for peerSessions
         int numReferrers =
-            (_unusedPeerSessions != null && _unusedPeerSessions.contains(peerSession)) ? 0 : -1;
+            (_unusedPeerSessions != null && _unusedPeerSessions.contains(peerSession))
+                ? 0
+                // we are not properly counting references for peer sessions
+                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
         recordStructure(
             CiscoStructureType.BGP_PEER_SESSION,
             peerSession.getName(),

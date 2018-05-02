@@ -36,6 +36,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -2357,9 +2358,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
               0,
               _unreferencedBgpGroups.get(group.getName()));
         } else {
-          // -1 because we are not counting these references properly
           recordStructure(
-              JuniperStructureType.BGP_GROUP, group.getName(), -1, group.getDefinitionLine());
+              JuniperStructureType.BGP_GROUP,
+              group.getName(),
+              // we are not counting references properly for bgp groups
+              DefinedStructureInfo.UNKNOWN_NUM_REFERRERS,
+              group.getDefinitionLine());
         }
       }
     }
@@ -2448,11 +2452,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
       String name = e.getKey();
       PrefixList prefixList = e.getValue();
-      // if (!prefixList.getIpv6() && prefixList.isUnused() && !_ignoredPrefixLists.contains(name))
-      // {
       recordStructure(
           prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
-      // }
     }
   }
 

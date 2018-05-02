@@ -1,14 +1,14 @@
 package org.batfish.question.definedstructures;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.datamodel.questions.IPacketTraceQuestion;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.Question;
 
 /**
  * Fetches all defined structures in config files. The nodeRegex parameter controls structures of
  * which nodes are fetched.
  */
-public class DefinedStructuresQuestion extends IPacketTraceQuestion {
+public class DefinedStructuresQuestion extends Question {
 
   private static final String PROP_NODE_REGEX = "nodeRegex";
 

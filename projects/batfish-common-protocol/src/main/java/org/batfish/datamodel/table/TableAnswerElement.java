@@ -2,7 +2,6 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
@@ -123,7 +122,7 @@ public abstract class TableAnswerElement extends AnswerElement {
     }
   }
 
-  public abstract Object fromRow(ObjectNode o) throws JsonProcessingException;
+  public abstract Object fromRow(ObjectNode o) throws IOException;
 
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {

@@ -197,7 +197,7 @@ final class ConvertConfigurationAnswerElementMatchers {
       if (byStructureName.get(_structureName).getNumReferrers() != _numReferrers) {
         mismatchDescription.appendText(
             String.format(
-                "On host '%s' has defined structure of type '%s' named '%s' has %d referrers",
+                "On host '%s', defined structure of type '%s' named '%s' has %d referrers",
                 _hostname, _type, _structureName, _numReferrers));
         return false;
       }

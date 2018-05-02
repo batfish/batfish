@@ -260,7 +260,7 @@ public class CiscoGrammarTest {
                                                 computeServiceObjectGroupAclName("ogs1"))))))))))));
 
     /*
-     * We expect only object-groups to be ogsunused1, ognunused1 to have zero referrers
+     * We expect only object-groups ogsunused1, ognunused1 to have zero referrers
      */
     assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "ogs1", 1));
     assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1", 1));

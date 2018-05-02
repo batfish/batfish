@@ -2,7 +2,6 @@ package org.batfish.question.definedstructures;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
@@ -68,21 +67,17 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(ObjectNode row) throws JsonProcessingException {
+  public Object fromRow(ObjectNode row) throws IOException {
     return fromRowStatic(row);
   }
 
-  public static DefinedStructureRow fromRowStatic(ObjectNode row) throws JsonProcessingException {
+  public static DefinedStructureRow fromRowStatic(ObjectNode row) throws IOException {
     SortedSet<Integer> definitionLines = new TreeSet<>();
-    try {
-      definitionLines =
-          BatfishObjectMapper.mapper()
-              .readValue(
-                  BatfishObjectMapper.mapper().treeAsTokens(row.get(COL_DEFINITION_LINES)),
-                  new TypeReference<SortedSet<Integer>>() {});
-    } catch (IOException e) {
-      // what do we here? -- change throws to IOException
-    }
+    definitionLines =
+        BatfishObjectMapper.mapper()
+            .readValue(
+                BatfishObjectMapper.mapper().treeAsTokens(row.get(COL_DEFINITION_LINES)),
+                new TypeReference<SortedSet<Integer>>() {});
     Integer numReferences =
         BatfishObjectMapper.mapper().treeToValue(row.get(COL_NUM_REFERENCES), Integer.class);
     String nodeName =

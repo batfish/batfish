@@ -12,6 +12,8 @@ public class DefinedStructureInfo implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
+  public static final int UNKNOWN_NUM_REFERRERS = -1;
+
   private static final String PROP_DEFINITION_LINES = "definitionLines";
   private static final String PROP_NUM_REFERRERS = "numReferrers";
 
@@ -23,7 +25,7 @@ public class DefinedStructureInfo implements Serializable {
       @JsonProperty(PROP_DEFINITION_LINES) SortedSet<Integer> definitionLines,
       @JsonProperty(PROP_NUM_REFERRERS) Integer numReferrers) {
     _definitionLines = MoreObjects.firstNonNull(definitionLines, new TreeSet<>());
-    _numReferrers = MoreObjects.firstNonNull(numReferrers, -1);
+    _numReferrers = MoreObjects.firstNonNull(numReferrers, UNKNOWN_NUM_REFERRERS);
   }
 
   @JsonProperty(PROP_DEFINITION_LINES)
