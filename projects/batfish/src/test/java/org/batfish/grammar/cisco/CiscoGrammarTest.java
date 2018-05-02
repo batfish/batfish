@@ -463,12 +463,14 @@ public class CiscoGrammarTest {
                             isOrMatchExprThat(
                                 hasDisjuncts(
                                     containsInAnyOrder(
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                hasIpProtocols(contains(IpProtocol.TCP)))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                hasIpProtocols(contains(IpProtocol.UDP)))))))))))));
+                                        ImmutableList.of(
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    hasIpProtocols(contains(IpProtocol.TCP)))),
+                                            isMatchHeaderSpaceThat(
+                                                hasHeaderSpace(
+                                                    hasIpProtocols(
+                                                        contains(IpProtocol.UDP))))))))))))));
 
     // Last protocol object group should only have an ICMP IpProtocol
     assertThat(
