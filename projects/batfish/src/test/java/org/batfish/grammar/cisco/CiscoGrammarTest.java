@@ -77,7 +77,6 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.Arrays;
@@ -466,12 +465,10 @@ public class CiscoGrammarTest {
                                     containsInAnyOrder(
                                         isMatchHeaderSpaceThat(
                                             hasHeaderSpace(
-                                                hasIpProtocols(
-                                                    contains(IpProtocol.TCP)))),
+                                                hasIpProtocols(contains(IpProtocol.TCP)))),
                                         isMatchHeaderSpaceThat(
                                             hasHeaderSpace(
-                                                hasIpProtocols(
-                                                    contains(IpProtocol.UDP)))))))))))));
+                                                hasIpProtocols(contains(IpProtocol.UDP)))))))))))));
 
     // Last protocol object group should only have an ICMP IpProtocol
     assertThat(
@@ -481,9 +478,7 @@ public class CiscoGrammarTest {
             hasLines(
                 containsInAnyOrder(
                     ImmutableList.of(
-                        hasMatchCondition(
-                            isOrMatchExprThat(
-                                hasDisjuncts(emptyIterable()))))))));
+                        hasMatchCondition(isOrMatchExprThat(hasDisjuncts(emptyIterable()))))))));
   }
 
   @Test
