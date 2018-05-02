@@ -6,7 +6,7 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import org.batfish.common.Pair;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -36,7 +35,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.z3.state.OriginateVrf;
+import org.batfish.symbolic.smt.IngressPoint;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -55,8 +54,8 @@ public class NodJobChunkingTest {
   private Vrf _srcVrf1;
   private Vrf _srcVrf2;
   private Synthesizer _synthesizer;
-  private OriginateVrf _originateVrf1;
-  private OriginateVrf _originateVrf2;
+  private IngressPoint _ingressPoint1;
+  private IngressPoint _ingressPoint2;
 
   @Before
   public void setup() throws IOException {
@@ -88,8 +87,8 @@ public class NodJobChunkingTest {
     _srcNode2 = cb.build();
     _srcVrf1 = vb.setOwner(_srcNode1).build();
     _srcVrf2 = vb.setOwner(_srcNode2).build();
-    _originateVrf1 = new OriginateVrf(_srcNode1.getHostname(), _srcVrf1.getName());
-    _originateVrf2 = new OriginateVrf(_srcNode2.getHostname(), _srcVrf2.getName());
+    _ingressPoint1 = IngressPoint.ingressVrf(_srcNode1.getHostname(), _srcVrf1.getName());
+    _ingressPoint2 = IngressPoint.ingressVrf(_srcNode2.getHostname(), _srcVrf2.getName());
     _dstNode = cb.build();
     Vrf dstVrf = vb.setOwner(_dstNode).build();
 
@@ -170,17 +169,17 @@ public class NodJobChunkingTest {
             .setHeaderSpace(new HeaderSpace())
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
             .setIngressNodeVrfs(
-                ImmutableMap.of(
-                    _srcNode1.getHostname(), ImmutableSet.of(_srcVrf1.getName()),
-                    _srcNode2.getHostname(), ImmutableSet.of(_srcVrf2.getName())))
+                ImmutableMultimap.of(
+                    _srcNode1.getHostname(), _srcVrf1.getName(),
+                    _srcNode2.getHostname(), _srcVrf2.getName()))
             .setTransitNodes(ImmutableSet.of())
             .setNonTransitNodes(ImmutableSet.of())
             .build();
-    SortedSet<Pair<String, String>> ingressNodes =
+    SortedSet<IngressPoint> ingressPoints =
         ImmutableSortedSet.of(
-            new Pair<>(_srcNode1.getHostname(), _srcVrf1.getName()),
-            new Pair<>(_srcNode2.getHostname(), _srcVrf2.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", true);
+            IngressPoint.ingressVrf(_srcNode1.getHostname(), _srcVrf1.getName()),
+            IngressPoint.ingressVrf(_srcNode2.getHostname(), _srcVrf2.getName()));
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressPoints, "tag", true);
   }
 
   @Test
@@ -190,21 +189,21 @@ public class NodJobChunkingTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
-        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(2));
-    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf1));
-    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf2));
-    Map<String, Long> fieldConstraints1 = fieldConstraintsByOriginateVrf.get(_originateVrf1);
-    Map<String, Long> fieldConstraints2 = fieldConstraintsByOriginateVrf.get(_originateVrf2);
+    Map<IngressPoint, Map<String, Long>> fieldConstraintsByIngressPoint =
+        nodJob.getIngressPointConstraints(z3Context, smtInput);
+    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(2));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint1));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint2));
+    Map<String, Long> fieldConstraints1 = fieldConstraintsByIngressPoint.get(_ingressPoint1);
+    Map<String, Long> fieldConstraints2 = fieldConstraintsByIngressPoint.get(_ingressPoint2);
 
     assertThat(
         fieldConstraints1,
-        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
+        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
     assertThat(fieldConstraints1, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
     assertThat(
         fieldConstraints2,
-        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(1)));
+        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(1)));
     assertThat(fieldConstraints2, hasEntry(Field.SRC_IP.getName(), new Ip("2.0.0.0").asLong()));
   }
 }
