@@ -44,7 +44,7 @@ public class Exclusion {
       return null;
     }
     for (Exclusion exclusion : exclusions) {
-      if (firstCoversSecond(exclusion.getExclusion(), row.getData())) {
+      if (row.isCovered(exclusion.getExclusion())) {
         return exclusion;
       }
     }

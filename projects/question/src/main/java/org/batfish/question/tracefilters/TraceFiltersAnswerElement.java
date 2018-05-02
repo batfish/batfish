@@ -3,7 +3,6 @@ package org.batfish.question.tracefilters;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
@@ -93,14 +92,14 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
       LineAction action,
       Integer matchLine,
       String lineContent) {
-    ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
-    row.set(COLUMN_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(nodeName)));
-    row.set(COLUMN_FILTER_NAME, BatfishObjectMapper.mapper().valueToTree(filterName));
-    row.set(COLUMN_FLOW, BatfishObjectMapper.mapper().valueToTree(flow));
-    row.set(COLUMN_ACTION, BatfishObjectMapper.mapper().valueToTree(action));
-    row.set(COLUMN_LINE_NUMBER, BatfishObjectMapper.mapper().valueToTree(matchLine));
-    row.set(COLUMN_LINE_CONTENT, BatfishObjectMapper.mapper().valueToTree(lineContent));
-    return new Row(row);
+    Row row = new Row();
+    row.put(COLUMN_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(nodeName)));
+    row.put(COLUMN_FILTER_NAME, BatfishObjectMapper.mapper().valueToTree(filterName));
+    row.put(COLUMN_FLOW, BatfishObjectMapper.mapper().valueToTree(flow));
+    row.put(COLUMN_ACTION, BatfishObjectMapper.mapper().valueToTree(action));
+    row.put(COLUMN_LINE_NUMBER, BatfishObjectMapper.mapper().valueToTree(matchLine));
+    row.put(COLUMN_LINE_CONTENT, BatfishObjectMapper.mapper().valueToTree(lineContent));
+    return row;
   }
 
   @Override

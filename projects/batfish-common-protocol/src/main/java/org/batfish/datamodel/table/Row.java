@@ -3,14 +3,20 @@ package org.batfish.datamodel.table;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.MoreObjects;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.questions.Exclusion;
 
 public class Row implements Comparable<Row> {
 
   private final ObjectNode _data;
+
+  public Row() {
+    this(null);
+  }
 
   @JsonCreator
   public Row(ObjectNode data) {
@@ -28,8 +34,21 @@ public class Row implements Comparable<Row> {
     }
   }
 
+  public JsonNode get(String columnName) {
+    return _data.get(columnName);
+  }
+
   @JsonValue
-  public ObjectNode getData() {
+  private ObjectNode getData() {
     return _data;
+  }
+
+  public boolean isCovered(ObjectNode exclusion) {
+    return Exclusion.firstCoversSecond(exclusion, _data);
+  }
+
+  public Row put(String columnName, JsonNode value) {
+    _data.set(columnName, value);
+    return this;
   }
 }

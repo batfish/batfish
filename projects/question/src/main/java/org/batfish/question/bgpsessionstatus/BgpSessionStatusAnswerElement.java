@@ -3,7 +3,6 @@ package org.batfish.question.bgpsessionstatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -82,24 +81,22 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   }
 
   public static BgpSessionInfo fromRowStatic(Row row) throws JsonProcessingException {
-    ObjectNode data = row.getData();
-    Ip localIp = BatfishObjectMapper.mapper().treeToValue(data.get(COL_LOCAL_IP), Ip.class);
+    Ip localIp = BatfishObjectMapper.mapper().treeToValue(row.get(COL_LOCAL_IP), Ip.class);
     SessionStatus configuredStatus =
         BatfishObjectMapper.mapper()
-            .treeToValue(data.get(COL_CONFIGURED_STATUS), SessionStatus.class);
+            .treeToValue(row.get(COL_CONFIGURED_STATUS), SessionStatus.class);
     Integer establishedNeighbors =
-        BatfishObjectMapper.mapper()
-            .treeToValue(data.get(COL_ESTABLISHED_NEIGHBORS), Integer.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_ESTABLISHED_NEIGHBORS), Integer.class);
     Boolean onLoopback =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_ON_LOOPBACK), Boolean.class);
-    Node node = BatfishObjectMapper.mapper().treeToValue(data.get(COL_NODE), Node.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_ON_LOOPBACK), Boolean.class);
+    Node node = BatfishObjectMapper.mapper().treeToValue(row.get(COL_NODE), Node.class);
     Node remoteNode =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_REMOTE_NODE), Node.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_REMOTE_NODE), Node.class);
     Prefix remotePrefix =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_REMOTE_PREFIX), Prefix.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_REMOTE_PREFIX), Prefix.class);
     SessionType sessionType =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_SESSION_TYPE), SessionType.class);
-    String vrfName = BatfishObjectMapper.mapper().treeToValue(data.get(COL_VRF_NAME), String.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_SESSION_TYPE), SessionType.class);
+    String vrfName = BatfishObjectMapper.mapper().treeToValue(row.get(COL_VRF_NAME), String.class);
 
     return new BgpSessionInfo(
         configuredStatus,
@@ -119,21 +116,22 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   }
 
   public static Row toRowStatic(BgpSessionInfo info) {
-    ObjectNode data = BatfishObjectMapper.mapper().createObjectNode();
-    data.set(
-        COL_CONFIGURED_STATUS,
-        BatfishObjectMapper.mapper().valueToTree(info.getConfiguredStatus()));
-    data.set(
-        COL_ESTABLISHED_NEIGHBORS,
-        BatfishObjectMapper.mapper().valueToTree(info.getEstablishedNeighbors()));
-    data.set(COL_LOCAL_IP, BatfishObjectMapper.mapper().valueToTree(info.getLocalIp()));
-    data.set(COL_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info.getNodeName())));
-    data.set(COL_ON_LOOPBACK, BatfishObjectMapper.mapper().valueToTree(info.getOnLoopback()));
-    data.set(
-        COL_REMOTE_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info.getRemoteNode())));
-    data.set(COL_REMOTE_PREFIX, BatfishObjectMapper.mapper().valueToTree(info.getRemotePrefix()));
-    data.set(COL_SESSION_TYPE, BatfishObjectMapper.mapper().valueToTree(info.getSessionType()));
-    data.set(COL_VRF_NAME, BatfishObjectMapper.mapper().valueToTree(info.getVrfName()));
-    return new Row(data);
+    Row row = new Row();
+    row.put(
+            COL_CONFIGURED_STATUS,
+            BatfishObjectMapper.mapper().valueToTree(info.getConfiguredStatus()))
+        .put(
+            COL_ESTABLISHED_NEIGHBORS,
+            BatfishObjectMapper.mapper().valueToTree(info.getEstablishedNeighbors()))
+        .put(COL_LOCAL_IP, BatfishObjectMapper.mapper().valueToTree(info.getLocalIp()))
+        .put(COL_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(info.getNodeName())))
+        .put(COL_ON_LOOPBACK, BatfishObjectMapper.mapper().valueToTree(info.getOnLoopback()))
+        .put(
+            COL_REMOTE_NODE,
+            BatfishObjectMapper.mapper().valueToTree(new Node(info.getRemoteNode())))
+        .put(COL_REMOTE_PREFIX, BatfishObjectMapper.mapper().valueToTree(info.getRemotePrefix()))
+        .put(COL_SESSION_TYPE, BatfishObjectMapper.mapper().valueToTree(info.getSessionType()))
+        .put(COL_VRF_NAME, BatfishObjectMapper.mapper().valueToTree(info.getVrfName()));
+    return row;
   }
 }

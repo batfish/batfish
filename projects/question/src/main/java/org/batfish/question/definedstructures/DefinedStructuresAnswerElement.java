@@ -3,7 +3,6 @@ package org.batfish.question.definedstructures;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -72,20 +71,19 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   public static DefinedStructureRow fromRowStatic(Row row) throws IOException {
-    ObjectNode data = row.getData();
     SortedSet<Integer> definitionLines =
         BatfishObjectMapper.mapper()
             .readValue(
-                BatfishObjectMapper.mapper().treeAsTokens(data.get(COL_DEFINITION_LINES)),
+                BatfishObjectMapper.mapper().treeAsTokens(row.get(COL_DEFINITION_LINES)),
                 new TypeReference<SortedSet<Integer>>() {});
     Integer numReferences =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_NUM_REFERENCES), Integer.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_NUM_REFERENCES), Integer.class);
     String nodeName =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_NODE_NAME), String.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_NODE_NAME), String.class);
     String structName =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_STRUCT_NAME), String.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_STRUCT_NAME), String.class);
     String structType =
-        BatfishObjectMapper.mapper().treeToValue(data.get(COL_STRUCT_TYPE), String.class);
+        BatfishObjectMapper.mapper().treeToValue(row.get(COL_STRUCT_TYPE), String.class);
 
     return new DefinedStructureRow(
         nodeName, structType, structName, numReferences, definitionLines);
@@ -97,14 +95,16 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   public static Row toRowStatic(DefinedStructureRow info) {
-    ObjectNode data = BatfishObjectMapper.mapper().createObjectNode();
-    data.set(
-        COL_DEFINITION_LINES, BatfishObjectMapper.mapper().valueToTree(info.getDefinitionLines()));
-    data.set(COL_NODE_NAME, BatfishObjectMapper.mapper().valueToTree(info.getNodeName()));
-    data.set(COL_NUM_REFERENCES, BatfishObjectMapper.mapper().valueToTree(info.getNumReferences()));
-    data.set(
-        COL_STRUCT_NAME, BatfishObjectMapper.mapper().valueToTree(new Node(info.getStructName())));
-    data.set(COL_STRUCT_TYPE, BatfishObjectMapper.mapper().valueToTree(info.getStructType()));
-    return new Row(data);
+    Row row = new Row();
+    row.put(
+            COL_DEFINITION_LINES,
+            BatfishObjectMapper.mapper().valueToTree(info.getDefinitionLines()))
+        .put(COL_NODE_NAME, BatfishObjectMapper.mapper().valueToTree(info.getNodeName()))
+        .put(COL_NUM_REFERENCES, BatfishObjectMapper.mapper().valueToTree(info.getNumReferences()))
+        .put(
+            COL_STRUCT_NAME,
+            BatfishObjectMapper.mapper().valueToTree(new Node(info.getStructName())))
+        .put(COL_STRUCT_TYPE, BatfishObjectMapper.mapper().valueToTree(info.getStructType()));
+    return row;
   }
 }
