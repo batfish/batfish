@@ -99,7 +99,11 @@ final class BatfishStorage {
       throw new BatfishException(
           "Error reading vendor-independent configs directory: '" + indepDir + "'", e);
     }
-    return deserializeObjects(namesByPath, Configuration.class);
+    try {
+      return deserializeObjects(namesByPath, Configuration.class);
+    } catch (BatfishException e) {
+      return null;
+    }
   }
 
   @Nullable
@@ -208,7 +212,7 @@ final class BatfishStorage {
       }
       closer.register(ois);
       return outputClass.cast(ois.readObject());
-    } catch (IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException | ClassCastException e) {
       throw new BatfishException(
           String.format(
               "Failed to deserialize object of type %s from file %s",
