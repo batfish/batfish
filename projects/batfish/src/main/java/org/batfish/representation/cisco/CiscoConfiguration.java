@@ -1365,8 +1365,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         new MatchPrefixSet(
             new DestinationNetwork(),
             new ExplicitPrefixSet(
-                new PrefixSpace(
-                    Collections.singleton(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
+                new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))));
     matchDefaultRoute.setComment("match default route");
     MatchPrefix6Set matchDefaultRoute6 =
         new MatchPrefix6Set(
@@ -1400,8 +1399,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       currentGeneratedRouteConditional.setGuard(
           new MatchPrefixSet(
               new DestinationNetwork(),
-              new ExplicitPrefixSet(
-                  new PrefixSpace(Collections.singleton(new PrefixRange(prefix, prefixRange))))));
+              new ExplicitPrefixSet(new PrefixSpace(new PrefixRange(prefix, prefixRange)))));
       currentGeneratedRouteConditional
           .getTrueStatements()
           .add(Statements.ReturnTrue.toStaticStatement());
@@ -1420,8 +1418,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .add(
               new MatchPrefixSet(
                   new DestinationNetwork(),
-                  new ExplicitPrefixSet(
-                      new PrefixSpace(Collections.singleton(PrefixRange.fromPrefix(prefix))))));
+                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
       applyCurrentAggregateAttributesConditions
           .getConjuncts()
           .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
@@ -2820,8 +2817,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           new MatchPrefixSet(
               new DestinationNetwork(),
               new ExplicitPrefixSet(
-                  new PrefixSpace(
-                      Collections.singleton(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
+                  new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
 
   // For testing.
   If convertOspfRedistributionPolicy(
@@ -3003,9 +2999,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new MatchPrefixSet(
                   new DestinationNetwork(),
                   new ExplicitPrefixSet(
-                      new PrefixSpace(
-                          Collections.singleton(
-                              new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
+                      new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
       long metric = proc.getDefaultInformationMetric();
       ospfExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       OspfMetricType metricType = proc.getDefaultInformationMetricType();
@@ -3160,9 +3154,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               new MatchPrefixSet(
                   new DestinationNetwork(),
                   new ExplicitPrefixSet(
-                      new PrefixSpace(
-                          Collections.singleton(
-                              new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
+                      new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
       long metric = proc.getDefaultInformationMetric();
       ripExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       // add default export map with metric
@@ -3251,9 +3243,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   new MatchPrefixSet(
                       new DestinationNetwork(),
                       new ExplicitPrefixSet(
-                          new PrefixSpace(
-                              Collections.singleton(
-                                  new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
+                          new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
 
       Long metric = rsp.getMetric();
       boolean explicitMetric = metric != null;
@@ -3297,9 +3287,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                   new MatchPrefixSet(
                       new DestinationNetwork(),
                       new ExplicitPrefixSet(
-                          new PrefixSpace(
-                              Collections.singleton(
-                                  new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
+                          new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
 
       Long metric = rbp.getMetric();
       boolean explicitMetric = metric != null;
