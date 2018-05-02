@@ -2,7 +2,6 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -28,7 +27,7 @@ public class ExcludedRows {
     _rows = rows == null ? new Rows() : rows;
   }
 
-  public void addRow(ObjectNode row) {
+  public void addRow(Row row) {
     _rows.add(row);
   }
 

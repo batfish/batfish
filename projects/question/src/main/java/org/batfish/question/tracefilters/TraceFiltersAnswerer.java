@@ -1,6 +1,5 @@
 package org.batfish.question.tracefilters;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Answerer;
@@ -13,6 +12,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.Row;
 
 public class TraceFiltersAnswerer extends Answerer {
 
@@ -48,7 +48,7 @@ public class TraceFiltersAnswerer extends Answerer {
             lineDesc = "line:" + matchLine;
           }
         }
-        ObjectNode row =
+        Row row =
             answer.getRow(
                 c.getHostname(), filter.getName(), flow, result.getAction(), matchLine, lineDesc);
 

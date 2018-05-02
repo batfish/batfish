@@ -10,13 +10,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -67,44 +67,44 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(ObjectNode row) throws IOException {
+  public Object fromRow(Row row) throws IOException {
     return fromRowStatic(row);
   }
 
-  public static DefinedStructureRow fromRowStatic(ObjectNode row) throws IOException {
-    SortedSet<Integer> definitionLines = new TreeSet<>();
-    definitionLines =
+  public static DefinedStructureRow fromRowStatic(Row row) throws IOException {
+    ObjectNode data = row.getData();
+    SortedSet<Integer> definitionLines =
         BatfishObjectMapper.mapper()
             .readValue(
-                BatfishObjectMapper.mapper().treeAsTokens(row.get(COL_DEFINITION_LINES)),
+                BatfishObjectMapper.mapper().treeAsTokens(data.get(COL_DEFINITION_LINES)),
                 new TypeReference<SortedSet<Integer>>() {});
     Integer numReferences =
-        BatfishObjectMapper.mapper().treeToValue(row.get(COL_NUM_REFERENCES), Integer.class);
+        BatfishObjectMapper.mapper().treeToValue(data.get(COL_NUM_REFERENCES), Integer.class);
     String nodeName =
-        BatfishObjectMapper.mapper().treeToValue(row.get(COL_NODE_NAME), String.class);
+        BatfishObjectMapper.mapper().treeToValue(data.get(COL_NODE_NAME), String.class);
     String structName =
-        BatfishObjectMapper.mapper().treeToValue(row.get(COL_STRUCT_NAME), String.class);
+        BatfishObjectMapper.mapper().treeToValue(data.get(COL_STRUCT_NAME), String.class);
     String structType =
-        BatfishObjectMapper.mapper().treeToValue(row.get(COL_STRUCT_TYPE), String.class);
+        BatfishObjectMapper.mapper().treeToValue(data.get(COL_STRUCT_TYPE), String.class);
 
     return new DefinedStructureRow(
         nodeName, structType, structName, numReferences, definitionLines);
   }
 
   @Override
-  public ObjectNode toRow(Object o) {
+  public Row toRow(Object o) {
     return toRowStatic((DefinedStructureRow) o);
   }
 
-  public static ObjectNode toRowStatic(DefinedStructureRow info) {
-    ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
-    row.set(
+  public static Row toRowStatic(DefinedStructureRow info) {
+    ObjectNode data = BatfishObjectMapper.mapper().createObjectNode();
+    data.set(
         COL_DEFINITION_LINES, BatfishObjectMapper.mapper().valueToTree(info.getDefinitionLines()));
-    row.set(COL_NODE_NAME, BatfishObjectMapper.mapper().valueToTree(info.getNodeName()));
-    row.set(COL_NUM_REFERENCES, BatfishObjectMapper.mapper().valueToTree(info.getNumReferences()));
-    row.set(
+    data.set(COL_NODE_NAME, BatfishObjectMapper.mapper().valueToTree(info.getNodeName()));
+    data.set(COL_NUM_REFERENCES, BatfishObjectMapper.mapper().valueToTree(info.getNumReferences()));
+    data.set(
         COL_STRUCT_NAME, BatfishObjectMapper.mapper().valueToTree(new Node(info.getStructName())));
-    row.set(COL_STRUCT_TYPE, BatfishObjectMapper.mapper().valueToTree(info.getStructType()));
-    return row;
+    data.set(COL_STRUCT_TYPE, BatfishObjectMapper.mapper().valueToTree(info.getStructType()));
+    return new Row(data);
   }
 }

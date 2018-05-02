@@ -15,6 +15,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -80,12 +81,12 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(ObjectNode o) throws JsonProcessingException {
+  public Object fromRow(Row o) throws JsonProcessingException {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
 
-  public ObjectNode getRow(
+  public Row getRow(
       String nodeName,
       String filterName,
       Flow flow,
@@ -99,11 +100,11 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
     row.set(COLUMN_ACTION, BatfishObjectMapper.mapper().valueToTree(action));
     row.set(COLUMN_LINE_NUMBER, BatfishObjectMapper.mapper().valueToTree(matchLine));
     row.set(COLUMN_LINE_CONTENT, BatfishObjectMapper.mapper().valueToTree(lineContent));
-    return row;
+    return new Row(row);
   }
 
   @Override
-  public ObjectNode toRow(Object object) {
+  public Row toRow(Object object) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

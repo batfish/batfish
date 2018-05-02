@@ -44,6 +44,15 @@ public abstract class TableAnswerElement extends AnswerElement {
    * @param row The row to add
    */
   public void addRow(ObjectNode row) {
+    addRow(new Row(row));
+  }
+
+  /**
+   * Adds a new row to data rows
+   *
+   * @param row The row to add
+   */
+  public void addRow(Row row) {
     _rows.add(row);
   }
 
@@ -53,6 +62,15 @@ public abstract class TableAnswerElement extends AnswerElement {
    * @param row The row to add
    */
   public void addExcludedRow(ObjectNode row, String exclusionName) {
+    addExcludedRow(new Row(row), exclusionName);
+  }
+
+  /**
+   * Adds a new row to excluded data rows
+   *
+   * @param row The row to add
+   */
+  public void addExcludedRow(Row row, String exclusionName) {
     for (ExcludedRows exRows : _excludedRows) {
       if (exRows.getExclusionName().equals(exclusionName)) {
         exRows.addRow(row);
@@ -122,7 +140,7 @@ public abstract class TableAnswerElement extends AnswerElement {
     }
   }
 
-  public abstract Object fromRow(ObjectNode o) throws IOException;
+  public abstract Object fromRow(Row row) throws IOException;
 
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {
@@ -142,7 +160,7 @@ public abstract class TableAnswerElement extends AnswerElement {
   public void postProcessAnswer(Question question, Multiset<?> objects) {
     objects.forEach(
         object -> {
-          ObjectNode row = toRow(object);
+          Row row = toRow(object);
 
           // exclude or not?
           Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
@@ -166,5 +184,5 @@ public abstract class TableAnswerElement extends AnswerElement {
     _rows = rows == null ? new Rows() : rows;
   }
 
-  public abstract ObjectNode toRow(Object object);
+  public abstract Row toRow(Object object);
 }

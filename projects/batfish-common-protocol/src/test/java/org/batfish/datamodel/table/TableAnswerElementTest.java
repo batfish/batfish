@@ -29,12 +29,12 @@ public class TableAnswerElementTest {
     }
 
     @Override
-    public Object fromRow(ObjectNode o) throws JsonProcessingException {
+    public Object fromRow(Row o) throws JsonProcessingException {
       return null;
     }
 
     @Override
-    public ObjectNode toRow(Object object) {
+    public Row toRow(Object object) {
       return null;
     }
   }

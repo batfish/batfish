@@ -20,6 +20,7 @@ import org.batfish.common.util.JsonPathUtils;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.Row;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 
 public class JsonPathToTableAnswerer extends Answerer {
@@ -86,8 +87,7 @@ public class JsonPathToTableAnswerer extends Answerer {
 
     // 2. Put them in the answer element based on whether they are covered by an exclusion
     for (JsonPathResult result : jsonPathResults) {
-      ObjectNode answerValues =
-          computeRowValues(query.getExtractions(), query.getCompositions(), result);
+      Row answerValues = computeRowValues(query.getExtractions(), query.getCompositions(), result);
       Exclusion exclusion = Exclusion.covered(answerValues, question.getExclusions());
       if (exclusion != null) {
         answer.addExcludedRow(answerValues, exclusion.getName());
@@ -102,14 +102,14 @@ public class JsonPathToTableAnswerer extends Answerer {
     return answer;
   }
 
-  private static ObjectNode computeRowValues(
+  private static Row computeRowValues(
       Map<String, JsonPathToTableExtraction> extractions,
       Map<String, JsonPathToTableComposition> compositions,
       JsonPathResult jpResult) {
     ObjectNode answerValues = BatfishObjectMapper.mapper().createObjectNode();
     computeExtractions(extractions, jpResult, answerValues);
     doCompositions(compositions, extractions, answerValues);
-    return answerValues;
+    return new Row(answerValues);
   }
 
   private static void computeExtractions(
