@@ -34,6 +34,28 @@ public class HeaderSpaceMatchersImpl {
     }
   }
 
+  static class HasNotDstIps extends FeatureMatcher<HeaderSpace, IpSpace> {
+    HasNotDstIps(@Nonnull Matcher<? super IpSpace> subMatcher) {
+      super(subMatcher, "A HeaderSpace with notDstIps:", "notDstIps");
+    }
+
+    @Override
+    protected IpSpace featureValueOf(HeaderSpace actual) {
+      return actual.getNotDstIps();
+    }
+  }
+
+  static class HasNotSrcIps extends FeatureMatcher<HeaderSpace, IpSpace> {
+    HasNotSrcIps(@Nonnull Matcher<? super IpSpace> subMatcher) {
+      super(subMatcher, "A HeaderSpace with notSrcIps:", "notSrcIps");
+    }
+
+    @Override
+    protected IpSpace featureValueOf(HeaderSpace actual) {
+      return actual.getNotSrcIps();
+    }
+  }
+
   static class HasSrcIps extends FeatureMatcher<HeaderSpace, IpSpace> {
     HasSrcIps(@Nonnull Matcher<? super IpSpace> subMatcher) {
       super(subMatcher, "A HeaderSpace with srcIps:", "srcIps");

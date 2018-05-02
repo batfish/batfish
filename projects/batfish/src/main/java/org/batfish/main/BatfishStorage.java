@@ -100,7 +100,11 @@ final class BatfishStorage {
       throw new BatfishException(
           "Error reading vendor-independent configs directory: '" + indepDir + "'", e);
     }
-    return deserializeObjects(namesByPath, Configuration.class);
+    try {
+      return deserializeObjects(namesByPath, Configuration.class);
+    } catch (BatfishException e) {
+      return null;
+    }
   }
 
   @Nullable
