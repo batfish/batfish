@@ -11,6 +11,27 @@ cm_end_class_map
    END_CLASS_MAP NEWLINE
 ;
 
+cm_ios_inspect
+:
+   INSPECT match_semantics? name = variable_permissive NEWLINE cm_iosi_match*
+;
+
+cm_iosi_match
+:
+   cm_iosim_access_group
+   | cm_iosim_protocol
+;
+
+cm_iosim_access_group
+:
+   MATCH ACCESS_GROUP NAME name = variable_permissive NEWLINE
+;
+
+cm_iosim_protocol
+:
+   MATCH PROTOCOL inspect_protocol NEWLINE
+;
+
 cm_match
 :
    num = DEC? MATCH
@@ -156,6 +177,22 @@ color_setter
       | YELLOW
       | GREEN
    )
+;
+
+inspect_protocol
+:
+   HTTP
+   | HTTPS
+   | ICMP
+   | TCP
+   | TFTP
+   | UDP
+;
+
+match_semantics
+:
+   MATCH_ALL
+   | MATCH_ANY
 ;
 
 o_network
@@ -462,6 +499,47 @@ pm_end_policy_map
    END_POLICY_MAP NEWLINE
 ;
 
+pm_ios_inspect
+:
+   INSPECT name = variable NEWLINE
+   (
+      pm_iosi_class
+      | pm_iosi_class_type_inspect
+   )*
+;
+
+pm_iosi_class
+:
+   CLASS CLASS_DEFAULT NEWLINE
+   (
+      pi_iosic_drop
+      | pi_iosic_pass
+   )*
+;
+
+pm_iosi_class_type_inspect
+:
+   CLASS TYPE INSPECT name = variable NEWLINE
+   (
+      pm_iosict_inspect
+   )*
+;
+
+pi_iosic_drop
+:
+   DROP LOG? NEWLINE
+;
+
+pi_iosic_pass
+:
+   PASS NEWLINE
+;
+
+pm_iosict_inspect
+:
+   INSPECT NEWLINE
+;
+
 pm_null
 :
    NO?
@@ -549,7 +627,11 @@ s_class_map
 :
    CLASS_MAP
    (
-      TYPE ~NEWLINE
+      TYPE
+      (
+         NETWORK_QOS
+         | PBR
+      )
    )?
    (
       MATCH_ALL
@@ -562,6 +644,11 @@ s_class_map
       cm_end_class_map
       | cm_match
    )*
+;
+
+s_class_map_ios
+:
+   CLASS_MAP TYPE cm_ios_inspect
 ;
 
 s_object
@@ -588,13 +675,35 @@ s_object_group
 
 s_policy_map
 :
-   POLICY_MAP null_rest_of_line
+   POLICY_MAP
+   (
+      variable_policy_map_header
+      |
+      (
+         TYPE variable variable variable
+      )
+      |
+      (
+         TYPE
+         (
+            CONTROL_PLANE
+            | NETWORK_QOS
+            | PBR
+            | QUEUEING
+         ) variable
+      )
+   ) NEWLINE
    (
       pm_class
       | pm_end_policy_map
       | pm_null
       | pm_parameters
    )*
+;
+
+s_policy_map_ios
+:
+   POLICY_MAP TYPE pm_ios_inspect
 ;
 
 s_qos_mapping
@@ -621,4 +730,9 @@ table_map_null
       | FROM
       | MAP
    ) null_rest_of_line
+;
+
+variable_policy_map_header
+:
+   ~( TYPE | NEWLINE )
 ;

@@ -401,6 +401,9 @@
             <configuration>
               <rules>
                 <dependencyConvergence/>
+                <requireJavaVersion>
+                  <version>[1.8.0,1.8.99999)</version>
+                </requireJavaVersion>
                 <requireMavenVersion>
                   <version>3.3.9</version>
                 </requireMavenVersion>

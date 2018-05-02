@@ -206,9 +206,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
           String int2Name = edge.getInt2();
           Interface int2 = configurations.get(node2).getInterfaces().get(int2Name);
           boolean neighborUnreachable = false;
-          Boolean proxyArp = int2.getProxyArp();
-          if (proxyArp == null || !proxyArp) {
-            // TODO: proxyArp probably shouldn't be null
+          if (!int2.getProxyArp()) {
             neighborUnreachable = true;
           } else {
             for (InterfaceAddress address : int2.getAllAddresses()) {

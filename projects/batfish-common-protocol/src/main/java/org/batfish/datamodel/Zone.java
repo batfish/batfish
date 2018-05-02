@@ -4,8 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import org.batfish.common.util.ComparableStructure;
 
@@ -18,12 +20,14 @@ public final class Zone extends ComparableStructure<String> {
 
   private static final String PROP_INBOUND_INTERFACE_FILTERS = "inboundInterfaceFilters";
 
-  /** */
-  private static final long serialVersionUID = 1L;
+  private static final String PROP_INTERFACES = "interfaces";
 
   private static final String PROP_TO_HOST_FILTER = "toHostFilter";
 
   private static final String PROP_TO_ZONE_POLICIES = "toZonePolicies";
+
+  /** */
+  private static final long serialVersionUID = 1L;
 
   private IpAccessList _fromHostFilter;
 
@@ -37,6 +41,8 @@ public final class Zone extends ComparableStructure<String> {
 
   private transient SortedMap<String, String> _inboundInterfaceFiltersNames;
 
+  private SortedSet<String> _interfaces;
+
   private IpAccessList _toHostFilter;
 
   private transient String _toHostFilterName;
@@ -48,6 +54,7 @@ public final class Zone extends ComparableStructure<String> {
   @JsonCreator
   public Zone(@JsonProperty(PROP_NAME) String name) {
     super(name);
+    _interfaces = ImmutableSortedSet.of();
   }
 
   public Zone(
@@ -145,6 +152,11 @@ public final class Zone extends ComparableStructure<String> {
     }
   }
 
+  @JsonProperty(PROP_INTERFACES)
+  public SortedSet<String> getInterfaces() {
+    return _interfaces;
+  }
+
   @JsonIgnore
   public IpAccessList getToHostFilter() {
     return _toHostFilter;
@@ -214,6 +226,11 @@ public final class Zone extends ComparableStructure<String> {
   public void setInboundInterfaceFiltersNames(
       SortedMap<String, String> inboundInterfaceFiltersNames) {
     _inboundInterfaceFiltersNames = inboundInterfaceFiltersNames;
+  }
+
+  @JsonProperty(PROP_INTERFACES)
+  public void setInterfaces(Iterable<String> interfaces) {
+    _interfaces = ImmutableSortedSet.copyOf(interfaces);
   }
 
   @JsonIgnore

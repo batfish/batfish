@@ -26,6 +26,8 @@ import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
@@ -41,6 +43,9 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisProcess;
@@ -1572,6 +1577,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIpsecVpn;
   }
 
+  /** Convert address book into corresponding IpSpaces */
+  private Map<String, IpSpace> toIpSpaces(String bookName, AddressBook book) {
+    Map<String, IpSpace> ipSpaces = new TreeMap<>();
+    book.getEntries()
+        .forEach(
+            (n, entry) -> {
+              String entryName = bookName + "~" + n;
+
+              // If this address book references other entries, add them to an AclIpSpace
+              if (!entry.getEntries().isEmpty()) {
+                ImmutableList.Builder<AclIpSpaceLine> aclIpSpaceLineBuilder =
+                    ImmutableList.builder();
+                entry
+                    .getEntries()
+                    .forEach(
+                        subEntry -> {
+                          String subEntryName = bookName + "~" + subEntry.getName();
+                          aclIpSpaceLineBuilder.add(
+                              AclIpSpaceLine.builder()
+                                  .setIpSpace(new IpSpaceReference(subEntryName))
+                                  .setAction(LineAction.ACCEPT)
+                                  .build());
+                        });
+                ipSpaces.put(
+                    entryName,
+                    AclIpSpace.builder().setLines(aclIpSpaceLineBuilder.build()).build());
+              } else {
+                ipSpaces.put(
+                    entryName,
+                    IpWildcardSetIpSpace.builder().including(entry.getIpWildcards(_w)).build());
+              }
+            });
+    return ipSpaces;
+  }
+
   private RoutingPolicy toRoutingPolicy(FirewallFilter filter) {
     String name = filter.getName();
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
@@ -1814,6 +1854,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       _c.getRouteFilterLists().put(name, rfl);
     }
 
+    // Convert AddressBooks to IpSpaces
+    _globalAddressBooks.forEach(
+        (name, addressBook) -> _c.getIpSpaces().putAll(toIpSpaces(name, addressBook)));
+
     // TODO: instead make both IpAccessList and Ip6AccessList instances from
     // such firewall filters
     // remove ipv6 lines from firewall filters
@@ -1991,6 +2035,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Zone zone : _zones.values()) {
       org.batfish.datamodel.Zone newZone = toZone(zone);
       _c.getZones().put(zone.getName(), newZone);
+      if (!zone.getAddressBook().getEntries().isEmpty()) {
+        _c.getIpSpaces().putAll(toIpSpaces(zone.getName(), zone.getAddressBook()));
+      }
     }
     // If there are zones, then assume we will need to support existing connection ACL
     if (!_zones.isEmpty()) {
