@@ -2198,22 +2198,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
 
-    // warn about unreferenced data structures
+    // record defined structures
     recordStructure(_applications, JuniperStructureType.APPLICATION);
     recordStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
-    warnUnreferencedAuthenticationKeyChains();
-    warnUnreferencedBgpGroups();
-    warnUnreferencedDhcpRelayServerGroups();
-    warnUnreferencedPolicyStatements();
-    warnUnreferencedFirewallFilters();
-    warnUnreferencedIkeProposals();
-    warnUnreferencedIkePolicies();
-    warnUnreferencedIkeGateways();
-    warnUnreferencedIpsecProposals();
-    warnUnreferencedIpsecPolicies();
-    warnUnusedPrefixLists();
+    recordAuthenticationKeyChains();
+    recordBgpGroups();
+    recordDhcpRelayServerGroups();
+    recordPolicyStatements();
+    recordFirewallFilters();
+    recordIkeProposals();
+    recordIkePolicies();
+    recordIkeGateways();
+    recordIpsecProposals();
+    recordIpsecPolicies();
+    recordPrefixLists();
+    recordAndDisableUnreferencedStInterfaces();
+
     warnEmptyPrefixLists();
-    warnAndDisableUnreferencedStInterfaces();
 
     _c.computeRoutingPolicySources(_w);
 
@@ -2305,7 +2306,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newZone;
   }
 
-  private void warnAndDisableUnreferencedStInterfaces() {
+  private void recordAndDisableUnreferencedStInterfaces() {
     _routingInstances.forEach(
         (riName, ri) -> {
           ri.getInterfaces()
@@ -2336,7 +2337,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedAuthenticationKeyChains() {
+  private void recordAuthenticationKeyChains() {
     for (Entry<String, JuniperAuthenticationKeyChain> e : _authenticationKeyChains.entrySet()) {
       String name = e.getKey();
       JuniperAuthenticationKeyChain keyChain = e.getValue();
@@ -2348,7 +2349,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedBgpGroups() {
+  private void recordBgpGroups() {
     for (RoutingInstance ri : _routingInstances.values()) {
       for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
         if (_unreferencedBgpGroups != null && _unreferencedBgpGroups.containsKey(group.getName())) {
@@ -2369,7 +2370,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedDhcpRelayServerGroups() {
+  private void recordDhcpRelayServerGroups() {
     for (RoutingInstance ri : _routingInstances.values()) {
       for (Entry<String, DhcpRelayServerGroup> e : ri.getDhcpRelayServerGroups().entrySet()) {
         String name = e.getKey();
@@ -2380,7 +2381,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedFirewallFilters() {
+  private void recordFirewallFilters() {
     for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
@@ -2389,7 +2390,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedIkeGateways() {
+  private void recordIkeGateways() {
     for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {
       String name = e.getKey();
       IkeGateway ikeGateway = e.getValue();
@@ -2398,7 +2399,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedIkePolicies() {
+  private void recordIkePolicies() {
     for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
       String name = e.getKey();
       IkePolicy ikePolicy = e.getValue();
@@ -2407,7 +2408,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedIkeProposals() {
+  private void recordIkeProposals() {
     for (Entry<String, IkeProposal> e : _ikeProposals.entrySet()) {
       String name = e.getKey();
       IkeProposal ikeProposal = e.getValue();
@@ -2416,7 +2417,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedIpsecPolicies() {
+  private void recordIpsecPolicies() {
     for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {
       String name = e.getKey();
       IpsecPolicy ipsecPolicy = e.getValue();
@@ -2425,7 +2426,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedIpsecProposals() {
+  private void recordIpsecProposals() {
     for (Entry<String, IpsecProposal> e : _ipsecProposals.entrySet()) {
       String name = e.getKey();
       IpsecProposal ipsecProposal = e.getValue();
@@ -2437,7 +2438,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedPolicyStatements() {
+  private void recordPolicyStatements() {
     for (Entry<String, PolicyStatement> e : _policyStatements.entrySet()) {
       String name = e.getKey();
       if (name.startsWith("~")) {
@@ -2448,7 +2449,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnusedPrefixLists() {
+  private void recordPrefixLists() {
     for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
       String name = e.getKey();
       PrefixList prefixList = e.getValue();

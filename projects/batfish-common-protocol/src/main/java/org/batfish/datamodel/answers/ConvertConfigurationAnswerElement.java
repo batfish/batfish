@@ -153,7 +153,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
         });
     _definedStructures.forEach(
         (hostname, byType) -> {
-          sb.append("\n  " + hostname + "[Unused structures]\n");
+          sb.append("\n  " + hostname + "[Defined structures]\n");
           byType.forEach(
               (structureType, byName) -> {
                 byName.forEach(
