@@ -1384,8 +1384,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Prefix prefix = e.getKey();
       BgpAggregateIpv4Network aggNet = e.getValue();
       boolean summaryOnly = aggNet.getSummaryOnly();
-      int prefixLength = prefix.getPrefixLength();
-      SubRange prefixRange = new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH);
       if (summaryOnly) {
         summaryOnlyNetworks.add(aggNet);
       }
@@ -1398,7 +1396,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       currentGeneratedRouteConditional.setGuard(
           new MatchPrefixSet(
               new DestinationNetwork(),
-              new ExplicitPrefixSet(new PrefixSpace(new PrefixRange(prefix, prefixRange)))));
+              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))));
       currentGeneratedRouteConditional
           .getTrueStatements()
           .add(Statements.ReturnTrue.toStaticStatement());
@@ -1521,12 +1519,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put(matchSuppressedSummaryOnlyRoutesName, matchSuppressedSummaryOnlyRoutes);
       for (BgpAggregateIpv4Network summaryOnlyNetwork : summaryOnlyNetworks) {
         Prefix prefix = summaryOnlyNetwork.getPrefix();
-        int prefixLength = prefix.getPrefixLength();
         RouteFilterLine line =
-            new RouteFilterLine(
-                LineAction.ACCEPT,
-                prefix,
-                new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH));
+            new RouteFilterLine(LineAction.ACCEPT, PrefixRange.moreSpecificThan(prefix));
         matchSuppressedSummaryOnlyRoutes.addLine(line);
       }
       suppressSummaryOnly.setGuard(
