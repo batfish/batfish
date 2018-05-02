@@ -333,7 +333,7 @@
                   "prefixSet" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefix6Set",
                     "prefix6Space" : [
-                      "2607:f010:3f9:8000:0:0:0:0/52;53-32"
+                      "2607:f010:3f9:8000:0:0:0:0/52;53-128"
                     ]
                   }
                 },
