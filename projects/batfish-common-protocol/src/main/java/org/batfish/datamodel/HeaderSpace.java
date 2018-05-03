@@ -117,6 +117,26 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       _notSrcProtocols = ImmutableSortedSet.of();
     }
 
+    public void addDstIp(IpSpace dstIp) {
+      _dstIps = AclIpSpace.union(_dstIps, dstIp);
+    }
+
+    public void addSrcIp(IpSpace srcIp) {
+      _srcIps = AclIpSpace.union(_srcIps, srcIp);
+    }
+
+    public void addNotDstIp(IpSpace notDstIp) {
+      _notDstIps = AclIpSpace.union(_notDstIps, notDstIp);
+    }
+
+    public void addNotSrcIp(IpSpace notSrcIp) {
+      _notSrcIps = AclIpSpace.union(_notSrcIps, notSrcIp);
+    }
+
+    public void addSrcOrDstIp(IpSpace srcOrDstIp) {
+      _srcOrDstIps = AclIpSpace.union(_srcOrDstIps, srcOrDstIp);
+    }
+
     public HeaderSpace build() {
       return new HeaderSpace(this);
     }
