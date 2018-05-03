@@ -6,10 +6,15 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.MoreObjects;
+import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.questions.Exclusion;
 
+/**
+ * Represents one row of the table answer. Each row is basically a map of key value pairs, where the
+ * key is the column name and the value (currently) is JsonNode.
+ */
 public class Row implements Comparable<Row> {
 
   private final ObjectNode _data;
@@ -23,6 +28,14 @@ public class Row implements Comparable<Row> {
     _data = MoreObjects.firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
   }
 
+  /**
+   * Compares two Rows. The current implementation ignores primary keys of the table and compares
+   * everything, mainly to provide consistent ordering of answers. This will need to change when we
+   * start using the primary keys for something.
+   *
+   * @param o The other Row to compare against.
+   * @return
+   */
   @Override
   public int compareTo(Row o) {
     try {
@@ -34,6 +47,20 @@ public class Row implements Comparable<Row> {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || !(o instanceof Row)) {
+      return false;
+    }
+    return _data.equals(((Row) o)._data);
+  }
+
+  /**
+   * Gets the value of specified column name
+   *
+   * @param columnName The column to fetch
+   * @return The result
+   */
   public JsonNode get(String columnName) {
     return _data.get(columnName);
   }
@@ -43,10 +70,29 @@ public class Row implements Comparable<Row> {
     return _data;
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(_data);
+  }
+
+  /**
+   * Checks is this row is covered by the provided exclusion.
+   *
+   * @param exclusion The exclusion to check against.
+   * @return The result of the check
+   */
   public boolean isCovered(ObjectNode exclusion) {
     return Exclusion.firstCoversSecond(exclusion, _data);
   }
 
+  /**
+   * Sets the value for the specified column to the specified value. Any existing values for the
+   * column are overwritten
+   *
+   * @param columnName The column to set
+   * @param value The value to set
+   * @return The Row object itself (to aid chaining)
+   */
   public Row put(String columnName, JsonNode value) {
     _data.set(columnName, value);
     return this;
