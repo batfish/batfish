@@ -2,6 +2,7 @@ add-batfish-option haltonconverterror
 add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
+
 init-testrig test_rigs/example roles-example
 
 test tests/roles/roleNeighbors.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role", roleDimension="default"
@@ -16,3 +17,4 @@ test tests/roles/nsRoleConsistency.ref get namedStructureRoleConsistency hypothe
 init-testrig test_rigs/example2 roles-example2
 test -compareall tests/roles/inferRoles.ref get inferRoles
 test tests/roles/roleNeighbors2.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
+
