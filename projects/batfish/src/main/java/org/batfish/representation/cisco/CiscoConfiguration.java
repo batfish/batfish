@@ -1548,10 +1548,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     If preFilter = new If();
     bgpCommonExportStatements.add(preFilter);
-    bgpCommonExportStatements.add(Statements.ReturnFalse.toStaticStatement());
     Disjunction preFilterConditions = new Disjunction();
     preFilter.setGuard(preFilterConditions);
-    preFilter.getTrueStatements().add(Statements.ReturnTrue.toStaticStatement());
+    preFilter.setTrueStatements(ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
+    preFilter.setFalseStatements(ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
 
     preFilterConditions.getDisjuncts().addAll(attributeMapPrefilters);
 
