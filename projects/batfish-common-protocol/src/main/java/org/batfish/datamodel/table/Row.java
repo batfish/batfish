@@ -34,7 +34,7 @@ public class Row implements Comparable<Row> {
    * start using the primary keys for something.
    *
    * @param o The other Row to compare against.
-   * @return
+   * @return The result of the comparison
    */
   @Override
   public int compareTo(Row o) {
