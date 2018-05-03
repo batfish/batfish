@@ -1043,6 +1043,7 @@
                             "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                             "expr" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                              "comment" : "match default route",
                               "prefix" : {
                                 "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                               },
