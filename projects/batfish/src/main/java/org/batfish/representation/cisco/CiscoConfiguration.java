@@ -138,6 +138,34 @@ import org.batfish.vendor.VendorConfiguration;
 
 public final class CiscoConfiguration extends VendorConfiguration {
 
+  /** Matches the IPv4 default route. */
+  private static final MatchPrefixSet MATCH_DEFAULT_ROUTE;
+
+  /** Matches the IPv6 default route. */
+  private static final MatchPrefix6Set MATCH_DEFAULT_ROUTE6;
+
+  /** Matches anything but the IPv4 default route. */
+  static final Not NOT_DEFAULT_ROUTE;
+
+  static {
+    MATCH_DEFAULT_ROUTE =
+        new MatchPrefixSet(
+            new DestinationNetwork(),
+            new ExplicitPrefixSet(
+                new PrefixSpace(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))));
+    MATCH_DEFAULT_ROUTE.setComment("match default route");
+
+    NOT_DEFAULT_ROUTE = new Not(MATCH_DEFAULT_ROUTE);
+
+    MATCH_DEFAULT_ROUTE6 =
+        new MatchPrefix6Set(
+            new DestinationNetwork6(),
+            new ExplicitPrefix6Set(
+                new Prefix6Space(
+                    Collections.singleton(new Prefix6Range(Prefix6.ZERO, new SubRange(0, 0))))));
+    MATCH_DEFAULT_ROUTE6.setComment("match default route");
+  }
+
   private static final int CISCO_AGGREGATE_ROUTE_ADMIN_COST = 200;
 
   /*
@@ -1362,20 +1390,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
-    MatchPrefixSet matchDefaultRoute =
-        new MatchPrefixSet(
-            new DestinationNetwork(),
-            new ExplicitPrefixSet(
-                new PrefixSpace(
-                    Collections.singleton(new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))));
-    matchDefaultRoute.setComment("match default route");
-    MatchPrefix6Set matchDefaultRoute6 =
-        new MatchPrefix6Set(
-            new DestinationNetwork6(),
-            new ExplicitPrefix6Set(
-                new Prefix6Space(
-                    Collections.singleton(new Prefix6Range(Prefix6.ZERO, new SubRange(0, 0))))));
-    matchDefaultRoute.setComment("match default route");
     newBgpProcess.setRouterId(bgpRouterId);
     Set<BgpAggregateIpv4Network> summaryOnlyNetworks = new HashSet<>();
     Set<BgpAggregateIpv6Network> summaryOnlyIpv6Networks = new HashSet<>();
@@ -1387,8 +1401,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Prefix prefix = e.getKey();
       BgpAggregateIpv4Network aggNet = e.getValue();
       boolean summaryOnly = aggNet.getSummaryOnly();
-      int prefixLength = prefix.getPrefixLength();
-      SubRange prefixRange = new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH);
       if (summaryOnly) {
         summaryOnlyNetworks.add(aggNet);
       }
@@ -1401,8 +1413,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       currentGeneratedRouteConditional.setGuard(
           new MatchPrefixSet(
               new DestinationNetwork(),
-              new ExplicitPrefixSet(
-                  new PrefixSpace(Collections.singleton(new PrefixRange(prefix, prefixRange))))));
+              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))));
       currentGeneratedRouteConditional
           .getTrueStatements()
           .add(Statements.ReturnTrue.toStaticStatement());
@@ -1421,8 +1432,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .add(
               new MatchPrefixSet(
                   new DestinationNetwork(),
-                  new ExplicitPrefixSet(
-                      new PrefixSpace(Collections.singleton(PrefixRange.fromPrefix(prefix))))));
+                  new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
       applyCurrentAggregateAttributesConditions
           .getConjuncts()
           .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
@@ -1526,12 +1536,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put(matchSuppressedSummaryOnlyRoutesName, matchSuppressedSummaryOnlyRoutes);
       for (BgpAggregateIpv4Network summaryOnlyNetwork : summaryOnlyNetworks) {
         Prefix prefix = summaryOnlyNetwork.getPrefix();
-        int prefixLength = prefix.getPrefixLength();
         RouteFilterLine line =
-            new RouteFilterLine(
-                LineAction.ACCEPT,
-                prefix,
-                new SubRange(prefixLength + 1, Prefix.MAX_PREFIX_LENGTH));
+            new RouteFilterLine(LineAction.ACCEPT, PrefixRange.moreSpecificThan(prefix));
         matchSuppressedSummaryOnlyRoutes.addLine(line);
       }
       suppressSummaryOnly.setGuard(
@@ -1917,9 +1923,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       GeneratedRoute6.Builder defaultRoute6 = null;
       if (lpg.getDefaultOriginate()) {
         if (ipv4) {
-          localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute);
+          localOrCommonOrigination.getDisjuncts().add(MATCH_DEFAULT_ROUTE);
         } else {
-          localOrCommonOrigination.getDisjuncts().add(matchDefaultRoute6);
+          localOrCommonOrigination.getDisjuncts().add(MATCH_DEFAULT_ROUTE6);
         }
         defaultRoute = new GeneratedRoute.Builder();
         defaultRoute.setNetwork(Prefix.ZERO);
@@ -1955,9 +1961,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           If defaultRouteGenerationConditional = new If();
           defaultRouteGenerationPolicy.getStatements().add(defaultRouteGenerationConditional);
           if (ipv4) {
-            defaultRouteGenerationConditional.setGuard(matchDefaultRoute);
+            defaultRouteGenerationConditional.setGuard(MATCH_DEFAULT_ROUTE);
           } else {
-            defaultRouteGenerationConditional.setGuard(matchDefaultRoute6);
+            defaultRouteGenerationConditional.setGuard(MATCH_DEFAULT_ROUTE6);
           }
           defaultRouteGenerationConditional
               .getTrueStatements()
@@ -2816,14 +2822,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     allOspfExportStatements.add(redistributionPolicy);
   }
 
-  static final Not NOT_DEFAULT_ROUTE =
-      new Not(
-          new MatchPrefixSet(
-              new DestinationNetwork(),
-              new ExplicitPrefixSet(
-                  new PrefixSpace(
-                      Collections.singleton(new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
-
   // For testing.
   If convertOspfRedistributionPolicy(
       OspfRedistributionPolicy policy, OspfProcess proc, CiscoStructureUsage structureType) {
@@ -2998,15 +2996,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ospfExportDefault.setComment("OSPF export default route");
       Conjunction ospfExportDefaultConditions = new Conjunction();
       List<Statement> ospfExportDefaultStatements = ospfExportDefault.getTrueStatements();
-      ospfExportDefaultConditions
-          .getConjuncts()
-          .add(
-              new MatchPrefixSet(
-                  new DestinationNetwork(),
-                  new ExplicitPrefixSet(
-                      new PrefixSpace(
-                          Collections.singleton(
-                              new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
+      ospfExportDefaultConditions.getConjuncts().add(MATCH_DEFAULT_ROUTE);
       long metric = proc.getDefaultInformationMetric();
       ospfExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       OspfMetricType metricType = proc.getDefaultInformationMetricType();
@@ -3155,15 +3145,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       ripExportDefault.setComment("RIP export default route");
       Conjunction ripExportDefaultConditions = new Conjunction();
       List<Statement> ripExportDefaultStatements = ripExportDefault.getTrueStatements();
-      ripExportDefaultConditions
-          .getConjuncts()
-          .add(
-              new MatchPrefixSet(
-                  new DestinationNetwork(),
-                  new ExplicitPrefixSet(
-                      new PrefixSpace(
-                          Collections.singleton(
-                              new PrefixRange(Prefix.ZERO, new SubRange(0, 0)))))));
+      ripExportDefaultConditions.getConjuncts().add(MATCH_DEFAULT_ROUTE);
       long metric = proc.getDefaultInformationMetric();
       ripExportDefaultStatements.add(new SetMetric(new LiteralLong(metric)));
       // add default export map with metric
@@ -3245,16 +3227,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Conjunction ripExportStaticConditions = new Conjunction();
       ripExportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
       List<Statement> ripExportStaticStatements = ripExportStatic.getTrueStatements();
-      ripExportStaticConditions
-          .getConjuncts()
-          .add(
-              new Not(
-                  new MatchPrefixSet(
-                      new DestinationNetwork(),
-                      new ExplicitPrefixSet(
-                          new PrefixSpace(
-                              Collections.singleton(
-                                  new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
+      ripExportStaticConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
 
       Long metric = rsp.getMetric();
       boolean explicitMetric = metric != null;
@@ -3291,16 +3264,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Conjunction ripExportBgpConditions = new Conjunction();
       ripExportBgpConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.BGP));
       List<Statement> ripExportBgpStatements = ripExportBgp.getTrueStatements();
-      ripExportBgpConditions
-          .getConjuncts()
-          .add(
-              new Not(
-                  new MatchPrefixSet(
-                      new DestinationNetwork(),
-                      new ExplicitPrefixSet(
-                          new PrefixSpace(
-                              Collections.singleton(
-                                  new PrefixRange(Prefix.ZERO, new SubRange(0, 0))))))));
+      ripExportBgpConditions.getConjuncts().add(NOT_DEFAULT_ROUTE);
 
       Long metric = rbp.getMetric();
       boolean explicitMetric = metric != null;
