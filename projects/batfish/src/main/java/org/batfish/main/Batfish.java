@@ -861,7 +861,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     List<NodFirstUnsatJob<AclLine, Integer>> jobs = new ArrayList<>();
     for (Entry<String, Map<String, List<AclLine>>> e : unreachableAclLinesMap.entrySet()) {
       String hostname = e.getKey();
-      System.out.println("Hostname: " + hostname);
       Configuration c = configurations.get(hostname);
       List<String> nodeInterfaces =
           ImmutableList.sortedCopyOf(
@@ -872,12 +871,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .collect(Collectors.toList()));
       // Skip ACLs that have no unreachable lines
       Map<String, List<AclLine>> reachableAcls = reachableAclLinesMap.get(hostname);
-      System.out.println("Fully reachable ACLs: " + reachableAcls.keySet());
       Synthesizer aclSynthesizer =
           synthesizeAcls(
               hostname, c, reachableAcls == null ? new TreeSet<>() : reachableAcls.keySet());
       Map<String, List<AclLine>> byAclName = e.getValue();
-      System.out.println("ACLs with unreachable lines: " + byAclName.keySet());
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
         // Generate job for earlier blocking lines in this ACL
