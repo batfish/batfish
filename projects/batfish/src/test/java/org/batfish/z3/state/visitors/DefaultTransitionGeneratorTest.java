@@ -1214,7 +1214,7 @@ public class DefaultTransitionGeneratorTest {
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2),
                     NODE2,
                     ImmutableMap.of(INTERFACE1, ACL1, INTERFACE2, ACL2)))
-            .setTopologyInterfaces(
+            .setEnabledInterfaces(
                 ImmutableMap.of(
                     NODE1,
                     ImmutableSet.of(INTERFACE1, INTERFACE2, INTERFACE3),
