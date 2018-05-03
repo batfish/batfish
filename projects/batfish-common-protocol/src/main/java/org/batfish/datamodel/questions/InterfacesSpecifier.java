@@ -30,6 +30,8 @@ public class InterfacesSpecifier {
 
   public static InterfacesSpecifier ALL = new InterfacesSpecifier(".*");
 
+  public static InterfacesSpecifier NONE = new InterfacesSpecifier("");
+
   private final String _expression;
 
   private final Pattern _regex;
@@ -85,6 +87,7 @@ public class InterfacesSpecifier {
     }
   }
 
+  @Override
   @JsonValue
   public String toString() {
     return _expression;

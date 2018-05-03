@@ -19,6 +19,7 @@ import org.batfish.common.util.DefinedStructure;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 
@@ -33,9 +34,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   private VendorConfiguration _overlayConfiguration;
 
-  protected final SortedMap<StructureType, SortedMap<String, SortedSet<Integer>>>
-      _structureDefinitions;
-
   protected final SortedMap<
           StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>>
       _structureReferences;
@@ -45,19 +43,11 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   protected transient Warnings _w;
 
   public VendorConfiguration() {
-    _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
   }
 
   public String canonicalizeInterfaceName(String name) {
     return name;
-  }
-
-  public void defineStructure(StructureType type, String name, int line) {
-    SortedMap<String, SortedSet<Integer>> byName =
-        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedSet<Integer> lines = byName.computeIfAbsent(name, k -> new TreeSet<>());
-    lines.add(line);
   }
 
   @JsonIgnore
@@ -184,18 +174,25 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
-  public void unused(StructureType structureType, String name, int line) {
+  public void recordStructure(
+      StructureType structureType, String name, int numReferrers, int line) {
     String hostname = getHostname();
     String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        _answerElement.getUnusedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
-    SortedMap<String, SortedSet<Integer>> byName =
+    SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType =
+        _answerElement.getDefinedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
+    SortedMap<String, DefinedStructureInfo> byName =
         byType.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedSet<Integer> lines = byName.computeIfAbsent(name, k -> new TreeSet<>());
-    lines.add(line);
+    DefinedStructureInfo info =
+        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), numReferrers));
+    info.getDefinitionLines().add(line);
   }
 
-  protected <T extends DefinedStructure<String>> void warnUnusedStructure(
+  public void recordStructure(
+      ReferenceCountedStructure structure, StructureType structureType, String name, int line) {
+    recordStructure(structureType, name, structure.getReferers().size(), line);
+  }
+
+  protected <T extends DefinedStructure<String>> void recordStructure(
       Map<String, T> map, StructureType type) {
     for (Entry<String, T> e : map.entrySet()) {
       String name = e.getKey();
@@ -204,9 +201,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
         continue;
       }
       T t = e.getValue();
-      if (t.isUnused()) {
-        unused(type, name, t.getDefinitionLine());
-      }
+      recordStructure(t, type, name, t.getDefinitionLine());
     }
   }
 }

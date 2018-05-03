@@ -1,9 +1,9 @@
 package org.batfish.z3;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.util.CommonUtil.computeIpOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -272,7 +272,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         toImmutableMap(configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
     _specializationIpSpace =
         specialize
-            ? MoreObjects.firstNonNull(
+            ? firstNonNull(
                 AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps()),
                 UniverseIpSpace.INSTANCE)
             : UniverseIpSpace.INSTANCE;
@@ -784,6 +784,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return _aclConditions;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       getArpTrueEdge() {
     return _arpTrueEdge;
@@ -829,6 +830,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return _namedIpSpaces;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
     return _neighborUnreachable;
   }
