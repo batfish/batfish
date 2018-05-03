@@ -52093,6 +52093,1282 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "aggAddress" : {
+          "ipv4 prefix-list" : {
+            "ScienceDMZ-networks" : {
+              "definitionLines" : [
+                14
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "ipv6 prefix-list" : {
+            "ScienceDMZ-networks" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "arista_acl" : {
+          "extended ip access-list" : {
+            "abcd" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "arista_bgp" : {
+          "bgp group" : {
+            "UNDEFINED_PEER_GROUP" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "ROUTE_MAP" : {
+              "definitionLines" : [
+                15
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "arista_misc" : {
+          "standard ip access-list" : {
+            "sshabc" : {
+              "definitionLines" : [
+                25
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "as_path_prepend" : {
+          "route-map" : {
+            "rmap" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "asa_acl" : {
+          "extended ip access-list" : {
+            "outside" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            },
+            "outside_in" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "standard ip access-list" : {
+            "Local_LAN_Access" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "bgp-allow" : {
+          "bgp group" : {
+            "GROUP" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "bgp-enforce-first-as" : {
+          "bgp group" : {
+            "MYGROUP" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "bgp_address_family" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : -1
+            },
+            "as2" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : -1
+            },
+            "as3" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 0
+            },
+            "dcp-rrs" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "bgp_default_originate_policy" : {
+          "bgp group" : {
+            "ama-coe" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "bgp_foundry" : {
+          "bgp group" : {
+            "ucr" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cadant_acl" : {
+          "extended ipv6 access-list" : {
+            "ipv6-acl-foo" : {
+              "definitionLines" : [
+                18
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "standard ip access-list" : {
+            "50" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "51" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
+            },
+            "99" : {
+              "definitionLines" : [
+                14
+              ],
+              "numReferrers" : 0
+            },
+            "stdAcl-bar" : {
+              "definitionLines" : [
+                14
+              ],
+              "numReferrers" : 0
+            },
+            "stdAcl-foo" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cadant_cable" : {
+          "docsis-policy" : {
+            "1" : {
+              "definitionLines" : [
+                48
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "docsis-policy-rule" : {
+            "1" : {
+              "definitionLines" : [
+                49
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "cadant_prefix_list" : {
+          "ipv4 prefix-list" : {
+            "A+C" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "foo" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "ipv6 prefix-list" : {
+            "bar" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cadant_route_map" : {
+          "route-map" : {
+            "bar" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            },
+            "foo" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco-zone" : {
+          "zone security" : {
+            "z1" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 1
+            },
+            "z2" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "cisco_acl" : {
+          "extended ip access-list" : {
+            "BLAH-BLAH" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "blah" : {
+              "definitionLines" : [
+                30
+              ],
+              "numReferrers" : 0
+            },
+            "extended" : {
+              "definitionLines" : [
+                26
+              ],
+              "numReferrers" : 0
+            },
+            "standard" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "ipv4 prefix-list" : {
+            "allowprefix" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 0
+            },
+            "allowprefix-asa" : {
+              "definitionLines" : [
+                36
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_bgp" : {
+          "bgp group" : {
+            "p1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "CONNECTED-TO-BGP" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 1
+            },
+            "ospfv3_map" : {
+              "definitionLines" : [
+                26
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "cisco_cable" : {
+          "cable service-class" : {
+            "1" : {
+              "definitionLines" : [
+                88
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "depi-class" : {
+            "depiclass1" : {
+              "definitionLines" : [
+                131
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "depi-tunnel" : {
+            "bar1" : {
+              "definitionLines" : [
+                137
+              ],
+              "numReferrers" : 0
+            },
+            "foo1" : {
+              "definitionLines" : [
+                134
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "docsis-policy" : {
+            "1" : {
+              "definitionLines" : [
+                42
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "docsis-policy-rule" : {
+            "1" : {
+              "definitionLines" : [
+                48
+              ],
+              "numReferrers" : 1
+            },
+            "2" : {
+              "definitionLines" : [
+                49
+              ],
+              "numReferrers" : 0
+            },
+            "3" : {
+              "definitionLines" : [
+                50
+              ],
+              "numReferrers" : 0
+            },
+            "4" : {
+              "definitionLines" : [
+                51
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_crypto" : {
+          "crypto ipsec profile" : {
+            "abcdefg" : {
+              "definitionLines" : [
+                138
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "crypto ipsec transform-set" : {
+            "ESP-3DES-MD5" : {
+              "definitionLines" : [
+                145
+              ],
+              "numReferrers" : 0
+            },
+            "IPSEC_AES_256" : {
+              "definitionLines" : [
+                148
+              ],
+              "numReferrers" : 0
+            },
+            "cipts1" : {
+              "definitionLines" : [
+                149
+              ],
+              "numReferrers" : 0
+            },
+            "cipts2" : {
+              "definitionLines" : [
+                150
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "crypto keyring" : {
+            "VRF:ABC:DEF:GHI:1234" : {
+              "definitionLines" : [
+                187
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_eigrp" : {
+          "extended ip access-list" : {
+            "bippety" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : 0
+            },
+            "bloop_blop" : {
+              "definitionLines" : [
+                90
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_interface" : {
+          "extended ip access-list" : {
+            "abc" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "cisco_ip_nat" : {
+          "nat pool" : {
+            "abc" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "dynamic-srcnat" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 0
+            },
+            "example-1-dynamic-nat-pool" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            },
+            "example-2-dynamic-nat-pool" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_ipv6_access_list" : {
+          "extended ipv6 access-list" : {
+            "RT404888-XO" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "abcdefg" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_l2tp" : {
+          "l2tp-class" : {
+            "foobar" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_mac_acl" : {
+          "mac acl" : {
+            "1199" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "700" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "copp-system-p-acl-mac-cdp-udld-vtp" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_misc" : {
+          "object-group service" : {
+            "SVCGRP-ICMP" : {
+              "definitionLines" : [
+                176
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_nxos_bgp" : {
+          "route-map" : {
+            "MATCH_ASN" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "cisco_qos" : {
+          "object-group network" : {
+            "dns_servers" : {
+              "definitionLines" : [
+                26
+              ],
+              "numReferrers" : 0
+            },
+            "ntp_servers" : {
+              "definitionLines" : [
+                29
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "policy-map type inspect" : {
+            "pminspect" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_route_map" : {
+          "route-map" : {
+            "MSDP-SA-RP-FILTER" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "beeble" : {
+              "definitionLines" : [
+                30
+              ],
+              "numReferrers" : 0
+            },
+            "connected-to-bgp" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "ijfw$%^&****(((([]grr" : {
+              "definitionLines" : [
+                17
+              ],
+              "numReferrers" : 0
+            },
+            "mgmt" : {
+              "definitionLines" : [
+                26
+              ],
+              "numReferrers" : 0
+            },
+            "multicaststuff" : {
+              "definitionLines" : [
+                41
+              ],
+              "numReferrers" : 0
+            },
+            "next-hop-null" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 0
+            },
+            "to_svl-hub-router" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_style_acl1" : {
+          "extended ip access-list" : {
+            "blah" : {
+              "definitionLines" : [
+                1
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_style_acl2" : {
+          "standard ip access-list" : {
+            "1" : {
+              "definitionLines" : [
+                1
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "community-name-numbers" : {
+          "route-map" : {
+            "AAA1-BBB-CCC" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "standard community-list" : {
+            "9999-RRR" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "community-name-numbers_dos" : {
+          "route-map" : {
+            "AAA1-BBB-CCC" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "standard community-list" : {
+            "9999-RRR" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "community_list_named" : {
+          "ipv4 prefix-list" : {
+            "PFX_LIST" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "route-map" : {
+            "TO_NEIGHBOR" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "standard community-list" : {
+            "COMM_LIST_NAME" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "foundry_access_list" : {
+          "extended ipv6 access-list" : {
+            "RT404888-Caltech" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "foundry_bgp" : {
+          "bgp group" : {
+            "bippety" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 0
+            },
+            "boop" : {
+              "definitionLines" : [
+                18
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "ios_xr_bgp_neighbor_group" : {
+          "bgp group" : {
+            "BGPMonitor" : {
+              "definitionLines" : [
+                20
+              ],
+              "numReferrers" : -1
+            },
+            "blabbety" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
+            },
+            "blappety" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "foobar-iBGP_border_ipv4" : {
+              "definitionLines" : [
+                56
+              ],
+              "numReferrers" : -1
+            },
+            "foobar-iBGP_border_ipv6" : {
+              "definitionLines" : [
+                67
+              ],
+              "numReferrers" : 0
+            },
+            "foobar-iBGP_ipv4" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : -1
+            },
+            "foobar-iBGP_ipv6" : {
+              "definitionLines" : [
+                46
+              ],
+              "numReferrers" : 0
+            },
+            "~FAKE_PG_1~" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : -1
+            },
+            "~FAKE_PG_2~" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "bgp session" : {
+            "OLA" : {
+              "definitionLines" : [
+                92
+              ],
+              "numReferrers" : 0
+            },
+            "blibber" : {
+              "definitionLines" : [
+                15
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "ip_prefix_list_single_line" : {
+          "ipv4 prefix-list" : {
+            "DENY-IPV4-ANY-IN" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "juniper-tcpflags" : {
+          "firewall filter" : {
+            "foo" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "juniper_bgp" : {
+          "bgp group" : {
+            "someinternalipv4group" : {
+              "definitionLines" : [
+                22
+              ],
+              "numReferrers" : -1
+            },
+            "someinternalipv6group" : {
+              "definitionLines" : [
+                31
+              ],
+              "numReferrers" : -1
+            },
+            "someipv4bgpgroup" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : -1
+            },
+            "someipv6bgpgroup" : {
+              "definitionLines" : [
+                15
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "juniper_bgp_authentication" : {
+          "authentication-key-chain" : {
+            "bgp-auth" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "bgp group" : {
+            "ext" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : -1
+            },
+            "ext1" : {
+              "definitionLines" : [
+                20
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "juniper_firewall" : {
+          "firewall filter" : {
+            "blah" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "f1" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "juniper_forwarding_options" : {
+          "dhcp-relay server-group" : {
+            "dhcpgrp" : {
+              "definitionLines" : [
+                24
+              ],
+              "numReferrers" : 0
+            },
+            "test2" : {
+              "definitionLines" : [
+                26
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "juniper_relay" : {
+          "dhcp-relay server-group" : {
+            "site-dhcp" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "juniper_route_filter" : {
+          "policy-statement" : {
+            "route-filter-test-v4" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "route-filter-test-v6" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "juniper_security" : {
+          "firewall filter" : {
+            "~GLOBAL_SECURITY_POLICY~" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "local_v6_addr" : {
+          "bgp group" : {
+            "NEIGH" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "mac_access_list" : {
+          "mac acl" : {
+            "STPDENY" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "filtermac" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            },
+            "ipmi_test" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            },
+            "permitCDP" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "named_and_numbered_lists" : {
+          "route-map" : {
+            "foo" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "neighbor" : {
+          "bgp group" : {
+            "1.2.3.4abc" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "123.123.123.abc" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 0
+            },
+            "1234-5" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "abc1.2.3.4" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            },
+            "abc1.2.3.4def" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "neighbor-name-numbers" : {
+          "bgp group" : {
+            "8075-CORE" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "neighbor_dos" : {
+          "bgp group" : {
+            "1.2.3.4abc" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "123.123.123.abc" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : 0
+            },
+            "1234-5" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "abc1.2.3.4" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            },
+            "abc1.2.3.4def" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "nexus_bgp" : {
+          "bgp group" : {
+            "PEER_BLLF" : {
+              "definitionLines" : [
+                22
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "nxos_acl" : {
+          "extended ip access-list" : {
+            "blah" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            },
+            "extended" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 0
+            },
+            "standard" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "nxos_route_map_continue" : {
+          "route-map" : {
+            "foobar" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "peer_template" : {
+          "bgp group" : {
+            "RAAS" : {
+              "definitionLines" : [
+                14
+              ],
+              "numReferrers" : -1
+            },
+            "SPINE" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "preSet" : {
+          "ipv4 prefix-list" : {
+            "default_route" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "ucla_networks" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "prefix_list_ipv4" : {
+          "ipv4 prefix-list" : {
+            "default" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 1
+            },
+            "test" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "to_elacc" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "route_maps_in_two_address_families" : {
+          "bgp group" : {
+            "ABC" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "ipv4 prefix-list" : {
+            "v4_list" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipv6 prefix-list" : {
+            "v6_list" : {
+              "definitionLines" : [
+                22
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "route-map" : {
+            "FROM_ABC_V4" : {
+              "definitionLines" : [
+                24
+              ],
+              "numReferrers" : 1
+            },
+            "FROM_ABC_V6" : {
+              "definitionLines" : [
+                27
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "route_policy_as_path_set" : {
+          "as-path-set" : {
+            "ama-coe-as-path" : {
+              "definitionLines" : [
+                34
+              ],
+              "numReferrers" : 0
+            },
+            "ama-coe-as-path2" : {
+              "definitionLines" : [
+                37
+              ],
+              "numReferrers" : 0
+            },
+            "ama-coe-as-path3" : {
+              "definitionLines" : [
+                39
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "tcpflags" : {
+          "extended ip access-list" : {
+            "100" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "underscore_variable" : {
+          "route-map" : {
+            "JKL_MNO_PQR" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        }
+      },
       "undefinedReferences" : {
         "IosXrMultiCast" : {
           "ipv4 acl" : {
@@ -52972,612 +54248,6 @@
                 5
               ]
             }
-          }
-        }
-      },
-      "unusedStructures" : {
-        "aggAddress" : {
-          "ipv4 prefix-list" : {
-            "ScienceDMZ-networks" : [
-              14
-            ]
-          },
-          "ipv6 prefix-list" : {
-            "ScienceDMZ-networks" : [
-              16
-            ]
-          }
-        },
-        "arista_acl" : {
-          "extended ip access-list" : {
-            "abcd" : [
-              4
-            ]
-          }
-        },
-        "arista_bgp" : {
-          "bgp group" : {
-            "UNDEFINED_PEER_GROUP" : [
-              11
-            ]
-          }
-        },
-        "as_path_prepend" : {
-          "route-map" : {
-            "rmap" : [
-              4
-            ]
-          }
-        },
-        "asa_acl" : {
-          "extended ip access-list" : {
-            "outside" : [
-              6
-            ],
-            "outside_in" : [
-              4
-            ]
-          },
-          "standard ip access-list" : {
-            "Local_LAN_Access" : [
-              5
-            ]
-          }
-        },
-        "bgp_address_family" : {
-          "bgp group" : {
-            "as3" : [
-              11
-            ],
-            "dcp-rrs" : [
-              16
-            ]
-          }
-        },
-        "bgp_default_originate_policy" : {
-          "bgp group" : {
-            "ama-coe" : [
-              5
-            ]
-          }
-        },
-        "bgp_foundry" : {
-          "bgp group" : {
-            "ucr" : [
-              7
-            ]
-          }
-        },
-        "cadant_acl" : {
-          "extended ipv6 access-list" : {
-            "ipv6-acl-foo" : [
-              18
-            ]
-          },
-          "standard ip access-list" : {
-            "50" : [
-              5
-            ],
-            "51" : [
-              10
-            ],
-            "99" : [
-              14
-            ],
-            "stdAcl-bar" : [
-              14
-            ],
-            "stdAcl-foo" : [
-              5
-            ]
-          }
-        },
-        "cadant_cable" : {
-          "docsis-policy" : {
-            "1" : [
-              48
-            ]
-          }
-        },
-        "cadant_prefix_list" : {
-          "ipv4 prefix-list" : {
-            "A+C" : [
-              7
-            ],
-            "foo" : [
-              5
-            ]
-          },
-          "ipv6 prefix-list" : {
-            "bar" : [
-              8
-            ]
-          }
-        },
-        "cadant_route_map" : {
-          "route-map" : {
-            "bar" : [
-              9
-            ],
-            "foo" : [
-              5
-            ]
-          }
-        },
-        "cisco_acl" : {
-          "extended ip access-list" : {
-            "BLAH-BLAH" : [
-              4
-            ],
-            "blah" : [
-              30
-            ],
-            "extended" : [
-              26
-            ],
-            "standard" : [
-              28
-            ]
-          },
-          "ipv4 prefix-list" : {
-            "allowprefix" : [
-              33
-            ],
-            "allowprefix-asa" : [
-              36
-            ]
-          }
-        },
-        "cisco_bgp" : {
-          "bgp group" : {
-            "p1" : [
-              13
-            ]
-          }
-        },
-        "cisco_cable" : {
-          "cable service-class" : {
-            "1" : [
-              88
-            ]
-          },
-          "depi-tunnel" : {
-            "bar1" : [
-              137
-            ]
-          },
-          "docsis-policy-rule" : {
-            "2" : [
-              49
-            ],
-            "3" : [
-              50
-            ],
-            "4" : [
-              51
-            ]
-          }
-        },
-        "cisco_crypto" : {
-          "crypto ipsec profile" : {
-            "abcdefg" : [
-              138
-            ]
-          },
-          "crypto ipsec transform-set" : {
-            "ESP-3DES-MD5" : [
-              145
-            ],
-            "IPSEC_AES_256" : [
-              148
-            ],
-            "cipts1" : [
-              149
-            ],
-            "cipts2" : [
-              150
-            ]
-          },
-          "crypto keyring" : {
-            "VRF:ABC:DEF:GHI:1234" : [
-              187
-            ]
-          }
-        },
-        "cisco_eigrp" : {
-          "extended ip access-list" : {
-            "bippety" : [
-              21
-            ],
-            "bloop_blop" : [
-              90
-            ]
-          }
-        },
-        "cisco_ip_nat" : {
-          "nat pool" : {
-            "abc" : [
-              4
-            ],
-            "dynamic-srcnat" : [
-              12
-            ],
-            "example-1-dynamic-nat-pool" : [
-              8
-            ],
-            "example-2-dynamic-nat-pool" : [
-              10
-            ]
-          }
-        },
-        "cisco_ipv6_access_list" : {
-          "extended ipv6 access-list" : {
-            "RT404888-XO" : [
-              4
-            ],
-            "abcdefg" : [
-              19
-            ]
-          }
-        },
-        "cisco_l2tp" : {
-          "l2tp-class" : {
-            "foobar" : [
-              4
-            ]
-          }
-        },
-        "cisco_mac_acl" : {
-          "mac acl" : {
-            "1199" : [
-              5
-            ],
-            "700" : [
-              4
-            ],
-            "copp-system-p-acl-mac-cdp-udld-vtp" : [
-              6
-            ]
-          }
-        },
-        "cisco_misc" : {
-          "object-group service" : {
-            "SVCGRP-ICMP" : [
-              176
-            ]
-          }
-        },
-        "cisco_qos" : {
-          "object-group network" : {
-            "dns_servers" : [
-              26
-            ],
-            "ntp_servers" : [
-              29
-            ]
-          },
-          "policy-map type inspect" : {
-            "pminspect" : [
-              32
-            ]
-          }
-        },
-        "cisco_route_map" : {
-          "route-map" : {
-            "MSDP-SA-RP-FILTER" : [
-              19
-            ],
-            "beeble" : [
-              30
-            ],
-            "connected-to-bgp" : [
-              4
-            ],
-            "ijfw$%^&****(((([]grr" : [
-              17
-            ],
-            "mgmt" : [
-              26
-            ],
-            "multicaststuff" : [
-              41
-            ],
-            "next-hop-null" : [
-              23
-            ],
-            "to_svl-hub-router" : [
-              12
-            ]
-          }
-        },
-        "cisco_style_acl1" : {
-          "extended ip access-list" : {
-            "blah" : [
-              1
-            ]
-          }
-        },
-        "cisco_style_acl2" : {
-          "standard ip access-list" : {
-            "1" : [
-              1
-            ]
-          }
-        },
-        "community-name-numbers" : {
-          "route-map" : {
-            "AAA1-BBB-CCC" : [
-              6
-            ]
-          }
-        },
-        "community-name-numbers_dos" : {
-          "route-map" : {
-            "AAA1-BBB-CCC" : [
-              6
-            ]
-          }
-        },
-        "community_list_named" : {
-          "route-map" : {
-            "TO_NEIGHBOR" : [
-              8
-            ]
-          },
-          "standard community-list" : {
-            "COMM_LIST_NAME" : [
-              6
-            ]
-          }
-        },
-        "foundry_access_list" : {
-          "extended ipv6 access-list" : {
-            "RT404888-Caltech" : [
-              8
-            ]
-          }
-        },
-        "foundry_bgp" : {
-          "bgp group" : {
-            "bippety" : [
-              11
-            ],
-            "boop" : [
-              18
-            ]
-          }
-        },
-        "ios_xr_bgp_neighbor_group" : {
-          "bgp group" : {
-            "blabbety" : [
-              10
-            ],
-            "blappety" : [
-              5
-            ],
-            "foobar-iBGP_border_ipv6" : [
-              67
-            ],
-            "foobar-iBGP_ipv6" : [
-              46
-            ]
-          },
-          "bgp session" : {
-            "OLA" : [
-              92
-            ],
-            "blibber" : [
-              15
-            ]
-          }
-        },
-        "ip_prefix_list_single_line" : {
-          "ipv4 prefix-list" : {
-            "DENY-IPV4-ANY-IN" : [
-              4
-            ]
-          }
-        },
-        "juniper-tcpflags" : {
-          "firewall filter" : {
-            "foo" : [
-              4
-            ]
-          }
-        },
-        "juniper_firewall" : {
-          "firewall filter" : {
-            "blah" : [
-              5
-            ],
-            "f1" : [
-              4
-            ]
-          }
-        },
-        "juniper_forwarding_options" : {
-          "dhcp-relay server-group" : {
-            "dhcpgrp" : [
-              24
-            ],
-            "test2" : [
-              26
-            ]
-          }
-        },
-        "juniper_relay" : {
-          "dhcp-relay server-group" : {
-            "site-dhcp" : [
-              4
-            ]
-          }
-        },
-        "juniper_route_filter" : {
-          "policy-statement" : {
-            "route-filter-test-v4" : [
-              4
-            ],
-            "route-filter-test-v6" : [
-              11
-            ]
-          }
-        },
-        "juniper_security" : {
-          "firewall filter" : {
-            "~GLOBAL_SECURITY_POLICY~" : [
-              -1
-            ]
-          }
-        },
-        "local_v6_addr" : {
-          "bgp group" : {
-            "NEIGH" : [
-              5
-            ]
-          }
-        },
-        "mac_access_list" : {
-          "mac acl" : {
-            "STPDENY" : [
-              13
-            ],
-            "filtermac" : [
-              8
-            ],
-            "ipmi_test" : [
-              9
-            ],
-            "permitCDP" : [
-              4
-            ]
-          }
-        },
-        "named_and_numbered_lists" : {
-          "route-map" : {
-            "foo" : [
-              4
-            ]
-          }
-        },
-        "neighbor" : {
-          "bgp group" : {
-            "1.2.3.4abc" : [
-              7
-            ],
-            "123.123.123.abc" : [
-              11
-            ],
-            "1234-5" : [
-              5
-            ],
-            "abc1.2.3.4" : [
-              8
-            ],
-            "abc1.2.3.4def" : [
-              9
-            ]
-          }
-        },
-        "neighbor-name-numbers" : {
-          "bgp group" : {
-            "8075-CORE" : [
-              6
-            ]
-          }
-        },
-        "neighbor_dos" : {
-          "bgp group" : {
-            "1.2.3.4abc" : [
-              7
-            ],
-            "123.123.123.abc" : [
-              11
-            ],
-            "1234-5" : [
-              5
-            ],
-            "abc1.2.3.4" : [
-              8
-            ],
-            "abc1.2.3.4def" : [
-              9
-            ]
-          }
-        },
-        "nexus_bgp" : {
-          "bgp group" : {
-            "PEER_BLLF" : [
-              22
-            ]
-          }
-        },
-        "nxos_acl" : {
-          "extended ip access-list" : {
-            "blah" : [
-              9
-            ],
-            "extended" : [
-              5
-            ],
-            "standard" : [
-              7
-            ]
-          }
-        },
-        "nxos_route_map_continue" : {
-          "route-map" : {
-            "foobar" : [
-              6
-            ]
-          }
-        },
-        "preSet" : {
-          "ipv4 prefix-list" : {
-            "default_route" : [
-              4
-            ],
-            "ucla_networks" : [
-              7
-            ]
-          }
-        },
-        "prefix_list_ipv4" : {
-          "ipv4 prefix-list" : {
-            "test" : [
-              4
-            ]
-          },
-          "route-map" : {
-            "to_elacc" : [
-              9
-            ]
-          }
-        },
-        "route_policy_as_path_set" : {
-          "as-path-set" : {
-            "ama-coe-as-path" : [
-              34
-            ],
-            "ama-coe-as-path2" : [
-              37
-            ],
-            "ama-coe-as-path3" : [
-              39
-            ]
-          }
-        },
-        "tcpflags" : {
-          "extended ip access-list" : {
-            "100" : [
-              4
-            ]
-          }
-        },
-        "underscore_variable" : {
-          "route-map" : {
-            "JKL_MNO_PQR" : [
-              4
-            ]
           }
         }
       },
