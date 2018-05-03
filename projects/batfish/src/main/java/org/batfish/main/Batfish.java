@@ -676,35 +676,54 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<AclLine, Boolean> linesReachableMap = new TreeMap<>();
     computeNodSatOutput(jobs, linesReachableMap);
 
-    // Create hostnamesToAclsMap with hostnames as keys and Map(acl name -> acl lines) as values
-    // Also create set of all acls without unreachable lines
-    Set<String> aclsWithUnreachableLines = new TreeSet<>();
-    Set<String> aclsWithoutUnreachableLines = new TreeSet<>();
-    Map<String, Map<String, List<AclLine>>> hostnamesToAclsMap = new TreeMap<>();
+    // Create two maps with hostnames as keys and Map(acl name -> acl lines) as values. One map will
+    // contain all ACLs with unreachable lines, the other will have all fully reachable ACLs.
+    Map<String, Map<String, List<AclLine>>> hostnamesToAclsWithUnreachableLinesMap =
+        new TreeMap<>();
+    Map<String, Map<String, List<AclLine>>> hostnamesToFullyReachableAclsMap = new TreeMap<>();
     for (Entry<AclLine, Boolean> e : linesReachableMap.entrySet()) {
       AclLine line = e.getKey();
       String aclName = line.getAclName();
-      // Keep track of which ACLs do/don't have unreachable lines
-      if (!e.getValue()) {
-        aclsWithUnreachableLines.add(aclName);
-        aclsWithoutUnreachableLines.remove(aclName);
-      } else if (!aclsWithUnreachableLines.contains(aclName)) {
-        aclsWithoutUnreachableLines.add(aclName);
-      }
       String hostname = line.getHostname();
-      // aclsMap = hostnamesToAclsMap.get(hostname), the map of ACL names to lines for this hostname
-      Map<String, List<AclLine>> aclsMap =
-          hostnamesToAclsMap.computeIfAbsent(hostname, k -> new TreeMap<>());
-      // aclLines = hostnamesToAclsMap.get(hostname).get(aclName), the list of lines in this ACL
-      List<AclLine> aclLines = aclsMap.computeIfAbsent(aclName, k -> new ArrayList<>());
-      aclLines.add(line);
+
+      Map<String, List<AclLine>> fullyReachableAcls =
+          hostnamesToFullyReachableAclsMap.computeIfAbsent(hostname, k -> new TreeMap<>());
+      Map<String, List<AclLine>> aclsWithUnreachableLines =
+          hostnamesToAclsWithUnreachableLinesMap.computeIfAbsent(hostname, k -> new TreeMap<>());
+
+      if (!e.getValue()) {
+        // Current line is unreachable.
+        // Get lines so far of this ACL. Could be in fullyReachableAcls or aclsWithUnreachableLines.
+        // If ACL was thus far completely reachable, move its lines into aclsWithUnreachableLines.
+        List<AclLine> aclRecordedAsReachable = fullyReachableAcls.remove(aclName);
+        if (aclRecordedAsReachable != null) {
+          aclRecordedAsReachable.add(line);
+          aclsWithUnreachableLines.put(aclName, aclRecordedAsReachable);
+        } else {
+          // Otherwise, there were already earlier unreachable lines. Just add the new one.
+          aclsWithUnreachableLines.get(aclName).add(line);
+        }
+      } else {
+        // Current line is reachable.
+        // Get lines so far of this ACL. Could be in fullyReachableAcls, aclsWithUnreachableLines,
+        // or this could be the first line. Create/get the ACL's list of lines.
+        List<AclLine> aclLineList = aclsWithUnreachableLines.get(aclName);
+        if (aclLineList == null) {
+          aclLineList = fullyReachableAcls.computeIfAbsent(aclName, k -> new ArrayList<>());
+        }
+        // Add line to the ACL's list of lines.
+        aclLineList.add(line);
+      }
     }
 
     // Run second batch of nod jobs to get earliest more general lines for each unreachable line
     // Produces a map of acl line -> line number of earliest more general reachable line
     List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs =
         generateEarliestMoreGeneralAclLineJobs(
-            hostnamesToAclsMap, linesReachableMap, configurations, aclsWithoutUnreachableLines);
+            hostnamesToAclsWithUnreachableLinesMap,
+            hostnamesToFullyReachableAclsMap,
+            linesReachableMap,
+            configurations);
     Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
     computeNodFirstUnsatOutput(step2Jobs, blockingLinesMap);
 
@@ -835,13 +854,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private List<NodFirstUnsatJob<AclLine, Integer>> generateEarliestMoreGeneralAclLineJobs(
-      Map<String, Map<String, List<AclLine>>> aclLinesMap,
+      Map<String, Map<String, List<AclLine>>> unreachableAclLinesMap,
+      Map<String, Map<String, List<AclLine>>> reachableAclLinesMap,
       Map<AclLine, Boolean> aclLinesReachabilityMap, // map of acl line -> isReachable boolean
-      Map<String, Configuration> configurations,
-      Set<String> aclsToSkip) {
+      Map<String, Configuration> configurations) {
     List<NodFirstUnsatJob<AclLine, Integer>> jobs = new ArrayList<>();
-    for (Entry<String, Map<String, List<AclLine>>> e : aclLinesMap.entrySet()) {
+    for (Entry<String, Map<String, List<AclLine>>> e : unreachableAclLinesMap.entrySet()) {
       String hostname = e.getKey();
+      System.out.println("Hostname: " + hostname);
       Configuration c = configurations.get(hostname);
       List<String> nodeInterfaces =
           ImmutableList.sortedCopyOf(
@@ -851,38 +871,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .map(Interface::getName)
                   .collect(Collectors.toList()));
       // Skip ACLs that have no unreachable lines
-      Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclsToSkip);
+      Map<String, List<AclLine>> reachableAcls = reachableAclLinesMap.get(hostname);
+      System.out.println("Fully reachable ACLs: " + reachableAcls.keySet());
+      Synthesizer aclSynthesizer =
+          synthesizeAcls(
+              hostname, c, reachableAcls == null ? new TreeSet<>() : reachableAcls.keySet());
       Map<String, List<AclLine>> byAclName = e.getValue();
+      System.out.println("ACLs with unreachable lines: " + byAclName.keySet());
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
-        // Generate job for earlier blocking line if this ACL contains unreachable lines
-        if (!aclsToSkip.contains(aclName)) {
-          IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
-          List<AclLine> lines = e2.getValue();
-          for (int i = 0; i < lines.size(); i++) {
-            AclLine line = lines.get(i);
-            boolean reachable = aclLinesReachabilityMap.get(line);
-            if (!reachable) {
-              List<AclLine> toCheck = new ArrayList<>();
-              for (int j = 0; j < i; j++) {
-                AclLine earlierLine = lines.get(j);
-                boolean earlierIsReachable = aclLinesReachabilityMap.get(earlierLine);
-                if (earlierIsReachable) {
-                  toCheck.add(earlierLine);
-                }
+        // Generate job for earlier blocking lines in this ACL
+        IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
+        List<AclLine> lines = e2.getValue();
+        for (int i = 0; i < lines.size(); i++) {
+          AclLine line = lines.get(i);
+          boolean reachable = aclLinesReachabilityMap.get(line);
+          if (!reachable) {
+            List<AclLine> toCheck = new ArrayList<>();
+            for (int j = 0; j < i; j++) {
+              AclLine earlierLine = lines.get(j);
+              boolean earlierIsReachable = aclLinesReachabilityMap.get(earlierLine);
+              if (earlierIsReachable) {
+                toCheck.add(earlierLine);
               }
-              EarliestMoreGeneralReachableLineQuerySynthesizer query =
-                  new EarliestMoreGeneralReachableLineQuerySynthesizer(
-                      line,
-                      toCheck,
-                      ipAccessList,
-                      c.getIpSpaces(),
-                      c.getIpAccessLists(),
-                      nodeInterfaces);
-              NodFirstUnsatJob<AclLine, Integer> job =
-                  new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
-              jobs.add(job);
             }
+            EarliestMoreGeneralReachableLineQuerySynthesizer query =
+                new EarliestMoreGeneralReachableLineQuerySynthesizer(
+                    line,
+                    toCheck,
+                    ipAccessList,
+                    c.getIpSpaces(),
+                    c.getIpAccessLists(),
+                    nodeInterfaces);
+            NodFirstUnsatJob<AclLine, Integer> job =
+                new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
+            jobs.add(job);
           }
         }
       }
