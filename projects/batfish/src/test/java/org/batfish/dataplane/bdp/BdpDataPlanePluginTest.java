@@ -560,6 +560,7 @@ public class BdpDataPlanePluginTest {
                 .build(),
             _folder);
     Settings settings = batfish.getSettings();
+    settings.setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
     settings.setBdpDetail(bdpSettings.getBdpDetail());
     settings.setBdpMaxOscillationRecoveryAttempts(
         bdpSettings.getBdpMaxOscillationRecoveryAttempts());
@@ -684,8 +685,8 @@ public class BdpDataPlanePluginTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
@@ -787,8 +788,8 @@ public class BdpDataPlanePluginTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
@@ -824,8 +825,8 @@ public class BdpDataPlanePluginTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(batfish.loadDataPlane());
@@ -856,8 +857,8 @@ public class BdpDataPlanePluginTest {
                 .setRoutingTablesText(testrigResourcePrefix, routingTableNames)
                 .build(),
             _folder);
-    BdpDataPlanePlugin dataPlanePlugin = new BdpDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(BdpDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false);
     SortedMap<String, RoutesByVrf> environmentRoutes = batfish.loadEnvironmentRoutingTables();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
