@@ -3,30 +3,19 @@ package org.batfish.question.definedstructures;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
-<<<<<<< HEAD
-=======
-import com.fasterxml.jackson.databind.node.ObjectNode;
->>>>>>> origin/master
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-<<<<<<< HEAD
-=======
-import java.util.TreeSet;
->>>>>>> origin/master
 import javax.annotation.Nonnull;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
-<<<<<<< HEAD
 import org.batfish.datamodel.table.Row;
-=======
->>>>>>> origin/master
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 

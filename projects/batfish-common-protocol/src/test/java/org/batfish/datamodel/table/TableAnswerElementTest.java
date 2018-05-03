@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -44,8 +43,8 @@ public class TableAnswerElementTest {
   public void testComputeSummary() {
     // generate an answer with two rows
     TableAnswerElement answer = new TableAnswerElementChild(new TableMetadata());
-    answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
-    answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
+    answer.addRow(new Row());
+    answer.addRow(new Row());
 
     Assertion assertion = new Assertion(AssertionType.countequals, new IntNode(1)); // wrong count
     AnswerSummary summary = answer.computeSummary(assertion);
@@ -61,11 +60,11 @@ public class TableAnswerElementTest {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
     TableAnswerElement oneRow = new TableAnswerElementChild(new TableMetadata());
-    oneRow.addRow(BatfishObjectMapper.mapper().createObjectNode());
+    oneRow.addRow(new Row());
 
     TableAnswerElement twoRows = new TableAnswerElementChild(new TableMetadata());
-    twoRows.addRow(BatfishObjectMapper.mapper().createObjectNode());
-    twoRows.addRow(BatfishObjectMapper.mapper().createObjectNode());
+    twoRows.addRow(new Row());
+    twoRows.addRow(new Row());
 
     assertThat(oneRow.evaluateAssertion(twoCount), equalTo(false));
     assertThat(twoRows.evaluateAssertion(twoCount), equalTo(true));
@@ -82,19 +81,13 @@ public class TableAnswerElementTest {
 
     // adding rows in different order shouldn't matter
     TableAnswerElement otherRows = new TableAnswerElementChild(new TableMetadata());
-    otherRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key2", new TextNode("value2")));
-    otherRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value1")));
+    otherRows.addRow(new Row().put("key2", new TextNode("value2")));
+    otherRows.addRow(new Row().put("key1", new TextNode("value1")));
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(true));
 
     // adding another duplicate row should matter
-    otherRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value1")));
+    otherRows.addRow(new Row().put("key1", new TextNode("value1")));
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
   }

@@ -2,7 +2,6 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
 import java.util.LinkedList;
@@ -43,26 +42,8 @@ public abstract class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public void addRow(ObjectNode row) {
-    addRow(new Row(row));
-  }
-
-  /**
-   * Adds a new row to data rows
-   *
-   * @param row The row to add
-   */
   public void addRow(Row row) {
     _rows.add(row);
-  }
-
-  /**
-   * Adds a new row to excluded data rows
-   *
-   * @param row The row to add
-   */
-  public void addExcludedRow(ObjectNode row, String exclusionName) {
-    addExcludedRow(new Row(row), exclusionName);
   }
 
   /**
