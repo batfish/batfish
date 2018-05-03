@@ -20,6 +20,7 @@ import org.batfish.datamodel.ReachabilityType;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.IReachabilityQuestion;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilitySettings;
@@ -111,9 +112,11 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private static final SortedSet<ForwardingAction> DEFAULT_ACTIONS =
         ImmutableSortedSet.of(ForwardingAction.ACCEPT);
 
-    private static final NodesSpecifier DEFAULT_FINAL_NODE_REGEX = NodesSpecifier.ALL;
+    private static final NodesSpecifier DEFAULT_FINAL_NODES = NodesSpecifier.ALL;
 
-    private static final NodesSpecifier DEFAULT_INGRESS_NODE_REGEX = NodesSpecifier.ALL;
+    private static final NodesSpecifier DEFAULT_INGRESS_NODES = NodesSpecifier.ALL;
+
+    private static final InterfacesSpecifier DEFAULT_INGRESS_INTERFACES = InterfacesSpecifier.NONE;
 
     private static final int DEFAULT_MAX_CHUNK_SIZE = 1;
 
@@ -144,6 +147,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     private static final String PROP_ICMP_CODES = "icmpCodes";
 
     private static final String PROP_ICMP_TYPES = "icmpTypes";
+
+    private static final String PROP_INGRESS_INTERFACES = "ingressInterfaces";
 
     private static final String PROP_INGRESS_NODE_REGEX = "ingressNodeRegex";
 
@@ -212,9 +217,10 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     public ReachabilityQuestion() {
       _reachabilitySettings = ReachabilitySettings.builder();
       setActions(DEFAULT_ACTIONS);
-      setFinalNodeRegex(DEFAULT_FINAL_NODE_REGEX);
+      setFinalNodeRegex(DEFAULT_FINAL_NODES);
       setHeaderSpace(new HeaderSpace());
-      setIngressNodeRegex(DEFAULT_INGRESS_NODE_REGEX);
+      setIngressInterfaces(DEFAULT_INGRESS_INTERFACES);
+      setIngressNodes(DEFAULT_INGRESS_NODES);
       setMaxChunkSize(DEFAULT_MAX_CHUNK_SIZE);
       setNotFinalNodeRegex(DEFAULT_NOT_FINAL_NODE_REGEX);
       setNonTransitNodes(DEFAULT_NON_TRANSIT_NODES);
@@ -446,7 +452,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getDstProtocols() != null && !getDstProtocols().isEmpty()) {
           retString += String.format(", %s=%s", PROP_DST_PROTOCOLS, getDstProtocols());
         }
-        if (!getFinalNodeRegex().equals(DEFAULT_FINAL_NODE_REGEX)) {
+        if (!getFinalNodeRegex().equals(DEFAULT_FINAL_NODES)) {
           retString += String.format(", %s=%s", PROP_FINAL_NODE_REGEX, getFinalNodeRegex());
         }
         if (getFragmentOffsets() != null && !getFragmentOffsets().isEmpty()) {
@@ -458,7 +464,7 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
         if (getIcmpTypes() != null && !getIcmpTypes().isEmpty()) {
           retString += String.format(", %s=%s", PROP_ICMP_TYPES, getIcmpTypes());
         }
-        if (!getIngressNodeRegex().equals(DEFAULT_INGRESS_NODE_REGEX)) {
+        if (!getIngressNodeRegex().equals(DEFAULT_INGRESS_NODES)) {
           retString += String.format(", %s=%s", PROP_INGRESS_NODE_REGEX, getIngressNodeRegex());
         }
         if (getIpProtocols() != null && !getIpProtocols().isEmpty()) {
@@ -569,6 +575,12 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
           .setDstProtocols(ImmutableSortedSet.copyOf(dstProtocols));
     }
 
+    @Override
+    @JsonProperty(PROP_INGRESS_INTERFACES)
+    public void setIngressInterfaces(InterfacesSpecifier ingressInterfaces) {
+      _reachabilitySettings.setIngressInterfaces(ingressInterfaces);
+    }
+
     @JsonProperty(PROP_FINAL_NODE_REGEX)
     public void setFinalNodeRegex(NodesSpecifier regex) {
       _reachabilitySettings.setFinalNodes(regex);
@@ -590,8 +602,8 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
 
     @Override
     @JsonProperty(PROP_INGRESS_NODE_REGEX)
-    public void setIngressNodeRegex(NodesSpecifier regex) {
-      _reachabilitySettings.setIngressNodes(regex);
+    public void setIngressNodes(NodesSpecifier ingressNodes) {
+      _reachabilitySettings.setIngressNodes(ingressNodes);
     }
 
     @JsonProperty(PROP_IP_PROTOCOLS)

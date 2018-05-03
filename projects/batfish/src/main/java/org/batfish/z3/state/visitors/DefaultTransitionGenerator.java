@@ -690,7 +690,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitPostInInterface(PostInInterface.State postInInterface) {
     // PassIncomingAcl
     _input
-        .getTraversableInterfaces()
+        .getEnabledInterfaces()
         .entrySet()
         .stream()
         .flatMap(
