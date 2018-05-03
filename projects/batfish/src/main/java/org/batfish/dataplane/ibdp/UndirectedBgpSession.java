@@ -13,23 +13,15 @@ import org.batfish.datamodel.BgpSession;
 public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
   @Nonnull private final BgpNeighbor _first;
   @Nonnull private final BgpNeighbor _second;
-  private static final BgpNeighborComparator _comparator = new BgpNeighborComparator();
-
   /**
    * Compare BGP neighbors using prefix and hostname. This comparator is **NOT** consistent with
    * equals
    */
-  private static class BgpNeighborComparator implements Comparator<BgpNeighbor> {
-    @Override
-    public int compare(BgpNeighbor o1, BgpNeighbor o2) {
-      return Comparator.comparing(BgpNeighbor::getPrefix)
-          .thenComparing(BgpNeighbor::getOwner)
-          .compare(o1, o2);
-    }
-  }
+  private static final Comparator<BgpNeighbor> COMPARATOR =
+      Comparator.comparing(BgpNeighbor::getPrefix).thenComparing(BgpNeighbor::getOwner);
 
   UndirectedBgpSession(@Nonnull BgpNeighbor n1, @Nonnull BgpNeighbor n2) {
-    if (_comparator.compare(n1, n2) < 0) {
+    if (COMPARATOR.compare(n1, n2) < 0) {
       _first = n1;
       _second = n2;
     } else {
@@ -70,8 +62,8 @@ public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
 
   @Override
   public int compareTo(@Nonnull UndirectedBgpSession o) {
-    return Comparator.comparing(UndirectedBgpSession::getFirst, _comparator)
-        .thenComparing(UndirectedBgpSession::getSecond, _comparator)
+    return Comparator.comparing(UndirectedBgpSession::getFirst, COMPARATOR)
+        .thenComparing(UndirectedBgpSession::getSecond, COMPARATOR)
         .compare(this, o);
   }
 
