@@ -11,12 +11,99 @@
   },
   {
     "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-    "unusedStructures" : {
+    "definedStructures" : {
       "lhr-border-02" : {
+        "bgp group" : {
+          "FW" : {
+            "definitionLines" : [
+              198
+            ],
+            "numReferrers" : -1
+          }
+        },
+        "crypto ipsec profile" : {
+          "ipsec-vpn-ba2e34a8-0" : {
+            "definitionLines" : [
+              92
+            ],
+            "numReferrers" : 1
+          },
+          "ipsec-vpn-ba2e34a8-1" : {
+            "definitionLines" : [
+              96
+            ],
+            "numReferrers" : 1
+          }
+        },
+        "crypto ipsec transform-set" : {
+          "ipsec-prop-vpn-ba2e34a8-0" : {
+            "definitionLines" : [
+              85
+            ],
+            "numReferrers" : 1
+          },
+          "ipsec-prop-vpn-ba2e34a8-1" : {
+            "definitionLines" : [
+              87
+            ],
+            "numReferrers" : 1
+          }
+        },
+        "crypto keyring" : {
+          "keyring-vpn-ba2e34a8-0" : {
+            "definitionLines" : [
+              52
+            ],
+            "numReferrers" : 1
+          },
+          "keyring-vpn-ba2e34a8-1" : {
+            "definitionLines" : [
+              55
+            ],
+            "numReferrers" : 1
+          }
+        },
         "extended ip access-list" : {
-          "2001" : [
-            248
-          ]
+          "2001" : {
+            "definitionLines" : [
+              248
+            ],
+            "numReferrers" : 0
+          },
+          "LIMIT_PEER" : {
+            "definitionLines" : [
+              239
+            ],
+            "numReferrers" : 1
+          },
+          "MATCH_ALL_BGP" : {
+            "definitionLines" : [
+              242
+            ],
+            "numReferrers" : 2
+          }
+        },
+        "ipv4 prefix-list" : {
+          "PROTECT_LOOPBACK" : {
+            "definitionLines" : [
+              246
+            ],
+            "numReferrers" : 1
+          }
+        },
+        "route-map" : {
+          "PROTECT_LOOPBACK" : {
+            "definitionLines" : [
+              251
+            ],
+            "numReferrers" : 3
+          },
+          "SET_LOCAL_PREF" : {
+            "definitionLines" : [
+              254
+            ],
+            "numReferrers" : 1
+          }
         }
       }
     },

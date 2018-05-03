@@ -2199,6 +2199,112 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "lhr-border-01" : {
+          "bgp group" : {
+            "FW" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "lhr-border-02" : {
+          "bgp group" : {
+            "FW" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "lhr-fw-01" : {
+          "bgp group" : {
+            "BORDER" : {
+              "definitionLines" : [
+                41
+              ],
+              "numReferrers" : -1
+            },
+            "SPINE" : {
+              "definitionLines" : [
+                40
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "lhr-fw-02" : {
+          "bgp group" : {
+            "BORDER" : {
+              "definitionLines" : [
+                40
+              ],
+              "numReferrers" : -1
+            },
+            "SPINE" : {
+              "definitionLines" : [
+                39
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "lhr-leaf-01" : {
+          "bgp group" : {
+            "SPINE" : {
+              "definitionLines" : [
+                36
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "lhr-leaf-02" : {
+          "bgp group" : {
+            "SPINE" : {
+              "definitionLines" : [
+                36
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "lhr-spine-01" : {
+          "bgp group" : {
+            "FW" : {
+              "definitionLines" : [
+                40
+              ],
+              "numReferrers" : -1
+            },
+            "LEAF" : {
+              "definitionLines" : [
+                39
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "lhr-spine-02" : {
+          "bgp group" : {
+            "FW" : {
+              "definitionLines" : [
+                40
+              ],
+              "numReferrers" : -1
+            },
+            "LEAF" : {
+              "definitionLines" : [
+                39
+              ],
+              "numReferrers" : -1
+            }
+          }
+        }
+      },
       "version" : "0.36.0",
       "warnings" : {
         "lhr-border-02" : {

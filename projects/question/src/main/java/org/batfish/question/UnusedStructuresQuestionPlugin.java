@@ -85,12 +85,28 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
           _batfish.loadConvertConfigurationAnswerElementOrReparse();
       Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      ccae.getUnusedStructures()
+      // this is an ugly hack to convert defined structures into unused structures of the old type
+      ccae.getDefinedStructures()
           .forEach(
               (hostname, byType) -> {
-                if (includeNodes.contains(hostname)) {
-                  answerElement.getUnusedStructures().put(hostname, byType);
+                if (!includeNodes.contains(hostname)) {
+                  return;
                 }
+                byType.forEach(
+                    (structType, byName) -> {
+                      byName.forEach(
+                          (structName, info) -> {
+                            if (info.getNumReferrers() == 0) {
+                              SortedMap<String, SortedMap<String, SortedSet<Integer>>> newByType =
+                                  answerElement
+                                      .getUnusedStructures()
+                                      .computeIfAbsent(hostname, e -> new TreeMap<>());
+                              SortedMap<String, SortedSet<Integer>> newByName =
+                                  newByType.computeIfAbsent(structType, e -> new TreeMap<>());
+                              newByName.put(structName, info.getDefinitionLines());
+                            }
+                          });
+                    });
               });
 
       ParseVendorConfigurationAnswerElement pvcae =

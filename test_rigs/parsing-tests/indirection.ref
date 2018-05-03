@@ -948,6 +948,64 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "n1" : {
+          "bgp group" : {
+            "physical" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "policy-statement" : {
+            "ps-from-2-criterion-1" : {
+              "definitionLines" : [
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "ps-from-2-criterion-2" : {
+              "definitionLines" : [
+                48
+              ],
+              "numReferrers" : 1
+            },
+            "ps-from-2-sub-1" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            },
+            "ps-from-2-tagger" : {
+              "definitionLines" : [
+                26
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "n2" : {
+          "bgp group" : {
+            "physical" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "n3" : {
+          "ipv4 prefix-list" : {
+            "bgp_sub2_route_filter" : {
+              "definitionLines" : [
+                63
+              ],
+              "numReferrers" : 1
+            }
+          }
+        }
+      },
       "version" : "0.36.0"
     },
     {

@@ -44,6 +44,7 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
@@ -408,9 +409,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private transient Set<String> _unimplementedFeatures;
 
-  private transient Map<String, Integer> _unusedPeerGroups;
+  private transient Set<NamedBgpPeerGroup> _unusedPeerGroups;
 
-  private transient Map<String, Integer> _unusedPeerSessions;
+  private transient Set<NamedBgpPeerGroup> _unusedPeerSessions;
 
   private ConfigurationFormat _vendor;
 
@@ -1673,14 +1674,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (LeafBgpPeerGroup lpg : leafGroups) {
       lpg.inheritUnsetFields(proc, this);
     }
-    _unusedPeerGroups = new TreeMap<>();
+    _unusedPeerGroups = new HashSet<>();
     int fakePeerCounter = -1;
     // peer groups / peer templates
     for (Entry<String, NamedBgpPeerGroup> e : proc.getNamedPeerGroups().entrySet()) {
       String name = e.getKey();
       NamedBgpPeerGroup namedPeerGroup = e.getValue();
       if (!namedPeerGroup.getInherited()) {
-        _unusedPeerGroups.put(name, namedPeerGroup.getDefinitionLine());
+        _unusedPeerGroups.add(namedPeerGroup);
         Ip fakeIp = new Ip(fakePeerCounter);
         IpBgpPeerGroup fakePg = new IpBgpPeerGroup(fakeIp);
         fakePg.setGroupName(name);
@@ -1693,7 +1694,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       namedPeerGroup.inheritUnsetFields(proc, this);
     }
     // separate because peer sessions can inherit from other peer sessions
-    _unusedPeerSessions = new TreeMap<>();
+    _unusedPeerSessions = new HashSet<>();
     int fakeGroupCounter = 1;
     for (NamedBgpPeerGroup namedPeerGroup : proc.getPeerSessions().values()) {
       namedPeerGroup.getParentSession(proc, this).inheritUnsetFields(proc, this);
@@ -1702,7 +1703,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       String name = e.getKey();
       NamedBgpPeerGroup namedPeerGroup = e.getValue();
       if (!namedPeerGroup.getInherited()) {
-        _unusedPeerSessions.put(name, namedPeerGroup.getDefinitionLine());
+        _unusedPeerSessions.add(namedPeerGroup);
         String fakeNamedPgName = "~FAKE_PG_" + fakeGroupCounter + "~";
         NamedBgpPeerGroup fakeNamedPg = new NamedBgpPeerGroup(fakeNamedPgName, -1);
         fakeNamedPg.setPeerSession(name);
@@ -4029,33 +4030,34 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markSecurityZones(CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE);
     markSecurityZones(CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
-    // warn about unreferenced data structures
-    warnUnusedStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
-    warnUnusedCommunityLists();
-    warnUnusedStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
-    warnUnusedStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
-    warnUnusedDocsisPolicies();
-    warnUnusedDocsisPolicyRules();
-    warnUnusedStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
-    warnUnusedIpAccessLists();
-    warnUnusedStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
-    warnUnusedStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
-    warnUnusedStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
-    warnUnusedStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
-    warnUnusedIpv6AccessLists();
-    warnUnusedKeyrings();
-    warnUnusedStructure(_cf.getL2tpClasses(), CiscoStructureType.L2TP_CLASS);
-    warnUnusedStructure(_macAccessLists, CiscoStructureType.MAC_ACCESS_LIST);
-    warnUnusedStructure(_natPools, CiscoStructureType.NAT_POOL);
-    warnUnusedStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
-    warnUnusedStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
-    warnUnusedStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
-    warnUnusedPeerGroups();
-    warnUnusedPeerSessions();
-    warnUnusedStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
-    warnUnusedStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
-    warnUnusedStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
-    warnUnusedServiceClasses();
+    // record references to defined structures
+    recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
+    recordCommunityLists();
+    recordStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
+    recordStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
+    recordDocsisPolicies();
+    recordDocsisPolicyRules();
+    recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
+    recordIpAccessLists();
+    recordStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
+    recordStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
+    recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
+    recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
+    recordIpv6AccessLists();
+    recordKeyrings();
+    recordStructure(_cf.getL2tpClasses(), CiscoStructureType.L2TP_CLASS);
+    recordStructure(_macAccessLists, CiscoStructureType.MAC_ACCESS_LIST);
+    recordStructure(_natPools, CiscoStructureType.NAT_POOL);
+    recordStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
+    recordStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
+    recordStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
+    recordPeerGroups();
+    recordPeerSessions();
+    recordStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
+    recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
+    recordStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
+    recordServiceClasses();
+
     c.simplifyRoutingPolicies();
 
     c.computeRoutingPolicySources(_w);
@@ -4384,59 +4386,84 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return false;
   }
 
-  private void warnUnusedCommunityLists() {
-    warnUnusedStructure(_expandedCommunityLists, CiscoStructureType.COMMUNITY_LIST_EXPANDED);
-    warnUnusedStructure(_standardCommunityLists, CiscoStructureType.COMMUNITY_LIST_STANDARD);
+  private void recordCommunityLists() {
+    recordStructure(_expandedCommunityLists, CiscoStructureType.COMMUNITY_LIST_EXPANDED);
+    recordStructure(_standardCommunityLists, CiscoStructureType.COMMUNITY_LIST_STANDARD);
   }
 
-  private void warnUnusedDocsisPolicies() {
+  private void recordDocsisPolicies() {
     if (_cf.getCable() != null) {
-      warnUnusedStructure(_cf.getCable().getDocsisPolicies(), CiscoStructureType.DOCSIS_POLICY);
+      recordStructure(_cf.getCable().getDocsisPolicies(), CiscoStructureType.DOCSIS_POLICY);
     }
   }
 
-  private void warnUnusedDocsisPolicyRules() {
+  private void recordDocsisPolicyRules() {
     if (_cf.getCable() != null) {
-      warnUnusedStructure(
-          _cf.getCable().getDocsisPolicyRules(), CiscoStructureType.DOCSIS_POLICY_RULE);
+      recordStructure(_cf.getCable().getDocsisPolicyRules(), CiscoStructureType.DOCSIS_POLICY_RULE);
     }
   }
 
-  private void warnUnusedIpAccessLists() {
-    warnUnusedStructure(_extendedAccessLists, CiscoStructureType.IP_ACCESS_LIST_EXTENDED);
-    warnUnusedStructure(_standardAccessLists, CiscoStructureType.IP_ACCESS_LIST_STANDARD);
+  private void recordIpAccessLists() {
+    recordStructure(_extendedAccessLists, CiscoStructureType.IP_ACCESS_LIST_EXTENDED);
+    recordStructure(_standardAccessLists, CiscoStructureType.IP_ACCESS_LIST_STANDARD);
   }
 
-  private void warnUnusedIpv6AccessLists() {
-    warnUnusedStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
-    warnUnusedStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
+  private void recordIpv6AccessLists() {
+    recordStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
+    recordStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
   }
 
-  private void warnUnusedKeyrings() {
-    warnUnusedStructure(_keyrings, CiscoStructureType.KEYRING);
+  private void recordKeyrings() {
+    recordStructure(_keyrings, CiscoStructureType.KEYRING);
   }
 
-  private void warnUnusedPeerGroups() {
-    if (_unusedPeerGroups != null) {
-      _unusedPeerGroups.forEach(
-          (name, line) -> {
-            unused(CiscoStructureType.BGP_PEER_GROUP, name, line);
-          });
+  private void recordPeerGroups() {
+    for (Vrf vrf : getVrfs().values()) {
+      BgpProcess proc = vrf.getBgpProcess();
+      if (proc == null) {
+        continue;
+      }
+      for (NamedBgpPeerGroup peerGroup : proc.getNamedPeerGroups().values()) {
+        int numReferrers =
+            (_unusedPeerGroups != null && _unusedPeerGroups.contains(peerGroup))
+                ? 0
+                // we are not properly counting references for peer groups
+                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
+
+        recordStructure(
+            CiscoStructureType.BGP_PEER_GROUP,
+            peerGroup.getName(),
+            numReferrers,
+            peerGroup.getDefinitionLine());
+      }
     }
   }
 
-  private void warnUnusedPeerSessions() {
-    if (_unusedPeerSessions != null) {
-      _unusedPeerSessions.forEach(
-          (name, line) -> {
-            unused(CiscoStructureType.BGP_PEER_SESSION, name, line);
-          });
+  private void recordPeerSessions() {
+    for (Vrf vrf : getVrfs().values()) {
+      BgpProcess proc = vrf.getBgpProcess();
+      if (proc == null) {
+        continue;
+      }
+      for (NamedBgpPeerGroup peerSession : proc.getPeerSessions().values()) {
+        // use -1 for now; we are not counting references for peerSessions
+        int numReferrers =
+            (_unusedPeerSessions != null && _unusedPeerSessions.contains(peerSession))
+                ? 0
+                // we are not properly counting references for peer sessions
+                : DefinedStructureInfo.UNKNOWN_NUM_REFERRERS;
+        recordStructure(
+            CiscoStructureType.BGP_PEER_SESSION,
+            peerSession.getName(),
+            numReferrers,
+            peerSession.getDefinitionLine());
+      }
     }
   }
 
-  private void warnUnusedServiceClasses() {
+  private void recordServiceClasses() {
     if (_cf.getCable() != null) {
-      warnUnusedStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
+      recordStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
     }
   }
 

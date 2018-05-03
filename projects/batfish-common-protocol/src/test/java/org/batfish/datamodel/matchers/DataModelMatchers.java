@@ -19,6 +19,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
+import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
@@ -142,10 +143,12 @@ public final class DataModelMatchers {
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has
    * an unused structure for {@code hostname} of type {@code type} named {@code structureName}.
    */
-  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasUnusedStructure(
-      @Nonnull String hostname, @Nonnull StructureType type, @Nonnull String structureName) {
-    return new ConvertConfigurationAnswerElementMatchers.HasUnusedStructure(
-        hostname, type, structureName);
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasNumReferrers(
+      @Nonnull String hostname,
+      @Nonnull StructureType type,
+      @Nonnull String structureName,
+      int numReferrers) {
+    return new HasNumReferrers(hostname, type, structureName, numReferrers);
   }
 
   /**

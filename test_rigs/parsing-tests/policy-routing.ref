@@ -1944,6 +1944,36 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "D2" : {
+          "extended ip access-list" : {
+            "drop10" : {
+              "definitionLines" : [
+                74
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "R" : {
+          "extended ip access-list" : {
+            "policy-filter" : {
+              "definitionLines" : [
+                84
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "route-map" : {
+            "redirect-S-loopback" : {
+              "definitionLines" : [
+                88
+              ],
+              "numReferrers" : 1
+            }
+          }
+        }
+      },
       "version" : "0.36.0"
     },
     {
