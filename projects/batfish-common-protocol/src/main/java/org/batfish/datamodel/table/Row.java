@@ -3,9 +3,10 @@ package org.batfish.datamodel.table;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.MoreObjects;
+import java.io.IOException;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -61,8 +62,13 @@ public class Row implements Comparable<Row> {
    * @param columnName The column to fetch
    * @return The result
    */
-  public JsonNode get(String columnName) {
-    return _data.get(columnName);
+  public <T> T get(String columnName, Class<T> valueType) throws JsonProcessingException {
+    return BatfishObjectMapper.mapper().treeToValue(_data.get(columnName), valueType);
+  }
+
+  public <T> T get(String columnName, TypeReference<?> valueTypeRef) throws IOException {
+    return BatfishObjectMapper.mapper()
+        .readValue(BatfishObjectMapper.mapper().treeAsTokens(_data.get(columnName)), valueTypeRef);
   }
 
   @JsonValue
@@ -93,8 +99,8 @@ public class Row implements Comparable<Row> {
    * @param value The value to set
    * @return The Row object itself (to aid chaining)
    */
-  public Row put(String columnName, JsonNode value) {
-    _data.set(columnName, value);
+  public Row put(String columnName, Object value) {
+    _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
     return this;
   }
 }

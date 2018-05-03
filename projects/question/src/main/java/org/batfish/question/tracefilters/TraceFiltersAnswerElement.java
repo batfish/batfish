@@ -3,17 +3,14 @@ package org.batfish.question.tracefilters;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
@@ -35,26 +32,14 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
    * @return The creates the answer element object.
    */
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
-    Map<String, Schema> columnSchemas =
-        new ImmutableMap.Builder<String, Schema>()
-            .put(COLUMN_NODE, new Schema("Node"))
-            .put(COLUMN_FILTER_NAME, new Schema("String"))
-            .put(COLUMN_FLOW, new Schema("Flow"))
-            .put(COLUMN_ACTION, new Schema("String"))
-            .put(COLUMN_LINE_NUMBER, new Schema("Integer"))
-            .put(COLUMN_LINE_CONTENT, new Schema("String"))
-            .build();
-    List<String> primaryKey =
-        new ImmutableList.Builder<String>()
-            .add(COLUMN_NODE)
-            .add(COLUMN_FILTER_NAME)
-            .add(COLUMN_FLOW)
-            .build();
-    List<String> primaryValue =
-        new ImmutableList.Builder<String>()
-            .add(COLUMN_ACTION)
-            .add(COLUMN_LINE_NUMBER)
-            .add(COLUMN_LINE_CONTENT)
+    Map<String, ColumnMetadata> columnMetadata =
+        new ImmutableMap.Builder<String, ColumnMetadata>()
+            .put(COLUMN_NODE, new ColumnMetadata("Node", "Node", true, false))
+            .put(COLUMN_FILTER_NAME, new ColumnMetadata("String", "Filter name", true, false))
+            .put(COLUMN_FLOW, new ColumnMetadata("Flow", "Evaluated flow", true, false))
+            .put(COLUMN_ACTION, new ColumnMetadata("String", "Outcome", false, true))
+            .put(COLUMN_LINE_NUMBER, new ColumnMetadata("Integer", "Line number", false, true))
+            .put(COLUMN_LINE_CONTENT, new ColumnMetadata("String", "Line content", false, true))
             .build();
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
@@ -69,7 +54,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
               COLUMN_LINE_NUMBER,
               COLUMN_LINE_CONTENT));
     }
-    TableMetadata metadata = new TableMetadata(columnSchemas, primaryKey, primaryValue, dhints);
+    TableMetadata metadata = new TableMetadata(columnMetadata, dhints);
     return new TraceFiltersAnswerElement(metadata);
   }
 
@@ -93,12 +78,12 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
       Integer matchLine,
       String lineContent) {
     Row row = new Row();
-    row.put(COLUMN_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(nodeName)));
-    row.put(COLUMN_FILTER_NAME, BatfishObjectMapper.mapper().valueToTree(filterName));
-    row.put(COLUMN_FLOW, BatfishObjectMapper.mapper().valueToTree(flow));
-    row.put(COLUMN_ACTION, BatfishObjectMapper.mapper().valueToTree(action));
-    row.put(COLUMN_LINE_NUMBER, BatfishObjectMapper.mapper().valueToTree(matchLine));
-    row.put(COLUMN_LINE_CONTENT, BatfishObjectMapper.mapper().valueToTree(lineContent));
+    row.put(COLUMN_NODE, new Node(nodeName))
+        .put(COLUMN_FILTER_NAME, filterName)
+        .put(COLUMN_FLOW, flow)
+        .put(COLUMN_ACTION, action)
+        .put(COLUMN_LINE_NUMBER, matchLine)
+        .put(COLUMN_LINE_CONTENT, lineContent);
     return row;
   }
 

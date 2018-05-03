@@ -6,7 +6,6 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerSummary;
@@ -81,13 +80,13 @@ public class TableAnswerElementTest {
 
     // adding rows in different order shouldn't matter
     TableAnswerElement otherRows = new TableAnswerElementChild(new TableMetadata());
-    otherRows.addRow(new Row().put("key2", new TextNode("value2")));
-    otherRows.addRow(new Row().put("key1", new TextNode("value1")));
+    otherRows.addRow(new Row().put("key2", "value2"));
+    otherRows.addRow(new Row().put("key1", "value1"));
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(true));
 
     // adding another duplicate row should matter
-    otherRows.addRow(new Row().put("key1", new TextNode("value1")));
+    otherRows.addRow(new Row().put("key1", "value1"));
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
   }
