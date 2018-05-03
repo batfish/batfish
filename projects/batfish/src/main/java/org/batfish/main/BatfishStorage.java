@@ -26,6 +26,7 @@ import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
 import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -99,7 +100,11 @@ final class BatfishStorage {
       throw new BatfishException(
           "Error reading vendor-independent configs directory: '" + indepDir + "'", e);
     }
-    return deserializeObjects(namesByPath, Configuration.class);
+    try {
+      return deserializeObjects(namesByPath, Configuration.class);
+    } catch (BatfishException e) {
+      return null;
+    }
   }
 
   @Nullable
@@ -108,7 +113,14 @@ final class BatfishStorage {
     if (!Files.exists(ccaePath)) {
       return null;
     }
-    return deserializeObject(ccaePath, ConvertConfigurationAnswerElement.class);
+    try {
+      return deserializeObject(ccaePath, ConvertConfigurationAnswerElement.class);
+    } catch (BatfishException e) {
+      _logger.errorf(
+          "Failed to deserialize ConvertConfigurationAnswerElement: %s",
+          ExceptionUtils.getStackTrace(e));
+      return null;
+    }
   }
 
   /**
@@ -208,7 +220,7 @@ final class BatfishStorage {
       }
       closer.register(ois);
       return outputClass.cast(ois.readObject());
-    } catch (IOException | ClassNotFoundException e) {
+    } catch (IOException | ClassNotFoundException | ClassCastException e) {
       throw new BatfishException(
           String.format(
               "Failed to deserialize object of type %s from file %s",

@@ -36,6 +36,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -2197,22 +2198,23 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
 
-    // warn about unreferenced data structures
-    warnUnusedStructure(_applications, JuniperStructureType.APPLICATION);
-    warnUnusedStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
-    warnUnreferencedAuthenticationKeyChains();
-    warnUnreferencedBgpGroups();
-    warnUnreferencedDhcpRelayServerGroups();
-    warnUnreferencedPolicyStatements();
-    warnUnreferencedFirewallFilters();
-    warnUnreferencedIkeProposals();
-    warnUnreferencedIkePolicies();
-    warnUnreferencedIkeGateways();
-    warnUnreferencedIpsecProposals();
-    warnUnreferencedIpsecPolicies();
-    warnUnusedPrefixLists();
+    // record defined structures
+    recordStructure(_applications, JuniperStructureType.APPLICATION);
+    recordStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
+    recordAuthenticationKeyChains();
+    recordBgpGroups();
+    recordDhcpRelayServerGroups();
+    recordPolicyStatements();
+    recordFirewallFilters();
+    recordIkeProposals();
+    recordIkePolicies();
+    recordIkeGateways();
+    recordIpsecProposals();
+    recordIpsecPolicies();
+    recordPrefixLists();
+    recordAndDisableUnreferencedStInterfaces();
+
     warnEmptyPrefixLists();
-    warnAndDisableUnreferencedStInterfaces();
 
     _c.computeRoutingPolicySources(_w);
 
@@ -2304,20 +2306,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newZone;
   }
 
-  private void warnAndDisableUnreferencedStInterfaces() {
+  private void recordAndDisableUnreferencedStInterfaces() {
     _routingInstances.forEach(
         (riName, ri) -> {
           ri.getInterfaces()
               .forEach(
                   (name, iface) -> {
                     if (org.batfish.datamodel.Interface.computeInterfaceType(name, _vendor)
-                            == InterfaceType.VPN
-                        && iface.isUnused()) {
-                      unused(
+                        == InterfaceType.VPN) {
+                      recordStructure(
+                          iface,
                           JuniperStructureType.SECURE_TUNNEL_INTERFACE,
                           name,
                           iface.getDefinitionLine());
-                      _c.getVrfs().get(riName).getInterfaces().remove(name);
+                      if (iface.isUnused()) {
+                        _c.getVrfs().get(riName).getInterfaces().remove(name);
+                      }
                     }
                   });
         });
@@ -2333,117 +2337,124 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void warnUnreferencedAuthenticationKeyChains() {
+  private void recordAuthenticationKeyChains() {
     for (Entry<String, JuniperAuthenticationKeyChain> e : _authenticationKeyChains.entrySet()) {
       String name = e.getKey();
       JuniperAuthenticationKeyChain keyChain = e.getValue();
-      if (keyChain.isUnused()) {
-        unused(JuniperStructureType.AUTHENTICATION_KEY_CHAIN, name, keyChain.getDefinitionLine());
-      }
+      recordStructure(
+          keyChain,
+          JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
+          name,
+          keyChain.getDefinitionLine());
     }
   }
 
-  private void warnUnreferencedBgpGroups() {
-    if (_unreferencedBgpGroups != null) {
-      _unreferencedBgpGroups.forEach(
-          (name, line) -> {
-            unused(JuniperStructureType.BGP_GROUP, name, line);
-          });
-    }
-  }
-
-  private void warnUnreferencedDhcpRelayServerGroups() {
+  private void recordBgpGroups() {
     for (RoutingInstance ri : _routingInstances.values()) {
-      for (Entry<String, DhcpRelayServerGroup> e : ri.getDhcpRelayServerGroups().entrySet()) {
-        String name = e.getKey();
-        DhcpRelayServerGroup sg = e.getValue();
-        if (sg.isUnused()) {
-          unused(JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
+      for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
+        if (_unreferencedBgpGroups != null && _unreferencedBgpGroups.containsKey(group.getName())) {
+          recordStructure(
+              JuniperStructureType.BGP_GROUP,
+              group.getName(),
+              0,
+              _unreferencedBgpGroups.get(group.getName()));
+        } else {
+          recordStructure(
+              JuniperStructureType.BGP_GROUP,
+              group.getName(),
+              // we are not counting references properly for bgp groups
+              DefinedStructureInfo.UNKNOWN_NUM_REFERRERS,
+              group.getDefinitionLine());
         }
       }
     }
   }
 
-  private void warnUnreferencedFirewallFilters() {
+  private void recordDhcpRelayServerGroups() {
+    for (RoutingInstance ri : _routingInstances.values()) {
+      for (Entry<String, DhcpRelayServerGroup> e : ri.getDhcpRelayServerGroups().entrySet()) {
+        String name = e.getKey();
+        DhcpRelayServerGroup sg = e.getValue();
+        recordStructure(
+            sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
+      }
+    }
+  }
+
+  private void recordFirewallFilters() {
     for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();
-      if (filter.isUnused()) {
-        unused(JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
-      }
+      recordStructure(
+          filter, JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
     }
   }
 
-  private void warnUnreferencedIkeGateways() {
+  private void recordIkeGateways() {
     for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {
       String name = e.getKey();
       IkeGateway ikeGateway = e.getValue();
-      if (ikeGateway.isUnused()) {
-        unused(JuniperStructureType.IKE_GATEWAY, name, ikeGateway.getDefinitionLine());
-      }
+      recordStructure(
+          ikeGateway, JuniperStructureType.IKE_GATEWAY, name, ikeGateway.getDefinitionLine());
     }
   }
 
-  private void warnUnreferencedIkePolicies() {
+  private void recordIkePolicies() {
     for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
       String name = e.getKey();
       IkePolicy ikePolicy = e.getValue();
-      if (ikePolicy.isUnused()) {
-        unused(JuniperStructureType.IKE_POLICY, name, ikePolicy.getDefinitionLine());
-      }
+      recordStructure(
+          ikePolicy, JuniperStructureType.IKE_POLICY, name, ikePolicy.getDefinitionLine());
     }
   }
 
-  private void warnUnreferencedIkeProposals() {
+  private void recordIkeProposals() {
     for (Entry<String, IkeProposal> e : _ikeProposals.entrySet()) {
       String name = e.getKey();
       IkeProposal ikeProposal = e.getValue();
-      if (ikeProposal.isUnused()) {
-        unused(JuniperStructureType.IKE_PROPOSAL, name, ikeProposal.getDefinitionLine());
-      }
+      recordStructure(
+          ikeProposal, JuniperStructureType.IKE_PROPOSAL, name, ikeProposal.getDefinitionLine());
     }
   }
 
-  private void warnUnreferencedIpsecPolicies() {
+  private void recordIpsecPolicies() {
     for (Entry<String, IpsecPolicy> e : _ipsecPolicies.entrySet()) {
       String name = e.getKey();
       IpsecPolicy ipsecPolicy = e.getValue();
-      if (ipsecPolicy.isUnused()) {
-        unused(JuniperStructureType.IPSEC_POLICY, name, ipsecPolicy.getDefinitionLine());
-      }
+      recordStructure(
+          ipsecPolicy, JuniperStructureType.IPSEC_POLICY, name, ipsecPolicy.getDefinitionLine());
     }
   }
 
-  private void warnUnreferencedIpsecProposals() {
+  private void recordIpsecProposals() {
     for (Entry<String, IpsecProposal> e : _ipsecProposals.entrySet()) {
       String name = e.getKey();
       IpsecProposal ipsecProposal = e.getValue();
-      if (ipsecProposal.isUnused()) {
-        unused(JuniperStructureType.IPSEC_PROPOSAL, name, ipsecProposal.getDefinitionLine());
-      }
+      recordStructure(
+          ipsecProposal,
+          JuniperStructureType.IPSEC_PROPOSAL,
+          name,
+          ipsecProposal.getDefinitionLine());
     }
   }
 
-  private void warnUnreferencedPolicyStatements() {
+  private void recordPolicyStatements() {
     for (Entry<String, PolicyStatement> e : _policyStatements.entrySet()) {
       String name = e.getKey();
       if (name.startsWith("~")) {
         continue;
       }
       PolicyStatement ps = e.getValue();
-      if (ps.isUnused()) {
-        unused(JuniperStructureType.POLICY_STATEMENT, name, ps.getDefinitionLine());
-      }
+      recordStructure(ps, JuniperStructureType.POLICY_STATEMENT, name, ps.getDefinitionLine());
     }
   }
 
-  private void warnUnusedPrefixLists() {
+  private void recordPrefixLists() {
     for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
       String name = e.getKey();
       PrefixList prefixList = e.getValue();
-      if (!prefixList.getIpv6() && prefixList.isUnused() && !_ignoredPrefixLists.contains(name)) {
-        unused(JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
-      }
+      recordStructure(
+          prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
     }
   }
 
