@@ -10,6 +10,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -44,6 +45,11 @@ public class ContainsMatchSrcInterfaceExprVisitor
   @Override
   public Boolean visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     return notMatchExpr.getOperand().accept(this);
+  }
+
+  @Override
+  public Boolean visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+    return true;
   }
 
   @Override

@@ -17,6 +17,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.z3.expr.AndExpr;
@@ -25,9 +26,11 @@ import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.IfThenElse;
 import org.batfish.z3.expr.IntExpr;
+import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.VarIntExpr;
+import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVisitor<BooleanExpr> {
   private final Map<String, IpSpace> _namedIpSpaces;
@@ -92,6 +95,14 @@ public class AclLineMatchExprToBooleanExpr implements GenericAclLineMatchExprVis
   @Override
   public BooleanExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     return new NotExpr(notMatchExpr.getOperand().accept(this));
+  }
+
+  @Override
+  public BooleanExpr visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+    return new EqExpr(
+        new VarIntExpr(_sourceInterfaceField),
+        new LitIntExpr(
+            DefaultTransitionGenerator.NO_SOURCE_INTERFACE, _sourceInterfaceField.getSize()));
   }
 
   @Override

@@ -68,7 +68,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   /* Dedicated value for the srcInterfaceField used when traffic did not enter the node through any
    * interface (or we no longer care which interface was the source).
    */
-  static final int NO_SOURCE_INTERFACE = 0;
+  public static final int NO_SOURCE_INTERFACE = 0;
 
   public static final IntExpr NOT_TRANSITED = new LitIntExpr(0, 1);
 

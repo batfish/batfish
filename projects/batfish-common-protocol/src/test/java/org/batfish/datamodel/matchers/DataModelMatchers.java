@@ -9,6 +9,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
@@ -43,6 +44,15 @@ public final class DataModelMatchers {
   public static Matcher<Configuration> hasZone(
       @Nonnull String name, @Nonnull Matcher<? super Zone> subMatcher) {
     return new HasZone(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s {@code outgoingFilterName}.
+   */
+  public static @Nonnull Matcher<Interface> hasOutgoingFilter(
+      @Nonnull Matcher<? super IpAccessList> subMatcher) {
+    return new InterfaceMatchersImpl.HasOutgoingFilter(subMatcher);
   }
 
   /**
