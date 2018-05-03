@@ -1,11 +1,11 @@
 package org.batfish.dataplane.ibdp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.dataplane.ibdp.AbstractRib.importRib;
 import static org.batfish.dataplane.ibdp.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
@@ -465,7 +465,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     // Determine whether to use min metric by default, based on RFC1583 compatibility setting.
     // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
     // RFC1583 compatibility explicitly disabled, in which case they default to max.
-    boolean useMin = MoreObjects.firstNonNull(proc.getRfc1583Compatible(), true);
+    boolean useMin = firstNonNull(proc.getRfc1583Compatible(), true);
 
     // Compute summaries for each area
     for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
