@@ -8549,6 +8549,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -12108,6 +12109,7 @@
                 "comment" : "OSPF export default route",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
                   "prefix" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                   },
@@ -15979,6 +15981,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -16024,6 +16027,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
