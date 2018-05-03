@@ -1,8 +1,9 @@
 package org.batfish.datamodel.answers;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedMap;
@@ -69,12 +70,12 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
               undefinedReferences,
       @JsonProperty(PROP_VERSION) String version,
       @JsonProperty(PROP_WARNINGS) SortedMap<String, Warnings> warnings) {
-    _definedStructures = MoreObjects.firstNonNull(definedStructures, new TreeMap<>());
-    _errors = MoreObjects.firstNonNull(errors, new TreeMap<>());
-    _failed = MoreObjects.firstNonNull(failed, new TreeSet<>());
-    _undefinedReferences = MoreObjects.firstNonNull(undefinedReferences, new TreeMap<>());
-    _version = MoreObjects.firstNonNull(version, Version.getVersion());
-    _warnings = MoreObjects.firstNonNull(warnings, new TreeMap<>());
+    _definedStructures = firstNonNull(definedStructures, new TreeMap<>());
+    _errors = firstNonNull(errors, new TreeMap<>());
+    _failed = firstNonNull(failed, new TreeSet<>());
+    _undefinedReferences = firstNonNull(undefinedReferences, new TreeMap<>());
+    _version = firstNonNull(version, Version.getVersion());
+    _warnings = firstNonNull(warnings, new TreeMap<>());
   }
 
   @JsonProperty(PROP_DEFINED_STRUCTURES)

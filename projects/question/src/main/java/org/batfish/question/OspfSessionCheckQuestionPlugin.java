@@ -1,8 +1,9 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import com.google.common.base.MoreObjects;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -199,7 +200,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
 
       SortedSet<Prefix> foreignPrefixes =
-          MoreObjects.firstNonNull(question._foreignOspfNetworks, Collections.emptySortedSet());
+          firstNonNull(question._foreignOspfNetworks, Collections.emptySortedSet());
       PrefixTrie foreignPrefixTrie = new PrefixTrie(foreignPrefixes);
 
       OspfSessionCheckAnswerElement answerElement = new OspfSessionCheckAnswerElement();

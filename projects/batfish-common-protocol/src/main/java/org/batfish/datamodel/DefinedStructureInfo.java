@@ -1,8 +1,9 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -24,8 +25,8 @@ public class DefinedStructureInfo implements Serializable {
   public DefinedStructureInfo(
       @JsonProperty(PROP_DEFINITION_LINES) SortedSet<Integer> definitionLines,
       @JsonProperty(PROP_NUM_REFERRERS) Integer numReferrers) {
-    _definitionLines = MoreObjects.firstNonNull(definitionLines, new TreeSet<>());
-    _numReferrers = MoreObjects.firstNonNull(numReferrers, UNKNOWN_NUM_REFERRERS);
+    _definitionLines = firstNonNull(definitionLines, new TreeSet<>());
+    _numReferrers = firstNonNull(numReferrers, UNKNOWN_NUM_REFERRERS);
   }
 
   @JsonProperty(PROP_DEFINITION_LINES)
