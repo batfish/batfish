@@ -54,7 +54,6 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.symbolic.smt.IngressPoint;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 

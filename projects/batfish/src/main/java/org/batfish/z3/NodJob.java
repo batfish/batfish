@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
-import org.batfish.symbolic.smt.IngressPoint;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.ReachabilityProgramOptimizer;
 import org.batfish.z3.expr.RuleStatement;

@@ -35,7 +35,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.symbolic.smt.IngressPoint;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

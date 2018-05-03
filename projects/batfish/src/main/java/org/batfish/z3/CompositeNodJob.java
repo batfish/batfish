@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
-import org.batfish.symbolic.smt.IngressPoint;
 
 public class CompositeNodJob extends AbstractNodJob {
 

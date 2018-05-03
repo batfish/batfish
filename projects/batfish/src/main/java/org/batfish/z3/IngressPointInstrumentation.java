@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
 import java.util.List;
-import org.batfish.symbolic.smt.IngressPoint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.Comment;

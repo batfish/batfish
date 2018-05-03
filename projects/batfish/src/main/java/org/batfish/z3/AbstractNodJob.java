@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Flow;
-import org.batfish.symbolic.smt.IngressPoint;
 import org.batfish.z3.expr.RuleStatement;
 
 public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
