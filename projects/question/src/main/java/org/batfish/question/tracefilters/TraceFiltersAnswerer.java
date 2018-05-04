@@ -33,7 +33,7 @@ public class TraceFiltersAnswerer extends Answerer {
         continue;
       }
       for (IpAccessList filter : c.getIpAccessLists().values()) {
-        if (!question.getFilterRegex().matches(filter)) {
+        if (!question.getFilterRegex().matches(filter, c)) {
           continue;
         }
         Flow flow = getFlow(c.getHostname(), question, configurations);
