@@ -858,7 +858,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
-      iface.setOspfPointToPoint(true);
+      iface.setOspfPointToPoint(ctx.POINT_TO_POINT() != null);
     }
   }
 
