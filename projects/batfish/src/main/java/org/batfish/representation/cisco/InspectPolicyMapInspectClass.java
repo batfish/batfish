@@ -7,13 +7,13 @@ public class InspectPolicyMapInspectClass implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private boolean _inspect;
+  private PolicyMapClassAction _action;
 
-  public boolean getInspect() {
-    return _inspect;
+  public PolicyMapClassAction getAction() {
+    return _action;
   }
 
-  public void setInspect(boolean inspect) {
-    _inspect = inspect;
+  public void setAction(PolicyMapClassAction action) {
+    _action = action;
   }
 }

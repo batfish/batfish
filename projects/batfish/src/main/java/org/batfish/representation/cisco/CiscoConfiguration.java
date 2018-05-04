@@ -3499,27 +3499,41 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _inspectPolicyMaps.forEach(
         (inspectPolicyMapName, inspectPolicyMap) -> {
           String inspectPolicyMapAclName = computeInspectPolicyMapAclName(inspectPolicyMapName);
-          ImmutableList.Builder<IpAccessListLine> disjuncts = ImmutableList.builder();
+          ImmutableList.Builder<IpAccessListLine> policyMapAclLines = ImmutableList.builder();
           inspectPolicyMap
               .getInspectClasses()
               .forEach(
                   (inspectClassName, inspectPolicyMapInspectClass) -> {
-                    if (!inspectPolicyMapInspectClass.getInspect()) {
+                    PolicyMapClassAction action = inspectPolicyMapInspectClass.getAction();
+                    if (action == null) {
                       return;
                     }
                     String inspectClassMapAclName = computeInspectClassMapAclName(inspectClassName);
                     if (!c.getIpAccessLists().containsKey(inspectClassMapAclName)) {
                       return;
                     }
-                    disjuncts.add(
-                        IpAccessListLine.accepting()
-                            .setMatchCondition(new PermittedByAcl(inspectClassMapAclName))
-                            .build());
+                    AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
+                    switch (action) {
+                      case DROP:
+                        policyMapAclLines.add(
+                            IpAccessListLine.rejecting().setMatchCondition(matchCondition).build());
+                        break;
+
+                      case INSPECT:
+                      case PASS:
+                        policyMapAclLines.add(
+                            IpAccessListLine.accepting().setMatchCondition(matchCondition).build());
+                        break;
+
+                      default:
+                        _w.unimplemented("Unimplemented policy-map class action: " + action);
+                        return;
+                    }
                   });
           IpAccessList.builder()
               .setOwner(c)
               .setName(inspectPolicyMapAclName)
-              .setLines(disjuncts.build())
+              .setLines(policyMapAclLines.build())
               .build();
         });
   }
