@@ -1,8 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.List;
-import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.LineAction;
 
@@ -19,13 +17,12 @@ public class IpAsPathAccessListLine implements Serializable {
     _regex = regex;
   }
 
-  public void applyTo(AsPathAccessList newList) {
-    List<AsPathAccessListLine> lines = newList.getLines();
+  public AsPathAccessListLine toAsPathAccessListLine() {
     AsPathAccessListLine line = new AsPathAccessListLine();
     line.setAction(_action);
     String regex = CiscoConfiguration.toJavaRegex(_regex);
     line.setRegex(regex);
-    lines.add(line);
+    return line;
   }
 
   public LineAction getAction() {

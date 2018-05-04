@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -34,34 +33,23 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
-import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6AccessList;
-import org.batfish.datamodel.Ip6AccessListLine;
-import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -84,20 +72,16 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SourceNat;
-import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
-import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -564,7 +548,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         });
   }
 
-  private WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
+  private static WithEnvironmentExpr bgpRedistributeWithEnvironmentExpr(
       BooleanExpr expr, OriginType originType) {
     WithEnvironmentExpr we = new WithEnvironmentExpr();
     we.setExpr(expr);
@@ -617,7 +601,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return false;
   }
 
-  private void convertForPurpose(Set<RouteMap> routingRouteMaps, RouteMap map) {
+  private static void convertForPurpose(Set<RouteMap> routingRouteMaps, RouteMap map) {
     if (routingRouteMaps.contains(map)) {
       for (RouteMapClause clause : map.getClauses().values()) {
         List<RouteMapMatchLine> matchList = clause.getMatchList();
@@ -1301,34 +1285,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
-  }
-
-  private AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
-    String name = asPathSet.getName();
-    AsPathAccessList list = new AsPathAccessList(name);
-    for (AsPathSetElem elem : asPathSet.getElements()) {
-      AsPathAccessListLine line = toAsPathAccessListLine(elem);
-      list.getLines().add(line);
-    }
-    return list;
-  }
-
-  private AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
-    String name = pathList.getName();
-    AsPathAccessList newList = new AsPathAccessList(name);
-    for (IpAsPathAccessListLine fromLine : pathList.getLines()) {
-      fromLine.applyTo(newList);
-    }
-    return newList;
-  }
-
-  private AsPathAccessListLine toAsPathAccessListLine(AsPathSetElem elem) {
-    String rawRegex = elem.regex();
-    String regex = toJavaRegex(rawRegex);
-    AsPathAccessListLine line = new AsPathAccessListLine();
-    line.setAction(LineAction.ACCEPT);
-    line.setRegex(regex);
-    return line;
   }
 
   private org.batfish.datamodel.BgpProcess toNxBgpProcess(
@@ -2106,21 +2062,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newBgpProcess;
   }
 
-  private CommunityList toCommunityList(ExpandedCommunityList ecList) {
-    List<CommunityListLine> cllList = new ArrayList<>();
-    for (ExpandedCommunityListLine ecll : ecList.getLines()) {
-      cllList.add(toCommunityListLine(ecll));
-    }
-    CommunityList cList = new CommunityList(ecList.getName(), cllList);
-    return cList;
-  }
-
-  private CommunityListLine toCommunityListLine(ExpandedCommunityListLine eclLine) {
-    String regex = eclLine.getRegex();
-    String javaRegex = toJavaRegex(regex);
-    return new CommunityListLine(eclLine.getAction(), javaRegex);
-  }
-
   /**
    * Processes a {@link CiscoSourceNat} rule. This function performs two actions:
    *
@@ -2440,368 +2381,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeCombinedOutgoingAclName(String interfaceName) {
     return String.format("~COMBINED_OUTGOING_ACL~%s~", interfaceName);
-  }
-
-  private Ip6AccessList toIp6AccessList(ExtendedIpv6AccessList eaList) {
-    String name = eaList.getName();
-    List<Ip6AccessListLine> lines = new ArrayList<>();
-    for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
-      Ip6AccessListLine newLine = new Ip6AccessListLine();
-      newLine.setName(fromLine.getName());
-      newLine.setAction(fromLine.getAction());
-      Ip6Wildcard srcIpWildcard = fromLine.getSourceIpWildcard();
-      if (srcIpWildcard != null) {
-        newLine.getSrcIps().add(srcIpWildcard);
-      }
-      Ip6Wildcard dstIpWildcard = fromLine.getDestinationIpWildcard();
-      if (dstIpWildcard != null) {
-        newLine.getDstIps().add(dstIpWildcard);
-      }
-      // TODO: src/dst address group
-      IpProtocol protocol = fromLine.getProtocol();
-      if (protocol != IpProtocol.IP) {
-        newLine.getIpProtocols().add(protocol);
-      }
-      newLine.getDstPorts().addAll(fromLine.getDstPorts());
-      newLine.getSrcPorts().addAll(fromLine.getSrcPorts());
-      Integer icmpType = fromLine.getIcmpType();
-      if (icmpType != null) {
-        newLine.setIcmpTypes(new TreeSet<>(Collections.singleton(new SubRange(icmpType))));
-      }
-      Integer icmpCode = fromLine.getIcmpCode();
-      if (icmpCode != null) {
-        newLine.setIcmpCodes(new TreeSet<>(Collections.singleton(new SubRange(icmpCode))));
-      }
-      Set<State> states = fromLine.getStates();
-      newLine.getStates().addAll(states);
-      List<TcpFlags> tcpFlags = fromLine.getTcpFlags();
-      newLine.getTcpFlags().addAll(tcpFlags);
-      Set<Integer> dscps = fromLine.getDscps();
-      newLine.getDscps().addAll(dscps);
-      Set<Integer> ecns = fromLine.getEcns();
-      newLine.getEcns().addAll(ecns);
-      lines.add(newLine);
-    }
-    return new Ip6AccessList(name, lines);
-  }
-
-  private IpAccessList toIpAccessList(ExtendedAccessList eaList) {
-    String name = eaList.getName();
-    List<IpAccessListLine> lines = new ArrayList<>(eaList.getLines().size());
-    for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-      AclLineMatchExpr match;
-      IpSpace srcIpSpace = fromLine.getSourceAddressSpecifier().toIpSpace();
-      IpSpace dstIpSpace = fromLine.getDestinationAddressSpecifier().toIpSpace();
-      AclLineMatchExpr matchService = fromLine.getServiceSpecifier().toAclLineMatchExpr();
-      if (matchService instanceof MatchHeaderSpace) {
-        match =
-            new MatchHeaderSpace(
-                ((MatchHeaderSpace) matchService)
-                    .getHeaderspace()
-                    .rebuild()
-                    .setSrcIps(srcIpSpace)
-                    .setDstIps(dstIpSpace)
-                    .build());
-      } else {
-        match =
-            new AndMatchExpr(
-                ImmutableList.of(
-                    matchService,
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(srcIpSpace)
-                            .setDstIps(dstIpSpace)
-                            .build())));
-      }
-
-      lines.add(
-          IpAccessListLine.builder()
-              .setAction(fromLine.getAction())
-              .setMatchCondition(match)
-              .setName(fromLine.getName())
-              .build());
-    }
-    return new IpAccessList(name, lines);
-  }
-
-  private IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
-    return IpWildcardSetIpSpace.builder().including(networkObjectGroup.getLines()).build();
-  }
-
-  private org.batfish.datamodel.IsisProcess toIsisProcess(
-      IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.IsisProcess newProcess = new org.batfish.datamodel.IsisProcess();
-
-    newProcess.setNetAddress(proc.getNetAddress());
-    newProcess.setLevel(proc.getLevel());
-
-    // if (proc.getLevel() == IsisLevel.LEVEL_1_2) {
-    // PolicyMap leakL1Policy = new PolicyMap(
-    // ISIS_LEAK_L1_ROUTES_POLICY_NAME);
-    // c.getPolicyMaps().put(ISIS_LEAK_L1_ROUTES_POLICY_NAME, leakL1Policy);
-    // for (Entry<RoutingProtocol, IsisRedistributionPolicy> e : proc
-    // .getRedistributionPolicies().entrySet()) {
-    // if (!e.getKey().equals(RoutingProtocol.ISIS_L1)) {
-    // continue;
-    // }
-    // IsisRedistributionPolicy rp = e.getValue();
-    // Prefix summaryPrefix = rp.getSummaryPrefix();
-    // // add clause suppressing l1 summarized routes, and also add
-    // // aggregates for summarized addresses
-    // PolicyMapClause suppressClause = new PolicyMapClause();
-    // PolicyMapClause allowSummaryClause = new PolicyMapClause();
-    // leakL1Policy.getClauses().add(suppressClause);
-    // leakL1Policy.getClauses().add(allowSummaryClause);
-    // suppressClause.setAction(PolicyMapAction.DENY);
-    // allowSummaryClause.setAction(PolicyMapAction.PERMIT);
-    // String summarizedFilterName =
-    // ISIS_SUPPRESS_SUMMARIZED_ROUTE_FILTER_NAME
-    // + ":" + summaryPrefix.toString();
-    // RouteFilterList summarizedFilter = new RouteFilterList(
-    // summarizedFilterName);
-    // c.getRouteFilterLists().put(summarizedFilterName, summarizedFilter);
-    // String summaryFilterName = ISIS_ALLOW_SUMMARY_ROUTE_FILTER_NAME
-    // + ":" + summaryPrefix.toString();
-    // RouteFilterList summaryFilter = new RouteFilterList(
-    // summaryFilterName);
-    // c.getRouteFilterLists().put(summaryFilterName, summaryFilter);
-    // PolicyMapMatchRouteFilterListLine matchSummarized = new
-    // PolicyMapMatchRouteFilterListLine(
-    // Collections.singleton(summarizedFilter));
-    // PolicyMapMatchRouteFilterListLine matchSummary = new
-    // PolicyMapMatchRouteFilterListLine(
-    // Collections.singleton(summaryFilter));
-    // suppressClause.getMatchLines().add(matchSummarized);
-    // suppressClause.getMatchLines()
-    // .add(new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
-    // allowSummaryClause.getMatchLines().add(matchSummary);
-    // allowSummaryClause.getMatchLines().add(
-    // new PolicyMapMatchProtocolLine(RoutingProtocol.AGGREGATE));
-    // Integer summaryMetric = rp.getMetric();
-    // if (summaryMetric == null) {
-    // summaryMetric =
-    // org.batfish.datamodel.IsisProcess.DEFAULT_ISIS_INTERFACE_COST;
-    // }
-    // allowSummaryClause.getSetLines()
-    // .add(new PolicyMapSetMetricLine(summaryMetric));
-    // IsisLevel summaryLevel = rp.getLevel();
-    // if (summaryLevel == null) {
-    // summaryLevel = IsisRedistributionPolicy.DEFAULT_LEVEL;
-    // }
-    // allowSummaryClause.getSetLines()
-    // .add(new PolicyMapSetLevelLine(summaryLevel));
-    // int length = summaryPrefix.getPrefixLength();
-    // int rejectLowerBound = length + 1;
-    // if (rejectLowerBound > Prefix.MAX_LENGTH) {
-    // throw new VendorConversionException(
-    // "Invalid summary prefix: " + summaryPrefix.toString());
-    // }
-    // SubRange summarizedRange = new SubRange(rejectLowerBound, Prefix.MAX_LENGTH);
-    // RouteFilterLine summarized = new RouteFilterLine(LineAction.ACCEPT,
-    // summaryPrefix, summarizedRange);
-    // RouteFilterLine summary = new RouteFilterLine(LineAction.ACCEPT,
-    // summaryPrefix, new SubRange(length, length));
-    // summarizedFilter.addLine(summarized);
-    // summaryFilter.addLine(summary);
-    //
-    // String filterName = "~ISIS_MATCH_SUMMARIZED_OF:"
-    // + summaryPrefix.toString() + "~";
-    // String generationPolicyName = "~ISIS_AGGREGATE_ROUTE_GEN:"
-    // + summaryPrefix.toString() + "~";
-    // PolicyMap generationPolicy = makeRouteExportPolicy(c,
-    // generationPolicyName, filterName, summaryPrefix,
-    // summarizedRange, LineAction.ACCEPT, null, null,
-    // PolicyMapAction.PERMIT);
-    // Set<PolicyMap> generationPolicies = new HashSet<>();
-    // generationPolicies.add(generationPolicy);
-    // GeneratedRoute gr = new GeneratedRoute(summaryPrefix,
-    // MAX_ADMINISTRATIVE_COST, generationPolicies);
-    // gr.setDiscard(true);
-    // newProcess.getGeneratedRoutes().add(gr);
-    // }
-    // // add clause allowing remaining l1 routes
-    // PolicyMapClause leakL1Clause = new PolicyMapClause();
-    // leakL1Clause.setAction(PolicyMapAction.PERMIT);
-    // leakL1Clause.getMatchLines()
-    // .add(new PolicyMapMatchProtocolLine(RoutingProtocol.ISIS_L1));
-    // leakL1Policy.getClauses().add(leakL1Clause);
-    // newProcess.getOutboundPolicyMaps().add(leakL1Policy);
-    // leakL1Clause.getSetLines()
-    // .add(new PolicyMapSetLevelLine(IsisLevel.LEVEL_2));
-    //
-    // // generate routes, policies for summary addresses
-    // }
-    //
-    // // policy map for redistributing connected routes
-    // // TODO: honor subnets option
-    // IsisRedistributionPolicy rcp = proc.getRedistributionPolicies()
-    // .get(RoutingProtocol.CONNECTED);
-    // if (rcp != null) {
-    // Integer metric = rcp.getMetric();
-    // IsisLevel exportLevel = rcp.getLevel();
-    // boolean explicitMetric = metric != null;
-    // boolean routeMapMetric = false;
-    // if (!explicitMetric) {
-    // metric =
-    // IsisRedistributionPolicy.DEFAULT_REDISTRIBUTE_CONNECTED_METRIC;
-    // }
-    // // add default export map with metric
-    // PolicyMap exportConnectedPolicy;
-    // String mapName = rcp.getMap();
-    // if (mapName != null) {
-    // exportConnectedPolicy = c.getPolicyMaps().get(mapName);
-    // if (exportConnectedPolicy == null) {
-    // undefined("undefined reference to route-map: " + mapName,
-    // ROUTE_MAP, mapName);
-    // }
-    // else {
-    // RouteMap exportConnectedRouteMap = _routeMaps.get(mapName);
-    // exportConnectedRouteMap.getReferers().put(proc,
-    // "is-is export connected route-map");
-    //
-    // // crash if both an explicit metric is set and one exists in the
-    // // route map
-    // for (PolicyMapClause clause : exportConnectedPolicy
-    // .getClauses()) {
-    // for (PolicyMapSetLine line : clause.getSetLines()) {
-    // if (line.getType() == PolicyMapSetType.METRIC) {
-    // if (explicitMetric) {
-    // throw new Error(
-    // "Explicit redistribution metric set while route map also contains set
-    // metric line");
-    // }
-    // else {
-    // routeMapMetric = true;
-    // break;
-    // }
-    // }
-    // }
-    // }
-    // PolicyMapMatchLine matchConnectedLine = new PolicyMapMatchProtocolLine(
-    // RoutingProtocol.CONNECTED);
-    // PolicyMapSetLine setMetricLine = null;
-    // // add a set metric line if no metric provided by route map
-    // if (!routeMapMetric) {
-    // // use default metric if no explicit metric is set
-    // setMetricLine = new PolicyMapSetMetricLine(metric);
-    // }
-    // for (PolicyMapClause clause : exportConnectedPolicy
-    // .getClauses()) {
-    // clause.getMatchLines().add(matchConnectedLine);
-    // if (!routeMapMetric) {
-    // clause.getSetLines().add(setMetricLine);
-    // }
-    // }
-    // newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-    // newProcess.getPolicyExportLevels()
-    // .put(exportConnectedPolicy.getName(), exportLevel);
-    // }
-    // }
-    // else {
-    // exportConnectedPolicy = makeRouteExportPolicy(c,
-    // ISIS_EXPORT_CONNECTED_POLICY_NAME, null, null, null, null,
-    // metric, RoutingProtocol.CONNECTED, PolicyMapAction.PERMIT);
-    // newProcess.getOutboundPolicyMaps().add(exportConnectedPolicy);
-    // newProcess.getPolicyExportLevels()
-    // .put(exportConnectedPolicy.getName(), exportLevel);
-    // c.getPolicyMaps().put(exportConnectedPolicy.getName(),
-    // exportConnectedPolicy);
-    // }
-    // }
-    //
-    // // policy map for redistributing static routes
-    // // TODO: honor subnets option
-    // IsisRedistributionPolicy rsp = proc.getRedistributionPolicies()
-    // .get(RoutingProtocol.STATIC);
-    // if (rsp != null) {
-    // Integer metric = rsp.getMetric();
-    // IsisLevel exportLevel = rsp.getLevel();
-    // boolean explicitMetric = metric != null;
-    // boolean routeMapMetric = false;
-    // if (!explicitMetric) {
-    // metric = IsisRedistributionPolicy.DEFAULT_REDISTRIBUTE_STATIC_METRIC;
-    // }
-    // // add export map with metric
-    // PolicyMap exportStaticPolicy;
-    // String mapName = rsp.getMap();
-    // if (mapName != null) {
-    // exportStaticPolicy = c.getPolicyMaps().get(mapName);
-    // if (exportStaticPolicy == null) {
-    // undefined("undefined reference to route-map: " + mapName,
-    // ROUTE_MAP, mapName);
-    // }
-    // else {
-    // RouteMap exportStaticRouteMap = _routeMaps.get(mapName);
-    // exportStaticRouteMap.getReferers().put(proc,
-    // "is-is static redistribution route-map");
-    // // crash if both an explicit metric is set and one exists in the
-    // // route map
-    // for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-    // for (PolicyMapSetLine line : clause.getSetLines()) {
-    // if (line.getType() == PolicyMapSetType.METRIC) {
-    // if (explicitMetric) {
-    // throw new Error(
-    // "Explicit redistribution metric set while route map also contains set
-    // metric line");
-    // }
-    // else {
-    // routeMapMetric = true;
-    // break;
-    // }
-    // }
-    // }
-    // }
-    // PolicyMapSetLine setMetricLine = null;
-    // // add a set metric line if no metric provided by route map
-    // if (!routeMapMetric) {
-    // // use default metric if no explicit metric is set
-    // setMetricLine = new PolicyMapSetMetricLine(metric);
-    // }
-    //
-    // PolicyMapMatchLine matchStaticLine = new PolicyMapMatchProtocolLine(
-    // RoutingProtocol.STATIC);
-    // for (PolicyMapClause clause : exportStaticPolicy.getClauses()) {
-    // boolean containsRouteFilterList = modifyRejectDefault(clause);
-    // if (!containsRouteFilterList) {
-    // RouteFilterList generatedRejectDefaultRouteList = c
-    // .getRouteFilterLists()
-    // .get(ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME);
-    // if (generatedRejectDefaultRouteList == null) {
-    // generatedRejectDefaultRouteList = makeRouteFilter(
-    // ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-    // Prefix.ZERO, new SubRange(0, 0),
-    // LineAction.REJECT);
-    // }
-    // Set<RouteFilterList> lists = new HashSet<>();
-    // lists.add(generatedRejectDefaultRouteList);
-    // PolicyMapMatchLine line = new PolicyMapMatchRouteFilterListLine(
-    // lists);
-    // clause.getMatchLines().add(line);
-    // }
-    // Set<PolicyMapSetLine> setList = clause.getSetLines();
-    // clause.getMatchLines().add(matchStaticLine);
-    // if (!routeMapMetric) {
-    // setList.add(setMetricLine);
-    // }
-    // }
-    // newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-    // newProcess.getPolicyExportLevels()
-    // .put(exportStaticPolicy.getName(), exportLevel);
-    //
-    // }
-    // }
-    // else { // export static routes without named policy
-    // exportStaticPolicy = makeRouteExportPolicy(c,
-    // ISIS_EXPORT_STATIC_POLICY_NAME,
-    // ISIS_EXPORT_STATIC_REJECT_DEFAULT_ROUTE_FILTER_NAME,
-    // Prefix.ZERO, new SubRange(0, 0), LineAction.REJECT, metric,
-    // RoutingProtocol.STATIC, PolicyMapAction.PERMIT);
-    // newProcess.getOutboundPolicyMaps().add(exportStaticPolicy);
-    // newProcess.getPolicyExportLevels().put(exportStaticPolicy.getName(),
-    // exportLevel);
-    // }
-    // }
-    return newProcess;
   }
 
   /**
@@ -3296,84 +2875,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newProcess;
   }
 
-  private Route6FilterLine toRoute6FilterLine(ExtendedIpv6AccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    Ip6 ip = fromLine.getSourceIpWildcard().getIp();
-    BigInteger minSubnet = fromLine.getDestinationIpWildcard().getIp().asBigInteger();
-    BigInteger maxSubnet =
-        minSubnet.or(fromLine.getDestinationIpWildcard().getWildcard().asBigInteger());
-    int minPrefixLength = fromLine.getDestinationIpWildcard().getIp().numSubnetBits();
-    int maxPrefixLength = new Ip6(maxSubnet).numSubnetBits();
-    int statedPrefixLength =
-        fromLine.getSourceIpWildcard().getWildcard().inverted().numSubnetBits();
-    int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
-    Prefix6 prefix = new Prefix6(ip, prefixLength);
-    return new Route6FilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
-  }
-
-  private Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {
-    String name = eaList.getName();
-    Route6FilterList newList = new Route6FilterList(name);
-    List<Route6FilterLine> lines = new ArrayList<>();
-    for (ExtendedIpv6AccessListLine fromLine : eaList.getLines()) {
-      Route6FilterLine newLine = toRoute6FilterLine(fromLine);
-      lines.add(newLine);
-    }
-    newList.getLines().addAll(lines);
-    return newList;
-  }
-
-  private Route6FilterList toRoute6FilterList(Prefix6List list) {
-    Route6FilterList newRouteFilterList = new Route6FilterList(list.getName());
-    for (Prefix6ListLine prefixListLine : list.getLines()) {
-      Route6FilterLine newRouteFilterListLine =
-          new Route6FilterLine(
-              prefixListLine.getAction(),
-              prefixListLine.getPrefix(),
-              prefixListLine.getLengthRange());
-      newRouteFilterList.addLine(newRouteFilterListLine);
-    }
-    return newRouteFilterList;
-  }
-
-  private RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
-    LineAction action = fromLine.getAction();
-    IpWildcard srcIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getSourceAddressSpecifier()).getIpWildcard();
-    Ip ip = srcIpWildcard.getIp();
-    IpWildcard dstIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getDestinationAddressSpecifier()).getIpWildcard();
-    long minSubnet = dstIpWildcard.getIp().asLong();
-    long maxSubnet = minSubnet | dstIpWildcard.getWildcard().asLong();
-    int minPrefixLength = dstIpWildcard.getIp().numSubnetBits();
-    int maxPrefixLength = new Ip(maxSubnet).numSubnetBits();
-    int statedPrefixLength = srcIpWildcard.getWildcard().inverted().numSubnetBits();
-    int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
-    Prefix prefix = new Prefix(ip, prefixLength);
-    return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
-  }
-
-  private RouteFilterList toRouteFilterList(ExtendedAccessList eaList) {
-    String name = eaList.getName();
-    RouteFilterList newList = new RouteFilterList(name);
-    for (ExtendedAccessListLine fromLine : eaList.getLines()) {
-      RouteFilterLine newLine = toRouteFilterLine(fromLine);
-      newList.addLine(newLine);
-    }
-    return newList;
-  }
-
-  private RouteFilterList toRouteFilterList(PrefixList list) {
-    RouteFilterList newRouteFilterList = new RouteFilterList(list.getName());
-    List<RouteFilterLine> newLines =
-        list.getLines()
-            .stream()
-            .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
-            .collect(ImmutableList.toImmutableList());
-    newRouteFilterList.setLines(newLines);
-    return newRouteFilterList;
-  }
-
   private RoutingPolicy toRoutingPolicy(final Configuration c, RouteMap map) {
     boolean hasContinue =
         map.getClauses().values().stream().anyMatch(clause -> clause.getContinueLine() != null);
@@ -3554,26 +3055,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return rp;
   }
 
-  private org.batfish.datamodel.StaticRoute toStaticRoute(
-      Configuration c, StaticRoute staticRoute) {
-    Ip nextHopIp = staticRoute.getNextHopIp();
-    Prefix prefix = staticRoute.getPrefix();
-    String nextHopInterface = staticRoute.getNextHopInterface();
-    if (nextHopInterface != null && CommonUtil.isNullInterface(nextHopInterface)) {
-      nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
-    }
-    Integer oldTag = staticRoute.getTag();
-    int tag;
-    tag = oldTag != null ? oldTag : -1;
-    return org.batfish.datamodel.StaticRoute.builder()
-        .setNetwork(prefix)
-        .setNextHopIp(nextHopIp)
-        .setNextHopInterface(nextHopInterface)
-        .setAdministrativeCost(staticRoute.getDistance())
-        .setTag(tag)
-        .build();
-  }
-
   @Override
   public String toString() {
     if (_hostname != null) {
@@ -3640,36 +3121,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // convert as path access lists to vendor independent format
     for (IpAsPathAccessList pathList : _asPathAccessLists.values()) {
-      AsPathAccessList apList = toAsPathAccessList(pathList);
+      AsPathAccessList apList = CiscoConversions.toAsPathAccessList(pathList);
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
     // convert as-path-sets to vendor independent format
     for (AsPathSet asPathSet : _asPathSets.values()) {
-      AsPathAccessList apList = toAsPathAccessList(asPathSet);
+      AsPathAccessList apList = CiscoConversions.toAsPathAccessList(asPathSet);
       c.getAsPathAccessLists().put(apList.getName(), apList);
     }
 
     // convert standard/expanded community lists to community lists
     for (StandardCommunityList scList : _standardCommunityLists.values()) {
       ExpandedCommunityList ecList = scList.toExpandedCommunityList();
-      CommunityList cList = toCommunityList(ecList);
+      CommunityList cList = CiscoConversions.toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
     for (ExpandedCommunityList ecList : _expandedCommunityLists.values()) {
-      CommunityList cList = toCommunityList(ecList);
+      CommunityList cList = CiscoConversions.toCommunityList(ecList);
       c.getCommunityLists().put(cList.getName(), cList);
     }
 
     // convert prefix lists to route filter lists
     for (PrefixList prefixList : _prefixLists.values()) {
-      RouteFilterList newRouteFilterList = toRouteFilterList(prefixList);
+      RouteFilterList newRouteFilterList = CiscoConversions.toRouteFilterList(prefixList);
       c.getRouteFilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
     // convert ipv6 prefix lists to route6 filter lists
     for (Prefix6List prefixList : _prefix6Lists.values()) {
-      Route6FilterList newRouteFilterList = toRoute6FilterList(prefixList);
+      Route6FilterList newRouteFilterList = CiscoConversions.toRoute6FilterList(prefixList);
       c.getRoute6FilterLists().put(newRouteFilterList.getName(), newRouteFilterList);
     }
 
@@ -3690,22 +3171,25 @@ public final class CiscoConfiguration extends VendorConfiguration {
         } else {
           eaList.getReferers().put(this, msg);
         }
-        RouteFilterList rfList = toRouteFilterList(eaList);
+        RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList);
+      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
     // convert each NetworkObjectGroup to IpSpace
     _networkObjectGroups.forEach(
-        (name, networkObjectGroup) -> c.getIpSpaces().put(name, toIpSpace(networkObjectGroup)));
+        (name, networkObjectGroup) ->
+            c.getIpSpaces().put(name, CiscoConversions.toIpSpace(networkObjectGroup)));
 
     // convert each ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
-                .put(computeServiceObjectGroupAclName(name), toIpAccessList(serviceObjectGroup)));
+                .put(
+                    computeServiceObjectGroupAclName(name),
+                    CiscoConversions.toIpAccessList(serviceObjectGroup)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
     // route6 filter
@@ -3725,10 +3209,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         } else {
           eaList.getReferers().put(this, msg);
         }
-        Route6FilterList rfList = toRoute6FilterList(eaList);
+        Route6FilterList rfList = CiscoConversions.toRoute6FilterList(eaList);
         c.getRoute6FilterLists().put(rfList.getName(), rfList);
       }
-      Ip6AccessList ipaList = toIp6AccessList(eaList);
+      Ip6AccessList ipaList = CiscoConversions.toIp6AccessList(eaList);
       c.getIp6AccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3861,7 +3345,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
           // convert static routes
           for (StaticRoute staticRoute : vrf.getStaticRoutes()) {
-            newVrf.getStaticRoutes().add(toStaticRoute(c, staticRoute));
+            newVrf.getStaticRoutes().add(CiscoConversions.toStaticRoute(c, staticRoute));
           }
 
           // convert rip process
@@ -3883,7 +3367,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert isis process
           IsisProcess isisProcess = vrf.getIsisProcess();
           if (isisProcess != null) {
-            org.batfish.datamodel.IsisProcess newIsisProcess = toIsisProcess(isisProcess, c, this);
+            org.batfish.datamodel.IsisProcess newIsisProcess =
+                CiscoConversions.toIsisProcess(isisProcess, c, this);
             newVrf.setIsisProcess(newIsisProcess);
           }
 
@@ -4201,17 +3686,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeInspectClassMapAclName(@Nonnull String inspectClassMapName) {
     return String.format("~INSPECT_CLASS_MAP_ACL~%s~", inspectClassMapName);
-  }
-
-  private IpAccessList toIpAccessList(ServiceObjectGroup serviceObjectGroup) {
-    return IpAccessList.builder()
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting()
-                    .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
-                    .build()))
-        .setName(computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
-        .build();
   }
 
   private void addIkePoliciesAndGateways(Configuration c) {
