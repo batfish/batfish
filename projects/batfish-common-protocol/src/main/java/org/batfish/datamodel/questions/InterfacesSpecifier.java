@@ -1,5 +1,6 @@
 package org.batfish.datamodel.questions;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.util.Arrays;
@@ -38,6 +39,7 @@ public class InterfacesSpecifier {
 
   private final Type _type;
 
+  @JsonCreator
   public InterfacesSpecifier(String expression) {
     _expression = expression;
 
@@ -62,6 +64,12 @@ public class InterfacesSpecifier {
     } else {
       throw new IllegalArgumentException("Cannot parse InterfacesSpecifier " + expression);
     }
+  }
+
+  public InterfacesSpecifier(Pattern regex) {
+    _expression = regex.toString();
+    _type = Type.NAME;
+    _regex = regex;
   }
 
   @JsonIgnore
