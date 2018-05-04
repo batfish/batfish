@@ -1349,7 +1349,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     newBgpProcess.setRouterId(bgpRouterId);
     Set<BgpAggregateIpv4Network> summaryOnlyNetworks = new HashSet<>();
-    Set<BgpAggregateIpv6Network> summaryOnlyIpv6Networks = new HashSet<>();
 
     List<BooleanExpr> attributeMapPrefilters = new ArrayList<>();
 
@@ -1422,12 +1421,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<Prefix6, BgpAggregateIpv6Network> e : proc.getAggregateIpv6Networks().entrySet()) {
       Prefix6 prefix6 = e.getKey();
       BgpAggregateIpv6Network aggNet = e.getValue();
-      boolean summaryOnly = aggNet.getSummaryOnly();
       int prefixLength = prefix6.getPrefixLength();
       SubRange prefixRange = new SubRange(prefixLength + 1, Prefix6.MAX_PREFIX_LENGTH);
-      if (summaryOnly) {
-        summaryOnlyIpv6Networks.add(aggNet);
-      }
 
       // create generation policy for aggregate network
       String generationPolicyName = "~AGGREGATE_ROUTE6_GEN:" + vrfName + ":" + prefix6 + "~";
