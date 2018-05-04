@@ -2467,25 +2467,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // establish areas and associated interfaces
     Map<Long, OspfArea> areas = newProcess.getAreas();
     Map<Long, ImmutableSortedSet.Builder<String>> areaInterfacesBuilders = new HashMap<>();
-    List<OspfNetwork> networks = new ArrayList<>();
-    networks.addAll(proc.getNetworks());
-    Collections.sort(
-        networks,
-        new Comparator<OspfNetwork>() {
-          // sort so longest prefixes are first
-          @Override
-          public int compare(OspfNetwork lhs, OspfNetwork rhs) {
-            int lhsPrefixLength = lhs.getPrefix().getPrefixLength();
-            int rhsPrefixLength = rhs.getPrefix().getPrefixLength();
-            int result = Integer.compare(rhsPrefixLength, lhsPrefixLength); // intentionally swapped
-            if (result == 0) {
-              long lhsIp = lhs.getPrefix().getStartIp().asLong();
-              long rhsIp = rhs.getPrefix().getStartIp().asLong();
-              result = Long.compare(lhsIp, rhsIp);
-            }
-            return result;
-          }
-        });
+    // Sort networks with longer prefixes first, then lower start IPs and areas.
+    SortedSet<OspfNetwork> networks =
+        ImmutableSortedSet.copyOf(
+            Comparator.<OspfNetwork>comparingInt(n -> n.getPrefix().getPrefixLength())
+                .reversed()
+                .thenComparing(n -> n.getPrefix().getStartIp())
+                .thenComparingLong(OspfNetwork::getArea),
+            proc.getNetworks());
 
     // Set RFC 1583 compatibility
     newProcess.setRfc1583Compatible(proc.getRfc1583Compatible());
