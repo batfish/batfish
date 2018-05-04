@@ -541,6 +541,23 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfNetwork() throws IOException {
+    Configuration c = parseConfig("ios-interface-ospf-network");
+
+    /*
+     * Confirm interfaces with ospf network broadcast, non-broadcast, etc do not show up as
+     * point-to-point
+     */
+    assertThat(c, hasInterface("Ethernet0/0", not(isOspfPointToPoint())));
+    assertThat(c, hasInterface("Ethernet0/2", not(isOspfPointToPoint())));
+    assertThat(c, hasInterface("Ethernet0/3", not(isOspfPointToPoint())));
+    assertThat(c, hasInterface("Ethernet0/4", not(isOspfPointToPoint())));
+
+    /* Confirm the point-to-point interface shows up as such */
+    assertThat(c, hasInterface("Ethernet0/1", isOspfPointToPoint()));
+  }
+
+  @Test
   public void testIosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e6d));
