@@ -708,6 +708,48 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosXePolicyMapInspectClassInspectActions() throws IOException {
+    Configuration c = parseConfig("ios-xe-policy-map-inspect-class-inspect-actions");
+
+    String policyMapName = "pm";
+    String policyMapAclName = computeInspectPolicyMapAclName(policyMapName);
+
+    String classMapPassName = "cpass";
+    String classMapPassAclName = computeInspectClassMapAclName(classMapPassName);
+    String classMapInspectName = "cinspect";
+    String classMapInspectAclName = computeInspectClassMapAclName(classMapInspectName);
+    String classMapDropName = "cdrop";
+    String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
+
+    Flow flowPass =
+        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.TCP).build();
+    Flow flowInspect =
+        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.UDP).build();
+    Flow flowDrop =
+        Flow.builder()
+            .setIngressNode(c.getName())
+            .setTag("")
+            .setIpProtocol(IpProtocol.ICMP)
+            .build();
+
+    assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(policyMapAclName, rejects(flowDrop, null, c)));
+
+    assertThat(c, hasIpAccessList(classMapPassAclName, accepts(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(classMapPassAclName, rejects(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(classMapPassAclName, rejects(flowDrop, null, c)));
+
+    assertThat(c, hasIpAccessList(classMapInspectAclName, rejects(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(classMapInspectAclName, accepts(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(classMapInspectAclName, rejects(flowDrop, null, c)));
+
+    assertThat(c, hasIpAccessList(classMapDropAclName, rejects(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(classMapDropAclName, rejects(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(classMapDropAclName, accepts(flowDrop, null, c)));
+  }
+
+  @Test
   public void testIosXeZoneDefaultBehavior() throws IOException {
     Configuration c = parseConfig("ios-xe-zone-default-behavior");
 
