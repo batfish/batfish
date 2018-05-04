@@ -18,7 +18,7 @@ public class SettingsTest {
   /** Test default dataplane engine is bdp */
   public void testDefaultDPEngine() {
     Settings settings = new Settings(new String[] {});
-    assertThat(settings.getDataPlaneEngineName(), equalTo("bdp"));
+    assertThat(settings.getDataPlaneEngineName(), equalTo("ibdp"));
   }
 
   /** Test that settings copy is deep */
