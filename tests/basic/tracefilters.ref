@@ -2,27 +2,47 @@
   {
     "class" : "org.batfish.question.tracefilters.TraceFiltersAnswerElement",
     "metadata" : {
-      "columnSchemas" : {
-        "node" : "Node",
-        "filterName" : "String",
-        "flow" : "Flow",
-        "action" : "String",
-        "lineNumber" : "Integer",
-        "lineContent" : "String"
+      "columnMetadata" : {
+        "node" : {
+          "description" : "Node",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "Node"
+        },
+        "filterName" : {
+          "description" : "Filter name",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "String"
+        },
+        "flow" : {
+          "description" : "Evaluated flow",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "Flow"
+        },
+        "action" : {
+          "description" : "Outcome",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "String"
+        },
+        "lineNumber" : {
+          "description" : "Line number",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "Integer"
+        },
+        "lineContent" : {
+          "description" : "Line content",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "String"
+        }
       },
       "displayHints" : {
         "textDesc" : "Filter ${filterName} on node ${node} will ${action} flow ${flow} at line ${lineNumber} ${lineContent}"
-      },
-      "primaryKey" : [
-        "node",
-        "filterName",
-        "flow"
-      ],
-      "primaryValue" : [
-        "action",
-        "lineNumber",
-        "lineContent"
-      ]
+      }
     },
     "rows" : [
       {
