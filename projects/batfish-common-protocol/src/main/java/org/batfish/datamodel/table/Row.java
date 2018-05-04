@@ -1,11 +1,12 @@
 package org.batfish.datamodel.table;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.base.MoreObjects;
 import java.io.IOException;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
@@ -26,7 +27,7 @@ public class Row implements Comparable<Row> {
 
   @JsonCreator
   public Row(ObjectNode data) {
-    _data = MoreObjects.firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
+    _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
   }
 
   /**
