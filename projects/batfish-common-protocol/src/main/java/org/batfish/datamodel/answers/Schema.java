@@ -32,6 +32,7 @@ public class Schema {
           .put("Integer", getClassString(Long.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
+          .put("Issue", getClassString(Issue.class))
           .put("Object", getClassString(Object.class))
           .put("Node", getClassString(Node.class))
           .put("Prefix", getClassString(Prefix.class))
