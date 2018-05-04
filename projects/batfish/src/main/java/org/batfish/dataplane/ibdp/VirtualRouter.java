@@ -1066,17 +1066,12 @@ public class VirtualRouter extends ComparableStructure<String> {
 
     for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
       Ip localIp = neighbor.getLocalIp();
-      Set<String> localIpOwners = ipOwners.get(localIp);
       String hostname = _c.getHostname();
-      if (localIpOwners == null || !localIpOwners.contains(hostname)) {
+      if (localIp == null || Ip.AUTO.equals(localIp) || neighbor.getDynamic()) {
+        // Skip neighbors for which cannot reasonably determine localIp
         continue;
       }
-      Prefix remotePrefix = neighbor.getPrefix();
-      if (neighbor.getDynamic() || Ip.AUTO.equals(neighbor.getLocalIp())) {
-        // Do not support dynamic outside neighbors
-        continue;
-      }
-      Ip remoteIp = remotePrefix.getStartIp();
+      Ip remoteIp = neighbor.getPrefix().getStartIp();
       if (ipOwners.get(remoteIp) != null) {
         // Skip if neighbor is not outside the network
         continue;
@@ -1178,7 +1173,7 @@ public class VirtualRouter extends ComparableStructure<String> {
            *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
            *  same as originator id of advertisement
            */
-          if (!ebgpSession && routeOriginatorIp != null && remoteIp.equals(routeOriginatorIp)) {
+          if (!ebgpSession && remoteIp.equals(routeOriginatorIp)) {
             continue;
           }
           if (routeProtocol == RoutingProtocol.IBGP && !ebgpSession) {
@@ -1256,7 +1251,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                 route,
                 transformedOutgoingRouteBuilder,
                 remoteIp,
-                remotePrefix,
+                neighbor.getPrefix(),
                 remoteVrfName,
                 Direction.OUT);
         if (acceptOutgoing) {
