@@ -3,10 +3,8 @@ package org.batfish.datamodel;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.ImmutableSet;
 import java.util.BitSet;
 import java.util.Set;
-import java.util.TreeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +37,7 @@ public class PrefixSpaceTest {
 
   @Test
   public void constructPrefixSpaceTest() {
-    _ps = new PrefixSpace(ImmutableSet.of(PrefixRange.fromString("100.0.0.0/32")));
+    _ps = new PrefixSpace(PrefixRange.fromString("100.0.0.0/32"));
     assertThat(_ps.isEmpty(), equalTo(false));
     assertThat(_ps.containsPrefixRange(PrefixRange.fromString("100.0.0.0/32")), equalTo(true));
   }
@@ -54,10 +52,8 @@ public class PrefixSpaceTest {
 
   @Test
   public void addPrefixRangeTest() {
-    Set<PrefixRange> ranges = new TreeSet<>();
     PrefixRange range = PrefixRange.fromString("10.10.10.0/32:16-24");
-    ranges.add(range);
-    _ps = new PrefixSpace(ranges);
+    _ps = new PrefixSpace(range);
     assertThat(_ps.containsPrefixRange(range), equalTo(true));
     assertThat(
         "Shorter prefixes not included",
@@ -87,10 +83,8 @@ public class PrefixSpaceTest {
 
   @Test
   public void addSpaceTest() {
-    Set<PrefixRange> ranges = new TreeSet<>();
     PrefixRange range = PrefixRange.fromString("100.0.0.0/32");
-    ranges.add(range);
-    _ps.addSpace(new PrefixSpace(ranges));
+    _ps.addSpace(new PrefixSpace(range));
     assertThat(_ps.isEmpty(), equalTo(false));
     assertThat(_ps.containsPrefixRange(range), equalTo(true));
   }

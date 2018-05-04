@@ -25,6 +25,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -213,6 +214,11 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
     } else {
       return new NotMatchExpr(subExpr);
     }
+  }
+
+  @Override
+  public AclLineMatchExpr visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+    return originatingFromDevice;
   }
 
   @Override

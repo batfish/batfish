@@ -1,9 +1,9 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import java.util.Map;
+import com.google.common.collect.Multimap;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
@@ -16,6 +16,7 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
+import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
 
 public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
@@ -24,7 +25,9 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       Q extends ReachabilityQuerySynthesizer, T extends Builder<Q, T>> {
     protected HeaderSpace _headerSpace;
 
-    protected Map<String, Set<String>> _ingressNodeVrfs;
+    protected Multimap<String, String> _ingressNodeInterfaces;
+
+    protected Multimap<String, String> _ingressNodeVrfs;
 
     protected Set<String> _nonTransitNodes;
 
@@ -34,7 +37,8 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
     public Builder() {
       _headerSpace = new HeaderSpace();
-      _ingressNodeVrfs = ImmutableMap.of();
+      _ingressNodeInterfaces = ImmutableMultimap.of();
+      _ingressNodeVrfs = ImmutableMultimap.of();
       _nonTransitNodes = ImmutableSet.of();
       _srcNatted = false;
       _transitNodes = ImmutableSet.of();
@@ -53,8 +57,13 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       return getThis();
     }
 
-    public T setIngressNodeVrfs(Map<String, Set<String>> ingressNodeVrfs) {
-      _ingressNodeVrfs = ingressNodeVrfs;
+    public T setIngressNodeInterfaces(Multimap<String, String> ingressNodeInterfaces) {
+      _ingressNodeInterfaces = ImmutableMultimap.copyOf(ingressNodeInterfaces);
+      return getThis();
+    }
+
+    public T setIngressNodeVrfs(Multimap<String, String> ingressNodeVrfs) {
+      _ingressNodeVrfs = ImmutableMultimap.copyOf(ingressNodeVrfs);
       return getThis();
     }
 
@@ -76,7 +85,9 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
   protected final HeaderSpace _headerSpace;
 
-  protected final Map<String, Set<String>> _ingressNodeVrfs;
+  protected final Multimap<String, String> _ingressNodeInterfaces;
+
+  protected final Multimap<String, String> _ingressNodeVrfs;
 
   protected final Set<String> _nonTransitNodes;
 
@@ -86,11 +97,13 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
   public ReachabilityQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
-      @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      @Nonnull Multimap<String, String> ingressNodeInterfaces,
+      @Nonnull Multimap<String, String> ingressNodeVrfs,
       Boolean srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
     _headerSpace = headerSpace;
+    _ingressNodeInterfaces = ingressNodeInterfaces;
     _ingressNodeVrfs = ingressNodeVrfs;
     _srcNatted = srcNatted;
     _transitNodes = transitNodes;
@@ -99,17 +112,19 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
   protected final void addOriginateRules(ImmutableList.Builder<RuleStatement> rules) {
     // create rules for injecting symbolic packets into ingress node(s)
-    for (String ingressNode : _ingressNodeVrfs.keySet()) {
-      for (String ingressVrf : _ingressNodeVrfs.get(ingressNode)) {
-        rules.add(
-            new BasicRuleStatement(
-                new AndExpr(
-                    ImmutableList.of(
-                        new EqExpr(
-                            new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP)))),
-                new OriginateVrf(ingressNode, ingressVrf)));
-      }
-    }
+    BooleanExpr initialConstraint =
+        new AndExpr(
+            ImmutableList.of(
+                new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP))));
+
+    _ingressNodeVrfs.forEach(
+        (node, vrf) ->
+            rules.add(new BasicRuleStatement(initialConstraint, new OriginateVrf(node, vrf))));
+
+    _ingressNodeInterfaces.forEach(
+        (node, iface) ->
+            rules.add(
+                new BasicRuleStatement(initialConstraint, new OriginateInterface(node, iface))));
   }
 
   protected final BooleanExpr getSrcNattedConstraint() {

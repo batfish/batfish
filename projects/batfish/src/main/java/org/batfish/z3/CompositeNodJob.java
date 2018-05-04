@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.config.Settings;
 
 public class CompositeNodJob extends AbstractNodJob {
@@ -23,9 +22,9 @@ public class CompositeNodJob extends AbstractNodJob {
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
-      SortedSet<Pair<String, String>> nodeVrfSet,
+      SortedSet<IngressPoint> ingressPoints,
       String tag) {
-    super(settings, nodeVrfSet, tag);
+    super(settings, ingressPoints, tag);
     _numPrograms = dataPlaneSynthesizer.size();
     if (_numPrograms != querySynthesizer.size()) {
       throw new BatfishException("mismatch between number of programs and number of queries");
