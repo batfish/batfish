@@ -4262,11 +4262,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
-        "ipAccessLists" : {
-          "~ZONE_OUTGOING_ACL~z2~" : {
-            "name" : "~ZONE_OUTGOING_ACL~z2~"
-          }
-        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "cisco-zone",

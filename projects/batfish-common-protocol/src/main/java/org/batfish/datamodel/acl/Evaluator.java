@@ -20,8 +20,8 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   private final Map<String, IpAccessList> _availableAcls;
   private final Flow _flow;
 
-  private final String _srcInterface;
   private final Map<String, IpSpace> _namedIpSpaces;
+  private final String _srcInterface;
 
   public Evaluator(
       Flow flow,
@@ -57,6 +57,11 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   @Override
   public Boolean visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     return !notMatchExpr.getOperand().accept(this);
+  }
+
+  @Override
+  public Boolean visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+    return _srcInterface == null;
   }
 
   @Override

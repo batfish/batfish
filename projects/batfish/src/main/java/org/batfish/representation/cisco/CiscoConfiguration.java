@@ -94,6 +94,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
@@ -4095,33 +4096,59 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void createZoneAcls(Configuration c) {
+    // Mapping: zoneName -> (MatchSrcInterface for interfaces in zone)
     Map<String, MatchSrcInterface> matchSrcInterfaceBySrcZone =
         toImmutableMap(
             c.getZones(),
             Entry::getKey,
             zoneByNameEntry -> new MatchSrcInterface(zoneByNameEntry.getValue().getInterfaces()));
-    _securityZonePairs.forEach(
-        (dstZoneName, zonePairsBySrcZoneName) -> {
-          if (!_securityZones.containsKey(dstZoneName)) {
-            return;
-          }
-          ImmutableList.Builder<IpAccessListLine> zonePairPermits = ImmutableList.builder();
-          zonePairsBySrcZoneName.forEach(
-              (srcZoneName, zonePair) ->
-                  createZonePairAcl(
-                          c,
-                          matchSrcInterfaceBySrcZone.get(srcZoneName),
-                          dstZoneName,
-                          srcZoneName,
-                          zonePair.getInspectPolicyMap())
-                      .ifPresent(zonePairPermits::add));
-          String zoneOutgoingAclName = computeZoneOutgoingAclName(dstZoneName);
-          IpAccessList.builder()
-              .setName(zoneOutgoingAclName)
-              .setOwner(c)
-              .setLines(zonePairPermits.build())
-              .build();
-        });
+
+    c.getZones()
+        .forEach(
+            (zoneName, zone) -> {
+              // Don't bother if zone is empty
+              if (zone.getInterfaces().isEmpty()) {
+                return;
+              }
+
+              ImmutableList.Builder<IpAccessListLine> zonePolicies = ImmutableList.builder();
+
+              // Allow traffic originating from device (no source interface)
+              zonePolicies.add(
+                  IpAccessListLine.accepting()
+                      .setMatchCondition(OriginatingFromDevice.INSTANCE)
+                      .build());
+
+              // Allow traffic staying within this zone
+              zonePolicies.add(
+                  IpAccessListLine.accepting()
+                      .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
+                      .build());
+
+              /*
+               * Add zone-pair policies
+               */
+              // zoneName refers to dstZone
+              Map<String, SecurityZonePair> zonePairsBySrcZoneName =
+                  _securityZonePairs.get(zoneName);
+              if (zonePairsBySrcZoneName != null) {
+                zonePairsBySrcZoneName.forEach(
+                    (srcZoneName, zonePair) ->
+                        createZonePairAcl(
+                                c,
+                                matchSrcInterfaceBySrcZone.get(srcZoneName),
+                                zoneName,
+                                srcZoneName,
+                                zonePair.getInspectPolicyMap())
+                            .ifPresent(zonePolicies::add));
+              }
+
+              IpAccessList.builder()
+                  .setName(computeZoneOutgoingAclName(zoneName))
+                  .setOwner(c)
+                  .setLines(zonePolicies.build())
+                  .build();
+            });
   }
 
   public Optional<IpAccessListLine> createZonePairAcl(
