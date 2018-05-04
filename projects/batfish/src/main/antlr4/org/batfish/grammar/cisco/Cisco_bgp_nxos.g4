@@ -60,7 +60,6 @@ rbnx_af_inner
     | rbnx_af_client_to_client
     | rbnx_af_dampen_igp_metric
     | rbnx_af_dampening
-    | rbnx_af_default
     | rbnx_af_default_information
     | rbnx_af_default_metric
     | rbnx_af_distance
@@ -105,7 +104,7 @@ rbnx_af_aa_tail
     | AS_SET
     | ATTRIBUTE_MAP mapname = variable
     | SUMMARY_ONLY
-    | SUPPRESS_MAP
+    | SUPPRESS_MAP mapname = variable
 ;
 
 rbnx_af_client_to_client
@@ -124,11 +123,6 @@ rbnx_af_dampening
         half_life = DEC start_reuse = DEC start_suppress = DEC max_suppress = DEC
         | ROUTE_MAP mapname = variable
     ) NEWLINE
-;
-
-rbnx_af_default
-:
-    DEFAULT SUPPRESS_INACTIVE NEWLINE
 ;
 
 rbnx_af_default_information
@@ -356,7 +350,7 @@ rbnx_n_common
 
 rbnx_n_address_family
 :
-    ADDRESS_FAMILY (IPV4 | IPV6) (MULTICAST | UNICAST) NEWLINE
+    ADDRESS_FAMILY first = (IPV4 | IPV6) second = (MULTICAST | UNICAST) NEWLINE
     rbnx_n_af_inner*
 ;
 
@@ -381,7 +375,7 @@ rbnx_n_af_inner
     | rbnx_n_af_inherit
     | rbnx_n_af_maximum_prefix
     | rbnx_n_af_next_hop_self
-    | rbnx_n_af_next_help_third_party
+    | rbnx_n_af_next_hop_third_party
     | rbnx_n_af_prefix_list
     | rbnx_n_af_route_map
     | rbnx_n_af_route_reflector_client
@@ -457,7 +451,7 @@ rbnx_n_af_next_hop_self
     NEXT_HOP_SELF NEWLINE
 ;
 
-rbnx_n_af_next_help_third_party
+rbnx_n_af_next_hop_third_party
 :
     NEXT_HOP_THIRD_PARTY NEWLINE
 ;
