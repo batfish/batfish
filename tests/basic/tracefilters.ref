@@ -3,11 +3,11 @@
     "class" : "org.batfish.question.tracefilters.TraceFiltersAnswerElement",
     "metadata" : {
       "columnMetadata" : {
-        "node" : {
-          "description" : "Node",
-          "isKey" : true,
-          "isValue" : false,
-          "schema" : "Node"
+        "action" : {
+          "description" : "Outcome",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "String"
         },
         "filterName" : {
           "description" : "Filter name",
@@ -21,8 +21,8 @@
           "isValue" : false,
           "schema" : "Flow"
         },
-        "action" : {
-          "description" : "Outcome",
+        "lineContent" : {
+          "description" : "Line content",
           "isKey" : false,
           "isValue" : true,
           "schema" : "String"
@@ -33,11 +33,11 @@
           "isValue" : true,
           "schema" : "Integer"
         },
-        "lineContent" : {
-          "description" : "Line content",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "String"
+        "node" : {
+          "description" : "Node",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "Node"
         }
       },
       "displayHints" : {
