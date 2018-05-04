@@ -137,7 +137,7 @@ public class FiltersSpecifier {
    * Evaluates if the given IPv4 filter matches this specifier
    *
    * @param filter The filter to evaluate
-   * @param c
+   * @param c The configuration providing context in which to evaluate
    * @return Results of the match
    */
   public boolean matches(IpAccessList filter, Configuration c) {
