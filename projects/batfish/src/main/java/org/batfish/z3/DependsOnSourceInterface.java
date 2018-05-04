@@ -14,11 +14,10 @@ import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
-public class ContainsMatchSrcInterfaceExprVisitor
-    implements GenericAclLineMatchExprVisitor<Boolean> {
+public class DependsOnSourceInterface implements GenericAclLineMatchExprVisitor<Boolean> {
   private final Map<String, IpAccessList> _ipAccessLists;
 
-  public ContainsMatchSrcInterfaceExprVisitor(Map<String, IpAccessList> ipAccessLists) {
+  public DependsOnSourceInterface(Map<String, IpAccessList> ipAccessLists) {
     _ipAccessLists = ipAccessLists;
   }
 
@@ -59,10 +58,10 @@ public class ContainsMatchSrcInterfaceExprVisitor
 
   @Override
   public Boolean visitPermittedByAcl(PermittedByAcl permittedByAcl) {
-    return containsMatchSrcInterfaceExpr(_ipAccessLists.get(permittedByAcl.getAclName()));
+    return dependsOnSourceInterface(_ipAccessLists.get(permittedByAcl.getAclName()));
   }
 
-  public Boolean containsMatchSrcInterfaceExpr(IpAccessList ipAccessList) {
+  public Boolean dependsOnSourceInterface(IpAccessList ipAccessList) {
     return ipAccessList
         .getLines()
         .stream()

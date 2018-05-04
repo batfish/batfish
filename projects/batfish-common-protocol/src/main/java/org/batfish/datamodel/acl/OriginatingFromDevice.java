@@ -2,6 +2,10 @@ package org.batfish.datamodel.acl;
 
 import com.google.common.base.MoreObjects;
 
+/**
+ * Match condition that holds when flow originated from this device rather than being received on
+ * some interface.
+ */
 public class OriginatingFromDevice extends AclLineMatchExpr {
 
   public static final OriginatingFromDevice INSTANCE = new OriginatingFromDevice();
