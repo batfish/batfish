@@ -14,11 +14,11 @@ import org.junit.Test;
 /** Test for {@link org.batfish.config.Settings} */
 public class SettingsTest {
 
+  /** Test default dataplane engine is ibdp */
   @Test
-  /** Test default dataplane engine is bdp */
   public void testDefaultDPEngine() {
     Settings settings = new Settings(new String[] {});
-    assertThat(settings.getDataPlaneEngineName(), equalTo("bdp"));
+    assertThat(settings.getDataPlaneEngineName(), equalTo("ibdp"));
   }
 
   /** Test that settings copy is deep */
