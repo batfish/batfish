@@ -316,25 +316,32 @@ rbnx_neighbor
     rbnx_n_inner*
 ;
 
-// We break the inner commands for `router bgp neighbor` into those can also be applied inside of
-// DEFAULT (rbnx_n_common) and those that are only valid at the top level (default itself and
-// inherit).
+// We might get to this level of the hierarchy in four ways:
+//  1. configuring an actual neighbor (router bgp ; (optional vrf) ; neighbor)
+//  2. configuring a template peer (router bgp ; template peer)
+//  3. configuring a template peer-session (router bgp ; template peer-session)
+//  4. inside of DEFAULT command in any of the above 3 levels.
+//     For now, DEFAULT is unhandled.
+//
+// We use a few different rules to distinguish the rest.
+//  rbnx_n_common are commands valid at any of the levels 1-3.
+//  rnbx_n_address_family is only valid at levels 1 and 2.
 rbnx_n_inner
 :
     rbnx_n_common
-    | rbnx_n_default
-    | rbnx_n_inherit
+    | rbnx_n_address_family
 ;
 
 rbnx_n_common
 :
-    rbnx_n_address_family
-    | rbnx_n_capability
+    rbnx_n_capability
+    | rbnx_n_default
     | rbnx_n_description
     | rbnx_n_disable_connected_check
     | rbnx_n_dont_capability_negotiate
     | rbnx_n_dynamic_capability
     | rbnx_n_ebgp_multihop
+    | rbnx_n_inherit
     | rbnx_n_local_as
     | rbnx_n_low_memory
     | rbnx_n_maximum_peers
@@ -353,25 +360,25 @@ rbnx_n_address_family
     rbnx_n_af_inner*
 ;
 
-// We break the inner commands for `router bgp neighbor address-family` into those can also be
-// applied inside of DEFAULT (rbnx_n_af_common) and those that are only valid at the top level
-// (default itself and inherit).
+// We might get to this level of the hierarchy in four ways:
+//  1. configuring an actual neighbor (router bgp ; (optional vrf) ; neighbor ; address-family)
+//  2. configuring a template peer (router bgp ; template peer ; address-family)
+//  3. configuring a template peer-policy (router bgp ; template peer-policy)
+//  4. inside of DEFAULT command in any of the above 3 levels.
+//     For now, DEFAULT is unhandled.
+//
+// All the remaining commands are valid at all levels 1-3.
 rbnx_n_af_inner
-:
-    rbnx_n_af_common
-    | rbnx_n_af_default
-    | rbnx_n_af_inherit
-;
-
-rbnx_n_af_common
 :
     rbnx_n_af_advertise_map
     | rbnx_n_af_allowas_in
     | rbnx_n_af_as_override
     | rbnx_n_af_capability
+    | rbnx_n_af_default
     | rbnx_n_af_default_originate
     | rbnx_n_af_disable_peer_as_check
     | rbnx_n_af_filter_list
+    | rbnx_n_af_inherit
     | rbnx_n_af_maximum_prefix
     | rbnx_n_af_next_hop_self
     | rbnx_n_af_next_help_third_party
@@ -411,7 +418,8 @@ rbnx_n_af_capability
 
 rbnx_n_af_default
 :
-    DEFAULT rbnx_n_af_common
+    // TODO: implement default handling.
+    DEFAULT null_rest_of_line
 ;
 
 rbnx_n_af_default_originate
@@ -506,7 +514,8 @@ rbnx_n_capability
 
 rbnx_n_default
 :
-    DEFAULT rbnx_n_common
+    // TODO: implement default handling.
+    DEFAULT null_rest_of_line
 ;
 
 rbnx_n_description
@@ -621,7 +630,7 @@ rbnx_template_peer_policy
 rbnx_template_peer_session
 :
     TEMPLATE PEER_SESSION session = variable NEWLINE
-    rbnx_n_inner*
+    rbnx_n_common*
 ;
 
 rbnx_timers_bestpath_limit

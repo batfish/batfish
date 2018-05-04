@@ -11,7 +11,7 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import org.batfish.common.Pair;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
@@ -50,7 +49,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.z3.state.OriginateVrf;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -61,7 +59,7 @@ public class NodJobTest {
   private SortedMap<String, Configuration> _configs;
   private DataPlane _dataPlane;
   private Configuration _dstNode;
-  private OriginateVrf _originateVrf;
+  private IngressPoint _ingressPoint;
   private Configuration _srcNode;
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
@@ -84,15 +82,14 @@ public class NodJobTest {
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
             .setHeaderSpace(headerSpace)
-            .setIngressNodeVrfs(
-                ImmutableMap.of(_srcNode.getHostname(), ImmutableSet.of(_srcVrf.getName())))
+            .setIngressNodeVrfs(ImmutableMultimap.of(_srcNode.getHostname(), _srcVrf.getName()))
             .setSrcNatted(srcNatted)
             .setTransitNodes(ImmutableSet.of())
             .setNonTransitNodes(ImmutableSet.of())
             .build();
-    SortedSet<Pair<String, String>> ingressNodes =
-        ImmutableSortedSet.of(new Pair<>(_srcNode.getHostname(), _srcVrf.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", false);
+    SortedSet<IngressPoint> ingressPoints =
+        ImmutableSortedSet.of(IngressPoint.ingressVrf(_srcNode.getHostname(), _srcVrf.getName()));
+    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressPoints, "tag", false);
   }
 
   @Before
@@ -114,7 +111,7 @@ public class NodJobTest {
     _srcNode = cb.build();
     _dstNode = cb.build();
     _srcVrf = vb.setOwner(_srcNode).build();
-    _originateVrf = new OriginateVrf(_srcNode.getHostname(), _srcVrf.getName());
+    _ingressPoint = IngressPoint.ingressVrf(_srcNode.getHostname(), _srcVrf.getName());
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
     Ip poolIp1 = new Ip("1.0.0.10");
@@ -196,23 +193,23 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
-        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(1));
-    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf));
-    Map<String, Long> fieldConstraints = fieldConstraintsByOriginateVrf.get(_originateVrf);
+    Map<IngressPoint, Map<String, Long>> fieldConstraintsByIngressPoint =
+        nodJob.getIngressPointConstraints(z3Context, smtInput);
+    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(1));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint));
+    Map<String, Long> fieldConstraints = fieldConstraintsByIngressPoint.get(_ingressPoint);
 
     // Only one OriginateVrf choice, so this must be 0
     assertThat(
         fieldConstraints,
-        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
+        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
     assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
     assertThat(
         fieldConstraints,
         hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(new Ip("3.0.0.0").asLong()))));
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
 
-    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
+    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByIngressPoint);
     _dataPlanePlugin.processFlows(flows, _dataPlane, false);
     List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
@@ -261,15 +258,15 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
-        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
+    Map<IngressPoint, Map<String, Long>> fieldConstraintsByOriginateVrf =
+        nodJob.getIngressPointConstraints(z3Context, smtInput);
     assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(1));
-    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf));
-    Map<String, Long> fieldConstraints = fieldConstraintsByOriginateVrf.get(_originateVrf);
+    assertThat(fieldConstraintsByOriginateVrf, hasKey(_ingressPoint));
+    Map<String, Long> fieldConstraints = fieldConstraintsByOriginateVrf.get(_ingressPoint);
 
     assertThat(
         fieldConstraints,
-        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
+        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 

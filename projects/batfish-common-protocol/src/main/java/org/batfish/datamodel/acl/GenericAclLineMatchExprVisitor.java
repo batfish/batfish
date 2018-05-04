@@ -16,6 +16,8 @@ public interface GenericAclLineMatchExprVisitor<R> {
 
   R visitNotMatchExpr(NotMatchExpr notMatchExpr);
 
+  R visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice);
+
   R visitOrMatchExpr(OrMatchExpr orMatchExpr);
 
   R visitPermittedByAcl(PermittedByAcl permittedByAcl);

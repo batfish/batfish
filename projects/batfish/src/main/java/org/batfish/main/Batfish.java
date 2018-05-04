@@ -8,11 +8,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -142,6 +143,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -184,6 +186,7 @@ import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
+import org.batfish.z3.IngressPoint;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodFirstUnsatJob;
 import org.batfish.z3.NodJob;
@@ -2887,9 +2890,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
-      SortedSet<Pair<String, String>> nodes = ImmutableSortedSet.of(new Pair<>(ingressNode, vrf));
+      SortedSet<IngressPoint> ingressPoints =
+          ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
       CompositeNodJob job =
-          new CompositeNodJob(settings, commonEdgeSynthesizers, queries, nodes, tag);
+          new CompositeNodJob(settings, commonEdgeSynthesizers, queries, ingressPoints, tag);
       jobs.add(job);
     }
 
@@ -2915,9 +2919,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new ReachEdgeQuerySynthesizer(
                 ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
-        SortedSet<Pair<String, String>> nodes = ImmutableSortedSet.of(new Pair<>(ingressNode, vrf));
+        SortedSet<IngressPoint> ingressPoints =
+            ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
         CompositeNodJob job =
-            new CompositeNodJob(settings, missingEdgeSynthesizers, queries, nodes, tag);
+            new CompositeNodJob(settings, missingEdgeSynthesizers, queries, ingressPoints, tag);
         jobs.add(job);
       }
     }
@@ -3334,8 +3339,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         .stream()
                         .map(
                             vrf -> {
-                              Map<String, Set<String>> ingressNodeVrfs =
-                                  ImmutableMap.of(node, ImmutableSet.of(vrf));
+                              Multimap<String, String> ingressNodeVrfs =
+                                  ImmutableMultimap.of(node, vrf);
                               StandardReachabilityQuerySynthesizer acceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
                                       .setActions(
@@ -3364,12 +3369,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                       .setNonTransitNodes(ImmutableSet.of())
                                       .build();
                               notAcceptQuery.setNegate(true);
-                              SortedSet<Pair<String, String>> nodes =
-                                  ImmutableSortedSet.of(new Pair<>(node, vrf));
+                              SortedSet<IngressPoint> ingressPoints =
+                                  ImmutableSortedSet.of(IngressPoint.ingressVrf(node, vrf));
                               List<QuerySynthesizer> queries =
                                   ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
                               return new CompositeNodJob(
-                                  settings, synthesizers, queries, nodes, tag);
+                                  settings, synthesizers, queries, ingressPoints, tag);
                             }))
             .collect(Collectors.toList());
 
@@ -4032,26 +4037,42 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } catch (InvalidReachabilitySettingsException e) {
       return e.getInvalidSettingsAnswer();
     }
-    List<Pair<String, String>> originateNodeVrfs =
-        activeIngressNodes
-            .stream()
-            .flatMap(
-                ingressNode ->
-                    configurations
-                        .get(ingressNode)
-                        .getVrfs()
-                        .keySet()
-                        .stream()
-                        .map(ingressVrf -> new Pair<>(ingressNode, ingressVrf)))
-            .collect(Collectors.toList());
+
+    List<IngressPoint> ingressPoints = new ArrayList<>();
+    if (reachabilitySettings.getIngressInterfaces() != InterfacesSpecifier.NONE) {
+      // originate from specified interfaces
+      activeIngressNodes
+          .stream()
+          .flatMap(
+              ingressNode ->
+                  configurations
+                      .get(ingressNode)
+                      .getInterfaces()
+                      .values()
+                      .stream()
+                      .filter(reachabilitySettings.getIngressInterfaces()::matches)
+                      .map(iface -> IngressPoint.ingressInterface(ingressNode, iface.getName())))
+          .forEach(ingressPoints::add);
+    } else {
+      // originate from VRFs
+      activeIngressNodes
+          .stream()
+          .flatMap(
+              ingressNode ->
+                  configurations
+                      .get(ingressNode)
+                      .getVrfs()
+                      .keySet()
+                      .stream()
+                      .map(ingressVrf -> IngressPoint.ingressVrf(ingressNode, ingressVrf)))
+          .forEach(ingressPoints::add);
+    }
 
     int chunkSize =
-        Math.max(
-            1, Math.min(maxChunkSize, originateNodeVrfs.size() / _settings.getAvailableThreads()));
+        Math.max(1, Math.min(maxChunkSize, ingressPoints.size() / _settings.getAvailableThreads()));
 
     // partition originateNodeVrfs into chunks
-    List<List<Pair<String, String>>> originateNodeVrfChunks =
-        Lists.partition(originateNodeVrfs, chunkSize);
+    List<List<IngressPoint>> ingressPointChunks = Lists.partition(ingressPoints, chunkSize);
 
     Synthesizer dataPlaneSynthesizer =
         synthesizeDataPlane(
@@ -4065,26 +4086,37 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // build query jobs
     List<NodJob> jobs =
-        originateNodeVrfChunks
+        ingressPointChunks
             .stream()
             .map(ImmutableSortedSet::copyOf)
             .map(
-                nodeVrfs -> {
-                  SortedMap<String, Set<String>> vrfsByNode = new TreeMap<>();
-                  nodeVrfs.forEach(
-                      nodeVrf -> {
-                        String node = nodeVrf.getFirst();
-                        String vrf = nodeVrf.getSecond();
-                        vrfsByNode.computeIfAbsent(node, key -> new TreeSet<>());
-                        vrfsByNode.get(node).add(vrf);
+                chunkIngressPoints -> {
+                  ImmutableMultimap.Builder<String, String> ingressNodeInterfacesBuilder =
+                      ImmutableMultimap.builder();
+                  ImmutableMultimap.Builder<String, String> ingressNodeVrfsBuilder =
+                      ImmutableMultimap.builder();
+                  chunkIngressPoints.forEach(
+                      ingressPoint -> {
+                        if (ingressPoint.isIngressInterface()) {
+                          ingressNodeInterfacesBuilder.put(
+                              ingressPoint.getNode(), ingressPoint.getInterface());
+                        } else if (ingressPoint.isIngressVrf()) {
+                          ingressNodeVrfsBuilder.put(ingressPoint.getNode(), ingressPoint.getVrf());
+                        } else {
+                          throw new BatfishException("Unexpected IngressPoint type");
+                        }
                       });
+                  Multimap<String, String> ingressNodeInterfaces =
+                      ingressNodeInterfacesBuilder.build();
+                  Multimap<String, String> ingressNodeVrfs = ingressNodeVrfsBuilder.build();
 
                   ReachabilityQuerySynthesizer query =
                       builder
                           .setActions(actions)
                           .setHeaderSpace(headerSpace)
                           .setFinalNodes(activeFinalNodes)
-                          .setIngressNodeVrfs(vrfsByNode)
+                          .setIngressNodeInterfaces(ingressNodeInterfaces)
+                          .setIngressNodeVrfs(ingressNodeVrfs)
                           .setTransitNodes(transitNodes)
                           .setNonTransitNodes(nonTransitNodes)
                           .setSrcNatted(reachabilitySettings.getSrcNatted())
@@ -4094,7 +4126,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       settings,
                       dataPlaneSynthesizer,
                       query,
-                      nodeVrfs,
+                      chunkIngressPoints,
                       tag,
                       reachabilitySettings.getSpecialize());
                 })
