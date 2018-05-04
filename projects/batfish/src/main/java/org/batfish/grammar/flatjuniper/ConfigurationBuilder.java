@@ -2702,7 +2702,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         from = new FwFromDestinationAddress(ipWildcard);
       }
       _currentFwTerm.getFroms().add(from);
-    } else if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
+    } else if (ctx.ip_address != null || ctx.IP_PREFIX() != null) {
       Prefix prefix;
       if (ctx.IP_PREFIX() != null) {
         prefix = Prefix.parse(ctx.IP_PREFIX().getText());

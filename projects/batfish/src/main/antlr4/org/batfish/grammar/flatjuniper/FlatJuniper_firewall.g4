@@ -124,7 +124,7 @@ fftf_destination_address
 :
    DESTINATION_ADDRESS
    (
-      ipaddress = IP_ADDRESS
+      ip_address = IP_ADDRESS
       | IP_PREFIX
       | IPV6_ADDRESS
       | IPV6_PREFIX
