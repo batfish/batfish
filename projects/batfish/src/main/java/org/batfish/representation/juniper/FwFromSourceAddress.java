@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
@@ -12,10 +13,18 @@ public final class FwFromSourceAddress extends FwFrom {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final Prefix _prefix;
+  @Nullable private final IpWildcard _ipWildcard;
+
+  @Nullable private final Prefix _prefix;
 
   public FwFromSourceAddress(Prefix prefix) {
     _prefix = prefix;
+    _ipWildcard = null;
+  }
+
+  public FwFromSourceAddress(IpWildcard ipWildcard) {
+    _prefix = null;
+    _ipWildcard = ipWildcard;
   }
 
   @Override
@@ -24,12 +33,21 @@ public final class FwFromSourceAddress extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    IpWildcard wildcard = new IpWildcard(_prefix);
+    IpWildcard wildcard;
+    if (_ipWildcard != null) {
+      wildcard = _ipWildcard;
+    } else {
+      wildcard = new IpWildcard(_prefix);
+    }
     headerSpaceBuilder.setSrcIps(
         AclIpSpace.union(headerSpaceBuilder.getSrcIps(), wildcard.toIpSpace()));
   }
 
   public Prefix getPrefix() {
     return _prefix;
+  }
+
+  public IpWildcard getIpWildcard() {
+    return _ipWildcard;
   }
 }

@@ -12,10 +12,18 @@ public final class FwFromSourceAddressExcept extends FwFrom {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private final IpWildcard _ipWildcard;
+
   private final Prefix _prefix;
 
   public FwFromSourceAddressExcept(Prefix prefix) {
     _prefix = prefix;
+    _ipWildcard = null;
+  }
+
+  public FwFromSourceAddressExcept(IpWildcard ipWildcard) {
+    _prefix = null;
+    _ipWildcard = ipWildcard;
   }
 
   @Override
@@ -24,12 +32,21 @@ public final class FwFromSourceAddressExcept extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    IpWildcard wildcard = new IpWildcard(_prefix);
+    IpWildcard wildcard;
+    if (_ipWildcard != null) {
+      wildcard = _ipWildcard;
+    } else {
+      wildcard = new IpWildcard(_prefix);
+    }
     headerSpaceBuilder.setNotSrcIps(
         AclIpSpace.union(headerSpaceBuilder.getNotSrcIps(), wildcard.toIpSpace()));
   }
 
   public Prefix getPrefix() {
     return _prefix;
+  }
+
+  public IpWildcard getIpWildcard() {
+    return _ipWildcard;
   }
 }

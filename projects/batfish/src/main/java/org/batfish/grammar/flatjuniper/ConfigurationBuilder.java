@@ -2692,12 +2692,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_destination_address(Fftf_destination_addressContext ctx) {
-    if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
+    if (ctx.ip_address != null && ctx.wildcard_mask != null) {
+      IpWildcard ipWildcard =
+          new IpWildcard(new Ip(ctx.ip_address.getText()), new Ip(ctx.wildcard_mask.getText()));
+      FwFrom from;
+      if (ctx.EXCEPT() != null) {
+        from = new FwFromDestinationAddressExcept(ipWildcard);
+      } else {
+        from = new FwFromDestinationAddress(ipWildcard);
+      }
+      _currentFwTerm.getFroms().add(from);
+    } else if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
       Prefix prefix;
       if (ctx.IP_PREFIX() != null) {
         prefix = Prefix.parse(ctx.IP_PREFIX().getText());
       } else {
-        prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()), Prefix.MAX_PREFIX_LENGTH);
+        prefix = new Prefix(new Ip(ctx.ip_address.getText()), Prefix.MAX_PREFIX_LENGTH);
       }
       FwFrom from;
       if (ctx.EXCEPT() != null) {
@@ -2857,12 +2867,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_source_address(Fftf_source_addressContext ctx) {
-    if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
+    if (ctx.ip_address != null && ctx.wildcard_mask != null) {
+      IpWildcard ipWildcard =
+          new IpWildcard(new Ip(ctx.ip_address.getText()), new Ip(ctx.wildcard_mask.getText()));
+      FwFrom from;
+      if (ctx.EXCEPT() != null) {
+        from = new FwFromSourceAddressExcept(ipWildcard);
+      } else {
+        from = new FwFromSourceAddress(ipWildcard);
+      }
+      _currentFwTerm.getFroms().add(from);
+    } else if (ctx.ip_address != null || ctx.IP_PREFIX() != null) {
       Prefix prefix;
       if (ctx.IP_PREFIX() != null) {
         prefix = Prefix.parse(ctx.IP_PREFIX().getText());
       } else {
-        prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()), Prefix.MAX_PREFIX_LENGTH);
+        prefix = new Prefix(new Ip(ctx.ip_address.getText()), Prefix.MAX_PREFIX_LENGTH);
       }
       FwFrom from;
       if (ctx.EXCEPT() != null) {

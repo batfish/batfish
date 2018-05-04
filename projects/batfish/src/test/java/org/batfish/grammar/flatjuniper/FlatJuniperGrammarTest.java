@@ -40,6 +40,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
@@ -58,6 +59,7 @@ import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -68,6 +70,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
@@ -940,6 +943,62 @@ public class FlatJuniperGrammarTest {
     /* Properly configured interfaces should be present in respective areas. */
     assertThat(c.getInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
     assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
+  }
+
+  @Test
+  public void testJuniperSourceAddress() throws IOException {
+    Configuration c = parseConfig("firewall-source-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    IpAccessList fwSourceAddressAcl = Iterables.getOnlyElement(c.getIpAccessLists().values());
+    assertThat(fwSourceAddressAcl.getLines(), hasSize(1));
+
+    // should have the same acl as defined in the config
+    assertThat(
+        Iterables.getOnlyElement(fwSourceAddressAcl.getLines()),
+        equalTo(
+            IpAccessListLine.builder()
+                .setAction(LineAction.ACCEPT)
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(
+                                AclIpSpace.union(
+                                    new IpWildcard(new Ip("0.2.0.4"), new Ip("255.0.255.0"))
+                                        .toIpSpace(),
+                                    new IpWildcard("2.3.4.5/24").toIpSpace()))
+                            .build()))
+                .setName("TERM")
+                .build()));
+  }
+
+  @Test
+  public void testJuniperDestinationAddress() throws IOException {
+    Configuration c = parseConfig("firewall-destination-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    IpAccessList fwDestinationAddressAcl = Iterables.getOnlyElement(c.getIpAccessLists().values());
+    assertThat(fwDestinationAddressAcl.getLines(), hasSize(1));
+
+    // should have the same acl as defined in the config
+    assertThat(
+        Iterables.getOnlyElement(fwDestinationAddressAcl.getLines()),
+        equalTo(
+            IpAccessListLine.builder()
+                .setAction(LineAction.ACCEPT)
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setDstIps(
+                                AclIpSpace.union(
+                                    new IpWildcard(new Ip("0.2.0.4"), new Ip("255.0.255.0"))
+                                        .toIpSpace(),
+                                    new IpWildcard("2.3.4.5/24").toIpSpace()))
+                            .build()))
+                .setName("TERM")
+                .build()));
   }
 
   @Test
