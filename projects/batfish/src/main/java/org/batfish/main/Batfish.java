@@ -767,9 +767,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Integer earliestMoreGeneralReachableLineNumber = blockingLinesMap.get(line);
         line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLineNumber);
 
-        // TODO Something intelligent when earliestMoreGeneralReachableLine is null.
-        // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
-        // multiple partially-blocking lines.
         if (earliestMoreGeneralReachableLineNumber != null) {
           IpAccessListLine earliestMoreGeneralLine =
               ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
@@ -778,6 +775,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
           if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
             reachabilityEntry.setDifferentAction(true);
           }
+        } else {
+          // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
+          // multiple partially-blocking lines. Provide that info in any way we can...
+          reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
+          reachabilityEntry.setEarliestMoreGeneralLineName(
+              "Multiple earlier lines partially block this line, making it unreachable.");
         }
         answerElement.addUnreachableLine(hostname, ipAccessList, reachabilityEntry);
 
