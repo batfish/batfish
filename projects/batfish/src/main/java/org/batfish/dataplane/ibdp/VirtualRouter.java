@@ -1627,7 +1627,9 @@ public class VirtualRouter extends ComparableStructure<String> {
                     ImmutableSortedSet.copyOf(sentClusterList),
                     sentWeight);
 
-            _sentBgpAdvertisements.add(sentAdvert);
+            if (!remoteRouteAdvert.isWithdrawn()) {
+              _sentBgpAdvertisements.add(sentAdvert);
+            }
 
             /*
              * CREATE INCOMING ROUTE
@@ -1704,7 +1706,9 @@ public class VirtualRouter extends ComparableStructure<String> {
                 ribDeltas
                     .get(targetRib)
                     .from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-                _receivedBgpAdvertisements.add(receivedAdvert);
+                if (!remoteRouteAdvert.isWithdrawn()) {
+                  _receivedBgpAdvertisements.add(receivedAdvert);
+                }
                 _receivedBgpRoutes
                     .computeIfAbsent(transformedIncomingRoute.getNetwork(), k -> new TreeSet<>())
                     .add(transformedIncomingRoute);
