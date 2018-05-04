@@ -342,14 +342,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         .stream()
         .filter(
             entry -> {
-              ContainsMatchSrcInterfaceExprVisitor containsMatchSrcInterfaceExprVisitor =
-                  new ContainsMatchSrcInterfaceExprVisitor(entry.getValue().getIpAccessLists());
+              DependsOnSourceInterface dependsOnSourceInterface =
+                  new DependsOnSourceInterface(entry.getValue().getIpAccessLists());
               return entry
                   .getValue()
                   .getIpAccessLists()
                   .values()
                   .stream()
-                  .anyMatch(containsMatchSrcInterfaceExprVisitor::containsMatchSrcInterfaceExpr);
+                  .anyMatch(dependsOnSourceInterface::dependsOnSourceInterface);
             })
         .map(Entry::getKey)
         .collect(ImmutableSet.toImmutableSet());
