@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,5 +32,16 @@ public class PrefixRangeTest {
     assertThat(
         BatfishObjectMapper.mapper().readValue("\"1.0.0.0/8:17-19\"", PrefixRange.class),
         equalTo(pr));
+  }
+
+  /**
+   * Tests that getting a range more specific than a /32 does not crash and is empty -- or at least
+   * does not contain the initial /32.
+   */
+  @Test
+  public void testEmptyRange() {
+    Prefix slash32 = Prefix.parse("1.2.3.4/32");
+    PrefixRange empty = PrefixRange.moreSpecificThan(slash32);
+    assertFalse(empty.includesPrefixRange(PrefixRange.fromPrefix(slash32)));
   }
 }

@@ -277,24 +277,24 @@
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "ScienceDMZ-networks" : {
-            "name" : "ScienceDMZ-networks",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "lengthRange" : "52-128",
                 "prefix" : "2607:f010:3f9:8000:0:0:0:0/52"
               }
-            ]
+            ],
+            "name" : "ScienceDMZ-networks"
           },
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "lengthRange" : "52-52",
                 "prefix" : "2607:f010:3f9:8000:0:0:0:0/52"
               }
-            ]
+            ],
+            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
           }
         },
         "routeFilterLists" : {
@@ -2882,14 +2882,14 @@
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "lengthRange" : "32-32",
                 "prefix" : "2607:f380:0:0:0:0:0:0/32"
               }
-            ]
+            ],
+            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
           }
         },
         "routingPolicies" : {
@@ -4087,7 +4087,6 @@
         "deviceType" : "SWITCH",
         "route6FilterLists" : {
           "bar" : {
-            "name" : "bar",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -4099,7 +4098,8 @@
                 "lengthRange" : "64-64",
                 "prefix" : "dead:beef:0:0:0:0:0:0/26"
               }
-            ]
+            ],
+            "name" : "bar"
           }
         },
         "routeFilterLists" : {
@@ -4262,11 +4262,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
-        "ipAccessLists" : {
-          "~ZONE_OUTGOING_ACL~z2~" : {
-            "name" : "~ZONE_OUTGOING_ACL~z2~"
-          }
-        },
         "vendorFamily" : {
           "cisco" : {
             "hostname" : "cisco-zone",
@@ -8549,6 +8544,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -12108,6 +12104,7 @@
                 "comment" : "OSPF export default route",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                  "comment" : "match default route",
                   "prefix" : {
                     "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                   },
@@ -13768,7 +13765,6 @@
         "deviceType" : "SWITCH",
         "route6FilterLists" : {
           "route-filter-test-v6:t1" : {
-            "name" : "route-filter-test-v6:t1",
             "lines" : [
               {
                 "action" : "ACCEPT",
@@ -13800,7 +13796,8 @@
                 "lengthRange" : "98-98",
                 "prefix" : "2001:db8:1239:0:0:0:0:0/98"
               }
-            ]
+            ],
+            "name" : "route-filter-test-v6:t1"
           }
         },
         "routeFilterLists" : {
@@ -15143,14 +15140,14 @@
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "lengthRange" : "64-64",
                 "prefix" : "1a01:111:a100:1001:0:0:0:0/64"
               }
-            ]
+            ],
+            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
           }
         },
         "routingPolicies" : {
@@ -15300,14 +15297,14 @@
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "lengthRange" : "120-120",
                 "prefix" : "0:0:0:0:0:0:102:300/120"
               }
-            ]
+            ],
+            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
           }
         },
         "routingPolicies" : {
@@ -15979,6 +15976,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -16024,6 +16022,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -20017,14 +20016,14 @@
         "deviceType" : "ROUTER",
         "route6FilterLists" : {
           "v6_list" : {
-            "name" : "v6_list",
             "lines" : [
               {
                 "action" : "ACCEPT",
                 "lengthRange" : "128-128",
                 "prefix" : "0:0:0:0:0:0:0:0/128"
               }
-            ]
+            ],
+            "name" : "v6_list"
           },
           "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"

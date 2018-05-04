@@ -38,7 +38,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   // the node name that is used to infer a regex
   private String _chosenNode;
   // a tokenized version of _chosenNode
-  private List<Pair<String, InferRolesCharClass>> _tokens;
+  private List<Pair<String, Token>> _tokens;
   // the regex produced by generalizing from _tokens
   private List<String> _regex;
   // the list of nodes that match _regex
@@ -53,7 +53,9 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   // the minimum role score for a candidate role regex to be chosen
   private static final double ROLE_THRESHOLD = 0.9;
 
-  private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}+";
+  private static final String ALPHABETIC_REGEX = "\\p{Alpha}";
+  private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}";
+  private static final String DIGIT_REGEX = "\\p{Digit}";
 
   public InferRoles(
       Collection<String> nodes, Map<String, Configuration> configurations, IBatfish batfish) {
@@ -61,30 +63,57 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     _batfish = batfish;
   }
 
-  // Node names are parsed into a sequence of alphanumeric strings and
-  // delimiters (strings of non-alphanumeric characters).
-  public enum InferRolesCharClass {
-    ALPHANUMERIC,
-    DELIMITER;
+  // A node's name is first parsed into a sequence of simple "pretokens",
+  // and then these pretokens are combined to form tokens.
+  public enum PreToken {
+    ALPHA_PLUS, // sequence of alphabetic characters
+    DELIMITER, // sequence of non-alphanumeric characters
+    DIGIT_PLUS; // sequence of digits
 
-    public static InferRolesCharClass charToCharClass(char c) {
-      if (Character.isAlphabetic(c) || Character.isDigit(c)) {
-        return InferRolesCharClass.ALPHANUMERIC;
+    public static PreToken charToPreToken(char c) {
+      if (Character.isAlphabetic(c)) {
+        return ALPHA_PLUS;
+      } else if (Character.isDigit(c)) {
+        return DIGIT_PLUS;
       } else {
-        return InferRolesCharClass.DELIMITER;
+        return DELIMITER;
       }
     }
+  }
+
+  public enum Token {
+    ALPHA_PLUS_DIGIT_PLUS,
+    ALNUM_PLUS,
+    DELIMITER,
+    DIGIT_PLUS;
 
     public String tokenToRegex(String s) {
       switch (this) {
-        case ALPHANUMERIC:
-          return ALPHANUMERIC_REGEX;
+        case ALPHA_PLUS_DIGIT_PLUS:
+          return plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
+        case ALNUM_PLUS:
+          return ALPHABETIC_REGEX + plus(ALPHANUMERIC_REGEX);
         case DELIMITER:
           return Pattern.quote(s);
+        case DIGIT_PLUS:
+          return plus(DIGIT_REGEX);
         default:
           throw new BatfishException("this case should be unreachable");
       }
     }
+  }
+
+  // some useful operations on regexes
+  private static String plus(String s) {
+    return s + "+";
+  }
+
+  private static String star(String s) {
+    return s + "*";
+  }
+
+  private static String group(String s) {
+    return "(" + s + ")";
   }
 
   @Override
@@ -137,7 +166,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
       allDims.add(optResult.get());
     } else {
 
-      // if no single role group is aboe threshold, we attempt to make the best role found so far
+      // if no single role group is above threshold, we attempt to make the best role found so far
       // more specific.
       // NOTE: we could try to refine all possible roles we've considered, rather than
       // greedily only refining the best one, if the greedy approach fails often.
@@ -186,27 +215,106 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     return false;
   }
 
-  // a very simple lexer that tokenizes a name into a sequence of
-  // alphanumeric and non-alphanumeric strings
-  private List<Pair<String, InferRolesCharClass>> tokenizeName(String name) {
-    List<Pair<String, InferRolesCharClass>> pattern = new ArrayList<>();
+  // If delimiters (non-alphanumeric characters) are being used in the node names, we use them
+  // to separate the different tokens.
+  private List<Pair<String, Token>> preTokensToDelimitedTokens(
+      List<Pair<String, PreToken>> pretokens) {
+    List<Pair<String, Token>> tokens = new ArrayList<>();
+    int size = pretokens.size();
+    for (int i = 0; i < size; i++) {
+      StringBuilder chars = new StringBuilder(pretokens.get(i).getFirst());
+      PreToken pt = pretokens.get(i).getSecond();
+      switch (pt) {
+        case ALPHA_PLUS:
+          // combine everything up to the next delimiter into a single alphanumeric token
+          int next = i + 1;
+          while (next < size && pretokens.get(next).getSecond() != PreToken.DELIMITER) {
+            chars.append(pretokens.get(next).getFirst());
+            next++;
+          }
+          i = next - 1;
+          tokens.add(new Pair<>(chars.toString(), Token.ALNUM_PLUS));
+          break;
+        case DELIMITER:
+          tokens.add(new Pair<>(chars.toString(), Token.DELIMITER));
+          break;
+        case DIGIT_PLUS:
+          tokens.add(new Pair<>(chars.toString(), Token.DIGIT_PLUS));
+          break;
+        default:
+          throw new BatfishException("Unknown pretoken " + pt);
+      }
+    }
+    return tokens;
+  }
+
+  // If delimiters (non-alphanumeric characters) are not being used in the node names, we treat
+  // each consecutive string matching alpha+digit+ as a distinct token.
+  private List<Pair<String, Token>> preTokensToUndelimitedTokens(
+      List<Pair<String, PreToken>> pretokens) {
+    List<Pair<String, Token>> tokens = new ArrayList<>();
+    int size = pretokens.size();
+    for (int i = 0; i < size; i++) {
+      String chars = pretokens.get(i).getFirst();
+      PreToken pt = pretokens.get(i).getSecond();
+      switch (pt) {
+        case ALPHA_PLUS:
+          int next = i + 1;
+          if (next >= size) {
+            // generalize a final alphabetic sequence to allow alphanumeric ones
+            tokens.add(new Pair<>(chars, Token.ALNUM_PLUS));
+          } else {
+            // the next token must be DIGIT_PLUS since we know there are no delimiters
+            int third = i + 2;
+            String bothChars = chars + pretokens.get(next).getFirst();
+            if (third >= size) {
+              // generalize a final ALPHA+DIGIT+ to ALNUM+
+              tokens.add(new Pair<>(bothChars, Token.ALNUM_PLUS));
+            } else {
+              // keep ALPHA+DIGIT+ as is, to separate it from the subsequent
+              // alphabetic sequence
+              tokens.add(new Pair<>(bothChars, Token.ALPHA_PLUS_DIGIT_PLUS));
+            }
+            i++;
+          }
+          break;
+        case DIGIT_PLUS:
+          tokens.add(new Pair<>(chars, Token.DIGIT_PLUS));
+          break;
+        default:
+          throw new BatfishException("Unexpected pretoken " + pt);
+      }
+    }
+    return tokens;
+  }
+
+  private List<Pair<String, Token>> tokenizeName(String name) {
+    List<Pair<String, PreToken>> pretokens = pretokenizeName(name);
+    if (pretokens.stream().anyMatch((p) -> p.getSecond() == PreToken.DELIMITER)) {
+      return preTokensToDelimitedTokens(pretokens);
+    } else {
+      return preTokensToUndelimitedTokens(pretokens);
+    }
+  }
+
+  // tokenizes a name into a sequence of pretokens defined by the PreToken enum above
+  private List<Pair<String, PreToken>> pretokenizeName(String name) {
+    List<Pair<String, PreToken>> pattern = new ArrayList<>();
     char c = name.charAt(0);
-    InferRolesCharClass cc = InferRolesCharClass.charToCharClass(c);
+    PreToken currPT = PreToken.charToPreToken(c);
     StringBuffer curr = new StringBuffer();
     curr.append(c);
     for (int i = 1; i < name.length(); i++) {
       c = name.charAt(i);
-      InferRolesCharClass currClass = InferRolesCharClass.charToCharClass(c);
-      if (currClass == cc) {
-        curr.append(c);
-      } else {
-        pattern.add(new Pair<>(new String(curr), cc));
+      PreToken newPT = PreToken.charToPreToken(c);
+      if (newPT != currPT) {
+        pattern.add(new Pair<>(new String(curr), currPT));
         curr = new StringBuffer();
-        cc = currClass;
-        curr.append(c);
+        currPT = newPT;
       }
+      curr.append(c);
     }
-    pattern.add(new Pair<>(new String(curr), cc));
+    pattern.add(new Pair<>(new String(curr), currPT));
     return pattern;
   }
 
@@ -224,21 +332,29 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     int numAll = _matchingNodes.size();
     List<List<String>> candidateRegexes = new ArrayList<>();
     for (int i = 0; i < _tokens.size(); i++) {
-      if (_tokens.get(i).getSecond() == InferRolesCharClass.DELIMITER) {
-        continue;
-      }
-      List<String> regexCopy = new ArrayList<>(_regex);
-      regexCopy.set(i, "(\\p{Alpha}+)\\p{Alnum}*");
-      Pattern newp = Pattern.compile(regexTokensToRegex(regexCopy));
-      int numMatches = 0;
-      for (String node : _matchingNodes) {
-        Matcher newm = newp.matcher(node);
-        if (newm.matches()) {
-          numMatches++;
-        }
-      }
-      if ((double) numMatches / numAll >= GROUP_THRESHOLD) {
-        candidateRegexes.add(regexCopy);
+      switch (_tokens.get(i).getSecond()) {
+        case ALNUM_PLUS:
+          List<String> regexCopy = new ArrayList<>(_regex);
+          regexCopy.set(i, group(plus(ALPHABETIC_REGEX)) + star(ALPHANUMERIC_REGEX));
+          Pattern newp = Pattern.compile(regexTokensToRegex(regexCopy));
+          int numMatches = 0;
+          for (String node : _matchingNodes) {
+            Matcher newm = newp.matcher(node);
+            if (newm.matches()) {
+              numMatches++;
+            }
+          }
+          if ((double) numMatches / numAll >= GROUP_THRESHOLD) {
+            candidateRegexes.add(regexCopy);
+          }
+          break;
+        case ALPHA_PLUS_DIGIT_PLUS:
+          List<String> regexCopy2 = new ArrayList<>(_regex);
+          regexCopy2.set(i, group(plus(ALPHABETIC_REGEX)) + plus(DIGIT_REGEX));
+          candidateRegexes.add(regexCopy2);
+          break;
+        default:
+          break;
       }
     }
     return candidateRegexes;
@@ -258,11 +374,13 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   private List<List<String>> possibleSecondRoleGroups(List<String> tokens) {
     List<List<String>> candidateRegexes = new ArrayList<>();
     for (int i = 0; i < tokens.size(); i++) {
-      if (!tokens.get(i).equals(ALPHANUMERIC_REGEX)) {
+      String token = tokens.get(i);
+      // skip the token if it's a delimiter or the primary group
+      if (token.startsWith("\\Q") || token.startsWith("(")) {
         continue;
       }
       List<String> regexCopy = new ArrayList<>(tokens);
-      regexCopy.set(i, "(" + ALPHANUMERIC_REGEX + ")");
+      regexCopy.set(i, group(token));
       candidateRegexes.add(regexCopy);
     }
     return candidateRegexes;

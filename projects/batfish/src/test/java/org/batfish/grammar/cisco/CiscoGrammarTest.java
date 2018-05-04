@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -687,6 +688,38 @@ public class CiscoGrammarTest {
         hasDefaultVrf(
             hasOspfProcess(
                 hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(nullValue()))))));
+  }
+
+  @Test
+  public void testIosXeZoneDefaultBehavior() throws IOException {
+    Configuration c = parseConfig("ios-xe-zone-default-behavior");
+
+    /* Ethernet1 and Ethernet2 are in zone z12 */
+    String e1Name = "Ethernet1";
+    String e2Name = "Ethernet2";
+
+    /* Ethernet3 is in zone z3 */
+    String e3Name = "Ethernet3";
+
+    Flow flow = Flow.builder().setIngressNode(c.getName()).setTag("").build();
+
+    /* Traffic originating from device should not be subject to zone filtering */
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, null, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, null, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(accepts(flow, null, c))));
+
+    /* Traffic with src and dst interface in same zone should be permitted by default */
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e2Name, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, e2Name, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(accepts(flow, e3Name, c))));
+
+    /* Traffic crossing zones should be blocked by default */
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e1Name, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
   }
 
   @Test

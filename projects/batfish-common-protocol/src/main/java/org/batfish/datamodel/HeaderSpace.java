@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
@@ -25,7 +26,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<Integer> _dscps;
 
-    private IpSpace _dstIps;
+    private @Nullable IpSpace _dstIps;
 
     private SortedSet<SubRange> _dstPorts;
 
@@ -45,7 +46,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<Integer> _notDscps;
 
-    private IpSpace _notDstIps;
+    private @Nullable IpSpace _notDstIps;
 
     private SortedSet<SubRange> _notDstPorts;
 
@@ -63,7 +64,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<SubRange> _notPacketLengths;
 
-    private IpSpace _notSrcIps;
+    private @Nullable IpSpace _notSrcIps;
 
     private SortedSet<SubRange> _notSrcPorts;
 
@@ -71,9 +72,9 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
     private SortedSet<SubRange> _packetLengths;
 
-    private IpSpace _srcIps;
+    private @Nullable IpSpace _srcIps;
 
-    private IpSpace _srcOrDstIps;
+    private @Nullable IpSpace _srcOrDstIps;
 
     private SortedSet<SubRange> _srcOrDstPorts;
 
@@ -101,8 +102,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       _srcOrDstProtocols = ImmutableSortedSet.of();
       _srcPorts = ImmutableSortedSet.of();
       _srcProtocols = ImmutableSortedSet.of();
-      _icmpTypes = ImmutableSortedSet.of();
-      _icmpCodes = ImmutableSortedSet.of();
       _states = ImmutableSortedSet.of();
       _tcpFlags = ImmutableList.of();
       _notDscps = ImmutableSortedSet.of();
@@ -118,6 +117,26 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       _notSrcProtocols = ImmutableSortedSet.of();
     }
 
+    public void addDstIp(IpSpace dstIp) {
+      _dstIps = AclIpSpace.union(_dstIps, dstIp);
+    }
+
+    public void addSrcIp(IpSpace srcIp) {
+      _srcIps = AclIpSpace.union(_srcIps, srcIp);
+    }
+
+    public void addNotDstIp(IpSpace notDstIp) {
+      _notDstIps = AclIpSpace.union(_notDstIps, notDstIp);
+    }
+
+    public void addNotSrcIp(IpSpace notSrcIp) {
+      _notSrcIps = AclIpSpace.union(_notSrcIps, notSrcIp);
+    }
+
+    public void addSrcOrDstIp(IpSpace srcOrDstIp) {
+      _srcOrDstIps = AclIpSpace.union(_srcOrDstIps, srcOrDstIp);
+    }
+
     public HeaderSpace build() {
       return new HeaderSpace(this);
     }
@@ -126,7 +145,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _dscps;
     }
 
-    public IpSpace getDstIps() {
+    public @Nullable IpSpace getDstIps() {
       return _dstIps;
     }
 
@@ -166,7 +185,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _notDscps;
     }
 
-    public IpSpace getNotDstIps() {
+    public @Nullable IpSpace getNotDstIps() {
       return _notDstIps;
     }
 
@@ -202,7 +221,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _notPacketLengths;
     }
 
-    public IpSpace getNotSrcIps() {
+    public @Nullable IpSpace getNotSrcIps() {
       return _notSrcIps;
     }
 
@@ -218,11 +237,11 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
       return _packetLengths;
     }
 
-    public IpSpace getSrcIps() {
+    public @Nullable IpSpace getSrcIps() {
       return _srcIps;
     }
 
-    public IpSpace getSrcOrDstIps() {
+    public @Nullable IpSpace getSrcOrDstIps() {
       return _srcOrDstIps;
     }
 
