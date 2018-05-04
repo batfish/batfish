@@ -3,9 +3,9 @@ package org.batfish.question.definedstructures;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.pojo.Node;
@@ -31,20 +31,24 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   public static TableMetadata createMetadata(Question question) {
-    Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
-    columnMetadataMap.put(
-        COL_DEFINITION_LINES,
-        new ColumnMetadata("List<Integer>", "Lines where the structure is defined", false, true));
-    columnMetadataMap.put(
-        COL_NODE_NAME,
-        new ColumnMetadata("String", "Node where the structure is defined", true, false));
-    columnMetadataMap.put(
-        COL_NUM_REFERENCES,
-        new ColumnMetadata("Integer", "Number of references to this structure", false, true));
-    columnMetadataMap.put(
-        COL_STRUCT_NAME, new ColumnMetadata("String", "Name of the structure", true, false));
-    columnMetadataMap.put(
-        COL_STRUCT_TYPE, new ColumnMetadata("String", "Type of the structure", true, false));
+    SortedMap<String, ColumnMetadata> columnMetadataMap =
+        new ImmutableSortedMap.Builder<String, ColumnMetadata>(String::compareTo)
+            .put(
+                COL_DEFINITION_LINES,
+                new ColumnMetadata(
+                    "List<Integer>", "Lines where the structure is defined", false, true))
+            .put(
+                COL_NODE_NAME,
+                new ColumnMetadata("String", "Node where the structure is defined", true, false))
+            .put(
+                COL_NUM_REFERENCES,
+                new ColumnMetadata(
+                    "Integer", "Number of references to this structure", false, true))
+            .put(
+                COL_STRUCT_NAME, new ColumnMetadata("String", "Name of the structure", true, false))
+            .put(
+                COL_STRUCT_TYPE, new ColumnMetadata("String", "Type of the structure", true, false))
+            .build();
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {

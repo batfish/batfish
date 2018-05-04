@@ -39,7 +39,7 @@ public class Rows implements Serializable {
   }
 
   @JsonValue
-  private SortedMultiset<Row> getData() {
+  public SortedMultiset<Row> getData() {
     return _data;
   }
 

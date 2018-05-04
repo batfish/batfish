@@ -3,8 +3,8 @@ package org.batfish.question.bgpsessionstatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -37,29 +37,40 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   }
 
   public static TableMetadata createMetadata(Question question) {
-    Map<String, ColumnMetadata> columnMetadata = new HashMap<>();
-    columnMetadata.put(
-        COL_CONFIGURED_STATUS, new ColumnMetadata("String", "Configured status", false, true));
-    columnMetadata.put(
-        COL_ESTABLISHED_NEIGHBORS,
-        new ColumnMetadata(
-            "Integer", "Number of neighbors with whom BGP session was established", false, true));
-    columnMetadata.put(
-        COL_LOCAL_IP, new ColumnMetadata("Ip", "The local IP of the session", false, false));
-    columnMetadata.put(COL_NODE, new ColumnMetadata("Node", "Node of the session", true, false));
-    columnMetadata.put(
-        COL_ON_LOOPBACK,
-        new ColumnMetadata(
-            "Boolean", "Whether the session was established on loopback interface", false, true));
-    columnMetadata.put(
-        COL_REMOTE_NODE, new ColumnMetadata("Node", "Remote node for this sessions", false, false));
-    columnMetadata.put(
-        COL_REMOTE_PREFIX,
-        new ColumnMetadata("Prefix", "Remote prefix for this session", true, false));
-    columnMetadata.put(
-        COL_SESSION_TYPE, new ColumnMetadata("String", "The type of this session", false, false));
-    columnMetadata.put(
-        COL_VRF_NAME, new ColumnMetadata("String", "The VRF for this session", true, false));
+    SortedMap<String, ColumnMetadata> columnMetadata =
+        new ImmutableSortedMap.Builder<String, ColumnMetadata>(String::compareTo)
+            .put(
+                COL_CONFIGURED_STATUS,
+                new ColumnMetadata("String", "Configured status", false, true))
+            .put(
+                COL_ESTABLISHED_NEIGHBORS,
+                new ColumnMetadata(
+                    "Integer",
+                    "Number of neighbors with whom BGP session was established",
+                    false,
+                    true))
+            .put(
+                COL_LOCAL_IP, new ColumnMetadata("Ip", "The local IP of the session", false, false))
+            .put(COL_NODE, new ColumnMetadata("Node", "Node of the session", true, false))
+            .put(
+                COL_ON_LOOPBACK,
+                new ColumnMetadata(
+                    "Boolean",
+                    "Whether the session was established on loopback interface",
+                    false,
+                    true))
+            .put(
+                COL_REMOTE_NODE,
+                new ColumnMetadata("Node", "Remote node for this sessions", false, false))
+            .put(
+                COL_REMOTE_PREFIX,
+                new ColumnMetadata("Prefix", "Remote prefix for this session", true, false))
+            .put(
+                COL_SESSION_TYPE,
+                new ColumnMetadata("String", "The type of this session", false, false))
+            .put(
+                COL_VRF_NAME, new ColumnMetadata("String", "The VRF for this session", true, false))
+            .build();
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {

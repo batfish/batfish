@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.MoreObjects;
 import java.io.IOException;
+import java.util.Map.Entry;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -74,6 +75,30 @@ public class Row implements Comparable<Row> {
   @JsonValue
   private ObjectNode getData() {
     return _data;
+  }
+
+  public String getKey(TableMetadata metadata) {
+    StringBuilder key = new StringBuilder();
+    for (Entry<String, ColumnMetadata> entry : metadata.getColumnMetadata().entrySet()) {
+      String columnName = entry.getKey();
+      ColumnMetadata columnMetadata = entry.getValue();
+      if (columnMetadata.getIsKey()) {
+        key.append(_data.get(columnName).toString());
+      }
+    }
+    return key.toString();
+  }
+
+  public String getValue(TableMetadata metadata) {
+    StringBuilder key = new StringBuilder();
+    for (Entry<String, ColumnMetadata> entry : metadata.getColumnMetadata().entrySet()) {
+      String columnName = entry.getKey();
+      ColumnMetadata columnMetadata = entry.getValue();
+      if (columnMetadata.getIsValue()) {
+        key.append(_data.get(columnName).toString());
+      }
+    }
+    return key.toString();
   }
 
   @Override

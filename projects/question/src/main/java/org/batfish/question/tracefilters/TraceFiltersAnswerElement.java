@@ -3,8 +3,8 @@ package org.batfish.question.tracefilters;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.LineAction;
@@ -32,8 +32,8 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
    * @return The creates the answer element object.
    */
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
-    Map<String, ColumnMetadata> columnMetadata =
-        new ImmutableMap.Builder<String, ColumnMetadata>()
+    SortedMap<String, ColumnMetadata> columnMetadata =
+        new ImmutableSortedMap.Builder<String, ColumnMetadata>(String::compareTo)
             .put(COLUMN_NODE, new ColumnMetadata("Node", "Node", true, false))
             .put(COLUMN_FILTER_NAME, new ColumnMetadata("String", "Filter name", true, false))
             .put(COLUMN_FLOW, new ColumnMetadata("Flow", "Evaluated flow", true, false))
