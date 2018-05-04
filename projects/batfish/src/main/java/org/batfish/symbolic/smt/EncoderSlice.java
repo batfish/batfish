@@ -1,5 +1,6 @@
 package org.batfish.symbolic.smt;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.microsoft.z3.ArithExpr;
 import com.microsoft.z3.BitVecExpr;
@@ -30,7 +31,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -1994,19 +1994,20 @@ class EncoderSlice {
 
         // We have to wrap this with the right thing for some reason
         List<Statement> statements;
-        Statements.StaticStatement s1 = new Statements.StaticStatement(Statements.ExitAccept);
-        Statements.StaticStatement s2 = new Statements.StaticStatement(Statements.ExitReject);
         if (proto.isOspf()) {
-          If i = new If();
-          List<Statement> stmts =
-              (pol == null ? Collections.singletonList(s2) : pol.getStatements());
-          i.setTrueStatements(Collections.singletonList(s1));
-          i.setFalseStatements(stmts);
-          BooleanExpr expr = new MatchProtocol(RoutingProtocol.OSPF);
-          i.setGuard(expr);
+          If i =
+              new If(
+                  new MatchProtocol(RoutingProtocol.OSPF),
+                  ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                  pol != null
+                      ? pol.getStatements()
+                      : ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)));
           statements = Collections.singletonList(i);
         } else {
-          statements = (pol == null ? Collections.singletonList(s1) : pol.getStatements());
+          statements =
+              (pol == null
+                  ? Collections.singletonList(new Statements.StaticStatement(Statements.ExitAccept))
+                  : pol.getStatements());
         }
 
         TransferSSA f =
