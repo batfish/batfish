@@ -1476,10 +1476,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // create policy for denying suppressed summary-only networks
     if (summaryOnlyNetworks.size() > 0) {
-      If suppressSummaryOnly = new If();
-      bgpCommonExportStatements.add(suppressSummaryOnly);
-      suppressSummaryOnly.setComment(
-          "Suppress summarized of summary-only aggregate-address networks");
       String matchSuppressedSummaryOnlyRoutesName =
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:" + vrfName + "~";
       RouteFilterList matchSuppressedSummaryOnlyRoutes =
@@ -1492,10 +1488,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
             new RouteFilterLine(LineAction.ACCEPT, PrefixRange.moreSpecificThan(prefix));
         matchSuppressedSummaryOnlyRoutes.addLine(line);
       }
-      suppressSummaryOnly.setGuard(
-          new MatchPrefixSet(
-              new DestinationNetwork(), new NamedPrefixSet(matchSuppressedSummaryOnlyRoutesName)));
-      suppressSummaryOnly.getTrueStatements().add(Statements.ReturnFalse.toStaticStatement());
+      If suppressSummaryOnly =
+          new If(
+              "Suppress summarized of summary-only aggregate-address networks",
+              new MatchPrefixSet(
+                  new DestinationNetwork(),
+                  new NamedPrefixSet(matchSuppressedSummaryOnlyRoutesName)),
+              ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+              ImmutableList.of());
+      bgpCommonExportStatements.add(suppressSummaryOnly);
     }
 
     If preFilter = new If();
@@ -1825,14 +1826,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (lpg.getRemovePrivateAs() != null && lpg.getRemovePrivateAs()) {
         peerExportPolicy.getStatements().add(Statements.RemovePrivateAs.toStaticStatement());
       }
-      If peerExportConditional = new If();
-      peerExportConditional.setComment(
-          "peer-export policy main conditional: exitAccept if true / exitReject if false");
-      peerExportPolicy.getStatements().add(peerExportConditional);
       Conjunction peerExportConditions = new Conjunction();
-      peerExportConditional.setGuard(peerExportConditions);
-      peerExportConditional.getTrueStatements().add(Statements.ExitAccept.toStaticStatement());
-      peerExportConditional.getFalseStatements().add(Statements.ExitReject.toStaticStatement());
+      If peerExportConditional =
+          new If(
+              "peer-export policy main conditional: exitAccept if true / exitReject if false",
+              peerExportConditions,
+              ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+              ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+      peerExportPolicy.getStatements().add(peerExportConditional);
       Disjunction localOrCommonOrigination = new Disjunction();
       peerExportConditions.getConjuncts().add(localOrCommonOrigination);
       localOrCommonOrigination.getDisjuncts().add(new CallExpr(bgpCommonExportPolicyName));
@@ -1906,28 +1907,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
             defaultRoute.setGenerationPolicy(defaultOriginateMapName);
           }
         } else {
-          String defaultRouteGenerationPolicyName =
-              "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~";
+          If defaultRouteGenerationConditional =
+              new If(
+                  ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
           RoutingPolicy defaultRouteGenerationPolicy =
-              new RoutingPolicy(defaultRouteGenerationPolicyName, c);
-          If defaultRouteGenerationConditional = new If();
+              new RoutingPolicy(
+                  "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
           defaultRouteGenerationPolicy.getStatements().add(defaultRouteGenerationConditional);
-          if (ipv4) {
-            defaultRouteGenerationConditional.setGuard(MATCH_DEFAULT_ROUTE);
-          } else {
-            defaultRouteGenerationConditional.setGuard(MATCH_DEFAULT_ROUTE6);
-          }
-          defaultRouteGenerationConditional
-              .getTrueStatements()
-              .add(Statements.ReturnTrue.toStaticStatement());
           if (lpg.getActive() && !lpg.getShutdown()) {
             c.getRoutingPolicies()
-                .put(defaultRouteGenerationPolicyName, defaultRouteGenerationPolicy);
+                .put(defaultRouteGenerationPolicy.getName(), defaultRouteGenerationPolicy);
           }
           if (ipv4) {
-            defaultRoute.setGenerationPolicy(defaultRouteGenerationPolicyName);
+            defaultRoute.setGenerationPolicy(defaultRouteGenerationPolicy.getName());
           } else {
-            defaultRoute6.setGenerationPolicy(defaultRouteGenerationPolicyName);
+            defaultRoute6.setGenerationPolicy(defaultRouteGenerationPolicy.getName());
           }
         }
       }
@@ -2440,12 +2435,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     ospfExportStatements.add(Statements.ExitAccept.toStaticStatement());
 
     // Construct the policy and add it before returning.
-    If ospfExportIf = new If();
-    ospfExportIf.setComment("OSPF export routes for " + protocol.protocolName());
-    ospfExportIf.setGuard(ospfExportConditions);
-    ospfExportIf.setTrueStatements(ospfExportStatements.build());
-
-    return ospfExportIf;
+    return new If(
+        "OSPF export routes for " + protocol.protocolName(),
+        ospfExportConditions,
+        ospfExportStatements.build(),
+        ImmutableList.of());
   }
 
   private org.batfish.datamodel.OspfProcess toOspfProcess(
@@ -3026,16 +3020,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (RoutePolicyStatement routePolicyStatement : routePolicy.getStatements()) {
       routePolicyStatement.applyTo(statements, this, c, _w);
     }
-    If endPolicy = new If();
-    If nonBoolean = new If();
-    endPolicy.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-    endPolicy.setTrueStatements(
-        Collections.singletonList(Statements.ReturnLocalDefaultAction.toStaticStatement()));
-    endPolicy.setFalseStatements(Collections.singletonList(nonBoolean));
-    nonBoolean.setGuard(BooleanExprs.CallStatementContext.toStaticBooleanExpr());
-    nonBoolean.setTrueStatements(Collections.singletonList(Statements.Return.toStaticStatement()));
-    nonBoolean.setFalseStatements(
-        Collections.singletonList(Statements.DefaultAction.toStaticStatement()));
+    If nonBoolean =
+        new If(
+            BooleanExprs.CallStatementContext.toStaticBooleanExpr(),
+            Collections.singletonList(Statements.Return.toStaticStatement()),
+            Collections.singletonList(Statements.DefaultAction.toStaticStatement()));
+    @SuppressWarnings("unused") // TODO(https://github.com/batfish/batfish/issues/1306)
+    If endPolicy =
+        new If(
+            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            Collections.singletonList(Statements.ReturnLocalDefaultAction.toStaticStatement()),
+            Collections.singletonList(nonBoolean));
     return rp;
   }
 

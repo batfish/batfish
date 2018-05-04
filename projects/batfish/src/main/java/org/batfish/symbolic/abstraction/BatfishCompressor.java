@@ -44,7 +44,6 @@ import org.batfish.datamodel.routing_policy.expr.RegexAsPathSetElem;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
@@ -175,14 +174,9 @@ public class BatfishCompressor {
   // Boolean: are the prefixes for the default equivalence class?
   private List<Statement> applyFilters(
       List<Statement> statements, @Nullable EquivalenceClassFilter filter) {
-    If i = new If();
-    List<Statement> newStatements = new ArrayList<>();
-    List<Statement> falseStatements = new ArrayList<>();
-    Statement reject = new StaticStatement(Statements.ExitReject);
-    falseStatements.add(reject);
+    BooleanExpr guard;
     if (filter == null) {
-      StaticBooleanExpr sbe = new StaticBooleanExpr(BooleanExprs.False);
-      i.setGuard(sbe);
+      guard = new StaticBooleanExpr(BooleanExprs.False);
     } else {
       AbstractionPrefixSet eps = new AbstractionPrefixSet(filter._prefixTrie);
       MatchPrefixSet match = new MatchPrefixSet(new DestinationNetwork(), eps);
@@ -190,16 +184,14 @@ public class BatfishCompressor {
         // Let traffic through if it passes the filter or was advertised from outside the network.
         Disjunction pfxOrExternal = new Disjunction();
         pfxOrExternal.setDisjuncts(ImmutableList.of(match, matchExternalTraffic()));
-        i.setGuard(pfxOrExternal);
+        guard = pfxOrExternal;
       } else {
         // Not default equivalence class, so just let traffic through if dest matches the filter
-        i.setGuard(match);
+        guard = match;
       }
     }
-    i.setFalseStatements(falseStatements);
-    i.setTrueStatements(statements);
-    newStatements.add(i);
-    return newStatements;
+    return ImmutableList.of(
+        new If(guard, statements, ImmutableList.of(Statements.ExitReject.toStaticStatement())));
   }
 
   /**
