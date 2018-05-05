@@ -164,7 +164,7 @@ public class JsonPathResult {
       for (Entry<String, Composition> cEntry : compositions.entrySet()) {
         String compositionName = cEntry.getKey();
         Composition composition = cEntry.getValue();
-        if (composition.getSchemaAsObject().isList()) {
+        if (composition.getSchema().isList()) {
           doCompositionList(resultKey, compositionName, composition, extractions);
         } else {
           doCompositionSingleton(resultKey, compositionName, composition);
@@ -189,7 +189,7 @@ public class JsonPathResult {
                 "varName '%s' for '%s' of '%s' is not in extractions",
                 varName, composition.getDictionary().get(varName), compositionName));
       }
-      if (extractions.get(varName).getSchemaAsObject().isList()) {
+      if (extractions.get(varName).getSchema().isList()) {
         if (!_displayValues.get(resultKey).containsKey(varName)) {
           throw new BatfishException(
               String.format(
@@ -215,13 +215,13 @@ public class JsonPathResult {
         String propertyName = pEntry.getKey();
         String varName = pEntry.getValue();
         JsonNode varNode = _displayValues.get(resultKey).get(varName);
-        if (extractions.get(varName).getSchemaAsObject().isList()) {
+        if (extractions.get(varName).getSchema().isList()) {
           object.set(propertyName, ((ArrayNode) varNode).get(index));
         } else {
           object.set(propertyName, varNode);
         }
       }
-      confirmValueType(object, composition.getSchemaAsObject().getBaseType());
+      confirmValueType(object, composition.getSchema().getBaseType());
       arrayNode.add(object);
     }
     _displayValues.get(resultKey).put(compositionName, arrayNode);
@@ -242,13 +242,13 @@ public class JsonPathResult {
       }
       object.set(propertyName, _displayValues.get(resultKey).get(varName));
     }
-    confirmValueType(object, composition.getSchemaAsObject().getBaseType());
+    confirmValueType(object, composition.getSchema().getBaseType());
     _displayValues.get(resultKey).put(compositionName, object);
   }
 
   private void extractValuesFromPrefix(
       String displayVar, Extraction extraction, JsonPathExtractionHint jpeHint) {
-    if (extraction.getSchemaAsObject().isList()) {
+    if (extraction.getSchema().isList()) {
       throw new BatfishException("Prefix-based hints are incompatible with list types");
     }
     for (Entry<String, JsonPathResultEntry> entry : _result.entrySet()) {
@@ -281,7 +281,7 @@ public class JsonPathResult {
       switch (jpeHint.getUse()) {
         case FUNCOFSUFFIX:
           {
-            if (!extraction.getSchemaAsObject().isIntOrIntList()) {
+            if (!extraction.getSchema().isIntOrIntList()) {
               throw new BatfishException(
                   "schema must be INT(LIST) with funcofsuffix-based extraction hint");
             }
@@ -314,7 +314,7 @@ public class JsonPathResult {
                   (jpeHint.getUse() == UseType.PREFIXOFSUFFIX)
                       ? new TextNode(resultEntry.getValue().getPrefixPart(jpeHint.getIndex()))
                       : resultEntry.getValue().getSuffix();
-              confirmValueType(value, extraction.getSchemaAsObject().getBaseType());
+              confirmValueType(value, extraction.getSchema().getBaseType());
               extractedList.add(value);
             }
           }
@@ -331,7 +331,7 @@ public class JsonPathResult {
                 + jsonObject);
       }
 
-      if (extraction.getSchemaAsObject().isList()) {
+      if (extraction.getSchema().isList()) {
         ArrayNode arrayNode = BatfishObjectMapper.mapper().valueToTree(extractedList);
         _displayValues.get(entry.getKey()).put(displayVar, arrayNode);
       } else {
