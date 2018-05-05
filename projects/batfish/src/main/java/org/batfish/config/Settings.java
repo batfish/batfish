@@ -1090,7 +1090,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
     setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
-    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "bdp");
+    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
   }
 
   private void initOptions() {
