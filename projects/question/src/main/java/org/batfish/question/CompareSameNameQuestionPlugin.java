@@ -116,6 +116,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private boolean _singletons;
 
+    private boolean _compareGenerated;
+
     public CompareSameNameAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
@@ -135,6 +137,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     public CompareSameNameAnswerElement answer() {
 
       CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
+      _compareGenerated = question.getCompareGenerated();
       _configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
       _nodes = question.getNodeRegex().getMatchingNodes(_batfish);
@@ -177,6 +180,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return _answerElement;
     }
 
+    private boolean ignored(String structName) {
+      return !_compareGenerated && structName.startsWith("~");
+    }
+
     private <T> NamedStructureEquivalenceSets<T> processStructures(
         Class<T> structureClass,
         Set<String> hostnames,
@@ -190,7 +197,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
               .map(configurations::get)
               .map(structureMapRetriever::apply)
               .flatMap(structureMap -> structureMap.keySet().stream())
-              .filter(structName -> !structName.startsWith("~"))
+              .filter(structName -> !ignored(structName))
               .collect(ImmutableSet.toImmutableSet());
       NamedStructureEquivalenceSets.Builder<T> builder =
           NamedStructureEquivalenceSets.builder(structureClassName);
@@ -242,6 +249,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    */
   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
 
+    private static final String PROP_COMPARE_GENERATED = "compareGenerated";
+
     private static final String PROP_EXCLUDED_NAMED_STRUCT_TYPES = "excludedNamedStructTypes";
 
     private static final String PROP_MISSING = "missing";
@@ -251,6 +260,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
     private static final String PROP_SINGLETONS = "singletons";
+
+    private boolean _compareGenerated;
 
     private SortedSet<String> _excludedNamedStructTypes;
 
@@ -266,6 +277,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _namedStructTypes = new TreeSet<>();
       initExcludedNamedStructTypes();
       _nodeRegex = NodesSpecifier.ALL;
+    }
+
+    @JsonProperty(PROP_COMPARE_GENERATED)
+    public boolean getCompareGenerated() {
+      return _compareGenerated;
     }
 
     @Override
@@ -311,6 +327,11 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _excludedNamedStructTypes = new TreeSet<>();
       _excludedNamedStructTypes.add(Interface.class.getSimpleName());
       _excludedNamedStructTypes.add(Vrf.class.getSimpleName());
+    }
+
+    @JsonProperty(PROP_COMPARE_GENERATED)
+    public void setCompareGenerated(boolean compareGenerated) {
+      _compareGenerated = compareGenerated;
     }
 
     @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
