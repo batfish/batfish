@@ -3644,7 +3644,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                             ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
                     .setName(
                         String.format(
-                            "Allow traffic received on interface in zone '%s' permitted by policy-map: %s",
+                            "Allow traffic received on interface in zone '%s' permitted by policy-map: '%s'",
                             srcZoneName, inspectPolicyMapName))
                     .build()))
         .build();
