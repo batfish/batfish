@@ -7,7 +7,9 @@ public class FalseExpr extends AclLineMatchExpr {
   private static final long serialVersionUID = 1L;
   public static final FalseExpr INSTANCE = new FalseExpr();
 
-  private FalseExpr() {}
+  private FalseExpr() {
+    super(null);
+  }
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {
