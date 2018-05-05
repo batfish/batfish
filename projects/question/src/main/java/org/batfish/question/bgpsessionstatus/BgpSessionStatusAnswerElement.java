@@ -2,7 +2,6 @@ package org.batfish.question.bgpsessionstatus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -79,11 +78,11 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(Row row) throws JsonProcessingException {
+  public Object fromRow(Row row) {
     return fromRowStatic(row);
   }
 
-  public static BgpSessionInfo fromRowStatic(Row row) throws JsonProcessingException {
+  public static BgpSessionInfo fromRowStatic(Row row) {
     Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
     SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
     Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);

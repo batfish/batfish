@@ -121,7 +121,7 @@ public abstract class TableAnswerElement extends AnswerElement {
     }
   }
 
-  public abstract Object fromRow(Row row) throws IOException;
+  public abstract Object fromRow(Row row);
 
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {

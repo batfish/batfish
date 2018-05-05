@@ -63,13 +63,30 @@ public class Row implements Comparable<Row> {
    * @param columnName The column to fetch
    * @return The result
    */
-  public <T> T get(String columnName, Class<T> valueType) throws JsonProcessingException {
-    return BatfishObjectMapper.mapper().treeToValue(_data.get(columnName), valueType);
+  public <T> T get(String columnName, Class<T> valueType) {
+    try {
+      return BatfishObjectMapper.mapper().treeToValue(_data.get(columnName), valueType);
+    } catch (JsonProcessingException e) {
+      throw new BatfishException(
+          String.format(
+              "Could not recover object of type %s from column %s",
+              valueType.getName(), columnName),
+          e);
+    }
   }
 
-  public <T> T get(String columnName, TypeReference<?> valueTypeRef) throws IOException {
-    return BatfishObjectMapper.mapper()
-        .readValue(BatfishObjectMapper.mapper().treeAsTokens(_data.get(columnName)), valueTypeRef);
+  public <T> T get(String columnName, TypeReference<?> valueTypeRef) {
+    try {
+      return BatfishObjectMapper.mapper()
+          .readValue(
+              BatfishObjectMapper.mapper().treeAsTokens(_data.get(columnName)), valueTypeRef);
+    } catch (IOException e) {
+      throw new BatfishException(
+          String.format(
+              "Could not recover object of type %s from column %s",
+              valueTypeRef.getClass(), columnName),
+          e);
+    }
   }
 
   @JsonValue
