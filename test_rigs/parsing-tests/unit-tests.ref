@@ -54370,7 +54370,7 @@
         "cisco_nxos_bgp" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: 2.2.2.2",
+            "2" : "MISCELLANEOUS: BGP neighbor 2.2.2.2 in vrf default: could not determine update source",
             "3" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
           }
         },
@@ -54464,14 +54464,14 @@
         "peer_template" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: 100.93.100.16",
-            "3" : "MISCELLANEOUS: BGP neighbor 10.98.25.0/25 in vrf default has configured update-source Loopback1 but this interface is not associated with this vrf."
+            "2" : "MISCELLANEOUS: BGP neighbor 100.93.100.16 in vrf default: could not determine update source",
+            "3" : "MISCELLANEOUS: BGP neighbor 10.98.25.0/25 in vrf default: configured update-source Loopback1 does not exist or is not associated with this vrf"
           }
         },
         "route_maps_in_two_address_families" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: 1.1.1.1"
+            "2" : "MISCELLANEOUS: BGP neighbor 1.1.1.1 in vrf default: could not determine update source"
           }
         }
       }

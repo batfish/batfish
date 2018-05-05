@@ -228,8 +228,8 @@ final class CiscoNxConversions {
       if (iface == null) {
         warnings.redFlag(
             String.format(
-                "BGP neighbor %s in vrf %s has configured update-source %s but "
-                    + "this interface is not associated with this vrf.",
+                "BGP neighbor %s in vrf %s: configured update-source %s does not exist or "
+                    + "is not associated with this vrf",
                 dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
         return null;
       }
@@ -237,8 +237,7 @@ final class CiscoNxConversions {
       if (address == null) {
         warnings.redFlag(
             String.format(
-                "BGP neighbor %s in vrf %s has configured update-source %s but "
-                    + "this interface has no configured IP address.",
+                "BGP neighbor %s in vrf %s: configured update-source %s has no IP address",
                 dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
         return null;
       }
@@ -255,17 +254,14 @@ final class CiscoNxConversions {
             .map(InterfaceAddress::getIp)
             .findFirst();
     if (firstMatchingInterfaceAddress.isPresent()) {
-      warnings.redFlag(
-          String.format(
-              "BGP neighbor %s in vrf %s has no configured update-source; "
-                  + "choosing IP %s from an interface that contains the neighbor address",
-              prefix.getStartIp(), vrf.getName(), firstMatchingInterfaceAddress.get()));
+      /* TODO: Warn here? Seems like this may be standard practice, e.g., for a /31. */
       return firstMatchingInterfaceAddress.get();
     }
 
     warnings.redFlag(
         String.format(
-            "Could not determine update source for BGP neighbor: %s", prefix.getStartIp()));
+            "BGP neighbor %s in vrf %s: could not determine update source",
+            prefix.getStartIp(), vrf.getName()));
     return null;
   }
 
