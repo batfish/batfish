@@ -1710,53 +1710,55 @@ public final class CiscoConfiguration extends VendorConfiguration {
               exportNetworkConditions.getConjuncts().add(we);
               preFilterConditions.getDisjuncts().add(exportNetworkConditions);
             });
-    String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
-    Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
-    proc.getIpv6Networks()
-        .forEach(
-            (prefix6, bgpNetwork6) -> {
-              int prefixLen = prefix6.getPrefixLength();
-              Route6FilterLine line =
-                  new Route6FilterLine(
-                      LineAction.ACCEPT, prefix6, new SubRange(prefixLen, prefixLen));
-              localFilter6.addLine(line);
-              String mapName = bgpNetwork6.getRouteMapName();
-              if (mapName != null) {
-                RouteMap routeMap = _routeMaps.get(mapName);
-                if (routeMap != null) {
-                  routeMap.getReferers().put(proc, "bgp ipv6 advertised network route-map");
-                  BooleanExpr we =
-                      bgpRedistributeWithEnvironmentExpr(new CallExpr(mapName), OriginType.IGP);
-                  Conjunction exportNetwork6Conditions = new Conjunction();
-                  Prefix6Space space6 = new Prefix6Space();
-                  space6.addPrefix6(prefix6);
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(
-                          new MatchPrefix6Set(
-                              new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
-                  // TODO: ban aggregates?
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
-                  exportNetwork6Conditions.getConjuncts().add(we);
-                  preFilterConditions.getDisjuncts().add(exportNetwork6Conditions);
-                } else {
-                  undefined(
-                      CiscoStructureType.ROUTE_MAP,
-                      mapName,
-                      CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
-                      bgpNetwork6.getRouteMapLine());
+    if (!proc.getIpv6Networks().isEmpty()) {
+      String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
+      Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
+      proc.getIpv6Networks()
+          .forEach(
+              (prefix6, bgpNetwork6) -> {
+                int prefixLen = prefix6.getPrefixLength();
+                Route6FilterLine line =
+                    new Route6FilterLine(
+                        LineAction.ACCEPT, prefix6, new SubRange(prefixLen, prefixLen));
+                localFilter6.addLine(line);
+                String mapName = bgpNetwork6.getRouteMapName();
+                if (mapName != null) {
+                  RouteMap routeMap = _routeMaps.get(mapName);
+                  if (routeMap != null) {
+                    routeMap.getReferers().put(proc, "bgp ipv6 advertised network route-map");
+                    BooleanExpr we =
+                        bgpRedistributeWithEnvironmentExpr(new CallExpr(mapName), OriginType.IGP);
+                    Conjunction exportNetwork6Conditions = new Conjunction();
+                    Prefix6Space space6 = new Prefix6Space();
+                    space6.addPrefix6(prefix6);
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(
+                            new MatchPrefix6Set(
+                                new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+                    // TODO: ban aggregates?
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+                    exportNetwork6Conditions.getConjuncts().add(we);
+                    preFilterConditions.getDisjuncts().add(exportNetwork6Conditions);
+                  } else {
+                    undefined(
+                        CiscoStructureType.ROUTE_MAP,
+                        mapName,
+                        CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
+                        bgpNetwork6.getRouteMapLine());
+                  }
                 }
-              }
-            });
-    c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
+              });
+      c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
+    }
 
     MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
     MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
