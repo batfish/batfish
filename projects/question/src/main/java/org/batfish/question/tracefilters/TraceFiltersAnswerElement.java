@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -33,12 +34,13 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
     Map<String, ColumnMetadata> columnMetadata =
         new ImmutableMap.Builder<String, ColumnMetadata>()
-            .put(COLUMN_NODE, new ColumnMetadata("Node", "Node", true, false))
-            .put(COLUMN_FILTER_NAME, new ColumnMetadata("String", "Filter name", true, false))
-            .put(COLUMN_FLOW, new ColumnMetadata("Flow", "Evaluated flow", true, false))
-            .put(COLUMN_ACTION, new ColumnMetadata("String", "Outcome", false, true))
-            .put(COLUMN_LINE_NUMBER, new ColumnMetadata("Integer", "Line number", false, true))
-            .put(COLUMN_LINE_CONTENT, new ColumnMetadata("String", "Line content", false, true))
+            .put(COLUMN_NODE, new ColumnMetadata(Schema.NODE, "Node", true, false))
+            .put(COLUMN_FILTER_NAME, new ColumnMetadata(Schema.STRING, "Filter name", true, false))
+            .put(COLUMN_FLOW, new ColumnMetadata(Schema.FLOW, "Evaluated flow", true, false))
+            .put(COLUMN_ACTION, new ColumnMetadata(Schema.STRING, "Outcome", false, true))
+            .put(COLUMN_LINE_NUMBER, new ColumnMetadata(Schema.INTEGER, "Line number", false, true))
+            .put(
+                COLUMN_LINE_CONTENT, new ColumnMetadata(Schema.STRING, "Line content", false, true))
             .build();
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {

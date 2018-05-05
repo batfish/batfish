@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -38,29 +39,39 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   public static TableMetadata createMetadata(Question question) {
     Map<String, ColumnMetadata> columnMetadata = new HashMap<>();
     columnMetadata.put(
-        COL_CONFIGURED_STATUS, new ColumnMetadata("String", "Configured status", false, true));
+        COL_CONFIGURED_STATUS, new ColumnMetadata(Schema.STRING, "Configured status", false, true));
     columnMetadata.put(
         COL_ESTABLISHED_NEIGHBORS,
         new ColumnMetadata(
-            "Integer", "Number of neighbors with whom BGP session was established", false, true));
+            Schema.INTEGER,
+            "Number of neighbors with whom BGP session was established",
+            false,
+            true));
     columnMetadata.put(
-        COL_LOCAL_IP, new ColumnMetadata("Ip", "The local IP of the session", false, false));
+        COL_LOCAL_IP, new ColumnMetadata(Schema.IP, "The local IP of the session", false, false));
     columnMetadata.put(
-        COL_NODE, new ColumnMetadata("Node", "Node where this session is configured", true, false));
+        COL_NODE,
+        new ColumnMetadata(Schema.NODE, "Node where this session is configured", true, false));
     columnMetadata.put(
         COL_ON_LOOPBACK,
         new ColumnMetadata(
-            "Boolean", "Whether the session was established on loopback interface", false, true));
+            Schema.BOOLEAN,
+            "Whether the session was established on loopback interface",
+            false,
+            true));
     columnMetadata.put(
-        COL_REMOTE_NODE, new ColumnMetadata("Node", "Remote node for this session", false, false));
+        COL_REMOTE_NODE,
+        new ColumnMetadata(Schema.NODE, "Remote node for this session", false, false));
     columnMetadata.put(
         COL_REMOTE_PREFIX,
-        new ColumnMetadata("Prefix", "Remote prefix for this session", true, false));
+        new ColumnMetadata(Schema.PREFIX, "Remote prefix for this session", true, false));
     columnMetadata.put(
-        COL_SESSION_TYPE, new ColumnMetadata("String", "The type of this session", false, false));
+        COL_SESSION_TYPE,
+        new ColumnMetadata(Schema.STRING, "The type of this session", false, false));
     columnMetadata.put(
         COL_VRF_NAME,
-        new ColumnMetadata("String", "The VRF in which this session is configured", true, false));
+        new ColumnMetadata(
+            Schema.STRING, "The VRF in which this session is configured", true, false));
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {

@@ -22,20 +22,12 @@ public class ColumnMetadata {
     this(schema, null, null, null);
   }
 
-  public ColumnMetadata(String schema) {
-    this(new Schema(schema), null, null, null);
+  public ColumnMetadata(Schema schema, String description) {
+    this(schema, description, null, null);
   }
 
-  public ColumnMetadata(String schema, String description) {
-    this(new Schema(schema), description, null, null);
-  }
-
-  public ColumnMetadata(String schema, boolean isKey, boolean isValue) {
-    this(new Schema(schema), null, isKey, isValue);
-  }
-
-  public ColumnMetadata(String schema, String description, boolean isKey, boolean isValue) {
-    this(new Schema(schema), description, isKey, isValue);
+  public ColumnMetadata(Schema schema, boolean isKey, boolean isValue) {
+    this(schema, null, isKey, isValue);
   }
 
   @JsonCreator

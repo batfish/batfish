@@ -18,6 +18,23 @@ import org.batfish.datamodel.pojo.Node;
 
 public class Schema {
 
+  public static final Schema BOOLEAN = new Schema("Boolean");
+  public static final Schema ENVIRONMENT = new Schema("Environment");
+  public static final Schema FILE_LINE = new Schema("FileLine");
+  public static final Schema FLOW = new Schema("Flow");
+  public static final Schema FLOW_TRACE = new Schema("FlowTrace");
+  public static final Schema INTEGER = new Schema("Integer");
+  public static final Schema INTERFACE = new Schema("Interface");
+  public static final Schema IP = new Schema("Ip");
+  public static final Schema OBJECT = new Schema("Object");
+  public static final Schema NODE = new Schema("Node");
+  public static final Schema PREFIX = new Schema("Prefix");
+  public static final Schema STRING = new Schema("String");
+
+  public static final Schema List(Schema baseSchema) {
+    return new Schema("List<" + baseSchema._schemaStr + ">");
+  }
+
   private static String getClassString(Class<?> cls) {
     return String.format("class:%s", cls.getCanonicalName());
   }
@@ -45,7 +62,7 @@ public class Schema {
   private String _schemaStr;
 
   @JsonCreator
-  public Schema(String schema) {
+  private Schema(String schema) {
     _schemaStr = schema;
 
     String baseTypeName = schema;
