@@ -478,7 +478,7 @@ rbnx_n_af_send_community
 
 rbnx_n_af_soft_reconfiguration
 :
-    SOFT_RECONFIGURATION INBOUND NEWLINE
+    SOFT_RECONFIGURATION INBOUND ALWAYS? NEWLINE
 ;
 
 rbnx_n_af_soo

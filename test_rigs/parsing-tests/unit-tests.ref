@@ -28803,7 +28803,56 @@
             "            ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
             "            (variable",
             "              VARIABLE:'MATCH_ASN'  <== mode:M_RouteMap)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_log_neighbor_changes",
+            "            LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_address_family",
+            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "            IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "            UNICAST:'unicast'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_neighbor",
+            "            NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "            IP_ADDRESS:'2.2.2.2'  <== mode:M_NEIGHBOR",
+            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              DEC:'6600'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_local_as",
+            "                  LOCAL_AS:'local-as'  <== mode:DEFAULT_MODE",
+            "                  (bgp_asn",
+            "                    DEC:'65500'  <== mode:DEFAULT_MODE)",
+            "                  NO_PREPEND:'no-prepend'  <== mode:DEFAULT_MODE",
+            "                  REPLACE_AS:'replace-as'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_common",
+            "                (rbnx_n_timers",
+            "                  TIMERS:'timers'  <== mode:DEFAULT_MODE",
+            "                  DEC:'1'  <== mode:DEFAULT_MODE",
+            "                  DEC:'3'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (rbnx_n_inner",
+            "              (rbnx_n_address_family",
+            "                ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "                IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "                UNICAST:'unicast'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "                (rbnx_n_af_inner",
+            "                  (rbnx_n_af_soft_reconfiguration",
+            "                    SOFT_RECONFIGURATION:'soft-reconfiguration'  <== mode:DEFAULT_MODE",
+            "                    INBOUND:'inbound'  <== mode:DEFAULT_MODE",
+            "                    ALWAYS:'always'  <== mode:DEFAULT_MODE",
+            "                    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -54321,7 +54370,8 @@
         "cisco_nxos_bgp" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
+            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: 2.2.2.2",
+            "3" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
           }
         },
         "ios_xr_bgp_neighbor_group" : {
@@ -54413,12 +54463,15 @@
         },
         "peer_template" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
+            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: 100.93.100.16",
+            "3" : "MISCELLANEOUS: BGP neighbor 10.98.25.0/25 in vrf default has configured update-source Loopback1 but this interface is not associated with this vrf."
           }
         },
         "route_maps_in_two_address_families" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses"
+            "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
+            "2" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: 1.1.1.1"
           }
         }
       }

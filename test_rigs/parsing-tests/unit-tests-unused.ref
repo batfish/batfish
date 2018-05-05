@@ -736,6 +736,22 @@
           ]
         }
       },
+      "unused:route-map:FROM_ABC_V4" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'FROM_ABC_V4'",
+        "files" : {
+          "route_maps_in_two_address_families" : [
+            24
+          ]
+        }
+      },
+      "unused:route-map:FROM_ABC_V6" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'FROM_ABC_V6'",
+        "files" : {
+          "route_maps_in_two_address_families" : [
+            27
+          ]
+        }
+      },
       "unused:route-map:JKL_MNO_PQR" : {
         "description" : "Unused structure of type: 'route-map' with name: 'JKL_MNO_PQR'",
         "files" : {
@@ -927,7 +943,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 122
+      "numResults" : 124
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1504,6 +1520,16 @@
         "route-map" : {
           "to_elacc" : [
             9
+          ]
+        }
+      },
+      "route_maps_in_two_address_families" : {
+        "route-map" : {
+          "FROM_ABC_V4" : [
+            24
+          ],
+          "FROM_ABC_V6" : [
+            27
           ]
         }
       },

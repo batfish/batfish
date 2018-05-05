@@ -74,14 +74,6 @@
           ]
         }
       },
-      "undefined:bgp group:usage:inherited BGP group:KLMN" : {
-        "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'KLMN'",
-        "files" : {
-          "neighbor_nxos" : [
-            0
-          ]
-        }
-      },
       "undefined:bgp group:usage:inherited BGP group:p3" : {
         "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'p3'",
         "files" : {
@@ -193,9 +185,6 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback1'",
         "files" : {
           "foundry_bgp" : [
-            0
-          ],
-          "peer_template" : [
             0
           ]
         }
@@ -847,14 +836,6 @@
           ]
         }
       },
-      "undefined:route-map:usage:bgp inbound route-map:PROTECT-LEAF" : {
-        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'PROTECT-LEAF'",
-        "files" : {
-          "peer_template" : [
-            19
-          ]
-        }
-      },
       "undefined:route-map:usage:bgp inbound route-map:as2_to_as1" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'as2_to_as1'",
         "files" : {
@@ -1011,7 +992,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 125
+      "numResults" : 122
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1679,15 +1660,6 @@
           }
         }
       },
-      "neighbor_nxos" : {
-        "bgp group" : {
-          "KLMN" : {
-            "inherited BGP group" : [
-              0
-            ]
-          }
-        }
-      },
       "nexus_bgp" : {
         "route-map" : {
           "BLIB" : {
@@ -1727,22 +1699,6 @@
           "RM_OSPF_STATIC" : {
             "ospf redistribute static route-map" : [
               10
-            ]
-          }
-        }
-      },
-      "peer_template" : {
-        "interface" : {
-          "Loopback1" : {
-            "update-source interface" : [
-              0
-            ]
-          }
-        },
-        "route-map" : {
-          "PROTECT-LEAF" : {
-            "bgp inbound route-map" : [
-              19
             ]
           }
         }
