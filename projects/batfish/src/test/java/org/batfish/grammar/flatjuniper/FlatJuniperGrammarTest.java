@@ -317,7 +317,9 @@ public class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
     InitInfoAnswerElement answer = batfish.initInfo(false, true);
     System.out.println(answer.prettyPrint());
-    assertThat(answer.prettyPrint(), not(Matchers.containsString("unimplemented pre-defined junos application")));
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application")));
   }
 
   /** Tests support for dynamic bgp parsing using "bgp allow" command */

@@ -36,7 +36,6 @@ public class JunosApplicationTest {
     _lines = new ArrayList<>();
     _fb = Flow.builder().setTag("").setIngressNode("");
     _aclb = IpAccessList.builder().setName("acl");
-
   }
 
   private IpAccessList makeAcl(JunosApplication application) {
@@ -55,12 +54,13 @@ public class JunosApplicationTest {
   @Test
   public void testAolDefinition() {
     IpAccessList acl = makeAcl(JunosApplication.JUNOS_AOL);
-    Flow startOfRange = _fb.setDstPort(NamedPort.AOL.number()).setIpProtocol(IpProtocol.TCP).build();
-    Flow endOfRange = _fb.setDstPort(NamedPort.AOL.number()+3).setIpProtocol(IpProtocol.TCP).build();
+    Flow startOfRange =
+        _fb.setDstPort(NamedPort.AOL.number()).setIpProtocol(IpProtocol.TCP).build();
+    Flow endOfRange =
+        _fb.setDstPort(NamedPort.AOL.number() + 3).setIpProtocol(IpProtocol.TCP).build();
     Flow invalid = _fb.setDstPort(5193).setIpProtocol(IpProtocol.UDP).build();
     assertThat(acl, accepts(startOfRange));
     assertThat(acl, accepts(endOfRange));
     assertThat(acl, rejects(invalid));
-
   }
 }
