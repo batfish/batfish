@@ -2327,8 +2327,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           .setMatchCondition(
                               new AndMatchExpr(
                                   ImmutableList.of(
-                                      new PermittedByAcl(oldOutgoingFilterName),
-                                      new PermittedByAcl(zoneOutgoingAclName))))
+                                      new PermittedByAcl(zoneOutgoingAclName),
+                                      new PermittedByAcl(oldOutgoingFilterName)),
+                                  String.format(
+                                      "Permit if permitted by policy for zone '%s' and permitted by outgoing filter '%s'",
+                                      zoneName, oldOutgoingFilterName)))
                           .build()))
               .build();
       newIface.setOutgoingFilter(combinedOutgoingAcl);
