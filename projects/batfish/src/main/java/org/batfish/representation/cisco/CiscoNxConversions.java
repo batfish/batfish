@@ -215,6 +215,60 @@ final class CiscoNxConversions {
     return (int) asn;
   }
 
+  @Nullable
+  private static Ip computeUpdateSource(
+      Vrf vrf,
+      Prefix prefix,
+      CiscoNxBgpVrfNeighborConfiguration neighbor,
+      boolean dynamic,
+      Warnings warnings) {
+    String updateSourceInterface = neighbor.getUpdateSource();
+    if (updateSourceInterface != null) {
+      Interface iface = vrf.getInterfaces().get(updateSourceInterface);
+      if (iface == null) {
+        warnings.redFlag(
+            String.format(
+                "BGP neighbor %s in vrf %s has configured update-source %s but "
+                    + "this interface is not associated with this vrf.",
+                dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
+        return null;
+      }
+      InterfaceAddress address = iface.getAddress();
+      if (address == null) {
+        warnings.redFlag(
+            String.format(
+                "BGP neighbor %s in vrf %s has configured update-source %s but "
+                    + "this interface has no configured IP address.",
+                dynamic ? prefix : prefix.getStartIp(), vrf.getName(), updateSourceInterface));
+        return null;
+      }
+      return address.getIp();
+    } else if (dynamic) {
+      return Ip.AUTO;
+    }
+    Optional<Ip> firstMatchingInterfaceAddress =
+        vrf.getInterfaces()
+            .values()
+            .stream()
+            .flatMap(i -> i.getAllAddresses().stream())
+            .filter(ia -> ia != null && ia.getPrefix().containsIp(prefix.getStartIp()))
+            .map(InterfaceAddress::getIp)
+            .findFirst();
+    if (firstMatchingInterfaceAddress.isPresent()) {
+      warnings.redFlag(
+          String.format(
+              "BGP neighbor %s in vrf %s has no configured update-source; "
+                  + "choosing IP %s from an interface that contains the neighbor address",
+              prefix.getStartIp(), vrf.getName(), firstMatchingInterfaceAddress.get()));
+      return firstMatchingInterfaceAddress.get();
+    }
+
+    warnings.redFlag(
+        String.format(
+            "Could not determine update source for BGP neighbor: %s", prefix.getStartIp()));
+    return null;
+  }
+
   @Nonnull
   private static BgpNeighbor toBgpNeighbor(
       Configuration c,
@@ -247,6 +301,8 @@ final class CiscoNxConversions {
       newNeighbor.setLocalAs(
           coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", vrfConfig.getLocalAs()));
     }
+
+    newNeighbor.setLocalIp(computeUpdateSource(vrf, prefix, neighbor, dynamic, warnings));
 
     if (neighbor.getRemoteAs() != null) {
       newNeighbor.setRemoteAs(

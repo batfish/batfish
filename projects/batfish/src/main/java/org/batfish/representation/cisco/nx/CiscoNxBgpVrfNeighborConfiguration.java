@@ -119,6 +119,15 @@ public class CiscoNxBgpVrfNeighborConfiguration implements Serializable {
     this._shutdown = shutdown;
   }
 
+  @Nullable
+  public String getUpdateSource() {
+    return _updateSource;
+  }
+
+  public void setUpdateSource(@Nullable String updateSource) {
+    _updateSource = updateSource;
+  }
+
   private final Map<String, CiscoNxBgpVrfNeighborAddressFamilyConfiguration> _addressFamilies;
   @Nullable private String _description;
   @Nullable private Integer _ebgpMultihopTtl;
@@ -129,6 +138,7 @@ public class CiscoNxBgpVrfNeighborConfiguration implements Serializable {
   @Nullable private String _remoteAsRouteMap;
   @Nullable private RemovePrivateAsMode _removePrivateAs;
   @Nullable private Boolean _shutdown;
+  @Nullable private String _updateSource;
 
   private void inheritFrom(
       CiscoNxBgpGlobalConfiguration nxBgpGlobal,
@@ -155,6 +165,9 @@ public class CiscoNxBgpVrfNeighborConfiguration implements Serializable {
     }
     if (_shutdown == null) {
       _shutdown = peer._shutdown;
+    }
+    if (_updateSource == null) {
+      _updateSource = peer._updateSource;
     }
   }
 

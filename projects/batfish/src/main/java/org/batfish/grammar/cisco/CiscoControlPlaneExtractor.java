@@ -496,6 +496,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_local_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_shutdownContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_neighborContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peerContext;
@@ -2491,6 +2492,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRbnx_n_shutdown(Rbnx_n_shutdownContext ctx) {
     _currentBgpNxVrfNeighbor.setShutdown(true);
+  }
+
+  @Override
+  public void exitRbnx_n_update_source(Rbnx_n_update_sourceContext ctx) {
+    String name = toInterfaceName(ctx.interface_name());
+    _currentBgpNxVrfNeighbor.setUpdateSource(name);
+    _configuration.referenceStructure(
+        CiscoStructureType.INTERFACE,
+        name,
+        CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
+        ctx.getStart().getLine());
   }
 
   @Override
