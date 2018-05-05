@@ -3,7 +3,6 @@ package org.batfish.datamodel.table;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
 import java.io.IOException;
@@ -27,7 +26,7 @@ public class TableAnswerElementTest {
     }
 
     @Override
-    public Object fromRow(Row o) throws JsonProcessingException {
+    public Object fromRow(Row o) {
       return null;
     }
 
