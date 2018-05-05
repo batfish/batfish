@@ -946,7 +946,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperSourceAddress() throws IOException {
+  public void testSourceAddress() throws IOException {
     Configuration c = parseConfig("firewall-source-address");
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(1));
@@ -956,25 +956,30 @@ public class FlatJuniperGrammarTest {
 
     // should have the same acl as defined in the config
     assertThat(
-        Iterables.getOnlyElement(fwSourceAddressAcl.getLines()),
-        equalTo(
-            IpAccessListLine.builder()
-                .setAction(LineAction.ACCEPT)
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(
-                                AclIpSpace.union(
-                                    new IpWildcard(new Ip("0.2.0.4"), new Ip("255.0.255.0"))
-                                        .toIpSpace(),
-                                    new IpWildcard("2.3.4.5/24").toIpSpace()))
-                            .build()))
-                .setName("TERM")
-                .build()));
+        c,
+        hasIpAccessList(
+            "FILTER",
+            hasLines(
+                equalTo(
+                    ImmutableList.of(
+                        IpAccessListLine.builder()
+                            .setAction(LineAction.ACCEPT)
+                            .setMatchCondition(
+                                new MatchHeaderSpace(
+                                    HeaderSpace.builder()
+                                        .setSrcIps(
+                                            AclIpSpace.union(
+                                                new IpWildcard(
+                                                        new Ip("1.0.3.0"), new Ip("0.255.0.255"))
+                                                    .toIpSpace(),
+                                                new IpWildcard("2.3.4.5/24").toIpSpace()))
+                                        .build()))
+                            .setName("TERM")
+                            .build())))));
   }
 
   @Test
-  public void testJuniperDestinationAddress() throws IOException {
+  public void testDestinationAddress() throws IOException {
     Configuration c = parseConfig("firewall-destination-address");
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(1));
@@ -984,21 +989,62 @@ public class FlatJuniperGrammarTest {
 
     // should have the same acl as defined in the config
     assertThat(
-        Iterables.getOnlyElement(fwDestinationAddressAcl.getLines()),
-        equalTo(
-            IpAccessListLine.builder()
-                .setAction(LineAction.ACCEPT)
-                .setMatchCondition(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setDstIps(
-                                AclIpSpace.union(
-                                    new IpWildcard(new Ip("0.2.0.4"), new Ip("255.0.255.0"))
-                                        .toIpSpace(),
-                                    new IpWildcard("2.3.4.5/24").toIpSpace()))
-                            .build()))
-                .setName("TERM")
-                .build()));
+        c,
+        hasIpAccessList(
+            "FILTER",
+            hasLines(
+                equalTo(
+                    ImmutableList.of(
+                        IpAccessListLine.builder()
+                            .setAction(LineAction.ACCEPT)
+                            .setMatchCondition(
+                                new MatchHeaderSpace(
+                                    HeaderSpace.builder()
+                                        .setDstIps(
+                                            AclIpSpace.union(
+                                                new IpWildcard(
+                                                        new Ip("1.0.3.0"), new Ip("0.255.0.255"))
+                                                    .toIpSpace(),
+                                                new IpWildcard("2.3.4.5/24").toIpSpace()))
+                                        .build()))
+                            .setName("TERM")
+                            .build())))));
+  }
+
+  @Test
+  public void testSourceAddressBehavior() throws IOException {
+    Configuration c = parseConfig("firewall-source-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    Flow whileListedSrc = createFlow("1.8.3.9", "2.5.6.7");
+    Flow blackListedSrc = createFlow("5.8.4.9", "2.5.6.7");
+
+    IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
+
+    // Whitelisted source address should be allowed
+    assertThat(incomingFilter, accepts(whileListedSrc, "fw-s-add.0", c));
+
+    // Blacklisted source address should be denied
+    assertThat(incomingFilter, rejects(blackListedSrc, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testDestinationAddressBehavior() throws IOException {
+    Configuration c = parseConfig("firewall-destination-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    Flow whileListedDst = createFlow("2.5.6.7", "1.8.3.9");
+    Flow blackListedDst = createFlow("2.5.6.7", "5.8.4.9");
+
+    IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
+
+    // Whitelisted source address should be allowed
+    assertThat(incomingFilter, accepts(whileListedDst, "fw-s-add.0", c));
+
+    // Blacklisted source address should be denied
+    assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
   }
 
   @Test

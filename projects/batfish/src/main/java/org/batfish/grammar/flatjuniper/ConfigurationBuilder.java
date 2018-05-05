@@ -2692,29 +2692,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_destination_address(Fftf_destination_addressContext ctx) {
-    if (ctx.ip_address != null && ctx.wildcard_mask != null) {
-      IpWildcard ipWildcard =
-          new IpWildcard(new Ip(ctx.ip_address.getText()), new Ip(ctx.wildcard_mask.getText()));
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-        from = new FwFromDestinationAddressExcept(ipWildcard);
-      } else {
-        from = new FwFromDestinationAddress(ipWildcard);
-      }
-      _currentFwTerm.getFroms().add(from);
-    } else if (ctx.ip_address != null || ctx.IP_PREFIX() != null) {
-      Prefix prefix;
-      if (ctx.IP_PREFIX() != null) {
-        prefix = Prefix.parse(ctx.IP_PREFIX().getText());
-      } else {
-        prefix = new Prefix(new Ip(ctx.ip_address.getText()), Prefix.MAX_PREFIX_LENGTH);
-      }
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-        from = new FwFromDestinationAddressExcept(prefix);
-      } else {
-        from = new FwFromDestinationAddress(prefix);
-      }
+    FwFrom from;
+    IpWildcard ipWildcard = formIpWildCard(ctx.ip_address, ctx.wildcard_mask, ctx.IP_PREFIX());
+    if (ipWildcard != null) {
+      from =
+          ctx.EXCEPT() != null
+              ? new FwFromDestinationAddressExcept(ipWildcard)
+              : new FwFromDestinationAddress(ipWildcard);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -2867,29 +2851,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_source_address(Fftf_source_addressContext ctx) {
-    if (ctx.ip_address != null && ctx.wildcard_mask != null) {
-      IpWildcard ipWildcard =
-          new IpWildcard(new Ip(ctx.ip_address.getText()), new Ip(ctx.wildcard_mask.getText()));
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-        from = new FwFromSourceAddressExcept(ipWildcard);
-      } else {
-        from = new FwFromSourceAddress(ipWildcard);
-      }
-      _currentFwTerm.getFroms().add(from);
-    } else if (ctx.ip_address != null || ctx.IP_PREFIX() != null) {
-      Prefix prefix;
-      if (ctx.IP_PREFIX() != null) {
-        prefix = Prefix.parse(ctx.IP_PREFIX().getText());
-      } else {
-        prefix = new Prefix(new Ip(ctx.ip_address.getText()), Prefix.MAX_PREFIX_LENGTH);
-      }
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-        from = new FwFromSourceAddressExcept(prefix);
-      } else {
-        from = new FwFromSourceAddress(prefix);
-      }
+    FwFrom from;
+    IpWildcard ipWildcard = formIpWildCard(ctx.ip_address, ctx.wildcard_mask, ctx.IP_PREFIX());
+    if (ipWildcard != null) {
+      from =
+          ctx.EXCEPT() != null
+              ? new FwFromSourceAddressExcept(ipWildcard)
+              : new FwFromSourceAddress(ipWildcard);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -4213,6 +4181,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSyt_source_address(Syt_source_addressContext ctx) {
     Ip sourceAddress = new Ip(ctx.address.getText());
     _currentTacplusServer.setSourceAddress(sourceAddress);
+  }
+
+  @Nullable
+  private IpWildcard formIpWildCard(
+      @Nullable Token ipAddressToken,
+      @Nullable Token wildcardMask,
+      @Nullable TerminalNode ipPrefix) {
+    IpWildcard ipWildcard = null;
+    if (ipAddressToken != null && wildcardMask != null) {
+      Ip ipAddress = new Ip(ipAddressToken.getText());
+      Ip mask = new Ip(wildcardMask.getText());
+      ipWildcard = new IpWildcard(ipAddress, mask.inverted());
+    } else if (ipAddressToken != null) {
+      ipWildcard =
+          new IpWildcard(new Prefix(new Ip(ipAddressToken.getText()), Prefix.MAX_PREFIX_LENGTH));
+    } else if (ipPrefix != null) {
+      ipWildcard = new IpWildcard(Prefix.parse(ipPrefix.getText()));
+    }
+    return ipWildcard;
   }
 
   public JuniperConfiguration getConfiguration() {

@@ -6,7 +6,6 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 
 public final class FwFromDestinationAddressExcept extends FwFrom {
 
@@ -15,16 +14,8 @@ public final class FwFromDestinationAddressExcept extends FwFrom {
 
   @Nullable private final IpWildcard _ipWildcard;
 
-  @Nullable private final Prefix _prefix;
-
   public FwFromDestinationAddressExcept(IpWildcard ipWildcard) {
     _ipWildcard = ipWildcard;
-    _prefix = null;
-  }
-
-  public FwFromDestinationAddressExcept(Prefix prefix) {
-    _ipWildcard = null;
-    _prefix = prefix;
   }
 
   @Override
@@ -33,18 +24,8 @@ public final class FwFromDestinationAddressExcept extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    IpWildcard wildcard;
-    if (_ipWildcard != null) {
-      wildcard = _ipWildcard;
-    } else {
-      wildcard = new IpWildcard(_prefix);
-    }
     headerSpaceBuilder.setNotDstIps(
-        AclIpSpace.union(headerSpaceBuilder.getNotDstIps(), wildcard.toIpSpace()));
-  }
-
-  public Prefix getPrefix() {
-    return _prefix;
+        AclIpSpace.union(headerSpaceBuilder.getNotDstIps(), _ipWildcard.toIpSpace()));
   }
 
   public IpWildcard getIpWildcard() {
