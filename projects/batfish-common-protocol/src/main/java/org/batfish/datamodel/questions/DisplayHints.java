@@ -32,7 +32,12 @@ public class DisplayHints {
     }
 
     @JsonProperty(PROP_SCHEMA)
-    public Schema getSchema() {
+    public String getSchema() {
+      return _schema.toString();
+    }
+
+    @JsonIgnore
+    public Schema getSchemaAsObject() {
       return _schema;
     }
 
@@ -77,7 +82,12 @@ public class DisplayHints {
     }
 
     @JsonProperty(PROP_SCHEMA)
-    public Schema getSchema() {
+    public String getSchema() {
+      return _schema.toString();
+    }
+
+    @JsonIgnore
+    public Schema getSchemaAsObject() {
       return _schema;
     }
 
