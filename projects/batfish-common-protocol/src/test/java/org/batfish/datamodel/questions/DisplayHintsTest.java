@@ -28,14 +28,15 @@ public class DisplayHintsTest {
     assertThat(extractions.size(), equalTo(3));
 
     Extraction hint0 = extractions.get("node1");
-    assertThat(hint0.getSchema().isList(), equalTo(false));
-    assertThat(hint0.getSchema().getBaseType().getCanonicalName(), equalTo("java.lang.String"));
+    assertThat(hint0.getSchemaAsObject().isList(), equalTo(false));
+    assertThat(
+        hint0.getSchemaAsObject().getBaseType().getCanonicalName(), equalTo("java.lang.String"));
     assertThat(hint0.getMethod().containsKey("use"), equalTo(true));
 
     Extraction hint1 = extractions.get("interfaces1");
-    assertThat(hint1.getSchema().isList(), equalTo(true));
+    assertThat(hint1.getSchemaAsObject().isList(), equalTo(true));
 
     Extraction hint2 = extractions.get("nodes1");
-    assertThat(hint2.getSchema().isIntOrIntList(), equalTo(true));
+    assertThat(hint2.getSchemaAsObject().isIntOrIntList(), equalTo(true));
   }
 }
