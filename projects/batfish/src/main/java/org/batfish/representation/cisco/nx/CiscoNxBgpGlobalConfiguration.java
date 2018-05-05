@@ -30,6 +30,14 @@ public final class CiscoNxBgpGlobalConfiguration implements Serializable {
     this._enforceFirstAs = enforceFirstAs;
   }
 
+  public long getLocalAs() {
+    return _localAs;
+  }
+
+  public void setLocalAs(long localAs) {
+    this._localAs = localAs;
+  }
+
   public CiscoNxBgpVrfNeighborConfiguration getOrCreateTemplatePeer(String name) {
     return _templatePeers.computeIfAbsent(name, n -> new CiscoNxBgpVrfNeighborConfiguration());
   }
@@ -67,6 +75,7 @@ public final class CiscoNxBgpGlobalConfiguration implements Serializable {
   }
 
   private boolean _enforceFirstAs;
+  private long _localAs;
   private final Map<String, CiscoNxBgpVrfNeighborConfiguration> _templatePeers;
   private final Map<String, CiscoNxBgpVrfNeighborAddressFamilyConfiguration> _templatePeerPolicies;
   private final Map<String, CiscoNxBgpVrfNeighborConfiguration> _templatePeerSessions;

@@ -2662,7 +2662,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _currentBgpNxVrfConfiguration = new CiscoNxBgpVrfConfiguration();
         vrf.setBgpNxConfig(_currentBgpNxVrfConfiguration);
       }
-      _currentBgpNxVrfConfiguration.setLocalAs(procNum);
+      _configuration.getNxBgpGlobalConfiguration().setLocalAs(procNum);
     } else {
       BgpProcess proc = new BgpProcess(_format, procNum);
       vrf.setBgpProcess(proc);

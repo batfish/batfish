@@ -300,6 +300,9 @@ final class CiscoNxConversions {
     } else if (vrfConfig.getLocalAs() != null) {
       newNeighbor.setLocalAs(
           coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", vrfConfig.getLocalAs()));
+    } else {
+      newNeighbor.setLocalAs(
+          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", bgpConfig.getLocalAs()));
     }
 
     newNeighbor.setLocalIp(computeUpdateSource(vrf, prefix, neighbor, dynamic, warnings));
