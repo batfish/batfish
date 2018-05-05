@@ -10,7 +10,7 @@
           "schema" : "String"
         },
         "node" : {
-          "description" : "Node of the session",
+          "description" : "Node where this session is configured",
           "isKey" : true,
           "isValue" : false,
           "schema" : "Node"
@@ -22,7 +22,7 @@
           "schema" : "Boolean"
         },
         "remoteNode" : {
-          "description" : "Remote node for this sessions",
+          "description" : "Remote node for this session",
           "isKey" : false,
           "isValue" : false,
           "schema" : "Node"
@@ -52,7 +52,7 @@
           "schema" : "Integer"
         },
         "vrfName" : {
-          "description" : "The VRF for this session",
+          "description" : "The VRF in which this session is configured",
           "isKey" : true,
           "isValue" : false,
           "schema" : "String"

@@ -47,10 +47,10 @@
     "rows" : [
       {
         "node" : {
-          "id" : "node-host1",
-          "name" : "host1"
+          "id" : "node-host2",
+          "name" : "host2"
         },
-        "filterName" : "filter::FORWARD",
+        "filterName" : "filter::INPUT",
         "flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
@@ -59,7 +59,7 @@
           "fragmentOffset" : 0,
           "icmpCode" : 255,
           "icmpVar" : 255,
-          "ingressNode" : "host1",
+          "ingressNode" : "host2",
           "ingressVrf" : "default",
           "ipProtocol" : "IP",
           "packetLength" : 0,
@@ -76,8 +76,8 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "ACCEPT",
-        "lineNumber" : 0,
+        "action" : "REJECT",
+        "lineNumber" : 1,
         "lineContent" : "default"
       },
       {
@@ -190,41 +190,6 @@
           "id" : "node-host2",
           "name" : "host2"
         },
-        "filterName" : "filter::INPUT",
-        "flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "IP",
-          "packetLength" : 0,
-          "srcIp" : "AUTO/NONE(-1l)",
-          "srcPort" : 0,
-          "state" : "NEW",
-          "tag" : "BASE",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "action" : "REJECT",
-        "lineNumber" : 1,
-        "lineContent" : "default"
-      },
-      {
-        "node" : {
-          "id" : "node-host2",
-          "name" : "host2"
-        },
         "filterName" : "filter::OUTPUT",
         "flow" : {
           "dscp" : 0,
@@ -253,6 +218,41 @@
         },
         "action" : "ACCEPT",
         "lineNumber" : 1,
+        "lineContent" : "default"
+      },
+      {
+        "node" : {
+          "id" : "node-host1",
+          "name" : "host1"
+        },
+        "filterName" : "filter::FORWARD",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "AUTO/NONE(-1l)",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
         "lineContent" : "default"
       }
     ],

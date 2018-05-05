@@ -46,20 +46,22 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
             "Integer", "Number of neighbors with whom BGP session was established", false, true));
     columnMetadata.put(
         COL_LOCAL_IP, new ColumnMetadata("Ip", "The local IP of the session", false, false));
-    columnMetadata.put(COL_NODE, new ColumnMetadata("Node", "Node of the session", true, false));
+    columnMetadata.put(
+        COL_NODE, new ColumnMetadata("Node", "Node where this session is configured", true, false));
     columnMetadata.put(
         COL_ON_LOOPBACK,
         new ColumnMetadata(
             "Boolean", "Whether the session was established on loopback interface", false, true));
     columnMetadata.put(
-        COL_REMOTE_NODE, new ColumnMetadata("Node", "Remote node for this sessions", false, false));
+        COL_REMOTE_NODE, new ColumnMetadata("Node", "Remote node for this session", false, false));
     columnMetadata.put(
         COL_REMOTE_PREFIX,
         new ColumnMetadata("Prefix", "Remote prefix for this session", true, false));
     columnMetadata.put(
         COL_SESSION_TYPE, new ColumnMetadata("String", "The type of this session", false, false));
     columnMetadata.put(
-        COL_VRF_NAME, new ColumnMetadata("String", "The VRF for this session", true, false));
+        COL_VRF_NAME,
+        new ColumnMetadata("String", "The VRF in which this session is configured", true, false));
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
