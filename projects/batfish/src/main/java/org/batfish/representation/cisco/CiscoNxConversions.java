@@ -203,6 +203,18 @@ final class CiscoNxConversions {
                         warnings)));
   }
 
+  /** Returns {@code asn} cast to {@code int}, warning if the AS number given is a 4-byte AS. */
+  private static int coerceTwoByteAsn(
+      Warnings warnings, String vrfName, Prefix prefix, String type, long asn) {
+    if (asn >= (1 << 16)) {
+      warnings.redFlag(
+          String.format(
+              "4-byte AS numbers are not fully supported: vrf %s neighbor %s %s-as %d",
+              vrfName, prefix, type, asn));
+    }
+    return (int) asn;
+  }
+
   @Nonnull
   private static BgpNeighbor toBgpNeighbor(
       Configuration c,
@@ -229,34 +241,16 @@ final class CiscoNxConversions {
     }
 
     if (neighbor.getLocalAs() != null) {
-      long asn = neighbor.getLocalAs();
-      if (asn >= (1 << 16)) {
-        warnings.redFlag(
-            String.format(
-                "4-byte AS numbers are not fully supported: vrf %s neighbor %s local-as %d",
-                vrf.getName(), prefix, asn));
-      }
-      newNeighbor.setLocalAs((int) asn);
+      newNeighbor.setLocalAs(
+          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", neighbor.getLocalAs()));
     } else if (vrfConfig.getLocalAs() != null) {
-      long asn = vrfConfig.getLocalAs();
-      if (asn >= (1 << 16)) {
-        warnings.redFlag(
-            String.format(
-                "4-byte AS numbers are not fully supported: vrf %s neighbor %s local-as %d",
-                vrf.getName(), prefix, asn));
-      }
-      newNeighbor.setLocalAs((int) asn);
+      newNeighbor.setLocalAs(
+          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", vrfConfig.getLocalAs()));
     }
 
     if (neighbor.getRemoteAs() != null) {
-      long asn = neighbor.getRemoteAs();
-      if (asn >= (1 << 16)) {
-        warnings.redFlag(
-            String.format(
-                "4-byte AS numbers are not fully supported: vrf %s neighbor %s remote-as %d",
-                vrf.getName(), prefix, asn));
-      }
-      newNeighbor.setRemoteAs((int) asn);
+      newNeighbor.setRemoteAs(
+          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "remote", neighbor.getRemoteAs()));
     }
 
     newNeighbor.setVrf(vrf.getName());
