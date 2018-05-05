@@ -49,6 +49,11 @@ public class AclReachabilityTest {
 
     AclReachabilityQuestion question = new AclReachabilityQuestion();
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
+
+    /*
+     *  Test for NPE introduced by reverted PR #1272 due to missing definition for acl1 when
+     *  processing acl2.
+     */
     answerer.answer();
   }
 }
