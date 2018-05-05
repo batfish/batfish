@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import java.util.Collections;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -20,13 +20,12 @@ public abstract class RoutePolicySetStatement extends RoutePolicyStatement {
       List<Statement> statements, CiscoConfiguration cc, Configuration c, Warnings w) {
     Statement setStatement = toSetStatement(cc, c, w);
     Statement bufferedStatement = new BufferedStatement(setStatement);
-    If ifStatement = new If();
-    ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-    ifStatement.setTrueStatements(
-        Collections.singletonList(Statements.SetLocalDefaultActionAccept.toStaticStatement()));
-    ifStatement.setFalseStatements(
-        Collections.singletonList(Statements.SetDefaultActionAccept.toStaticStatement()));
     statements.add(bufferedStatement);
+    If ifStatement =
+        new If(
+            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            ImmutableList.of(Statements.SetLocalDefaultActionAccept.toStaticStatement()),
+            ImmutableList.of(Statements.SetDefaultActionAccept.toStaticStatement()));
     statements.add(ifStatement);
   }
 

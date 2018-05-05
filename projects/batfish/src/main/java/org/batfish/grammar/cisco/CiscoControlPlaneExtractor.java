@@ -423,7 +423,9 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_ios_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosi_class_type_inspectContext;
+import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_dropContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_inspectContext;
+import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_passContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -691,6 +693,7 @@ import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.batfish.representation.cisco.OspfWildcardNetwork;
+import org.batfish.representation.cisco.PolicyMapClassAction;
 import org.batfish.representation.cisco.Prefix6List;
 import org.batfish.representation.cisco.Prefix6ListLine;
 import org.batfish.representation.cisco.PrefixList;
@@ -858,7 +861,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
-      iface.setOspfPointToPoint(true);
+      iface.setOspfPointToPoint(ctx.POINT_TO_POINT() != null);
     }
   }
 
@@ -5602,7 +5605,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitPm_iosict_inspect(Pm_iosict_inspectContext ctx) {
-    _currentInspectPolicyMapInspectClass.setInspect(true);
+    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.INSPECT);
+  }
+
+  @Override
+  public void exitPm_iosict_pass(Pm_iosict_passContext ctx) {
+    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.PASS);
+  }
+
+  @Override
+  public void exitPm_iosict_drop(Pm_iosict_dropContext ctx) {
+    _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.DROP);
   }
 
   @Override

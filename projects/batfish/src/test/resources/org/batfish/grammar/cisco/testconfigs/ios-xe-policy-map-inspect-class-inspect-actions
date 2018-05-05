@@ -1,0 +1,26 @@
+!
+hostname ios-xe-policy-map-inspect-class-inspect-actions
+!
+policy-map type inspect pm
+ class type inspect cpass
+  pass
+ class type inspect cinspect
+  inspect
+ class type inspect cdrop
+  drop
+!
+class-map type inspect cpass
+ match access-group name aclpass
+class-map type inspect cinspect
+ match access-group name aclinspect
+class-map type inspect cdrop
+ match access-group name acldrop
+!
+ip access-list extended aclpass
+ permit tcp any any
+ip access-list extended aclinspect
+ permit udp any any
+ip access-list extended acldrop
+ permit icmp any any
+!
+!
