@@ -1,0 +1,43 @@
+#
+set system host-name pre-defined-junos-applications
+#
+set security policies global policy allow-hosts-printsrv match application junos-aol
+set security policies global policy allow-hosts-printsrv match application junos-bgp
+set security policies global policy allow-hosts-printsrv match application junos-biff
+set security policies global policy allow-hosts-printsrv match application junos-bootpc
+set security policies global policy allow-hosts-printsrv match application junos-bootps
+set security policies global policy allow-hosts-printsrv match application junos-chargen
+set security policies global policy allow-hosts-printsrv match application junos-cvspserver
+set security policies global policy allow-hosts-printsrv match application junos-dhcp-client
+set security policies global policy allow-hosts-printsrv match application junos-dhcp-relay
+set security policies global policy allow-hosts-printsrv match application junos-dhcp-server
+set security policies global policy allow-hosts-printsrv match application junos-discard
+set security policies global policy allow-hosts-printsrv match application junos-dns-tcp
+set security policies global policy allow-hosts-printsrv match application junos-dns-udp
+set security policies global policy allow-hosts-printsrv match application junos-echo
+set security policies global policy allow-hosts-printsrv match application junos-finger
+set security policies global policy allow-hosts-printsrv match application junos-ftp
+set security policies global policy allow-hosts-printsrv match application junos-ftp-data
+set security policies global policy allow-hosts-printsrv match application junos-gnutella
+set security policies global policy allow-hosts-printsrv match application junos-gopher
+set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-c
+set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-u
+set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-v0
+set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-sctp
+set security policies global policy allow-hosts-printsrv match application junos-gre
+set security policies global policy allow-hosts-printsrv match application junos-gtp
+set security policies global policy allow-hosts-printsrv match application junos-h323
+set security policies global policy allow-hosts-printsrv match application junos-http
+set security policies global policy allow-hosts-printsrv match application junos-http-ext
+set security policies global policy allow-hosts-printsrv match application junos-https
+set security policies global policy allow-hosts-printsrv match application junos-icmp-all
+set security policies global policy allow-hosts-printsrv match application junos-icmp-ping
+set security policies global policy allow-hosts-printsrv match application junos-icmp6-all
+set security policies global policy allow-hosts-printsrv match application junos-ms-rpc-tcp
+set security policies global policy allow-hosts-printsrv match application junos-ms-rpc-udp
+set security policies global policy allow-hosts-printsrv match application junos-nntp
+set security policies global policy allow-hosts-printsrv match application junos-ntp
+set security policies global policy allow-hosts-printsrv match application junos-pptp
+set security policies global policy allow-hosts-printsrv match application junos-printer
+set security policies global policy allow-hosts-printsrv match application junos-smb
+set security policies global policy allow-hosts-printsrv match application junos-ssh

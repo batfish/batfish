@@ -78,6 +78,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -87,6 +88,7 @@ import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -308,6 +310,14 @@ public class FlatJuniperGrammarTest {
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
                                 .build()))))));
+  }
+
+  @Test
+  public void testPredefinedJunosApplications() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    System.out.println(answer.prettyPrint());
+    assertThat(answer.prettyPrint(), not(Matchers.containsString("unimplemented pre-defined junos application")));
   }
 
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
