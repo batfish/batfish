@@ -2,7 +2,6 @@ package org.batfish.question.tracefilters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -65,7 +64,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(Row o) throws JsonProcessingException {
+  public Object fromRow(Row o) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

@@ -2,7 +2,6 @@ package org.batfish.question.jsonpathtotable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -29,7 +28,7 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(Row o) throws JsonProcessingException {
+  public Object fromRow(Row o) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

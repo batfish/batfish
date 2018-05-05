@@ -2,7 +2,7 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 
@@ -11,14 +11,14 @@ public class Rows implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private SortedMultiset<Row> _data;
+  private Multiset<Row> _data;
 
   public Rows() {
     this(null);
   }
 
   @JsonCreator
-  public Rows(SortedMultiset<Row> data) {
+  public Rows(Multiset<Row> data) {
     _data = data == null ? TreeMultiset.create() : data;
   }
 
@@ -39,7 +39,7 @@ public class Rows implements Serializable {
   }
 
   @JsonValue
-  public SortedMultiset<Row> getData() {
+  public Multiset<Row> getData() {
     return _data;
   }
 

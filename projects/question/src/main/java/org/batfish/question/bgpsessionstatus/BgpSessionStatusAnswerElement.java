@@ -2,7 +2,6 @@ package org.batfish.question.bgpsessionstatus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -51,7 +50,10 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
                     true))
             .put(
                 COL_LOCAL_IP, new ColumnMetadata("Ip", "The local IP of the session", false, false))
-            .put(COL_NODE, new ColumnMetadata("Node", "Node of the session", true, false))
+            .put(
+                COL_NODE,
+                new ColumnMetadata(
+                    "Node", "The node where this session is configured", true, false))
             .put(
                 COL_ON_LOOPBACK,
                 new ColumnMetadata(
@@ -61,7 +63,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
                     true))
             .put(
                 COL_REMOTE_NODE,
-                new ColumnMetadata("Node", "Remote node for this sessions", false, false))
+                new ColumnMetadata("Node", "Remote node for this session", false, false))
             .put(
                 COL_REMOTE_PREFIX,
                 new ColumnMetadata("Prefix", "Remote prefix for this session", true, false))
@@ -69,7 +71,9 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
                 COL_SESSION_TYPE,
                 new ColumnMetadata("String", "The type of this session", false, false))
             .put(
-                COL_VRF_NAME, new ColumnMetadata("String", "The VRF for this session", true, false))
+                COL_VRF_NAME,
+                new ColumnMetadata(
+                    "String", "The VRF in which this session is configured", true, false))
             .build();
 
     DisplayHints dhints = question.getDisplayHints();
@@ -88,11 +92,11 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(Row row) throws JsonProcessingException {
+  public Object fromRow(Row row) {
     return fromRowStatic(row);
   }
 
-  public static BgpSessionInfo fromRowStatic(Row row) throws JsonProcessingException {
+  public static BgpSessionInfo fromRowStatic(Row row) {
     Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
     SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
     Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);

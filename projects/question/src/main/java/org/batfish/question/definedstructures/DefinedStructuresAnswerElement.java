@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableSortedMap;
-import java.io.IOException;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -66,11 +65,11 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(Row row) throws IOException {
+  public Object fromRow(Row row) {
     return fromRowStatic(row);
   }
 
-  public static DefinedStructureRow fromRowStatic(Row row) throws IOException {
+  public static DefinedStructureRow fromRowStatic(Row row) {
     SortedSet<Integer> definitionLines =
         row.get(COL_DEFINITION_LINES, new TypeReference<SortedSet<Integer>>() {});
     Integer numReferences = row.get(COL_NUM_REFERENCES, Integer.class);
