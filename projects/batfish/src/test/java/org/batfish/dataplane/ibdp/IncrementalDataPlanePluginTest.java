@@ -1,8 +1,10 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isIn;
@@ -15,6 +17,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,6 +45,8 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -764,5 +769,31 @@ public class IncrementalDataPlanePluginTest {
         configs.get("n1").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
     assertThat(n1Neighbors, hasSize(1));
     assertThat(bgpTopology.degree(n1Neighbors.iterator().next()), is(0));
+  }
+
+  @Test
+  public void testGeneratedRoutesInMainRib() throws IOException {
+    Configuration n1 =
+        _nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("n1")
+            .build();
+    Vrf vrf = _vb.setOwner(n1).build();
+
+    // Create generated route
+    Prefix genRoutePrefix = Prefix.parse("1.1.1.1/32");
+    Builder grb = new Builder();
+    GeneratedRoute route = grb.setNetwork(genRoutePrefix).setDiscard(true).build();
+    vrf.setGeneratedRoutes(ImmutableSortedSet.of(route));
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(n1.getHostname(), n1), _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    assertThat(
+        dp.getRibs().get(n1.getHostname()).get(vrf.getName()).getRoutes(),
+        hasItem(hasPrefix(genRoutePrefix)));
   }
 }

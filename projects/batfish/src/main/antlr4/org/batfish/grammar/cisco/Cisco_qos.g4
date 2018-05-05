@@ -521,7 +521,9 @@ pm_iosi_class_type_inspect
 :
    CLASS TYPE INSPECT name = variable NEWLINE
    (
-      pm_iosict_inspect
+      pm_iosict_drop
+      | pm_iosict_inspect
+      | pm_iosict_pass
    )*
 ;
 
@@ -535,9 +537,19 @@ pi_iosic_pass
    PASS NEWLINE
 ;
 
+pm_iosict_drop
+:
+   DROP LOG? NEWLINE
+;
+
 pm_iosict_inspect
 :
    INSPECT NEWLINE
+;
+
+pm_iosict_pass
+:
+   PASS NEWLINE
 ;
 
 pm_null
@@ -629,8 +641,11 @@ s_class_map
    (
       TYPE
       (
-         NETWORK_QOS
+         CONTROL_PLANE
+         | NETWORK_QOS
          | PBR
+         | QOS
+         | QUEUING
       )
    )?
    (

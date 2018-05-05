@@ -369,7 +369,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
     d = generatedRouteDeltaBuilder.build();
     // Update main rib as well
-    _mainRibRouteDeltaBuiler.from(d);
+    _mainRibRouteDeltaBuiler.from(importRibDelta(_mainRib, d));
 
     /*
      * Check dependencies for BGP aggregates.
@@ -841,7 +841,6 @@ public class VirtualRouter extends ComparableStructure<String> {
    * accepting advertisements less desirable than the local generated ones for the given network.
    */
   void initBgpAggregateRoutes() {
-    // TODO: implement bgp aggregate routes in incremental manner
     // first import aggregates
     switch (_c.getConfigurationFormat()) {
       case JUNIPER:
@@ -1628,7 +1627,9 @@ public class VirtualRouter extends ComparableStructure<String> {
                     ImmutableSortedSet.copyOf(sentClusterList),
                     sentWeight);
 
-            _sentBgpAdvertisements.add(sentAdvert);
+            if (!remoteRouteAdvert.isWithdrawn()) {
+              _sentBgpAdvertisements.add(sentAdvert);
+            }
 
             /*
              * CREATE INCOMING ROUTE
@@ -1705,7 +1706,9 @@ public class VirtualRouter extends ComparableStructure<String> {
                 ribDeltas
                     .get(targetRib)
                     .from(targetRib.mergeRouteGetDelta(transformedIncomingRoute));
-                _receivedBgpAdvertisements.add(receivedAdvert);
+                if (!remoteRouteAdvert.isWithdrawn()) {
+                  _receivedBgpAdvertisements.add(receivedAdvert);
+                }
                 _receivedBgpRoutes
                     .computeIfAbsent(transformedIncomingRoute.getNetwork(), k -> new TreeSet<>())
                     .add(transformedIncomingRoute);

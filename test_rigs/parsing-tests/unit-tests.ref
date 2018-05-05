@@ -108,6 +108,7 @@
         "cisco_mpls" : "cisco_mpls",
         "cisco_multicast" : "cisco_multicast",
         "cisco_ntp" : "cisco_ntp",
+        "cisco_nxos" : "cisco_nxos",
         "cisco_nxos_bgp" : "cisco_nxos_bgp",
         "cisco_ospf" : "cisco_ospf",
         "cisco_pim" : "cisco_pim",
@@ -352,6 +353,7 @@
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
         "cisco_ntp" : "PASSED",
+        "cisco_nxos" : "PASSED",
         "cisco_nxos_bgp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
@@ -28704,6 +28706,58 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "cisco_nxos" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
+            "      VARIABLE:'cisco_nxos'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_feature",
+            "      FEATURE:'feature'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        BGP:'bgp'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (extended_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'copp-system-acl-icmp'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (extended_access_list_tail",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        (access_list_action",
+            "          PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "        (protocol",
+            "          ICMP:'icmp'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        (access_list_ip_range",
+            "          ANY:'any'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_class_map",
+            "      CLASS_MAP:'class-map'  <== mode:DEFAULT_MODE",
+            "      TYPE:'type'  <== mode:DEFAULT_MODE",
+            "      CONTROL_PLANE:'control-plane'  <== mode:DEFAULT_MODE",
+            "      MATCH_ANY:'match-any'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'copp-icmp'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_access_group",
+            "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "          NAME:'name'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'copp-system-acl-icmp'  <== mode:M_Name)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "cisco_nxos_bgp" : {
           "sentences" : [
             "(cisco_configuration",
@@ -30320,7 +30374,7 @@
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'queuing'  <== mode:DEFAULT_MODE",
+            "          QUEUING:'queuing'  <== mode:DEFAULT_MODE",
             "          VARIABLE:'bleefee'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (pmc_null",
@@ -48037,7 +48091,7 @@
             "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
             "            TYPE:'type'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'queuing'  <== mode:DEFAULT_MODE",
+            "            QUEUING:'queuing'  <== mode:DEFAULT_MODE",
             "            INPUT:'input'  <== mode:DEFAULT_MODE",
             "            VARIABLE:'default-in-policy'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -48045,7 +48099,7 @@
             "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
             "            TYPE:'type'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'queuing'  <== mode:DEFAULT_MODE",
+            "            QUEUING:'queuing'  <== mode:DEFAULT_MODE",
             "            OUTPUT:'output'  <== mode:DEFAULT_MODE",
             "            VARIABLE:'default-out-policy'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -52656,6 +52710,16 @@
             }
           }
         },
+        "cisco_nxos" : {
+          "extended ip access-list" : {
+            "copp-system-acl-icmp" : {
+              "definitionLines" : [
+                5
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "cisco_nxos_bgp" : {
           "route-map" : {
             "MATCH_ASN" : {
@@ -54501,6 +54565,7 @@
         "cisco_mpls" : "PASSED",
         "cisco_multicast" : "PASSED",
         "cisco_ntp" : "PASSED",
+        "cisco_nxos" : "PASSED",
         "cisco_nxos_bgp" : "PASSED",
         "cisco_ospf" : "PASSED",
         "cisco_pim" : "PASSED",
