@@ -35,7 +35,7 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
     columnMetadataMap.put(
         COL_DEFINITION_LINES,
         new ColumnMetadata(
-            Schema.List(Schema.INTEGER), "Lines where the structure is defined", false, true));
+            Schema.list(Schema.INTEGER), "Lines where the structure is defined", false, true));
     columnMetadataMap.put(
         COL_NODE_NAME,
         new ColumnMetadata(Schema.STRING, "Node where the structure is defined", true, false));
