@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.HeaderSpace;
 
 public class MatchHeaderSpace extends AclLineMatchExpr {
@@ -12,8 +13,15 @@ public class MatchHeaderSpace extends AclLineMatchExpr {
 
   private final HeaderSpace _headerSpace;
 
+  public MatchHeaderSpace(HeaderSpace headerSpace) {
+    this(headerSpace, null);
+  }
+
   @JsonCreator
-  public MatchHeaderSpace(@JsonProperty(PROP_HEADER_SPACE) HeaderSpace headerSpace) {
+  public MatchHeaderSpace(
+      @JsonProperty(PROP_HEADER_SPACE) HeaderSpace headerSpace,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
+    super(description);
     _headerSpace = headerSpace;
   }
 

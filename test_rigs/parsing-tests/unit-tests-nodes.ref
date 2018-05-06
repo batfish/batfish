@@ -1635,6 +1635,7 @@
                     "negate" : false,
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "description" : "Match network object-group: 'drawbridge_hosts'",
                       "name" : "drawbridge_hosts"
                     }
                   }
@@ -8320,6 +8321,54 @@
           },
           "some-vrf" : {
             "name" : "some-vrf"
+          }
+        }
+      },
+      "cisco_nxos" : {
+        "configurationFormat" : "CISCO_NX",
+        "name" : "cisco_nxos",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "ipAccessLists" : {
+          "copp-system-acl-icmp" : {
+            "name" : "copp-system-acl-icmp",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "dstIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    },
+                    "ipProtocols" : [
+                      "ICMP"
+                    ],
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                      "ipWildcard" : "0.0.0.0/0"
+                    }
+                  }
+                },
+                "name" : "10 permit icmp any any"
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "cisco" : {
+            "features" : {
+              "bgp" : true
+            },
+            "hostname" : "cisco_nxos"
+          }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
           }
         }
       },
