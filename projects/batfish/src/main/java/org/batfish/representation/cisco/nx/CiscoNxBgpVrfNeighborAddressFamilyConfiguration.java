@@ -38,6 +38,24 @@ public class CiscoNxBgpVrfNeighborAddressFamilyConfiguration implements Serializ
   }
 
   @Nullable
+  public Boolean getDefaultOriginate() {
+    return _defaultOriginate;
+  }
+
+  public void setDefaultOriginate(@Nullable Boolean defaultOriginate) {
+    _defaultOriginate = defaultOriginate;
+  }
+
+  @Nullable
+  public String getDefaultOriginateMap() {
+    return _defaultOriginateMap;
+  }
+
+  public void setDefaultOriginateMap(@Nullable String defaultOriginateMap) {
+    _defaultOriginateMap = defaultOriginateMap;
+  }
+
+  @Nullable
   public String getInboundRouteMap() {
     return _inboundRouteMap;
   }
@@ -115,6 +133,8 @@ public class CiscoNxBgpVrfNeighborAddressFamilyConfiguration implements Serializ
 
   private @Nullable Boolean _allowAsIn;
   private @Nullable Boolean _asOverride;
+  private @Nullable Boolean _defaultOriginate;
+  private @Nullable String _defaultOriginateMap;
   private boolean _doneInheriting;
   private @Nullable String _inboundRouteMap;
   private final SortedMap<Integer, String> _inheritPeerPolicies;
@@ -152,6 +172,12 @@ public class CiscoNxBgpVrfNeighborAddressFamilyConfiguration implements Serializ
     }
     if (_asOverride == null) {
       _asOverride = policy._asOverride;
+    }
+    if (_defaultOriginate == null) {
+      _defaultOriginate = policy._defaultOriginate;
+    }
+    if (_defaultOriginateMap == null) {
+      _defaultOriginateMap = policy._defaultOriginateMap;
     }
     if (_inboundRouteMap == null) {
       _inboundRouteMap = policy._inboundRouteMap;

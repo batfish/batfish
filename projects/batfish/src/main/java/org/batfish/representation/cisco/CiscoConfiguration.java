@@ -235,7 +235,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  private static final int MAX_ADMINISTRATIVE_COST = 32767;
+  static final int MAX_ADMINISTRATIVE_COST = 32767;
 
   public static final String NXOS_MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 

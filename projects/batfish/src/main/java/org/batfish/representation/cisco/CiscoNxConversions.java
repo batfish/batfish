@@ -5,9 +5,11 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePr
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
+import static org.batfish.representation.cisco.CiscoConversions.generateDefaultRoute;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -348,10 +350,17 @@ final class CiscoNxConversions {
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     List<BooleanExpr> localOrCommonOrigination = new LinkedList<>();
     localOrCommonOrigination.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
-    if (af4 != null && af4.getDefaultOriginate()) {
+    if (naf4 != null && firstNonNull(naf4.getDefaultOriginate(), Boolean.FALSE)) {
       localOrCommonOrigination.add(MATCH_DEFAULT_ROUTE);
+      newNeighbor.setGeneratedRoutes(
+          ImmutableSet.of(
+              generateDefaultRoute(
+                  c,
+                  vrf.getName(),
+                  dynamic ? prefix.toString() : prefix.getStartIp().toString(),
+                  naf4.getDefaultOriginateMap())));
     }
-    if (af6 != null && af6.getDefaultOriginate()) {
+    if (af6 != null && af6.getDefaultInformationOriginate()) {
       localOrCommonOrigination.add(MATCH_DEFAULT_ROUTE6);
     }
     peerExportConditions.add(new Disjunction(localOrCommonOrigination));

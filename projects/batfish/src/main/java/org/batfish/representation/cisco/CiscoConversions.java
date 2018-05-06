@@ -2,6 +2,8 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
+import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
+import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
@@ -20,6 +22,7 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -83,6 +86,27 @@ class CiscoConversions {
     policy.setStatements(ImmutableList.of(currentGeneratedRouteConditional));
     c.getRoutingPolicies().put(policy.getName(), policy);
     return policy;
+  }
+
+  static GeneratedRoute generateDefaultRoute(
+      Configuration c, String vrfName, String neighbor, @Nullable String defaultOriginateMap) {
+    GeneratedRoute.Builder defaultRoute =
+        new GeneratedRoute.Builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST);
+    if (defaultOriginateMap == null) {
+      RoutingPolicy genRoute =
+          new RoutingPolicy(
+              String.format("~BGP_DEFAULT_ROUTE_GENERATION_POLICY:%s:%s~", vrfName, neighbor), c);
+      genRoute.setStatements(
+          ImmutableList.of(
+              new If(
+                  MATCH_DEFAULT_ROUTE,
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))));
+      c.getRoutingPolicies().put(genRoute.getName(), genRoute);
+      defaultRoute.setGenerationPolicy(genRoute.getName());
+    } else if (c.getRoutingPolicies().containsKey(defaultOriginateMap)) {
+      defaultRoute.setGenerationPolicy(defaultOriginateMap);
+    }
+    return defaultRoute.build();
   }
 
   /**

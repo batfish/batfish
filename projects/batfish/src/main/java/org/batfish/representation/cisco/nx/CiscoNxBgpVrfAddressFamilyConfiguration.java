@@ -22,7 +22,7 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
     _aggregateNetworks = new HashMap<>();
     _clientToClientReflection = false; // disabled by default
     _defaultMetric = null; // there is no default, and metric must be set to redistribute routes
-    _defaultOriginate = false; // disabled by default
+    _defaultInformationOriginate = false; // disabled by default
     _distanceEbgp = 20; // documented under "address-family (BGP router)" and NX-OS CLI
     _distanceIbgp = 200; // documented under "address-family (BGP router)" and NX-OS CLI
     _distanceLocal = 220; // documented under "address-family (BGP router)" and NX-OS CLI
@@ -53,6 +53,14 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
     this._clientToClientReflection = clientToClientReflection;
   }
 
+  public boolean getDefaultInformationOriginate() {
+    return _defaultInformationOriginate;
+  }
+
+  public void setDefaultInformationOriginate(boolean defaultInformationOriginate) {
+    this._defaultInformationOriginate = defaultInformationOriginate;
+  }
+
   @Nullable
   public Long getDefaultMetric() {
     return _defaultMetric;
@@ -60,14 +68,6 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
 
   public void setDefaultMetric(@Nullable Long defaultMetric) {
     this._defaultMetric = defaultMetric;
-  }
-
-  public boolean getDefaultOriginate() {
-    return _defaultOriginate;
-  }
-
-  public void setDefaultOriginate(boolean defaultOriginate) {
-    this._defaultOriginate = defaultOriginate;
   }
 
   public int getDistanceEbgp() {
@@ -150,7 +150,7 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
       _aggregateNetworks;
   private boolean _clientToClientReflection;
   @Nullable private Long _defaultMetric;
-  private boolean _defaultOriginate;
+  private boolean _defaultInformationOriginate;
   private int _distanceEbgp;
   private int _distanceIbgp;
   private int _distanceLocal;

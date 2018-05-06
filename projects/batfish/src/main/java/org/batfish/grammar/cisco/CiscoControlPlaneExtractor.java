@@ -2081,7 +2081,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRbnx_af_default_information(Rbnx_af_default_informationContext ctx) {
-    _currentBgpNxVrfAddressFamily.setDefaultOriginate(true);
+    _currentBgpNxVrfAddressFamily.setDefaultInformationOriginate(true);
   }
 
   @Override
@@ -2342,8 +2342,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRbnx_n_af_default_originate(Rbnx_n_af_default_originateContext ctx) {
+    _currentBgpNxVrfNeighborAddressFamily.setDefaultOriginate(true);
     if (ctx.ROUTE_MAP() != null) {
       String name = ctx.mapname.getText();
+      _currentBgpNxVrfNeighborAddressFamily.setDefaultOriginateMap(name);
       _configuration.referenceStructure(
           ROUTE_MAP,
           name,
