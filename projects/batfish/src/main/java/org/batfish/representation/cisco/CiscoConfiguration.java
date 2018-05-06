@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 
 import com.google.common.collect.ImmutableList;
@@ -119,6 +120,7 @@ import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpRedistributionPolicy;
+import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfAddressFamilyConfiguration;
 import org.batfish.representation.cisco.nx.CiscoNxBgpVrfConfiguration;
 import org.batfish.vendor.VendorConfiguration;
@@ -1351,6 +1353,49 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // This list of reasons to export a route will be built up over the remainder of this function.
     List<BooleanExpr> exportConditions = routesShouldBeExported.getDisjuncts();
 
+    // Generate and distribute aggregate routes.
+    if (ipv4af != null) {
+      for (Entry<Prefix, CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration> e :
+          ipv4af.getAggregateNetworks().entrySet()) {
+        Prefix prefix = e.getKey();
+        CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration agg = e.getValue();
+        RoutingPolicy generatedPolicy = generateAggregateRoutePolicy(c, vrfName, prefix);
+
+        GeneratedRoute.Builder gr =
+            new GeneratedRoute.Builder()
+                .setNetwork(prefix)
+                .setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST)
+                .setGenerationPolicy(generatedPolicy.getName())
+                .setDiscard(true);
+
+        // Conditions to generate this route
+        List<BooleanExpr> generateAggregateConditions = new ArrayList<>();
+        generateAggregateConditions.add(
+            new MatchPrefixSet(
+                new DestinationNetwork(),
+                new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))));
+        generateAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
+
+        // If defined, set attribute map for aggregate network
+        BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+        String attributeMapName = agg.getAttributeMap();
+        if (attributeMapName != null) {
+          RouteMap attributeMap = _routeMaps.get(attributeMapName);
+          if (attributeMap != null) {
+            // need to apply attribute changes if this specific route is matched
+            weInterior = new CallExpr(attributeMapName);
+            gr.setAttributePolicy(attributeMapName);
+          }
+        }
+        generateAggregateConditions.add(
+            bgpRedistributeWithEnvironmentExpr(weInterior, OriginType.IGP));
+
+        v.getGeneratedRoutes().add(gr.build());
+        // Do export a generated aggregate.
+        exportConditions.add(new Conjunction(generateAggregateConditions));
+      }
+    }
+
     // Export RIP routes that should be redistributed.
     CiscoNxBgpRedistributionPolicy ripPolicy =
         ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.RIP);
@@ -1588,8 +1633,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       BgpAggregateIpv4Network aggNet = e.getValue();
 
       // Generate a policy that matches routes to be aggregated.
-      RoutingPolicy generatedPolicy =
-          CiscoConversions.generateAggregateRoutePolicy(c, vrfName, prefix);
+      RoutingPolicy generatedPolicy = generateAggregateRoutePolicy(c, vrfName, prefix);
 
       GeneratedRoute.Builder gr =
           new GeneratedRoute.Builder()
