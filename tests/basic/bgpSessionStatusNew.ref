@@ -22,7 +22,7 @@
           "schema" : "Ip"
         },
         "node" : {
-          "description" : "Node where this session is configured",
+          "description" : "The node where this session is configured",
           "isKey" : true,
           "isValue" : false,
           "schema" : "Node"

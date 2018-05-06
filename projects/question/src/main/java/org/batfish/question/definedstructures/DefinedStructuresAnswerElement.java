@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -35,18 +36,24 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
             .put(
                 COL_DEFINITION_LINES,
                 new ColumnMetadata(
-                    "List<Integer>", "Lines where the structure is defined", false, true))
+                    Schema.list(Schema.INTEGER),
+                    "Lines where the structure is defined",
+                    false,
+                    true))
             .put(
                 COL_NODE_NAME,
-                new ColumnMetadata("String", "Node where the structure is defined", true, false))
+                new ColumnMetadata(
+                    Schema.STRING, "Node where the structure is defined", true, false))
             .put(
                 COL_NUM_REFERENCES,
                 new ColumnMetadata(
-                    "Integer", "Number of references to this structure", false, true))
+                    Schema.INTEGER, "Number of references to this structure", false, true))
             .put(
-                COL_STRUCT_NAME, new ColumnMetadata("String", "Name of the structure", true, false))
+                COL_STRUCT_NAME,
+                new ColumnMetadata(Schema.STRING, "Name of the structure", true, false))
             .put(
-                COL_STRUCT_TYPE, new ColumnMetadata("String", "Type of the structure", true, false))
+                COL_STRUCT_TYPE,
+                new ColumnMetadata(Schema.STRING, "Type of the structure", true, false))
             .build();
 
     DisplayHints dhints = question.getDisplayHints();

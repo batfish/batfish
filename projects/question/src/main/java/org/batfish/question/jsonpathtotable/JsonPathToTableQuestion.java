@@ -62,11 +62,13 @@ public class JsonPathToTableQuestion extends Question {
   public TableMetadata computeTableMetadata() {
     SortedMap<String, ColumnMetadata> columnMetadataMap = new TreeMap<>();
     for (Entry<String, JsonPathToTableExtraction> entry : _pathQuery.getExtractions().entrySet()) {
-      columnMetadataMap.put(entry.getKey(), new ColumnMetadata(entry.getValue().getSchema()));
+      columnMetadataMap.put(
+          entry.getKey(), new ColumnMetadata(entry.getValue().getSchema(), "description"));
     }
     for (Entry<String, JsonPathToTableComposition> entry :
         _pathQuery.getCompositions().entrySet()) {
-      columnMetadataMap.put(entry.getKey(), new ColumnMetadata(entry.getValue().getSchema()));
+      columnMetadataMap.put(
+          entry.getKey(), new ColumnMetadata(entry.getValue().getSchema(), "description"));
     }
     return new TableMetadata(columnMetadataMap, _displayHints);
   }

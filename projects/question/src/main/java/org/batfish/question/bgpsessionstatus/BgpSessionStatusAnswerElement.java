@@ -7,6 +7,7 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -40,40 +41,41 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         new ImmutableSortedMap.Builder<String, ColumnMetadata>(String::compareTo)
             .put(
                 COL_CONFIGURED_STATUS,
-                new ColumnMetadata("String", "Configured status", false, true))
+                new ColumnMetadata(Schema.STRING, "Configured status", false, true))
             .put(
                 COL_ESTABLISHED_NEIGHBORS,
                 new ColumnMetadata(
-                    "Integer",
+                    Schema.INTEGER,
                     "Number of neighbors with whom BGP session was established",
                     false,
                     true))
             .put(
-                COL_LOCAL_IP, new ColumnMetadata("Ip", "The local IP of the session", false, false))
+                COL_LOCAL_IP,
+                new ColumnMetadata(Schema.IP, "The local IP of the session", false, false))
             .put(
                 COL_NODE,
                 new ColumnMetadata(
-                    "Node", "The node where this session is configured", true, false))
+                    Schema.NODE, "The node where this session is configured", true, false))
             .put(
                 COL_ON_LOOPBACK,
                 new ColumnMetadata(
-                    "Boolean",
+                    Schema.BOOLEAN,
                     "Whether the session was established on loopback interface",
                     false,
                     true))
             .put(
                 COL_REMOTE_NODE,
-                new ColumnMetadata("Node", "Remote node for this session", false, false))
+                new ColumnMetadata(Schema.NODE, "Remote node for this session", false, false))
             .put(
                 COL_REMOTE_PREFIX,
-                new ColumnMetadata("Prefix", "Remote prefix for this session", true, false))
+                new ColumnMetadata(Schema.PREFIX, "Remote prefix for this session", true, false))
             .put(
                 COL_SESSION_TYPE,
-                new ColumnMetadata("String", "The type of this session", false, false))
+                new ColumnMetadata(Schema.STRING, "The type of this session", false, false))
             .put(
                 COL_VRF_NAME,
                 new ColumnMetadata(
-                    "String", "The VRF in which this session is configured", true, false))
+                    Schema.STRING, "The VRF in which this session is configured", true, false))
             .build();
 
     DisplayHints dhints = question.getDisplayHints();
