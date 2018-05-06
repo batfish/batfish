@@ -7,7 +7,9 @@ public class TrueExpr extends AclLineMatchExpr {
   public static final TrueExpr INSTANCE = new TrueExpr();
   private static final long serialVersionUID = 1L;
 
-  private TrueExpr() {}
+  private TrueExpr() {
+    super(null);
+  }
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {

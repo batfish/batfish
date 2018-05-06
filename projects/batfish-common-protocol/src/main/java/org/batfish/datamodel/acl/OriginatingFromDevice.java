@@ -11,7 +11,9 @@ public class OriginatingFromDevice extends AclLineMatchExpr {
   public static final OriginatingFromDevice INSTANCE = new OriginatingFromDevice();
   private static final long serialVersionUID = 1L;
 
-  private OriginatingFromDevice() {}
+  private OriginatingFromDevice() {
+    super(null);
+  }
 
   @Override
   public <R> R accept(GenericAclLineMatchExprVisitor<R> visitor) {
