@@ -427,11 +427,6 @@
                 "18.18.18.18",
                 "23.23.23.23"
               ],
-              "route6FilterLists" : {
-                "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-                  "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-                }
-              },
               "routeFilterLists" : {
                 "101" : {
                   "name" : "101",
