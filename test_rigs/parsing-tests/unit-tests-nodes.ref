@@ -1635,6 +1635,7 @@
                     "negate" : false,
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "description" : "Match network object-group: 'drawbridge_hosts'",
                       "name" : "drawbridge_hosts"
                     }
                   }
