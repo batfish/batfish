@@ -229,7 +229,6 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     /*
      * Instantiate routes
@@ -350,7 +349,6 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
     BgpBestPathRib bbr = BgpBestPathRib.initial(null, null);
     BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     Prefix p = Prefix.ZERO;
@@ -417,7 +415,6 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     // good for both ebgp and ibgp
     BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
@@ -530,7 +527,6 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
     BgpBestPathRib bbr = BgpBestPathRib.initial(null, null);
     BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     Ip ip1 = new Ip("1.0.0.0");
