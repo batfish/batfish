@@ -23,7 +23,6 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
-import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
@@ -85,8 +84,6 @@ public interface GenericStateExprVisitor<R> {
   R visitNodeNeighborUnreachable(NodeNeighborUnreachable nodeNeighborUnreachable);
 
   R visitNumberedQuery(NumberedQuery numberedQuery);
-
-  R visitOriginate(Originate originate);
 
   R visitOriginateInterface(OriginateInterface originateInterface);
 

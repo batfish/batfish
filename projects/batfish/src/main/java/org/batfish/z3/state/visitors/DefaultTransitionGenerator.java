@@ -51,7 +51,6 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
-import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
@@ -596,63 +595,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNumberedQuery(NumberedQuery.State numberedQuery) {}
 
   @Override
-  public void visitOriginate(Originate.State originate) {
-    // Project OriginateInterface
-    _input
-        .getEnabledInterfaces()
-        .entrySet()
-        .stream()
-        .flatMap(
-            enabledInterfacesByHostnameEntry -> {
-              String hostname = enabledInterfacesByHostnameEntry.getKey();
-              return enabledInterfacesByHostnameEntry
-                  .getValue()
-                  .stream()
-                  .map(
-                      iface ->
-                          new BasicRuleStatement(
-                              srcInterfaceConstraint(hostname, iface),
-                              new OriginateInterface(hostname, iface),
-                              new Originate(hostname)));
-            })
-        .forEach(_rules::add);
-
-    // Project OriginateVrf
-    _input
-        .getEnabledVrfs()
-        .entrySet()
-        .stream()
-        .flatMap(
-            enabledVrfsByHostnameEntry -> {
-              String hostname = enabledVrfsByHostnameEntry.getKey();
-              return enabledVrfsByHostnameEntry
-                  .getValue()
-                  .stream()
-                  .map(
-                      vrfName -> {
-                        ImmutableList.Builder<BooleanExpr> preconditionsBuilder =
-                            ImmutableList.builder();
-                        if (!_input.getTransitNodes().isEmpty()) {
-                          preconditionsBuilder.add(transitNodesNotTransitedConstraint());
-                        }
-                        preconditionsBuilder.add(noSrcInterfaceConstraint());
-
-                        List<BooleanExpr> preconditions = preconditionsBuilder.build();
-
-                        return new BasicRuleStatement(
-                            preconditions.isEmpty()
-                                ? TrueExpr.INSTANCE
-                                : preconditions.size() == 1
-                                    ? preconditions.get(0)
-                                    : new AndExpr(preconditionsBuilder.build()),
-                            new OriginateVrf(hostname, vrfName),
-                            new Originate(hostname));
-                      });
-            })
-        .forEach(_rules::add);
-  }
-
-  @Override
   public void visitOriginateInterface(OriginateInterface.State originateInterface) {}
 
   @Override
@@ -660,13 +602,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPostIn(PostIn.State postIn) {
-    // CopyOriginate
-    _input
-        .getEnabledNodes()
-        .stream()
-        .map(hostname -> new BasicRuleStatement(new Originate(hostname), new PostIn(hostname)))
-        .forEach(_rules::add);
-
     // ProjectPostInInterface
     _input
         .getEnabledInterfaces()
@@ -720,32 +655,26 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPostInVrf(PostInVrf.State postInVrf) {
-    // CopyOriginateVrf
+    // Project OriginateVrf
     _input
-        .getEnabledInterfacesByNodeVrf()
+        .getEnabledVrfs()
         .entrySet()
         .stream()
         .flatMap(
-            enabledInterfacesByNodeEntry -> {
-              String hostname = enabledInterfacesByNodeEntry.getKey();
-              return enabledInterfacesByNodeEntry
+            enabledVrfsByHostnameEntry -> {
+              String hostname = enabledVrfsByHostnameEntry.getKey();
+              return enabledVrfsByHostnameEntry
                   .getValue()
-                  .entrySet()
                   .stream()
                   .map(
-                      enabledInterfacesByVrfEntry -> {
-                        String vrf = enabledInterfacesByVrfEntry.getKey();
-                        return new BasicRuleStatement(
-                            /*
-                             * TODO probably also need to set src interface constraint as in
-                             * rule for Originate.
-                             */
-                            _input.getTransitNodes().isEmpty()
-                                ? TrueExpr.INSTANCE
-                                : transitNodesNotTransitedConstraint(),
-                            new OriginateVrf(hostname, vrf),
-                            new PostInVrf(hostname, vrf));
-                      });
+                      vrfName ->
+                          new BasicRuleStatement(
+                              new AndExpr(
+                                  ImmutableList.of(
+                                      noSrcInterfaceConstraint(),
+                                      transitNodesNotTransitedConstraint())),
+                              new OriginateVrf(hostname, vrfName),
+                              new PostInVrf(hostname, vrfName)));
             })
         .forEach(_rules::add);
 
@@ -851,7 +780,10 @@ public class DefaultTransitionGenerator implements StateVisitor {
                   .map(
                       iface ->
                           new BasicRuleStatement(
-                              srcInterfaceConstraint(hostname, iface),
+                              new AndExpr(
+                                  ImmutableList.of(
+                                      srcInterfaceConstraint(hostname, iface),
+                                      transitNodesNotTransitedConstraint())),
                               new OriginateInterface(hostname, iface),
                               new PreInInterface(hostname, iface)));
             })
@@ -871,8 +803,11 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   private BooleanExpr transitNodesNotTransitedConstraint() {
-    return new EqExpr(
-        new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD), NOT_TRANSITED);
+    return _input.getTransitNodes().isEmpty()
+        ? TrueExpr.INSTANCE
+        : new EqExpr(
+            new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+            NOT_TRANSITED);
   }
 
   @Override

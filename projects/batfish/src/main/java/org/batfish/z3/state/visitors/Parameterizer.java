@@ -33,7 +33,6 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
-import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostIn;
@@ -191,11 +190,6 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   public List<StateParameter> visitNumberedQuery(NumberedQuery numberedQuery) {
     return ImmutableList.of(
         new StateParameter(Integer.toString(numberedQuery.getLine()), QUERY_NUMBER));
-  }
-
-  @Override
-  public List<StateParameter> visitOriginate(Originate originate) {
-    return ImmutableList.of(new StateParameter(originate.getHostname(), NODE));
   }
 
   @Override
