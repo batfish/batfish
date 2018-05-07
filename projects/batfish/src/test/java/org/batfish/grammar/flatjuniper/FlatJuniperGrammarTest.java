@@ -316,7 +316,6 @@ public class FlatJuniperGrammarTest {
   public void testPredefinedJunosApplications() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
     InitInfoAnswerElement answer = batfish.initInfo(false, true);
-    System.out.println(answer.prettyPrint());
     assertThat(
         answer.prettyPrint(),
         not(Matchers.containsString("unimplemented pre-defined junos application")));

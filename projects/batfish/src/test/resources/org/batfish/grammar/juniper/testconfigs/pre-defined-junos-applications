@@ -23,7 +23,6 @@ set security policies global policy allow-hosts-printsrv match application junos
 set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-c
 set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-u
 set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-v0
-set security policies global policy allow-hosts-printsrv match application junos-gprs-gtp-sctp
 set security policies global policy allow-hosts-printsrv match application junos-gre
 set security policies global policy allow-hosts-printsrv match application junos-gtp
 set security policies global policy allow-hosts-printsrv match application junos-h323

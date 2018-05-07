@@ -19,8 +19,8 @@ import org.batfish.representation.juniper.BaseApplication.Term;
 
 public enum JunosApplication implements Application {
   /**
-   * TODO: separate applications from application-sets the list below inlcudes both applications and
-   * application-sets and does not distinguish between them
+   * TODO(https://github.com/batfish/batfish/issues/1325): separate applications from
+   * application-sets
    */
   JUNOS_AOL,
   JUNOS_BGP,
@@ -243,14 +243,17 @@ public enum JunosApplication implements Application {
 
   private void setHeaderSpaceInfo(
       HeaderSpace.Builder hb,
-      @Nullable IpProtocol ip,
+      @Nullable IpProtocol ipProtocol,
       @Nullable Integer portRangeStart,
       @Nullable Integer portRangeEnd) {
-    if (ip != null) hb.setIpProtocols(ImmutableSet.of(ip));
-    if (portRangeStart != null)
+    if (ipProtocol != null) {
+      hb.setIpProtocols(ImmutableSet.of(ipProtocol));
+    }
+    if (portRangeStart != null) {
       hb.setDstPorts(
           ImmutableSet.of(
               new SubRange(portRangeStart, portRangeEnd == null ? portRangeStart : portRangeEnd)));
+    }
   }
 
   private BaseApplication init() {
@@ -260,7 +263,7 @@ public enum JunosApplication implements Application {
 
     Integer portRangeStart = null;
     Integer portRangeEnd = null;
-    IpProtocol ip = null;
+    IpProtocol ipProtocol = null;
     Integer icmpType = null;
 
     switch (this) {
@@ -268,49 +271,49 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.AOL.number();
           portRangeEnd = portRangeStart + 3;
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_BGP:
         {
           portRangeStart = NamedPort.BGP.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_BIFF:
         {
           portRangeStart = NamedPort.BIFFudp_OR_EXECtcp.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_BOOTPC:
         {
           portRangeStart = NamedPort.BOOTPC.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_BOOTPS:
         {
           portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_CHARGEN:
         {
           portRangeStart = NamedPort.CHARGEN.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_CVSPSERVER:
         {
           portRangeStart = NamedPort.CVSPSERVER.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
@@ -318,70 +321,70 @@ public enum JunosApplication implements Application {
         {
           portRangeStart =
               NamedPort.BOOTPC.number(); // TODO: rename BOOTPC to BOOTPC_OR_DHCP_CLIENT
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_DHCP_RELAY:
         {
           portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_DHCP_SERVER:
         {
           portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_DISCARD:
         {
           portRangeStart = NamedPort.DISCARD.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_DNS_TCP:
         {
           portRangeStart = NamedPort.DOMAIN.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_DNS_UDP:
         {
           portRangeStart = NamedPort.DOMAIN.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_ECHO:
         {
           portRangeStart = NamedPort.ECHO.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_FINGER:
         {
           portRangeStart = NamedPort.FINGER.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_FTP:
         {
           portRangeStart = NamedPort.FTP.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_FTP_DATA:
         {
           portRangeStart = NamedPort.FTP_DATA.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
@@ -389,62 +392,55 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.GNUTELLA.number();
           portRangeEnd = portRangeStart + 1;
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_GOPHER:
         {
           portRangeStart = NamedPort.GOPHER.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_GPRS_GTP_C:
         {
           portRangeStart = NamedPort.GPRS_GTP_C.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_GPRS_GTP_U:
         {
           portRangeStart = NamedPort.GPRS_GTP_U.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_GPRS_GTP_V0:
         {
           portRangeStart = NamedPort.GPRS_GTP_V0.number();
-          ip = IpProtocol.UDP;
-          break;
-        }
-
-      case JUNOS_GPRS_SCTP:
-        {
-          portRangeStart = NamedPort.GPRS_SCTP.number();
-          ip = IpProtocol.SCTP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_GRE:
         {
-          ip = IpProtocol.GRE;
+          ipProtocol = IpProtocol.GRE;
           break;
         }
 
       case JUNOS_GTP:
         {
           portRangeStart = NamedPort.GPRS_GTP_C.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_H323:
         {
           portRangeStart = NamedPort.H323.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
 
           String t2Name = "t2";
           Term t2 = new Term(t2Name);
@@ -491,33 +487,33 @@ public enum JunosApplication implements Application {
       case JUNOS_HTTP:
         {
           portRangeStart = NamedPort.HTTP.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_HTTP_EXT:
         {
           portRangeStart = NamedPort.HTTP_EXT.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_HTTPS:
         {
           portRangeStart = NamedPort.HTTPS.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_ICMP_ALL:
         {
-          ip = IpProtocol.ICMP;
+          ipProtocol = IpProtocol.ICMP;
           break;
         }
 
       case JUNOS_ICMP_PING:
         {
-          ip = IpProtocol.ICMP;
+          ipProtocol = IpProtocol.ICMP;
           icmpType = IcmpType.ECHO_REQUEST;
           break;
         }
@@ -525,49 +521,49 @@ public enum JunosApplication implements Application {
       case JUNOS_ICMP6_ALL:
         {
           baseApplication.setIpv6(true);
-          ip = IpProtocol.IPV6_ICMP;
+          ipProtocol = IpProtocol.IPV6_ICMP;
           break;
         }
 
       case JUNOS_MS_RPC_TCP:
         {
           portRangeStart = NamedPort.MSRPC.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_MS_RPC_UDP:
         {
           portRangeStart = NamedPort.MSRPC.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_NNTP:
         {
           portRangeStart = NamedPort.NNTP.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_NTP:
         {
           portRangeStart = NamedPort.NTP.number();
-          ip = IpProtocol.UDP;
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_PPTP:
         {
           portRangeStart = NamedPort.PPTP.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_PRINTER:
         {
           portRangeStart = NamedPort.LPD.number(); // TODO: rename LPD to LPD_OR_PRINTER
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
@@ -575,7 +571,7 @@ public enum JunosApplication implements Application {
         {
           portRangeStart =
               NamedPort.NETBIOS_SSN.number(); // TODO: rename NETBIOS_SSN to NETBIOS_SSN_OR_SMB
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
 
           String t2Name = "t2";
           Term t2 = new Term(t2Name);
@@ -594,7 +590,7 @@ public enum JunosApplication implements Application {
       case JUNOS_SSH:
         {
           portRangeStart = NamedPort.SSH.number();
-          ip = IpProtocol.TCP;
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
@@ -607,8 +603,10 @@ public enum JunosApplication implements Application {
     Term t1 = new Term(t1Name);
     HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
 
-    setHeaderSpaceInfo(l1, ip, portRangeStart, portRangeEnd);
-    if (icmpType != null) l1.setIcmpTypes(ImmutableSet.of(new SubRange(icmpType)));
+    setHeaderSpaceInfo(l1, ipProtocol, portRangeStart, portRangeEnd);
+    if (icmpType != null) {
+      l1.setIcmpTypes(ImmutableSet.of(new SubRange(icmpType)));
+    }
     t1.setHeaderSpace(l1.build());
     terms.put(t1Name, t1);
 

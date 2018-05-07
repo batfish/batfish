@@ -35,7 +35,6 @@ public enum NamedPort {
   GPRS_GTP_C(2123),
   GPRS_GTP_U(2152),
   GPRS_GTP_V0(3386),
-  GPRS_SCTP(0),
   H323(1720),
   H323_T2(1719),
   H323_T3(1503),
