@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
 
 /** Describes a role played by a node */
 public class NodeRole implements Comparable<NodeRole> {
@@ -12,9 +13,9 @@ public class NodeRole implements Comparable<NodeRole> {
 
   private static final String PROP_REGEX = "regex";
 
-  private final String _name;
+  @Nonnull private final String _name;
 
-  private final String _regex;
+  @Nonnull private final String _regex;
 
   private final transient Pattern _compiledPattern;
 

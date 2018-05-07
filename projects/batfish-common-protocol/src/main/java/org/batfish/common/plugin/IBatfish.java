@@ -39,6 +39,7 @@ import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.NodeRolesData;
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -70,6 +71,8 @@ public interface IBatfish extends IPluginConsumer {
   GrammarSettings getGrammarSettings();
 
   FlowHistory getHistory();
+
+  NodeRolesData getNodeRolesData();
 
   NodeRoleDimension getNodeRoleDimension(String roleDimension);
 

@@ -1766,6 +1766,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
+   * Gets the {@link NodeRolesData} for the testrig
+   *
+   * @return The {@link NodeRolesData} object.
+   */
+  @Override
+  public NodeRolesData getNodeRolesData() {
+    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    try {
+      return NodeRolesData.read(nodeRoleDataPath);
+    } catch (IOException e) {
+      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      return null;
+    }
+  }
+
+  /**
    * Gets the {@link NodeRoleDimension} object give dimension name
    *
    * @param dimension The dimension name
