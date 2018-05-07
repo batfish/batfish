@@ -5,6 +5,7 @@ import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
@@ -1345,6 +1346,26 @@ public class CommonUtil {
   public static <E, K, V> Map<K, V> toImmutableMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
+  }
+
+  public static <K1, K2 extends Comparable<? super K2>, V1, V2>
+      SortedMap<K2, V2> toImmutableSortedMap(
+          Map<K1, V1> map,
+          Function<Entry<K1, V1>, K2> keyFunction,
+          Function<Entry<K1, V1>, V2> valueFunction) {
+    return map.entrySet()
+        .stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(), keyFunction, valueFunction));
+  }
+
+  public static <E, K extends Comparable<? super K>, V> SortedMap<K, V> toImmutableSortedMap(
+      Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
+    return set.stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(), keyFunction, valueFunction));
   }
 
   public static <S extends Set<T>, T> S union(
