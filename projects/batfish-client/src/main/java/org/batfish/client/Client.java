@@ -87,6 +87,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
@@ -753,6 +754,25 @@ public class Client extends AbstractClient implements IClient {
       CommonUtil.deleteIfExists(questionFile);
     }
     return result;
+  }
+
+  private boolean autoComplete(List<String> options, List<String> parameters) {
+    if (!isValidArgument(options, parameters, 1, 2, 2, Command.AUTOCOMPLETE)) {
+      return false;
+    }
+    if (!isSetContainer(true) || !isSetTestrig()) {
+      return false;
+    }
+
+    int maxSuggestions = options.size() == 1 ? Integer.parseInt(options.get(0)) : Integer.MAX_VALUE;
+    CompletionType completionType = CompletionType.valueOf(parameters.get(0).toUpperCase());
+    String query = parameters.get(1);
+
+    String suggestionsJson =
+        _workHelper.autoComplete(
+            _currContainerName, _currTestrig, completionType, query, maxSuggestions);
+    _logger.outputf("Auto complete: %s\n", suggestionsJson);
+    return true;
   }
 
   private boolean cat(String[] words) throws IOException, FileNotFoundException {
@@ -2514,6 +2534,8 @@ public class Client extends AbstractClient implements IClient {
         return answer(words, outWriter, options, parameters, false);
       case ANSWER_DELTA:
         return answer(words, outWriter, options, parameters, true);
+      case AUTOCOMPLETE:
+        return autoComplete(options, parameters);
       case CAT:
         return cat(words);
       case CHECK_API_KEY:
