@@ -218,7 +218,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nullable Map<String, Set<Ip>> _ipsByHostname;
 
-  private final @Nullable Map<String, Map<String, Set<Ip>>> _ipsByVrf;
+  private final @Nullable Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
 
   private final @Nonnull Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
 
@@ -313,7 +313,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _nullRoutedIps = computeNullRoutedIps(forwardingAnalysis.getNullRoutedIps());
       _routableIps = computeRoutableIps(forwardingAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();
-      _ipsByVrf = computeIpsByVrf();
+      _ipsByNodeVrf = computeIpsByNodeVrf();
       _edges = topology.getEdges();
       _enabledEdges = computeEnabledEdges();
       _topologyInterfaces = computeTopologyInterfaces();
@@ -324,7 +324,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _nullRoutedIps = null;
       _routableIps = null;
       _ipsByHostname = null;
-      _ipsByVrf = null;
+      _ipsByNodeVrf = null;
       _edges = null;
       _enabledEdges = null;
       _topologyInterfaces = null;
@@ -647,7 +647,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return toImmutableMap(map, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }
 
-  private Map<String, Map<String, Set<Ip>>> computeIpsByVrf() {
+  private Map<String, Map<String, Set<Ip>>> computeIpsByNodeVrf() {
     Map<String, Map<String, Interface>> enabledInterfaces =
         toImmutableMap(
             _enabledInterfaces,
@@ -871,7 +871,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   @Override
   public Map<String, Map<String, Set<Ip>>> getIpsByNodeVrf() {
-    return _ipsByVrf;
+    return _ipsByNodeVrf;
   }
 
   @Override

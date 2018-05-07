@@ -359,6 +359,15 @@ public class CommonUtil {
     return ipOwners;
   }
 
+  /**
+   * Compute a mapping of IP addresses to the VRFs that "own" this IP (e.g., as a network interface
+   * address).
+   *
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
+   *     Interface}
+   * @return A map of {@link Ip}s to a map of hostnames to vrfs that own the Ip.
+   */
   public static Map<Ip, Map<String, String>> computeIpVrfOwners(
       boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
     // TODO: confirm VRFs are handled correctly
