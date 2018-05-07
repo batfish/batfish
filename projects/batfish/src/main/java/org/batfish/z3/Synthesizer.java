@@ -27,7 +27,6 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
@@ -96,7 +95,6 @@ public class Synthesizer {
                     NodeInterfaceNeighborUnreachable.State.INSTANCE,
                     NodeNeighborUnreachable.State.INSTANCE,
                     OriginateVrf.State.INSTANCE,
-                    PostIn.State.INSTANCE,
                     PostInInterface.State.INSTANCE,
                     PostInVrf.State.INSTANCE,
                     PostOutEdge.State.INSTANCE,

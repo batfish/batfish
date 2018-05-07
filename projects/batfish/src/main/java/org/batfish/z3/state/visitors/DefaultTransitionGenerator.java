@@ -53,7 +53,6 @@ import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
 import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
@@ -386,26 +385,35 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
     // PostInForMe
     _input
-        .getEnabledNodes()
+        .getEnabledVrfs()
+        .entrySet()
         .stream()
-        .map(
-            hostname ->
-                new BasicRuleStatement(
-                    new IpSpaceMatchExpr(
-                            IpWildcardSetIpSpace.builder()
-                                .including(
-                                    _input
-                                        .getIpsByHostname()
-                                        .get(hostname)
-                                        .stream()
-                                        .map(IpWildcard::new)
-                                        .collect(ImmutableSet.toImmutableSet()))
-                                .build(),
-                            _input.getNamedIpSpaces().get(hostname),
-                            Field.DST_IP)
-                        .getExpr(),
-                    ImmutableSet.of(new PostIn(hostname)),
-                    new NodeAccept(hostname)))
+        .flatMap(
+            entry -> {
+              String hostname = entry.getKey();
+              return entry
+                  .getValue()
+                  .stream()
+                  .map(
+                      vrf ->
+                          new BasicRuleStatement(
+                              new IpSpaceMatchExpr(
+                                      IpWildcardSetIpSpace.builder()
+                                          .including(
+                                              _input
+                                                  .getIpsByNodeVrf()
+                                                  .get(hostname)
+                                                  .get(vrf)
+                                                  .stream()
+                                                  .map(IpWildcard::new)
+                                                  .collect(ImmutableSet.toImmutableSet()))
+                                          .build(),
+                                      _input.getNamedIpSpaces().get(hostname),
+                                      Field.DST_IP)
+                                  .getExpr(),
+                              ImmutableSet.of(new PostInVrf(hostname, vrf)),
+                              new NodeAccept(hostname)));
+            })
         .forEach(_rules::add);
   }
 
@@ -599,27 +607,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitOriginateVrf(OriginateVrf.State originateVrf) {}
-
-  @Override
-  public void visitPostIn(PostIn.State postIn) {
-    // ProjectPostInInterface
-    _input
-        .getEnabledInterfaces()
-        .entrySet()
-        .stream()
-        .flatMap(
-            enabledInterfacesByHostnameEntry -> {
-              String hostname = enabledInterfacesByHostnameEntry.getKey();
-              return enabledInterfacesByHostnameEntry
-                  .getValue()
-                  .stream()
-                  .map(
-                      ifaceName ->
-                          new BasicRuleStatement(
-                              new PostInInterface(hostname, ifaceName), new PostIn(hostname)));
-            })
-        .forEach(_rules::add);
-  }
 
   @Override
   public void visitPostInInterface(PostInInterface.State postInInterface) {

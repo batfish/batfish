@@ -61,7 +61,6 @@ import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.OriginateInterface;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
@@ -702,8 +701,14 @@ public class DefaultTransitionGeneratorTest {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
             .setEnabledNodes(ImmutableSet.of(NODE1, NODE2))
-            .setIpsByHostname(
-                ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
+            .setEnabledVrfs(
+                ImmutableMap.of(NODE1, ImmutableSet.of(VRF1), NODE2, ImmutableSet.of(VRF2)))
+            .setIpsByNodeVrf(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(VRF1, ImmutableSet.of(IP1, IP2)),
+                    NODE2,
+                    ImmutableMap.of(VRF2, ImmutableSet.of(IP3, IP4))))
             .setNamedIpSpaces(ImmutableMap.of(NODE1, ImmutableMap.of(), NODE2, ImmutableMap.of()))
             .build();
     Set<RuleStatement> rules =
@@ -721,7 +726,7 @@ public class DefaultTransitionGeneratorTest {
                         .including(ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))
                         .build(),
                     ImmutableMap.of()),
-                new PostIn(NODE1),
+                new PostInVrf(NODE1, VRF1),
                 new NodeAccept(NODE1))));
     assertThat(
         rules,
@@ -732,7 +737,7 @@ public class DefaultTransitionGeneratorTest {
                         .including(ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))
                         .build(),
                     ImmutableMap.of()),
-                ImmutableSet.of(new PostIn(NODE2)),
+                new PostInVrf(NODE2, VRF2),
                 new NodeAccept(NODE2))));
   }
 
@@ -1078,38 +1083,6 @@ public class DefaultTransitionGeneratorTest {
             new BasicRuleStatement(
                 new NodeInterfaceNeighborUnreachable(NODE2, INTERFACE1),
                 new NodeNeighborUnreachable(NODE2))));
-  }
-
-  @Test
-  public void testVisitPostIn() {
-    SynthesizerInput input =
-        MockSynthesizerInput.builder()
-            .setEnabledNodes(ImmutableSet.of(NODE1, NODE2))
-            .setEnabledInterfaces(
-                ImmutableMap.of(
-                    NODE1,
-                    ImmutableSet.of(INTERFACE1, INTERFACE2),
-                    NODE2,
-                    ImmutableSet.of(INTERFACE1, INTERFACE2)))
-            .build();
-    Set<RuleStatement> rules =
-        ImmutableSet.copyOf(
-            DefaultTransitionGenerator.generateTransitions(
-                input, ImmutableSet.of(PostIn.State.INSTANCE)));
-
-    // ProjectPostInInterface
-    assertThat(
-        rules,
-        hasItem(new BasicRuleStatement(new PostInInterface(NODE1, INTERFACE1), new PostIn(NODE1))));
-    assertThat(
-        rules,
-        hasItem(new BasicRuleStatement(new PostInInterface(NODE1, INTERFACE2), new PostIn(NODE1))));
-    assertThat(
-        rules,
-        hasItem(new BasicRuleStatement(new PostInInterface(NODE2, INTERFACE1), new PostIn(NODE2))));
-    assertThat(
-        rules,
-        hasItem(new BasicRuleStatement(new PostInInterface(NODE2, INTERFACE2), new PostIn(NODE2))));
   }
 
   @Test
