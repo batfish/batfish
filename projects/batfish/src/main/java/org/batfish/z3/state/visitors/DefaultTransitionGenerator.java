@@ -210,9 +210,9 @@ public class DefaultTransitionGenerator implements StateVisitor {
         .forEach(
             (hostname, aclConditionsByAclName) ->
                 aclConditionsByAclName.forEach(
-                    (aclName, aclConditionsByLineNumber) ->
+                    (aclName, aclConditionsList) ->
                         forEachWithIndex(
-                            aclConditionsByLineNumber,
+                            aclConditionsList,
                             (lineNumber, lineCriteria) ->
                                 _rules.add(
                                     new BasicRuleStatement(
