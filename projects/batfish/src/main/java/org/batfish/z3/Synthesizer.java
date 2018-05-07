@@ -33,9 +33,9 @@ import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class Synthesizer {
@@ -103,7 +103,7 @@ public class Synthesizer {
                     PostInVrf.State.INSTANCE,
                     PostOutEdge.State.INSTANCE,
                     PreInInterface.State.INSTANCE,
-                    PreOut.State.INSTANCE,
+                    PreOutVrf.State.INSTANCE,
                     PreOutEdge.State.INSTANCE,
                     PreOutEdgePostNat.State.INSTANCE))));
   }

@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import static org.batfish.common.util.CommonUtil.computeIpOwners;
+import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.base.MoreObjects;
@@ -183,7 +184,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, List<BooleanExpr>>> _aclConditions;
 
-  private final @Nonnull Map<
+  private final @Nullable Map<
           String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       _arpTrueEdge;
 
@@ -197,11 +198,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Set<String>> _disabledVrfs;
 
-  private final @Nonnull Set<Edge> _edges;
+  private final @Nullable Set<Edge> _edges;
 
   private final @Nonnull Map<String, Map<String, IpAccessList>> _enabledAcls;
 
-  private final @Nonnull Set<Edge> _enabledEdges;
+  private final @Nullable Set<Edge> _enabledEdges;
 
   private final @Nonnull Map<String, Set<String>> _enabledInterfaces;
 
@@ -215,13 +216,15 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, IpAccessListSpecializer> _ipAccessListSpecializers;
 
-  private final @Nonnull Map<String, Set<Ip>> _ipsByHostname;
+  private final @Nullable Map<String, Set<Ip>> _ipsByHostname;
+
+  private final @Nullable Map<String, Map<String, Set<Ip>>> _ipsByVrf;
 
   private final @Nonnull Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
 
   private final @Nonnull Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
-  private final @Nonnull Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
+  private final @Nullable Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
 
   private final @Nonnull Map<String, List<String>> _nodeInterfaces;
 
@@ -229,11 +232,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Set<String> _nonTransitNodes;
 
-  private final @Nonnull Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
+  private final @Nullable Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
   private final @Nonnull Map<String, Map<String, String>> _outgoingAcls;
 
-  private final @Nonnull Map<String, Map<String, BooleanExpr>> _routableIps;
+  private final @Nullable Map<String, Map<String, BooleanExpr>> _routableIps;
 
   private final boolean _simplify;
 
@@ -243,9 +246,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Map<String, IntExpr>> _sourceInterfaceFieldValues;
 
-  private final @Nonnull Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
+  private final @Nullable Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> _sourceNats;
 
-  private final @Nonnull Map<String, Set<String>> _topologyInterfaces;
+  private final @Nullable Map<String, Set<String>> _topologyInterfaces;
 
   private final @Nonnull Set<String> _transitNodes;
 
@@ -310,6 +313,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _nullRoutedIps = computeNullRoutedIps(forwardingAnalysis.getNullRoutedIps());
       _routableIps = computeRoutableIps(forwardingAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();
+      _ipsByVrf = computeIpsByVrf();
       _edges = topology.getEdges();
       _enabledEdges = computeEnabledEdges();
       _topologyInterfaces = computeTopologyInterfaces();
@@ -320,6 +324,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _nullRoutedIps = null;
       _routableIps = null;
       _ipsByHostname = null;
+      _ipsByVrf = null;
       _edges = null;
       _enabledEdges = null;
       _topologyInterfaces = null;
@@ -642,6 +647,45 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return toImmutableMap(map, Entry::getKey, e -> ImmutableSet.copyOf(e.getValue()));
   }
 
+  private Map<String, Map<String, Set<Ip>>> computeIpsByVrf() {
+    Map<String, Map<String, Interface>> enabledInterfaces =
+        toImmutableMap(
+            _enabledInterfaces,
+            Entry::getKey,
+            enabledInterfacesEntry -> {
+              Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
+              return toImmutableMap(
+                  enabledInterfacesEntry.getValue(), Function.identity(), c.getInterfaces()::get);
+            });
+    Map<Ip, Map<String, String>> ipOwners = computeIpVrfOwners(true, enabledInterfaces);
+    Map<String, Map<String, Set<Ip>>> ipsByNodeByVrf = new HashMap<>();
+    /*
+     * ipOwners may not contain all nodes (i.e. a node may not own any IPs),
+     * so first initialize to make sure there is an entry for each node and vrf
+     */
+    _enabledInterfacesByNodeVrf.forEach(
+        (node, ifacesByVrf) -> {
+          Map<String, Set<Ip>> ipsByVrf =
+              ipsByNodeByVrf.computeIfAbsent(node, k -> new HashMap<>());
+          ifacesByVrf.keySet().forEach(vrf -> ipsByVrf.put(vrf, new HashSet<>()));
+        });
+
+    ipOwners.forEach(
+        (ip, nodeVrfOwners) ->
+            nodeVrfOwners.forEach(
+                (node, vrf) -> {
+                  if (_specializationIpSpace.containsIp(ip, _namedIpSpaces.get(node))) {
+                    ipsByNodeByVrf.get(node).get(vrf).add(ip);
+                  }
+                }));
+    // freeze
+    return toImmutableMap(
+        ipsByNodeByVrf,
+        Entry::getKey,
+        e1 ->
+            toImmutableMap(e1.getValue(), Entry::getKey, e2 -> ImmutableSet.copyOf(e2.getValue())));
+  }
+
   private Map<String, Map<String, Map<String, BooleanExpr>>> computeNeighborUnreachable(
       Map<String, Map<String, Map<String, IpSpace>>> neighborUnreachable) {
     return toImmutableMap(
@@ -784,6 +828,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return _aclConditions;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       getArpTrueEdge() {
     return _arpTrueEdge;
@@ -825,10 +870,16 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, Set<Ip>>> getIpsByNodeVrf() {
+    return _ipsByVrf;
+  }
+
+  @Override
   public Map<String, Map<String, IpSpace>> getNamedIpSpaces() {
     return _namedIpSpaces;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
     return _neighborUnreachable;
   }

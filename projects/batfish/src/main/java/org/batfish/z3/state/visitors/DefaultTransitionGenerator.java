@@ -59,9 +59,9 @@ import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.Query;
 
 public class DefaultTransitionGenerator implements StateVisitor {
@@ -524,7 +524,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         _rules.add(
                             new BasicRuleStatement(
                                 new NotExpr(routableIps),
-                                ImmutableSet.of(new PostInVrf(hostname, vrf), new PreOut(hostname)),
+                                new PreOutVrf(hostname, vrf),
                                 new NodeDropNoRoute(hostname)))));
   }
 
@@ -540,7 +540,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         _rules.add(
                             new BasicRuleStatement(
                                 nullRoutedIps,
-                                ImmutableSet.of(new PostInVrf(hostname, vrf), new PreOut(hostname)),
+                                new PreOutVrf(hostname, vrf),
                                 new NodeDropNullRoute(hostname)))));
   }
 
@@ -555,7 +555,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         neighborUnreachableByOutInterface.forEach(
                             (outIface, dstIpConstraint) -> {
                               ImmutableSet.Builder<StateExpr> preStates = ImmutableSet.builder();
-                              preStates.add(new PostInVrf(hostname, vrf), new PreOut(hostname));
+                              preStates.add(new PreOutVrf(hostname, vrf));
 
                               // add outAcl if one exists
                               String outAcl =
@@ -876,33 +876,32 @@ public class DefaultTransitionGenerator implements StateVisitor {
   }
 
   @Override
-  public void visitPreOut(PreOut.State preOut) {
+  public void visitPreOutVrf(PreOutVrf.State preOut) {
     // PostInNotMine
     _input
-        .getIpsByHostname()
-        .entrySet()
-        .stream()
-        .map(
-            ipsByHostnameEntry -> {
-              String hostname = ipsByHostnameEntry.getKey();
-              BooleanExpr ipForeignToCurrentNode =
-                  new NotExpr(
-                      new IpSpaceMatchExpr(
-                              IpWildcardSetIpSpace.builder()
-                                  .including(
-                                      ipsByHostnameEntry
-                                          .getValue()
-                                          .stream()
-                                          .map(IpWildcard::new)
-                                          .collect(ImmutableSet.toImmutableSet()))
-                                  .build(),
-                              _input.getNamedIpSpaces().get(hostname),
-                              Field.DST_IP)
-                          .getExpr());
-              return new BasicRuleStatement(
-                  ipForeignToCurrentNode, new PostIn(hostname), new PreOut(hostname));
-            })
-        .forEach(_rules::add);
+        .getIpsByNodeVrf()
+        .forEach(
+            (hostname, ipsByVrf) ->
+                ipsByVrf.forEach(
+                    (vrf, ips) -> {
+                      BooleanExpr ipForeignToCurrentNode =
+                          new NotExpr(
+                              new IpSpaceMatchExpr(
+                                      IpWildcardSetIpSpace.builder()
+                                          .including(
+                                              ips.stream()
+                                                  .map(IpWildcard::new)
+                                                  .collect(ImmutableSet.toImmutableSet()))
+                                          .build(),
+                                      _input.getNamedIpSpaces().get(hostname),
+                                      Field.DST_IP)
+                                  .getExpr());
+                      _rules.add(
+                          new BasicRuleStatement(
+                              ipForeignToCurrentNode,
+                              new PostInVrf(hostname, vrf),
+                              new PreOutVrf(hostname, vrf)));
+                    }));
   }
 
   @Override
@@ -923,9 +922,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                                 _rules.add(
                                                     new BasicRuleStatement(
                                                         dstIpConstraint,
-                                                        ImmutableSet.of(
-                                                            new PostInVrf(hostname, vrf),
-                                                            new PreOut(hostname)),
+                                                        new PreOutVrf(hostname, vrf),
                                                         new PreOutEdge(
                                                             hostname,
                                                             outInterface,

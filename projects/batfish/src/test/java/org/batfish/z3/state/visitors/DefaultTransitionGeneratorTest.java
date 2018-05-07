@@ -66,9 +66,9 @@ import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.junit.Test;
 
 public class DefaultTransitionGeneratorTest {
@@ -920,30 +920,22 @@ public class DefaultTransitionGeneratorTest {
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NotExpr(B1),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
-                new NodeDropNoRoute(NODE1))));
+                new NotExpr(B1), new PreOutVrf(NODE1, VRF1), new NodeDropNoRoute(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NotExpr(B2),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
-                new NodeDropNoRoute(NODE1))));
+                new NotExpr(B2), new PreOutVrf(NODE1, VRF2), new NodeDropNoRoute(NODE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NotExpr(B1),
-                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
-                new NodeDropNoRoute(NODE2))));
+                new NotExpr(B1), new PreOutVrf(NODE2, VRF1), new NodeDropNoRoute(NODE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
-                new NotExpr(B2),
-                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
-                new NodeDropNoRoute(NODE2))));
+                new NotExpr(B2), new PreOutVrf(NODE2, VRF2), new NodeDropNoRoute(NODE2))));
   }
 
   @Test
@@ -966,31 +958,19 @@ public class DefaultTransitionGeneratorTest {
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                B1,
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
-                new NodeDropNullRoute(NODE1))));
+            new BasicRuleStatement(B1, new PreOutVrf(NODE1, VRF1), new NodeDropNullRoute(NODE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                B2,
-                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
-                new NodeDropNullRoute(NODE1))));
+            new BasicRuleStatement(B2, new PreOutVrf(NODE1, VRF2), new NodeDropNullRoute(NODE1))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                B1,
-                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
-                new NodeDropNullRoute(NODE2))));
+            new BasicRuleStatement(B1, new PreOutVrf(NODE2, VRF1), new NodeDropNullRoute(NODE2))));
     assertThat(
         rules,
         hasItem(
-            new BasicRuleStatement(
-                B2,
-                ImmutableSet.of(new PostInVrf(NODE2, VRF2), new PreOut(NODE2)),
-                new NodeDropNullRoute(NODE2))));
+            new BasicRuleStatement(B2, new PreOutVrf(NODE2, VRF2), new NodeDropNullRoute(NODE2))));
   }
 
   @Test
@@ -1018,28 +998,28 @@ public class DefaultTransitionGeneratorTest {
         hasItem(
             new BasicRuleStatement(
                 b(1),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF1),
                 new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE1))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(2),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF1),
                 new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE2))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(3),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF2),
                 new NodeInterfaceNeighborUnreachable(NODE1, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(4),
-                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new PreOutVrf(NODE2, VRF1),
                 new NodeInterfaceNeighborUnreachable(NODE2, INTERFACE1))));
   }
 
@@ -1782,17 +1762,21 @@ public class DefaultTransitionGeneratorTest {
   }
 
   @Test
-  public void testVisitPreOut() {
+  public void testVisitPreOutVrf() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            .setIpsByHostname(
-                ImmutableMap.of(NODE1, ImmutableSet.of(IP1, IP2), NODE2, ImmutableSet.of(IP3, IP4)))
+            .setIpsByNodeVrf(
+                ImmutableMap.of(
+                    NODE1,
+                    ImmutableMap.of(VRF1, ImmutableSet.of(IP1, IP2)),
+                    NODE2,
+                    ImmutableMap.of(VRF2, ImmutableSet.of(IP3, IP4))))
             .setNamedIpSpaces(ImmutableMap.of(NODE1, ImmutableMap.of(), NODE2, ImmutableMap.of()))
             .build();
     Set<RuleStatement> rules =
         ImmutableSet.copyOf(
             DefaultTransitionGenerator.generateTransitions(
-                input, ImmutableSet.of(PreOut.State.INSTANCE)));
+                input, ImmutableSet.of(PreOutVrf.State.INSTANCE)));
 
     // PostInNotMine
     assertThat(
@@ -1805,8 +1789,8 @@ public class DefaultTransitionGeneratorTest {
                             .including(ImmutableSet.of(new IpWildcard(IP1), new IpWildcard(IP2)))
                             .build(),
                         ImmutableMap.of())),
-                ImmutableSet.of(new PostIn(NODE1)),
-                new PreOut(NODE1))));
+                new PostInVrf(NODE1, VRF1),
+                new PreOutVrf(NODE1, VRF1))));
     assertThat(
         rules,
         hasItem(
@@ -1817,8 +1801,8 @@ public class DefaultTransitionGeneratorTest {
                             .including(ImmutableSet.of(new IpWildcard(IP3), new IpWildcard(IP4)))
                             .build(),
                         ImmutableMap.of())),
-                ImmutableSet.of(new PostIn(NODE2)),
-                new PreOut(NODE2))));
+                new PostInVrf(NODE2, VRF2),
+                new PreOutVrf(NODE2, VRF2))));
   }
 
   @Test
@@ -1860,42 +1844,42 @@ public class DefaultTransitionGeneratorTest {
         hasItem(
             new BasicRuleStatement(
                 b(1),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF1),
                 new PreOutEdge(NODE1, INTERFACE1, NODE3, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(2),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF1),
                 new PreOutEdge(NODE1, INTERFACE1, NODE3, INTERFACE4))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(3),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF1),
                 new PreOutEdge(NODE1, INTERFACE1, NODE4, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(4),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF1), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF1),
                 new PreOutEdge(NODE1, INTERFACE2, NODE3, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(5),
-                ImmutableSet.of(new PostInVrf(NODE1, VRF2), new PreOut(NODE1)),
+                new PreOutVrf(NODE1, VRF2),
                 new PreOutEdge(NODE1, INTERFACE3, NODE3, INTERFACE3))));
     assertThat(
         rules,
         hasItem(
             new BasicRuleStatement(
                 b(6),
-                ImmutableSet.of(new PostInVrf(NODE2, VRF1), new PreOut(NODE2)),
+                new PreOutVrf(NODE2, VRF1),
                 new PreOutEdge(NODE2, INTERFACE1, NODE3, INTERFACE3))));
   }
 
