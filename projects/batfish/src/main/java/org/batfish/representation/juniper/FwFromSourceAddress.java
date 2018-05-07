@@ -15,15 +15,7 @@ public final class FwFromSourceAddress extends FwFrom {
 
   @Nullable private final IpWildcard _ipWildcard;
 
-  @Nullable private final Prefix _prefix;
-
-  public FwFromSourceAddress(Prefix prefix) {
-    _prefix = prefix;
-    _ipWildcard = null;
-  }
-
   public FwFromSourceAddress(IpWildcard ipWildcard) {
-    _prefix = null;
     _ipWildcard = ipWildcard;
   }
 
@@ -34,17 +26,8 @@ public final class FwFromSourceAddress extends FwFrom {
       Warnings w,
       Configuration c) {
     IpWildcard wildcard;
-    if (_ipWildcard != null) {
-      wildcard = _ipWildcard;
-    } else {
-      wildcard = new IpWildcard(_prefix);
-    }
     headerSpaceBuilder.setSrcIps(
-        AclIpSpace.union(headerSpaceBuilder.getSrcIps(), wildcard.toIpSpace()));
-  }
-
-  public Prefix getPrefix() {
-    return _prefix;
+        AclIpSpace.union(headerSpaceBuilder.getSrcIps(), _ipWildcard.toIpSpace()));
   }
 
   public IpWildcard getIpWildcard() {

@@ -1017,13 +1017,13 @@ public class FlatJuniperGrammarTest {
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(1));
 
-    Flow whileListedSrc = createFlow("1.8.3.9", "2.5.6.7");
+    Flow whiteListedSrc = createFlow("1.8.3.9", "2.5.6.7");
     Flow blackListedSrc = createFlow("5.8.4.9", "2.5.6.7");
 
     IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
 
     // Whitelisted source address should be allowed
-    assertThat(incomingFilter, accepts(whileListedSrc, "fw-s-add.0", c));
+    assertThat(incomingFilter, accepts(whiteListedSrc, "fw-s-add.0", c));
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedSrc, "fw-s-add.0", c));
@@ -1035,13 +1035,13 @@ public class FlatJuniperGrammarTest {
 
     assertThat(c.getIpAccessLists().keySet(), hasSize(1));
 
-    Flow whileListedDst = createFlow("2.5.6.7", "1.8.3.9");
+    Flow whiteListedDst = createFlow("2.5.6.7", "1.8.3.9");
     Flow blackListedDst = createFlow("2.5.6.7", "5.8.4.9");
 
     IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
 
     // Whitelisted source address should be allowed
-    assertThat(incomingFilter, accepts(whileListedDst, "fw-s-add.0", c));
+    assertThat(incomingFilter, accepts(whiteListedDst, "fw-s-add.0", c));
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));

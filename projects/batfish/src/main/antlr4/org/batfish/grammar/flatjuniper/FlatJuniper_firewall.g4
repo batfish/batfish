@@ -111,6 +111,13 @@ fft_then
    )
 ;
 
+fftfa_address_mask_prefix
+:
+    ip_address = IP_ADDRESS (FORWARD_SLASH wildcard_mask = IP_ADDRESS)?
+    | IP_PREFIX
+
+;
+
 fftf_address
 :
    ADDRESS
@@ -124,8 +131,7 @@ fftf_destination_address
 :
    DESTINATION_ADDRESS
    (
-      ip_address = IP_ADDRESS (FORWARD_SLASH wildcard_mask = IP_ADDRESS)?
-      | IP_PREFIX
+      fftfa_address_mask_prefix
       | IPV6_ADDRESS
       | IPV6_PREFIX
    ) EXCEPT?
@@ -267,8 +273,7 @@ fftf_source_address
 :
    SOURCE_ADDRESS
    (
-      ip_address = IP_ADDRESS (FORWARD_SLASH wildcard_mask = IP_ADDRESS)?
-      | IP_PREFIX
+      fftfa_address_mask_prefix
       | IPV6_ADDRESS
       | IPV6_PREFIX
    ) EXCEPT?
