@@ -30,6 +30,7 @@ import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -191,6 +192,38 @@ public class DefaultTransitionGenerator implements StateVisitor {
                           return new BasicRuleStatement(
                               new AclLineNoMatch(hostname, acl, lastLine), deny);
                         }
+                      });
+            })
+        .forEach(_rules::add);
+  }
+
+  @Override
+  public void visitAclLineIndependentMatch(AclLineIndependentMatch.State state) {
+    _input
+        .getAclConditions()
+        .entrySet()
+        .stream()
+        .flatMap(
+            aclConditionsEntryByNode -> {
+              String hostname = aclConditionsEntryByNode.getKey();
+              return aclConditionsEntryByNode
+                  .getValue()
+                  .entrySet()
+                  .stream()
+                  .flatMap(
+                      aclConditionsEntryByAclName -> {
+                        String acl = aclConditionsEntryByAclName.getKey();
+                        AtomicInteger lineNumber = new AtomicInteger(0);
+                        return aclConditionsEntryByAclName
+                            .getValue()
+                            .stream()
+                            .map(
+                                lineCriteria -> {
+                                  int line = lineNumber.getAndIncrement();
+                                  return new BasicRuleStatement(
+                                      lineCriteria,
+                                      new AclLineIndependentMatch(hostname, acl, line));
+                                });
                       });
             })
         .forEach(_rules::add);
