@@ -4500,6 +4500,11 @@ STATION_PORT
    'station-port'
 ;
 
+STORM_CONTROL
+:
+   'storm-control'
+;
+
 STORM_CONTROL_PROFILES
 :
    'storm-control-profiles'
