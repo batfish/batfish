@@ -1122,4 +1122,10 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasDefaultVrf(hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("1.0.0.0/8"))))));
     assertThat(c, hasVrf("ri2", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("2.0.0.0/8"))))));
   }
+
+  @Test
+  public void testStormControl() throws IOException {
+    /* allow storm-control configuration in an interface */
+    parseConfig("storm-control");
+  }
 }
