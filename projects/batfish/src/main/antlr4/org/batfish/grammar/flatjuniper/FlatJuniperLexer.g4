@@ -9,6 +9,14 @@ boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
 
+public boolean isPrefix() {
+   char nextChar = (char)this.getInputStream().LA(1);
+   if(Character.isDigit(nextChar) || nextChar == '.'){
+      return false;
+    }
+    return true;
+}
+
 @Override
 public String printStateVariables() {
    StringBuilder sb = new StringBuilder();
@@ -5148,6 +5156,8 @@ IP_PREFIX
    {enableIP_ADDRESS}?
 
    F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
+
+   {isPrefix()}?
 ;
 
 IPV6_ADDRESS
