@@ -1205,7 +1205,7 @@ public class DefaultTransitionGeneratorTest {
                     NODE2, ImmutableMap.of()))
             .setSrcInterfaceField(SRC_INTERFACE_FIELD)
             .setTransitNodes(ImmutableSet.of(NODE1))
-            .setTopologyInterfaces(
+            .setEnabledInterfaces(
                 ImmutableMap.of(
                     NODE1, ImmutableSet.of(INTERFACE1), NODE2, ImmutableSet.of(INTERFACE1)))
             .build();

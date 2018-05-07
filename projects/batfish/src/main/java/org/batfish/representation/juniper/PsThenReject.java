@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import java.util.Collections;
+import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
@@ -24,12 +24,11 @@ public final class PsThenReject extends PsThen {
       JuniperConfiguration juniperVendorConfiguration,
       Configuration c,
       Warnings warnings) {
-    If ifStatement = new If();
-    ifStatement.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
-    ifStatement.setTrueStatements(
-        Collections.singletonList(Statements.ReturnFalse.toStaticStatement()));
-    ifStatement.setFalseStatements(
-        Collections.singletonList(Statements.ExitReject.toStaticStatement()));
+    If ifStatement =
+        new If(
+            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     statements.add(ifStatement);
   }
 }

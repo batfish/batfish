@@ -10483,6 +10483,768 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "as1border1" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : -1
+            },
+            "as2" : {
+              "definitionLines" : [
+                15
+              ],
+              "numReferrers" : -1
+            },
+            "bad-ebgp" : {
+              "definitionLines" : [
+                24
+              ],
+              "numReferrers" : -1
+            },
+            "xanadu" : {
+              "definitionLines" : [
+                20
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "policy-statement" : {
+            "as1_to_as1" : {
+              "definitionLines" : [
+                30
+              ],
+              "numReferrers" : 1
+            },
+            "as1_to_as2" : {
+              "definitionLines" : [
+                34
+              ],
+              "numReferrers" : 1
+            },
+            "as2_to_as1" : {
+              "definitionLines" : [
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "match_original_prefixes" : {
+              "definitionLines" : [
+                45
+              ],
+              "numReferrers" : 2
+            },
+            "ospf-redistribute-connected" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "prefix-list" : {
+            "as3_prefixes" : {
+              "definitionLines" : [
+                49
+              ],
+              "numReferrers" : 0
+            },
+            "original_prefixes" : {
+              "definitionLines" : [
+                47
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "as1border2" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                11
+              ],
+              "numReferrers" : -1
+            },
+            "as3" : {
+              "definitionLines" : [
+                16
+              ],
+              "numReferrers" : -1
+            },
+            "as4" : {
+              "definitionLines" : [
+                21
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "policy-statement" : {
+            "as1_to_as1" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 1
+            },
+            "as1_to_as3" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 1
+            },
+            "as1_to_as4" : {
+              "definitionLines" : [
+                43
+              ],
+              "numReferrers" : 1
+            },
+            "as3_to_as1" : {
+              "definitionLines" : [
+                40
+              ],
+              "numReferrers" : 1
+            },
+            "as4_to_as1" : {
+              "definitionLines" : [
+                50
+              ],
+              "numReferrers" : 1
+            },
+            "ospf-redistribute-connected" : {
+              "definitionLines" : [
+                26
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "prefix-list" : {
+            "as2_prefixes" : {
+              "definitionLines" : [
+                56
+              ],
+              "numReferrers" : 0
+            },
+            "as4_prefixes" : {
+              "definitionLines" : [
+                58
+              ],
+              "numReferrers" : 1
+            },
+            "original_prefixes" : {
+              "definitionLines" : [
+                54
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "as1core1" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                72
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "as2border1" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                81
+              ],
+              "numReferrers" : -1
+            },
+            "as2" : {
+              "definitionLines" : [
+                83
+              ],
+              "numReferrers" : -1
+            },
+            "as3" : {
+              "definitionLines" : [
+                85
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "expanded community-list" : {
+            "as1_community" : {
+              "definitionLines" : [
+                115
+              ],
+              "numReferrers" : 1
+            },
+            "as2_community" : {
+              "definitionLines" : [
+                116
+              ],
+              "numReferrers" : 0
+            },
+            "as3_community" : {
+              "definitionLines" : [
+                117
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "extended ip access-list" : {
+            "101" : {
+              "definitionLines" : [
+                130
+              ],
+              "numReferrers" : 2
+            },
+            "102" : {
+              "definitionLines" : [
+                132
+              ],
+              "numReferrers" : 3
+            },
+            "103" : {
+              "definitionLines" : [
+                134
+              ],
+              "numReferrers" : 2
+            },
+            "BLOCK_SPOOF_IN" : {
+              "definitionLines" : [
+                122
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : {
+              "definitionLines" : [
+                128
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "as1_to_as2" : {
+              "definitionLines" : [
+                147
+              ],
+              "numReferrers" : 1
+            },
+            "as2_to_as1" : {
+              "definitionLines" : [
+                137
+              ],
+              "numReferrers" : 1
+            },
+            "as2_to_as3" : {
+              "definitionLines" : [
+                151
+              ],
+              "numReferrers" : 1
+            },
+            "as3_to_as2" : {
+              "definitionLines" : [
+                161
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "as2border2" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                81
+              ],
+              "numReferrers" : 0
+            },
+            "as2" : {
+              "definitionLines" : [
+                83
+              ],
+              "numReferrers" : -1
+            },
+            "as3" : {
+              "definitionLines" : [
+                85
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "expanded community-list" : {
+            "as1_community" : {
+              "definitionLines" : [
+                115
+              ],
+              "numReferrers" : 1
+            },
+            "as2_community" : {
+              "definitionLines" : [
+                116
+              ],
+              "numReferrers" : 0
+            },
+            "as3_community" : {
+              "definitionLines" : [
+                117
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "extended ip access-list" : {
+            "101" : {
+              "definitionLines" : [
+                129
+              ],
+              "numReferrers" : 2
+            },
+            "102" : {
+              "definitionLines" : [
+                131
+              ],
+              "numReferrers" : 3
+            },
+            "103" : {
+              "definitionLines" : [
+                133
+              ],
+              "numReferrers" : 2
+            },
+            "BLOCK_SPOOF_IN" : {
+              "definitionLines" : [
+                122
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : {
+              "definitionLines" : [
+                127
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "as1_to_as2" : {
+              "definitionLines" : [
+                146
+              ],
+              "numReferrers" : 1
+            },
+            "as2_to_as1" : {
+              "definitionLines" : [
+                136
+              ],
+              "numReferrers" : 1
+            },
+            "as2_to_as3" : {
+              "definitionLines" : [
+                151
+              ],
+              "numReferrers" : 1
+            },
+            "as3_to_as2" : {
+              "definitionLines" : [
+                161
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "as2core1" : {
+          "bgp group" : {
+            "as2" : {
+              "definitionLines" : [
+                87
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "extended ip access-list" : {
+            "blocktelnet" : {
+              "definitionLines" : [
+                118
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
+        "as2core2" : {
+          "bgp group" : {
+            "as2" : {
+              "definitionLines" : [
+                85
+              ],
+              "numReferrers" : -1
+            }
+          }
+        },
+        "as2dept1" : {
+          "bgp group" : {
+            "as2" : {
+              "definitionLines" : [
+                70
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "expanded community-list" : {
+            "as2_community" : {
+              "definitionLines" : [
+                92
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "extended ip access-list" : {
+            "102" : {
+              "definitionLines" : [
+                109
+              ],
+              "numReferrers" : 2
+            },
+            "105" : {
+              "definitionLines" : [
+                110
+              ],
+              "numReferrers" : 0
+            },
+            "RESTRICT_HOST_TRAFFIC_IN" : {
+              "definitionLines" : [
+                102
+              ],
+              "numReferrers" : 1
+            },
+            "RESTRICT_HOST_TRAFFIC_OUT" : {
+              "definitionLines" : [
+                97
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "as2_to_dept" : {
+              "definitionLines" : [
+                120
+              ],
+              "numReferrers" : 2
+            },
+            "dept_to_as2" : {
+              "definitionLines" : [
+                115
+              ],
+              "numReferrers" : 2
+            }
+          }
+        },
+        "as2dist1" : {
+          "bgp group" : {
+            "as2" : {
+              "definitionLines" : [
+                82
+              ],
+              "numReferrers" : -1
+            },
+            "dept" : {
+              "definitionLines" : [
+                84
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "expanded community-list" : {
+            "dept_community" : {
+              "definitionLines" : [
+                110
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "extended ip access-list" : {
+            "102" : {
+              "definitionLines" : [
+                117
+              ],
+              "numReferrers" : 0
+            },
+            "105" : {
+              "definitionLines" : [
+                118
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "route-map" : {
+            "as2_to_dept" : {
+              "definitionLines" : [
+                123
+              ],
+              "numReferrers" : 1
+            },
+            "dept_to_as2" : {
+              "definitionLines" : [
+                128
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "as2dist2" : {
+          "bgp group" : {
+            "as2" : {
+              "definitionLines" : [
+                82
+              ],
+              "numReferrers" : -1
+            },
+            "dept" : {
+              "definitionLines" : [
+                84
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "expanded community-list" : {
+            "dept_community" : {
+              "definitionLines" : [
+                110
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "extended ip access-list" : {
+            "102" : {
+              "definitionLines" : [
+                117
+              ],
+              "numReferrers" : 0
+            },
+            "105" : {
+              "definitionLines" : [
+                118
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "route-map" : {
+            "as2_to_dept" : {
+              "definitionLines" : [
+                123
+              ],
+              "numReferrers" : 1
+            },
+            "dept_to_as2" : {
+              "definitionLines" : [
+                128
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "as3border1" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                74
+              ],
+              "numReferrers" : 0
+            },
+            "as2" : {
+              "definitionLines" : [
+                76
+              ],
+              "numReferrers" : -1
+            },
+            "as3" : {
+              "definitionLines" : [
+                78
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "expanded community-list" : {
+            "as1_community" : {
+              "definitionLines" : [
+                106
+              ],
+              "numReferrers" : 1
+            },
+            "as2_community" : {
+              "definitionLines" : [
+                107
+              ],
+              "numReferrers" : 1
+            },
+            "as3_community" : {
+              "definitionLines" : [
+                108
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "extended ip access-list" : {
+            "101" : {
+              "definitionLines" : [
+                116
+              ],
+              "numReferrers" : 2
+            },
+            "102" : {
+              "definitionLines" : [
+                118
+              ],
+              "numReferrers" : 2
+            },
+            "103" : {
+              "definitionLines" : [
+                120
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : {
+              "definitionLines" : [
+                114
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "as1_to_as3" : {
+              "definitionLines" : [
+                133
+              ],
+              "numReferrers" : 1
+            },
+            "as2_to_as3" : {
+              "definitionLines" : [
+                147
+              ],
+              "numReferrers" : 1
+            },
+            "as3_to_as1" : {
+              "definitionLines" : [
+                123
+              ],
+              "numReferrers" : 1
+            },
+            "as3_to_as2" : {
+              "definitionLines" : [
+                137
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "as3border2" : {
+          "bgp group" : {
+            "as1" : {
+              "definitionLines" : [
+                75
+              ],
+              "numReferrers" : -1
+            },
+            "as2" : {
+              "definitionLines" : [
+                77
+              ],
+              "numReferrers" : 0
+            },
+            "as3" : {
+              "definitionLines" : [
+                79
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "expanded community-list" : {
+            "as1_community" : {
+              "definitionLines" : [
+                107
+              ],
+              "numReferrers" : 1
+            },
+            "as2_community" : {
+              "definitionLines" : [
+                108
+              ],
+              "numReferrers" : 1
+            },
+            "as3_community" : {
+              "definitionLines" : [
+                109
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "extended ip access-list" : {
+            "101" : {
+              "definitionLines" : [
+                117
+              ],
+              "numReferrers" : 2
+            },
+            "102" : {
+              "definitionLines" : [
+                119
+              ],
+              "numReferrers" : 2
+            },
+            "103" : {
+              "definitionLines" : [
+                121
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "ipv4 prefix-list" : {
+            "inbound_route_filter" : {
+              "definitionLines" : [
+                115
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "route-map" : {
+            "as1_to_as3" : {
+              "definitionLines" : [
+                134
+              ],
+              "numReferrers" : 1
+            },
+            "as2_to_as3" : {
+              "definitionLines" : [
+                148
+              ],
+              "numReferrers" : 1
+            },
+            "as3_to_as1" : {
+              "definitionLines" : [
+                124
+              ],
+              "numReferrers" : 1
+            },
+            "as3_to_as2" : {
+              "definitionLines" : [
+                138
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "as3core1" : {
+          "bgp group" : {
+            "as3" : {
+              "definitionLines" : [
+                81
+              ],
+              "numReferrers" : -1
+            }
+          }
+        }
+      },
       "undefinedReferences" : {
         "as2core2" : {
           "route-map" : {
@@ -10491,120 +11253,6 @@
                 87
               ]
             }
-          }
-        }
-      },
-      "unusedStructures" : {
-        "as1border1" : {
-          "prefix-list" : {
-            "as3_prefixes" : [
-              49
-            ],
-            "original_prefixes" : [
-              47
-            ]
-          }
-        },
-        "as1border2" : {
-          "prefix-list" : {
-            "as2_prefixes" : [
-              56
-            ],
-            "original_prefixes" : [
-              54
-            ]
-          }
-        },
-        "as2border1" : {
-          "bgp group" : {
-            "as3" : [
-              85
-            ]
-          },
-          "expanded community-list" : {
-            "as2_community" : [
-              116
-            ]
-          },
-          "ipv4 prefix-list" : {
-            "inbound_route_filter" : [
-              128
-            ]
-          }
-        },
-        "as2border2" : {
-          "bgp group" : {
-            "as1" : [
-              81
-            ]
-          },
-          "expanded community-list" : {
-            "as2_community" : [
-              116
-            ]
-          },
-          "ipv4 prefix-list" : {
-            "inbound_route_filter" : [
-              127
-            ]
-          }
-        },
-        "as2dept1" : {
-          "extended ip access-list" : {
-            "105" : [
-              110
-            ],
-            "RESTRICT_HOST_TRAFFIC_OUT" : [
-              97
-            ]
-          }
-        },
-        "as2dist1" : {
-          "extended ip access-list" : {
-            "102" : [
-              117
-            ]
-          }
-        },
-        "as2dist2" : {
-          "extended ip access-list" : {
-            "102" : [
-              117
-            ]
-          }
-        },
-        "as3border1" : {
-          "bgp group" : {
-            "as1" : [
-              74
-            ]
-          },
-          "expanded community-list" : {
-            "as3_community" : [
-              108
-            ]
-          },
-          "ipv4 prefix-list" : {
-            "inbound_route_filter" : [
-              114
-            ]
-          }
-        },
-        "as3border2" : {
-          "bgp group" : {
-            "as2" : [
-              77
-            ]
-          },
-          "expanded community-list" : {
-            "as3_community" : [
-              109
-            ]
-          },
-          "ipv4 prefix-list" : {
-            "inbound_route_filter" : [
-              115
-            ]
           }
         }
       },

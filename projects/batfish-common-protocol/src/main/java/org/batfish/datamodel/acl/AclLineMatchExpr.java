@@ -1,28 +1,40 @@
 package org.batfish.datamodel.acl;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
+import java.util.Comparator;
+import java.util.Objects;
+import javax.annotation.Nullable;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLineMatchExpr> {
+  protected static final String PROP_DESCRIPTION = "description";
+
   private static final long serialVersionUID = 1L;
 
+  protected final @Nullable String _description;
+
+  @JsonCreator
+  public AclLineMatchExpr(@JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
+    _description = description;
+  }
+
   public abstract <R> R accept(GenericAclLineMatchExprVisitor<R> visitor);
+
+  protected abstract int compareSameClass(AclLineMatchExpr o);
 
   @Override
   public final int compareTo(AclLineMatchExpr o) {
     if (this == o) {
       return 0;
     }
-    int ret;
-    ret = getClass().getSimpleName().compareTo(o.getClass().getSimpleName());
-    if (ret != 0) {
-      return ret;
-    }
-    return compareSameClass(o);
+    return Comparator.comparing((AclLineMatchExpr e) -> e.getClass().getSimpleName())
+        .thenComparing(this::compareSameClass)
+        .thenComparing(AclLineMatchExpr::getDescription)
+        .compare(this, o);
   }
-
-  protected abstract int compareSameClass(AclLineMatchExpr o);
 
   @Override
   public boolean equals(Object o) {
@@ -32,10 +44,15 @@ public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLi
     if (!(getClass() == o.getClass())) {
       return false;
     }
-    return exprEquals(o);
+    return Objects.equals(_description, ((AclLineMatchExpr) o)._description) && exprEquals(o);
   }
 
   protected abstract boolean exprEquals(Object o);
+
+  @JsonProperty(PROP_DESCRIPTION)
+  public @Nullable String getDescription() {
+    return _description;
+  }
 
   @Override
   public abstract int hashCode();

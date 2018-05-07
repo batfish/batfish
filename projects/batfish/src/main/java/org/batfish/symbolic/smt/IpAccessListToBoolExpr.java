@@ -26,6 +26,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -195,6 +196,11 @@ public class IpAccessListToBoolExpr implements GenericAclLineMatchExprVisitor<Bo
   @Override
   public BoolExpr visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     return _context.mkNot(notMatchExpr.getOperand().accept(this));
+  }
+
+  @Override
+  public BoolExpr visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+    throw new BatfishException("OriginatingFromDevice is not supported");
   }
 
   @Override

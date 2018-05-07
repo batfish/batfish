@@ -12,6 +12,7 @@ import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Exclusion;
+import org.batfish.datamodel.table.Row;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 import org.junit.Test;
 
@@ -24,15 +25,14 @@ public class JsonPathToTableAnswererTest {
 
     // build an extraction to recover *Val
     JsonPathToTableExtraction extraction =
-        new JsonPathToTableExtraction(new Schema("String"), Method.SUFFIXOFSUFFIX, "$", null);
+        new JsonPathToTableExtraction(Schema.STRING, Method.SUFFIXOFSUFFIX, "$", null);
     Map<String, JsonPathToTableExtraction> extractions = new HashMap<>();
     extractions.put("val", extraction);
 
     // build a Node composition that use "val" as name
     Map<String, String> dict = new HashMap<>();
     dict.put("name", "val");
-    JsonPathToTableComposition composition =
-        new JsonPathToTableComposition(new Schema("Node"), dict);
+    JsonPathToTableComposition composition = new JsonPathToTableComposition(Schema.NODE, dict);
     Map<String, JsonPathToTableComposition> compositions = new HashMap<>();
     compositions.put("node", composition);
 
@@ -57,12 +57,12 @@ public class JsonPathToTableAnswererTest {
     assertThat(answer.getExcludedRows().size(), equalTo(1));
 
     // the one row should have includeVal
-    ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
-    row.set("val", new TextNode("includeVal"));
-    row.set(
+    ObjectNode data = BatfishObjectMapper.mapper().createObjectNode();
+    data.set("val", new TextNode("includeVal"));
+    data.set(
         "node",
         BatfishObjectMapper.mapper().createObjectNode().set("name", new TextNode("includeVal")));
-    assertThat(answer.getRows().contains(row), equalTo(true));
+    assertThat(answer.getRows().contains(new Row(data)), equalTo(true));
 
     // the summary should have the right count
     assertThat(answer.getSummary().getNumResults(), equalTo(1));

@@ -30,6 +30,7 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
       AclReachabilityQuestion question = (AclReachabilityQuestion) _question;
       // get comparesamename results for acls
       CompareSameNameQuestion csnQuestion = new CompareSameNameQuestion();
+      csnQuestion.setCompareGenerated(true);
       csnQuestion.setNodeRegex(question.getNodeRegex());
       csnQuestion.setNamedStructTypes(
           new TreeSet<>(Collections.singleton(IpAccessList.class.getSimpleName())));

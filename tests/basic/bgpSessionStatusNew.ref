@@ -2,29 +2,65 @@
   {
     "class" : "org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerElement",
     "metadata" : {
-      "columnSchemas" : {
-        "configuredStatus" : "String",
-        "node" : "Node",
-        "onLoopback" : "Boolean",
-        "remoteNode" : "Node",
-        "remotePrefix" : "Prefix",
-        "localIp" : "Ip",
-        "sessionType" : "String",
-        "establishedNeighbors" : "Integer",
-        "vrfName" : "String"
+      "columnMetadata" : {
+        "configuredStatus" : {
+          "description" : "Configured status",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "String"
+        },
+        "node" : {
+          "description" : "Node where this session is configured",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "Node"
+        },
+        "onLoopback" : {
+          "description" : "Whether the session was established on loopback interface",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "Boolean"
+        },
+        "remoteNode" : {
+          "description" : "Remote node for this session",
+          "isKey" : false,
+          "isValue" : false,
+          "schema" : "Node"
+        },
+        "remotePrefix" : {
+          "description" : "Remote prefix for this session",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "Prefix"
+        },
+        "localIp" : {
+          "description" : "The local IP of the session",
+          "isKey" : false,
+          "isValue" : false,
+          "schema" : "Ip"
+        },
+        "sessionType" : {
+          "description" : "The type of this session",
+          "isKey" : false,
+          "isValue" : false,
+          "schema" : "String"
+        },
+        "establishedNeighbors" : {
+          "description" : "Number of neighbors with whom BGP session was established",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "Integer"
+        },
+        "vrfName" : {
+          "description" : "The VRF in which this session is configured",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "String"
+        }
       },
       "displayHints" : {
         "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
-      },
-      "primaryKey" : [
-        "node",
-        "remotePrefix",
-        "vrfName"
-      ],
-      "primaryValue" : [
-        "configuredStatus",
-        "establishedNeighbors"
-      ]
+      }
     },
     "rows" : [
       {

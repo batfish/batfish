@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Set;
@@ -200,11 +201,15 @@ public class PrefixSpace implements Serializable {
   }
 
   @JsonCreator
-  public PrefixSpace(Set<PrefixRange> prefixRanges) {
+  public PrefixSpace(Iterable<PrefixRange> prefixRanges) {
     this();
     for (PrefixRange prefixRange : prefixRanges) {
       _trie.addPrefixRange(prefixRange);
     }
+  }
+
+  public PrefixSpace(PrefixRange... prefixRanges) {
+    this(Arrays.asList(prefixRanges));
   }
 
   /**

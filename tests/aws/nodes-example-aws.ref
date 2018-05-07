@@ -1059,11 +1059,6 @@
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1"
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "MATCH_ALL_BGP" : {
             "name" : "MATCH_ALL_BGP",

@@ -5916,17 +5916,407 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
-      "unusedStructures" : {
-        "junos-srx-3" : {
+      "definedStructures" : {
+        "junos-srx-1" : {
+          "bgp group" : {
+            "physical" : {
+              "definitionLines" : [
+                111
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "firewall filter" : {
+            "~FROM_ZONE~junos-host~TO_ZONE~untrust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~FROM_ZONE~loopback~TO_ZONE~junos-host" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~FROM_ZONE~trust~TO_ZONE~trust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~FROM_ZONE~untrust~TO_ZONE~junos-host" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~FROM_ZONE~untrust~TO_ZONE~loopback" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~FROM_ZONE~untrust~TO_ZONE~untrust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~hostos" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 2
+            },
+            "~INBOUND_ZONE_FILTER~loopback" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 2
+            },
+            "~INBOUND_ZONE_FILTER~trust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 3
+            },
+            "~INBOUND_ZONE_FILTER~untrust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 3
+            }
+          },
           "ike gateway" : {
-            "gateway-1" : [
-              28
-            ]
+            "gateway-2" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 1
+            },
+            "gateway-3" : {
+              "definitionLines" : [
+                25
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ike policy" : {
+            "test-ike-policy" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "ike proposal" : {
+            "PSK_DES_DH1_MD5" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "PSK_DES_DH1_SHA1" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipsec policy" : {
+            "test-ipsec-policy" : {
+              "definitionLines" : [
+                31
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "ipsec proposal" : {
+            "NOPFS_ESP_DES_MD5" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "NOPFS_ESP_DES_SHA" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "policy-statement" : {
+            "bgp_export" : {
+              "definitionLines" : [
+                115
+              ],
+              "numReferrers" : 1
+            },
+            "loadbal" : {
+              "definitionLines" : [
+                117
+              ],
+              "numReferrers" : 1
+            }
           },
           "secure tunnel interface" : {
-            "st0.1" : [
-              59
-            ]
+            "st0.2" : {
+              "definitionLines" : [
+                36
+              ],
+              "numReferrers" : 1
+            },
+            "st0.3" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "junos-srx-2" : {
+          "bgp group" : {
+            "physical" : {
+              "definitionLines" : [
+                91
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "firewall filter" : {
+            "~FROM_ZONE~trust~TO_ZONE~trust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~hostos" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 2
+            },
+            "~INBOUND_ZONE_FILTER~loopback" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 2
+            },
+            "~INBOUND_ZONE_FILTER~trust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 3
+            },
+            "~INBOUND_ZONE_FILTER~untrust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "ike gateway" : {
+            "gateway-1" : {
+              "definitionLines" : [
+                25
+              ],
+              "numReferrers" : 1
+            },
+            "gateway-3" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ike policy" : {
+            "test-ike-policy" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "ike proposal" : {
+            "PSK_DES_DH1_MD5" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "PSK_DES_DH1_SHA1" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipsec policy" : {
+            "test-ipsec-policy" : {
+              "definitionLines" : [
+                31
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "ipsec proposal" : {
+            "NOPFS_ESP_DES_MD5" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "NOPFS_ESP_DES_SHA" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "policy-statement" : {
+            "bgp_export" : {
+              "definitionLines" : [
+                98
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "secure tunnel interface" : {
+            "st0.1" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            },
+            "st0.3" : {
+              "definitionLines" : [
+                36
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "junos-srx-3" : {
+          "bgp group" : {
+            "physical" : {
+              "definitionLines" : [
+                82
+              ],
+              "numReferrers" : -1
+            }
+          },
+          "firewall filter" : {
+            "~FROM_ZONE~trust~TO_ZONE~trust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "~INBOUND_ZONE_FILTER~hostos" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 2
+            },
+            "~INBOUND_ZONE_FILTER~loopback" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 2
+            },
+            "~INBOUND_ZONE_FILTER~trust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 3
+            },
+            "~INBOUND_ZONE_FILTER~untrust" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 3
+            }
+          },
+          "ike gateway" : {
+            "gateway-1" : {
+              "definitionLines" : [
+                28
+              ],
+              "numReferrers" : 0
+            },
+            "gateway-2" : {
+              "definitionLines" : [
+                25
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ike policy" : {
+            "test-ike-policy" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 2
+            }
+          },
+          "ike proposal" : {
+            "PSK_DES_DH1_MD5" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "PSK_DES_DH1_SHA1" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipsec policy" : {
+            "test-ipsec-policy" : {
+              "definitionLines" : [
+                31
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "ipsec proposal" : {
+            "NOPFS_ESP_DES_MD5" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            },
+            "NOPFS_ESP_DES_SHA" : {
+              "definitionLines" : [
+                -1
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "policy-statement" : {
+            "bgp_export" : {
+              "definitionLines" : [
+                89
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "secure tunnel interface" : {
+            "st0.1" : {
+              "definitionLines" : [
+                59
+              ],
+              "numReferrers" : 0
+            },
+            "st0.2" : {
+              "definitionLines" : [
+                33
+              ],
+              "numReferrers" : 1
+            }
           }
         }
       },

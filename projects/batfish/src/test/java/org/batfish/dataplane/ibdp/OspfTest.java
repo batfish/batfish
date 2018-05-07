@@ -12,7 +12,6 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collections;
 import java.util.List;
@@ -114,8 +113,7 @@ public class OspfTest {
     exportIfMatchL2Prefix.setGuard(
         new MatchPrefixSet(
             new DestinationNetwork(),
-            new ExplicitPrefixSet(
-                new PrefixSpace(ImmutableSet.of(PrefixRange.fromPrefix(address.getPrefix()))))));
+            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(address.getPrefix())))));
     exportIfMatchL2Prefix.setTrueStatements(
         ImmutableList.of(
             new SetOspfMetricType(OspfMetricType.E1),

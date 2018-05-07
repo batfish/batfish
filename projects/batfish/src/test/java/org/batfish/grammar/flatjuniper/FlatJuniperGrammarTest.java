@@ -12,6 +12,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -155,19 +156,13 @@ public class FlatJuniperGrammarTest {
     String hostname = "applications";
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
-        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /* a1 should be used, while a2 should be unused */
-    assertThat(unusedStructures, hasKey(hostname));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        unusedStructures.get(hostname);
-    assertThat(byType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
-    SortedMap<String, SortedSet<Integer>> byName =
-        byType.get(JuniperStructureType.APPLICATION.getDescription());
-    assertThat(byName, hasKey("a2"));
-    assertThat(byName, not(hasKey("a1")));
-    assertThat(byName, not(hasKey("a3")));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a2", 0));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a3", 1));
   }
 
   @Test
@@ -176,8 +171,6 @@ public class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
-        ccae.getUnusedStructures();
     SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
@@ -208,16 +201,9 @@ public class FlatJuniperGrammarTest {
                                 .build()))))));
 
     /* Check that appset1 and appset2 are referenced, but appset3 is not */
-    assertThat(unusedStructures, hasKey(hostname));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> unusedStructuresByType =
-        unusedStructures.get(hostname);
-    assertThat(
-        unusedStructuresByType, hasKey(JuniperStructureType.APPLICATION_SET.getDescription()));
-    SortedMap<String, SortedSet<Integer>> unusedStructuresByName =
-        unusedStructuresByType.get(JuniperStructureType.APPLICATION_SET.getDescription());
-    assertThat(unusedStructuresByName, not(hasKey("appset1")));
-    assertThat(unusedStructuresByName, not(hasKey("appset2")));
-    assertThat(unusedStructuresByName, hasKey("appset3"));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION_SET, "appset1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION_SET, "appset2", 1));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION_SET, "appset3", 0));
 
     /*
      * Check that there is an undefined reference to appset4, but not to appset1-3
@@ -418,18 +404,14 @@ public class FlatJuniperGrammarTest {
   public void testEthernetSwitchingFilterReference() throws IOException {
     String hostname = "ethernet-switching-filter";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> unusedStructures =
-        batfish.loadConvertConfigurationAnswerElementOrReparse().getUnusedStructures();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    /* esfilter should not be unused, whuile esfilter2 should be unused */
-    assertThat(unusedStructures, hasKey(hostname));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        unusedStructures.get(hostname);
-    assertThat(byType, hasKey(JuniperStructureType.FIREWALL_FILTER.getDescription()));
-    SortedMap<String, SortedSet<Integer>> byName =
-        byType.get(JuniperStructureType.FIREWALL_FILTER.getDescription());
-    assertThat(byName, hasKey("esfilter2"));
-    assertThat(byName, not(hasKey("esfilter")));
+    /* esfilter should be referred, while esfilter2 should be unreferred */
+    assertThat(
+        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter", 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter2", 0));
   }
 
   @Test

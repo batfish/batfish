@@ -6,6 +6,7 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
@@ -66,6 +67,28 @@ final class InterfaceMatchersImpl {
     @Override
     protected Integer featureValueOf(Interface actual) {
       return actual.getOspfCost();
+    }
+  }
+
+  static final class HasOutgoingFilter extends FeatureMatcher<Interface, IpAccessList> {
+    HasOutgoingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(subMatcher, "an Interface with outgoingFilter:", "outgoingFilter");
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Interface actual) {
+      return actual.getOutgoingFilter();
+    }
+  }
+
+  static final class HasOutgoingFilterName extends FeatureMatcher<Interface, String> {
+    HasOutgoingFilterName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "an Interface with outgoingFilterName:", "outgoingFilterName");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getOutgoingFilterName();
     }
   }
 
