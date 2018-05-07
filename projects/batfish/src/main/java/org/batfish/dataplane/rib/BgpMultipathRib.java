@@ -10,7 +10,6 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 
 public class BgpMultipathRib extends AbstractRib<BgpRoute> {
 
@@ -21,8 +20,8 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
 
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
 
-  public BgpMultipathRib(VirtualRouter owner, MultipathEquivalentAsPathMatchMode meapmm) {
-    super(owner, null);
+  public BgpMultipathRib(MultipathEquivalentAsPathMatchMode meapmm) {
+    super(null);
     _multipathEquivalentAsPathMatchMode = meapmm;
   }
 

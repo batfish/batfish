@@ -767,8 +767,7 @@ public class VirtualRouterTest {
   /** Test that the routes are exact route matches are removed from the RIB by default */
   @Test
   public void testImportRibExactRemoval() {
-    BgpMultipathRib rib =
-        new BgpMultipathRib(_testVirtualRouter, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+    BgpMultipathRib rib = new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
     BgpRoute r1 =
         new BgpRoute.Builder()
             .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
@@ -797,9 +796,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathAddWithReplacement() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -857,9 +856,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathAddNoReplacementNoBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -904,9 +903,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathRemovalNoReplacementNoBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -952,9 +951,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathReplacementBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -1017,9 +1016,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMutipathBestPathWithdrawalMultipathAvail() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();

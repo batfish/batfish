@@ -1,14 +1,14 @@
 package org.batfish.dataplane.rib;
 
 import org.batfish.datamodel.RipInternalRoute;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 
+/** Rib that stores internal RIP routes */
 public class RipInternalRib extends AbstractRib<RipInternalRoute> {
 
   private static final long serialVersionUID = 1L;
 
-  public RipInternalRib(VirtualRouter owner) {
-    super(owner, null);
+  public RipInternalRib() {
+    super(null);
   }
 
   @Override

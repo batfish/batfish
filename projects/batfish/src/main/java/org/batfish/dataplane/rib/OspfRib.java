@@ -3,15 +3,13 @@ package org.batfish.dataplane.rib;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.OspfRoute;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 
 public class OspfRib extends AbstractRib<OspfRoute> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  public OspfRib(VirtualRouter owner) {
-    super(owner, null);
+  public OspfRib() {
+    super(null);
   }
 
   @Override
@@ -21,7 +19,7 @@ public class OspfRib extends AbstractRib<OspfRoute> {
     return Integer.compare(rhsTypeCost, lhsTypeCost);
   }
 
-  private int getTypeCost(RoutingProtocol protocol) {
+  private static int getTypeCost(RoutingProtocol protocol) {
     switch (protocol) {
       case OSPF:
         return 0;

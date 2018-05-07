@@ -17,7 +17,7 @@ public class RipInternalRibTest {
 
   @Test
   public void testComparePreference() {
-    RipInternalRib rib = new RipInternalRib(null);
+    RipInternalRib rib = new RipInternalRib();
     RipInternalRoute r1 =
         new RipInternalRoute(
             Prefix.parse("10.1.0.0/16"),

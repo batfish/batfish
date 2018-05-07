@@ -7,7 +7,7 @@ import org.batfish.datamodel.AbstractRoute;
 public class RouteAdvertisement<R extends AbstractRoute> {
   protected R _route;
   protected boolean _withdraw;
-  public Reason _reason;
+  protected Reason _reason;
 
   public enum Reason {
     ADD,

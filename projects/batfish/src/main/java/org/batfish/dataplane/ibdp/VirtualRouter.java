@@ -990,44 +990,46 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** Initialize all ribs on this router. All RIBs will be empty */
   @VisibleForTesting
   void initRibs() {
-    _connectedRib = new ConnectedRib(this);
+    _connectedRib = new ConnectedRib();
     // If bgp process is null, doesn't matter
     MultipathEquivalentAsPathMatchMode mpTieBreaker =
         _vrf.getBgpProcess() == null
             ? EXACT_PATH
             : _vrf.getBgpProcess().getMultipathEquivalentAsPathMatchMode();
-    _ebgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ebgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _generatedRib = new Rib(this);
-    _ibgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ibgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _independentRib = new Rib(this);
-    _mainRib = new Rib(this);
-    _ospfExternalType1Rib = new OspfExternalType1Rib(this, _receivedOspExternalType1Routes);
-    _ospfExternalType2Rib = new OspfExternalType2Rib(this, _receivedOspExternalType2Routes);
-    _ospfExternalType1StagingRib = new OspfExternalType1Rib(this, null);
-    _ospfExternalType2StagingRib = new OspfExternalType2Rib(this, null);
-    _ospfInterAreaRib = new OspfInterAreaRib(this);
-    _ospfInterAreaStagingRib = new OspfInterAreaRib(this);
+    _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
+    _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _generatedRib = new Rib();
+    _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
+    _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _independentRib = new Rib();
+    _mainRib = new Rib();
+    _ospfExternalType1Rib =
+        new OspfExternalType1Rib(getHostname(), _receivedOspExternalType1Routes);
+    _ospfExternalType2Rib =
+        new OspfExternalType2Rib(getHostname(), _receivedOspExternalType2Routes);
+    _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
+    _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
+    _ospfInterAreaRib = new OspfInterAreaRib();
+    _ospfInterAreaStagingRib = new OspfInterAreaRib();
     _ospfIntraAreaRib = new OspfIntraAreaRib(this);
     _ospfIntraAreaStagingRib = new OspfIntraAreaRib(this);
-    _ospfRib = new OspfRib(this);
-    _ripInternalRib = new RipInternalRib(this);
-    _ripInternalStagingRib = new RipInternalRib(this);
-    _ripRib = new RipRib(this);
-    _staticRib = new StaticRib(this);
-    _staticInterfaceRib = new StaticRib(this);
-    _bgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
+    _ospfRib = new OspfRib();
+    _ripInternalRib = new RipInternalRib();
+    _ripInternalStagingRib = new RipInternalRib();
+    _ripRib = new RipRib();
+    _staticRib = new StaticRib();
+    _staticInterfaceRib = new StaticRib();
+    _bgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
 
-    _ebgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ibgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
+    _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
+    _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     BgpTieBreaker tieBreaker =
         _vrf.getBgpProcess() == null
             ? BgpTieBreaker.ARRIVAL_ORDER
             : _vrf.getBgpProcess().getTieBreaker();
-    _ebgpBestPathRib = new BgpBestPathRib(this, tieBreaker, null);
-    _ibgpBestPathRib = new BgpBestPathRib(this, tieBreaker, null);
-    _bgpBestPathRib = new BgpBestPathRib(this, tieBreaker, _receivedBgpRoutes);
+    _ebgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
+    _ibgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
+    _bgpBestPathRib = new BgpBestPathRib(tieBreaker, _receivedBgpRoutes, _mainRib);
   }
 
   /** Initialize the static route RIB from the VRF config. */
@@ -2480,8 +2482,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     /*
      * RIBs not read from can just be re-initialized
      */
-    _ospfRib = new OspfRib(this);
-    _ripRib = new RipRib(this);
+    _ospfRib = new OspfRib();
+    _ripRib = new RipRib();
 
     /*
      * Staging RIBs can also be re-initialized
@@ -2490,10 +2492,10 @@ public class VirtualRouter extends ComparableStructure<String> {
         _vrf.getBgpProcess() == null
             ? EXACT_PATH
             : _vrf.getBgpProcess().getMultipathEquivalentAsPathMatchMode();
-    _ebgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ibgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ospfExternalType1StagingRib = new OspfExternalType1Rib(this, null);
-    _ospfExternalType2StagingRib = new OspfExternalType2Rib(this, null);
+    _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
+    _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
 
     /*
      * Add routes that cannot change (does not affect below computation)

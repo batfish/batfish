@@ -24,7 +24,7 @@ public class BgpBestPathRibTest {
 
   @Before
   public void setup() {
-    _bpRib = new BgpBestPathRib(null, BgpTieBreaker.ARRIVAL_ORDER, null);
+    _bpRib = new BgpBestPathRib(BgpTieBreaker.ARRIVAL_ORDER, null, null);
   }
 
   @Test

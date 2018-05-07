@@ -16,7 +16,6 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 
 /**
@@ -40,8 +39,6 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   /** Map to keep track when routes were merged in. */
   protected Map<R, Long> _logicalArrivalTime;
 
-  @Nullable protected VirtualRouter _owner;
-
   private RibTree<R> _tree;
 
   @Nullable private Set<R> _allRoutes;
@@ -49,15 +46,13 @@ public abstract class AbstractRib<R extends AbstractRoute> implements GenericRib
   /**
    * Keep a Sorted Set of alternative routes. Used to update the RIB if best routes are withdrawn
    */
-  @Nullable final Map<Prefix, SortedSet<R>> _backupRoutes;
+  @Nullable protected final Map<Prefix, SortedSet<R>> _backupRoutes;
 
-  public AbstractRib(
-      @Nullable VirtualRouter owner, @Nullable Map<Prefix, SortedSet<R>> backupRoutes) {
+  public AbstractRib(@Nullable Map<Prefix, SortedSet<R>> backupRoutes) {
     _allRoutes = ImmutableSet.of();
     _backupRoutes = backupRoutes;
     _logicalArrivalTime = new HashMap<>();
     _logicalClock = 0;
-    _owner = owner;
     _tree = new RibTree<>(this);
   }
 

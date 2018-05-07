@@ -1,8 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedMap.Builder;
-import java.util.Comparator;
 import java.util.SortedMap;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Configuration;
@@ -25,7 +23,7 @@ public final class Node extends ComparableStructure<String> {
   public Node(Configuration configuration) {
     super(configuration.getHostname());
     _c = configuration;
-    Builder<String, VirtualRouter> b = new Builder<>(Comparator.naturalOrder());
+    ImmutableSortedMap.Builder<String, VirtualRouter> b = ImmutableSortedMap.naturalOrder();
     for (String vrfName : _c.getVrfs().keySet()) {
       VirtualRouter vr = new VirtualRouter(vrfName, _c);
       b.put(vrfName, vr);
@@ -44,6 +42,6 @@ public final class Node extends ComparableStructure<String> {
    * @return Set of {@link VirtualRouter}s, keyed by VRF name
    */
   SortedMap<String, VirtualRouter> getVirtualRouters() {
-    return ImmutableSortedMap.copyOf(_virtualRouters);
+    return _virtualRouters;
   }
 }

@@ -3,15 +3,18 @@ package org.batfish.dataplane.rib;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.RipRoute;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 
-/** A {@link Rib} for storing RIP routes */
+/**
+ * A {@link Rib} for storing RIP (both internal and external) routes.
+ *
+ * <p>Note: external RIP routes not supported at this time
+ */
 public class RipRib extends AbstractRib<RipRoute> {
 
   private static final long serialVersionUID = 1L;
 
-  public RipRib(VirtualRouter owner) {
-    super(owner, null);
+  public RipRib() {
+    super(null);
   }
 
   @Override
@@ -21,11 +24,11 @@ public class RipRib extends AbstractRib<RipRoute> {
     return Integer.compare(rhsTypeCost, lhsTypeCost);
   }
 
-  private int getTypeCost(RoutingProtocol protocol) {
+  private static int getTypeCost(RoutingProtocol protocol) {
     switch (protocol) {
       case RIP:
+        // Only RIP internal supported, and all routes have equal cost
         return 0;
-        // $CASES-OMITTED$
       default:
         throw new BatfishException("Invalid rip protocol: '" + protocol + "'");
     }

@@ -3,14 +3,13 @@ package org.batfish.dataplane.rib;
 import java.io.Serializable;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 
 public class Rib extends AbstractRib<AbstractRoute> implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  public Rib(VirtualRouter owner) {
-    super(owner, null);
+  public Rib() {
+    super(null);
   }
 
   @Override

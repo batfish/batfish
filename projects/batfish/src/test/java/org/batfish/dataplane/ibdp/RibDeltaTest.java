@@ -87,7 +87,7 @@ public class RibDeltaTest {
   /** Test that deltas are chained correctly using the {@link RibDelta.Builder#from} function */
   @Test
   public void testChainDeltas() {
-    BgpBestPathRib rib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib rib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
     routeBuilder
         .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))

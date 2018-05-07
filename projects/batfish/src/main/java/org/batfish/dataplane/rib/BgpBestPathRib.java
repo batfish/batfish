@@ -13,38 +13,38 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.dataplane.exceptions.BestPathSelectionException;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 
 public class BgpBestPathRib extends AbstractRib<BgpRoute> {
 
   private static final long serialVersionUID = 1L;
+
+  private final Rib _mainRib;
 
   private final BgpTieBreaker _tieBreaker;
 
   /**
    * Construct an instance with given owner and previous instance.
    *
-   * @param owner The virtual router context for this RIB
    * @param backupRoutes a set of alternative (non-best routes)
    */
   public BgpBestPathRib(
-      VirtualRouter owner,
       BgpTieBreaker tieBreaker,
-      @Nullable Map<Prefix, SortedSet<BgpRoute>> backupRoutes) {
-    super(owner, backupRoutes);
+      @Nullable Map<Prefix, SortedSet<BgpRoute>> backupRoutes,
+      @Nullable Rib mainRib) {
+    super(backupRoutes);
     _tieBreaker = tieBreaker;
+    _mainRib = mainRib;
   }
 
   /**
    * Construct an initial best-path RIB with no age information for tie-breaking
    *
-   * @param owner The virtual router context for this RIB
    * @param backupRoutes a set of alternative (non-best routes)
    * @return A new instance
    */
   public static BgpBestPathRib initial(
-      VirtualRouter owner, @Nullable Map<Prefix, SortedSet<BgpRoute>> backupRoutes) {
-    return new BgpBestPathRib(owner, BgpTieBreaker.ARRIVAL_ORDER, backupRoutes);
+      @Nullable Map<Prefix, SortedSet<BgpRoute>> backupRoutes, @Nullable Rib mainRib) {
+    return new BgpBestPathRib(BgpTieBreaker.ARRIVAL_ORDER, backupRoutes, mainRib);
   }
 
   @Override
@@ -231,10 +231,10 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
    *     {@link Long#MAX_VALUE}
    */
   private long getIgpCostToNextHopIp(BgpRoute route) {
-    if (_owner == null || _owner.getMainRib() == null) {
+    if (_mainRib == null) {
       return Long.MAX_VALUE;
     }
-    Set<AbstractRoute> s = _owner.getMainRib().longestPrefixMatch(route.getNextHopIp());
+    Set<AbstractRoute> s = _mainRib.longestPrefixMatch(route.getNextHopIp());
     return s == null || s.isEmpty() ? Long.MAX_VALUE : s.iterator().next().getMetric();
   }
 }
