@@ -1,5 +1,7 @@
 package org.batfish.z3.state.visitors;
 
+import static org.batfish.common.util.CommonUtil.forEachWithIndex;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -199,34 +201,24 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitAclLineIndependentMatch(AclLineIndependentMatch.State state) {
+    /*
+     *  For each acl line, add a rule that its match condition (as a BooleanExpr) implies its
+     *  corresponding named state.
+     */
     _input
         .getAclConditions()
-        .entrySet()
-        .stream()
-        .flatMap(
-            aclConditionsEntryByNode -> {
-              String hostname = aclConditionsEntryByNode.getKey();
-              return aclConditionsEntryByNode
-                  .getValue()
-                  .entrySet()
-                  .stream()
-                  .flatMap(
-                      aclConditionsEntryByAclName -> {
-                        String acl = aclConditionsEntryByAclName.getKey();
-                        AtomicInteger lineNumber = new AtomicInteger(0);
-                        return aclConditionsEntryByAclName
-                            .getValue()
-                            .stream()
-                            .map(
-                                lineCriteria -> {
-                                  int line = lineNumber.getAndIncrement();
-                                  return new BasicRuleStatement(
-                                      lineCriteria,
-                                      new AclLineIndependentMatch(hostname, acl, line));
-                                });
-                      });
-            })
-        .forEach(_rules::add);
+        .forEach(
+            (hostname, aclConditionsByAclName) ->
+                aclConditionsByAclName.forEach(
+                    (aclName, aclConditionsByLineNumber) ->
+                        forEachWithIndex(
+                            aclConditionsByLineNumber,
+                            (lineNumber, lineCriteria) ->
+                                _rules.add(
+                                    new BasicRuleStatement(
+                                        lineCriteria,
+                                        new AclLineIndependentMatch(
+                                            hostname, aclName, lineNumber))))));
   }
 
   @Override

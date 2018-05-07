@@ -667,6 +667,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       computeIndependentlyUnmatchableAclLines(
           Map<String, Configuration> configurations, Map<String, Set<String>> representatives) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
+    Synthesizer aclSynthesizer = synthesizeAcls(configurations);
     representatives.forEach(
         (hostname, aclNames) -> {
           aclNames.forEach(
@@ -683,7 +684,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   AclLineIndependentSatisfiabilityQuerySynthesizer query =
                       new AclLineIndependentSatisfiabilityQuerySynthesizer(
                           hostname, aclName, lineNumber);
-                  Synthesizer aclSynthesizer = synthesizeAcls(configurations);
                   NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query);
                   jobs.add(job);
                 }
