@@ -6,7 +6,6 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.Prefix;
 
 public final class FwFromSourceAddress extends FwFrom {
 
@@ -25,7 +24,6 @@ public final class FwFromSourceAddress extends FwFrom {
       JuniperConfiguration jc,
       Warnings w,
       Configuration c) {
-    IpWildcard wildcard;
     headerSpaceBuilder.setSrcIps(
         AclIpSpace.union(headerSpaceBuilder.getSrcIps(), _ipWildcard.toIpSpace()));
   }
