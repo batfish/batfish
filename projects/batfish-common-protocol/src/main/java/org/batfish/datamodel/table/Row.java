@@ -3,6 +3,7 @@ package org.batfish.datamodel.table;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -97,6 +98,11 @@ public class Row implements Comparable<Row> {
    */
   public Iterator<String> getColumnNames() {
     return _data.fieldNames();
+  }
+
+  @JsonValue
+  private ObjectNode getData() {
+    return _data;
   }
 
   public String getKey(TableMetadata metadata) {
