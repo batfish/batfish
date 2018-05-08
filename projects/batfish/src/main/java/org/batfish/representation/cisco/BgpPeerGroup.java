@@ -472,7 +472,7 @@ public abstract class BgpPeerGroup implements Serializable {
   }
 
   public void setDefaultOriginate(boolean b) {
-    _defaultOriginate = b;
+    _defaultOriginate = true;
   }
 
   public void setDefaultOriginateMap(String routeMapName) {
