@@ -8689,7 +8689,16 @@
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
           "~INSPECT_POLICY_MAP_ACL~pminspect~" : {
-            "name" : "~INSPECT_POLICY_MAP_ACL~pminspect~"
+            "name" : "~INSPECT_POLICY_MAP_ACL~pminspect~",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.TrueExpr"
+                },
+                "name" : "class-default action: ACCEPT"
+              }
+            ]
           }
         },
         "ipSpaces" : {
