@@ -12,6 +12,7 @@ import java.util.List;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -73,6 +74,15 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   public List<StateParameter> visitAclDeny(AclDeny aclDeny) {
     return ImmutableList.of(
         new StateParameter(aclDeny.getHostname(), NODE), new StateParameter(aclDeny.getAcl(), ACL));
+  }
+
+  @Override
+  public List<StateParameter> visitAclLineIndependentMatch(
+      AclLineIndependentMatch aclLineIndependentMatch) {
+    return ImmutableList.of(
+        new StateParameter(aclLineIndependentMatch.getHostname(), NODE),
+        new StateParameter(aclLineIndependentMatch.getAcl(), ACL),
+        new StateParameter(Integer.toString(aclLineIndependentMatch.getLine()), ACL_LINE));
   }
 
   @Override
