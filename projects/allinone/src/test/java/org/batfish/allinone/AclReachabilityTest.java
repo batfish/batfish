@@ -5,6 +5,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 import com.google.common.collect.ImmutableList;
@@ -84,15 +85,15 @@ public class AclReachabilityTest {
                 ImmutableList.of(
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("0.0.0.0:0.0.255.255").toIpSpace())
+                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.0").toIpSpace())
                             .build()),
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("0.0.0.0:255.255.0.0").toIpSpace())
+                            .setSrcIps(new IpWildcard("1.0.0.1:0.0.0.0").toIpSpace())
                             .build()),
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("0.0.0.0:255.255.255.255").toIpSpace())
+                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.1").toIpSpace())
                             .build())))
             .setName(aclName)
             .build();
@@ -105,6 +106,12 @@ public class AclReachabilityTest {
     AnswerElement answer = answerer.answer();
 
     assertThat(answer, instanceOf(AclLinesAnswerElement.class));
+
+    AclLinesAnswerElement aclLinesAnswerElement = (AclLinesAnswerElement) answer;
+
+    assertThat(
+        aclLinesAnswerElement.getUnreachableLines(),
+        hasEntry(equalTo(c.getName()), hasEntry(equalTo(aclName), hasSize(1))));
     /* TODO: more meaningful assertion when we have proper support for multiple covering lines */
   }
 }
