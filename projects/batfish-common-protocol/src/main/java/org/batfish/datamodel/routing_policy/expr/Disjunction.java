@@ -97,11 +97,11 @@ public class Disjunction extends BooleanExpr {
     for (BooleanExpr disjunct : _disjuncts) {
       BooleanExpr simpleDisjunct = disjunct.simplify();
       if (simpleDisjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
-        atLeastOneTrue = true;
         if (!atLeastOneComplex) {
           _simplified = BooleanExprs.True.toStaticBooleanExpr();
           return _simplified;
         } else if (!atLeastOneTrue) {
+          atLeastOneTrue = true;
           simpleDisjunctsBuilder.add(simpleDisjunct);
         }
       } else if (!simpleDisjunct.equals(BooleanExprs.False.toStaticBooleanExpr())) {
