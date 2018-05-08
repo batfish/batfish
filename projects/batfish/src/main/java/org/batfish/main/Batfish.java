@@ -750,15 +750,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       if (!e.getValue()) {
         // Current line is unreachable.
-        // Get lines so far of this ACL. Could be in fullyReachableAcls or aclsWithUnreachableLines.
+        // Get lines so far of this ACL. Could be in fullyReachableAcls or aclsWithUnreachableLines,
+        // or this could be the first line (and be independently unsatisfiable).
         // If ACL was thus far completely reachable, move its lines into aclsWithUnreachableLines.
         List<AclLine> aclRecordedAsReachable = fullyReachableAcls.remove(aclName);
         if (aclRecordedAsReachable != null) {
           aclRecordedAsReachable.add(line);
           aclsWithUnreachableLines.put(aclName, aclRecordedAsReachable);
         } else {
-          // Otherwise, there were already earlier unreachable lines. Just add the new one.
-          aclsWithUnreachableLines.get(aclName).add(line);
+          // Otherwise, either this is the first line (and is independently unsatisfiable) or there
+          // were already unreachable lines in this ACL. Add line to appropriate ACL line list.
+          aclsWithUnreachableLines.computeIfAbsent(aclName, k -> new ArrayList<>()).add(line);
         }
       } else {
         // Current line is reachable.
