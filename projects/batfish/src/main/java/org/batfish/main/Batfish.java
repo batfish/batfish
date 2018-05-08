@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
@@ -853,7 +854,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Pair<String, String> qualifiedAclName = new Pair<>(hostname, aclName);
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
       IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(index);
-      AclReachabilityEntry line = new AclReachabilityEntry(index, ipAccessListLine.getName());
+      AclReachabilityEntry line =
+          new AclReachabilityEntry(
+              index,
+              MoreObjects.firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString()));
       if (aclsWithUnreachableLines.contains(qualifiedAclName)) {
         if (sat) {
           _logger.debugf(
@@ -862,16 +866,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
         } else {
           _logger.debugf(
               "%s:%s:%d:'%s' is UNREACHABLE\n\t%s\n",
-              hostname, aclName, line.getIndex(), line.getName(), ipAccessListLine.toString());
+              hostname,
+              aclName,
+              line.getIndex(),
+              line.getName(),
+              MoreObjects.firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString()));
           Integer earliestMoreGeneralLineIndex = aclLine.getEarliestMoreGeneralReachableLine();
           if (earliestMoreGeneralLineIndex != null) {
             IpAccessListLine earliestMoreGeneralLine =
                 ipAccessList.getLines().get(earliestMoreGeneralLineIndex);
             line.setEarliestMoreGeneralLineIndex(earliestMoreGeneralLineIndex);
-            line.setEarliestMoreGeneralLineName(earliestMoreGeneralLine.getName());
+            line.setEarliestMoreGeneralLineName(
+                MoreObjects.firstNonNull(
+                    earliestMoreGeneralLine.getName(), earliestMoreGeneralLine.toString()));
             if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
               line.setDifferentAction(true);
             }
+          } else {
+            line.setEarliestMoreGeneralLineIndex(-1);
+            line.setEarliestMoreGeneralLineName(
+                "Multiple earlier lines partially block this line, making it unreachable.");
           }
           answerElement.addUnreachableLine(hostname, ipAccessList, line);
           aclsWithUnreachableLines.add(qualifiedAclName);
