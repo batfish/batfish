@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -238,7 +239,10 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
         }
 
         // Setup session info
-        boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
+        // TODO(https://github.com/batfish/batfish/issues/1331): Handle list of remote ASes. Until
+        // then, we can't assume remote AS will always be a single integer that is present and
+        // non-null.
+        boolean ebgp = !Objects.equals(bgpNeighbor.getRemoteAs(), bgpNeighbor.getLocalAs());
         boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
         Prefix remotePrefix = bgpNeighbor.getPrefix();
         BgpSessionInfo bgpSessionInfo = new BgpSessionInfo(hostname, vrfName, remotePrefix);
