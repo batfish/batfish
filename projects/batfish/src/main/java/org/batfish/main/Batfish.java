@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.toMap;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
@@ -804,7 +805,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // TODO add ipAccessList to ACL mapping so we don't have to get it multiple times for one ACL
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
       IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(lineNumber);
-      String lineName = ipAccessListLine.getName();
+      String lineName =
+          MoreObjects.firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString());
       AclReachabilityEntry reachabilityEntry = new AclReachabilityEntry(lineNumber, lineName);
 
       Pair<String, String> hostnameAclPair = new Pair<>(hostname, aclName);
@@ -824,7 +826,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
           IpAccessListLine earliestMoreGeneralLine =
               ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
           reachabilityEntry.setEarliestMoreGeneralLineIndex(earliestMoreGeneralReachableLineNumber);
-          reachabilityEntry.setEarliestMoreGeneralLineName(earliestMoreGeneralLine.getName());
+          reachabilityEntry.setEarliestMoreGeneralLineName(
+              MoreObjects.firstNonNull(
+                  earliestMoreGeneralLine.getName(), earliestMoreGeneralLine.toString()));
           if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
             reachabilityEntry.setDifferentAction(true);
           }
