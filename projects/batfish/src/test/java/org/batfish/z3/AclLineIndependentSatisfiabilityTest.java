@@ -9,13 +9,14 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IpAccessList;
@@ -52,14 +53,26 @@ public class AclLineIndependentSatisfiabilityTest {
     IpAccessList matchableWithCovered =
         aclb.setLines(ImmutableList.of(alwaysMatches, alwaysMatches)).build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
-    Map<String, Set<String>> representatives =
+    Map<String, Map<String, Set<Integer>>> representatives =
         ImmutableMap.of(
             c.getHostname(),
-            ImmutableSet.of(
+            ImmutableMap.of(
                 unmatchableFirst.getName(),
+                IntStream.range(0, unmatchableFirst.getLines().size())
+                    .mapToObj(i -> new Integer(i))
+                    .collect(Collectors.toSet()),
                 unmatchableCovered.getName(),
+                IntStream.range(0, unmatchableCovered.getLines().size())
+                    .mapToObj(i -> new Integer(i))
+                    .collect(Collectors.toSet()),
                 unmatchableTwice.getName(),
-                matchableWithCovered.getName()));
+                IntStream.range(0, unmatchableTwice.getLines().size())
+                    .mapToObj(i -> new Integer(i))
+                    .collect(Collectors.toSet()),
+                matchableWithCovered.getName(),
+                IntStream.range(0, matchableWithCovered.getLines().size())
+                    .mapToObj(i -> new Integer(i))
+                    .collect(Collectors.toSet())));
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> unmatchableLinesByHostnameAndAclName =
         batfish.computeIndependentlyUnmatchableAclLines(configurations, representatives);
