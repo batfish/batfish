@@ -1,4 +1,4 @@
-package org.batfish.dataplane.ibdp;
+package org.batfish.dataplane.rib;
 
 import java.util.Collections;
 import java.util.Map;
@@ -20,8 +20,8 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
 
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
 
-  public BgpMultipathRib(VirtualRouter owner, MultipathEquivalentAsPathMatchMode meapmm) {
-    super(owner, null);
+  public BgpMultipathRib(MultipathEquivalentAsPathMatchMode meapmm) {
+    super(null);
     _multipathEquivalentAsPathMatchMode = meapmm;
   }
 
