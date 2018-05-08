@@ -29,7 +29,7 @@ public class PreOutVrf extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitPreOut(this);
+    return visitor.visitPreOutVrf(this);
   }
 
   public String getHostname() {

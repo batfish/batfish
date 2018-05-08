@@ -227,8 +227,10 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitPreOut(PreOutVrf preOutVrf) {
-    return ImmutableList.of(new StateParameter(preOutVrf.getHostname(), NODE));
+  public List<StateParameter> visitPreOutVrf(PreOutVrf preOutVrf) {
+    return ImmutableList.of(
+        new StateParameter(preOutVrf.getHostname(), NODE),
+        new StateParameter(preOutVrf.getHostname(), VRF));
   }
 
   @Override

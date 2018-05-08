@@ -96,7 +96,7 @@ public interface GenericStateExprVisitor<R> {
 
   R visitPreInInterface(PreInInterface preInInterface);
 
-  R visitPreOut(PreOutVrf preOutVrf);
+  R visitPreOutVrf(PreOutVrf preOutVrf);
 
   R visitPreOutEdge(PreOutEdge preOutEdge);
 
