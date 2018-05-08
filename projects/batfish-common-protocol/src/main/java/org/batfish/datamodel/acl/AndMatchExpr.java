@@ -6,6 +6,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.SortedSet;
+import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
 
 public class AndMatchExpr extends AclLineMatchExpr {
@@ -14,8 +15,15 @@ public class AndMatchExpr extends AclLineMatchExpr {
 
   private final SortedSet<AclLineMatchExpr> _conjuncts;
 
+  public AndMatchExpr(Iterable<AclLineMatchExpr> conjuncts) {
+    this(conjuncts, null);
+  }
+
   @JsonCreator
-  public AndMatchExpr(@JsonProperty(PROP_CONJUNCTS) Iterable<AclLineMatchExpr> conjuncts) {
+  public AndMatchExpr(
+      @JsonProperty(PROP_CONJUNCTS) Iterable<AclLineMatchExpr> conjuncts,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
+    super(description);
     _conjuncts = conjuncts != null ? ImmutableSortedSet.copyOf(conjuncts) : ImmutableSortedSet.of();
   }
 
@@ -41,11 +49,15 @@ public class AndMatchExpr extends AclLineMatchExpr {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_conjuncts);
+    return Objects.hash(_conjuncts, _description);
   }
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add(PROP_CONJUNCTS, _conjuncts).toString();
+    return MoreObjects.toStringHelper(getClass())
+        .omitNullValues()
+        .add(PROP_DESCRIPTION, _description)
+        .add(PROP_CONJUNCTS, _conjuncts)
+        .toString();
   }
 }

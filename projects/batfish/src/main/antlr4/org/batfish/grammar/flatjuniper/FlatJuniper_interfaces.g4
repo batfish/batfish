@@ -257,6 +257,7 @@ if_bridge
    BRIDGE
    (
       apply
+      | if_storm_control
       | ifbr_filter
       | ifbr_interface_mode
       | ifbr_vlan_id_list
@@ -273,6 +274,7 @@ if_ethernet_switching
    ETHERNET_SWITCHING
    (
       apply
+      | if_storm_control
       | ife_filter
       | ife_interface_mode
       | ife_native_vlan_id
@@ -319,6 +321,11 @@ if_mpls
       | ifm_maximum_labels
       | ifm_mtu
    )
+;
+
+if_storm_control
+:
+    STORM_CONTROL null_filler
 ;
 
 ifbr_filter

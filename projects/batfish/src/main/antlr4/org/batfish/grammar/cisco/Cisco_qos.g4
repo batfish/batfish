@@ -641,8 +641,11 @@ s_class_map
    (
       TYPE
       (
-         NETWORK_QOS
+         CONTROL_PLANE
+         | NETWORK_QOS
          | PBR
+         | QOS
+         | QUEUING
       )
    )?
    (
