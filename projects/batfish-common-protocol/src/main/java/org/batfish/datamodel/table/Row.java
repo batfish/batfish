@@ -113,6 +113,11 @@ public class Row implements Comparable<Row> {
     return _data;
   }
 
+  @JsonValue
+  private ObjectNode getData() {
+    return _data;
+  }
+
   public String getKey(TableMetadata metadata) {
     StringBuilder key = new StringBuilder();
     for (Entry<String, ColumnMetadata> entry : metadata.getColumnMetadata().entrySet()) {
