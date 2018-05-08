@@ -20,6 +20,7 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
+import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -112,6 +113,11 @@ public class AclReachabilityTest {
     assertThat(
         aclLinesAnswerElement.getUnreachableLines(),
         hasEntry(equalTo(c.getName()), hasEntry(equalTo(aclName), hasSize(1))));
-    /* TODO: more meaningful assertion when we have proper support for multiple covering lines */
+    AclReachabilityEntry multipleBlockingLinesEntry =
+        aclLinesAnswerElement.getUnreachableLines().get(c.getName()).get(aclName).first();
+    assertThat(multipleBlockingLinesEntry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        multipleBlockingLinesEntry.getEarliestMoreGeneralLineName(),
+        equalTo("Multiple earlier lines partially block this line, making it unreachable."));
   }
 }
