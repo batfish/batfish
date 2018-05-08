@@ -23,7 +23,7 @@ public abstract class RoutePolicySetStatement extends RoutePolicyStatement {
     statements.add(bufferedStatement);
     If ifStatement =
         new If(
-            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            BooleanExprs.CALL_EXPR_CONTEXT,
             ImmutableList.of(Statements.SetLocalDefaultActionAccept.toStaticStatement()),
             ImmutableList.of(Statements.SetDefaultActionAccept.toStaticStatement()));
     statements.add(ifStatement);

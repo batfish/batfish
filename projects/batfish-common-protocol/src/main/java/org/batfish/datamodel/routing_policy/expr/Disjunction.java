@@ -100,22 +100,22 @@ public class Disjunction extends BooleanExpr {
     boolean atLeastOneComplex = false;
     for (BooleanExpr disjunct : _disjuncts) {
       BooleanExpr simpleDisjunct = disjunct.simplify();
-      if (simpleDisjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
+      if (simpleDisjunct.equals(BooleanExprs.TRUE)) {
         atLeastOneTrue = true;
         if (!atLeastOneComplex) {
-          _simplified = BooleanExprs.True.toStaticBooleanExpr();
+          _simplified = BooleanExprs.TRUE;
           return _simplified;
         } else if (!atLeastOneTrue) {
           simpleDisjunctsBuilder.add(simpleDisjunct);
         }
-      } else if (!simpleDisjunct.equals(BooleanExprs.False.toStaticBooleanExpr())) {
+      } else if (!simpleDisjunct.equals(BooleanExprs.FALSE)) {
         atLeastOneComplex = true;
         simpleDisjunctsBuilder.add(simpleDisjunct);
       }
     }
     List<BooleanExpr> simpleDisjuncts = simpleDisjunctsBuilder.build();
     if (simpleDisjuncts.isEmpty()) {
-      _simplified = BooleanExprs.False.toStaticBooleanExpr();
+      _simplified = BooleanExprs.FALSE;
     } else if (simpleDisjuncts.size() == 1) {
       _simplified = simpleDisjuncts.get(0);
     } else {

@@ -1652,7 +1652,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       generateAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
 
       // If defined, set attribute map for aggregate network
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       String attributeMapName = aggNet.getAttributeMap();
       if (attributeMapName != null) {
         RouteMap attributeMap = _routeMaps.get(attributeMapName);
@@ -1728,7 +1728,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeRipPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.RIP);
     if (redistributeRipPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportRipConditions = new Conjunction();
       exportRipConditions.setComment("Redistribute RIP routes into BGP");
       exportRipConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.RIP));
@@ -1755,7 +1755,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeStaticPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.STATIC);
     if (redistributeStaticPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportStaticConditions = new Conjunction();
       exportStaticConditions.setComment("Redistribute static routes into BGP");
       exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
@@ -1782,7 +1782,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeConnectedPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
     if (redistributeConnectedPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportConnectedConditions = new Conjunction();
       exportConnectedConditions.setComment("Redistribute connected routes into BGP");
       exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
@@ -1811,7 +1811,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeOspfPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.OSPF);
     if (redistributeOspfPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportOspfConditions = new Conjunction();
       exportOspfConditions.setComment("Redistribute OSPF routes into BGP");
       exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
@@ -1895,7 +1895,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(
             (prefix, bgpNetwork) -> {
               String mapName = bgpNetwork.getRouteMapName();
-              BooleanExpr weExpr = BooleanExprs.True.toStaticBooleanExpr();
+              BooleanExpr weExpr = BooleanExprs.TRUE;
               if (mapName != null) {
                 RouteMap routeMap = _routeMaps.get(mapName);
                 if (routeMap != null) {
@@ -3207,13 +3207,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     If nonBoolean =
         new If(
-            BooleanExprs.CallStatementContext.toStaticBooleanExpr(),
+            BooleanExprs.CALL_STATEMENT_CONTEXT,
             Collections.singletonList(Statements.Return.toStaticStatement()),
             Collections.singletonList(Statements.DefaultAction.toStaticStatement()));
     @SuppressWarnings("unused") // TODO(https://github.com/batfish/batfish/issues/1306)
     If endPolicy =
         new If(
-            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            BooleanExprs.CALL_EXPR_CONTEXT,
             Collections.singletonList(Statements.ReturnLocalDefaultAction.toStaticStatement()),
             Collections.singletonList(nonBoolean));
     return rp;
