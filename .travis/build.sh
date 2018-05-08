@@ -29,8 +29,9 @@ allinone -cmdfile tests/basic/commands || exit 1
 echo -e "\n  ..... Running role functionality tests"
 allinone -cmdfile tests/roles/commands || exit 1
 
-echo -e "\n  ..... Running jsonpath-addons tests"
+echo -e "\n  ..... Running jsonpath tests"
 allinone -cmdfile tests/jsonpath-addons/commands || exit 1
+allinone -cmdfile tests/jsonpathtotable/commands || exit 1
 
 echo -e "\n  ..... Running ui-focused client tests"
 allinone -cmdfile tests/ui-focused/commands || exit 1
@@ -40,6 +41,7 @@ allinone -cmdfile tests/aws/commands || exit 1
 
 echo -e "\n  ..... Running java-smt client tests"
 allinone -cmdfile tests/java-smt/commands || exit 1
+
 
 echo -e "\n  ..... Running watchdog tests"
 allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit 1
