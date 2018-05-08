@@ -1378,7 +1378,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         generateAggregateConditions.add(new MatchProtocol(RoutingProtocol.AGGREGATE));
 
         // If defined, set attribute map for aggregate network
-        BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+        BooleanExpr weInterior = BooleanExprs.TRUE;
         String attributeMapName = agg.getAttributeMap();
         if (attributeMapName != null) {
           RouteMap attributeMap = _routeMaps.get(attributeMapName);
@@ -1408,8 +1408,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.RIP),
               bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.True.toStaticBooleanExpr() : new CallExpr(routeMap),
-                  OriginType.INCOMPLETE));
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction rip = new Conjunction(conditions);
       rip.setComment("Redistribute RIP routes into BGP");
       exportConditions.add(rip);
@@ -1425,8 +1424,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.STATIC),
               bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.True.toStaticBooleanExpr() : new CallExpr(routeMap),
-                  OriginType.INCOMPLETE));
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction staticRedist = new Conjunction(conditions);
       staticRedist.setComment("Redistribute static routes into BGP");
       exportConditions.add(staticRedist);
@@ -1442,8 +1440,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.CONNECTED),
               bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.True.toStaticBooleanExpr() : new CallExpr(routeMap),
-                  OriginType.INCOMPLETE));
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction connected = new Conjunction(conditions);
       connected.setComment("Redistribute connected routes into BGP");
       exportConditions.add(connected);
@@ -1460,8 +1457,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.OSPF),
               bgpRedistributeWithEnvironmentExpr(
-                  map == null ? BooleanExprs.True.toStaticBooleanExpr() : new CallExpr(routeMap),
-                  OriginType.INCOMPLETE));
+                  map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction ospf = new Conjunction(conditions);
       ospf.setComment("Redistribute OSPF routes into BGP");
       exportConditions.add(ospf);
@@ -1485,7 +1481,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         bgpRedistributeWithEnvironmentExpr(
                             _routeMaps.containsKey(routeMapOrEmpty)
                                 ? new CallExpr(routeMapOrEmpty)
-                                : BooleanExprs.True.toStaticBooleanExpr(),
+                                : BooleanExprs.TRUE,
                             OriginType.IGP));
                 exportConditions.add(new Conjunction(exportNetworkConditions));
               });
@@ -1510,7 +1506,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         bgpRedistributeWithEnvironmentExpr(
                             _routeMaps.containsKey(routeMapOrEmpty)
                                 ? new CallExpr(routeMapOrEmpty)
-                                : BooleanExprs.True.toStaticBooleanExpr(),
+                                : BooleanExprs.TRUE,
                             OriginType.IGP));
                 exportConditions.add(new Conjunction(exportNetworkConditions));
               });
