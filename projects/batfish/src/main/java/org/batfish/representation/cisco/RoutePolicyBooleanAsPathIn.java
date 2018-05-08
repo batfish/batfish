@@ -38,7 +38,7 @@ public class RoutePolicyBooleanAsPathIn extends RoutePolicyBoolean {
             name,
             CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN,
             _expressionLine);
-        return BooleanExprs.False.toStaticBooleanExpr();
+        return BooleanExprs.FALSE;
       } else {
         asPathSet.getReferers().put(this, "as-path in");
       }
