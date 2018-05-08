@@ -2188,9 +2188,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
         ImmutableList.of(_applications, _applicationSets));
     markStructure(
-        JuniperStructureType.APPLICATION,
+        JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
-        _applications);
+        ImmutableList.of(_applications, _applicationSets));
     markStructure(
         JuniperStructureType.APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET,

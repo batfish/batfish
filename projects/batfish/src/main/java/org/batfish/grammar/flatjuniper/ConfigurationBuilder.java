@@ -339,7 +339,7 @@ import org.batfish.representation.juniper.AddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.AggregateRoute;
-import org.batfish.representation.juniper.ApplicationReference;
+import org.batfish.representation.juniper.ApplicationOrSetReference;
 import org.batfish.representation.juniper.ApplicationSet;
 import org.batfish.representation.juniper.ApplicationSetMemberReference;
 import org.batfish.representation.juniper.ApplicationSetReference;
@@ -1579,14 +1579,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _configuration.referenceStructure(
-        JuniperStructureType.APPLICATION,
+        JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         name,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
         line);
     _currentApplicationSet.setMembers(
         ImmutableList.<ApplicationSetMemberReference>builder()
             .addAll(_currentApplicationSet.getMembers())
-            .add(new ApplicationReference(name))
+            .add(new ApplicationOrSetReference(name))
             .build());
   }
 
