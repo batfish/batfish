@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -665,13 +666,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   public SortedMap<String, SortedMap<String, SortedSet<Integer>>>
       computeIndependentlyUnmatchableAclLines(
-          Map<String, Configuration> configurations, Map<String, Set<String>> representatives) {
+          Map<String, Configuration> configurations,
+          Map<String, Map<String, Set<Integer>>> representatives) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
     Synthesizer aclSynthesizer = synthesizeAcls(configurations);
     representatives.forEach(
         (hostname, aclNames) -> {
           aclNames.forEach(
-              aclName -> {
+              (aclName, lineNumbers) -> {
                 Configuration c = configurations.get(hostname);
                 IpAccessList acl = c.getIpAccessLists().get(aclName);
                 int numLines = acl.getLines().size();
@@ -680,7 +682,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       "RED_FLAG: Acl \"" + hostname + ":" + aclName + "\" contains no lines\n");
                   return;
                 }
-                for (int lineNumber = 0; lineNumber < numLines; lineNumber++) {
+                for (int lineNumber : lineNumbers) {
                   AclLineIndependentSatisfiabilityQuerySynthesizer query =
                       new AclLineIndependentSatisfiabilityQuerySynthesizer(
                           hostname, aclName, lineNumber);
@@ -735,9 +737,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // Create two maps with hostnames as keys and Map(acl name -> acl lines) as values. One map will
     // contain all ACLs with unreachable lines, the other will have all fully reachable ACLs.
+    // Also create a map of hostname -> aclName -> Set<unreachable lines> to use for finding
+    // independently unmatchable lines.
     Map<String, Map<String, List<AclLine>>> hostnamesToAclsWithUnreachableLinesMap =
         new TreeMap<>();
     Map<String, Map<String, List<AclLine>>> hostnamesToFullyReachableAclsMap = new TreeMap<>();
+    Map<String, Map<String, Set<Integer>>> hostnamesToUnreachableLinesMap = new TreeMap<>();
     for (Entry<AclLine, Boolean> e : linesReachableMap.entrySet()) {
       AclLine line = e.getKey();
       String aclName = line.getAclName();
@@ -749,7 +754,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
           hostnamesToAclsWithUnreachableLinesMap.computeIfAbsent(hostname, k -> new TreeMap<>());
 
       if (!e.getValue()) {
-        // Current line is unreachable.
+        // Current line is unreachable. Add it to hostnamesToUnreachableLinesMap.
+        hostnamesToUnreachableLinesMap
+            .computeIfAbsent(hostname, h -> new TreeMap<>())
+            .computeIfAbsent(aclName, a -> new TreeSet<>())
+            .add(line.getLine());
         // Get lines so far of this ACL. Could be in fullyReachableAcls or aclsWithUnreachableLines,
         // or this could be the first line (and be independently unsatisfiable).
         // If ACL was thus far completely reachable, move its lines into aclsWithUnreachableLines.
@@ -775,6 +784,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     }
 
+    // Find any independently unmatchable lines.
+    SortedMap<String, SortedMap<String, SortedSet<Integer>>> unmatchableLines =
+        computeIndependentlyUnmatchableAclLines(configurations, hostnamesToUnreachableLinesMap);
+
     // Run second batch of nod jobs to get earliest more general lines for each unreachable line
     // Produces a map of acl line -> line number of earliest more general reachable line
     List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs =
@@ -788,7 +801,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // - Create an AclReachabilityEntry
     // - If the line is unreachable:
     //    - Add <hostname, aclName> pair to aclHostPairsWithUnreachableLines set
-    //    - Set earliestMoreGeneralReachableLine in its AclLine and its reachability entry
+    //    - If line is independently unmatchable, set reachability entry's message appropriately
+    //    - Else set earliestMoreGeneralReachableLine in its AclLine and its reachability entry
     // - Add the reachability entry to the answer element
     Set<Pair<String, String>> aclHostPairsWithUnreachableLines = new TreeSet<>();
     Set<Pair<String, String>> allAclHostPairs = new TreeSet<>();
@@ -800,6 +814,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String aclName = line.getAclName();
       int lineNumber = line.getLine();
       boolean lineIsReachable = e.getValue();
+      SortedMap<String, SortedSet<Integer>> aclsWithUnmatchableLinesOnThisHost =
+          firstNonNull(unmatchableLines.get(hostname), new TreeMap<>());
+      SortedSet<Integer> unmatchableLinesOnThisAcl =
+          firstNonNull(aclsWithUnmatchableLinesOnThisHost.get(aclName), new TreeSet<>());
 
       // TODO add ipAccessList to ACL mapping so we don't have to get it multiple times for one ACL
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
@@ -817,19 +835,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
         numUnreachableLines++;
         aclHostPairsWithUnreachableLines.add(hostnameAclPair);
 
-        Integer earliestMoreGeneralReachableLineNumber = blockingLinesMap.get(line);
-        line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLineNumber);
+        if (unmatchableLinesOnThisAcl.contains(lineNumber)) {
+          reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
+          reachabilityEntry.setEarliestMoreGeneralLineName(
+              "This line will never match any packet, independent of preceding lines.");
+        } else {
+          Integer earliestMoreGeneralReachableLineNumber = blockingLinesMap.get(line);
+          line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLineNumber);
 
-        // TODO Something intelligent when earliestMoreGeneralReachableLine is null.
-        // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
-        // multiple partially-blocking lines.
-        if (earliestMoreGeneralReachableLineNumber != null) {
-          IpAccessListLine earliestMoreGeneralLine =
-              ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
-          reachabilityEntry.setEarliestMoreGeneralLineIndex(earliestMoreGeneralReachableLineNumber);
-          reachabilityEntry.setEarliestMoreGeneralLineName(earliestMoreGeneralLine.getName());
-          if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
-            reachabilityEntry.setDifferentAction(true);
+          // TODO Something intelligent when earliestMoreGeneralReachableLine is null.
+          // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
+          // multiple partially-blocking lines.
+          if (earliestMoreGeneralReachableLineNumber != null) {
+            IpAccessListLine earliestMoreGeneralLine =
+                ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
+            reachabilityEntry.setEarliestMoreGeneralLineIndex(
+                earliestMoreGeneralReachableLineNumber);
+            reachabilityEntry.setEarliestMoreGeneralLineName(earliestMoreGeneralLine.getName());
+            if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
+              reachabilityEntry.setDifferentAction(true);
+            }
           }
         }
         answerElement.addUnreachableLine(hostname, ipAccessList, reachabilityEntry);
