@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.toMap;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -804,7 +805,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // TODO add ipAccessList to ACL mapping so we don't have to get it multiple times for one ACL
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
       IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(lineNumber);
-      String lineName = ipAccessListLine.getName();
+      String lineName = firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString());
       AclReachabilityEntry reachabilityEntry = new AclReachabilityEntry(lineNumber, lineName);
 
       Pair<String, String> hostnameAclPair = new Pair<>(hostname, aclName);
@@ -820,17 +821,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
         Integer earliestMoreGeneralReachableLineNumber = blockingLinesMap.get(line);
         line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLineNumber);
 
-        // TODO Something intelligent when earliestMoreGeneralReachableLine is null.
-        // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
-        // multiple partially-blocking lines.
         if (earliestMoreGeneralReachableLineNumber != null) {
           IpAccessListLine earliestMoreGeneralLine =
               ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
           reachabilityEntry.setEarliestMoreGeneralLineIndex(earliestMoreGeneralReachableLineNumber);
-          reachabilityEntry.setEarliestMoreGeneralLineName(earliestMoreGeneralLine.getName());
+          reachabilityEntry.setEarliestMoreGeneralLineName(
+              firstNonNull(earliestMoreGeneralLine.getName(), earliestMoreGeneralLine.toString()));
           if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
             reachabilityEntry.setDifferentAction(true);
           }
+        } else {
+          // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
+          // multiple partially-blocking lines. Provide that info in any way we can...
+          reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
+          reachabilityEntry.setEarliestMoreGeneralLineName(
+              "Multiple earlier lines partially block this line, making it unreachable.");
         }
         answerElement.addUnreachableLine(hostname, ipAccessList, reachabilityEntry);
 
