@@ -777,10 +777,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Produces a map of acl line -> line number of earliest more general reachable line
     List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs =
         generateEarliestMoreGeneralAclLineJobs(
-            hostnamesToAclsWithUnreachableLinesMap,
-            hostnamesToFullyReachableAclsMap,
-            linesReachableMap,
-            configurations);
+            hostnamesToAclsWithUnreachableLinesMap, linesReachableMap, configurations);
     Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
     computeNodFirstUnsatOutput(step2Jobs, blockingLinesMap);
 
@@ -868,7 +865,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Map<String, Configuration> configurations,
       AclLinesAnswerElement answerElement) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
-    Set<String> aclsToSkip = new TreeSet<>(aclEqSets.getSameNamedStructures().keySet());
 
     for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {
       String aclName = e.getKey();
@@ -883,8 +879,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       //        continue;
       //      }
 
-      // When building synthesizer, skip all ACLs except the current ACL
-      aclsToSkip.remove(aclName);
       Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
@@ -900,19 +894,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
         AclReachabilityQuerySynthesizer query =
             new AclReachabilityQuerySynthesizer(hostname, aclName, numLines);
-        Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclsToSkip);
+        Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
         NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query);
         jobs.add(job);
       }
       // Add current ACL back into ACL list before moving on to next ACL
-      aclsToSkip.add(aclName);
     }
     return jobs;
   }
 
   private List<NodFirstUnsatJob<AclLine, Integer>> generateEarliestMoreGeneralAclLineJobs(
       Map<String, Map<String, List<AclLine>>> unreachableAclLinesMap,
-      Map<String, Map<String, List<AclLine>>> reachableAclLinesMap,
       Map<AclLine, Boolean> aclLinesReachabilityMap, // map of acl line -> isReachable boolean
       Map<String, Configuration> configurations) {
     List<NodFirstUnsatJob<AclLine, Integer>> jobs = new ArrayList<>();
@@ -926,11 +918,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .stream()
                   .map(Interface::getName)
                   .collect(Collectors.toList()));
-      // Skip ACLs that have no unreachable lines
-      Map<String, List<AclLine>> reachableAcls = reachableAclLinesMap.get(hostname);
-      Synthesizer aclSynthesizer =
-          synthesizeAcls(
-              hostname, c, reachableAcls == null ? new TreeSet<>() : reachableAcls.keySet());
+      Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
@@ -4336,7 +4324,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
   }
 
-  private Synthesizer synthesizeAcls(String hostname, Configuration c, Set<String> aclsToSkip) {
+  private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4344,8 +4332,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Synthesizer s =
         new Synthesizer(
             SynthesizerInputImpl.builder()
-                .setConfigurations(Collections.singletonMap(hostname, c))
-                .setDisabledAcls(Collections.singletonMap(hostname, aclsToSkip))
+                .setConfigurations(configurations)
                 .setSimplify(_settings.getSimplify())
                 .build());
 
