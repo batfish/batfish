@@ -2589,7 +2589,10 @@ public class VirtualRouter extends ComparableStructure<String> {
     _bgpIncomingRoutes
         .get(session)
         .addAll(
-            routes.stream().map(RouteAdvertisement::new).collect(ImmutableSet.toImmutableSet()));
+            routes
+                .stream()
+                .map(RouteAdvertisement<AbstractRoute>::new)
+                .collect(ImmutableSet.toImmutableSet()));
   }
 
   private void newBgpSessionEstablishedHook(

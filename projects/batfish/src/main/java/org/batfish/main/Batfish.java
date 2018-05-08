@@ -182,6 +182,7 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
+import org.batfish.z3.AclLineIndependentSatisfiabilityQuerySynthesizer;
 import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
@@ -656,6 +657,59 @@ public class Batfish extends PluginConsumer implements IBatfish {
       answer.addAnswerElement(exception.getBatfishStackTrace());
     }
     return answer;
+  }
+
+  /**
+   * Mapping: hostname -> name of acl for which named host is representative -> list of lines that
+   * are independently unmatchable, i.e. they have unsatisfiable match condition
+   */
+  public SortedMap<String, SortedMap<String, SortedSet<Integer>>>
+      computeIndependentlyUnmatchableAclLines(
+          Map<String, Configuration> configurations, Map<String, Set<String>> representatives) {
+    List<NodSatJob<AclLine>> jobs = new ArrayList<>();
+    Synthesizer aclSynthesizer = synthesizeAcls(configurations);
+    representatives.forEach(
+        (hostname, aclNames) -> {
+          aclNames.forEach(
+              aclName -> {
+                Configuration c = configurations.get(hostname);
+                IpAccessList acl = c.getIpAccessLists().get(aclName);
+                int numLines = acl.getLines().size();
+                if (numLines == 0) {
+                  _logger.redflag(
+                      "RED_FLAG: Acl \"" + hostname + ":" + aclName + "\" contains no lines\n");
+                  return;
+                }
+                for (int lineNumber = 0; lineNumber < numLines; lineNumber++) {
+                  AclLineIndependentSatisfiabilityQuerySynthesizer query =
+                      new AclLineIndependentSatisfiabilityQuerySynthesizer(
+                          hostname, aclName, lineNumber);
+                  NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query);
+                  jobs.add(job);
+                }
+              });
+        });
+    Map<AclLine, Boolean> satisfiabilityByLine = new TreeMap<>();
+    computeNodSatOutput(jobs, satisfiabilityByLine);
+    SortedMap<String, SortedMap<String, ImmutableSortedSet.Builder<Integer>>> output =
+        new TreeMap<>();
+    satisfiabilityByLine.forEach(
+        (aclLine, satisfiable) -> {
+          if (!satisfiable) {
+            output
+                .computeIfAbsent(aclLine.getHostname(), h -> new TreeMap<>())
+                .computeIfAbsent(aclLine.getAclName(), a -> ImmutableSortedSet.naturalOrder())
+                .add(aclLine.getLine());
+          }
+        });
+    return CommonUtil.toImmutableSortedMap(
+        output,
+        Entry::getKey /* hostname */,
+        linesByAclNameByHostnameNameEntry ->
+            CommonUtil.toImmutableSortedMap(
+                linesByAclNameByHostnameNameEntry.getValue(),
+                Entry::getKey /* aclName */,
+                linesByAclNameEntry -> linesByAclNameEntry.getValue().build()));
   }
 
   @Override
