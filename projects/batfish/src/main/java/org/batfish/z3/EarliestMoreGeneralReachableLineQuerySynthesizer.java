@@ -112,9 +112,4 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
         .setRules(rules.build())
         .build();
   }
-
-  @Override
-  public ReachabilityProgram synthesizeBaseProgram(Synthesizer synthesizer) {
-    return synthesizer.synthesizeNodAclProgram(_hostname, _aclName);
-  }
 }
