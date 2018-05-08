@@ -2,8 +2,8 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 
 /** Represents data rows insider {@link TableAnswerElement} */
@@ -11,22 +11,22 @@ public class Rows implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private HashMultiset<ObjectNode> _data;
+  private Multiset<Row> _data;
 
   public Rows() {
     this(null);
   }
 
   @JsonCreator
-  public Rows(HashMultiset<ObjectNode> data) {
-    _data = data == null ? HashMultiset.create() : data;
+  public Rows(Multiset<Row> data) {
+    _data = data == null ? TreeMultiset.create() : data;
   }
 
-  public void add(ObjectNode row) {
+  public void add(Row row) {
     _data.add(row);
   }
 
-  public boolean contains(ObjectNode row) {
+  public boolean contains(Row row) {
     return _data.contains(row);
   }
 
@@ -39,7 +39,7 @@ public class Rows implements Serializable {
   }
 
   @JsonValue
-  private HashMultiset<ObjectNode> getData() {
+  private Multiset<Row> getData() {
     return _data;
   }
 

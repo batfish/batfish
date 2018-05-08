@@ -24,6 +24,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NamedStructureOutlierSet;
 import org.batfish.datamodel.collections.OutlierSet;
 import org.batfish.datamodel.collections.RoleBasedOutlierSet;
@@ -83,7 +84,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     } catch (IOException e) {
       throw new BatfishException("Error creating extraction", e);
     }
-    outliersEx.setSchema("List<String>");
+    outliersEx.setSchema(Schema.list(Schema.STRING));
     extractions.put("outlierNames", outliersEx);
 
     /////// All role consistency questions have a role in the answer.
@@ -97,7 +98,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     } catch (IOException e) {
       throw new BatfishException("Error creating extraction", e);
     }
-    roleEx.setSchema("String");
+    roleEx.setSchema(Schema.STRING);
     extractions.put("role", roleEx);
 
     String hypothesisSpecificDesc;
@@ -115,7 +116,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          nameEx.setSchema("String");
+          nameEx.setSchema(Schema.STRING);
           extractions.put("name", nameEx);
 
           JsonPathExtractionHint struct = new JsonPathExtractionHint();
@@ -128,7 +129,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          structEx.setSchema("String");
+          structEx.setSchema(Schema.STRING);
           extractions.put("structType", structEx);
 
           hypothesisSpecificDesc = "define a ${structType} named ${name}";
@@ -147,7 +148,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          nameEx.setSchema("String");
+          nameEx.setSchema(Schema.STRING);
           extractions.put("name", nameEx);
 
           JsonPathExtractionHint definition = new JsonPathExtractionHint();
@@ -161,7 +162,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          definitionEx.setSchema("List<Ip>");
+          definitionEx.setSchema(Schema.list(Schema.IP));
           extractions.put("definition", definitionEx);
           hypothesisSpecificDesc = "have ${name} equal to ${definition}";
           break;
@@ -179,7 +180,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          nameEx.setSchema("String");
+          nameEx.setSchema(Schema.STRING);
           extractions.put("name", nameEx);
 
           JsonPathExtractionHint struct = new JsonPathExtractionHint();
@@ -192,7 +193,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          structEx.setSchema("String");
+          structEx.setSchema(Schema.STRING);
           extractions.put("structType", structEx);
 
           JsonPathExtractionHint definition = new JsonPathExtractionHint();
@@ -206,7 +207,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
           } catch (IOException e) {
             throw new BatfishException("Error creating extraction", e);
           }
-          definitionEx.setSchema("Object");
+          definitionEx.setSchema(Schema.OBJECT);
           extractions.put("structDefinition", definitionEx);
 
           hypothesisSpecificDesc =
@@ -219,7 +220,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
     }
 
     Composition nodeComp = new Composition();
-    nodeComp.setSchema("List<Node>");
+    nodeComp.setSchema(Schema.list(Schema.NODE));
     nodeComp.setDictionary(ImmutableMap.of("name", "outlierNames"));
 
     return new DisplayHints(

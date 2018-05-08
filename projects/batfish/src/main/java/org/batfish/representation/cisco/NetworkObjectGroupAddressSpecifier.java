@@ -16,6 +16,6 @@ public class NetworkObjectGroupAddressSpecifier implements AccessListAddressSpec
 
   @Override
   public IpSpace toIpSpace() {
-    return new IpSpaceReference(_name);
+    return new IpSpaceReference(_name, String.format("Match network object-group: '%s'", _name));
   }
 }

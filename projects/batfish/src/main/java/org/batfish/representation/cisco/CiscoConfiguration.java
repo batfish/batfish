@@ -81,6 +81,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -1710,53 +1711,55 @@ public final class CiscoConfiguration extends VendorConfiguration {
               exportNetworkConditions.getConjuncts().add(we);
               preFilterConditions.getDisjuncts().add(exportNetworkConditions);
             });
-    String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
-    Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
-    proc.getIpv6Networks()
-        .forEach(
-            (prefix6, bgpNetwork6) -> {
-              int prefixLen = prefix6.getPrefixLength();
-              Route6FilterLine line =
-                  new Route6FilterLine(
-                      LineAction.ACCEPT, prefix6, new SubRange(prefixLen, prefixLen));
-              localFilter6.addLine(line);
-              String mapName = bgpNetwork6.getRouteMapName();
-              if (mapName != null) {
-                RouteMap routeMap = _routeMaps.get(mapName);
-                if (routeMap != null) {
-                  routeMap.getReferers().put(proc, "bgp ipv6 advertised network route-map");
-                  BooleanExpr we =
-                      bgpRedistributeWithEnvironmentExpr(new CallExpr(mapName), OriginType.IGP);
-                  Conjunction exportNetwork6Conditions = new Conjunction();
-                  Prefix6Space space6 = new Prefix6Space();
-                  space6.addPrefix6(prefix6);
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(
-                          new MatchPrefix6Set(
-                              new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
-                  // TODO: ban aggregates?
-                  exportNetwork6Conditions
-                      .getConjuncts()
-                      .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
-                  exportNetwork6Conditions.getConjuncts().add(we);
-                  preFilterConditions.getDisjuncts().add(exportNetwork6Conditions);
-                } else {
-                  undefined(
-                      CiscoStructureType.ROUTE_MAP,
-                      mapName,
-                      CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
-                      bgpNetwork6.getRouteMapLine());
+    if (!proc.getIpv6Networks().isEmpty()) {
+      String localFilter6Name = "~BGP_NETWORK6_NETWORKS_FILTER:" + vrfName + "~";
+      Route6FilterList localFilter6 = new Route6FilterList(localFilter6Name);
+      proc.getIpv6Networks()
+          .forEach(
+              (prefix6, bgpNetwork6) -> {
+                int prefixLen = prefix6.getPrefixLength();
+                Route6FilterLine line =
+                    new Route6FilterLine(
+                        LineAction.ACCEPT, prefix6, new SubRange(prefixLen, prefixLen));
+                localFilter6.addLine(line);
+                String mapName = bgpNetwork6.getRouteMapName();
+                if (mapName != null) {
+                  RouteMap routeMap = _routeMaps.get(mapName);
+                  if (routeMap != null) {
+                    routeMap.getReferers().put(proc, "bgp ipv6 advertised network route-map");
+                    BooleanExpr we =
+                        bgpRedistributeWithEnvironmentExpr(new CallExpr(mapName), OriginType.IGP);
+                    Conjunction exportNetwork6Conditions = new Conjunction();
+                    Prefix6Space space6 = new Prefix6Space();
+                    space6.addPrefix6(prefix6);
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(
+                            new MatchPrefix6Set(
+                                new DestinationNetwork6(), new ExplicitPrefix6Set(space6)));
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(new Not(new MatchProtocol(RoutingProtocol.BGP)));
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
+                    // TODO: ban aggregates?
+                    exportNetwork6Conditions
+                        .getConjuncts()
+                        .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
+                    exportNetwork6Conditions.getConjuncts().add(we);
+                    preFilterConditions.getDisjuncts().add(exportNetwork6Conditions);
+                  } else {
+                    undefined(
+                        CiscoStructureType.ROUTE_MAP,
+                        mapName,
+                        CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
+                        bgpNetwork6.getRouteMapLine());
+                  }
                 }
-              }
-            });
-    c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
+              });
+      c.getRoute6FilterLists().put(localFilter6Name, localFilter6);
+    }
 
     MatchProtocol isEbgp = new MatchProtocol(RoutingProtocol.BGP);
     MatchProtocol isIbgp = new MatchProtocol(RoutingProtocol.IBGP);
@@ -2327,8 +2330,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           .setMatchCondition(
                               new AndMatchExpr(
                                   ImmutableList.of(
-                                      new PermittedByAcl(oldOutgoingFilterName),
-                                      new PermittedByAcl(zoneOutgoingAclName))))
+                                      new PermittedByAcl(zoneOutgoingAclName),
+                                      new PermittedByAcl(oldOutgoingFilterName)),
+                                  String.format(
+                                      "Permit if permitted by policy for zone '%s' and permitted by outgoing filter '%s'",
+                                      zoneName, oldOutgoingFilterName)))
                           .build()))
               .build();
       newIface.setOutgoingFilter(combinedOutgoingAcl);
@@ -3511,13 +3517,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     switch (action) {
                       case DROP:
                         policyMapAclLines.add(
-                            IpAccessListLine.rejecting().setMatchCondition(matchCondition).build());
+                            IpAccessListLine.rejecting()
+                                .setMatchCondition(matchCondition)
+                                .setName(
+                                    String.format(
+                                        "Drop if matched by class-map: '%s'", inspectClassName))
+                                .build());
                         break;
 
                       case INSPECT:
+                        policyMapAclLines.add(
+                            IpAccessListLine.accepting()
+                                .setMatchCondition(matchCondition)
+                                .setName(
+                                    String.format(
+                                        "Inspect if matched by class-map: '%s'", inspectClassName))
+                                .build());
+                        break;
+
                       case PASS:
                         policyMapAclLines.add(
-                            IpAccessListLine.accepting().setMatchCondition(matchCondition).build());
+                            IpAccessListLine.accepting()
+                                .setMatchCondition(matchCondition)
+                                .setName(
+                                    String.format(
+                                        "Pass if matched by class-map: '%s'", inspectClassName))
+                                .build());
                         break;
 
                       default:
@@ -3525,6 +3550,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         return;
                     }
                   });
+          policyMapAclLines.add(
+              IpAccessListLine.builder()
+                  .setAction(inspectPolicyMap.getClassDefaultAction())
+                  .setMatchCondition(TrueExpr.INSTANCE)
+                  .setName(
+                      String.format(
+                          "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
+                  .build());
           IpAccessList.builder()
               .setOwner(c)
               .setName(inspectPolicyMapAclName)
@@ -3555,12 +3588,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
               zonePolicies.add(
                   IpAccessListLine.accepting()
                       .setMatchCondition(OriginatingFromDevice.INSTANCE)
+                      .setName("Allow traffic originating from this device")
                       .build());
 
               // Allow traffic staying within this zone
               zonePolicies.add(
                   IpAccessListLine.accepting()
                       .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
+                      .setName(
+                          String.format(
+                              "Allow traffic received on interface in same zone: '%s'", zoneName))
                       .build());
 
               /*
@@ -3616,11 +3653,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .setMatchCondition(
                         new AndMatchExpr(
                             ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
+                    .setName(
+                        String.format(
+                            "Allow traffic received on interface in zone '%s' permitted by policy-map: '%s'",
+                            srcZoneName, inspectPolicyMapName))
                     .build()))
         .build();
     return Optional.of(
         IpAccessListLine.accepting()
             .setMatchCondition(new PermittedByAcl(zonePairAclName))
+            .setName(
+                String.format(
+                    "Allow traffic from zone '%s' to '%s' permitted by service-policy: %s",
+                    srcZoneName, dstZoneName, inspectPolicyMapName))
             .build());
   }
 

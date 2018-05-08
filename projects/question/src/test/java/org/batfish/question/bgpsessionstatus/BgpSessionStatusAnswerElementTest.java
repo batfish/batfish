@@ -4,9 +4,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.table.Row;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 import org.junit.Test;
@@ -27,7 +27,7 @@ public class BgpSessionStatusAnswerElementTest {
             SessionType.EBGP_SINGLEHOP,
             "vrfName");
 
-    ObjectNode row = BgpSessionStatusAnswerElement.toRowStatic(session);
+    Row row = BgpSessionStatusAnswerElement.toRowStatic(session);
     BgpSessionInfo session2 = BgpSessionStatusAnswerElement.fromRowStatic(row);
 
     // session2 and session should be identical

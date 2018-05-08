@@ -476,6 +476,13 @@
 
       <dependency>
         <groupId>org.batfish</groupId>
+        <artifactId>batfish</artifactId>
+        <classifier>tests</classifier>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
         <artifactId>build-tools</artifactId>
         <version>${project.version}</version>
       </dependency>

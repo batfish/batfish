@@ -9,6 +9,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.table.Row;
 
 /**
  * Describes rows to be excluded in a {@link org.batfish.datamodel.table.TableAnswerElement}. An
@@ -38,12 +39,12 @@ public class Exclusion {
    * @param row The object whose coverage is to be checked
    * @return The exclusion that covers {@code row}. null if no such exclusion exists
    */
-  public static Exclusion covered(ObjectNode row, List<Exclusion> exclusions) {
+  public static Exclusion covered(Row row, List<Exclusion> exclusions) {
     if (exclusions == null) {
       return null;
     }
     for (Exclusion exclusion : exclusions) {
-      if (firstCoversSecond(exclusion.getExclusion(), row)) {
+      if (row.isCovered(exclusion.getExclusion())) {
         return exclusion;
       }
     }

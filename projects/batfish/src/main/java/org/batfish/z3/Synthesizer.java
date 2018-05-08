@@ -7,6 +7,7 @@ import java.util.List;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -64,6 +65,7 @@ public class Synthesizer {
                 _input,
                 ImmutableSet.of(
                     AclDeny.State.INSTANCE,
+                    AclLineIndependentMatch.State.INSTANCE,
                     AclLineMatch.State.INSTANCE,
                     AclLineNoMatch.State.INSTANCE,
                     AclPermit.State.INSTANCE))));
