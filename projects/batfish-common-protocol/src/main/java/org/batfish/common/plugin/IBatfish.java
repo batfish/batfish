@@ -51,6 +51,8 @@ public interface IBatfish extends IPluginConsumer {
 
   DataPlaneAnswerElement computeDataPlane(boolean differentialContext);
 
+  boolean debugFlagEnabled(String flag);
+
   Map<String, BiFunction<Question, IBatfish, Answerer>> getAnswererCreators();
 
   String getContainerName();
