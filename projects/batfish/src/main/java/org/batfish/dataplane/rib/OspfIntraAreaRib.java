@@ -1,6 +1,7 @@
-package org.batfish.dataplane.ibdp;
+package org.batfish.dataplane.rib;
 
 import org.batfish.datamodel.OspfIntraAreaRoute;
+import org.batfish.dataplane.ibdp.VirtualRouter;
 
 public class OspfIntraAreaRib extends AbstractRib<OspfIntraAreaRoute> {
 
@@ -8,7 +9,7 @@ public class OspfIntraAreaRib extends AbstractRib<OspfIntraAreaRoute> {
   private static final long serialVersionUID = 1L;
 
   public OspfIntraAreaRib(VirtualRouter owner) {
-    super(owner, null);
+    super(null);
   }
 
   @Override

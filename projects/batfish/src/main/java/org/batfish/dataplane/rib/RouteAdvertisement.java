@@ -1,15 +1,15 @@
-package org.batfish.dataplane.ibdp;
+package org.batfish.dataplane.rib;
 
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
 
 public class RouteAdvertisement<R extends AbstractRoute> {
-  protected R _route;
-  protected boolean _withdraw;
-  protected Reason _reason;
+  private R _route;
+  private boolean _withdraw;
+  private Reason _reason;
 
-  enum Reason {
+  public enum Reason {
     ADD,
     REPLACE,
     WITHDRAW
