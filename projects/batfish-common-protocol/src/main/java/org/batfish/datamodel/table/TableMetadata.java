@@ -4,8 +4,13 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+<<<<<<< HEAD
 import java.util.HashMap;
 import java.util.Map;
+=======
+import java.util.SortedMap;
+import java.util.TreeMap;
+>>>>>>> fc99ff4e4... piggybacking couple of minor changes
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -33,7 +38,7 @@ public class TableMetadata {
   }
 
   @JsonProperty(PROP_COLUMN_METADATA)
-  public Map<String, ColumnMetadata> getColumnMetadata() {
+  public SortedMap<String, ColumnMetadata> getColumnMetadata() {
     return _columnMetadata;
   }
 
