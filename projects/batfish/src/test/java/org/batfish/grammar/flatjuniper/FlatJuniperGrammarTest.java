@@ -263,9 +263,11 @@ public class FlatJuniperGrammarTest {
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
+        undefinedReferencesByType,
+        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationByName =
-        undefinedReferencesByType.get(JuniperStructureType.APPLICATION.getDescription());
+        undefinedReferencesByType.get(
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
     assertThat(urApplicationByName, not(hasKey("a1")));
     assertThat(urApplicationByName, not(hasKey("a2")));
     assertThat(urApplicationByName, not(hasKey("a3")));
