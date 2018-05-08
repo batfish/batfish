@@ -3,13 +3,11 @@ package org.batfish.representation.cisco;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.routing_policy.statement.Statements.RemovePrivateAs;
 import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE;
-import static org.batfish.representation.cisco.CiscoConfiguration.MATCH_DEFAULT_ROUTE6;
+import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeBgpCommonExportPolicyName;
-import static org.batfish.representation.cisco.CiscoConversions.generateDefaultRouteIfMapMatches;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedList;
@@ -25,6 +23,7 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -315,6 +314,8 @@ final class CiscoNxConversions {
     @Nullable
     CiscoNxBgpVrfNeighborAddressFamilyConfiguration naf4 = neighbor.getIpv4UnicastAddressFamily();
     @Nullable CiscoNxBgpVrfAddressFamilyConfiguration af4 = vrfConfig.getIpv4UnicastAddressFamily();
+    @Nullable
+    CiscoNxBgpVrfNeighborAddressFamilyConfiguration naf6 = neighbor.getIpv6UnicastAddressFamily();
     @Nullable CiscoNxBgpVrfAddressFamilyConfiguration af6 = vrfConfig.getIpv6UnicastAddressFamily();
 
     if (naf4 != null) {
@@ -339,7 +340,7 @@ final class CiscoNxConversions {
       // TODO(handle different types of RemovePrivateAs)
       exportStatements.add(RemovePrivateAs.toStaticStatement());
     }
-    // Main export policy is to call the common export policy!
+    // Peer-specific export policy.
     Conjunction peerExportGuard = new Conjunction();
     List<BooleanExpr> peerExportConditions = peerExportGuard.getConjuncts();
     exportStatements.add(
@@ -350,13 +351,17 @@ final class CiscoNxConversions {
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     List<BooleanExpr> localOrCommonOrigination = new LinkedList<>();
     localOrCommonOrigination.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
+    // If `default-originate [route-map NAME]` is configured for this neighbor, generate the
+    // default route and inject it.
     if (naf4 != null && firstNonNull(naf4.getDefaultOriginate(), Boolean.FALSE)) {
-      newNeighbor.setGeneratedRoutes(
-          ImmutableSet.of(generateDefaultRouteIfMapMatches(c, naf4.getDefaultOriginateMap())));
+      GeneratedRoute defaultRoute =
+          new GeneratedRoute.Builder()
+              .setNetwork(Prefix.ZERO)
+              .setAdmin(MAX_ADMINISTRATIVE_COST)
+              .setGenerationPolicy(naf4.getDefaultOriginateMap())
+              .build();
+      newNeighbor.getGeneratedRoutes().add(defaultRoute);
       localOrCommonOrigination.add(MATCH_DEFAULT_ROUTE);
-    }
-    if (af6 != null && af6.getDefaultInformationOriginate()) {
-      localOrCommonOrigination.add(MATCH_DEFAULT_ROUTE6);
     }
     peerExportConditions.add(new Disjunction(localOrCommonOrigination));
 

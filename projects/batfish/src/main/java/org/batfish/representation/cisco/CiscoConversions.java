@@ -87,8 +87,7 @@ class CiscoConversions {
     return policy;
   }
 
-  static GeneratedRoute generateDefaultRouteIfMapMatches(
-      Configuration c, @Nullable String defaultOriginateMap) {
+  static GeneratedRoute generateDefaultRouteIfMapMatches(@Nullable String defaultOriginateMap) {
     GeneratedRoute.Builder defaultRoute =
         new GeneratedRoute.Builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST);
     if (defaultOriginateMap != null) {
