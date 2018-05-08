@@ -160,11 +160,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -723,11 +718,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "ROUTE_MAP" : {
             "name" : "ROUTE_MAP",
@@ -1635,6 +1625,7 @@
                     "negate" : false,
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpSpaceReference",
+                      "description" : "Match network object-group: 'drawbridge_hosts'",
                       "name" : "drawbridge_hosts"
                     }
                   }
@@ -2310,11 +2301,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -2615,11 +2601,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -2680,11 +2661,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -2815,11 +2791,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -3317,11 +3288,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -4800,11 +4766,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -4885,14 +4846,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:aVrfWithInnerStatements~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:aVrfWithInnerStatements~"
-          },
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "~MATCH_SUPPRESSED_SUMMARY_ONLY:aVrfWithInnerStatements~" : {
             "name" : "~MATCH_SUPPRESSED_SUMMARY_ONLY:aVrfWithInnerStatements~",
@@ -5468,11 +5421,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -9708,11 +9656,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -10260,11 +10203,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -11431,11 +11369,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -11516,11 +11449,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -11581,11 +11509,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -14188,11 +14111,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -14537,11 +14455,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -14652,11 +14565,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -14717,11 +14625,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -14832,11 +14735,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -15268,11 +15166,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -15595,11 +15488,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -21992,11 +21880,6 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "EBGP-PEER" : {
             "name" : "EBGP-PEER",

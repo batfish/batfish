@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class PermittedByAcl extends AclLineMatchExpr {
   private static final String PROP_ACL_NAME = "aclName";
@@ -11,8 +12,15 @@ public class PermittedByAcl extends AclLineMatchExpr {
 
   private final String _aclName;
 
+  public PermittedByAcl(String aclName) {
+    this(aclName, null);
+  }
+
   @JsonCreator
-  public PermittedByAcl(@JsonProperty(PROP_ACL_NAME) String aclName) {
+  public PermittedByAcl(
+      @JsonProperty(PROP_ACL_NAME) String aclName,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
+    super(description);
     _aclName = aclName;
   }
 

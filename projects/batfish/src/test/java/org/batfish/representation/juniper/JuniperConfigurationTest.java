@@ -43,7 +43,7 @@ public class JuniperConfigurationTest {
 
     FwTerm term = new FwTerm("term");
     String ipAddrPrefix = "1.2.3.0/24";
-    term.getFroms().add(new FwFromSourceAddress(Prefix.parse(ipAddrPrefix)));
+    term.getFroms().add(new FwFromSourceAddress(new IpWildcard(Prefix.parse(ipAddrPrefix))));
     term.getThens().add(FwThenAccept.INSTANCE);
     filter.getTerms().put("term", term);
     IpAccessList headerSpaceAcl = config.toIpAccessList(filter);

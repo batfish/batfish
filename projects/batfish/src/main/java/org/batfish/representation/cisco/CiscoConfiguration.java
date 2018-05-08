@@ -2546,8 +2546,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
                           .setMatchCondition(
                               new AndMatchExpr(
                                   ImmutableList.of(
-                                      new PermittedByAcl(oldOutgoingFilterName),
-                                      new PermittedByAcl(zoneOutgoingAclName))))
+                                      new PermittedByAcl(zoneOutgoingAclName),
+                                      new PermittedByAcl(oldOutgoingFilterName)),
+                                  String.format(
+                                      "Permit if permitted by policy for zone '%s' and permitted by outgoing filter '%s'",
+                                      zoneName, oldOutgoingFilterName)))
                           .build()))
               .build();
       newIface.setOutgoingFilter(combinedOutgoingAcl);
@@ -3730,13 +3733,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     switch (action) {
                       case DROP:
                         policyMapAclLines.add(
-                            IpAccessListLine.rejecting().setMatchCondition(matchCondition).build());
+                            IpAccessListLine.rejecting()
+                                .setMatchCondition(matchCondition)
+                                .setName(
+                                    String.format(
+                                        "Drop if matched by class-map: '%s'", inspectClassName))
+                                .build());
                         break;
 
                       case INSPECT:
+                        policyMapAclLines.add(
+                            IpAccessListLine.accepting()
+                                .setMatchCondition(matchCondition)
+                                .setName(
+                                    String.format(
+                                        "Inspect if matched by class-map: '%s'", inspectClassName))
+                                .build());
+                        break;
+
                       case PASS:
                         policyMapAclLines.add(
-                            IpAccessListLine.accepting().setMatchCondition(matchCondition).build());
+                            IpAccessListLine.accepting()
+                                .setMatchCondition(matchCondition)
+                                .setName(
+                                    String.format(
+                                        "Pass if matched by class-map: '%s'", inspectClassName))
+                                .build());
                         break;
 
                       default:
@@ -3774,12 +3796,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
               zonePolicies.add(
                   IpAccessListLine.accepting()
                       .setMatchCondition(OriginatingFromDevice.INSTANCE)
+                      .setName("Allow traffic originating from this device")
                       .build());
 
               // Allow traffic staying within this zone
               zonePolicies.add(
                   IpAccessListLine.accepting()
                       .setMatchCondition(matchSrcInterfaceBySrcZone.get(zoneName))
+                      .setName(
+                          String.format(
+                              "Allow traffic received on interface in same zone: '%s'", zoneName))
                       .build());
 
               /*
@@ -3835,11 +3861,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .setMatchCondition(
                         new AndMatchExpr(
                             ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
+                    .setName(
+                        String.format(
+                            "Allow traffic received on interface in zone '%s' permitted by policy-map: '%s'",
+                            srcZoneName, inspectPolicyMapName))
                     .build()))
         .build();
     return Optional.of(
         IpAccessListLine.accepting()
             .setMatchCondition(new PermittedByAcl(zonePairAclName))
+            .setName(
+                String.format(
+                    "Allow traffic from zone '%s' to '%s' permitted by service-policy: %s",
+                    srcZoneName, dstZoneName, inspectPolicyMapName))
             .build());
   }
 
