@@ -5,9 +5,9 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
 
 public class RouteAdvertisement<R extends AbstractRoute> {
-  protected R _route;
-  protected boolean _withdraw;
-  protected Reason _reason;
+  private R _route;
+  private boolean _withdraw;
+  private Reason _reason;
 
   public enum Reason {
     ADD,
