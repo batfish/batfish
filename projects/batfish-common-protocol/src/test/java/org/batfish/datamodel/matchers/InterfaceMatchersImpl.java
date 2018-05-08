@@ -15,6 +15,17 @@ import org.hamcrest.Matcher;
 
 final class InterfaceMatchersImpl {
 
+  static final class HasAccessVlan extends FeatureMatcher<Interface, Integer> {
+    HasAccessVlan(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an Interface with accessVlan:", "accessVlan");
+    }
+
+    @Override
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getAccessVlan();
+    }
+  }
+
   static final class HasAdditionalArpIps extends FeatureMatcher<Interface, SortedSet<Ip>> {
     HasAdditionalArpIps(@Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
       super(subMatcher, "An interface with additionalArpIps:", "additionalArpIps");

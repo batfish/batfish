@@ -67,6 +67,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -214,6 +215,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
+  private Map<String, Integer> _vlanNameToIds;
+
   private final Map<String, Zone> _zones;
 
   public JuniperConfiguration(Set<String> unimplementedFeatures) {
@@ -247,6 +250,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _unimplementedFeatures = unimplementedFeatures;
+    _vlanNameToIds = new TreeMap<>();
     _zones = new TreeMap<>();
   }
 
@@ -793,6 +797,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _unimplementedFeatures;
   }
 
+  public Map<String, Integer> getVlanNameToIds() {
+    return _vlanNameToIds;
+  }
+
   public Map<String, Zone> getZones() {
     return _zones;
   }
@@ -1263,7 +1271,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
-    newIface.setAccessVlan(iface.getAccessVlan());
+    if (iface.getSwitchportMode() == SwitchportMode.ACCESS && iface.getAccessVlan() != null) {
+      Integer vlanId = getVlanNameToIds().get(iface.getAccessVlan());
+      if (vlanId != null) {
+        newIface.setAccessVlan(getVlanNameToIds().get(iface.getAccessVlan()));
+      }
+    }
+    newIface.setAllowedVlans(iface.getAllowedVlans());
     newIface.setNativeVlan(iface.getNativeVlan());
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();

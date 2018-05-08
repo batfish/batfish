@@ -1,0 +1,5 @@
+#
+set system host-name interface-vlan
+#
+set interfaces ge-0/0/0 unit 0 family ethernet-switching vlan members VLAN_TEST
+set vlans VLAN_TEST vlan-id 101

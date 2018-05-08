@@ -55,6 +55,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
@@ -143,6 +144,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
@@ -246,6 +249,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_address_bookContext;
@@ -331,6 +335,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Wildcard_addressContext;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
 import org.batfish.representation.juniper.AddressBook;
@@ -1495,6 +1500,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private VrrpGroup _currentVrrpGroup;
 
+  private String _currentVlanName;
+
   private Zone _currentZone;
 
   private FirewallFilter _currentZoneInboundFilter;
@@ -2478,6 +2485,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterS_vlans_named(S_vlans_namedContext ctx) {
+    if (ctx.name != null) {
+      _currentVlanName = ctx.name.getText();
+    }
+  }
+
+  @Override
   public void exitA_application(A_applicationContext ctx) {
     _currentApplication = null;
     _currentApplicationTerm = null;
@@ -3058,6 +3072,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     int line = filter.name.getStart().getLine();
     _configuration.referenceStructure(
         JuniperStructureType.FIREWALL_FILTER, name, JuniperStructureUsage.INTERFACE_FILTER, line);
+  }
+
+  @Override
+  public void exitIfe_port_mode(Ife_port_modeContext ctx) {
+    if (ctx.TRUNK() != null) {
+      _currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
+    }
+  }
+
+  @Override
+  public void exitIfe_vlan(Ife_vlanContext ctx) {
+    if (_currentInterface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      if (ctx.range() != null) {
+        List<SubRange> subRanges = toRange(ctx.range());
+        subRanges.forEach(subRange -> _currentInterface.getAllowedVlans().add(subRange));
+      }
+    } else if (ctx.name != null) {
+      _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+      _currentInterface.setAccessVlan(ctx.name.getText());
+    }
   }
 
   @Override
@@ -4193,6 +4227,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSyt_source_address(Syt_source_addressContext ctx) {
     Ip sourceAddress = new Ip(ctx.address.getText());
     _currentTacplusServer.setSourceAddress(sourceAddress);
+  }
+
+  @Override
+  public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
+    if (ctx.name != null) {
+      if (_currentVlanName != null) {
+        try {
+          _configuration
+              .getVlanNameToIds()
+              .put(_currentVlanName, Integer.valueOf(ctx.name.getText()));
+        } catch (NumberFormatException e) {
+          _w.redFlag(String.format("Invalid VLAN ID configured for VLAN %s", _currentVlanName));
+        }
+      }
+    }
   }
 
   public JuniperConfiguration getConfiguration() {

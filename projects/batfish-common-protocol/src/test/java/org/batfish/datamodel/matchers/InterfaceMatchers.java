@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
@@ -27,6 +28,19 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
 import org.hamcrest.Matcher;
 
 public final class InterfaceMatchers {
+
+  /** Provides a matcher that matches if the provided value matches the interface's Access VLAN. */
+  public static HasAccessVlan hasAccessVlan(int value) {
+    return hasAccessVlan(equalTo(value));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * Access VLAN.
+   */
+  public static HasAccessVlan hasAccessVlan(Matcher<? super Integer> subMatcher) {
+    return new HasAccessVlan(subMatcher);
+  }
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's

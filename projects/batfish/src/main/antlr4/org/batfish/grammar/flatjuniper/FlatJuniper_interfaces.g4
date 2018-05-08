@@ -370,7 +370,7 @@ ife_vlan
    (
       ALL
       | range
-      | variable
+      | name = variable
    )
 ;
 
