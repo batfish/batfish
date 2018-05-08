@@ -1,11 +1,11 @@
 package org.batfish.representation.juniper;
 
-public class ApplicationOrSetReference extends ApplicationSetMemberReference {
+public class ApplicationOrApplicationSetReference extends ApplicationSetMemberReference {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  public ApplicationOrSetReference(String name) {
+  public ApplicationOrApplicationSetReference(String name) {
     super(name);
   }
 

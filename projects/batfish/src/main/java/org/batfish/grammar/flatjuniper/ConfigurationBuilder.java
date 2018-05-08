@@ -339,7 +339,7 @@ import org.batfish.representation.juniper.AddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.AggregateRoute;
-import org.batfish.representation.juniper.ApplicationOrSetReference;
+import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
 import org.batfish.representation.juniper.ApplicationSet;
 import org.batfish.representation.juniper.ApplicationSetMemberReference;
 import org.batfish.representation.juniper.ApplicationSetReference;
@@ -1586,7 +1586,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentApplicationSet.setMembers(
         ImmutableList.<ApplicationSetMemberReference>builder()
             .addAll(_currentApplicationSet.getMembers())
-            .add(new ApplicationOrSetReference(name))
+            .add(new ApplicationOrApplicationSetReference(name))
             .build());
   }
 
