@@ -48,14 +48,14 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
   }
 
   @Override
-  public int comparePreference(BgpRoute lhs, BgpRoute rhs) {
+  public int comparePreference(BgpRoute newRoute, BgpRoute oldRoute) {
 
     int res;
 
     /*
      * first compare local preference
      */
-    res = Integer.compare(lhs.getLocalPreference(), rhs.getLocalPreference());
+    res = Integer.compare(newRoute.getLocalPreference(), oldRoute.getLocalPreference());
     if (res != 0) {
       return res;
     }
@@ -67,7 +67,8 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
 
     res =
         Integer.compare(
-            getAggregatePreference(lhs.getProtocol()), getAggregatePreference(rhs.getProtocol()));
+            getAggregatePreference(newRoute.getProtocol()),
+            getAggregatePreference(oldRoute.getProtocol()));
     if (res != 0) {
       return res;
     }
@@ -75,7 +76,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     /*
      * then compare as path size (shorter is better, hence reversal)
      */
-    res = Integer.compare(rhs.getAsPath().size(), lhs.getAsPath().size());
+    res = Integer.compare(oldRoute.getAsPath().size(), newRoute.getAsPath().size());
     if (res != 0) {
       return res;
     }
@@ -83,7 +84,9 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     /*
      * origin type (IGP better than EGP, which is better than INCOMPLETE)
      */
-    res = Integer.compare(lhs.getOriginType().getPreference(), rhs.getOriginType().getPreference());
+    res =
+        Integer.compare(
+            newRoute.getOriginType().getPreference(), oldRoute.getOriginType().getPreference());
     if (res != 0) {
       return res;
     }
@@ -99,7 +102,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     /*
      * next prefer eBGP over iBGP
      */
-    res = Integer.compare(getTypeCost(rhs.getProtocol()), getTypeCost(lhs.getProtocol()));
+    res = Integer.compare(getTypeCost(oldRoute.getProtocol()), getTypeCost(newRoute.getProtocol()));
     if (res != 0) {
       return res;
     }
@@ -107,7 +110,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     /*
      * Prefer the path with the lowest IGP metric to the BGP next hop
      */
-    res = Long.compare(getIgpCostToNextHopIp(rhs), getIgpCostToNextHopIp(lhs));
+    res = Long.compare(getIgpCostToNextHopIp(oldRoute), getIgpCostToNextHopIp(newRoute));
     if (res != 0) {
       return res;
     }
@@ -121,7 +124,8 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
      * Break tie with process's chosen tie-breaking mechanism
      */
     boolean bothEbgp =
-        lhs.getProtocol() == RoutingProtocol.BGP && rhs.getProtocol() == RoutingProtocol.BGP;
+        newRoute.getProtocol() == RoutingProtocol.BGP
+            && oldRoute.getProtocol() == RoutingProtocol.BGP;
     switch (_tieBreaker) {
       case ARRIVAL_ORDER:
         if (!bothEbgp) {
@@ -130,8 +134,8 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
         /* Flip compare because older is better */
         res =
             Long.compare(
-                _logicalArrivalTime.getOrDefault(rhs, _logicalClock),
-                _logicalArrivalTime.getOrDefault(lhs, _logicalClock));
+                _logicalArrivalTime.getOrDefault(oldRoute, _logicalClock),
+                _logicalArrivalTime.getOrDefault(newRoute, _logicalClock));
         if (res != 0) {
           return res;
         }
@@ -142,7 +146,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
           break;
         }
         /* Prefer the route that comes from the BGP router with the lowest router ID. */
-        res = rhs.getOriginatorIp().compareTo(lhs.getOriginatorIp());
+        res = oldRoute.getOriginatorIp().compareTo(newRoute.getOriginatorIp());
         if (res != 0) {
           return res;
         }
@@ -152,7 +156,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
         /* Prefer the path with the minimum cluster list length. lhs/rhs flipped because lower
          * length is preferred.
          */
-        res = Integer.compare(rhs.getClusterList().size(), lhs.getClusterList().size());
+        res = Integer.compare(oldRoute.getClusterList().size(), newRoute.getClusterList().size());
         if (res != 0) {
           return res;
         }
@@ -162,7 +166,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     }
 
     /* Prefer the route that comes from the BGP router with the lowest router ID. */
-    res = rhs.getOriginatorIp().compareTo(lhs.getOriginatorIp());
+    res = oldRoute.getOriginatorIp().compareTo(newRoute.getOriginatorIp());
     if (res != 0) {
       return res;
     }
@@ -170,7 +174,7 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     /* Prefer the path with the minimum cluster list length. lhs/rhs flipped because lower
      * length is preferred.
      */
-    res = Integer.compare(rhs.getClusterList().size(), lhs.getClusterList().size());
+    res = Integer.compare(oldRoute.getClusterList().size(), newRoute.getClusterList().size());
     if (res != 0) {
       return res;
     }
@@ -178,11 +182,11 @@ public class BgpBestPathRib extends AbstractRib<BgpRoute> {
     /* Prefer the path that comes from the lowest neighbor address.
      * Flipped because lower address is preferred.
      */
-    res = rhs.getReceivedFromIp().compareTo(lhs.getReceivedFromIp());
+    res = oldRoute.getReceivedFromIp().compareTo(newRoute.getReceivedFromIp());
     if (res != 0) {
       return res;
     }
-    if (lhs.equals(rhs)) {
+    if (newRoute.equals(oldRoute)) {
       // This is ok, because routes are stored in sets
       return 0;
     } else {

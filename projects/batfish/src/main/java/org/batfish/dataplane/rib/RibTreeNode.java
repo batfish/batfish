@@ -292,8 +292,8 @@ class RibTreeNode<R extends AbstractRoute> implements Serializable {
        * same preference level. Hence, the route we are checking will be better than all,
        * worse than all, or at the same preference level.
        */
-      R rhs = _routes.iterator().next();
-      int preferenceComparison = _owner.comparePreference(route, rhs);
+      R oldRoute = _routes.iterator().next();
+      int preferenceComparison = _owner.comparePreference(route, oldRoute);
       if (preferenceComparison < 0) { // less preferable, so route doesn't get added
         return null;
       }
