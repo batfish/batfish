@@ -60,7 +60,7 @@ public class AclLinesAnswerElement extends AnswerElement {
      *   <li>The line is blocked by multiple partially covering earlier lines
      * </ul>
      *
-     * This is a temporary solution for communicating these cases and will be changed soon.
+     * <p>This is a temporary solution for communicating these cases and will be changed soon.
      */
     public Integer getEarliestMoreGeneralLineIndex() {
       return _earliestMoreGeneralLineIndex;
@@ -76,7 +76,8 @@ public class AclLinesAnswerElement extends AnswerElement {
      *       partially block this line, making it unreachable."
      * </ul>
      *
-     * This is a temporary solution for communicating the latter two cases and will be changed soon.
+     * <p>This is a temporary solution for communicating the latter two cases and will be changed
+     * soon.
      */
     public String getEarliestMoreGeneralLineName() {
       return _earliestMoreGeneralLineName;
