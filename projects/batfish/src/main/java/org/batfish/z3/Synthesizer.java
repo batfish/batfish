@@ -28,16 +28,14 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
-import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class Synthesizer {
@@ -91,16 +89,14 @@ public class Synthesizer {
               NodeDropNullRoute.State.INSTANCE,
               NodeInterfaceNeighborUnreachable.State.INSTANCE,
               NodeNeighborUnreachable.State.INSTANCE,
-              Originate.State.INSTANCE,
               OriginateVrf.State.INSTANCE,
-              PostIn.State.INSTANCE,
               PostInInterface.State.INSTANCE,
               PostInVrf.State.INSTANCE,
               PostOutEdge.State.INSTANCE,
               PreInInterface.State.INSTANCE,
-              PreOut.State.INSTANCE,
               PreOutEdge.State.INSTANCE,
-              PreOutEdgePostNat.State.INSTANCE));
+              PreOutEdgePostNat.State.INSTANCE,
+              PreOutVrf.State.INSTANCE));
     }
     return synthesizeNodProgram(
         ImmutableList.copyOf(
