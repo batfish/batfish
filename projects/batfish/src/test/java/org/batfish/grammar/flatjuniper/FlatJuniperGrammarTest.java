@@ -458,9 +458,11 @@ public class FlatJuniperGrammarTest {
     String aclApplicationsName = "~FROM_ZONE~z1~TO_ZONE~z2";
     String aclApplicationSetName = "~FROM_ZONE~z2~TO_ZONE~z3";
     String aclApplicationSetAnyName = "~FROM_ZONE~z3~TO_ZONE~z4";
+    String aclApplicationAnyName = "~FROM_ZONE~z4~TO_ZONE~z5";
     IpAccessList aclApplication = c.getIpAccessLists().get(aclApplicationsName);
     IpAccessList aclApplicationSet = c.getIpAccessLists().get(aclApplicationSetName);
     IpAccessList aclApplicationSetAny = c.getIpAccessLists().get(aclApplicationSetAnyName);
+    IpAccessList aclApplicationAny = c.getIpAccessLists().get(aclApplicationAnyName);
     /* Allowed applications permits TCP to port 80 and 443 */
     Flow permittedHttpFlow = createTcpFlow(80);
     Flow permittedHttpsFlow = createTcpFlow(443);
@@ -494,7 +496,7 @@ public class FlatJuniperGrammarTest {
         aclApplicationSet, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
 
     /*
-     * Confirm permissive acl accepts all three flows
+     * Confirm indirectly permissive acl accepts all three flows
      */
     assertThat(
         aclApplicationSetAny,
@@ -504,6 +506,17 @@ public class FlatJuniperGrammarTest {
         accepts(permittedHttpsFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
         aclApplicationSetAny, accepts(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm explicitly permissive acl accepts all three flows
+     */
+    assertThat(
+        aclApplicationAny, accepts(permittedHttpFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationAny,
+        accepts(permittedHttpsFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationAny, accepts(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
