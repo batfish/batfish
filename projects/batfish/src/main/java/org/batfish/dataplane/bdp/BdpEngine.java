@@ -3,6 +3,7 @@ package org.batfish.dataplane.bdp;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import io.opentracing.ActiveSpan;
@@ -983,25 +984,31 @@ public class BdpEngine {
     return errorMessage;
   }
 
+  /**
+   * Return the main RIB routes for each node. Map structure: Hostname -> VRF name -> Set of routes
+   */
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(BdpDataPlane dp) {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname =
-        new TreeMap<>();
-    for (Entry<String, Node> e : dp._nodes.entrySet()) {
-      String hostname = e.getKey();
-      Node node = e.getValue();
-      for (Entry<String, VirtualRouter> e2 : node._virtualRouters.entrySet()) {
-        String vrfName = e2.getKey();
-        VirtualRouter vrf = e2.getValue();
-        for (AbstractRoute route : vrf._mainRib.getRoutes()) {
-          SortedMap<String, SortedSet<AbstractRoute>> routesByVrf =
-              routesByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
-          SortedSet<AbstractRoute> routes =
-              routesByVrf.computeIfAbsent(vrfName, k -> new TreeSet<>());
-          routes.add(route);
-        }
-      }
-    }
-    return routesByHostname;
+    // Scan through all Nodes and their virtual routers, retrieve main rib routes
+    return dp._nodes
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                String::compareTo,
+                Entry::getKey,
+                nodeEntry ->
+                    nodeEntry
+                        .getValue()
+                        ._virtualRouters
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                String::compareTo,
+                                Entry::getKey,
+                                vrfEntry ->
+                                    ImmutableSortedSet.copyOf(
+                                        vrfEntry.getValue()._mainRib.getRoutes())))));
   }
 
   /**
