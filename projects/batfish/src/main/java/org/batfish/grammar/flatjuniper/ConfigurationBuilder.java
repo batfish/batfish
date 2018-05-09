@@ -1576,8 +1576,39 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAas_application(Aas_applicationContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    String name;
+    int line;
+    if (ctx.ANY() != null) {
+      name = "any";
+      line = ctx.ANY().getSymbol().getLine();
+      // Create an empty application definition to match anything, so it can be referenced later
+      _configuration
+          .getApplications()
+          .computeIfAbsent(
+              name,
+              n -> {
+                BaseApplication base = new BaseApplication(n, -1);
+                Term term = new Term("permit");
+                base.getTerms().put("permit", term);
+                return base;
+              });
+    } else if (ctx.junos_application() != null) {
+      JunosApplication application = toJunosApplication(ctx.junos_application());
+      name = application.toString();
+      line = ctx.junos_application().getStart().getLine();
+      if (!application.hasDefinition()) {
+        _w.redFlag(
+            String.format(
+                "unimplemented pre-defined junos application: '%s'",
+                ctx.junos_application().getText()));
+        return;
+      }
+      // Need to add this default application to the config so it can be referenced later
+      _configuration.getApplications().putIfAbsent(name, application.getBaseApplication());
+    } else {
+      name = ctx.name.getText();
+      line = ctx.name.getStart().getLine();
+    }
     _configuration.referenceStructure(
         JuniperStructureType.APPLICATION,
         name,

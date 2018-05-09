@@ -47,7 +47,12 @@ aa_term
 
 aas_application
 :
-   APPLICATION name = variable
+   APPLICATION
+   (
+      ANY
+      | junos_application
+      | name = variable
+   )
 ;
 
 aas_application_set

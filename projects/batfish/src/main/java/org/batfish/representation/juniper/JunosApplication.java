@@ -224,6 +224,10 @@ public enum JunosApplication implements Application {
     _baseApplication.get().applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
   }
 
+  public BaseApplication getBaseApplication() {
+    return _baseApplication.get();
+  }
+
   @Override
   public boolean getIpv6() {
     return _baseApplication.get().getIpv6();

@@ -37,6 +37,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_E
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
@@ -82,6 +83,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -135,6 +137,15 @@ public class FlatJuniperGrammarTest {
     fb.setSrcIp(new Ip(sourceAddress));
     fb.setDstIp(new Ip(destinationAddress));
     fb.setState(state);
+    fb.setTag("test");
+    return fb.build();
+  }
+
+  private static Flow createTcpFlow(int dstPort) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(IpProtocol.TCP);
+    fb.setDstPort(dstPort);
     fb.setTag("test");
     return fb.build();
   }
@@ -394,6 +405,69 @@ public class FlatJuniperGrammarTest {
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+  }
+
+  @Test
+  public void testDefaultApplications() throws IOException {
+    String hostname = "default-applications";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        undefinedReferences = ccae.getUndefinedReferences();
+
+    Configuration c = parseConfig(hostname);
+
+    String aclApplicationsName = "~FROM_ZONE~z1~TO_ZONE~z2";
+    String aclApplicationSetName = "~FROM_ZONE~z2~TO_ZONE~z3";
+    String aclApplicationAnyName = "~FROM_ZONE~z3~TO_ZONE~z4";
+    IpAccessList aclApplication = c.getIpAccessLists().get(aclApplicationsName);
+    IpAccessList aclApplicationSet = c.getIpAccessLists().get(aclApplicationSetName);
+    IpAccessList aclApplicationAny = c.getIpAccessLists().get(aclApplicationAnyName);
+    /* Allowed applications permits TCP to port 80 and 443 */
+    Flow permittedHttpFlow = createTcpFlow(80);
+    Flow permittedHttpsFlow = createTcpFlow(443);
+    Flow rejectedFlow = createTcpFlow(100);
+
+    /*
+     * Confirm there are no undefined references
+     */
+    assertThat(undefinedReferences.keySet(), emptyIterable());
+
+    /*
+     * Confirm acl with explicit application constraints accepts http and https flows and rejects
+     * others
+     */
+    assertThat(
+        aclApplication, accepts(permittedHttpFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplication, accepts(permittedHttpsFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclApplication, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm acl with indirect constraints (application-set) accepts http and https flows and
+     * rejects others
+     */
+    assertThat(
+        aclApplicationSet, accepts(permittedHttpFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationSet,
+        accepts(permittedHttpsFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationSet, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm permissive acl accepts all three flows
+     */
+    assertThat(
+        aclApplicationAny, accepts(permittedHttpFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationAny,
+        accepts(permittedHttpsFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationAny, accepts(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
