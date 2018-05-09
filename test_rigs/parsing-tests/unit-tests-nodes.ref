@@ -13550,7 +13550,7 @@
             "ripEnabled" : false,
             "ripPassive" : false,
             "spanningTreePortfast" : false,
-            "switchportMode" : "NONE",
+            "switchportMode" : "ACCESS",
             "switchportTrunkEncapsulation" : "DOT1Q",
             "type" : "PHYSICAL",
             "vrf" : "default"

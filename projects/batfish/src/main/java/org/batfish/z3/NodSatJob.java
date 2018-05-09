@@ -27,7 +27,7 @@ public class NodSatJob<KeyT> extends Z3ContextJob<NodSatResult<KeyT>> {
     Map<KeyT, Boolean> results = new LinkedHashMap<>();
     long startTime = System.currentTimeMillis();
     try (Context ctx = new Context()) {
-      ReachabilityProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer);
+      ReachabilityProgram baseProgram = _synthesizer.synthesizeNodProgram();
       ReachabilityProgram queryProgram = _query.getReachabilityProgram(_synthesizer.getInput());
       NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
       Fixedpoint fix = mkFixedpoint(program, false);

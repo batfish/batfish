@@ -41,6 +41,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Set<Ip>> _ipsByHostname;
 
+    private boolean _dataPlane;
+
     private Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
     private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
@@ -154,6 +156,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setDataPlane(boolean dataPlane) {
+      _dataPlane = dataPlane;
+      return this;
+    }
+
     public Builder setNamedIpSpaces(Map<String, Map<String, IpSpace>> namedIpSpaces) {
       _namedIpSpaces = namedIpSpaces;
       return this;
@@ -259,6 +266,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
+  private final boolean _dataPlane;
+
   private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
@@ -300,6 +309,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
     _ipsByHostname = builder._ipsByHostname;
+    _dataPlane = builder._dataPlane;
     _neighborUnreachable = builder._neighborUnreachable;
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
@@ -446,5 +456,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<Type> getVectorizedParameters() {
     return _vectorizedParameters;
+  }
+
+  @Override
+  public boolean isDataPlane() {
+    return _dataPlane;
   }
 }
