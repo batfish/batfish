@@ -380,11 +380,11 @@ public class CommonUtil {
                               (groupNum, vrrpGroup) -> {
                                 InterfaceAddress address = vrrpGroup.getVirtualAddress();
                                 if (address == null) {
-                                  // This Vlan Interface has invalid configuration. The VRRP has no
-                                  // source
-                                  // IP address that would be used for VRRP election. This interface
-                                  // could
-                                  // never win the election, so is not a candidate.
+                                  /*
+                                   * This Vlan Interface has invalid configuration. The VRRP has no
+                                   * source IP address that would be used for VRRP election. This
+                                   * interface could never win the election, so is not a candidate.
+                                   */
                                   return;
                                 }
                                 Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
