@@ -1,0 +1,31 @@
+!Command: show running-config
+!Time: Wed Apr 25 23:55:08 2018
+
+! Real config from NX-OS emulator in GNS3, edited heavily to remove unrelated bits.
+! All commands that matter are below, enter them after `configure terminal` / `conf t`.
+!
+! Relevant NX-OS command to confirm route is advertised:
+!    `show ip bgp neighbors 1.2.3.0 advertised-routes`
+!
+! This version has a static route and static route redistribution, but no default-information
+! originate. The default route is not advertised.
+
+license grace-period
+hostname nxos-bgp-static-redist-only
+feature bgp
+
+route-map allow-everything permit 10
+
+! Static default route
+ip route 0.0.0.0/0 Null0
+
+interface Ethernet2/1
+  ip address 1.2.3.1/31
+  no shutdown
+
+router bgp 65000
+  address-family ipv4 unicast
+    redistribute static route-map allow-everything
+  neighbor 1.2.3.0 remote-as 65001
+    address-family ipv4 unicast
+      route-map allow-everything out
