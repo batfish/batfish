@@ -47,12 +47,12 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
                 eNode ->
                     eNode
                         .getValue()
-                        ._virtualRouters
+                        .getVirtualRouters()
                         .entrySet()
                         .stream()
                         .collect(
                             ImmutableMap.toImmutableMap(
-                                Entry::getKey, eVr -> eVr.getValue()._fib))));
+                                Entry::getKey, eVr -> eVr.getValue().getFib()))));
   }
 
   @Override
@@ -76,11 +76,12 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
         (hostname, node) -> {
           ImmutableSortedMap.Builder<String, GenericRib<AbstractRoute>> byVrf =
               new ImmutableSortedMap.Builder<>(naturalOrder());
-          node._virtualRouters.forEach(
-              (vrf, virtualRouter) -> {
-                GenericRib<AbstractRoute> rib = virtualRouter._mainRib;
-                byVrf.put(vrf, rib);
-              });
+          node.getVirtualRouters()
+              .forEach(
+                  (vrf, virtualRouter) -> {
+                    GenericRib<AbstractRoute> rib = virtualRouter.getMainRib();
+                    byVrf.put(vrf, rib);
+                  });
           ribs.put(hostname, byVrf.build());
         });
     return ribs.build();
