@@ -52,10 +52,33 @@ public class AclLinesAnswerElement extends AnswerElement {
       return _differentAction;
     }
 
+    /**
+     * Returns the line number of the earliest more general reachable line, which may be -1 if:
+     *
+     * <ul>
+     *   <li>The line is independently unmatchable (no blocking line)
+     *   <li>The line is blocked by multiple partially covering earlier lines
+     * </ul>
+     *
+     * <p>This is a temporary solution for communicating these cases and will be changed soon.
+     */
     public Integer getEarliestMoreGeneralLineIndex() {
       return _earliestMoreGeneralLineIndex;
     }
 
+    /**
+     * Returns the text of the earliest more general reachable line, except in these cases:
+     *
+     * <ul>
+     *   <li>If line is independently unmatchable, returns "This line will never match any packet,
+     *       independent of preceding lines."
+     *   <li>If line has multiple partially blocking lines, returns "Multiple earlier lines
+     *       partially block this line, making it unreachable."
+     * </ul>
+     *
+     * <p>This is a temporary solution for communicating the latter two cases and will be changed
+     * soon.
+     */
     public String getEarliestMoreGeneralLineName() {
       return _earliestMoreGeneralLineName;
     }
