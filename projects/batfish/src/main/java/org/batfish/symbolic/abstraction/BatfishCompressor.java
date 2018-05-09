@@ -31,7 +31,6 @@ import org.batfish.datamodel.routing_policy.expr.AbstractionPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
-import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -176,7 +175,7 @@ public class BatfishCompressor {
       List<Statement> statements, @Nullable EquivalenceClassFilter filter) {
     BooleanExpr guard;
     if (filter == null) {
-      guard = new StaticBooleanExpr(BooleanExprs.False);
+      guard = BooleanExprs.FALSE;
     } else {
       AbstractionPrefixSet eps = new AbstractionPrefixSet(filter._prefixTrie);
       MatchPrefixSet match = new MatchPrefixSet(new DestinationNetwork(), eps);
