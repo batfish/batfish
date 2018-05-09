@@ -83,7 +83,6 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
-import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -450,21 +449,18 @@ public class FlatJuniperGrammarTest {
   public void testDefaultApplications() throws IOException {
     String hostname = "default-applications";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    InitInfoAnswerElement answer = batfish.initInfo(false, true);
-
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
     SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences = ccae.getUndefinedReferences();
-
     Configuration c = parseConfig(hostname);
 
     String aclApplicationsName = "~FROM_ZONE~z1~TO_ZONE~z2";
     String aclApplicationSetName = "~FROM_ZONE~z2~TO_ZONE~z3";
-    String aclApplicationAnyName = "~FROM_ZONE~z3~TO_ZONE~z4";
+    String aclApplicationSetAnyName = "~FROM_ZONE~z3~TO_ZONE~z4";
     IpAccessList aclApplication = c.getIpAccessLists().get(aclApplicationsName);
     IpAccessList aclApplicationSet = c.getIpAccessLists().get(aclApplicationSetName);
-    IpAccessList aclApplicationAny = c.getIpAccessLists().get(aclApplicationAnyName);
+    IpAccessList aclApplicationSetAny = c.getIpAccessLists().get(aclApplicationSetAnyName);
     /* Allowed applications permits TCP to port 80 and 443 */
     Flow permittedHttpFlow = createTcpFlow(80);
     Flow permittedHttpsFlow = createTcpFlow(443);
@@ -501,12 +497,13 @@ public class FlatJuniperGrammarTest {
      * Confirm permissive acl accepts all three flows
      */
     assertThat(
-        aclApplicationAny, accepts(permittedHttpFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+        aclApplicationSetAny,
+        accepts(permittedHttpFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclApplicationAny,
+        aclApplicationSetAny,
         accepts(permittedHttpsFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        aclApplicationAny, accepts(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+        aclApplicationSetAny, accepts(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
