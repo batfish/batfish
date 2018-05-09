@@ -440,12 +440,10 @@ public class CommonUtil {
    */
   public static Map<String, Set<Interface>> computeNodeInterfaces(
       Map<String, Configuration> configurations) {
-    return configurations
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableMap.toImmutableMap(
-                Entry::getKey, e -> ImmutableSet.copyOf(e.getValue().getInterfaces().values())));
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        e -> ImmutableSet.copyOf(e.getValue().getInterfaces().values()));
   }
 
   public static void copy(Path srcPath, Path dstPath) {

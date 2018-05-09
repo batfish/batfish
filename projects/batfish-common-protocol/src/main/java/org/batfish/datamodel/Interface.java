@@ -714,6 +714,10 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
 
+    if (!Objects.equals(_key, other._key)) {
+      return false;
+    }
+
     if (!Objects.equals(this._address, other._address)) {
       return false;
     }
