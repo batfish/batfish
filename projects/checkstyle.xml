@@ -40,6 +40,11 @@
           <property name="regexp" value="true"/>
         </module>
 
+        <module name="RegexpSinglelineJava">
+          <property name="format" value=".*MoreObjects\.firstNonNull\(.*"/>
+          <property name="message" value="Static import MoreObjects.firstNonNull"/>
+        </module>
+
         <module name="UnusedImports"/>
         <module name="OuterTypeFilename"/>
         <module name="IllegalTokenText">

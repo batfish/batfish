@@ -1,9 +1,9 @@
 package org.batfish.z3;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.util.CommonUtil.computeIpOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
-import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -219,6 +219,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
 
+  private final boolean _dataPlane;
+
   private final @Nonnull Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
   private final @Nonnull Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
@@ -272,7 +274,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         toImmutableMap(configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
     _specializationIpSpace =
         specialize
-            ? MoreObjects.firstNonNull(
+            ? firstNonNull(
                 AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps()),
                 UniverseIpSpace.INSTANCE)
             : UniverseIpSpace.INSTANCE;
@@ -303,7 +305,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _outgoingAcls = computeOutgoingAcls();
     _simplify = simplify;
     _vectorizedParameters = vectorizedParameters;
-    if (forwardingAnalysis != null) {
+
+    _dataPlane = forwardingAnalysis != null;
+    if (_dataPlane) {
       _arpTrueEdge = computeArpTrueEdge(forwardingAnalysis.getArpTrueEdge());
       _neighborUnreachable =
           computeNeighborUnreachable(forwardingAnalysis.getNeighborUnreachable());
@@ -342,14 +346,14 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         .stream()
         .filter(
             entry -> {
-              ContainsMatchSrcInterfaceExprVisitor containsMatchSrcInterfaceExprVisitor =
-                  new ContainsMatchSrcInterfaceExprVisitor(entry.getValue().getIpAccessLists());
+              DependsOnSourceInterface dependsOnSourceInterface =
+                  new DependsOnSourceInterface(entry.getValue().getIpAccessLists());
               return entry
                   .getValue()
                   .getIpAccessLists()
                   .values()
                   .stream()
-                  .anyMatch(containsMatchSrcInterfaceExprVisitor::containsMatchSrcInterfaceExpr);
+                  .anyMatch(dependsOnSourceInterface::dependsOnSourceInterface);
             })
         .map(Entry::getKey)
         .collect(ImmutableSet.toImmutableSet());
@@ -784,6 +788,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     return _aclConditions;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       getArpTrueEdge() {
     return _arpTrueEdge;
@@ -825,10 +830,16 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   @Override
+  public boolean isDataPlane() {
+    return _dataPlane;
+  }
+
+  @Override
   public Map<String, Map<String, IpSpace>> getNamedIpSpaces() {
     return _namedIpSpaces;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable() {
     return _neighborUnreachable;
   }

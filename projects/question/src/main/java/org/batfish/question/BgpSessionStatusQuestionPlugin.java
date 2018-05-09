@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -238,7 +239,10 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
         }
 
         // Setup session info
-        boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
+        // TODO(https://github.com/batfish/batfish/issues/1331): Handle list of remote ASes. Until
+        // then, we can't assume remote AS will always be a single integer that is present and
+        // non-null.
+        boolean ebgp = !Objects.equals(bgpNeighbor.getRemoteAs(), bgpNeighbor.getLocalAs());
         boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
         Prefix remotePrefix = bgpNeighbor.getPrefix();
         BgpSessionInfo bgpSessionInfo = new BgpSessionInfo(hostname, vrfName, remotePrefix);
@@ -266,18 +270,18 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
           } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
             bgpSessionInfo._status = SessionStatus.UNKNOWN_REMOTE_IP;
           } else {
-            if (node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
-              if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
-                bgpSessionInfo._status = SessionStatus.HALF_OPEN;
-                // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
-              } else if (bgpTopology.degree(bgpNeighbor) > 2) {
-                bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
-              } else {
-                BgpNeighbor remoteNeighbor =
-                    bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
-                bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
-                bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
-              }
+            if (!node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
+              continue;
+            }
+            if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
+              bgpSessionInfo._status = SessionStatus.HALF_OPEN;
+              // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
+            } else if (bgpTopology.degree(bgpNeighbor) > 2) {
+              bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
+            } else {
+              BgpNeighbor remoteNeighbor = bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
+              bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
+              bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
             }
           }
         }

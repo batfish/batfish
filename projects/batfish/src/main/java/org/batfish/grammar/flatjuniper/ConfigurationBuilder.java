@@ -55,6 +55,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.vendor_family.juniper.TacplusServer;
@@ -120,6 +121,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_prefix_list
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_establishedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_initialContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftfa_address_mask_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_ipContext;
@@ -143,6 +145,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Icmp_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
@@ -246,6 +250,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Routing_protocolContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_firewallContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_routing_optionsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_snmpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_vlans_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sc_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Se_address_bookContext;
@@ -331,6 +336,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_alternativeCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_atomContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tcp_flags_literalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.VariableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Vlt_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Wildcard_addressContext;
 import org.batfish.representation.juniper.AddressAddressBookEntry;
 import org.batfish.representation.juniper.AddressBook;
@@ -338,7 +344,7 @@ import org.batfish.representation.juniper.AddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.AggregateRoute;
-import org.batfish.representation.juniper.ApplicationReference;
+import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
 import org.batfish.representation.juniper.ApplicationSet;
 import org.batfish.representation.juniper.ApplicationSetMemberReference;
 import org.batfish.representation.juniper.ApplicationSetReference;
@@ -449,6 +455,7 @@ import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
+import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
@@ -1495,6 +1502,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private VrrpGroup _currentVrrpGroup;
 
+  private String _currentVlanName;
+
   private Zone _currentZone;
 
   private FirewallFilter _currentZoneInboundFilter;
@@ -1578,14 +1587,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _configuration.referenceStructure(
-        JuniperStructureType.APPLICATION,
+        JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         name,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
         line);
     _currentApplicationSet.setMembers(
         ImmutableList.<ApplicationSetMemberReference>builder()
             .addAll(_currentApplicationSet.getMembers())
-            .add(new ApplicationReference(name))
+            .add(new ApplicationOrApplicationSetReference(name))
             .build());
   }
 
@@ -2478,6 +2487,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void enterS_vlans_named(S_vlans_namedContext ctx) {
+    _currentVlanName = ctx.name.getText();
+  }
+
+  @Override
   public void exitA_application(A_applicationContext ctx) {
     _currentApplication = null;
     _currentApplicationTerm = null;
@@ -2692,19 +2706,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_destination_address(Fftf_destination_addressContext ctx) {
-    if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
-      Prefix prefix;
-      if (ctx.IP_PREFIX() != null) {
-        prefix = Prefix.parse(ctx.IP_PREFIX().getText());
-      } else {
-        prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()), Prefix.MAX_PREFIX_LENGTH);
-      }
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-        from = new FwFromDestinationAddressExcept(prefix);
-      } else {
-        from = new FwFromDestinationAddress(prefix);
-      }
+    FwFrom from;
+    IpWildcard ipWildcard = formIpWildCard(ctx.fftfa_address_mask_prefix());
+    if (ipWildcard != null) {
+      from =
+          ctx.EXCEPT() != null
+              ? new FwFromDestinationAddressExcept(ipWildcard)
+              : new FwFromDestinationAddress(ipWildcard);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -2857,19 +2865,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitFftf_source_address(Fftf_source_addressContext ctx) {
-    if (ctx.IP_ADDRESS() != null || ctx.IP_PREFIX() != null) {
-      Prefix prefix;
-      if (ctx.IP_PREFIX() != null) {
-        prefix = Prefix.parse(ctx.IP_PREFIX().getText());
-      } else {
-        prefix = new Prefix(new Ip(ctx.IP_ADDRESS().getText()), Prefix.MAX_PREFIX_LENGTH);
-      }
-      FwFrom from;
-      if (ctx.EXCEPT() != null) {
-        from = new FwFromSourceAddressExcept(prefix);
-      } else {
-        from = new FwFromSourceAddress(prefix);
-      }
+    FwFrom from;
+    IpWildcard ipWildcard = formIpWildCard(ctx.fftfa_address_mask_prefix());
+    if (ipWildcard != null) {
+      from =
+          ctx.EXCEPT() != null
+              ? new FwFromSourceAddressExcept(ipWildcard)
+              : new FwFromSourceAddress(ipWildcard);
       _currentFwTerm.getFroms().add(from);
     }
   }
@@ -3058,6 +3060,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     int line = filter.name.getStart().getLine();
     _configuration.referenceStructure(
         JuniperStructureType.FIREWALL_FILTER, name, JuniperStructureUsage.INTERFACE_FILTER, line);
+  }
+
+  @Override
+  public void exitIfe_port_mode(Ife_port_modeContext ctx) {
+    if (ctx.TRUNK() != null) {
+      _currentInterface.setSwitchportMode(SwitchportMode.TRUNK);
+    }
+  }
+
+  @Override
+  public void exitIfe_vlan(Ife_vlanContext ctx) {
+    if (_currentInterface.getSwitchportMode() == SwitchportMode.TRUNK) {
+      if (ctx.range() != null) {
+        List<SubRange> subRanges = toRange(ctx.range());
+        subRanges.forEach(subRange -> _currentInterface.getAllowedVlans().add(subRange));
+      }
+    } else if (ctx.name != null) {
+      // SwitchPortMode here can be ACCESS or NONE, overwrite both with ACCESS(considered default)
+      _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
+      String name = ctx.name.getText();
+      _currentInterface.setAccessVlan(name);
+      _configuration.referenceStructure(
+          JuniperStructureType.VLAN,
+          name,
+          JuniperStructureUsage.INTERFACE_VLAN,
+          ctx.name.getStart().getLine());
+    }
   }
 
   @Override
@@ -3680,6 +3709,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitS_vlans_named(S_vlans_namedContext ctx) {
+    _currentVlanName = null;
+  }
+
+  @Override
   public void exitSe_zones(Se_zonesContext ctx) {
     _hasZones = true;
   }
@@ -4193,6 +4227,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSyt_source_address(Syt_source_addressContext ctx) {
     Ip sourceAddress = new Ip(ctx.address.getText());
     _currentTacplusServer.setSourceAddress(sourceAddress);
+  }
+
+  @Override
+  public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
+    Vlan vlan = new Vlan(_currentVlanName, ctx.id.getLine(), toInt(ctx.id));
+    _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
+  }
+
+  @Nullable
+  private IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
+    IpWildcard ipWildcard = null;
+    if (ctx.ip_address != null && ctx.wildcard_mask != null) {
+      Ip ipAddress = new Ip(ctx.ip_address.getText());
+      Ip mask = new Ip(ctx.wildcard_mask.getText());
+      ipWildcard = new IpWildcard(ipAddress, mask.inverted());
+    } else if (ctx.ip_address != null) {
+      ipWildcard =
+          new IpWildcard(new Prefix(new Ip(ctx.ip_address.getText()), Prefix.MAX_PREFIX_LENGTH));
+    } else if (ctx.IP_PREFIX() != null) {
+      ipWildcard = new IpWildcard(Prefix.parse(ctx.IP_PREFIX().getText()));
+    }
+    return ipWildcard;
   }
 
   public JuniperConfiguration getConfiguration() {

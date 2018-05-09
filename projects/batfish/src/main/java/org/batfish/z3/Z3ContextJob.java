@@ -92,10 +92,19 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
           .build();
 
   protected static Flow createFlow(
-      String node, String vrf, Map<String, Long> constraints, String tag) {
+      IngressPoint ingressPoint, Map<String, Long> constraints, String tag) {
     Flow.Builder flowBuilder = new Flow.Builder();
-    flowBuilder.setIngressNode(node);
-    flowBuilder.setIngressVrf(vrf);
+    flowBuilder.setIngressNode(ingressPoint.getNode());
+    switch (ingressPoint.getType()) {
+      case INTERFACE:
+        flowBuilder.setIngressInterface(ingressPoint.getInterface());
+        break;
+      case VRF:
+        flowBuilder.setIngressVrf(ingressPoint.getVrf());
+        break;
+      default:
+        throw new BatfishException("Unexpected IngressPoint type");
+    }
     flowBuilder.setTag(tag);
     constraints.forEach(
         (name, value) -> {

@@ -13,10 +13,14 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
@@ -40,6 +44,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.not;
@@ -58,6 +63,7 @@ import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -68,12 +74,14 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -132,6 +140,15 @@ public class FlatJuniperGrammarTest {
     fb.setSrcIp(new Ip(sourceAddress));
     fb.setDstIp(new Ip(destinationAddress));
     fb.setState(state);
+    fb.setTag("test");
+    return fb.build();
+  }
+
+  private static Flow createTcpFlow(int srcPort) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(IpProtocol.TCP);
+    fb.setSrcPort(srcPort);
     fb.setTag("test");
     return fb.build();
   }
@@ -251,9 +268,11 @@ public class FlatJuniperGrammarTest {
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
+        undefinedReferencesByType,
+        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationByName =
-        undefinedReferencesByType.get(JuniperStructureType.APPLICATION.getDescription());
+        undefinedReferencesByType.get(
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
     assertThat(urApplicationByName, not(hasKey("a1")));
     assertThat(urApplicationByName, not(hasKey("a2")));
     assertThat(urApplicationByName, not(hasKey("a3")));
@@ -262,6 +281,42 @@ public class FlatJuniperGrammarTest {
     assertThat(
         urApplicationByUsage,
         hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION.getDescription()));
+  }
+
+  @Test
+  public void testApplicationSetNested() throws IOException {
+    String hostname = "application-set-nested";
+    Configuration c = parseConfig(hostname);
+
+    String aclNameNonNested = "~FROM_ZONE~z1~TO_ZONE~z2";
+    String aclNameNested = "~FROM_ZONE~z2~TO_ZONE~z3";
+    String aclNameMultiNested = "~FROM_ZONE~z3~TO_ZONE~z4";
+    IpAccessList aclNonNested = c.getIpAccessLists().get(aclNameNonNested);
+    IpAccessList aclNested = c.getIpAccessLists().get(aclNameNested);
+    IpAccessList aclMultiNested = c.getIpAccessLists().get(aclNameMultiNested);
+    /* Allowed application permits TCP from port 1 only */
+    Flow permittedFlow = createTcpFlow(1);
+    Flow rejectedFlow = createTcpFlow(2);
+
+    /*
+     * Confirm non-nested application-set acl accepts the allowed protocol-port combo and reject
+     * others
+     */
+    assertThat(aclNonNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclNonNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm nested application-set acl accepts the allowed protocol-port combo and reject others
+     */
+    assertThat(aclNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm multi-nested application-set acl accepts the allowed protocol-port combo and reject
+     * others
+     */
+    assertThat(aclMultiNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclMultiNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -943,6 +998,146 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceVlan() throws IOException {
+    Configuration c = parseConfig("interface-vlan");
+
+    // Expecting an Interface in ACCESS mode with VLAN 101
+    assertThat(c, hasInterface("ge-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("ge-0/0/0.0", hasAccessVlan(101)));
+
+    // Expecting an Interface in TRUNK mode with VLANs 1-5
+    assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(
+        c, hasInterface("ge-0/3/0.0", hasAllowedVlans(ImmutableList.of(new SubRange("1-5")))));
+  }
+
+  @Test
+  public void testInterfaceVlanReferences() throws IOException {
+    String hostname = "interface-vlan";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expect an undefined reference for VLAN_TEST_UNDEFINED
+     */
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.VLAN,
+            "VLAN_TEST_UNDEFINED",
+            JuniperStructureUsage.INTERFACE_VLAN));
+
+    /*
+     * VLAN should not contribute to defined structures
+     */
+    assertThat(ccae.getDefinedStructures().keySet(), hasSize(0));
+  }
+
+  @Test
+  public void testSourceAddress() throws IOException {
+    Configuration c = parseConfig("firewall-source-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    IpAccessList fwSourceAddressAcl = Iterables.getOnlyElement(c.getIpAccessLists().values());
+    assertThat(fwSourceAddressAcl.getLines(), hasSize(1));
+
+    // should have the same acl as defined in the config
+    assertThat(
+        c,
+        hasIpAccessList(
+            "FILTER",
+            hasLines(
+                equalTo(
+                    ImmutableList.of(
+                        IpAccessListLine.builder()
+                            .setAction(LineAction.ACCEPT)
+                            .setMatchCondition(
+                                new MatchHeaderSpace(
+                                    HeaderSpace.builder()
+                                        .setSrcIps(
+                                            AclIpSpace.union(
+                                                new IpWildcard(
+                                                        new Ip("1.0.3.0"), new Ip("0.255.0.255"))
+                                                    .toIpSpace(),
+                                                new IpWildcard("2.3.4.5/24").toIpSpace()))
+                                        .build()))
+                            .setName("TERM")
+                            .build())))));
+  }
+
+  @Test
+  public void testDestinationAddress() throws IOException {
+    Configuration c = parseConfig("firewall-destination-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    IpAccessList fwDestinationAddressAcl = Iterables.getOnlyElement(c.getIpAccessLists().values());
+    assertThat(fwDestinationAddressAcl.getLines(), hasSize(1));
+
+    // should have the same acl as defined in the config
+    assertThat(
+        c,
+        hasIpAccessList(
+            "FILTER",
+            hasLines(
+                equalTo(
+                    ImmutableList.of(
+                        IpAccessListLine.builder()
+                            .setAction(LineAction.ACCEPT)
+                            .setMatchCondition(
+                                new MatchHeaderSpace(
+                                    HeaderSpace.builder()
+                                        .setDstIps(
+                                            AclIpSpace.union(
+                                                new IpWildcard(
+                                                        new Ip("1.0.3.0"), new Ip("0.255.0.255"))
+                                                    .toIpSpace(),
+                                                new IpWildcard("2.3.4.5/24").toIpSpace()))
+                                        .build()))
+                            .setName("TERM")
+                            .build())))));
+  }
+
+  @Test
+  public void testSourceAddressBehavior() throws IOException {
+    Configuration c = parseConfig("firewall-source-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    Flow whiteListedSrc = createFlow("1.8.3.9", "2.5.6.7");
+    Flow blackListedSrc = createFlow("5.8.4.9", "2.5.6.7");
+
+    IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
+
+    // Whitelisted source address should be allowed
+    assertThat(incomingFilter, accepts(whiteListedSrc, "fw-s-add.0", c));
+
+    // Blacklisted source address should be denied
+    assertThat(incomingFilter, rejects(blackListedSrc, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testDestinationAddressBehavior() throws IOException {
+    Configuration c = parseConfig("firewall-destination-address");
+
+    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+
+    Flow whiteListedDst = createFlow("2.5.6.7", "1.8.3.9");
+    Flow blackListedDst = createFlow("2.5.6.7", "5.8.4.9");
+
+    IpAccessList incomingFilter = c.getInterfaces().get("fw-s-add.0").getIncomingFilter();
+
+    // Whitelisted source address should be allowed
+    assertThat(incomingFilter, accepts(whiteListedDst, "fw-s-add.0", c));
+
+    // Blacklisted source address should be denied
+    assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+  }
+
+  @Test
   public void testOspfInterfaceAreaAssignment() throws IOException {
     Configuration c = parseConfig("ospfInterfaceAreaAssignment");
 
@@ -1016,5 +1211,11 @@ public class FlatJuniperGrammarTest {
 
     assertThat(c, hasDefaultVrf(hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("1.0.0.0/8"))))));
     assertThat(c, hasVrf("ri2", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("2.0.0.0/8"))))));
+  }
+
+  @Test
+  public void testStormControl() throws IOException {
+    /* allow storm-control configuration in an interface */
+    parseConfig("storm-control");
   }
 }

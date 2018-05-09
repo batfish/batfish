@@ -1,5 +1,7 @@
 package org.batfish.z3.state.visitors;
 
+import static org.batfish.common.util.CommonUtil.forEachWithIndex;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -30,6 +32,7 @@ import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -68,7 +71,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   /* Dedicated value for the srcInterfaceField used when traffic did not enter the node through any
    * interface (or we no longer care which interface was the source).
    */
-  static final int NO_SOURCE_INTERFACE = 0;
+  public static final int NO_SOURCE_INTERFACE = 0;
 
   public static final IntExpr NOT_TRANSITED = new LitIntExpr(0, 1);
 
@@ -194,6 +197,28 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       });
             })
         .forEach(_rules::add);
+  }
+
+  @Override
+  public void visitAclLineIndependentMatch(AclLineIndependentMatch.State state) {
+    /*
+     *  For each acl line, add a rule that its match condition (as a BooleanExpr) implies its
+     *  corresponding named state.
+     */
+    _input
+        .getAclConditions()
+        .forEach(
+            (hostname, aclConditionsByAclName) ->
+                aclConditionsByAclName.forEach(
+                    (aclName, aclConditionsList) ->
+                        forEachWithIndex(
+                            aclConditionsList,
+                            (lineNumber, lineCriteria) ->
+                                _rules.add(
+                                    new BasicRuleStatement(
+                                        lineCriteria,
+                                        new AclLineIndependentMatch(
+                                            hostname, aclName, lineNumber))))));
   }
 
   @Override
@@ -690,7 +715,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitPostInInterface(PostInInterface.State postInInterface) {
     // PassIncomingAcl
     _input
-        .getTraversableInterfaces()
+        .getEnabledInterfaces()
         .entrySet()
         .stream()
         .flatMap(

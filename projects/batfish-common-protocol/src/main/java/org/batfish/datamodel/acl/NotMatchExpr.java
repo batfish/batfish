@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 public class NotMatchExpr extends AclLineMatchExpr {
   private static final String PROP_OPERAND = "operand";
@@ -11,8 +12,15 @@ public class NotMatchExpr extends AclLineMatchExpr {
 
   private final AclLineMatchExpr _operand;
 
+  public NotMatchExpr(AclLineMatchExpr operand) {
+    this(operand, null);
+  }
+
   @JsonCreator
-  public NotMatchExpr(@JsonProperty(PROP_OPERAND) AclLineMatchExpr operand) {
+  public NotMatchExpr(
+      @JsonProperty(PROP_OPERAND) AclLineMatchExpr operand,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
+    super(description);
     _operand = operand;
   }
 

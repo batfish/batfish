@@ -8803,6 +8803,11 @@ QUEUEING
    'queueing'
 ;
 
+QUEUING
+:
+   'queuing'
+;
+
 QUIT
 :
    'quit'

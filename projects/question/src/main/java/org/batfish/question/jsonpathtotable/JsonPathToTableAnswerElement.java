@@ -2,11 +2,10 @@ package org.batfish.question.jsonpathtotable;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -29,7 +28,7 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public Object fromRow(ObjectNode o) throws JsonProcessingException {
+  public Object fromRow(Row o) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }
@@ -44,7 +43,7 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
   }
 
   @Override
-  public ObjectNode toRow(Object object) {
+  public Row toRow(Object object) {
     throw new UnsupportedOperationException(
         "no implementation for generated method"); // TODO Auto-generated method stub
   }

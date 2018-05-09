@@ -101,10 +101,7 @@ public class NodeRolesData {
     // add the new dimensions
     newRoles.addAll(finalNewDimensions);
 
-    // this conditional write ensures that we update the last modified time only if needed
-    if (!oldRolesData._roleDimensions.equals(newRoles)) {
-      write(new NodeRolesData(new Date().toInstant(), newRoles), dataPath);
-    }
+    write(new NodeRolesData(new Date().toInstant(), newRoles), dataPath);
   }
 
   public static synchronized void write(NodeRolesData data, Path dataPath)

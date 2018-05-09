@@ -67,6 +67,7 @@ import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -214,6 +215,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
+  private final Map<String, Vlan> _vlanNameToVlan;
+
   private final Map<String, Zone> _zones;
 
   public JuniperConfiguration(Set<String> unimplementedFeatures) {
@@ -247,6 +250,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _unimplementedFeatures = unimplementedFeatures;
+    _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
   }
 
@@ -793,6 +797,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _unimplementedFeatures;
   }
 
+  public Map<String, Vlan> getVlanNameToVlan() {
+    return _vlanNameToVlan;
+  }
+
   public Map<String, Zone> getZones() {
     return _zones;
   }
@@ -1263,7 +1271,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
-    newIface.setAccessVlan(iface.getAccessVlan());
+    if (iface.getSwitchportMode() == SwitchportMode.ACCESS && iface.getAccessVlan() != null) {
+      Vlan vlan = getVlanNameToVlan().get(iface.getAccessVlan());
+      if (vlan != null) {
+        newIface.setAccessVlan(vlan.getVlanId());
+      }
+    }
+    newIface.setAllowedVlans(iface.getAllowedVlans());
     newIface.setNativeVlan(iface.getNativeVlan());
     newIface.setSwitchportMode(iface.getSwitchportMode());
     SwitchportEncapsulationType swe = iface.getSwitchportTrunkEncapsulation();
@@ -1773,7 +1787,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     If endOfPolicy = new If();
-    endOfPolicy.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
+    endOfPolicy.setGuard(BooleanExprs.CALL_EXPR_CONTEXT);
     endOfPolicy.setFalseStatements(
         Collections.singletonList(Statements.Return.toStaticStatement()));
     statements.add(endOfPolicy);
@@ -2188,15 +2202,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
         ImmutableList.of(_applications, _applicationSets));
     markStructure(
-        JuniperStructureType.APPLICATION,
+        JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
-        _applications);
+        ImmutableList.of(_applications, _applicationSets));
     markStructure(
         JuniperStructureType.APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET,
         _applicationSets);
     markStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
+    markStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN, _vlanNameToVlan);
 
     // record defined structures
     recordStructure(_applications, JuniperStructureType.APPLICATION);

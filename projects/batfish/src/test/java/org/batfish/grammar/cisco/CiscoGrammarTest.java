@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
@@ -595,6 +596,23 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosOspfNetwork() throws IOException {
+    Configuration c = parseConfig("ios-interface-ospf-network");
+
+    /*
+     * Confirm interfaces with ospf network broadcast, non-broadcast, etc do not show up as
+     * point-to-point
+     */
+    assertThat(c, hasInterface("Ethernet0/0", not(isOspfPointToPoint())));
+    assertThat(c, hasInterface("Ethernet0/2", not(isOspfPointToPoint())));
+    assertThat(c, hasInterface("Ethernet0/3", not(isOspfPointToPoint())));
+    assertThat(c, hasInterface("Ethernet0/4", not(isOspfPointToPoint())));
+
+    /* Confirm the point-to-point interface shows up as such */
+    assertThat(c, hasInterface("Ethernet0/1", isOspfPointToPoint()));
+  }
+
+  @Test
   public void testIosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
     assertThat(manual.getDefaultVrf().getOspfProcess().getReferenceBandwidth(), equalTo(10e6d));
@@ -742,6 +760,95 @@ public class CiscoGrammarTest {
         hasDefaultVrf(
             hasOspfProcess(
                 hasArea(1L, hasSummary(Prefix.parse("10.0.0.0/16"), hasMetric(nullValue()))))));
+  }
+
+  @Test
+  public void testIosXePolicyMapClassDefault() throws IOException {
+    Configuration c = parseConfig("ios-xe-policy-map-class-default");
+
+    String dropPolicyMapAclName = computeInspectPolicyMapAclName("pdrop");
+    String passPolicyMapAclName = computeInspectPolicyMapAclName("ppass");
+    String unspecifiedPolicyMapAclName = computeInspectPolicyMapAclName("punspecified");
+
+    Flow flow = Flow.builder().setTag("").setIngressNode("").build();
+
+    assertThat(c, hasIpAccessList(dropPolicyMapAclName, rejects(flow, null, c)));
+    assertThat(c, hasIpAccessList(passPolicyMapAclName, accepts(flow, null, c)));
+    assertThat(c, hasIpAccessList(unspecifiedPolicyMapAclName, rejects(flow, null, c)));
+  }
+
+  @Test
+  public void testIosXePolicyMapInspectClassInspectActions() throws IOException {
+    Configuration c = parseConfig("ios-xe-policy-map-inspect-class-inspect-actions");
+
+    String policyMapName = "pm";
+    String policyMapAclName = computeInspectPolicyMapAclName(policyMapName);
+
+    String classMapPassName = "cpass";
+    String classMapPassAclName = computeInspectClassMapAclName(classMapPassName);
+    String classMapInspectName = "cinspect";
+    String classMapInspectAclName = computeInspectClassMapAclName(classMapInspectName);
+    String classMapDropName = "cdrop";
+    String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
+
+    Flow flowPass =
+        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.TCP).build();
+    Flow flowInspect =
+        Flow.builder().setIngressNode(c.getName()).setTag("").setIpProtocol(IpProtocol.UDP).build();
+    Flow flowDrop =
+        Flow.builder()
+            .setIngressNode(c.getName())
+            .setTag("")
+            .setIpProtocol(IpProtocol.ICMP)
+            .build();
+
+    assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(policyMapAclName, rejects(flowDrop, null, c)));
+
+    assertThat(c, hasIpAccessList(classMapPassAclName, accepts(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(classMapPassAclName, rejects(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(classMapPassAclName, rejects(flowDrop, null, c)));
+
+    assertThat(c, hasIpAccessList(classMapInspectAclName, rejects(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(classMapInspectAclName, accepts(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(classMapInspectAclName, rejects(flowDrop, null, c)));
+
+    assertThat(c, hasIpAccessList(classMapDropAclName, rejects(flowPass, null, c)));
+    assertThat(c, hasIpAccessList(classMapDropAclName, rejects(flowInspect, null, c)));
+    assertThat(c, hasIpAccessList(classMapDropAclName, accepts(flowDrop, null, c)));
+  }
+
+  @Test
+  public void testIosXeZoneDefaultBehavior() throws IOException {
+    Configuration c = parseConfig("ios-xe-zone-default-behavior");
+
+    /* Ethernet1 and Ethernet2 are in zone z12 */
+    String e1Name = "Ethernet1";
+    String e2Name = "Ethernet2";
+
+    /* Ethernet3 is in zone z3 */
+    String e3Name = "Ethernet3";
+
+    Flow flow = Flow.builder().setIngressNode(c.getName()).setTag("").build();
+
+    /* Traffic originating from device should not be subject to zone filtering */
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, null, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, null, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(accepts(flow, null, c))));
+
+    /* Traffic with src and dst interface in same zone should be permitted by default */
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e2Name, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, e2Name, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(accepts(flow, e3Name, c))));
+
+    /* Traffic crossing zones should be blocked by default */
+    assertThat(c, hasInterface(e1Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
+    assertThat(c, hasInterface(e2Name, hasOutgoingFilter(rejects(flow, e3Name, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e1Name, c))));
+    assertThat(c, hasInterface(e3Name, hasOutgoingFilter(rejects(flow, e2Name, c))));
   }
 
   @Test

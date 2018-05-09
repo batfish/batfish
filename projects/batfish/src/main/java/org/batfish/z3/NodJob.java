@@ -18,7 +18,6 @@ import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.config.Settings;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.ReachabilityProgramOptimizer;
@@ -36,10 +35,10 @@ public final class NodJob extends AbstractNodJob {
       Settings settings,
       Synthesizer dataPlaneSynthesizer,
       QuerySynthesizer querySynthesizer,
-      SortedSet<Pair<String, String>> nodeVrfSet,
+      SortedSet<IngressPoint> ingressPoints,
       String tag,
       boolean optimize) {
-    super(settings, nodeVrfSet, tag);
+    super(settings, ingressPoints, tag);
     _dataPlaneSynthesizer = dataPlaneSynthesizer;
     _querySynthesizer = querySynthesizer;
     _optimize = optimize;
@@ -96,7 +95,7 @@ public final class NodJob extends AbstractNodJob {
   @Nonnull
   protected NodProgram getNodProgram(Context ctx) {
     ReachabilityProgram baseProgram =
-        instrumentReachabilityProgram(_dataPlaneSynthesizer.synthesizeNodDataPlaneProgram());
+        instrumentReachabilityProgram(_dataPlaneSynthesizer.synthesizeNodProgram());
     ReachabilityProgram queryProgram =
         instrumentReachabilityProgram(
             _querySynthesizer.getReachabilityProgram(_dataPlaneSynthesizer.getInput()));

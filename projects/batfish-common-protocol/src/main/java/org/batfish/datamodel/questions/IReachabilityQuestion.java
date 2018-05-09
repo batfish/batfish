@@ -13,7 +13,9 @@ public interface IReachabilityQuestion extends IQuestion {
 
   void setDstProtocols(SortedSet<Protocol> protocols);
 
-  void setIngressNodeRegex(NodesSpecifier ingressNodeRegex);
+  void setIngressInterfaces(InterfacesSpecifier ingressInterfaces);
+
+  void setIngressNodes(NodesSpecifier ingressNodes);
 
   void setNotDstProtocols(SortedSet<Protocol> protocols);
 }

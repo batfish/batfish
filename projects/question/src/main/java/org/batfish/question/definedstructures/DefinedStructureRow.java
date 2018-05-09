@@ -1,6 +1,7 @@
 package org.batfish.question.definedstructures;
 
-import com.google.common.base.MoreObjects;
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.SortedSet;
@@ -41,7 +42,7 @@ public class DefinedStructureRow implements Comparable<DefinedStructureRow> {
     _structType = structType;
     _structName = structName;
     _numReferences = numReferences == null ? -1 : numReferences;
-    _definitionLines = MoreObjects.firstNonNull(definitionLines, new TreeSet<>());
+    _definitionLines = firstNonNull(definitionLines, new TreeSet<>());
   }
 
   public SortedSet<Integer> getDefinitionLines() {

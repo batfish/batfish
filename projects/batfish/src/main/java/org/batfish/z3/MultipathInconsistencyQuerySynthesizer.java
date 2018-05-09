@@ -3,7 +3,7 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.Map;
+import com.google.common.collect.Multimap;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
@@ -28,7 +28,12 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
     @Override
     public MultipathInconsistencyQuerySynthesizer build() {
       return new MultipathInconsistencyQuerySynthesizer(
-          _headerSpace, _ingressNodeVrfs, _srcNatted, _transitNodes, _nonTransitNodes);
+          _headerSpace,
+          _ingressNodeInterfaces,
+          _ingressNodeVrfs,
+          _srcNatted,
+          _transitNodes,
+          _nonTransitNodes);
     }
 
     @Override
@@ -53,11 +58,18 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
 
   private MultipathInconsistencyQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
-      @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      @Nonnull Multimap<String, String> ingressNodeInterfaces,
+      @Nonnull Multimap<String, String> ingressNodeVrfs,
       Boolean srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(headerSpace, ingressNodeVrfs, srcNatted, transitNodes, nonTransitNodes);
+    super(
+        headerSpace,
+        ingressNodeInterfaces,
+        ingressNodeVrfs,
+        srcNatted,
+        transitNodes,
+        nonTransitNodes);
   }
 
   @Override

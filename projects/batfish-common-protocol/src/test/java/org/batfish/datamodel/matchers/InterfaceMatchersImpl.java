@@ -6,13 +6,27 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class InterfaceMatchersImpl {
+
+  static final class HasAccessVlan extends FeatureMatcher<Interface, Integer> {
+    HasAccessVlan(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "an Interface with accessVlan:", "accessVlan");
+    }
+
+    @Override
+    protected Integer featureValueOf(Interface actual) {
+      return actual.getAccessVlan();
+    }
+  }
 
   static final class HasAdditionalArpIps extends FeatureMatcher<Interface, SortedSet<Ip>> {
     HasAdditionalArpIps(@Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
@@ -22,6 +36,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected SortedSet<Ip> featureValueOf(Interface actual) {
       return actual.getAdditionalArpIps();
+    }
+  }
+
+  static final class HasAllowedVlans extends FeatureMatcher<Interface, List<SubRange>> {
+    HasAllowedVlans(@Nonnull Matcher<? super List<SubRange>> subMatcher) {
+      super(subMatcher, "an Interface with allowedVlans:", "allowedVlans");
+    }
+
+    @Override
+    protected List<SubRange> featureValueOf(Interface actual) {
+      return actual.getAllowedVlans();
     }
   }
 
@@ -69,6 +94,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOutgoingFilter extends FeatureMatcher<Interface, IpAccessList> {
+    HasOutgoingFilter(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+      super(subMatcher, "an Interface with outgoingFilter:", "outgoingFilter");
+    }
+
+    @Override
+    protected IpAccessList featureValueOf(Interface actual) {
+      return actual.getOutgoingFilter();
+    }
+  }
+
   static final class HasOutgoingFilterName extends FeatureMatcher<Interface, String> {
     HasOutgoingFilterName(@Nonnull Matcher<? super String> subMatcher) {
       super(subMatcher, "an Interface with outgoingFilterName:", "outgoingFilterName");
@@ -88,6 +124,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected List<SourceNat> featureValueOf(Interface actual) {
       return actual.getSourceNats();
+    }
+  }
+
+  static final class HasSwitchPortMode extends FeatureMatcher<Interface, SwitchportMode> {
+    HasSwitchPortMode(@Nonnull Matcher<? super SwitchportMode> subMatcher) {
+      super(subMatcher, "an Interface with switchPortMode:", "switchPortMode");
+    }
+
+    @Override
+    protected SwitchportMode featureValueOf(Interface actual) {
+      return actual.getSwitchportMode();
     }
   }
 

@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -26,10 +28,16 @@ public class Route6FilterList extends ComparableStructure<String> {
 
   private transient Set<Prefix6> _permittedCache;
 
+  public Route6FilterList(String name) {
+    this(name, new ArrayList<>());
+  }
+
   @JsonCreator
-  public Route6FilterList(@JsonProperty(PROP_NAME) String name) {
+  public Route6FilterList(
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_LINES) List<Route6FilterLine> lines) {
     super(name);
-    _lines = new ArrayList<>();
+    _lines = firstNonNull(lines, Collections.emptyList());
   }
 
   public void addLine(Route6FilterLine r) {

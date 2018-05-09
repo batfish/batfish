@@ -1090,7 +1090,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
     setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
-    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "bdp");
+    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
   }
 
   private void initOptions() {
@@ -1531,6 +1531,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setContainerDir(Path containerDir) {
     _config.setProperty(BfConsts.ARG_CONTAINER_DIR, containerDir.toString());
+  }
+
+  public void setDebugFlags(List<String> debugFlags) {
+    _config.setProperty(ARG_DEBUG_FLAGS, debugFlags);
   }
 
   public void setDeltaEnvironmentName(String diffEnvironmentName) {

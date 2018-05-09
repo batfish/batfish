@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
@@ -28,8 +29,26 @@ public class If extends Statement {
 
   @JsonCreator
   public If() {
-    _falseStatements = new ArrayList<>();
-    _trueStatements = new ArrayList<>();
+    this(null, new ArrayList<>(), new ArrayList<>());
+  }
+
+  public If(BooleanExpr guard, List<Statement> trueStatements) {
+    this(guard, trueStatements, new ArrayList<>());
+  }
+
+  public If(BooleanExpr guard, List<Statement> trueStatements, List<Statement> falseStatements) {
+    this(null, guard, trueStatements, falseStatements);
+  }
+
+  public If(
+      @Nullable String comment,
+      BooleanExpr guard,
+      List<Statement> trueStatements,
+      List<Statement> falseStatements) {
+    setComment(comment);
+    _guard = guard;
+    _trueStatements = trueStatements;
+    _falseStatements = falseStatements;
   }
 
   @Override
@@ -153,18 +172,14 @@ public class If extends Statement {
       simpleFalseStatementsBuilder.addAll(falseStatement.simplify());
     }
     List<Statement> simpleFalseStatements = simpleFalseStatementsBuilder.build();
-    if (simpleGuard.equals(BooleanExprs.True.toStaticBooleanExpr())) {
+    if (simpleGuard.equals(BooleanExprs.TRUE)) {
       _simplified = simpleTrueStatements;
-    } else if (simpleGuard.equals(BooleanExprs.False.toStaticBooleanExpr())) {
+    } else if (simpleGuard.equals(BooleanExprs.FALSE)) {
       _simplified = simpleFalseStatements;
     } else if (simpleTrueStatements.size() == 0 && simpleFalseStatements.size() == 0) {
       _simplified = Collections.emptyList();
     } else {
-      If simple = new If();
-      simple.setGuard(simpleGuard);
-      simple.setTrueStatements(simpleTrueStatements);
-      simple.setFalseStatements(simpleFalseStatements);
-      simple.setComment(getComment());
+      If simple = new If(getComment(), simpleGuard, simpleTrueStatements, simpleFalseStatements);
       _simplified = ImmutableList.of(simple);
       simple._simplified = _simplified;
     }

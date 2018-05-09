@@ -17,6 +17,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   INTERFACE_FILTER("interface firewall filter"),
   INTERFACE_INCOMING_FILTER("interface incoming firewall filter"),
   INTERFACE_OUTGOING_FILTER("interface outgoing firewall filter"),
+  INTERFACE_VLAN("interface vlan"),
   IPSEC_POLICY_IPSEC_PROPOSAL("ipsec policy ipsec proposal"),
   IPSEC_VPN_BIND_INTERFACE("ipsec vpn bind-interface"),
   IPSEC_VPN_IKE_GATEWAY("ipsec vpn ike gateway"),
