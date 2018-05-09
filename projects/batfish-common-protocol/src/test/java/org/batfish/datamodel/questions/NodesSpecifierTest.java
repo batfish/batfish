@@ -87,7 +87,7 @@ public class NodesSpecifierTest {
     List<AutocompleteSuggestion> suggestionsRole =
         NodesSpecifier.autoComplete(queryRole, nodes, null);
 
-    // suggestionsName should have three elements: NAME:
+    // suggestionsName should have three elements: NAME:, na.*, and nade1
     assertThat(suggestionsName, hasSize(3));
     assertThat(suggestionsName.get(0).getText(), equalTo("NAME:"));
     assertThat(suggestionsName.get(1).getText(), equalTo("na.*"));
