@@ -72,6 +72,7 @@ public class CoordConsts {
   public static final String SVC_KEY_ASSERTION = "assertion";
   public static final String SVC_KEY_AUTO_ANALYZE_TESTRIG = "autoanalyzetestrig";
   public static final String SVC_KEY_BASE_ENV_NAME = "baseenvname";
+  public static final String SVC_KEY_COMPLETION_TYPE = "completiontype";
   public static final String SVC_KEY_CONFIGURATION_NAME = "configurationname";
   public static final String SVC_KEY_CONTAINERS = "containers";
   public static final String SVC_KEY_CONTAINER_LIST = "containerlist";
@@ -88,9 +89,11 @@ public class CoordConsts {
   public static final String SVC_KEY_FILE = "file";
   public static final String SVC_KEY_FILE2 = "file2";
   public static final String SVC_KEY_FORCE = "force";
+  public static final String SVC_KEY_MAX_SUGGESTIONS = "maxsuggestions";
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
+  public static final String SVC_KEY_QUERY = "query";
   public static final String SVC_KEY_QUESTION = "question";
   public static final String SVC_KEY_QUESTION_LIST = "questionlist";
   public static final String SVC_KEY_QUESTION_NAME = "questionname";
@@ -98,6 +101,7 @@ public class CoordConsts {
   public static final String SVC_KEY_SETTINGS = "settings";
   public static final String SVC_KEY_SUCCESS = "success";
   public static final String SVC_KEY_SUGGESTED = "suggested";
+  public static final String SVC_KEY_SUGGESTIONS = "suggestions";
   public static final String SVC_KEY_TASKSTATUS = "taskstatus";
   public static final String SVC_KEY_TESTRIG_INFO = "testriginfo";
   public static final String SVC_KEY_TESTRIG_LIST = "testriglist";
@@ -114,8 +118,9 @@ public class CoordConsts {
   public static final String SVC_KEY_ZIPFILE = "zipfile";
 
   /** Constants for endpoints of various service calls */
-  public static final String SVC_RSC_CHECK_API_KEY = "checkapikey";
+  public static final String SVC_RSC_AUTO_COMPLETE = "autocomplete";
 
+  public static final String SVC_RSC_CHECK_API_KEY = "checkapikey";
   public static final String SVC_RSC_CONFIGURE_ANALYSIS = "configureanalysis";
   public static final String SVC_RSC_DEL_ANALYSIS = "delanalysis";
   public static final String SVC_RSC_DEL_CONTAINER = "delcontainer";
