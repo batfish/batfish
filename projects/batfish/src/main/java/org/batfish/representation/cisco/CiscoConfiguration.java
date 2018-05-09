@@ -1430,7 +1430,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.STATIC),
-              redistributeDefaultRoute
+              redistributeDefaultRoute,
               bgpRedistributeWithEnvironmentExpr(
                   map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction staticRedist = new Conjunction(conditions);
