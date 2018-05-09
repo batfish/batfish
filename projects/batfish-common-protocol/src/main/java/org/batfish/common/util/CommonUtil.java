@@ -360,6 +360,112 @@ public class CommonUtil {
     return ipOwners;
   }
 
+  public static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
+      Map<String, Configuration> configurations, boolean excludeInactive) {
+    Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
+    Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
+    configurations.forEach(
+        (hostname, config) ->
+            config
+                .getInterfaces()
+                .values()
+                .forEach(
+                    i -> {
+                      if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+                        return;
+                      }
+                      // collect vrrp info
+                      i.getVrrpGroups()
+                          .forEach(
+                              (groupNum, vrrpGroup) -> {
+                                InterfaceAddress address = vrrpGroup.getVirtualAddress();
+                                if (address == null) {
+                                  // This Vlan Interface has invalid configuration. The VRRP has no
+                                  // source
+                                  // IP address that would be used for VRRP election. This interface
+                                  // could
+                                  // never win the election, so is not a candidate.
+                                  return;
+                                }
+                                Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
+                                Set<Interface> candidates =
+                                    vrrpGroups.computeIfAbsent(
+                                        key,
+                                        k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+                                candidates.add(i);
+                              });
+                      // collect prefixes
+                      i.getAllAddresses()
+                          .stream()
+                          .map(InterfaceAddress::getIp)
+                          .forEach(
+                              ip ->
+                                  ipOwners
+                                      .computeIfAbsent(ip, k -> new HashMap<>())
+                                      .computeIfAbsent(hostname, k -> new HashSet<>())
+                                      .add(i.getName()));
+                    }));
+    vrrpGroups.forEach(
+        (p, candidates) -> {
+          InterfaceAddress address = p.getFirst();
+          int groupNum = p.getSecond();
+          /*
+           * Compare priorities first. If tied, break tie based on highest interface IP.
+           */
+          Interface vrrpMaster =
+              Collections.max(
+                  candidates,
+                  Comparator.comparingInt(
+                          (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
+                      .thenComparing(o -> o.getAddress().getIp()));
+          ipOwners
+              .computeIfAbsent(address.getIp(), k -> new HashMap<>())
+              .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
+              .add(vrrpMaster.getName());
+        });
+
+    // freeze
+    return toImmutableMap(
+        ipOwners,
+        Entry::getKey,
+        ipOwnersEntry ->
+            toImmutableMap(
+                ipOwnersEntry.getValue(),
+                Entry::getKey, // hostname
+                hostIpOwnersEntry -> ImmutableSet.copyOf(hostIpOwnersEntry.getValue())));
+  }
+
+  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
+    Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
+
+    ipInterfaceOwners.forEach(
+        (ip, owners) ->
+            owners.forEach(
+                (host, ifaces) ->
+                    ifaces.forEach(
+                        iface ->
+                            ownedIps
+                                .computeIfAbsent(host, k -> new HashMap<>())
+                                .computeIfAbsent(iface, k -> new HashSet<>())
+                                .add(ip))));
+
+    // freeze
+    return toImmutableMap(
+        ownedIps,
+        Entry::getKey, /* host */
+        hostEntry ->
+            toImmutableMap(
+                hostEntry.getValue(),
+                Entry::getKey, /* interface */
+                ifaceEntry -> ImmutableSet.copyOf(ifaceEntry.getValue())));
+  }
+
+  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+      Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeInterfaceOwnedIps(computeIpInterfaceOwners(configurations, excludeInactive));
+  }
+
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
     Map<Ip, String> ipOwnersSimple = new HashMap<>();
     ipOwners.forEach(

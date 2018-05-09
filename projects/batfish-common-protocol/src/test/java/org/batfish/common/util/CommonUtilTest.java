@@ -2,9 +2,12 @@ package org.batfish.common.util;
 
 import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
 import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
+import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
 import static org.batfish.common.util.CommonUtil.computeIpOwners;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.collect.ImmutableSortedMap;
@@ -24,6 +27,8 @@ import org.junit.Test;
 public class CommonUtilTest {
 
   private NetworkFactory _nf;
+  private Interface _i1;
+  private Interface _i2;
   private InterfaceAddress _virtInterfaceAddr =
       new InterfaceAddress(new Ip("1.1.1.1"), Prefix.MAX_PREFIX_LENGTH);
 
@@ -62,15 +67,17 @@ public class CommonUtilTest {
     Interface.Builder ib = _nf.interfaceBuilder();
     ib.setActive(true);
 
-    ib.setOwner(c1);
-    ib.setAddress(new InterfaceAddress("1.1.1.22/32"));
-    Interface i1 = ib.build();
-    i1.setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg1));
+    _i1 =
+        ib.setOwner(c1)
+            .setAddress(new InterfaceAddress("1.1.1.22/32"))
+            .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg1))
+            .build();
 
-    ib.setOwner(c2);
-    ib.setAddress(new InterfaceAddress("1.1.1.33/32"));
-    Interface i2 = ib.build();
-    i2.setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg2));
+    _i2 =
+        ib.setOwner(c2)
+            .setAddress(new InterfaceAddress("1.1.1.33/32"))
+            .setVrrpGroups(ImmutableSortedMap.of(vrrpGroupId, vg2))
+            .build();
 
     return ImmutableSortedMap.of("n1", c1, "n2", c2);
   }
@@ -109,5 +116,28 @@ public class CommonUtilTest {
 
     // Ensure node that has higher interface IP wins
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
+  }
+
+  @Test
+  public void testIpInterfaceOwners() {
+    Map<String, Configuration> configs = setupVrrpTestCase(true);
+
+    Map<Ip, Map<String, Set<String>>> interfaceOwners = computeIpInterfaceOwners(configs, false);
+
+    assertThat(
+        interfaceOwners,
+        hasEntry(
+            equalTo(_i1.getAddress().getIp()),
+            hasEntry(equalTo(_i1.getOwner().getName()), contains(_i1.getName()))));
+    assertThat(
+        interfaceOwners,
+        hasEntry(
+            equalTo(_i2.getAddress().getIp()),
+            hasEntry(equalTo(_i2.getOwner().getName()), contains(_i2.getName()))));
+    assertThat(
+        interfaceOwners,
+        hasEntry(
+            equalTo(_virtInterfaceAddr.getIp()),
+            hasEntry(equalTo(_i2.getOwner().getName()), contains(_i2.getName()))));
   }
 }

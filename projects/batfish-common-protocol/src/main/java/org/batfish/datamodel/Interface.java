@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,12 +67,15 @@ public final class Interface extends ComparableStructure<String> {
 
     private Vrf _vrf;
 
+    private ImmutableSortedMap<Integer, VrrpGroup> _vrrpGroups;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
+      _vrrpGroups = ImmutableSortedMap.of();
     }
 
     @Override
@@ -114,6 +118,7 @@ public final class Interface extends ComparableStructure<String> {
           iface.setOspfCost(proc.computeInterfaceCost(iface));
         }
       }
+      iface.setVrrpGroups(_vrrpGroups);
       return iface;
     }
 
@@ -261,6 +266,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
+      return this;
+    }
+
+    public Builder setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
+      _vrrpGroups = ImmutableSortedMap.copyOf(vrrpGroups);
       return this;
     }
   }
