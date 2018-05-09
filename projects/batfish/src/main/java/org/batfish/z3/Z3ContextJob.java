@@ -144,34 +144,33 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   }
 
   protected BoolExpr getSolverInput(Expr answer, NodProgram program, boolean negate) {
-    BoolExpr solverInput;
-    if (answer.getArgs().length > 0) {
+    Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
+    List<BitVecExpr> vars =
+        program
+            .getNodContext()
+            .getVariableNames()
+            .stream()
+            .map(variablesAsConsts::get)
+            .collect(Collectors.toList());
 
-      Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
-      List<BitVecExpr> vars =
-          program
-              .getNodContext()
-              .getVariableNames()
-              .stream()
-              .map(variablesAsConsts::get)
-              .collect(Collectors.toList());
-      List<BitVecExpr> reversedVars = Lists.reverse(vars);
+    Expr substitutedSmtConstraint =
+        program.getSmtConstraint().substituteVars(vars.toArray(new Expr[] {}));
 
-      Expr substitutedSmtConstraint =
-          program.getSmtConstraint().substituteVars(vars.toArray(new Expr[] {}));
-      Expr substitutedAnswer = answer.substituteVars(reversedVars.toArray(new Expr[] {}));
-      solverInput =
-          program
-              .getNodContext()
-              .getContext()
-              .mkAnd((BoolExpr) substitutedAnswer, (BoolExpr) substitutedSmtConstraint);
-    } else {
-      solverInput = (BoolExpr) answer;
-    }
-    if (negate) {
-      solverInput = program.getNodContext().getContext().mkNot(solverInput);
-    }
-    return solverInput;
+    List<BitVecExpr> reversedVars = Lists.reverse(vars);
+    Expr substitutedAnswer =
+        answer.getArgs().length == 0
+            ? answer
+            : answer.substituteVars(reversedVars.toArray(new Expr[] {}));
+
+    BoolExpr answerAndSmtConstraint =
+        program
+            .getNodContext()
+            .getContext()
+            .mkAnd((BoolExpr) substitutedAnswer, (BoolExpr) substitutedSmtConstraint);
+
+    return negate
+        ? program.getNodContext().getContext().mkNot(answerAndSmtConstraint)
+        : answerAndSmtConstraint;
   }
 
   protected Fixedpoint mkFixedpoint(NodProgram program, boolean printAnswer) {

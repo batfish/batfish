@@ -416,6 +416,44 @@ public class CommonUtil {
         computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive));
   }
 
+  /**
+   * Compute a mapping of IP addresses to the VRFs that "own" this IP (e.g., as a network interface
+   * address).
+   *
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
+   *     Interface}
+   * @return A map of {@link Ip}s to a map of hostnames to vrfs that own the Ip.
+   */
+  public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
+      boolean excludeInactive, Map<String, Set<Interface>> enabledInterfaces) {
+
+    Map<String, Map<String, String>> interfaceVrfs =
+        toImmutableMap(
+            enabledInterfaces,
+            Entry::getKey, /* hostname */
+            nodeInterfaces ->
+                nodeInterfaces
+                    .getValue()
+                    .stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(Interface::getName, Interface::getVrfName)));
+
+    return toImmutableMap(
+        computeIpInterfaceOwners(enabledInterfaces, excludeInactive),
+        Entry::getKey, /* Ip */
+        ipInterfaceOwnersEntry ->
+            toImmutableMap(
+                ipInterfaceOwnersEntry.getValue(),
+                Entry::getKey, /* Hostname */
+                ipNodeInterfaceOwnersEntry ->
+                    ipNodeInterfaceOwnersEntry
+                        .getValue()
+                        .stream()
+                        .map(interfaceVrfs.get(ipNodeInterfaceOwnersEntry.getKey())::get)
+                        .collect(ImmutableSet.toImmutableSet())));
+  }
+
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
     Map<Ip, String> ipOwnersSimple = new HashMap<>();
     ipOwners.forEach(
