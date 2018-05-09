@@ -104,6 +104,8 @@ public abstract class Question implements IQuestion {
 
       private String _description;
 
+      private String _longDescription;
+
       private Integer _minElements;
 
       private Integer _minLength;
@@ -126,6 +128,11 @@ public abstract class Question implements IQuestion {
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public String getDescription() {
         return _description;
+      }
+
+      @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
+      public String getLongDescription() {
+        return _longDescription;
       }
 
       @JsonProperty(BfConsts.PROP_MIN_ELEMENTS)
@@ -162,6 +169,11 @@ public abstract class Question implements IQuestion {
       @JsonProperty(BfConsts.PROP_DESCRIPTION)
       public void setDescription(String description) {
         _description = description;
+      }
+
+      @JsonProperty(BfConsts.PROP_LONG_DESCRIPTION)
+      public void setLongDescription(String longDescription) {
+        _longDescription = longDescription;
       }
 
       @JsonProperty(BfConsts.PROP_MIN_ELEMENTS)
