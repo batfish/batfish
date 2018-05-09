@@ -26,7 +26,7 @@ public final class PsThenAccept extends PsThen {
       Warnings w) {
     If ifStatement =
         new If(
-            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            BooleanExprs.CALL_EXPR_CONTEXT,
             ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
             ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
     statements.add(ifStatement);

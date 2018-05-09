@@ -6,11 +6,20 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
-public enum BooleanExprs {
-  CallExprContext,
-  CallStatementContext,
-  False,
-  True;
+public final class BooleanExprs {
+  public enum StaticExpressionType {
+    CallExprContext,
+    CallStatementContext,
+    False,
+    True,
+  }
+
+  public static final StaticBooleanExpr CALL_EXPR_CONTEXT =
+      new StaticBooleanExpr(StaticExpressionType.CallExprContext);
+  public static final StaticBooleanExpr CALL_STATEMENT_CONTEXT =
+      new StaticBooleanExpr(StaticExpressionType.CallStatementContext);
+  public static final StaticBooleanExpr FALSE = new StaticBooleanExpr(StaticExpressionType.False);
+  public static final StaticBooleanExpr TRUE = new StaticBooleanExpr(StaticExpressionType.True);
 
   public static class StaticBooleanExpr extends BooleanExpr {
     /** */
@@ -18,19 +27,36 @@ public enum BooleanExprs {
 
     private static final String PROP_TYPE = "type";
 
-    private BooleanExprs _type;
+    private StaticExpressionType _type;
+
+    private StaticBooleanExpr(StaticExpressionType type) {
+      _type = type;
+    }
 
     @JsonCreator
-    public StaticBooleanExpr(@JsonProperty(PROP_TYPE) BooleanExprs type) {
-      _type = type;
+    static StaticBooleanExpr create(@JsonProperty(PROP_TYPE) StaticExpressionType type) {
+      switch (type) {
+        case CallExprContext:
+          return CALL_EXPR_CONTEXT;
+
+        case CallStatementContext:
+          return CALL_STATEMENT_CONTEXT;
+
+        case False:
+          return FALSE;
+
+        case True:
+          return TRUE;
+
+        default:
+          throw new BatfishException(
+              "Unhandled " + StaticBooleanExpr.class.getCanonicalName() + ": " + type);
+      }
     }
 
     @Override
     public boolean equals(Object rhs) {
-      if (rhs instanceof StaticBooleanExpr) {
-        return _type.equals(((StaticBooleanExpr) rhs)._type);
-      }
-      return false;
+      return rhs instanceof StaticBooleanExpr && _type == ((StaticBooleanExpr) rhs)._type;
     }
 
     @Override
@@ -51,13 +77,13 @@ public enum BooleanExprs {
           break;
         default:
           throw new BatfishException(
-              "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + _type);
+              "Unhandled " + StaticBooleanExpr.class.getCanonicalName() + ": " + _type);
       }
       return result;
     }
 
     @JsonProperty(PROP_TYPE)
-    public BooleanExprs getType() {
+    public StaticExpressionType getType() {
       return _type;
     }
 
@@ -65,9 +91,5 @@ public enum BooleanExprs {
     public int hashCode() {
       return _type.ordinal();
     }
-  }
-
-  public StaticBooleanExpr toStaticBooleanExpr() {
-    return new StaticBooleanExpr(this);
   }
 }

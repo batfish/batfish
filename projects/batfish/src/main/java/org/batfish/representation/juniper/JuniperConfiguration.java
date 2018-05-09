@@ -1773,7 +1773,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
     If endOfPolicy = new If();
-    endOfPolicy.setGuard(BooleanExprs.CallExprContext.toStaticBooleanExpr());
+    endOfPolicy.setGuard(BooleanExprs.CALL_EXPR_CONTEXT);
     endOfPolicy.setFalseStatements(
         Collections.singletonList(Statements.Return.toStaticStatement()));
     statements.add(endOfPolicy);
