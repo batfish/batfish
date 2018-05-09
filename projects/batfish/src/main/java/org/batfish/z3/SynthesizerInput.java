@@ -62,6 +62,9 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
 
+  /** Whether it's synthesizing data plane rules */
+  boolean isDataPlane();
+
   /** Mapping: hostname -> IpSpace name -> IpSpace */
   Map<String, Map<String, IpSpace>> getNamedIpSpaces();
 

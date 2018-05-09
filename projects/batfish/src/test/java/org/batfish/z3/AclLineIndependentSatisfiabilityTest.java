@@ -9,13 +9,14 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IpAccessList;
@@ -52,14 +53,18 @@ public class AclLineIndependentSatisfiabilityTest {
     IpAccessList matchableWithCovered =
         aclb.setLines(ImmutableList.of(alwaysMatches, alwaysMatches)).build();
     SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getHostname(), c);
-    Map<String, Set<String>> representatives =
+    Map<String, Map<String, Set<Integer>>> representatives =
         ImmutableMap.of(
             c.getHostname(),
-            ImmutableSet.of(
+            ImmutableMap.of(
                 unmatchableFirst.getName(),
+                rangeSet(unmatchableFirst.getLines().size()),
                 unmatchableCovered.getName(),
+                rangeSet(unmatchableCovered.getLines().size()),
                 unmatchableTwice.getName(),
-                matchableWithCovered.getName()));
+                rangeSet(unmatchableTwice.getLines().size()),
+                matchableWithCovered.getName(),
+                rangeSet(matchableWithCovered.getLines().size())));
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> unmatchableLinesByHostnameAndAclName =
         batfish.computeIndependentlyUnmatchableAclLines(configurations, representatives);
@@ -89,5 +94,9 @@ public class AclLineIndependentSatisfiabilityTest {
     assertThat(
         unmatchableLinesByHostnameAndAclName,
         hasEntry(equalTo(c.getName()), not(hasKey(matchableWithCovered.getName()))));
+  }
+
+  private Set<Integer> rangeSet(int max) {
+    return IntStream.range(0, max).mapToObj(i -> new Integer(i)).collect(Collectors.toSet());
   }
 }
