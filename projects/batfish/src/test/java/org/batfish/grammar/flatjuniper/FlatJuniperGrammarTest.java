@@ -13,10 +13,14 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
@@ -77,6 +81,7 @@ import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
@@ -990,6 +995,44 @@ public class FlatJuniperGrammarTest {
     /* Properly configured interfaces should be present in respective areas. */
     assertThat(c.getInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
     assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
+  }
+
+  @Test
+  public void testInterfaceVlan() throws IOException {
+    Configuration c = parseConfig("interface-vlan");
+
+    // Expecting an Interface in ACCESS mode with VLAN 101
+    assertThat(c, hasInterface("ge-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("ge-0/0/0.0", hasAccessVlan(101)));
+
+    // Expecting an Interface in TRUNK mode with VLANs 1-5
+    assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(
+        c, hasInterface("ge-0/3/0.0", hasAllowedVlans(ImmutableList.of(new SubRange("1-5")))));
+  }
+
+  @Test
+  public void testInterfaceVlanReferences() throws IOException {
+    String hostname = "interface-vlan";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expect an undefined reference for VLAN_TEST_UNDEFINED
+     */
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.VLAN,
+            "VLAN_TEST_UNDEFINED",
+            JuniperStructureUsage.INTERFACE_VLAN));
+
+    /*
+     * VLAN should not contribute to defined structures
+     */
+    assertThat(ccae.getDefinedStructures().keySet(), hasSize(0));
   }
 
   @Test

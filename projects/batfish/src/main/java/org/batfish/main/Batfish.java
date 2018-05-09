@@ -1432,9 +1432,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
         } else if (iface.getSwitchportMode() == SwitchportMode.ACCESS) { // access mode ACCESS
           vlanNumber = iface.getAccessVlan();
           vlans.add(new SubRange(vlanNumber, vlanNumber));
-        } else {
+          // Any other Switch Port mode is unsupported
+        } else if (iface.getSwitchportMode() != SwitchportMode.NONE) {
           _logger.warnf(
-              "WARNING: Unsupported switchport mode %s, assuming no VLANs allowed: \"%s:%s\"\n",
+              "WARNING: Unsupported switch port mode %s, assuming no VLANs allowed: \"%s:%s\"\n",
               iface.getSwitchportMode(), hostname, iface.getName());
         }
 
