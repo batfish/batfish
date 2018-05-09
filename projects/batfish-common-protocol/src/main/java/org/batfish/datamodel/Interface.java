@@ -669,19 +669,22 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     Interface other = (Interface) o;
-    if (this._accessVlan != other._accessVlan) {
+    if (_accessVlan != other._accessVlan) {
       return false;
     }
-    if (this._active != other._active) {
+    if (_active != other._active) {
       return false;
     }
-    if (!this._allowedVlans.equals(other._allowedVlans)) {
+    if (!Objects.equals(_address, other._address)) {
       return false;
     }
-    if (!this._allAddresses.equals(other._allAddresses)) {
+    if (!Objects.equals(_allowedVlans, other._allowedVlans)) {
       return false;
     }
-    if (this._autoState != other._autoState) {
+    if (!Objects.equals(_allAddresses, other._allAddresses)) {
+      return false;
+    }
+    if (_autoState != other._autoState) {
       return false;
     }
     if (!Objects.equals(_bandwidth, other._bandwidth)) {
@@ -692,44 +695,35 @@ public final class Interface extends ComparableStructure<String> {
     if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
       return false;
     }
-
     if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(), other.getIncomingFilter())) {
       return false;
     }
-
     if (this._interfaceType != other._interfaceType) {
       return false;
     }
-
-    // TODO: check ISIS settings for equality.
-    if (this._mtu != other._mtu) {
-      return false;
-    }
-    if (this._nativeVlan != other._nativeVlan) {
-      return false;
-    }
-    // TODO: check OSPF settings for equality.
-
-    if (!IpAccessList.bothNullOrSameName(this._outgoingFilter, other._outgoingFilter)) {
-      return false;
-    }
-
     if (!Objects.equals(_key, other._key)) {
       return false;
     }
-
-    if (!Objects.equals(this._address, other._address)) {
+    // TODO: check ISIS settings for equality.
+    if (_mtu != other._mtu) {
       return false;
     }
-
+    if (_nativeVlan != other._nativeVlan) {
+      return false;
+    }
+    // TODO: check OSPF settings for equality.
+    if (!IpAccessList.bothNullOrSameName(this._outgoingFilter, other._outgoingFilter)) {
+      return false;
+    }
+    if (!_proxyArp == other._proxyArp) {
+      return false;
+    }
     if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
       return false;
     }
-
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
-
     if (!Objects.equals(this._zone, other._zone)) {
       return false;
     }
