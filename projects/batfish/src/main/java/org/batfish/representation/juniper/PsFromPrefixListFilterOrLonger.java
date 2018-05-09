@@ -30,7 +30,7 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
     if (pl != null) {
       pl.getReferers().put(this, "from prefix-list-filter or-longer");
       if (pl.getIpv6()) {
-        return BooleanExprs.False.toStaticBooleanExpr();
+        return BooleanExprs.FALSE;
       }
       RouteFilterList rf = c.getRouteFilterLists().get(_prefixList);
       String orLongerListName = "~" + _prefixList + "~ORLONGER~";
@@ -50,7 +50,7 @@ public final class PsFromPrefixListFilterOrLonger extends PsFrom {
       return new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(orLongerListName));
     } else {
       warnings.redFlag("Reference to undefined prefix-list: \"" + _prefixList + "\"");
-      return BooleanExprs.False.toStaticBooleanExpr();
+      return BooleanExprs.FALSE;
     }
   }
 }

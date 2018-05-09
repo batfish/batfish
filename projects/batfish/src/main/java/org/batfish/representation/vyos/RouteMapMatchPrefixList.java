@@ -39,7 +39,7 @@ public class RouteMapMatchPrefixList implements RouteMapMatch {
           VyosStructureUsage.ROUTE_MAP_MATCH_PREFIX_LIST,
           _statementLine);
       // TODO: see if vyos treats as true, false, or disallows
-      return BooleanExprs.True.toStaticBooleanExpr();
+      return BooleanExprs.TRUE;
     }
   }
 }

@@ -100,22 +100,22 @@ public final class Conjunction extends BooleanExpr {
     boolean atLeastOneComplex = false;
     for (BooleanExpr conjunct : _conjuncts) {
       BooleanExpr simpleConjunct = conjunct.simplify();
-      if (simpleConjunct.equals(BooleanExprs.False.toStaticBooleanExpr())) {
+      if (simpleConjunct.equals(BooleanExprs.FALSE)) {
         atLeastOneFalse = true;
         if (!atLeastOneComplex) {
-          _simplified = BooleanExprs.False.toStaticBooleanExpr();
+          _simplified = BooleanExprs.FALSE;
           return _simplified;
         } else if (!atLeastOneFalse) {
           simpleConjunctsBuilder.add(simpleConjunct);
         }
-      } else if (!simpleConjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
+      } else if (!simpleConjunct.equals(BooleanExprs.TRUE)) {
         atLeastOneComplex = true;
         simpleConjunctsBuilder.add(simpleConjunct);
       }
     }
     List<BooleanExpr> simpleConjuncts = simpleConjunctsBuilder.build();
     if (simpleConjuncts.isEmpty()) {
-      _simplified = BooleanExprs.True.toStaticBooleanExpr();
+      _simplified = BooleanExprs.TRUE;
     } else if (simpleConjuncts.size() == 1) {
       _simplified = simpleConjuncts.get(0);
     } else {
