@@ -139,6 +139,15 @@ public class FlatJuniperGrammarTest {
     return fb.build();
   }
 
+  private static Flow createTcpFlow(int srcPort) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(IpProtocol.TCP);
+    fb.setSrcPort(srcPort);
+    fb.setTag("test");
+    return fb.build();
+  }
+
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
         Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
@@ -254,9 +263,11 @@ public class FlatJuniperGrammarTest {
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
+        undefinedReferencesByType,
+        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationByName =
-        undefinedReferencesByType.get(JuniperStructureType.APPLICATION.getDescription());
+        undefinedReferencesByType.get(
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
     assertThat(urApplicationByName, not(hasKey("a1")));
     assertThat(urApplicationByName, not(hasKey("a2")));
     assertThat(urApplicationByName, not(hasKey("a3")));
@@ -265,6 +276,42 @@ public class FlatJuniperGrammarTest {
     assertThat(
         urApplicationByUsage,
         hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION.getDescription()));
+  }
+
+  @Test
+  public void testApplicationSetNested() throws IOException {
+    String hostname = "application-set-nested";
+    Configuration c = parseConfig(hostname);
+
+    String aclNameNonNested = "~FROM_ZONE~z1~TO_ZONE~z2";
+    String aclNameNested = "~FROM_ZONE~z2~TO_ZONE~z3";
+    String aclNameMultiNested = "~FROM_ZONE~z3~TO_ZONE~z4";
+    IpAccessList aclNonNested = c.getIpAccessLists().get(aclNameNonNested);
+    IpAccessList aclNested = c.getIpAccessLists().get(aclNameNested);
+    IpAccessList aclMultiNested = c.getIpAccessLists().get(aclNameMultiNested);
+    /* Allowed application permits TCP from port 1 only */
+    Flow permittedFlow = createTcpFlow(1);
+    Flow rejectedFlow = createTcpFlow(2);
+
+    /*
+     * Confirm non-nested application-set acl accepts the allowed protocol-port combo and reject
+     * others
+     */
+    assertThat(aclNonNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclNonNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm nested application-set acl accepts the allowed protocol-port combo and reject others
+     */
+    assertThat(aclNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm multi-nested application-set acl accepts the allowed protocol-port combo and reject
+     * others
+     */
+    assertThat(aclMultiNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclMultiNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
