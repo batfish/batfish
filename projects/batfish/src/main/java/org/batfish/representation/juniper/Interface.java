@@ -34,7 +34,7 @@ public class Interface extends ComparableStructure<String> {
     }
   }
 
-  private int _accessVlan;
+  private String _accessVlan;
 
   private boolean _active;
 
@@ -122,7 +122,7 @@ public class Interface extends ComparableStructure<String> {
     _allowedVlans.addAll(ranges);
   }
 
-  public int getAccessVlan() {
+  public String getAccessVlan() {
     return _accessVlan;
   }
 
@@ -255,7 +255,7 @@ public class Interface extends ComparableStructure<String> {
     }
   }
 
-  public void setAccessVlan(int vlan) {
+  public void setAccessVlan(String vlan) {
     _accessVlan = vlan;
   }
 

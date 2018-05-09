@@ -52,7 +52,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Set<String> includeNodes1 = question.getNode1Regex().getMatchingNodes(_batfish);
     Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
 
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Set<Ip> allInterfaceIps = ipOwners.keySet();
 
     Network<BgpNeighbor, BgpSession> configuredBgpTopology =
