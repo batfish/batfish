@@ -43,9 +43,4 @@ public class AclLineIndependentSatisfiabilityQuerySynthesizer extends SatQuerySy
     _keys.add(new AclLine(_hostname, _aclName, _lineNumber));
     return builder.setInput(input).setQueries(queries.build()).setRules(rules.build()).build();
   }
-
-  @Override
-  public ReachabilityProgram synthesizeBaseProgram(Synthesizer synthesizer) {
-    return synthesizer.synthesizeNodAclProgram(_hostname, _aclName);
-  }
 }
