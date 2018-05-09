@@ -39,7 +39,7 @@ public class Rows implements Serializable {
   }
 
   @JsonValue
-  private Multiset<Row> getData() {
+  public Multiset<Row> getData() {
     return _data;
   }
 

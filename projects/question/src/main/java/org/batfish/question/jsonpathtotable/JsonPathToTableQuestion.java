@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
@@ -60,13 +60,15 @@ public class JsonPathToTableQuestion extends Question {
   }
 
   public TableMetadata computeTableMetadata() {
-    Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
+    SortedMap<String, ColumnMetadata> columnMetadataMap = new TreeMap<>();
     for (Entry<String, JsonPathToTableExtraction> entry : _pathQuery.getExtractions().entrySet()) {
-      columnMetadataMap.put(entry.getKey(), new ColumnMetadata(entry.getValue().getSchema()));
+      columnMetadataMap.put(
+          entry.getKey(), new ColumnMetadata(entry.getValue().getSchema(), "description"));
     }
     for (Entry<String, JsonPathToTableComposition> entry :
         _pathQuery.getCompositions().entrySet()) {
-      columnMetadataMap.put(entry.getKey(), new ColumnMetadata(entry.getValue().getSchema()));
+      columnMetadataMap.put(
+          entry.getKey(), new ColumnMetadata(entry.getValue().getSchema(), "description"));
     }
     return new TableMetadata(columnMetadataMap, _displayHints);
   }
