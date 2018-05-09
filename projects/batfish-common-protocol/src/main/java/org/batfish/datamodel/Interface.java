@@ -67,7 +67,7 @@ public final class Interface extends ComparableStructure<String> {
 
     private Vrf _vrf;
 
-    private ImmutableSortedMap<Integer, VrrpGroup> _vrrpGroups;
+    private SortedMap<Integer, VrrpGroup> _vrrpGroups;
 
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);

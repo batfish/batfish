@@ -276,135 +276,73 @@ public class CommonUtil {
   }
 
   /**
-   * Compute ip owners. See {@link #computeIpOwners(boolean, Map)} for detailed description.
+   * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
+   * interface address)
    *
    * @param configurations {@link Configurations} keyed by hostname
    * @param excludeInactive Whether to exclude inactive interfaces
    * @return A map of {@link Ip}s to a set of hostnames that own this IP
    */
-  public static Map<Ip, Set<String>> computeIpOwners(
+  public static Map<Ip, Set<String>> computeIpNodeOwners(
       Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeIpOwners(
-        excludeInactive,
-        configurations
-            .entrySet()
-            .stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getInterfaces())));
+    return toImmutableMap(
+        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive),
+        Entry::getKey, /* Ip */
+        ipInterfaceOwnersEntry ->
+            /* project away interfaces */
+            ipInterfaceOwnersEntry.getValue().keySet());
   }
 
   /**
-   * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as an network
+   * Compute a mapping from IP address to the interfaces that "own" that IP (e.g., as an network
    * interface address)
    *
-   * @param excludeInactive whether to ignore inactive interfaces
    * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
    *     Interface}
-   * @return A map of {@link Ip}s to a set of hostnames that own this IP
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @return A map from {@link Ip}s to the {@link Interface}s that own them
    */
-  public static Map<Ip, Set<String>> computeIpOwners(
-      boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
-    // TODO: confirm VRFs are handled correctly
-    Map<Ip, Set<String>> ipOwners = new HashMap<>();
-    Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    enabledInterfaces.forEach(
-        (hostname, currentEnabledInterfaces) -> {
-          for (Interface i : currentEnabledInterfaces.values()) {
-            if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
-              continue;
-            }
-            // collect vrrp info
-            i.getVrrpGroups()
-                .forEach(
-                    (groupNum, vrrpGroup) -> {
-                      InterfaceAddress address = vrrpGroup.getVirtualAddress();
-                      if (address == null) {
-                        // This Vlan Interface has invalid configuration. The VRRP has no source
-                        // IP address that would be used for VRRP election. This interface could
-                        // never win the election, so is not a candidate.
-                        return;
-                      }
-                      Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                      Set<Interface> candidates =
-                          vrrpGroups.computeIfAbsent(
-                              key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                      candidates.add(i);
-                    });
-            // collect prefixes
-            i.getAllAddresses()
-                .stream()
-                .map(InterfaceAddress::getIp)
-                .forEach(
-                    ip -> {
-                      Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-                      owners.add(hostname);
-                    });
-          }
-        });
-    vrrpGroups.forEach(
-        (p, candidates) -> {
-          InterfaceAddress address = p.getFirst();
-          int groupNum = p.getSecond();
-          Set<String> owners = ipOwners.computeIfAbsent(address.getIp(), k -> new HashSet<>());
-          /*
-           * Compare priorities first. If tied, break tie based on highest interface IP.
-           */
-          Interface vrrpMaster =
-              Collections.max(
-                  candidates,
-                  Comparator.comparingInt(
-                          (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                      .thenComparing(o -> o.getAddress().getIp()));
-          owners.add(vrrpMaster.getOwner().getHostname());
-        });
-    return ipOwners;
-  }
-
   public static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
+      Map<String, Set<Interface>> enabledInterfaces, boolean excludeInactive) {
     Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    configurations.forEach(
-        (hostname, config) ->
-            config
-                .getInterfaces()
-                .values()
-                .forEach(
-                    i -> {
-                      if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
-                        return;
-                      }
-                      // collect vrrp info
-                      i.getVrrpGroups()
-                          .forEach(
-                              (groupNum, vrrpGroup) -> {
-                                InterfaceAddress address = vrrpGroup.getVirtualAddress();
-                                if (address == null) {
-                                  /*
-                                   * This Vlan Interface has invalid configuration. The VRRP has no
-                                   * source IP address that would be used for VRRP election. This
-                                   * interface could never win the election, so is not a candidate.
-                                   */
-                                  return;
-                                }
-                                Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                                Set<Interface> candidates =
-                                    vrrpGroups.computeIfAbsent(
-                                        key,
-                                        k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                                candidates.add(i);
-                              });
-                      // collect prefixes
-                      i.getAllAddresses()
-                          .stream()
-                          .map(InterfaceAddress::getIp)
-                          .forEach(
-                              ip ->
-                                  ipOwners
-                                      .computeIfAbsent(ip, k -> new HashMap<>())
-                                      .computeIfAbsent(hostname, k -> new HashSet<>())
-                                      .add(i.getName()));
-                    }));
+    enabledInterfaces.forEach(
+        (hostname, interfaces) ->
+            interfaces.forEach(
+                i -> {
+                  if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+                    return;
+                  }
+                  // collect vrrp info
+                  i.getVrrpGroups()
+                      .forEach(
+                          (groupNum, vrrpGroup) -> {
+                            InterfaceAddress address = vrrpGroup.getVirtualAddress();
+                            if (address == null) {
+                              /*
+                               * Invalid VRRP configuration. The VRRP has no source IP address that
+                               * would be used for VRRP election. This interface could never win the
+                               * election, so is not a candidate.
+                               */
+                              return;
+                            }
+                            Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
+                            Set<Interface> candidates =
+                                vrrpGroups.computeIfAbsent(
+                                    key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+                            candidates.add(i);
+                          });
+                  // collect prefixes
+                  i.getAllAddresses()
+                      .stream()
+                      .map(InterfaceAddress::getIp)
+                      .forEach(
+                          ip ->
+                              ipOwners
+                                  .computeIfAbsent(ip, k -> new HashMap<>())
+                                  .computeIfAbsent(hostname, k -> new HashSet<>())
+                                  .add(i.getName()));
+                }));
     vrrpGroups.forEach(
         (p, candidates) -> {
           InterfaceAddress address = p.getFirst();
@@ -435,6 +373,10 @@ public class CommonUtil {
                 hostIpOwnersEntry -> ImmutableSet.copyOf(hostIpOwnersEntry.getValue())));
   }
 
+  /**
+   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) to
+   * (hostname -> interface name -> Ip).
+   */
   public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
       Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
     Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
@@ -463,7 +405,8 @@ public class CommonUtil {
 
   public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
       Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeInterfaceOwnedIps(computeIpInterfaceOwners(configurations, excludeInactive));
+    return computeInterfaceOwnedIps(
+        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive));
   }
 
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
@@ -479,7 +422,23 @@ public class CommonUtil {
 
   public static Map<Ip, String> computeIpOwnersSimple(
       Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeIpOwnersSimple(computeIpOwners(configurations, excludeInactive));
+    return computeIpOwnersSimple(computeIpNodeOwners(configurations, excludeInactive));
+  }
+
+  /**
+   * Compute the interfaces of each node.
+   *
+   * @param configurations The {@link Configuration}s for the network
+   * @return A map from hostname to the interfaces of that node.
+   */
+  public static Map<String, Set<Interface>> computeNodeInterfaces(
+      Map<String, Configuration> configurations) {
+    return configurations
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableMap.toImmutableMap(
+                Entry::getKey, e -> ImmutableSet.copyOf(e.getValue().getInterfaces().values())));
   }
 
   public static void copy(Path srcPath, Path dstPath) {
@@ -904,7 +863,7 @@ public class CommonUtil {
    * details.
    *
    * @param configurations configuration keyed by hostname
-   * @param ipOwners Ip owners (see {@link #computeIpOwners(boolean, Map)}
+   * @param ipOwners Ip owners (see {@link #computeIpNodeOwners(boolean, Map)}
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
@@ -921,7 +880,8 @@ public class CommonUtil {
    * Compute the BGP topology -- a network of {@link BgpNeighbor}s connected by {@link BgpSession}s.
    *
    * @param configurations node configurations, keyed by hostname
-   * @param ipOwners network Ip owners (see {@link #computeIpOwners(Map, boolean)} for reference)
+   * @param ipOwners network Ip owners (see {@link #computeIpNodeOwners(Map, boolean)} for
+   *     reference)
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.

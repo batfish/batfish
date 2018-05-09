@@ -68,7 +68,7 @@ public class IncrementalBdpEngine {
     IncrementalDataPlane dp = new IncrementalDataPlane();
     _bfLogger.info("\nComputing Data Plane using iBDP\n");
 
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
     dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
 

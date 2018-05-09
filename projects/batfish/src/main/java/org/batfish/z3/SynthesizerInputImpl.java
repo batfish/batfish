@@ -1,7 +1,7 @@
 package org.batfish.z3;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static org.batfish.common.util.CommonUtil.computeIpOwners;
+import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableList;
@@ -618,25 +618,32 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Set<Ip>> computeIpsByHostname() {
-    Map<String, Map<String, Interface>> enabledInterfaces =
+    Map<String, Set<Interface>> enabledInterfaces =
         toImmutableMap(
             _enabledInterfaces,
             Entry::getKey,
-            enabledInterfacesEntry -> {
-              Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-              return toImmutableMap(
-                  enabledInterfacesEntry.getValue(), Function.identity(), c.getInterfaces()::get);
+            entry -> {
+              String hostname = entry.getKey();
+              Set<String> enabledInterfaceNames = entry.getValue();
+              Map<String, Interface> nodeInterfaces = _configurations.get(hostname).getInterfaces();
+              return enabledInterfaceNames
+                  .stream()
+                  .map(nodeInterfaces::get)
+                  .collect(ImmutableSet.toImmutableSet());
             });
-    Map<Ip, Set<String>> ipOwners = computeIpOwners(true, enabledInterfaces);
+
+    Map<Ip, Map<String, Set<String>>> ipInterfaceOwners =
+        computeIpInterfaceOwners(enabledInterfaces, true);
+
     Map<String, Set<Ip>> map = new HashMap<>();
     /*
      * ipOwners may not contain all nodes (i.e. a node may not own any IPs),
      * so first initialize to make sure there is an entry for each node.
      */
     _enabledInterfaces.keySet().forEach(node -> map.put(node, new HashSet<>()));
-    ipOwners.forEach(
+    ipInterfaceOwners.forEach(
         (ip, owners) -> {
-          for (String owner : owners) {
+          for (String owner : owners.keySet()) {
             if (_specializationIpSpace.containsIp(ip, _namedIpSpaces.get(owner))) {
               map.get(owner).add(ip);
             }

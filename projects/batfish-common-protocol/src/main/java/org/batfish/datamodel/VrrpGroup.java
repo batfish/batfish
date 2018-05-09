@@ -14,10 +14,7 @@ public class VrrpGroup extends ComparableStructure<Integer> {
     private InterfaceAddress _virtualAddress;
 
     public VrrpGroup build() {
-      VrrpGroup vrrpGroup = new VrrpGroup(_name);
-      vrrpGroup.setPriority(_priority);
-      vrrpGroup.setVirtualAddress(_virtualAddress);
-      return vrrpGroup;
+      return new VrrpGroup(this);
     }
 
     public Builder setName(int name) {
@@ -58,6 +55,12 @@ public class VrrpGroup extends ComparableStructure<Integer> {
   @JsonCreator
   public VrrpGroup(@JsonProperty(PROP_NAME) Integer name) {
     super(name);
+  }
+
+  private VrrpGroup(Builder builder) {
+    super(builder._name);
+    _priority = builder._priority;
+    _virtualAddress = builder._virtualAddress;
   }
 
   @JsonProperty(PROP_PREEMPT)

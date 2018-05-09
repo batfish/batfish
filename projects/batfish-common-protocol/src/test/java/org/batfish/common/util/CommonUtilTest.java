@@ -3,7 +3,8 @@ package org.batfish.common.util;
 import static org.batfish.common.util.CommonUtil.asNegativeIpWildcards;
 import static org.batfish.common.util.CommonUtil.asPositiveIpWildcards;
 import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
-import static org.batfish.common.util.CommonUtil.computeIpOwners;
+import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
+import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -99,7 +100,7 @@ public class CommonUtilTest {
   public void testVrrpPriority() {
     Map<String, Configuration> configs = setupVrrpTestCase(false);
 
-    Map<Ip, Set<String>> owners = computeIpOwners(configs, false);
+    Map<Ip, Set<String>> owners = computeIpNodeOwners(configs, false);
 
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
   }
@@ -112,7 +113,7 @@ public class CommonUtilTest {
   public void testVrrpPriorityTieBreaking() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
-    Map<Ip, Set<String>> owners = computeIpOwners(configs, false);
+    Map<Ip, Set<String>> owners = computeIpNodeOwners(configs, false);
 
     // Ensure node that has higher interface IP wins
     assertThat(owners.get(_virtInterfaceAddr.getIp()), contains("n2"));
@@ -122,7 +123,8 @@ public class CommonUtilTest {
   public void testIpInterfaceOwners() {
     Map<String, Configuration> configs = setupVrrpTestCase(true);
 
-    Map<Ip, Map<String, Set<String>>> interfaceOwners = computeIpInterfaceOwners(configs, false);
+    Map<Ip, Map<String, Set<String>>> interfaceOwners =
+        computeIpInterfaceOwners(computeNodeInterfaces(configs), false);
 
     assertThat(
         interfaceOwners,
