@@ -270,18 +270,18 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
           } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
             bgpSessionInfo._status = SessionStatus.UNKNOWN_REMOTE_IP;
           } else {
-            if (node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
-              if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
-                bgpSessionInfo._status = SessionStatus.HALF_OPEN;
-                // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
-              } else if (bgpTopology.degree(bgpNeighbor) > 2) {
-                bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
-              } else {
-                BgpNeighbor remoteNeighbor =
-                    bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
-                bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
-                bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
-              }
+            if (!node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
+              continue;
+            }
+            if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
+              bgpSessionInfo._status = SessionStatus.HALF_OPEN;
+              // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
+            } else if (bgpTopology.degree(bgpNeighbor) > 2) {
+              bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
+            } else {
+              BgpNeighbor remoteNeighbor = bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
+              bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
+              bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
             }
           }
         }
