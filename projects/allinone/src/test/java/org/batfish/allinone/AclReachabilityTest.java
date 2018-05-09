@@ -21,6 +21,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
@@ -136,20 +137,20 @@ public class AclReachabilityTest {
                 ImmutableList.of(
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.255").toIpSpace())
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
                             .build()),
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.255").toIpSpace())
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
                             .build()),
                     IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build(),
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.0").toIpSpace())
+                            .setSrcIps(Prefix.parse("1.0.0.0/32").toIpSpace())
                             .build()),
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.2.3.4:0.0.0.0").toIpSpace())
+                            .setSrcIps(Prefix.parse("1.2.3.4/32").toIpSpace())
                             .build())))
             .setName(aclName)
             .build();

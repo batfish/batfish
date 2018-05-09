@@ -661,16 +661,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Mapping: hostname -> name of acl for which named host is representative -> list of lines that
-   * are independently unmatchable, i.e. they have unsatisfiable match condition
+   * Identifies any independently unmatchable ACL lines in the given set of ACL lines.
+   *
+   * @param configurations Map of hostnames -> configuration objects
+   * @param linesToCheck Map of hostnames -> ACL names -> set of line numbers for which to check
+   *     matchability
+   * @return Map of hostname -> name of acl for which named host is representative -> list of lines
+   *     that are independently unmatchable, i.e. they have unsatisfiable match condition
    */
   public SortedMap<String, SortedMap<String, SortedSet<Integer>>>
       computeIndependentlyUnmatchableAclLines(
           Map<String, Configuration> configurations,
-          Map<String, Map<String, Set<Integer>>> representatives) {
+          Map<String, Map<String, Set<Integer>>> linesToCheck) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
     Synthesizer aclSynthesizer = synthesizeAcls(configurations);
-    representatives.forEach(
+    linesToCheck.forEach(
         (hostname, aclNames) -> {
           aclNames.forEach(
               (aclName, lineNumbers) -> {

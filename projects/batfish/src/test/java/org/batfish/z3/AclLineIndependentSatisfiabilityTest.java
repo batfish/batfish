@@ -58,21 +58,13 @@ public class AclLineIndependentSatisfiabilityTest {
             c.getHostname(),
             ImmutableMap.of(
                 unmatchableFirst.getName(),
-                IntStream.range(0, unmatchableFirst.getLines().size())
-                    .mapToObj(i -> new Integer(i))
-                    .collect(Collectors.toSet()),
+                rangeSet(unmatchableFirst.getLines().size()),
                 unmatchableCovered.getName(),
-                IntStream.range(0, unmatchableCovered.getLines().size())
-                    .mapToObj(i -> new Integer(i))
-                    .collect(Collectors.toSet()),
+                rangeSet(unmatchableCovered.getLines().size()),
                 unmatchableTwice.getName(),
-                IntStream.range(0, unmatchableTwice.getLines().size())
-                    .mapToObj(i -> new Integer(i))
-                    .collect(Collectors.toSet()),
+                rangeSet(unmatchableTwice.getLines().size()),
                 matchableWithCovered.getName(),
-                IntStream.range(0, matchableWithCovered.getLines().size())
-                    .mapToObj(i -> new Integer(i))
-                    .collect(Collectors.toSet())));
+                rangeSet(matchableWithCovered.getLines().size())));
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> unmatchableLinesByHostnameAndAclName =
         batfish.computeIndependentlyUnmatchableAclLines(configurations, representatives);
@@ -102,5 +94,9 @@ public class AclLineIndependentSatisfiabilityTest {
     assertThat(
         unmatchableLinesByHostnameAndAclName,
         hasEntry(equalTo(c.getName()), not(hasKey(matchableWithCovered.getName()))));
+  }
+
+  private Set<Integer> rangeSet(int max) {
+    return IntStream.range(0, max).mapToObj(i -> new Integer(i)).collect(Collectors.toSet());
   }
 }
