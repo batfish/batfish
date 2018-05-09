@@ -60,7 +60,7 @@ public class Synthesizer {
   }
 
   public ReachabilityProgram synthesizeNodProgram() {
-    // Only want these four states if NoD program is for ACL reachability (only non-data-plane type)
+    // Only want these 5 states if NoD program is for ACL reachability (only non-data-plane type)
     ImmutableSet.Builder<StateExpr.State> builder =
         ImmutableSet.<StateExpr.State>builder()
             .addAll(
