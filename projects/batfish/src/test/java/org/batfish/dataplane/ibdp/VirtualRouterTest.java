@@ -1,6 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.util.CommonUtil.computeIpOwners;
+import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.common.util.CommonUtil.synthesizeTopology;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;
@@ -713,7 +713,7 @@ public class VirtualRouterTest {
     Map<String, Configuration> configs =
         ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration());
     Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configs, computeIpOwners(configs, false), false);
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
 
     Map<String, Node> nodes = ImmutableMap.of("r1", n1, "r2", n2);
     Map<String, VirtualRouter> vrs =

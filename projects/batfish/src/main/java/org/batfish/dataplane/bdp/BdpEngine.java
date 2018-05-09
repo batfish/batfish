@@ -202,7 +202,7 @@ public class BdpEngine {
       try (ActiveSpan computeIpOwnersSpan =
           GlobalTracer.get().buildSpan("Computing ip owners").startActive()) {
         assert computeIpOwnersSpan != null;
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
         dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
       }
