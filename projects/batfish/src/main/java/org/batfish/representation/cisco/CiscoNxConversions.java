@@ -148,7 +148,7 @@ final class CiscoNxConversions {
   static Map<Ip, BgpNeighbor> getNeighbors(
       Configuration c,
       Vrf vrf,
-      org.batfish.datamodel.BgpProcess proc,
+      BgpProcess proc,
       CiscoNxBgpGlobalConfiguration bgpConfig,
       CiscoNxBgpVrfConfiguration nxBgpVrf,
       Warnings warnings) {
@@ -178,7 +178,7 @@ final class CiscoNxConversions {
   static Map<Prefix, BgpNeighbor> getPassiveNeighbors(
       Configuration c,
       Vrf vrf,
-      org.batfish.datamodel.BgpProcess proc,
+      BgpProcess proc,
       CiscoNxBgpGlobalConfiguration bgpConfig,
       CiscoNxBgpVrfConfiguration nxBgpVrf,
       Warnings warnings) {
@@ -314,9 +314,6 @@ final class CiscoNxConversions {
     @Nullable
     CiscoNxBgpVrfNeighborAddressFamilyConfiguration naf4 = neighbor.getIpv4UnicastAddressFamily();
     @Nullable CiscoNxBgpVrfAddressFamilyConfiguration af4 = vrfConfig.getIpv4UnicastAddressFamily();
-    @Nullable
-    CiscoNxBgpVrfNeighborAddressFamilyConfiguration naf6 = neighbor.getIpv6UnicastAddressFamily();
-    @Nullable CiscoNxBgpVrfAddressFamilyConfiguration af6 = vrfConfig.getIpv6UnicastAddressFamily();
 
     if (naf4 != null) {
       newNeighbor.setAdvertiseInactive(
