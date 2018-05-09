@@ -1533,6 +1533,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _config.setProperty(BfConsts.ARG_CONTAINER_DIR, containerDir.toString());
   }
 
+  public void setDebugFlags(List<String> debugFlags) {
+    _config.setProperty(ARG_DEBUG_FLAGS, debugFlags);
+  }
+
   public void setDeltaEnvironmentName(String diffEnvironmentName) {
     _config.setProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvironmentName);
   }
