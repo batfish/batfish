@@ -79,11 +79,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
       dhints.setTextDesc(
           String.format(
               "On ${%s} session ${%s}:${%s} has configured status ${%s}.",
-              COL_NODE,
-              COL_VRF_NAME,
-              COL_REMOTE_PREFIX,
-              COL_CONFIGURED_STATUS,
-              COL_ESTABLISHED_NEIGHBORS));
+              COL_NODE, COL_VRF_NAME, COL_REMOTE_PREFIX, COL_CONFIGURED_STATUS));
     }
     return new TableMetadata(columnMetadata, dhints);
   }
