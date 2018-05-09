@@ -41,7 +41,7 @@ public class CompositeNodJob extends AbstractNodJob {
       Synthesizer dataPlaneSynthesizer = _dataPlaneSynthesizers.get(i);
       QuerySynthesizer querySynthesizer = _querySynthesizers.get(i);
       ReachabilityProgram baseProgram =
-          instrumentReachabilityProgram(dataPlaneSynthesizer.synthesizeNodDataPlaneProgram());
+          instrumentReachabilityProgram(dataPlaneSynthesizer.synthesizeNodProgram());
       ReachabilityProgram queryProgram =
           instrumentReachabilityProgram(
               querySynthesizer.getReachabilityProgram(dataPlaneSynthesizer.getInput()));

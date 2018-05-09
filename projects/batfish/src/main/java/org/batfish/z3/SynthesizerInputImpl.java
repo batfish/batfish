@@ -219,6 +219,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, IpSpaceSpecializer> _ipSpaceSpecializers;
 
+  private final boolean _dataPlane;
+
   private final @Nonnull Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
   private final @Nonnull Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
@@ -303,7 +305,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _outgoingAcls = computeOutgoingAcls();
     _simplify = simplify;
     _vectorizedParameters = vectorizedParameters;
-    if (forwardingAnalysis != null) {
+
+    _dataPlane = forwardingAnalysis != null;
+    if (_dataPlane) {
       _arpTrueEdge = computeArpTrueEdge(forwardingAnalysis.getArpTrueEdge());
       _neighborUnreachable =
           computeNeighborUnreachable(forwardingAnalysis.getNeighborUnreachable());
@@ -823,6 +827,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Map<String, Set<Ip>> getIpsByHostname() {
     return _ipsByHostname;
+  }
+
+  @Override
+  public boolean isDataPlane() {
+    return _dataPlane;
   }
 
   @Override

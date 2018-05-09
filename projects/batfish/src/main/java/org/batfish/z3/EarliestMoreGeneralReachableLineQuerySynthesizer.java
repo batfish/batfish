@@ -29,11 +29,7 @@ import org.batfish.z3.state.NumberedQuery;
 public class EarliestMoreGeneralReachableLineQuerySynthesizer
     extends FirstUnsatQuerySynthesizer<AclLine, Integer> {
 
-  private String _aclName;
-
   private List<AclLine> _earlierReachableLines;
-
-  private String _hostname;
 
   private IpAccessList _list;
 
@@ -57,8 +53,6 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
     super(unreachableLine);
     _unreachableLine = unreachableLine;
     _earlierReachableLines = earlierReachableLines;
-    _hostname = _unreachableLine.getHostname();
-    _aclName = _unreachableLine.getAclName();
     _list = list;
     _namedIpSpaces = ImmutableMap.copyOf(namedIpSpaces);
     _nodeAcls = ImmutableMap.copyOf(nodeAcls);
@@ -111,10 +105,5 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
         .setQueries(queries.build())
         .setRules(rules.build())
         .build();
-  }
-
-  @Override
-  public ReachabilityProgram synthesizeBaseProgram(Synthesizer synthesizer) {
-    return synthesizer.synthesizeNodAclProgram(_hostname, _aclName);
   }
 }
