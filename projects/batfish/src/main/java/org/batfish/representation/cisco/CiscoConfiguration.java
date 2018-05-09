@@ -1397,6 +1397,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     }
 
+    // Only redistribute default route if `default-information originate` is set.
+    BooleanExpr redistributeDefaultRoute =
+        ipv4af == null || !ipv4af.getDefaultInformationOriginate()
+            ? NOT_DEFAULT_ROUTE
+            : BooleanExprs.TRUE;
+
     // Export RIP routes that should be redistributed.
     CiscoNxBgpRedistributionPolicy ripPolicy =
         ipv4af == null ? null : ipv4af.getRedistributionPolicy(RoutingProtocol.RIP);
@@ -1407,6 +1413,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.RIP),
+              redistributeDefaultRoute,
               bgpRedistributeWithEnvironmentExpr(
                   map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction rip = new Conjunction(conditions);
@@ -1423,6 +1430,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.STATIC),
+              redistributeDefaultRoute
               bgpRedistributeWithEnvironmentExpr(
                   map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction staticRedist = new Conjunction(conditions);
@@ -1439,6 +1447,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.CONNECTED),
+              redistributeDefaultRoute,
               bgpRedistributeWithEnvironmentExpr(
                   map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction connected = new Conjunction(conditions);
@@ -1456,6 +1465,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       List<BooleanExpr> conditions =
           ImmutableList.of(
               new MatchProtocol(RoutingProtocol.OSPF),
+              redistributeDefaultRoute,
               bgpRedistributeWithEnvironmentExpr(
                   map == null ? BooleanExprs.TRUE : new CallExpr(routeMap), OriginType.INCOMPLETE));
       Conjunction ospf = new Conjunction(conditions);
