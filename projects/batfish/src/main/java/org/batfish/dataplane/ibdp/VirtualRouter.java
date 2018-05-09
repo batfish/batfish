@@ -2,8 +2,8 @@ package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
-import static org.batfish.dataplane.ibdp.AbstractRib.importRib;
-import static org.batfish.dataplane.ibdp.RibDelta.importRibDelta;
+import static org.batfish.dataplane.rib.AbstractRib.importRib;
+import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
@@ -75,8 +75,22 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.dataplane.ibdp.RibDelta.Builder;
-import org.batfish.dataplane.ibdp.RouteAdvertisement.Reason;
+import org.batfish.dataplane.rib.BgpBestPathRib;
+import org.batfish.dataplane.rib.BgpMultipathRib;
+import org.batfish.dataplane.rib.ConnectedRib;
+import org.batfish.dataplane.rib.OspfExternalType1Rib;
+import org.batfish.dataplane.rib.OspfExternalType2Rib;
+import org.batfish.dataplane.rib.OspfInterAreaRib;
+import org.batfish.dataplane.rib.OspfIntraAreaRib;
+import org.batfish.dataplane.rib.OspfRib;
+import org.batfish.dataplane.rib.Rib;
+import org.batfish.dataplane.rib.RibDelta;
+import org.batfish.dataplane.rib.RibDelta.Builder;
+import org.batfish.dataplane.rib.RipInternalRib;
+import org.batfish.dataplane.rib.RipRib;
+import org.batfish.dataplane.rib.RouteAdvertisement;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
+import org.batfish.dataplane.rib.StaticRib;
 
 public class VirtualRouter extends ComparableStructure<String> {
 
@@ -103,10 +117,10 @@ public class VirtualRouter extends ComparableStructure<String> {
   transient BgpMultipathRib _bgpMultipathRib;
 
   /** Parent configuration for this Virtual router */
-  final Configuration _c;
+  private final Configuration _c;
 
   /** The RIB containing connected routes */
-  transient ConnectedRib _connectedRib;
+  private transient ConnectedRib _connectedRib;
 
   /** Helper RIB containing best paths obtained with external BGP */
   transient BgpBestPathRib _ebgpBestPathRib;
@@ -199,10 +213,11 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   final Vrf _vrf;
 
-  VirtualRouter(String name, Configuration c) {
+  VirtualRouter(final String name, final Configuration c) {
     super(name);
     _c = c;
     _vrf = c.getVrfs().get(name);
+    initRibs();
     // Keep track of sent and received advertisements
     _receivedBgpAdvertisements = new LinkedHashSet<>();
     _sentBgpAdvertisements = new LinkedHashSet<>();
@@ -234,13 +249,11 @@ public class VirtualRouter extends ComparableStructure<String> {
   /**
    * Prep for the Egp part of the computation
    *
-   * @param ipOwners Mapping of IPs to nodes names as computed by batfish parser
    * @param externalAdverts a set of external BGP advertisements
    * @param allNodes map of all network nodes, keyed by hostname
    * @param bgpTopology the bgp peering relationships
    */
   void initForEgpComputation(
-      Map<Ip, Set<String>> ipOwners,
       Set<BgpAdvertisement> externalAdverts,
       final Map<String, Node> allNodes,
       Topology topology,
@@ -977,44 +990,46 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** Initialize all ribs on this router. All RIBs will be empty */
   @VisibleForTesting
   void initRibs() {
-    _connectedRib = new ConnectedRib(this);
+    _connectedRib = new ConnectedRib();
     // If bgp process is null, doesn't matter
     MultipathEquivalentAsPathMatchMode mpTieBreaker =
         _vrf.getBgpProcess() == null
             ? EXACT_PATH
             : _vrf.getBgpProcess().getMultipathEquivalentAsPathMatchMode();
-    _ebgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ebgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _generatedRib = new Rib(this);
-    _ibgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ibgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _independentRib = new Rib(this);
-    _mainRib = new Rib(this);
-    _ospfExternalType1Rib = new OspfExternalType1Rib(this, _receivedOspExternalType1Routes);
-    _ospfExternalType2Rib = new OspfExternalType2Rib(this, _receivedOspExternalType2Routes);
-    _ospfExternalType1StagingRib = new OspfExternalType1Rib(this, null);
-    _ospfExternalType2StagingRib = new OspfExternalType2Rib(this, null);
-    _ospfInterAreaRib = new OspfInterAreaRib(this);
-    _ospfInterAreaStagingRib = new OspfInterAreaRib(this);
+    _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
+    _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _generatedRib = new Rib();
+    _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
+    _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _independentRib = new Rib();
+    _mainRib = new Rib();
+    _ospfExternalType1Rib =
+        new OspfExternalType1Rib(getHostname(), _receivedOspExternalType1Routes);
+    _ospfExternalType2Rib =
+        new OspfExternalType2Rib(getHostname(), _receivedOspExternalType2Routes);
+    _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
+    _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
+    _ospfInterAreaRib = new OspfInterAreaRib();
+    _ospfInterAreaStagingRib = new OspfInterAreaRib();
     _ospfIntraAreaRib = new OspfIntraAreaRib(this);
     _ospfIntraAreaStagingRib = new OspfIntraAreaRib(this);
-    _ospfRib = new OspfRib(this);
-    _ripInternalRib = new RipInternalRib(this);
-    _ripInternalStagingRib = new RipInternalRib(this);
-    _ripRib = new RipRib(this);
-    _staticRib = new StaticRib(this);
-    _staticInterfaceRib = new StaticRib(this);
-    _bgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
+    _ospfRib = new OspfRib();
+    _ripInternalRib = new RipInternalRib();
+    _ripInternalStagingRib = new RipInternalRib();
+    _ripRib = new RipRib();
+    _staticRib = new StaticRib();
+    _staticInterfaceRib = new StaticRib();
+    _bgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
 
-    _ebgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ibgpMultipathRib = new BgpMultipathRib(this, mpTieBreaker);
+    _ebgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
+    _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     BgpTieBreaker tieBreaker =
         _vrf.getBgpProcess() == null
             ? BgpTieBreaker.ARRIVAL_ORDER
             : _vrf.getBgpProcess().getTieBreaker();
-    _ebgpBestPathRib = new BgpBestPathRib(this, tieBreaker, null);
-    _ibgpBestPathRib = new BgpBestPathRib(this, tieBreaker, null);
-    _bgpBestPathRib = new BgpBestPathRib(this, tieBreaker, _receivedBgpRoutes);
+    _ebgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
+    _ibgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
+    _bgpBestPathRib = new BgpBestPathRib(tieBreaker, _receivedBgpRoutes, _mainRib);
   }
 
   /** Initialize the static route RIB from the VRF config. */
@@ -1053,17 +1068,12 @@ public class VirtualRouter extends ComparableStructure<String> {
 
     for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
       Ip localIp = neighbor.getLocalIp();
-      Set<String> localIpOwners = ipOwners.get(localIp);
       String hostname = _c.getHostname();
-      if (localIpOwners == null || !localIpOwners.contains(hostname)) {
+      if (localIp == null || Ip.AUTO.equals(localIp) || neighbor.getDynamic()) {
+        // Skip neighbors for which cannot reasonably determine localIp
         continue;
       }
-      Prefix remotePrefix = neighbor.getPrefix();
-      if (neighbor.getDynamic() || Ip.AUTO.equals(neighbor.getLocalIp())) {
-        // Do not support dynamic outside neighbors
-        continue;
-      }
-      Ip remoteIp = remotePrefix.getStartIp();
+      Ip remoteIp = neighbor.getPrefix().getStartIp();
       if (ipOwners.get(remoteIp) != null) {
         // Skip if neighbor is not outside the network
         continue;
@@ -1165,7 +1175,7 @@ public class VirtualRouter extends ComparableStructure<String> {
            *  iBGP speaker should not send out routes to iBGP neighbor whose router-id is
            *  same as originator id of advertisement
            */
-          if (!ebgpSession && routeOriginatorIp != null && remoteIp.equals(routeOriginatorIp)) {
+          if (!ebgpSession && remoteIp.equals(routeOriginatorIp)) {
             continue;
           }
           if (routeProtocol == RoutingProtocol.IBGP && !ebgpSession) {
@@ -1243,7 +1253,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                 route,
                 transformedOutgoingRouteBuilder,
                 remoteIp,
-                remotePrefix,
+                neighbor.getPrefix(),
                 remoteVrfName,
                 Direction.OUT);
         if (acceptOutgoing) {
@@ -1772,11 +1782,11 @@ public class VirtualRouter extends ComparableStructure<String> {
       Node neighbor = allNodes.get(neighborName);
       String neighborInterfaceName = edge.getInt2();
       OspfArea area = connectingInterface.getOspfArea();
-      Configuration nc = neighbor._c;
+      Configuration nc = neighbor.getConfiguration();
       Interface neighborInterface = nc.getInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
-          allNodes.get(neighborName)._virtualRouters.get(neighborVrfName);
+          allNodes.get(neighborName).getVirtualRouters().get(neighborVrfName);
 
       OspfArea neighborArea = neighborInterface.getOspfArea();
       if (connectingInterface.getOspfEnabled()
@@ -1945,7 +1955,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     // If there is a summary filter, run the route through it
     if (hasSummaryFilter) {
       RouteFilterList neighborSummaryFilter =
-          neighbor._c.getRouteFilterLists().get(neighborSummaryFilterName);
+          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
       allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
     }
     return allowed;
@@ -1966,7 +1976,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     // If there is a summary filter, run the route through it
     if (hasSummaryFilter) {
       RouteFilterList neighborSummaryFilter =
-          neighbor._c.getRouteFilterLists().get(neighborSummaryFilterName);
+          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
       allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
     }
     return allowed;
@@ -2031,7 +2041,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             : connectingInterfaceCost;
     Long areaNum = area.getName();
     VirtualRouter neighborVirtualRouter =
-        neighbor._virtualRouters.get(neighborInterface.getVrfName());
+        neighbor.getVirtualRouters().get(neighborInterface.getVrfName());
     boolean changed = false;
     for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
       changed |=
@@ -2118,7 +2128,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
       String neighborName = edge.getNode2();
       Node neighbor = nodes.get(neighborName);
-      Interface neighborInterface = neighbor._c.getInterfaces().get(edge.getInt2());
+      Interface neighborInterface = neighbor.getConfiguration().getInterfaces().get(edge.getInt2());
 
       changed |=
           propagateOspfInternalRoutesFromNeighbor(
@@ -2168,10 +2178,11 @@ public class VirtualRouter extends ComparableStructure<String> {
       String neighborName = edge.getNode2();
       Node neighbor = nodes.get(neighborName);
       String neighborInterfaceName = edge.getInt2();
-      Interface neighborInterface = neighbor._c.getInterfaces().get(neighborInterfaceName);
+      Interface neighborInterface =
+          neighbor.getConfiguration().getInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
-          nodes.get(neighborName)._virtualRouters.get(neighborVrfName);
+          nodes.get(neighborName).getVirtualRouters().get(neighborVrfName);
 
       if (connectingInterface.getRipEnabled()
           && !connectingInterface.getRipPassive()
@@ -2231,10 +2242,10 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @param bgpTopology the bgp peering relationships
    */
   private void queueOutgoingBgpRoutes(
-      RibDelta<BgpRoute> bgpBestPathDelta,
+      @Nullable RibDelta<BgpRoute> bgpBestPathDelta,
       RibDelta<BgpRoute> ebgpBestPathDelta,
-      RibDelta<BgpRoute> bgpMultiPathDelta,
-      RibDelta<AbstractRoute> mainDelta,
+      @Nullable RibDelta<BgpRoute> bgpMultiPathDelta,
+      @Nullable RibDelta<AbstractRoute> mainDelta,
       final Map<String, Node> allNodes,
       Network<BgpNeighbor, BgpSession> bgpTopology) {
     for (BgpNeighbor neighbor : _vrf.getBgpProcess().getNeighbors().values()) {
@@ -2304,7 +2315,8 @@ public class VirtualRouter extends ComparableStructure<String> {
    *     routes
    */
   private void queueOutgoingOspfExternalRoutes(
-      RibDelta<OspfExternalType1Route> type1delta, RibDelta<OspfExternalType2Route> type2delta) {
+      @Nullable RibDelta<OspfExternalType1Route> type1delta,
+      @Nullable RibDelta<OspfExternalType2Route> type2delta) {
     if (_vrf.getOspfProcess() == null) {
       return;
     }
@@ -2470,8 +2482,8 @@ public class VirtualRouter extends ComparableStructure<String> {
     /*
      * RIBs not read from can just be re-initialized
      */
-    _ospfRib = new OspfRib(this);
-    _ripRib = new RipRib(this);
+    _ospfRib = new OspfRib();
+    _ripRib = new RipRib();
 
     /*
      * Staging RIBs can also be re-initialized
@@ -2480,10 +2492,10 @@ public class VirtualRouter extends ComparableStructure<String> {
         _vrf.getBgpProcess() == null
             ? EXACT_PATH
             : _vrf.getBgpProcess().getMultipathEquivalentAsPathMatchMode();
-    _ebgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ibgpStagingRib = new BgpMultipathRib(this, mpTieBreaker);
-    _ospfExternalType1StagingRib = new OspfExternalType1Rib(this, null);
-    _ospfExternalType2StagingRib = new OspfExternalType2Rib(this, null);
+    _ebgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
+    _ospfExternalType1StagingRib = new OspfExternalType1Rib(getHostname(), null);
+    _ospfExternalType2StagingRib = new OspfExternalType2Rib(getHostname(), null);
 
     /*
      * Add routes that cannot change (does not affect below computation)
@@ -2677,11 +2689,11 @@ public class VirtualRouter extends ComparableStructure<String> {
       Node neighbor = allNodes.get(neighborName);
       String neighborInterfaceName = edge.getInt2();
       OspfArea area = connectingInterface.getOspfArea();
-      Configuration nc = neighbor._c;
+      Configuration nc = neighbor.getConfiguration();
       Interface neighborInterface = nc.getInterfaces().get(neighborInterfaceName);
       String neighborVrfName = neighborInterface.getVrfName();
       VirtualRouter neighborVirtualRouter =
-          allNodes.get(neighborName)._virtualRouters.get(neighborVrfName);
+          allNodes.get(neighborName).getVirtualRouters().get(neighborVrfName);
 
       OspfArea neighborArea = neighborInterface.getOspfArea();
       if (connectingInterface.getOspfEnabled()
@@ -2696,6 +2708,26 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
 
     return ImmutableSortedMap.copyOf(neighbors);
+  }
+
+  public Configuration getConfiguration() {
+    return _c;
+  }
+
+  public ConnectedRib getConnectedRib() {
+    return _connectedRib;
+  }
+
+  public Fib getFib() {
+    return _fib;
+  }
+
+  public Rib getMainRib() {
+    return _mainRib;
+  }
+
+  public BgpBestPathRib getBgpBestPathRib() {
+    return _bgpBestPathRib;
   }
 
   /** Convenience method to get the VirtualRouter's hostname */

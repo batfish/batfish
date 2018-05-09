@@ -1,14 +1,13 @@
-package org.batfish.dataplane.ibdp;
+package org.batfish.dataplane.rib;
 
 import org.batfish.datamodel.OspfInterAreaRoute;
 
 public class OspfInterAreaRib extends AbstractRib<OspfInterAreaRoute> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
-  public OspfInterAreaRib(VirtualRouter owner) {
-    super(owner, null);
+  public OspfInterAreaRib() {
+    super(null);
   }
 
   @Override
