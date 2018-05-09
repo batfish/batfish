@@ -661,13 +661,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   /**
-   * Identifies any independently unmatchable ACL lines in the given set of ACL lines.
+   * Identifies any independently unmatchable ACL lines (i.e. they have unsatisfiable match
+   * condition) in the given set of ACL lines.
    *
    * @param configurations Map of hostnames -> configuration objects
    * @param linesToCheck Map of hostnames -> ACL names -> set of line numbers for which to check
    *     matchability
-   * @return Map of hostname -> name of acl for which named host is representative -> list of lines
-   *     that are independently unmatchable, i.e. they have unsatisfiable match condition
+   * @return Map of hostname -> ACL names -> set of line numbers that are independently unmatchable
    */
   public SortedMap<String, SortedMap<String, SortedSet<Integer>>>
       computeIndependentlyUnmatchableAclLines(
