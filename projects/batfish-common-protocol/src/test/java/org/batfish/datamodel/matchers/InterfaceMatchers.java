@@ -11,14 +11,18 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasZoneName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
@@ -40,6 +44,21 @@ public final class InterfaceMatchers {
    */
   public static HasAccessVlan hasAccessVlan(Matcher<? super Integer> subMatcher) {
     return new HasAccessVlan(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided value matches the interface's Allowed VLANs.
+   */
+  public static HasAllowedVlans hasAllowedVlans(List<SubRange> value) {
+    return hasAllowedVlans(equalTo(value));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * Allowed VLANs.
+   */
+  public static HasAllowedVlans hasAllowedVlans(Matcher<? super List<SubRange>> subMatcher) {
+    return new HasAllowedVlans(subMatcher);
   }
 
   /**
@@ -112,6 +131,21 @@ public final class InterfaceMatchers {
    */
   public static HasSourceNats hasSourceNats(@Nonnull Matcher<? super List<SourceNat>> subMatcher) {
     return new HasSourceNats(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided value matches the interface's Switch Port mode.
+   */
+  public static HasSwitchPortMode hasSwitchPortMode(SwitchportMode switchportMode) {
+    return hasSwitchPortMode(equalTo(switchportMode));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * Switch Port mode.
+   */
+  public static HasSwitchPortMode hasSwitchPortMode(Matcher<? super SwitchportMode> subMatcher) {
+    return new HasSwitchPortMode(subMatcher);
   }
 
   /**

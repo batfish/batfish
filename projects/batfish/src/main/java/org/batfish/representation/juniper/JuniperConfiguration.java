@@ -215,7 +215,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
-  private Map<String, Integer> _vlanNameToIds;
+  private final Map<String, Vlan> _vlanNameToVlan;
 
   private final Map<String, Zone> _zones;
 
@@ -250,7 +250,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _unimplementedFeatures = unimplementedFeatures;
-    _vlanNameToIds = new TreeMap<>();
+    _vlanNameToVlan = new TreeMap<>();
     _zones = new TreeMap<>();
   }
 
@@ -797,8 +797,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return _unimplementedFeatures;
   }
 
-  public Map<String, Integer> getVlanNameToIds() {
-    return _vlanNameToIds;
+  public Map<String, Vlan> getVlanNameToVlan() {
+    return _vlanNameToVlan;
   }
 
   public Map<String, Zone> getZones() {
@@ -1272,9 +1272,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     if (iface.getSwitchportMode() == SwitchportMode.ACCESS && iface.getAccessVlan() != null) {
-      Integer vlanId = getVlanNameToIds().get(iface.getAccessVlan());
-      if (vlanId != null) {
-        newIface.setAccessVlan(getVlanNameToIds().get(iface.getAccessVlan()));
+      Vlan vlan = getVlanNameToVlan().get(iface.getAccessVlan());
+      if (vlan != null) {
+        newIface.setAccessVlan(vlan.getVlanId());
       }
     }
     newIface.setAllowedVlans(iface.getAllowedVlans());
@@ -2211,6 +2211,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _applicationSets);
     markStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
+    markStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN, _vlanNameToVlan);
 
     // record defined structures
     recordStructure(_applications, JuniperStructureType.APPLICATION);

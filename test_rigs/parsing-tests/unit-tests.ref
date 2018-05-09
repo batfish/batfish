@@ -42815,8 +42815,7 @@
             "              (s_vlans_tail",
             "                (vlt_vlan_id",
             "                  VLAN_ID:'vlan-id'  <== mode:DEFAULT_MODE",
-            "                  (variable",
-            "                    DEC:'2000'  <== mode:DEFAULT_MODE))))))))",
+            "                  DEC:'2000'  <== mode:DEFAULT_MODE)))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -54044,6 +54043,15 @@
             "site-dhcp" : {
               "dhcp relay group active-server-group" : [
                 13
+              ]
+            }
+          }
+        },
+        "juniper_interfaces" : {
+          "vlan" : {
+            "bippetyboppety" : {
+              "interface vlan" : [
+                12
               ]
             }
           }

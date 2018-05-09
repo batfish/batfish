@@ -455,6 +455,7 @@ import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
+import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
@@ -2487,9 +2488,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterS_vlans_named(S_vlans_namedContext ctx) {
-    if (ctx.name != null) {
-      _currentVlanName = ctx.name.getText();
-    }
+    _currentVlanName = ctx.name.getText();
   }
 
   @Override
@@ -3079,7 +3078,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     } else if (ctx.name != null) {
       _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
-      _currentInterface.setAccessVlan(ctx.name.getText());
+      String name = ctx.name.getText();
+      _currentInterface.setAccessVlan(name);
+      _configuration.referenceStructure(
+          JuniperStructureType.VLAN,
+          name,
+          JuniperStructureUsage.INTERFACE_VLAN,
+          ctx.name.getStart().getLine());
     }
   }
 
@@ -3703,6 +3708,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitS_vlans_named(S_vlans_namedContext ctx) {
+    _currentVlanName = null;
+  }
+
+  @Override
   public void exitSe_zones(Se_zonesContext ctx) {
     _hasZones = true;
   }
@@ -4220,17 +4230,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    if (ctx.name != null) {
-      if (_currentVlanName != null) {
-        try {
-          _configuration
-              .getVlanNameToIds()
-              .put(_currentVlanName, Integer.valueOf(ctx.name.getText()));
-        } catch (NumberFormatException e) {
-          _w.redFlag(String.format("Invalid VLAN ID configured for VLAN %s", _currentVlanName));
-        }
-      }
-    }
+    Vlan vlan = new Vlan(_currentVlanName, ctx.id.getLine(), toInt(ctx.id));
+    _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
   }
 
   @Nullable
