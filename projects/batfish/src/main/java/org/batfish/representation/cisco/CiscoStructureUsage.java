@@ -47,6 +47,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   DOCSIS_POLICY_DOCSIS_POLICY_RULE("cable load-balance docsis-policy rule"),
   EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP("extended access-list network object-group"),
   EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP("extended access-list protocol object-group"),
+  EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP(
+      "extended access-list protocol or service object-group"),
   EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP("extended access-list service object-group"),
   INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP("class-map type inspect match access-group"),
   INSPECT_POLICY_MAP_INSPECT_CLASS("policy-map type inspect class type inspect"),

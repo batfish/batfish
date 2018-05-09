@@ -17,7 +17,7 @@ public class ServiceObjectGroupServiceSpecifier implements AccessListServiceSpec
   @Override
   public AclLineMatchExpr toAclLineMatchExpr() {
     return new PermittedByAcl(
-        CiscoConfiguration.computeServiceObjectGroupAclName(_name),
+        CiscoConfiguration.computeObjectGroupAclName(_name),
         String.format("Match service object-group: '%s'", _name));
   }
 }

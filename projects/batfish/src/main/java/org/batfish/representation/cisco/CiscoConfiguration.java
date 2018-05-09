@@ -244,12 +244,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeProtocolObjectGroupAclName(String name) {
-    return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
-  }
-
-  public static String computeServiceObjectGroupAclName(String name) {
-    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
+  public static String computeObjectGroupAclName(String name) {
+    return String.format("~OBJECT_GROUP~%s~", name);
   }
 
   @Override
@@ -1166,8 +1162,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage, _networkObjectGroups);
   }
 
-  private void markProtocolObjectGroups(CiscoStructureUsage usage) {
-    markStructure(CiscoStructureType.PROTOCOL_OBJECT_GROUP, usage, _protocolObjectGroups);
+  private void markProtocolOrServiceObjectGroups(CiscoStructureUsage usage) {
+    markStructure(
+        CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        usage,
+        ImmutableList.of(_protocolObjectGroups, _serviceObjectGroups));
   }
 
   private void markRouteMaps(CiscoStructureUsage usage) {
@@ -3145,14 +3144,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
             c.getIpAccessLists()
-                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
+                .put(computeObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
 
     // convert each ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
                 .put(
-                    computeServiceObjectGroupAclName(name),
+                    computeObjectGroupAclName(name),
                     CiscoConversions.toIpAccessList(serviceObjectGroup)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
@@ -3435,7 +3434,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // object-group
     markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
-    markProtocolObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP);
+    markProtocolOrServiceObjectGroups(
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP);
     markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
 
     // zone
@@ -3486,7 +3486,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 IpAccessListLine.accepting()
                     .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
                     .build()))
-        .setName(computeServiceObjectGroupAclName(protocolObjectGroup.getName()))
+        .setName(computeObjectGroupAclName(protocolObjectGroup.getName()))
         .build();
   }
 

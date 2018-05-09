@@ -3766,12 +3766,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .setTcpFlags(tcpFlags)
           .build();
     } else if (ctx.ogs != null) {
+      // This object group specifier could be a service or protocol object group
       String name = ctx.ogs.getText();
       int line = ctx.ogs.getStart().getLine();
       _configuration.referenceStructure(
-          CiscoStructureType.SERVICE_OBJECT_GROUP,
+          CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
           name,
-          CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+          CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
           line);
       return new ServiceObjectGroupServiceSpecifier(name);
     } else {
