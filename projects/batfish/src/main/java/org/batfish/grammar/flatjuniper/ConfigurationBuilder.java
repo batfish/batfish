@@ -3077,6 +3077,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         subRanges.forEach(subRange -> _currentInterface.getAllowedVlans().add(subRange));
       }
     } else if (ctx.name != null) {
+      // SwitchPortMode here can be ACCESS or NONE, overwrite both with ACCESS(considered default)
       _currentInterface.setSwitchportMode(SwitchportMode.ACCESS);
       String name = ctx.name.getText();
       _currentInterface.setAccessVlan(name);
