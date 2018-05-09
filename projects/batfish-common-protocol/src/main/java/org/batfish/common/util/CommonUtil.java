@@ -403,6 +403,13 @@ public class CommonUtil {
                 ifaceEntry -> ImmutableSet.copyOf(ifaceEntry.getValue())));
   }
 
+  /**
+   * Compute the set of {@link Ip}s owned by each interface.
+   *
+   * @param configurations The network configurations.
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @return A mapping hostname -> interface name -> owned {@link Ip}s
+   */
   public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
       Map<String, Configuration> configurations, boolean excludeInactive) {
     return computeInterfaceOwnedIps(
