@@ -6,6 +6,33 @@ import org.batfish.common.util.ComparableStructure;
 
 public class VrrpGroup extends ComparableStructure<Integer> {
 
+  public static class Builder {
+    private int _name;
+
+    private int _priority;
+
+    private InterfaceAddress _virtualAddress;
+
+    public VrrpGroup build() {
+      return new VrrpGroup(this);
+    }
+
+    public Builder setName(int name) {
+      _name = name;
+      return this;
+    }
+
+    public Builder setPriority(int priority) {
+      _priority = priority;
+      return this;
+    }
+
+    public Builder setVirtualAddress(InterfaceAddress virtualAddress) {
+      _virtualAddress = virtualAddress;
+      return this;
+    }
+  }
+
   private static final String PROP_PREEMPT = "preempt";
 
   private static final String PROP_PRIORITY = "priority";
@@ -21,9 +48,19 @@ public class VrrpGroup extends ComparableStructure<Integer> {
 
   private InterfaceAddress _virtualAddress;
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   @JsonCreator
   public VrrpGroup(@JsonProperty(PROP_NAME) Integer name) {
     super(name);
+  }
+
+  private VrrpGroup(Builder builder) {
+    super(builder._name);
+    _priority = builder._priority;
+    _virtualAddress = builder._virtualAddress;
   }
 
   @JsonProperty(PROP_PREEMPT)
