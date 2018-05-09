@@ -33,6 +33,10 @@ public class Route6FilterLine implements Serializable {
     _lengthRange = lengthRange;
   }
 
+  public Route6FilterLine(LineAction action, Prefix6Range prefixRange) {
+    this(action, prefixRange.getPrefix6(), prefixRange.getLengthRange());
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
