@@ -2,7 +2,6 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import java.util.Map;
 import java.util.Set;
