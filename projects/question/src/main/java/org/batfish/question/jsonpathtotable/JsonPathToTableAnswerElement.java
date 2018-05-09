@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -30,7 +32,7 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
   }
 
   public static TableMetadata create(JsonPathToTableQuestion question) {
-    Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
+    SortedMap<String, ColumnMetadata> columnMetadataMap = new TreeMap<>();
     for (Entry<String, JsonPathToTableExtraction> entry :
         question.getPathQuery().getExtractions().entrySet()) {
       JsonPathToTableExtraction extraction = entry.getValue();
