@@ -1,5 +1,7 @@
 package org.batfish.z3.state.visitors;
 
+import static org.batfish.common.util.CommonUtil.forEachWithIndex;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -30,6 +32,7 @@ import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -192,6 +195,28 @@ public class DefaultTransitionGenerator implements StateVisitor {
                       });
             })
         .forEach(_rules::add);
+  }
+
+  @Override
+  public void visitAclLineIndependentMatch(AclLineIndependentMatch.State state) {
+    /*
+     *  For each acl line, add a rule that its match condition (as a BooleanExpr) implies its
+     *  corresponding named state.
+     */
+    _input
+        .getAclConditions()
+        .forEach(
+            (hostname, aclConditionsByAclName) ->
+                aclConditionsByAclName.forEach(
+                    (aclName, aclConditionsList) ->
+                        forEachWithIndex(
+                            aclConditionsList,
+                            (lineNumber, lineCriteria) ->
+                                _rules.add(
+                                    new BasicRuleStatement(
+                                        lineCriteria,
+                                        new AclLineIndependentMatch(
+                                            hostname, aclName, lineNumber))))));
   }
 
   @Override

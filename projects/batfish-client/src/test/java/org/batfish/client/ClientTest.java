@@ -843,7 +843,15 @@ public class ClientTest {
         "instance",
         new JSONObject()
             .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
+            .put("description", "test question description")
+            .put(
+                "variables",
+                new JSONObject()
+                    .put(
+                        "var1",
+                        new JSONObject()
+                            .put("description", "test var1 description")
+                            .put("longDescription", "test var1 long description"))));
     JSONObject question = Client.loadQuestionFromText(testQuestion.toString(), "testquestion");
 
     // checking if actual and loaded JSONs are same
@@ -853,6 +861,20 @@ public class ClientTest {
     assertEquals(
         "test question description",
         question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
+    assertEquals(
+        "test var1 description",
+        question
+            .getJSONObject(BfConsts.PROP_INSTANCE)
+            .getJSONObject(BfConsts.PROP_VARIABLES)
+            .getJSONObject("var1")
+            .getString(BfConsts.PROP_DESCRIPTION));
+    assertEquals(
+        "test var1 long description",
+        question
+            .getJSONObject(BfConsts.PROP_INSTANCE)
+            .getJSONObject(BfConsts.PROP_VARIABLES)
+            .getJSONObject("var1")
+            .getString(BfConsts.PROP_LONG_DESCRIPTION));
   }
 
   @Test

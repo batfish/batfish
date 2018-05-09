@@ -2,6 +2,7 @@ package org.batfish.z3.state.visitors;
 
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -41,6 +42,8 @@ public interface GenericStateExprVisitor<R> {
   R visitAccept(Accept accept);
 
   R visitAclDeny(AclDeny aclDeny);
+
+  R visitAclLineIndependentMatch(AclLineIndependentMatch aclLineIndependentMatch);
 
   R visitAclLineMatch(AclLineMatch aclLineMatch);
 

@@ -63,6 +63,8 @@ import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.dataplane.rib.BgpBestPathRib;
+import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -227,7 +229,6 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     /*
      * Instantiate routes
@@ -267,7 +268,7 @@ public class IncrementalDataPlanePluginTest {
      * Set the as-path match mode prior to instantiating bgp multipath RIB
      */
     proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
 
     /*
      * Prime bgp multipath RIB with best path for the prefix
@@ -348,9 +349,8 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
-    BgpBestPathRib bbr = BgpBestPathRib.initial(vr, null);
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpBestPathRib bbr = BgpBestPathRib.initial(null, null);
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     Prefix p = Prefix.ZERO;
     BgpRoute.Builder b = new BgpRoute.Builder().setNetwork(p).setProtocol(RoutingProtocol.IBGP);
 
@@ -415,12 +415,11 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     // good for both ebgp and ibgp
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     // ebgp
-    BgpBestPathRib ebgpBpr = BgpBestPathRib.initial(vr, null);
+    BgpBestPathRib ebgpBpr = BgpBestPathRib.initial(null, null);
     BgpRoute.Builder ebgpBuilder =
         new BgpRoute.Builder()
             .setNetwork(Prefix.ZERO)
@@ -434,7 +433,7 @@ public class IncrementalDataPlanePluginTest {
         ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(new Ip("1.1.1.2")).build();
     BgpRoute ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
     // ibgp
-    BgpBestPathRib ibgpBpr = BgpBestPathRib.initial(vr, null);
+    BgpBestPathRib ibgpBpr = BgpBestPathRib.initial(null, null);
     BgpRoute.Builder ibgpBuilder =
         new BgpRoute.Builder()
             .setNetwork(Prefix.ZERO)
@@ -528,9 +527,8 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
-    BgpBestPathRib bbr = BgpBestPathRib.initial(vr, null);
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpBestPathRib bbr = BgpBestPathRib.initial(null, null);
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     Ip ip1 = new Ip("1.0.0.0");
     Ip ip2 = new Ip("2.2.0.0");
     BgpRoute.Builder b1 =

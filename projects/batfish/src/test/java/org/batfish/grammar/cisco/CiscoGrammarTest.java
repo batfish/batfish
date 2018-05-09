@@ -708,6 +708,21 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosXePolicyMapClassDefault() throws IOException {
+    Configuration c = parseConfig("ios-xe-policy-map-class-default");
+
+    String dropPolicyMapAclName = computeInspectPolicyMapAclName("pdrop");
+    String passPolicyMapAclName = computeInspectPolicyMapAclName("ppass");
+    String unspecifiedPolicyMapAclName = computeInspectPolicyMapAclName("punspecified");
+
+    Flow flow = Flow.builder().setTag("").setIngressNode("").build();
+
+    assertThat(c, hasIpAccessList(dropPolicyMapAclName, rejects(flow, null, c)));
+    assertThat(c, hasIpAccessList(passPolicyMapAclName, accepts(flow, null, c)));
+    assertThat(c, hasIpAccessList(unspecifiedPolicyMapAclName, rejects(flow, null, c)));
+  }
+
+  @Test
   public void testIosXePolicyMapInspectClassInspectActions() throws IOException {
     Configuration c = parseConfig("ios-xe-policy-map-inspect-class-inspect-actions");
 
@@ -815,7 +830,7 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Network<BgpNeighbor, BgpSession> bgpTopology =
         CommonUtil.initBgpTopology(configurations, ipOwners, false);
     Configuration r1 = configurations.get("r1");
@@ -849,7 +864,7 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
     MultipathEquivalentAsPathMatchMode aristaDisabled =
         configurations
@@ -894,7 +909,7 @@ public class CiscoGrammarTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     batfish.computeDataPlane(false); // compute and cache the dataPlane

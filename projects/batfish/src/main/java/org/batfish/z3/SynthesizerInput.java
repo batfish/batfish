@@ -117,4 +117,7 @@ public interface SynthesizerInput {
 
   /** Mapping: hostname -> interface -> constraint on transformed source interface field */
   Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues();
+
+  /** Whether it's synthesizing data plane rules */
+  boolean isDataPlane();
 }

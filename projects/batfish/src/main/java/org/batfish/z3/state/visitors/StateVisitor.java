@@ -2,6 +2,7 @@ package org.batfish.z3.state.visitors;
 
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -39,6 +40,8 @@ public interface StateVisitor {
   void visitAccept(Accept.State accept);
 
   void visitAclDeny(AclDeny.State aclDeny);
+
+  void visitAclLineIndependentMatch(AclLineIndependentMatch.State state);
 
   void visitAclLineMatch(AclLineMatch.State aclLineMatch);
 

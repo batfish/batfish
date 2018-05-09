@@ -21,6 +21,4 @@ public abstract class FirstUnsatQuerySynthesizer<KeyT, ResultT> extends BaseQuer
   public List<ResultT> getResultsByQueryIndex() {
     return _resultsByQueryIndex;
   }
-
-  public abstract ReachabilityProgram synthesizeBaseProgram(Synthesizer synthesizer);
 }

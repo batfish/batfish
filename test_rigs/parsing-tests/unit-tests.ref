@@ -28802,7 +28802,57 @@
             "          ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
             "          (variable",
             "            VARIABLE:'MATCH_ASN'  <== mode:M_RouteMap)",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          (bgp_tail",
+            "            (null_bgp_tail",
+            "              LOG_NEIGHBOR_CHANGES:'log-neighbor-changes'  <== mode:DEFAULT_MODE",
+            "              (null_rest_of_line",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "      (router_bgp_stanza_tail",
+            "        (address_family_rb_stanza",
+            "          (address_family_header",
+            "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "            (bgp_address_family",
+            "              IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "              UNICAST:'unicast'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (address_family_footer)))",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_block_rb_stanza",
+            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'2.2.2.2'  <== mode:M_NEIGHBOR",
+            "          REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
+            "          DEC:'6600'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          (bgp_tail",
+            "            (local_as_bgp_tail",
+            "              LOCAL_AS:'local-as'  <== mode:DEFAULT_MODE",
+            "              DEC:'65500'  <== mode:DEFAULT_MODE",
+            "              NO_PREPEND:'no-prepend'  <== mode:DEFAULT_MODE",
+            "              REPLACE_AS:'replace-as'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          (bgp_tail",
+            "            (null_bgp_tail",
+            "              TIMERS:'timers'  <== mode:DEFAULT_MODE",
+            "              (null_rest_of_line",
+            "                DEC:'1'  <== mode:DEFAULT_MODE",
+            "                DEC:'3'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (neighbor_block_address_family",
+            "            (address_family_header",
+            "              ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
+            "              (bgp_address_family",
+            "                IPV4:'ipv4'  <== mode:DEFAULT_MODE",
+            "                UNICAST:'unicast'  <== mode:DEFAULT_MODE)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "            (bgp_tail",
+            "              (null_bgp_tail",
+            "                SOFT_RECONFIGURATION:'soft-reconfiguration'  <== mode:DEFAULT_MODE",
+            "                (null_rest_of_line",
+            "                  INBOUND:'inbound'  <== mode:DEFAULT_MODE",
+            "                  ALWAYS:'always'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (address_family_footer))))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -30032,15 +30082,15 @@
             "          (pm_iosict_inspect",
             "            INSPECT:'inspect'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "        (pm_iosi_class",
+            "        (pm_iosi_class_default",
             "          CLASS:'class'  <== mode:DEFAULT_MODE",
             "          CLASS_DEFAULT:'class-default'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "          (pi_iosic_drop",
+            "          (pi_iosicd_drop",
             "            DROP:'drop'  <== mode:DEFAULT_MODE",
             "            LOG:'log'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "          (pi_iosic_pass",
+            "          (pi_iosicd_pass",
             "            PASS:'pass'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
@@ -41138,7 +41188,8 @@
             "                      FROM:'from'  <== mode:DEFAULT_MODE",
             "                      (fftf_destination_address",
             "                        DESTINATION_ADDRESS:'destination-address'  <== mode:DEFAULT_MODE",
-            "                        IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE))))))))))",
+            "                        (fftfa_address_mask_prefix",
+            "                          IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE)))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -41163,7 +41214,8 @@
             "                      FROM:'from'  <== mode:DEFAULT_MODE",
             "                      (fftf_destination_address",
             "                        DESTINATION_ADDRESS:'destination-address'  <== mode:DEFAULT_MODE",
-            "                        IP_PREFIX:'1.2.3.5/32'  <== mode:DEFAULT_MODE))))))))))",
+            "                        (fftfa_address_mask_prefix",
+            "                          IP_PREFIX:'1.2.3.5/32'  <== mode:DEFAULT_MODE)))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -42813,8 +42865,7 @@
             "              (s_vlans_tail",
             "                (vlt_vlan_id",
             "                  VLAN_ID:'vlan-id'  <== mode:DEFAULT_MODE",
-            "                  (variable",
-            "                    DEC:'2000'  <== mode:DEFAULT_MODE))))))))",
+            "                  DEC:'2000'  <== mode:DEFAULT_MODE)))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
@@ -54046,6 +54097,15 @@
             }
           }
         },
+        "juniper_interfaces" : {
+          "vlan" : {
+            "bippetyboppety" : {
+              "interface vlan" : [
+                12
+              ]
+            }
+          }
+        },
         "juniper_snmp" : {
           "prefix-list" : {
             "bippetyboo" : {
@@ -54360,7 +54420,8 @@
         },
         "cisco_nxos_bgp" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: No remote-as set for peer: 123.123.123.0/24"
+            "1" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '2.2.2.2'",
+            "2" : "MISCELLANEOUS: No remote-as set for peer: 123.123.123.0/24"
           }
         },
         "ios_xr_bgp_neighbor_group" : {

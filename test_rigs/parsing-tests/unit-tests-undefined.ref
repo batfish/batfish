@@ -999,6 +999,14 @@
           ]
         }
       },
+      "undefined:vlan:usage:interface vlan:bippetyboppety" : {
+        "description" : "Undefined reference to structure of type: 'vlan' with usage: 'interface vlan' named 'bippetyboppety'",
+        "files" : {
+          "juniper_interfaces" : [
+            12
+          ]
+        }
+      },
       "undefined:zone security:usage:interface zone-member:z1" : {
         "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
         "files" : {
@@ -1011,7 +1019,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 125
+      "numResults" : 126
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1622,6 +1630,15 @@
           "site-dhcp" : {
             "dhcp relay group active-server-group" : [
               13
+            ]
+          }
+        }
+      },
+      "juniper_interfaces" : {
+        "vlan" : {
+          "bippetyboppety" : {
+            "interface vlan" : [
+              12
             ]
           }
         }

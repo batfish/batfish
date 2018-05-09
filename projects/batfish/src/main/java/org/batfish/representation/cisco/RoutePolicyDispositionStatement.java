@@ -28,7 +28,7 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
         {
           If ifStatement =
               new If(
-                  BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+                  BooleanExprs.CALL_EXPR_CONTEXT,
                   ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
                   ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
           statements.add(ifStatement);
@@ -43,7 +43,7 @@ public class RoutePolicyDispositionStatement extends RoutePolicyStatement {
         {
           If ifStatement =
               new If(
-                  BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+                  BooleanExprs.CALL_EXPR_CONTEXT,
                   ImmutableList.of(Statements.SetLocalDefaultActionAccept.toStaticStatement()),
                   ImmutableList.of(Statements.SetDefaultActionAccept.toStaticStatement()));
           statements.add(ifStatement);

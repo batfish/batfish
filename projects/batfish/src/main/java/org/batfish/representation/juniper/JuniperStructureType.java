@@ -18,7 +18,8 @@ public enum JuniperStructureType implements StructureType {
   IPSEC_PROPOSAL("ipsec proposal"),
   POLICY_STATEMENT("policy-statement"),
   PREFIX_LIST("prefix-list"),
-  SECURE_TUNNEL_INTERFACE("secure tunnel interface");
+  SECURE_TUNNEL_INTERFACE("secure tunnel interface"),
+  VLAN("vlan");
 
   private final String _description;
 

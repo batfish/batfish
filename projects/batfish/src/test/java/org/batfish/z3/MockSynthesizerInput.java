@@ -27,6 +27,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
         _arpTrueEdge;
 
+    private boolean _dataPlane;
+
     private Set<Edge> _enabledEdges;
 
     private Map<String, Set<String>> _enabledInterfaces;
@@ -157,6 +159,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setDataPlane(boolean dataPlane) {
+      _dataPlane = dataPlane;
+      return this;
+    }
+
     public Builder setNamedIpSpaces(Map<String, Map<String, IpSpace>> namedIpSpaces) {
       _namedIpSpaces = namedIpSpaces;
       return this;
@@ -253,6 +260,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
   private final Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       _arpTrueEdge;
 
+  private final boolean _dataPlane;
+
   private final Set<Edge> _enabledEdges;
 
   private final Map<String, Set<String>> _enabledInterfaces;
@@ -303,6 +312,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _aclActions = builder._aclActions;
     _aclConditions = builder._aclConditions;
     _arpTrueEdge = builder._arpTrueEdge;
+    _dataPlane = builder._dataPlane;
     _enabledEdges = builder._enabledEdges;
     _enabledInterfaces = builder._enabledInterfaces;
     _enabledInterfacesByNodeVrf = builder._enabledInterfacesByNodeVrf;
@@ -462,5 +472,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<Type> getVectorizedParameters() {
     return _vectorizedParameters;
+  }
+
+  @Override
+  public boolean isDataPlane() {
+    return _dataPlane;
   }
 }
