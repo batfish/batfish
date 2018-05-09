@@ -93,7 +93,7 @@ public class NodesSpecifierTest {
     assertThat(suggestionsName.get(1).getText(), equalTo("na.*"));
     assertThat(suggestionsName.get(2).getText(), equalTo("nade1"));
 
-    // suggestionsRole should have one element: NAME:
+    // suggestionsRole should have one element: ROLE:
     assertThat(suggestionsRole, hasSize(1));
     assertThat(suggestionsRole.get(0).getText(), equalTo("ROLE:"));
   }
@@ -102,49 +102,43 @@ public class NodesSpecifierTest {
   public void autoCompleteRoleAllDimensions() {
     NodeRolesData nodeRolesData = initNodeRoleData();
     String queryAllDimensions = "ROLE:";
-    List<AutocompleteSuggestion> suggestionsAllDimensions =
+    List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryAllDimensions, null, nodeRolesData);
-    Set<String> suggestionsAllDimensionsText =
-        suggestionsAllDimensions
-            .stream()
-            .map(suggestion -> suggestion.getText())
-            .collect(Collectors.toSet());
+    Set<String> suggestionsText =
+        suggestions.stream().map(suggestion -> suggestion.getText()).collect(Collectors.toSet());
 
-    // suggestionsName should have two elements, one for each dimension
-    assertThat(suggestionsAllDimensions, hasSize(2));
-    assertThat(suggestionsAllDimensionsText, hasItem("ROLE:dim10:"));
-    assertThat(suggestionsAllDimensionsText, hasItem("ROLE:dim20:"));
+    // suggestions should have two elements, one for each dimension
+    assertThat(suggestions, hasSize(2));
+    assertThat(suggestionsText, hasItem("ROLE:dim10:"));
+    assertThat(suggestionsText, hasItem("ROLE:dim20:"));
   }
 
   @Test
   public void autoCompleteRolePartialDimension() {
     NodeRolesData nodeRolesData = initNodeRoleData();
     String queryDimensionPartial = "ROLE:dim1";
-    List<AutocompleteSuggestion> suggestionsDimensionPartial =
+    List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryDimensionPartial, null, nodeRolesData);
 
-    // suggestionsName should have one element
-    assertThat(suggestionsDimensionPartial, hasSize(1));
-    assertThat(suggestionsDimensionPartial.get(0).getText(), equalTo("ROLE:dim10:"));
+    // suggestions should have one element
+    assertThat(suggestions, hasSize(1));
+    assertThat(suggestions.get(0).getText(), equalTo("ROLE:dim10:"));
   }
 
   @Test
   public void autoCompleteRoleDimension() {
     NodeRolesData nodeRolesData = initNodeRoleData();
     String queryDimension = "ROLE:dim10:";
-    List<AutocompleteSuggestion> suggestionsDimension =
+    List<AutocompleteSuggestion> suggestions =
         NodesSpecifier.autoComplete(queryDimension, null, nodeRolesData);
-    Set<String> suggestionsDimensionText =
-        suggestionsDimension
-            .stream()
-            .map(suggestion -> suggestion.getText())
-            .collect(Collectors.toSet());
+    Set<String> suggestionsText =
+        suggestions.stream().map(suggestion -> suggestion.getText()).collect(Collectors.toSet());
 
-    // suggestionsName should have three elements, one for each role and one .*
-    assertThat(suggestionsDimension, hasSize(3));
-    assertThat(suggestionsDimensionText, hasItem("ROLE:dim10:.*"));
-    assertThat(suggestionsDimensionText, hasItem("ROLE:dim10:role1"));
-    assertThat(suggestionsDimensionText, hasItem("ROLE:dim10:role2"));
+    // suggestions should have three elements, one for each role and one .*
+    assertThat(suggestions, hasSize(3));
+    assertThat(suggestionsText, hasItem("ROLE:dim10:.*"));
+    assertThat(suggestionsText, hasItem("ROLE:dim10:role1"));
+    assertThat(suggestionsText, hasItem("ROLE:dim10:role2"));
   }
 
   @Test
