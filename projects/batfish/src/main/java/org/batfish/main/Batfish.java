@@ -1255,6 +1255,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Files.exists(path);
   }
 
+  @Override
+  public boolean debugFlagEnabled(String flag) {
+    return _settings.debugFlagEnabled(flag);
+  }
+
   private SortedMap<String, BgpAdvertisementsByVrf> deserializeEnvironmentBgpTables(
       Path serializeEnvironmentBgpTablesPath) {
     _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");

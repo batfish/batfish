@@ -49,14 +49,15 @@ public class NamedStructureEquivalenceSets<T> {
       _structureClassName = structureClassName;
     }
 
-    public void addEntry(String structureName, String hostname, T structure) {
+    public void addEntry(
+        String structureName, String hostname, T structure, boolean assumeAllUnique) {
       Map<Integer, Set<NamedStructureEquivalenceSet<T>>> sameNamedStructuresByHash =
           _sameNamedStructuresByNameAndHash.computeIfAbsent(structureName, s -> new HashMap<>());
       String structureJson = writeObject(structure);
       int hash = structureJson.hashCode();
       Set<NamedStructureEquivalenceSet<T>> eqSetsWithSameHash =
           sameNamedStructuresByHash.computeIfAbsent(hash, h -> new HashSet<>());
-      if (eqSetsWithSameHash.isEmpty()) {
+      if (assumeAllUnique || eqSetsWithSameHash.isEmpty()) {
         eqSetsWithSameHash.add(new NamedStructureEquivalenceSet<>(hostname, structure));
       } else {
         Optional<NamedStructureEquivalenceSet<T>> potentialMatchingSet =

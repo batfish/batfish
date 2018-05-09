@@ -41,6 +41,8 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 @AutoService(Plugin.class)
 public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
+  public static final String DEBUG_FLAG_ASSUME_ALL_UNIQUE = "compareSameName.assumeAllUnique";
+
   public static class CompareSameNameAnswerElement extends AnswerElement {
 
     private static final String PROP_EQUIVALENCE_SETS_MAP = "equivalenceSetsMap";
@@ -118,6 +120,8 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private boolean _compareGenerated;
 
+    private boolean _assumeAllUnique;
+
     public CompareSameNameAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
@@ -135,7 +139,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     @Override
     public CompareSameNameAnswerElement answer() {
-
+      _assumeAllUnique = _batfish.debugFlagEnabled(DEBUG_FLAG_ASSUME_ALL_UNIQUE);
       CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
       _compareGenerated = question.getCompareGenerated();
       _configurations = _batfish.loadConfigurations();
@@ -207,7 +211,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         for (String structName : allNames) {
           T struct = structureMap.get(structName);
           if (struct != null || _missing) {
-            builder.addEntry(structName, hostname, struct);
+            builder.addEntry(structName, hostname, struct, _assumeAllUnique);
           }
         }
       }
@@ -216,6 +220,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         ae.clean();
       }
       return ae;
+    }
+
+    public void setAssumeAllUnique(boolean assumeAllUnique) {
+      _assumeAllUnique = assumeAllUnique;
     }
   }
 
