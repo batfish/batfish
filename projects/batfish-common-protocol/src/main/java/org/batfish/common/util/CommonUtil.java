@@ -425,71 +425,33 @@ public class CommonUtil {
    *     Interface}
    * @return A map of {@link Ip}s to a map of hostnames to vrfs that own the Ip.
    */
-  public static Map<Ip, Map<String, String>> computeIpVrfOwners(
-      boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
-    // TODO: confirm VRFs are handled correctly
-    Map<Ip, Map<String, String>> ipVrfOwners = new HashMap<>();
-    Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
-    enabledInterfaces.forEach(
-        (hostname, currentEnabledInterfacesByVrf) ->
-            currentEnabledInterfacesByVrf
-                .values()
-                .forEach(
-                    i -> {
-                      String vrf = i.getVrfName();
-                      if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
-                        return;
-                      }
-                      // collect vrrp info
-                      i.getVrrpGroups()
-                          .forEach(
-                              (groupNum, vrrpGroup) -> {
-                                InterfaceAddress address = vrrpGroup.getVirtualAddress();
-                                if (address == null) {
-                                  // This Vlan Interface has invalid configuration. The VRRP has no
-                                  // source
-                                  // IP address that would be used for VRRP election. This interface
-                                  // could
-                                  // never win the election, so is not a candidate.
-                                  return;
-                                }
-                                Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                                Set<Interface> candidates =
-                                    vrrpGroups.computeIfAbsent(
-                                        key,
-                                        k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                                candidates.add(i);
-                              });
-                      // collect prefixes
-                      i.getAllAddresses()
-                          .stream()
-                          .map(InterfaceAddress::getIp)
-                          .forEach(
-                              ip -> {
-                                Map<String, String> owners =
-                                    ipVrfOwners.computeIfAbsent(ip, k -> new HashMap<>());
-                                assert !owners.containsKey(hostname);
-                                owners.put(hostname, vrf);
-                              });
-                    }));
-    vrrpGroups.forEach(
-        (p, candidates) -> {
-          InterfaceAddress address = p.getFirst();
-          int groupNum = p.getSecond();
-          Map<String, String> owners =
-              ipVrfOwners.computeIfAbsent(address.getIp(), k -> new HashMap<>());
-          /*
-           * Compare priorities first. If tied, break tie based on highest interface IP.
-           */
-          Interface vrrpMaster =
-              Collections.max(
-                  candidates,
-                  Comparator.comparingInt(
-                          (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
-                      .thenComparing(o -> o.getAddress().getIp()));
-          owners.put(vrrpMaster.getOwner().getHostname(), vrrpMaster.getVrfName());
-        });
-    return ipVrfOwners;
+  public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
+      boolean excludeInactive, Map<String, Set<Interface>> enabledInterfaces) {
+
+    Map<String, Map<String, String>> interfaceVrfs =
+        toImmutableMap(
+            enabledInterfaces,
+            Entry::getKey, /* hostname */
+            nodeInterfaces ->
+                nodeInterfaces
+                    .getValue()
+                    .stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(Interface::getName, Interface::getVrfName)));
+
+    return toImmutableMap(
+        computeIpInterfaceOwners(enabledInterfaces, excludeInactive),
+        Entry::getKey, /* Ip */
+        ipInterfaceOwnersEntry ->
+            toImmutableMap(
+                ipInterfaceOwnersEntry.getValue(),
+                Entry::getKey, /* Hostname */
+                ipNodeInterfaceOwnersEntry ->
+                    ipNodeInterfaceOwnersEntry
+                        .getValue()
+                        .stream()
+                        .map(interfaceVrfs.get(ipNodeInterfaceOwnersEntry.getKey())::get)
+                        .collect(ImmutableSet.toImmutableSet())));
   }
 
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {

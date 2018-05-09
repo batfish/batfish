@@ -410,36 +410,25 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNodeAccept(NodeAccept.State nodeAccept) {
     // PostInForMe
     _input
-        .getEnabledVrfs()
-        .entrySet()
-        .stream()
-        .flatMap(
-            entry -> {
-              String hostname = entry.getKey();
-              return entry
-                  .getValue()
-                  .stream()
-                  .map(
-                      vrf ->
-                          new BasicRuleStatement(
-                              new IpSpaceMatchExpr(
-                                      IpWildcardSetIpSpace.builder()
-                                          .including(
-                                              _input
-                                                  .getIpsByNodeVrf()
-                                                  .get(hostname)
-                                                  .get(vrf)
-                                                  .stream()
-                                                  .map(IpWildcard::new)
-                                                  .collect(ImmutableSet.toImmutableSet()))
-                                          .build(),
-                                      _input.getNamedIpSpaces().get(hostname),
-                                      Field.DST_IP)
-                                  .getExpr(),
-                              ImmutableSet.of(new PostInVrf(hostname, vrf)),
-                              new NodeAccept(hostname)));
-            })
-        .forEach(_rules::add);
+        .getIpsByNodeVrf()
+        .forEach(
+            (hostname, nodeVrfIps) ->
+                nodeVrfIps.forEach(
+                    (vrf, ips) ->
+                        _rules.add(
+                            new BasicRuleStatement(
+                                new IpSpaceMatchExpr(
+                                        IpWildcardSetIpSpace.builder()
+                                            .including(
+                                                ips.stream()
+                                                    .map(IpWildcard::new)
+                                                    .collect(ImmutableSet.toImmutableSet()))
+                                            .build(),
+                                        _input.getNamedIpSpaces().get(hostname),
+                                        Field.DST_IP)
+                                    .getExpr(),
+                                new PostInVrf(hostname, vrf),
+                                new NodeAccept(hostname)))));
   }
 
   @Override

@@ -95,7 +95,8 @@ public class Synthesizer {
               PostOutEdge.State.INSTANCE,
               PreInInterface.State.INSTANCE,
               PreOutEdge.State.INSTANCE,
-              PreOutEdgePostNat.State.INSTANCE));
+              PreOutEdgePostNat.State.INSTANCE,
+              PreOutVrf.State.INSTANCE));
     }
     return synthesizeNodProgram(
         ImmutableList.copyOf(

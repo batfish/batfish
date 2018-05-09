@@ -1,6 +1,8 @@
 package org.batfish.z3;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
+import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableList;
@@ -657,16 +659,15 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   }
 
   private Map<String, Map<String, Set<Ip>>> computeIpsByNodeVrf() {
-    Map<String, Map<String, Interface>> enabledInterfaces =
+    Map<String, Set<Interface>> enabledInterfaces =
         toImmutableMap(
             _enabledInterfaces,
             Entry::getKey,
-            enabledInterfacesEntry -> {
-              Configuration c = _configurations.get(enabledInterfacesEntry.getKey());
-              return toImmutableMap(
-                  enabledInterfacesEntry.getValue(), Function.identity(), c.getInterfaces()::get);
-            });
-    Map<Ip, Map<String, String>> ipOwners = computeIpVrfOwners(true, enabledInterfaces);
+            enabledInterfacesEntry ->
+                ImmutableSet.copyOf(
+                    _configurations.get(enabledInterfacesEntry.getKey()).getInterfaces().values()));
+
+    Map<Ip, Map<String, Set<String>>> ipOwners = computeIpVrfOwners(true, enabledInterfaces);
     Map<String, Map<String, Set<Ip>>> ipsByNodeByVrf = new HashMap<>();
     /*
      * ipOwners may not contain all nodes (i.e. a node may not own any IPs),
@@ -682,9 +683,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     ipOwners.forEach(
         (ip, nodeVrfOwners) ->
             nodeVrfOwners.forEach(
-                (node, vrf) -> {
+                (node, vrfs) -> {
                   if (_specializationIpSpace.containsIp(ip, _namedIpSpaces.get(node))) {
-                    ipsByNodeByVrf.get(node).get(vrf).add(ip);
+                    vrfs.forEach(vrf -> ipsByNodeByVrf.get(node).get(vrf).add(ip));
                   }
                 }));
     // freeze
