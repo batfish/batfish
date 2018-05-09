@@ -836,6 +836,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         numUnreachableLines++;
         aclHostPairsWithUnreachableLines.add(hostnameAclPair);
 
+        /*
+         * We are using earliestMoreGeneralLineIndex and earliestMoreGeneralLineName inappropriately
+         * here. For both the multiple blocking lines case and the independently unmatchable case,
+         * we set the line index to -1 and set the line name to a hard-coded message (see below).
+         * For right now, it's hard to fix because the JsonPathAnswerElement for ACL reachability
+         * doesn't account for these two cases and changing that would be a breaking change.
+         * TODO Stop using the earliestMoreGeneralLine variables for other answer categories.
+         */
         if (unmatchableLinesOnThisAcl.contains(lineNumber)) {
           reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
           reachabilityEntry.setEarliestMoreGeneralLineName(
