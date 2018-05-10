@@ -188,7 +188,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       if (arp) {
         Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
         boolean neighborUnreachable =
-            interfaceRepliesToArpRequestForIp(
+            !interfaceRepliesToArpRequestForIp(
                 dp, configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2()), arpIp);
         if (neighborUnreachable) {
           unreachableNeighbors++;
@@ -285,7 +285,6 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       // neighbor owns arpIp
       return true;
     }
-
 
     // neighbor does not own arpIp. Request succeeds if proxy-arp is enabled and the destination
     // is not on the incoming edge.
