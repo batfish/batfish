@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Comparator;
 import java.util.SortedMap;
-import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Schema;
@@ -19,6 +19,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
+@ParametersAreNonnullByDefault
 public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
   public static final String COL_CONFIGURED_STATUS = "configuredStatus";
@@ -32,8 +33,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   public static final String COL_VRF_NAME = "vrfName";
 
   @JsonCreator
-  public BgpSessionStatusAnswerElement(
-      @Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
+  public BgpSessionStatusAnswerElement(@JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
     super(tableMetadata);
   }
 
@@ -130,7 +130,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         .put(COL_LOCAL_IP, info.getLocalIp())
         .put(COL_NODE, new Node(info.getNodeName()))
         .put(COL_ON_LOOPBACK, info.getOnLoopback())
-        .put(COL_REMOTE_NODE, new Node(info.getRemoteNode()))
+        .put(COL_REMOTE_NODE, info.getRemoteNode() == null ? null : new Node(info.getRemoteNode()))
         .put(COL_REMOTE_PREFIX, info.getRemotePrefix())
         .put(COL_SESSION_TYPE, info.getSessionType())
         .put(COL_VRF_NAME, info.getVrfName());
