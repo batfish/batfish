@@ -248,12 +248,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeServiceObjectGroupAclName(String name) {
-    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
-  }
-
   public static String computeBgpCommonExportPolicyName(String vrf) {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
+  }
+
+  public static String computeServiceObjectGroupAclName(String name) {
+    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
 
   @Override
