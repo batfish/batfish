@@ -4,8 +4,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
 
+@ParametersAreNonnullByDefault
 public abstract class JsonPathToTableColumn {
 
   public static final String DEFAULT_DESCRIPTION = "No description provided";
@@ -27,7 +30,11 @@ public abstract class JsonPathToTableColumn {
   @Nonnull private Schema _schema;
 
   public JsonPathToTableColumn(
-      Schema schema, String description, Boolean include, Boolean isKey, Boolean isValue) {
+      Schema schema,
+      @Nullable String description,
+      @Nullable Boolean include,
+      @Nullable Boolean isKey,
+      @Nullable Boolean isValue) {
     if (schema == null) {
       throw new IllegalArgumentException("Schema not specified in the composition");
     }
