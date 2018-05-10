@@ -2,6 +2,7 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
@@ -38,9 +39,14 @@ public class Rows implements Serializable {
     return _data.equals(((Rows) o)._data);
   }
 
+  /**
+   * Returns an immutable copy of the rows in this object
+   *
+   * @return An ImmutableMultiset
+   */
   @JsonValue
-  private Multiset<Row> getData() {
-    return _data;
+  public Multiset<Row> getData() {
+    return ImmutableMultiset.copyOf(_data);
   }
 
   @Override
