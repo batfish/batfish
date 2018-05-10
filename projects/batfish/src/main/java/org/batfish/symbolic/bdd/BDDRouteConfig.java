@@ -16,6 +16,8 @@ public class BDDRouteConfig {
 
   private boolean _keepCommunities;
 
+  private boolean _keepDstRouter;
+
   public BDDRouteConfig(boolean abstraction) {
     if (abstraction) {
       _keepAd = false;
@@ -25,6 +27,7 @@ public class BDDRouteConfig {
       _keepHistory = false;
       _keepCommunities = true;
       _keepMetric = false;
+      _keepDstRouter = true;
     } else {
       _keepAd = true;
       _keepCommunities = true;
@@ -33,6 +36,7 @@ public class BDDRouteConfig {
       _keepMed = true;
       _keepMetric = true;
       _keepOspfMetric = true;
+      _keepDstRouter = false;
     }
   }
 
@@ -62,5 +66,9 @@ public class BDDRouteConfig {
 
   public boolean getKeepCommunities() {
     return _keepCommunities;
+  }
+
+  public boolean getKeepDstRouter() {
+    return _keepDstRouter;
   }
 }

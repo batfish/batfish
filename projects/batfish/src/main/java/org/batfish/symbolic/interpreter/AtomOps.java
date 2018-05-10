@@ -56,13 +56,13 @@ public class AtomOps {
    * and minimal, and treated the same by every transformer.
    */
   private static Set<BDD> computeAtomicPredicatesAux(
-      List<BDD> atoms, List<Transformer> transformers) {
+      List<BDD> atoms, List<AtomTransformer> transformers) {
 
     Set<BDD> allPredicates = new HashSet<>(atoms);
     Set<BDD> disjoint = computeAtomicPredicatesAux(atoms);
 
     while (true) {
-      for (Transformer transformer : transformers) {
+      for (AtomTransformer transformer : transformers) {
         for (BDD b : disjoint) {
           BDD tb = transformer.getFunction().apply(b);
           allPredicates.add(tb);
@@ -110,14 +110,14 @@ public class AtomOps {
   }
 
   public static AtomicPredicates computeAtomicPredicates(
-      List<BDD> atoms, List<Transformer> transformers) {
+      List<BDD> atoms, List<AtomTransformer> transformers) {
     List<BDD> disjoint = new ArrayList<>(computeAtomicPredicatesAux(atoms, transformers));
 
     Map<BDD, Set<Integer>> map = computeMapping(atoms, disjoint);
 
     Table2<BDDTransferFunction, BDD, Integer> intMap = new Table2<>();
     Set<BDD> allTransformed = new HashSet<>();
-    for (Transformer t : transformers) {
+    for (AtomTransformer t : transformers) {
       for (int j = 0; j < disjoint.size(); j++) {
         BDD d = disjoint.get(j);
         BDD result = t.getFunction().apply(d);

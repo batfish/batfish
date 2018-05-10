@@ -37,7 +37,7 @@ public class ReachabilityInterpreter {
   }
 
   private <T> Map<String, BDD> computeFixedPoint(
-      Graph g, BDDNetwork network, IAbstractDomain<T> domain) {
+      Graph g, BDDNetwork network, BDDRouteFactory factory, IAbstractDomain<T> domain) {
 
     long t;
 
@@ -62,6 +62,8 @@ public class ReachabilityInterpreter {
       originatedConnected.put(router, Graph.getOriginatedNetworks(conf, Protocol.CONNECTED));
     }
 
+    FiniteIndexMap<String> routerIndexMap = new FiniteIndexMap<>(g.getRouters());
+
     Map<String, T> reachable = new HashMap<>();
 
     t = System.currentTimeMillis();
@@ -81,7 +83,6 @@ public class ReachabilityInterpreter {
 
     for (Entry<String, T> e : reachable.entrySet()) {
       String router = e.getKey();
-      T val = e.getValue();
       for (String neighbor : g.getNeighbors().get(router)) {
         updateSet.add(neighbor);
         update.add(neighbor);
@@ -153,7 +154,10 @@ public class ReachabilityInterpreter {
 
     Map<String, BDD> reach = new HashMap<>();
     for (Entry<String, T> e : reachable.entrySet()) {
-      reach.put(e.getKey(), domain.finalize(e.getValue()));
+      BDD val = domain.finalize(e.getValue());
+      reach.put(e.getKey(), val);
+      // System.out.println("Final router: " + e.getKey());
+      // System.out.println("" + factory.variables().dot(val));
     }
     return reach;
   }
@@ -171,9 +175,12 @@ public class ReachabilityInterpreter {
 
     ReachabilityAbstractDomainBDD domain = new ReachabilityAbstractDomainBDD(routeFactory);
 
-    // ReachabilityAbstractDomainAP domain2 = new ReachabilityAbstractDomainAP(domain, network);
+    t = System.currentTimeMillis();
+    ReachabilityAbstractDomainAP domain2 =
+        new ReachabilityAbstractDomainAP(domain, g.getRouters(), network);
+    System.out.println("Time for atomic preds: " + (System.currentTimeMillis() - t));
 
-    Map<String, BDD> reachable = computeFixedPoint(g, network, domain);
+    Map<String, BDD> reachable = computeFixedPoint(g, network, routeFactory, domain2);
     return new StringAnswerElement("Foo Bar");
   }
 }

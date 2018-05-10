@@ -16,6 +16,10 @@ import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.symbolic.AstVisitor;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
@@ -68,21 +72,43 @@ public class BDDRouteFactory {
 
   private BDDRouteConfig _config;
 
-  private Set<CommunityVar> _communities;
+  private Set<CommunityVar> _allCommunities;
 
-  private Set<Integer> _localPrefs;
+  Set<String> _allRouters;
+
+  private List<Integer> _allLocalPrefs;
 
   private BDDRoute _variables;
 
+  private Set<Integer> findAllLocalPrefs(Graph g) {
+    Set<Integer> prefs = new HashSet<>();
+    AstVisitor v = new AstVisitor();
+    v.visit(
+        g.getConfigurations().values(),
+        stmt -> {
+          if (stmt instanceof SetLocalPreference) {
+            SetLocalPreference slp = (SetLocalPreference) stmt;
+            IntExpr ie = slp.getLocalPreference();
+            if (ie instanceof LiteralInt) {
+              LiteralInt l = (LiteralInt) ie;
+              prefs.add(l.getValue());
+            }
+          }
+        },
+        expr -> {});
+    return prefs;
+  }
+
   public BDDRouteFactory(Graph g, BDDRouteConfig config) {
     _config = config;
-    _communities = g.getAllCommunities();
-
+    _allCommunities = g.getAllCommunities();
+    _allRouters = g.getRouters();
+    _allLocalPrefs = new ArrayList<>(findAllLocalPrefs(g));
     _variables = createRoute();
   }
 
   public BDDRoute createRoute() {
-    return new BDDRoute(_config, _communities);
+    return new BDDRoute();
   }
 
   public BDDRoute createRoute(BDDRoute other) {
@@ -112,13 +138,15 @@ public class BDDRouteFactory {
 
     private SortedMap<CommunityVar, BDD> _communities;
 
-    private BDDInteger _localPref;
+    private BDDDomain<Integer> _localPref;
 
     private BDDInteger _med;
 
     private BDDInteger _metric;
 
     private BDDDomain<OspfType> _ospfMetric;
+
+    private BDDDomain<String> _dstRouter;
 
     private final BDDInteger _prefix;
 
@@ -130,10 +158,16 @@ public class BDDRouteFactory {
      * Creates a collection of BDD variables representing the
      * various attributes of a control plane advertisement.
      */
-    private BDDRoute(BDDRouteConfig config, Set<CommunityVar> comms) {
-      _config = config;
+    private BDDRoute() {
       int numVars = factory.varNum();
-      int numNeeded = 2 * (32 * 5 + 5 + comms.size() + 4);
+      int numNeeded =
+          2
+              * (32 * 4
+                  + 5
+                  + _allCommunities.size()
+                  + _allLocalPrefs.size()
+                  + _allRouters.size()
+                  + 4);
       if (numVars < numNeeded) {
         factory.setVarNum(numNeeded); // allow for temporary variables
       }
@@ -142,12 +176,16 @@ public class BDDRouteFactory {
       _bitNames = new HashMap<>();
 
       int idx = 0;
-      int len;
+
+      if (_config.getKeepDstRouter()) {
+        _dstRouter = new BDDDomain<>(factory, new ArrayList<>(_allRouters), idx);
+        addBitNames("router", _dstRouter.numBits(), idx, false);
+        idx += _dstRouter.numBits();
+      }
       if (_config.getKeepHistory()) {
         _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
-        len = _protocolHistory.getInteger().getBitvec().length;
-        addBitNames("proto", len, idx, false);
-        idx += len;
+        addBitNames("proto", _protocolHistory.numBits(), idx, false);
+        idx += _protocolHistory.numBits();
       } else {
         _protocolHistory = null;
       }
@@ -167,9 +205,10 @@ public class BDDRouteFactory {
         idx += 32;
       }
       if (_config.getKeepLp()) {
-        _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
-        addBitNames("lp", 32, idx, false);
-        idx += 32;
+        _localPref = new BDDDomain<>(factory, _allLocalPrefs, idx);
+        // _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
+        addBitNames("lp", _localPref.numBits(), idx, false);
+        idx += _localPref.numBits();
       }
       _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx, true);
       addBitNames("pfxLen", 5, idx, true);
@@ -180,7 +219,7 @@ public class BDDRouteFactory {
 
       if (_config.getKeepCommunities()) {
         _communities = new TreeMap<>();
-        for (CommunityVar comm : comms) {
+        for (CommunityVar comm : _allCommunities) {
           if (comm.getType() != Type.REGEX) {
             _communities.put(comm, factory.ithVar(idx));
             _bitNames.put(idx, comm.getValue());
@@ -191,8 +230,8 @@ public class BDDRouteFactory {
       // Initialize OSPF type
       if (_config.getKeepOspfMetric()) {
         _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
-        len = _ospfMetric.getInteger().getBitvec().length;
-        addBitNames("ospfMetric", len, idx, false);
+        addBitNames("ospfMetric", _ospfMetric.numBits(), idx, false);
+        // idx += _ospfMetric.numBits();
       }
     }
 
@@ -217,7 +256,7 @@ public class BDDRouteFactory {
         _med = new BDDInteger(other._med);
       }
       if (_config.getKeepLp()) {
-        _localPref = new BDDInteger(other._localPref);
+        _localPref = new BDDDomain<>(other._localPref);
       }
       if (_config.getKeepHistory()) {
         _protocolHistory = new BDDDomain<>(other._protocolHistory);
@@ -226,6 +265,9 @@ public class BDDRouteFactory {
       }
       if (_config.getKeepOspfMetric()) {
         _ospfMetric = new BDDDomain<>(other._ospfMetric);
+      }
+      if (_config.getKeepDstRouter()) {
+        _dstRouter = new BDDDomain<>(other._dstRouter);
       }
       _bitNames = other._bitNames;
     }
@@ -327,11 +369,11 @@ public class BDDRouteFactory {
       this._communities = communities;
     }
 
-    public BDDInteger getLocalPref() {
+    public BDDDomain<Integer> getLocalPref() {
       return _localPref;
     }
 
-    public void setLocalPref(BDDInteger localPref) {
+    public void setLocalPref(BDDDomain<Integer> localPref) {
       this._localPref = localPref;
     }
 
@@ -371,6 +413,14 @@ public class BDDRouteFactory {
       return _protocolHistory;
     }
 
+    public BDDDomain<String> getDstRouter() {
+      return _dstRouter;
+    }
+
+    public void setDstRouter(BDDDomain<String> dstRouter) {
+      this._dstRouter = dstRouter;
+    }
+
     @Override
     public int hashCode() {
       if (_hcode == 0) {
@@ -391,7 +441,6 @@ public class BDDRouteFactory {
         return false;
       }
       BDDRoute other = (BDDRoute) o;
-
       return Objects.equals(_metric, other._metric)
           && Objects.equals(_ospfMetric, other._ospfMetric)
           && Objects.equals(_localPref, other._localPref)
@@ -430,8 +479,8 @@ public class BDDRouteFactory {
       }
 
       if (_config.getKeepLp()) {
-        BDD[] localPref = getLocalPref().getBitvec();
-        BDD[] localPref2 = other.getLocalPref().getBitvec();
+        BDD[] localPref = getLocalPref().getInteger().getBitvec();
+        BDD[] localPref2 = other.getLocalPref().getInteger().getBitvec();
         for (int i = 0; i < 32; i++) {
           localPref[i].orWith(localPref2[i]);
         }
@@ -495,7 +544,7 @@ public class BDDRouteFactory {
       }
 
       if (_config.getKeepLp()) {
-        BDD[] localPref = rec.getLocalPref().getBitvec();
+        BDD[] localPref = rec.getLocalPref().getInteger().getBitvec();
         for (int i = 0; i < 32; i++) {
           localPref[i] = localPref[i].veccompose(pairing);
         }

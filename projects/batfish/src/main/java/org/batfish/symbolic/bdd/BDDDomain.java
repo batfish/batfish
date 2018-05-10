@@ -59,6 +59,10 @@ public class BDDDomain<T> {
     _integer = i;
   }
 
+  public int numBits() {
+    return _integer.getBitvec().length;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (!(o instanceof BDDDomain<?>)) {

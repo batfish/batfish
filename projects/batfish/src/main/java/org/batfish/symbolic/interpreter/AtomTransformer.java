@@ -4,13 +4,13 @@ import java.util.function.Function;
 import net.sf.javabdd.BDD;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 
-public class Transformer {
+public class AtomTransformer {
 
   private BDDTransferFunction _transfer;
 
   private Function<BDD, BDD> _function;
 
-  public Transformer(BDDTransferFunction transfer, Function<BDD, BDD> function) {
+  public AtomTransformer(BDDTransferFunction transfer, Function<BDD, BDD> function) {
     this._transfer = transfer;
     this._function = function;
   }
@@ -32,7 +32,7 @@ public class Transformer {
       return false;
     }
 
-    Transformer that = (Transformer) o;
+    AtomTransformer that = (AtomTransformer) o;
 
     return _transfer != null ? _transfer.equals(that._transfer) : that._transfer == null;
   }

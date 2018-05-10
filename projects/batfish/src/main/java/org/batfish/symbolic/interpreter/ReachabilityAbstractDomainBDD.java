@@ -22,8 +22,15 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
 
   private BDDRouteFactory _routeFactory;
 
+  private BDD _existsCommunities;
+
   ReachabilityAbstractDomainBDD(BDDRouteFactory routeFactory) {
     _routeFactory = routeFactory;
+    _existsCommunities = factory.one();
+    for (Entry<CommunityVar, BDD> e : _routeFactory.variables().getCommunities().entrySet()) {
+      BDD c = e.getValue();
+      _existsCommunities = _existsCommunities.and(c);
+    }
   }
 
   private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
@@ -77,14 +84,25 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
       BDD pfx = isRelevantFor(_routeFactory.variables(), range);
       acc = acc.or(pfx);
     }
-    return acc;
+    BDD dst = _routeFactory.variables().getDstRouter().value(router);
+    return acc.and(dst);
   }
 
   @Override
   public BDD transform(BDD input, EdgeTransformer t) {
     BDDTransferFunction f = t.getBgpTransfer();
-    BDD passThrough = f.getFilter();
-    BDD acc = input.and(passThrough);
+    // Filter routes that can not pass through the transformer
+    BDD acc;
+    BDD allow = f.getFilter();
+    if (_existsCommunities.isOne()) {
+      acc = input.and(allow);
+    } else {
+      BDD block = allow.not();
+      BDD blockedInputs = input.and(block);
+      BDD blockedInputsWithoutCommunities = blockedInputs.exist(_existsCommunities);
+      acc = input.and(blockedInputsWithoutCommunities.not());
+    }
+    // Modify the result
     BDDRoute mods = f.getRoute();
     pairing.reset();
     if (mods.getConfig().getKeepCommunities()) {

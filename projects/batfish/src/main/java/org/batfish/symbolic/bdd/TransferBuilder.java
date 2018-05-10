@@ -156,6 +156,21 @@ class TransferBuilder {
   }
 
   /*
+   * Apply the effect of modifying an integer value (e.g., to set the local pref)
+   */
+  private BDDDomain<Integer> applyIntExprModification(
+      TransferParam<BDDRoute> p, BDDDomain<Integer> x, IntExpr e) {
+    if (e instanceof LiteralInt) {
+      LiteralInt z = (LiteralInt) e;
+      p.debug("LiteralInt: " + z.getValue());
+      BDDDomain<Integer> y = new BDDDomain<>(x);
+      y.setValue(z.getValue());
+      return y;
+    }
+    throw new BatfishException("TODO: int expr transfer function: " + e);
+  }
+
+  /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
   private BDDInteger applyLongExprModification(
@@ -581,7 +596,7 @@ class TransferBuilder {
         if (p.getData().getConfig().getKeepLp()) {
           SetLocalPreference slp = (SetLocalPreference) stmt;
           IntExpr ie = slp.getLocalPreference();
-          BDDInteger newValue =
+          BDDDomain<Integer> newValue =
               applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
           newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
           p.getData().setLocalPref(newValue);
@@ -778,9 +793,9 @@ class TransferBuilder {
     }
 
     if (_routeFactory.getConfig().getKeepLp()) {
-      x = r1.getLocalPref();
-      y = r2.getLocalPref();
-      ret.getLocalPref().setValue(ite(guard, x, y));
+      BDDDomain<Integer> a = r1.getLocalPref();
+      BDDDomain<Integer> b = r2.getLocalPref();
+      ret.getLocalPref().setInteger(ite(guard, a, b).getInteger());
     }
 
     if (_routeFactory.getConfig().getKeepMetric()) {
