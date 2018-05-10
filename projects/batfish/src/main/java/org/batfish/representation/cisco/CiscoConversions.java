@@ -112,7 +112,7 @@ class CiscoConversions {
     c.getRouteFilterLists().put(matchLonger.getName(), matchLonger);
 
     return new If(
-        "Suppress longer advertisements of summary-only aggregate-address networks",
+        "Suppress more specific networks for summary-only aggregate-address networks",
         new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(matchLonger.getName())),
         ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
         ImmutableList.of());
