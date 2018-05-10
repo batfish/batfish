@@ -172,9 +172,9 @@ public class If extends Statement {
       simpleFalseStatementsBuilder.addAll(falseStatement.simplify());
     }
     List<Statement> simpleFalseStatements = simpleFalseStatementsBuilder.build();
-    if (simpleGuard.equals(BooleanExprs.True.toStaticBooleanExpr())) {
+    if (simpleGuard.equals(BooleanExprs.TRUE)) {
       _simplified = simpleTrueStatements;
-    } else if (simpleGuard.equals(BooleanExprs.False.toStaticBooleanExpr())) {
+    } else if (simpleGuard.equals(BooleanExprs.FALSE)) {
       _simplified = simpleFalseStatements;
     } else if (simpleTrueStatements.size() == 0 && simpleFalseStatements.size() == 0) {
       _simplified = Collections.emptyList();

@@ -1,19 +1,22 @@
-package org.batfish.dataplane.ibdp;
+package org.batfish.dataplane.rib;
 
 import java.util.Map;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 
 public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
+  private final String _hostname;
+
   public OspfExternalType2Rib(
-      VirtualRouter owner, Map<Prefix, SortedSet<OspfExternalType2Route>> backupRoutes) {
-    super(owner, backupRoutes);
+      @Nonnull String hostname, Map<Prefix, SortedSet<OspfExternalType2Route>> backupRoutes) {
+    super(backupRoutes);
+    _hostname = hostname;
   }
 
   @Override
@@ -30,7 +33,7 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
   @Nullable
   public RibDelta<OspfExternalType2Route> mergeRouteGetDelta(OspfExternalType2Route route) {
     String advertiser = route.getAdvertiser();
-    if (route.getCostToAdvertiser() != 0 && _owner._c.getHostname().equals(advertiser)) {
+    if (route.getCostToAdvertiser() != 0 && _hostname.equals(advertiser)) {
       return null;
     } else {
       return super.mergeRouteGetDelta(route);

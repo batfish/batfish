@@ -538,6 +538,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   @JsonProperty(PROP_LOCAL_AS)
   @JsonPropertyDescription("The local autonomous system of this peering")
+  @Nullable
   public Integer getLocalAs() {
     return _localAs;
   }
@@ -563,6 +564,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   @JsonProperty(PROP_REMOTE_AS)
   @JsonPropertyDescription("The remote autonomous system of this peering")
+  @Nullable
   public Integer getRemoteAs() {
     return _remoteAs;
   }

@@ -10,13 +10,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.dataplane.rib.RipInternalRib;
 import org.junit.Test;
 
 public class RipInternalRibTest {
 
   @Test
   public void testComparePreference() {
-    RipInternalRib rib = new RipInternalRib(null);
+    RipInternalRib rib = new RipInternalRib();
     RipInternalRoute r1 =
         new RipInternalRoute(
             Prefix.parse("10.1.0.0/16"),

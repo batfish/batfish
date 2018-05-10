@@ -26,7 +26,7 @@ public final class PsThenReject extends PsThen {
       Warnings warnings) {
     If ifStatement =
         new If(
-            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            BooleanExprs.CALL_EXPR_CONTEXT,
             ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
             ImmutableList.of(Statements.ExitReject.toStaticStatement()));
     statements.add(ifStatement);

@@ -62,6 +62,9 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
 
+  /** Mapping: hostname -> vrf -> ipsOwnedByVrf */
+  Map<String, Map<String, Set<Ip>>> getIpsByNodeVrf();
+
   /** Mapping: hostname -> IpSpace name -> IpSpace */
   Map<String, Map<String, IpSpace>> getNamedIpSpaces();
 
@@ -114,4 +117,7 @@ public interface SynthesizerInput {
 
   /** Mapping: hostname -> interface -> constraint on transformed source interface field */
   Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues();
+
+  /** Whether it's synthesizing data plane rules */
+  boolean isDataPlane();
 }

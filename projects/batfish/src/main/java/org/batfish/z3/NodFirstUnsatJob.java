@@ -26,7 +26,7 @@ public class NodFirstUnsatJob<KeyT, ResultT>
   public NodFirstUnsatResult<KeyT, ResultT> call() {
     long startTime = System.currentTimeMillis();
     try (Context ctx = new Context()) {
-      ReachabilityProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer);
+      ReachabilityProgram baseProgram = _synthesizer.synthesizeNodProgram();
       ReachabilityProgram queryProgram = _query.getReachabilityProgram(_synthesizer.getInput());
       NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
       Fixedpoint fix = mkFixedpoint(program, false);

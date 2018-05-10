@@ -13,10 +13,14 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
@@ -77,11 +81,13 @@ import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
@@ -91,6 +97,7 @@ import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -135,6 +142,15 @@ public class FlatJuniperGrammarTest {
     fb.setSrcIp(new Ip(sourceAddress));
     fb.setDstIp(new Ip(destinationAddress));
     fb.setState(state);
+    fb.setTag("test");
+    return fb.build();
+  }
+
+  private static Flow createTcpFlow(int srcPort) {
+    Flow.Builder fb = new Flow.Builder();
+    fb.setIngressNode("node");
+    fb.setIpProtocol(IpProtocol.TCP);
+    fb.setSrcPort(srcPort);
     fb.setTag("test");
     return fb.build();
   }
@@ -254,9 +270,11 @@ public class FlatJuniperGrammarTest {
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION.getDescription()));
+        undefinedReferencesByType,
+        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationByName =
-        undefinedReferencesByType.get(JuniperStructureType.APPLICATION.getDescription());
+        undefinedReferencesByType.get(
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
     assertThat(urApplicationByName, not(hasKey("a1")));
     assertThat(urApplicationByName, not(hasKey("a2")));
     assertThat(urApplicationByName, not(hasKey("a3")));
@@ -265,6 +283,42 @@ public class FlatJuniperGrammarTest {
     assertThat(
         urApplicationByUsage,
         hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION.getDescription()));
+  }
+
+  @Test
+  public void testApplicationSetNested() throws IOException {
+    String hostname = "application-set-nested";
+    Configuration c = parseConfig(hostname);
+
+    String aclNameNonNested = "~FROM_ZONE~z1~TO_ZONE~z2";
+    String aclNameNested = "~FROM_ZONE~z2~TO_ZONE~z3";
+    String aclNameMultiNested = "~FROM_ZONE~z3~TO_ZONE~z4";
+    IpAccessList aclNonNested = c.getIpAccessLists().get(aclNameNonNested);
+    IpAccessList aclNested = c.getIpAccessLists().get(aclNameNested);
+    IpAccessList aclMultiNested = c.getIpAccessLists().get(aclNameMultiNested);
+    /* Allowed application permits TCP from port 1 only */
+    Flow permittedFlow = createTcpFlow(1);
+    Flow rejectedFlow = createTcpFlow(2);
+
+    /*
+     * Confirm non-nested application-set acl accepts the allowed protocol-port combo and reject
+     * others
+     */
+    assertThat(aclNonNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclNonNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm nested application-set acl accepts the allowed protocol-port combo and reject others
+     */
+    assertThat(aclNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm multi-nested application-set acl accepts the allowed protocol-port combo and reject
+     * others
+     */
+    assertThat(aclMultiNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(aclMultiNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
@@ -297,6 +351,15 @@ public class FlatJuniperGrammarTest {
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
                                 .build()))))));
+  }
+
+  @Test
+  public void testPredefinedJunosApplications() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application")));
   }
 
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
@@ -943,6 +1006,44 @@ public class FlatJuniperGrammarTest {
     /* Properly configured interfaces should be present in respective areas. */
     assertThat(c.getInterfaces().keySet(), equalTo(Collections.singleton("xe-0/0/0:0.0")));
     assertThat(c, hasInterface("xe-0/0/0:0.0", hasMtu(9000)));
+  }
+
+  @Test
+  public void testInterfaceVlan() throws IOException {
+    Configuration c = parseConfig("interface-vlan");
+
+    // Expecting an Interface in ACCESS mode with VLAN 101
+    assertThat(c, hasInterface("ge-0/0/0.0", hasSwitchPortMode(SwitchportMode.ACCESS)));
+    assertThat(c, hasInterface("ge-0/0/0.0", hasAccessVlan(101)));
+
+    // Expecting an Interface in TRUNK mode with VLANs 1-5
+    assertThat(c, hasInterface("ge-0/3/0.0", hasSwitchPortMode(SwitchportMode.TRUNK)));
+    assertThat(
+        c, hasInterface("ge-0/3/0.0", hasAllowedVlans(ImmutableList.of(new SubRange("1-5")))));
+  }
+
+  @Test
+  public void testInterfaceVlanReferences() throws IOException {
+    String hostname = "interface-vlan";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * We expect an undefined reference for VLAN_TEST_UNDEFINED
+     */
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.VLAN,
+            "VLAN_TEST_UNDEFINED",
+            JuniperStructureUsage.INTERFACE_VLAN));
+
+    /*
+     * VLAN should not contribute to defined structures
+     */
+    assertThat(ccae.getDefinedStructures().keySet(), hasSize(0));
   }
 
   @Test

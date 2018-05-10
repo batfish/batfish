@@ -95,7 +95,7 @@ public final class NodJob extends AbstractNodJob {
   @Nonnull
   protected NodProgram getNodProgram(Context ctx) {
     ReachabilityProgram baseProgram =
-        instrumentReachabilityProgram(_dataPlaneSynthesizer.synthesizeNodDataPlaneProgram());
+        instrumentReachabilityProgram(_dataPlaneSynthesizer.synthesizeNodProgram());
     ReachabilityProgram queryProgram =
         instrumentReachabilityProgram(
             _querySynthesizer.getReachabilityProgram(_dataPlaneSynthesizer.getInput()));

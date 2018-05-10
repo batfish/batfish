@@ -81,6 +81,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -1390,7 +1391,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       applyCurrentAggregateAttributesConditions
           .getConjuncts()
           .add(new MatchProtocol(RoutingProtocol.AGGREGATE));
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       if (attributeMapName != null) {
         RouteMap attributeMap = _routeMaps.get(attributeMapName);
         if (attributeMap != null) {
@@ -1509,7 +1510,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeRipPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.RIP);
     if (redistributeRipPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportRipConditions = new Conjunction();
       exportRipConditions.setComment("Redistribute RIP routes into BGP");
       exportRipConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.RIP));
@@ -1536,7 +1537,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeStaticPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.STATIC);
     if (redistributeStaticPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportStaticConditions = new Conjunction();
       exportStaticConditions.setComment("Redistribute static routes into BGP");
       exportStaticConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.STATIC));
@@ -1563,7 +1564,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeConnectedPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
     if (redistributeConnectedPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportConnectedConditions = new Conjunction();
       exportConnectedConditions.setComment("Redistribute connected routes into BGP");
       exportConnectedConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.CONNECTED));
@@ -1592,7 +1593,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     BgpRedistributionPolicy redistributeOspfPolicy =
         proc.getRedistributionPolicies().get(RoutingProtocol.OSPF);
     if (redistributeOspfPolicy != null) {
-      BooleanExpr weInterior = BooleanExprs.True.toStaticBooleanExpr();
+      BooleanExpr weInterior = BooleanExprs.TRUE;
       Conjunction exportOspfConditions = new Conjunction();
       exportOspfConditions.setComment("Redistribute OSPF routes into BGP");
       exportOspfConditions.getConjuncts().add(new MatchProtocol(RoutingProtocol.OSPF));
@@ -1676,7 +1677,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(
             (prefix, bgpNetwork) -> {
               String mapName = bgpNetwork.getRouteMapName();
-              BooleanExpr weExpr = BooleanExprs.True.toStaticBooleanExpr();
+              BooleanExpr weExpr = BooleanExprs.TRUE;
               if (mapName != null) {
                 RouteMap routeMap = _routeMaps.get(mapName);
                 if (routeMap != null) {
@@ -2989,13 +2990,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     If nonBoolean =
         new If(
-            BooleanExprs.CallStatementContext.toStaticBooleanExpr(),
+            BooleanExprs.CALL_STATEMENT_CONTEXT,
             Collections.singletonList(Statements.Return.toStaticStatement()),
             Collections.singletonList(Statements.DefaultAction.toStaticStatement()));
     @SuppressWarnings("unused") // TODO(https://github.com/batfish/batfish/issues/1306)
     If endPolicy =
         new If(
-            BooleanExprs.CallExprContext.toStaticBooleanExpr(),
+            BooleanExprs.CALL_EXPR_CONTEXT,
             Collections.singletonList(Statements.ReturnLocalDefaultAction.toStaticStatement()),
             Collections.singletonList(nonBoolean));
     return rp;
@@ -3549,6 +3550,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
                         return;
                     }
                   });
+          policyMapAclLines.add(
+              IpAccessListLine.builder()
+                  .setAction(inspectPolicyMap.getClassDefaultAction())
+                  .setMatchCondition(TrueExpr.INSTANCE)
+                  .setName(
+                      String.format(
+                          "class-default action: %s", inspectPolicyMap.getClassDefaultAction()))
+                  .build());
           IpAccessList.builder()
               .setOwner(c)
               .setName(inspectPolicyMapAclName)

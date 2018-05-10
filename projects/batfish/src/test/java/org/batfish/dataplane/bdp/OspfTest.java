@@ -623,7 +623,7 @@ public class OspfTest {
     _ib.setOwner(c2).setVrf(v2Other).setAddress(i2Address).setOspfArea(oa2).build();
 
     Map<String, Configuration> configurations = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
 

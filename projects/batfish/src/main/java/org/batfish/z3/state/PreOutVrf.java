@@ -4,7 +4,7 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class Originate extends StateExpr {
+public class PreOutVrf extends StateExpr {
 
   public static class State extends StateExpr.State {
 
@@ -14,23 +14,30 @@ public class Originate extends StateExpr {
 
     @Override
     public void accept(StateVisitor visitor) {
-      visitor.visitOriginate(this);
+      visitor.visitPreOutVrf(this);
     }
   }
 
   private final String _hostname;
 
-  public Originate(String hostname) {
+  private final String _vrf;
+
+  public PreOutVrf(String hostname, String vrf) {
     _hostname = hostname;
+    _vrf = vrf;
   }
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitOriginate(this);
+    return visitor.visitPreOutVrf(this);
   }
 
   public String getHostname() {
     return _hostname;
+  }
+
+  public String getVrf() {
+    return _vrf;
   }
 
   @Override
