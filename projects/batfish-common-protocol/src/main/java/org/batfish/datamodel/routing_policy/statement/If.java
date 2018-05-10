@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -29,11 +30,11 @@ public class If extends Statement {
 
   @JsonCreator
   public If() {
-    this(null, new ArrayList<>(), new ArrayList<>());
+    this(null, null, new ArrayList<>(), new ArrayList<>());
   }
 
   public If(BooleanExpr guard, List<Statement> trueStatements) {
-    this(guard, trueStatements, new ArrayList<>());
+    this(null, guard, trueStatements, new ArrayList<>());
   }
 
   public If(BooleanExpr guard, List<Statement> trueStatements, List<Statement> falseStatements) {
@@ -42,7 +43,7 @@ public class If extends Statement {
 
   public If(
       @Nullable String comment,
-      BooleanExpr guard,
+      @Nullable BooleanExpr guard,
       List<Statement> trueStatements,
       List<Statement> falseStatements) {
     setComment(comment);
@@ -72,35 +73,13 @@ public class If extends Statement {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof If)) {
       return false;
     }
     If other = (If) obj;
-    if (_falseStatements == null) {
-      if (other._falseStatements != null) {
-        return false;
-      }
-    } else if (!_falseStatements.equals(other._falseStatements)) {
-      return false;
-    }
-    if (_guard == null) {
-      if (other._guard != null) {
-        return false;
-      }
-    } else if (!_guard.equals(other._guard)) {
-      return false;
-    }
-    if (_trueStatements == null) {
-      if (other._trueStatements != null) {
-        return false;
-      }
-    } else if (!_trueStatements.equals(other._trueStatements)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_guard, other._guard)
+        && Objects.equals(_trueStatements, other._trueStatements)
+        && Objects.equals(_falseStatements, other._falseStatements);
   }
 
   @Override
