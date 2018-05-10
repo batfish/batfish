@@ -2,7 +2,6 @@ package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Collections.singletonList;
-import static org.batfish.representation.cisco.CiscoConfiguration.MAX_ADMINISTRATIVE_COST;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
@@ -21,7 +20,6 @@ import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -85,15 +83,6 @@ class CiscoConversions {
     policy.setStatements(ImmutableList.of(currentGeneratedRouteConditional));
     c.getRoutingPolicies().put(policy.getName(), policy);
     return policy;
-  }
-
-  static GeneratedRoute generateDefaultRouteIfMapMatches(@Nullable String defaultOriginateMap) {
-    GeneratedRoute.Builder defaultRoute =
-        new GeneratedRoute.Builder().setNetwork(Prefix.ZERO).setAdmin(MAX_ADMINISTRATIVE_COST);
-    if (defaultOriginateMap != null) {
-      defaultRoute.setGenerationPolicy(defaultOriginateMap);
-    }
-    return defaultRoute.build();
   }
 
   /**
