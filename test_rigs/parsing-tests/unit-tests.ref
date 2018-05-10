@@ -53516,16 +53516,7 @@
             }
           }
         },
-        "juniper_interfaces" : {
-          "vlan" : {
-            "2000" : {
-              "definitionLines" : [
-                16
-              ],
-              "numReferrers" : 0
-            }
-          }
-        },
+        "juniper_interfaces" : { },
         "juniper_isis" : { },
         "juniper_l2_learning" : { },
         "juniper_misc" : { },

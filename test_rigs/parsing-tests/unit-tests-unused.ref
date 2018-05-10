@@ -1278,20 +1278,12 @@
             29
           ]
         }
-      },
-      "unused:vlan:2000" : {
-        "description" : "Unused structure of type: 'vlan' with name: '2000'",
-        "files" : {
-          "juniper_interfaces" : [
-            16
-          ]
-        }
       }
     },
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 130
+      "numResults" : 129
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1934,13 +1926,6 @@
           ],
           "test2" : [
             26
-          ]
-        }
-      },
-      "juniper_interfaces" : {
-        "vlan" : {
-          "2000" : [
-            16
           ]
         }
       },
