@@ -349,6 +349,7 @@ class AbstractionBuilder {
   private boolean needUniversalAbstraction(Set<String> partition) {
     return maxNumLocalPrefs(partition) > 1;
   }
+
   /*
    * Collect concrete neighbors by their abstract ids
    */
