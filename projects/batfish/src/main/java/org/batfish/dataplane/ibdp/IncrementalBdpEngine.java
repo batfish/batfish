@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.graph.Network;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -603,7 +604,7 @@ public class IncrementalBdpEngine {
         .stream()
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
-                String::compareTo,
+                Comparator.naturalOrder(),
                 Entry::getKey,
                 nodeEntry ->
                     nodeEntry
@@ -613,7 +614,7 @@ public class IncrementalBdpEngine {
                         .stream()
                         .collect(
                             ImmutableSortedMap.toImmutableSortedMap(
-                                String::compareTo,
+                                Comparator.naturalOrder(),
                                 Entry::getKey,
                                 vrfEntry ->
                                     ImmutableSortedSet.copyOf(

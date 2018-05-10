@@ -9,6 +9,7 @@ import com.google.common.graph.Network;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -994,7 +995,7 @@ public class BdpEngine {
         .stream()
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
-                String::compareTo,
+                Comparator.naturalOrder(),
                 Entry::getKey,
                 nodeEntry ->
                     nodeEntry
@@ -1004,7 +1005,7 @@ public class BdpEngine {
                         .stream()
                         .collect(
                             ImmutableSortedMap.toImmutableSortedMap(
-                                String::compareTo,
+                                Comparator.naturalOrder(),
                                 Entry::getKey,
                                 vrfEntry ->
                                     ImmutableSortedSet.copyOf(
