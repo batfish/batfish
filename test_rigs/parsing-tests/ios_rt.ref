@@ -2200,6 +2200,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
+        "fra-border-01" : { },
         "lhr-border-01" : {
           "bgp group" : {
             "FW" : {
@@ -2303,7 +2304,8 @@
               "numReferrers" : -1
             }
           }
-        }
+        },
+        "lix-peer-01" : { }
       },
       "version" : "0.36.0",
       "warnings" : {
