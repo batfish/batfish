@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -27,9 +28,9 @@ public class TableMetadata {
 
   @JsonCreator
   public TableMetadata(
-      @Nullable @JsonProperty(PROP_COLUMN_METADATA) SortedMap<String, ColumnMetadata> columnData,
+      @Nullable @JsonProperty(PROP_COLUMN_METADATA) Map<String, ColumnMetadata> columnData,
       @Nullable @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints) {
-    _columnMetadata = firstNonNull(columnData, new TreeMap<>());
+    _columnMetadata = ImmutableSortedMap.copyOf(firstNonNull(columnData, new TreeMap<>()));
     _displayHints = displayHints;
   }
 

@@ -3,7 +3,9 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
+@ParametersAreNonnullByDefault
 public class Issue {
 
   public static int SEVERITY_ERROR_0 = 100; // clearly an error right here =on this row)
@@ -25,9 +27,7 @@ public class Issue {
     @Nonnull private String _minor;
 
     @JsonCreator
-    public Type(
-        @Nonnull @JsonProperty(COL_MAJOR) String major,
-        @Nonnull @JsonProperty(COL_MINOR) String minor) {
+    public Type(@JsonProperty(COL_MAJOR) String major, @JsonProperty(COL_MINOR) String minor) {
       _major = major;
       _minor = minor;
     }
@@ -52,9 +52,9 @@ public class Issue {
   @Nonnull private Type _type;
 
   public Issue(
-      @Nonnull @JsonProperty(COL_EXPLANATION) String explanation,
-      @Nonnull @JsonProperty(COL_SEVERITY) Integer severity,
-      @Nonnull @JsonProperty(COL_TYPE) Type type) {
+      @JsonProperty(COL_EXPLANATION) String explanation,
+      @JsonProperty(COL_SEVERITY) Integer severity,
+      @JsonProperty(COL_TYPE) Type type) {
     _explanation = explanation;
     _severity = severity;
     _type = type;

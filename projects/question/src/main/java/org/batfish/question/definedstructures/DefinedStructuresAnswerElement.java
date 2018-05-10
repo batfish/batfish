@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.Comparator;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -32,7 +33,7 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
 
   public static TableMetadata createMetadata(Question question) {
     SortedMap<String, ColumnMetadata> columnMetadataMap =
-        new ImmutableSortedMap.Builder<String, ColumnMetadata>(String::compareTo)
+        new ImmutableSortedMap.Builder<String, ColumnMetadata>(Comparator.naturalOrder())
             .put(
                 COL_DEFINITION_LINES,
                 new ColumnMetadata(

@@ -3,6 +3,7 @@ package org.batfish.question.bgpsessionstatus;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.Comparator;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
@@ -38,7 +39,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
   public static TableMetadata createMetadata(Question question) {
     SortedMap<String, ColumnMetadata> columnMetadata =
-        new ImmutableSortedMap.Builder<String, ColumnMetadata>(String::compareTo)
+        new ImmutableSortedMap.Builder<String, ColumnMetadata>(Comparator.naturalOrder())
             .put(
                 COL_CONFIGURED_STATUS,
                 new ColumnMetadata(Schema.STRING, "Configured status", false, true))
