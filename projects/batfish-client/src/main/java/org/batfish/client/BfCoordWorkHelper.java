@@ -33,6 +33,7 @@ import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
@@ -69,6 +70,43 @@ public class BfCoordWorkHelper {
 
   private void addTextMultiPart(MultiPart multiPart, String key, String value) {
     multiPart.bodyPart(new FormDataBodyPart(key, value, MediaType.TEXT_PLAIN_TYPE));
+  }
+
+  public String autoComplete(
+      String containerName,
+      String testrigName,
+      CompletionType completionType,
+      String query,
+      int maxSuggestions) {
+    try {
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_AUTO_COMPLETE);
+
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_TESTRIG_NAME, testrigName);
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_COMPLETION_TYPE, completionType.toString());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_QUERY, query);
+      addTextMultiPart(
+          multiPart, CoordConsts.SVC_KEY_MAX_SUGGESTIONS, Integer.toString(maxSuggestions));
+
+      JSONObject jObj = postData(webTarget, multiPart);
+      if (jObj == null) {
+        return null;
+      }
+      if (!jObj.has(CoordConsts.SVC_KEY_SUGGESTIONS)) {
+        _logger.errorf("suggestions key not found in: %s\n", jObj);
+        return null;
+      }
+
+      return jObj.getString(CoordConsts.SVC_KEY_SUGGESTIONS);
+    } catch (Exception e) {
+      _logger.errorf("exception: ");
+      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      return null;
+    }
   }
 
   @Nullable
@@ -1247,9 +1285,4 @@ public class BfCoordWorkHelper {
       return false;
     }
   }
-
-  // private String uriEncode(String input) {
-  // return UriComponent.encode(input,
-  // UriComponent.Type.QUERY_PARAM_SPACE_ENCODED);
-  // }
 }

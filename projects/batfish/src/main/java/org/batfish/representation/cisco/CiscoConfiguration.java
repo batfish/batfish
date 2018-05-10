@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
+import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -29,6 +30,7 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -97,7 +99,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefix6Set;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
-import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
@@ -1347,7 +1348,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     newBgpProcess.setRouterId(bgpRouterId);
-    Set<BgpAggregateIpv4Network> summaryOnlyNetworks = new HashSet<>();
 
     List<BooleanExpr> attributeMapPrefilters = new ArrayList<>();
 
@@ -1355,28 +1355,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<Prefix, BgpAggregateIpv4Network> e : proc.getAggregateNetworks().entrySet()) {
       Prefix prefix = e.getKey();
       BgpAggregateIpv4Network aggNet = e.getValue();
-      boolean summaryOnly = aggNet.getSummaryOnly();
-      if (summaryOnly) {
-        summaryOnlyNetworks.add(aggNet);
-      }
 
       // create generation policy for aggregate network
-      String generationPolicyName = "~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix + "~";
-      RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
-      If currentGeneratedRouteConditional = new If();
-      currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
-      currentGeneratedRouteConditional.setGuard(
-          new MatchPrefixSet(
-              new DestinationNetwork(),
-              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))));
-      currentGeneratedRouteConditional
-          .getTrueStatements()
-          .add(Statements.ReturnTrue.toStaticStatement());
-      c.getRoutingPolicies().put(generationPolicyName, currentGeneratedRoutePolicy);
+      RoutingPolicy currentGeneratedRoutePolicy =
+          CiscoConversions.generateAggregateRoutePolicy(c, vrfName, prefix);
       GeneratedRoute.Builder gr = new GeneratedRoute.Builder();
       gr.setNetwork(prefix);
       gr.setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST);
-      gr.setGenerationPolicy(generationPolicyName);
+      gr.setGenerationPolicy(currentGeneratedRoutePolicy.getName());
       gr.setDiscard(true);
 
       // set attribute map for aggregate network
@@ -1471,28 +1457,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.getRoutingPolicies().put(bgpCommonExportPolicyName, bgpCommonExportPolicy);
     List<Statement> bgpCommonExportStatements = bgpCommonExportPolicy.getStatements();
 
-    // create policy for denying suppressed summary-only networks
-    if (summaryOnlyNetworks.size() > 0) {
-      String matchSuppressedSummaryOnlyRoutesName =
-          "~MATCH_SUPPRESSED_SUMMARY_ONLY:" + vrfName + "~";
-      RouteFilterList matchSuppressedSummaryOnlyRoutes =
-          new RouteFilterList(matchSuppressedSummaryOnlyRoutesName);
-      c.getRouteFilterLists()
-          .put(matchSuppressedSummaryOnlyRoutesName, matchSuppressedSummaryOnlyRoutes);
-      for (BgpAggregateIpv4Network summaryOnlyNetwork : summaryOnlyNetworks) {
-        Prefix prefix = summaryOnlyNetwork.getPrefix();
-        RouteFilterLine line =
-            new RouteFilterLine(LineAction.ACCEPT, PrefixRange.moreSpecificThan(prefix));
-        matchSuppressedSummaryOnlyRoutes.addLine(line);
-      }
-      If suppressSummaryOnly =
-          new If(
-              "Suppress summarized of summary-only aggregate-address networks",
-              new MatchPrefixSet(
-                  new DestinationNetwork(),
-                  new NamedPrefixSet(matchSuppressedSummaryOnlyRoutesName)),
-              ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
-              ImmutableList.of());
+    // Never export routes suppressed because they are more specific than summary-only aggregate
+    Stream<Prefix> summaryOnlyNetworks =
+        proc.getAggregateNetworks()
+            .entrySet()
+            .stream()
+            .filter(e -> e.getValue().getSummaryOnly())
+            .map(Entry::getKey);
+    If suppressSummaryOnly = suppressSummarizedPrefixes(c, vrfName, summaryOnlyNetworks);
+    if (suppressSummaryOnly != null) {
       bgpCommonExportStatements.add(suppressSummaryOnly);
     }
 
