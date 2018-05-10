@@ -7,6 +7,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.UniverseIpSpace;
 
 public class FwFromSourcePrefixListExcept extends FwFrom {
 
@@ -32,6 +33,12 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
         return;
       }
       RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
+
+      // if referenced prefix list is empty, it should not match anything
+      if (sourcePrefixList.getLines().isEmpty()) {
+        headerSpaceBuilder.addNotSrcIp(UniverseIpSpace.INSTANCE);
+        return;
+      }
 
       headerSpaceBuilder.addNotSrcIp(
           AclIpSpace.union(

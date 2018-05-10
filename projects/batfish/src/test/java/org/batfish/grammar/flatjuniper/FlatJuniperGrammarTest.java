@@ -1193,6 +1193,26 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testPrefixListEmpty() throws IOException {
+    Configuration c = parseConfig("prefix-list-empty");
+    Flow testFlow1 = createFlow("9.8.7.6", "8.7.6.5");
+    Flow testFlow2 = createFlow("1.2.3.4", "8.7.6.5");
+    Flow testFlow3 = createFlow("0.0.0.0", "8.7.6.5");
+
+    IpAccessList incomingFilter = c.getInterfaces().get("p-e.0").getIncomingFilter();
+    IpAccessList incomingFilterExcept = c.getInterfaces().get("p-e-except.0").getIncomingFilter();
+
+    // Nothing should match by the empty prefix list
+    assertThat(incomingFilter, rejects(testFlow1, "p-e.0", c));
+    assertThat(incomingFilter, rejects(testFlow2, "p-e.0", c));
+    assertThat(incomingFilter, rejects(testFlow3, "p-e.0", c));
+
+    assertThat(incomingFilterExcept, rejects(testFlow1, "p-e-except.0", c));
+    assertThat(incomingFilterExcept, rejects(testFlow2, "p-e-except.0", c));
+    assertThat(incomingFilterExcept, rejects(testFlow3, "p-e-except.0", c));
+  }
+
+  @Test
   public void testRoutingInstanceType() throws IOException {
     Configuration c = parseConfig("routing-instance-type");
 
