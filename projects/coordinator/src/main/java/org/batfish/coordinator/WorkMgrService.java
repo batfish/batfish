@@ -42,6 +42,8 @@ import org.batfish.coordinator.AnalysisMetadataMgr.AnalysisType;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.datamodel.TestrigMetadata;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.pojo.WorkStatus;
 import org.batfish.datamodel.questions.Question;
 import org.codehaus.jettison.json.JSONArray;
@@ -60,6 +62,52 @@ public class WorkMgrService {
 
   private static JSONArray failureResponse(Object entity) {
     return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_FAILURE, entity));
+  }
+
+  @POST
+  @Path(CoordConsts.SVC_RSC_AUTO_COMPLETE)
+  @Produces(MediaType.APPLICATION_JSON)
+  public JSONArray autoComplete(
+      @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
+      @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
+      @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
+      @FormDataParam(CoordConsts.SVC_KEY_COMPLETION_TYPE) String completionType,
+      @FormDataParam(CoordConsts.SVC_KEY_QUERY) String query,
+      @FormDataParam(CoordConsts.SVC_KEY_MAX_SUGGESTIONS) String maxSuggestions /* optional */) {
+    try {
+      _logger.infof("WMS:autoComplete %s %s %s\n", completionType, query, maxSuggestions);
+
+      checkStringParam(apiKey, "API key");
+      checkStringParam(clientVersion, "Client version");
+      checkStringParam(containerName, "Container name");
+      checkStringParam(testrigName, "Testrig name");
+      checkStringParam(completionType, "Completion type");
+      checkStringParam(query, "Query");
+
+      checkApiKeyValidity(apiKey);
+      checkClientVersion(clientVersion);
+      checkContainerAccessibility(apiKey, containerName);
+
+      List<AutocompleteSuggestion> answer =
+          Main.getWorkMgr()
+              .autoComplete(
+                  containerName,
+                  testrigName,
+                  CompletionType.valueOf(completionType.toUpperCase()),
+                  query,
+                  Strings.isNullOrEmpty(maxSuggestions)
+                      ? Integer.MAX_VALUE
+                      : Integer.parseInt(maxSuggestions));
+      return successResponse(new JSONObject().put(CoordConsts.SVC_KEY_SUGGESTIONS, answer));
+    } catch (IllegalArgumentException | AccessControlException e) {
+      _logger.errorf("WMS:autoComplete exception: %s\n", e.getMessage());
+      return failureResponse(e.getMessage());
+    } catch (Exception e) {
+      String stackTrace = ExceptionUtils.getStackTrace(e);
+      _logger.errorf("WMS:autoComplete exception: %s", stackTrace);
+      return failureResponse(e.getMessage());
+    }
   }
 
   /**
