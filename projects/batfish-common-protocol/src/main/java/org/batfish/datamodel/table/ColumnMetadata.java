@@ -18,16 +18,8 @@ public class ColumnMetadata {
   private boolean _isValue;
   @Nonnull private Schema _schema;
 
-  public ColumnMetadata(Schema schema) {
-    this(schema, null, null, null);
-  }
-
   public ColumnMetadata(Schema schema, String description) {
     this(schema, description, null, null);
-  }
-
-  public ColumnMetadata(Schema schema, boolean isKey, boolean isValue) {
-    this(schema, null, isKey, isValue);
   }
 
   @JsonCreator
