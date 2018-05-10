@@ -32,6 +32,7 @@ public class Schema {
           .put("Integer", getClassString(Long.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
+          .put("Issue", getClassString(Issue.class))
           .put("Object", getClassString(Object.class))
           .put("Node", getClassString(Node.class))
           .put("Prefix", getClassString(Prefix.class))
@@ -46,6 +47,7 @@ public class Schema {
   public static final Schema INTEGER = new Schema("Integer");
   public static final Schema INTERFACE = new Schema("Interface");
   public static final Schema IP = new Schema("Ip");
+  public static final Schema ISSUE = new Schema("Issue");
   public static final Schema OBJECT = new Schema("Object");
   public static final Schema NODE = new Schema("Node");
   public static final Schema PREFIX = new Schema("Prefix");

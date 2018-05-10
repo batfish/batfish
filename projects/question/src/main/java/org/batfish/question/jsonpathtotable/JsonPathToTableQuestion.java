@@ -4,18 +4,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.table.ColumnMetadata;
-import org.batfish.datamodel.table.TableMetadata;
 
 public class JsonPathToTableQuestion extends Question {
 
@@ -57,18 +52,6 @@ public class JsonPathToTableQuestion extends Question {
             "textDesc has names that are neither entities nor extractions: " + missingVars);
       }
     }
-  }
-
-  public TableMetadata computeTableMetadata() {
-    Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
-    for (Entry<String, JsonPathToTableExtraction> entry : _pathQuery.getExtractions().entrySet()) {
-      columnMetadataMap.put(entry.getKey(), new ColumnMetadata(entry.getValue().getSchema()));
-    }
-    for (Entry<String, JsonPathToTableComposition> entry :
-        _pathQuery.getCompositions().entrySet()) {
-      columnMetadataMap.put(entry.getKey(), new ColumnMetadata(entry.getValue().getSchema()));
-    }
-    return new TableMetadata(columnMetadataMap, _displayHints);
   }
 
   @Override
