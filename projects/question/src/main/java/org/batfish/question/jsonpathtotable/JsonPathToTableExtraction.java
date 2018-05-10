@@ -3,11 +3,12 @@ package org.batfish.question.jsonpathtotable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.jayway.jsonpath.internal.path.PathCompiler;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.answers.Schema;
 
 /** Describes how to extract a column in {@link JsonPathToTableQuery}. */
-public class JsonPathToTableExtraction {
+public class JsonPathToTableExtraction extends JsonPathToTableColumn {
 
   public enum Method {
     PREFIX,
@@ -17,32 +18,27 @@ public class JsonPathToTableExtraction {
   }
 
   private static final String PROP_FILTER = "filter";
-
   private static final String PROP_INDEX = "index";
-
   private static final String PROP_METHOD = "method";
-
-  private static final String PROP_SCHEMA = "schema";
 
   private String _filter;
 
   private Integer _index;
 
-  private Method _method;
-
-  private Schema _schema;
+  @Nonnull private Method _method;
 
   @JsonCreator
   public JsonPathToTableExtraction(
       @JsonProperty(PROP_SCHEMA) Schema schema,
       @JsonProperty(PROP_METHOD) Method method,
       @JsonProperty(PROP_FILTER) String filter,
-      @JsonProperty(PROP_INDEX) Integer index) {
-
+      @JsonProperty(PROP_INDEX) Integer index,
+      @JsonProperty(PROP_DESCRIPTION) String description,
+      @JsonProperty(PROP_INCLUDE) Boolean include,
+      @JsonProperty(PROP_IS_KEY) Boolean isKey,
+      @JsonProperty(PROP_IS_VALUE) Boolean isValue) {
+    super(schema, description, include, isKey, isValue);
     // sanity check what we got
-    if (schema == null) {
-      throw new IllegalArgumentException("Schema not specified in JsonPathToTable extraction");
-    }
     if (method == null) {
       throw new IllegalArgumentException("Method not specified in JsonPathToTable extraction");
     }
@@ -95,7 +91,6 @@ public class JsonPathToTableExtraction {
 
     _filter = filter;
     _index = index;
-    _schema = schema;
     _method = method;
   }
 
@@ -112,10 +107,5 @@ public class JsonPathToTableExtraction {
   @JsonProperty(PROP_METHOD)
   public Method getMethod() {
     return _method;
-  }
-
-  @JsonProperty(PROP_SCHEMA)
-  public Schema getSchema() {
-    return _schema;
   }
 }

@@ -1820,6 +1820,11 @@ JUNOS_FTP
    'junos-ftp'
 ;
 
+JUNOS_FTP_DATA
+:
+    'junos-ftp-data'
+;
+
 JUNOS_GNUTELLA
 :
    'junos-gnutella'
@@ -1828,6 +1833,28 @@ JUNOS_GNUTELLA
 JUNOS_GOPHER
 :
    'junos-gopher'
+;
+
+JUNOS_GPRS_GTP_C
+:
+    'junos-gprs-gtp-c'
+;
+
+
+JUNOS_GPRS_GTP_U
+:
+    'junos-gprs-gtp-u'
+;
+
+
+JUNOS_GPRS_GTP_V0
+:
+    'junos-gprs-gtp-v0'
+;
+
+JUNOS_GPRS_SCTP
+:
+    'junos-gprs-sctp'
 ;
 
 JUNOS_GRE
@@ -1915,9 +1942,9 @@ JUNOS_ICMP6_ECHO_REQUEST
    'junos-icmp6-echo-request'
 ;
 
-JUNOS_ICMP6_PACKET_TO_BIG
+JUNOS_ICMP6_PACKET_TOO_BIG
 :
-   'junos-icmp6-packet-to-big'
+   'junos-icmp6-packet-too-big'
 ;
 
 JUNOS_ICMP6_PARAM_PROB_HEADER
@@ -2343,6 +2370,11 @@ JUNOS_SMB_SESSION
 JUNOS_SMTP
 :
    'junos-smtp'
+;
+
+JUNOS_SMTPS
+:
+    'junos-smtps'
 ;
 
 JUNOS_SNMP_AGENTX

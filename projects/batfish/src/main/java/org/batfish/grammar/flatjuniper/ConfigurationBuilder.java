@@ -663,10 +663,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_FINGER;
     } else if (ctx.JUNOS_FTP() != null) {
       return JunosApplication.JUNOS_FTP;
+    } else if (ctx.JUNOS_FTP_DATA() != null) {
+      return JunosApplication.JUNOS_FTP_DATA;
     } else if (ctx.JUNOS_GNUTELLA() != null) {
       return JunosApplication.JUNOS_GNUTELLA;
     } else if (ctx.JUNOS_GOPHER() != null) {
       return JunosApplication.JUNOS_GOPHER;
+    } else if (ctx.JUNOS_GPRS_GTP_C() != null) {
+      return JunosApplication.JUNOS_GPRS_GTP_C;
+    } else if (ctx.JUNOS_GPRS_GTP_U() != null) {
+      return JunosApplication.JUNOS_GPRS_GTP_U;
+    } else if (ctx.JUNOS_GPRS_GTP_V0() != null) {
+      return JunosApplication.JUNOS_GPRS_GTP_V0;
     } else if (ctx.JUNOS_GRE() != null) {
       return JunosApplication.JUNOS_GRE;
     } else if (ctx.JUNOS_GTP() != null) {
@@ -699,8 +707,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_ICMP6_ECHO_REPLY;
     } else if (ctx.JUNOS_ICMP6_ECHO_REQUEST() != null) {
       return JunosApplication.JUNOS_ICMP6_ECHO_REQUEST;
-    } else if (ctx.JUNOS_ICMP6_PACKET_TO_BIG() != null) {
-      return JunosApplication.JUNOS_ICMP6_PACKET_TO_BIG;
+    } else if (ctx.JUNOS_ICMP6_PACKET_TOO_BIG() != null) {
+      return JunosApplication.JUNOS_ICMP6_PACKET_TOO_BIG;
     } else if (ctx.JUNOS_ICMP6_PARAM_PROB_HEADER() != null) {
       return JunosApplication.JUNOS_ICMP6_PARAM_PROB_HEADER;
     } else if (ctx.JUNOS_ICMP6_PARAM_PROB_NEXTHDR() != null) {

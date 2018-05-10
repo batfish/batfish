@@ -1,0 +1,83 @@
+[
+  {
+    "class" : "org.batfish.question.jsonpathtotable.JsonPathToTableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : {
+        "node" : {
+          "description" : "No description provided",
+          "isKey" : true,
+          "isValue" : false,
+          "schema" : "Node"
+        },
+        "ntpServers" : {
+          "description" : "No description provided",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "List<Ip>"
+        }
+      },
+      "displayHints" : {
+        "textDesc" : "The NTP servers of ${node} are ${ntpServers}"
+      }
+    },
+    "excludedRows" : [
+      {
+        "exclusionName" : "{\"node\":{\"name\":\"as2border2\"}}",
+        "rows" : [
+          {
+            "ntpServers" : [
+              "18.18.18.18"
+            ],
+            "node" : {
+              "name" : "as2border2"
+            }
+          }
+        ]
+      }
+    ],
+    "rows" : [
+      {
+        "ntpServers" : [
+          "18.18.18.18",
+          "23.23.23.23"
+        ],
+        "node" : {
+          "name" : "as2border1"
+        }
+      },
+      {
+        "ntpServers" : [
+          "18.18.18.18",
+          "23.23.23.23"
+        ],
+        "node" : {
+          "name" : "as1border2"
+        }
+      },
+      {
+        "ntpServers" : [
+          "18.18.18.18",
+          "23.23.23.23"
+        ],
+        "node" : {
+          "name" : "as3border2"
+        }
+      },
+      {
+        "ntpServers" : [
+          "18.18.18.18",
+          "23.23.23.23"
+        ],
+        "node" : {
+          "name" : "as3border1"
+        }
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 4 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 4
+    }
+  }
+]

@@ -9,8 +9,20 @@
           "isValue" : true,
           "schema" : "String"
         },
+        "establishedNeighbors" : {
+          "description" : "Number of neighbors with whom BGP session was established",
+          "isKey" : false,
+          "isValue" : true,
+          "schema" : "Integer"
+        },
+        "localIp" : {
+          "description" : "The local IP of the session",
+          "isKey" : false,
+          "isValue" : false,
+          "schema" : "Ip"
+        },
         "node" : {
-          "description" : "Node where this session is configured",
+          "description" : "The node where this session is configured",
           "isKey" : true,
           "isValue" : false,
           "schema" : "Node"
@@ -33,23 +45,11 @@
           "isValue" : false,
           "schema" : "Prefix"
         },
-        "localIp" : {
-          "description" : "The local IP of the session",
-          "isKey" : false,
-          "isValue" : false,
-          "schema" : "Ip"
-        },
         "sessionType" : {
           "description" : "The type of this session",
           "isKey" : false,
           "isValue" : false,
           "schema" : "String"
-        },
-        "establishedNeighbors" : {
-          "description" : "Number of neighbors with whom BGP session was established",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "Integer"
         },
         "vrfName" : {
           "description" : "The VRF in which this session is configured",
