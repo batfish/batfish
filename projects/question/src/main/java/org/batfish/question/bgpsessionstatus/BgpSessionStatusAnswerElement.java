@@ -2,9 +2,10 @@ package org.batfish.question.bgpsessionstatus;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.HashMap;
-import java.util.Map;
-import javax.annotation.Nonnull;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.Comparator;
+import java.util.SortedMap;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Schema;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
+@ParametersAreNonnullByDefault
 public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
   public static final String COL_CONFIGURED_STATUS = "configuredStatus";
@@ -31,47 +33,51 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
   public static final String COL_VRF_NAME = "vrfName";
 
   @JsonCreator
-  public BgpSessionStatusAnswerElement(
-      @Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
+  public BgpSessionStatusAnswerElement(@JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
     super(tableMetadata);
   }
 
   public static TableMetadata createMetadata(Question question) {
-    Map<String, ColumnMetadata> columnMetadata = new HashMap<>();
-    columnMetadata.put(
-        COL_CONFIGURED_STATUS, new ColumnMetadata(Schema.STRING, "Configured status", false, true));
-    columnMetadata.put(
-        COL_ESTABLISHED_NEIGHBORS,
-        new ColumnMetadata(
-            Schema.INTEGER,
-            "Number of neighbors with whom BGP session was established",
-            false,
-            true));
-    columnMetadata.put(
-        COL_LOCAL_IP, new ColumnMetadata(Schema.IP, "The local IP of the session", false, false));
-    columnMetadata.put(
-        COL_NODE,
-        new ColumnMetadata(Schema.NODE, "Node where this session is configured", true, false));
-    columnMetadata.put(
-        COL_ON_LOOPBACK,
-        new ColumnMetadata(
-            Schema.BOOLEAN,
-            "Whether the session was established on loopback interface",
-            false,
-            true));
-    columnMetadata.put(
-        COL_REMOTE_NODE,
-        new ColumnMetadata(Schema.NODE, "Remote node for this session", false, false));
-    columnMetadata.put(
-        COL_REMOTE_PREFIX,
-        new ColumnMetadata(Schema.PREFIX, "Remote prefix for this session", true, false));
-    columnMetadata.put(
-        COL_SESSION_TYPE,
-        new ColumnMetadata(Schema.STRING, "The type of this session", false, false));
-    columnMetadata.put(
-        COL_VRF_NAME,
-        new ColumnMetadata(
-            Schema.STRING, "The VRF in which this session is configured", true, false));
+    SortedMap<String, ColumnMetadata> columnMetadata =
+        new ImmutableSortedMap.Builder<String, ColumnMetadata>(Comparator.naturalOrder())
+            .put(
+                COL_CONFIGURED_STATUS,
+                new ColumnMetadata(Schema.STRING, "Configured status", false, true))
+            .put(
+                COL_ESTABLISHED_NEIGHBORS,
+                new ColumnMetadata(
+                    Schema.INTEGER,
+                    "Number of neighbors with whom BGP session was established",
+                    false,
+                    true))
+            .put(
+                COL_LOCAL_IP,
+                new ColumnMetadata(Schema.IP, "The local IP of the session", false, false))
+            .put(
+                COL_NODE,
+                new ColumnMetadata(
+                    Schema.NODE, "The node where this session is configured", true, false))
+            .put(
+                COL_ON_LOOPBACK,
+                new ColumnMetadata(
+                    Schema.BOOLEAN,
+                    "Whether the session was established on loopback interface",
+                    false,
+                    true))
+            .put(
+                COL_REMOTE_NODE,
+                new ColumnMetadata(Schema.NODE, "Remote node for this session", false, false))
+            .put(
+                COL_REMOTE_PREFIX,
+                new ColumnMetadata(Schema.PREFIX, "Remote prefix for this session", true, false))
+            .put(
+                COL_SESSION_TYPE,
+                new ColumnMetadata(Schema.STRING, "The type of this session", false, false))
+            .put(
+                COL_VRF_NAME,
+                new ColumnMetadata(
+                    Schema.STRING, "The VRF in which this session is configured", true, false))
+            .build();
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
@@ -124,7 +130,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         .put(COL_LOCAL_IP, info.getLocalIp())
         .put(COL_NODE, new Node(info.getNodeName()))
         .put(COL_ON_LOOPBACK, info.getOnLoopback())
-        .put(COL_REMOTE_NODE, new Node(info.getRemoteNode()))
+        .put(COL_REMOTE_NODE, info.getRemoteNode() == null ? null : new Node(info.getRemoteNode()))
         .put(COL_REMOTE_PREFIX, info.getRemotePrefix())
         .put(COL_SESSION_TYPE, info.getSessionType())
         .put(COL_VRF_NAME, info.getVrfName());

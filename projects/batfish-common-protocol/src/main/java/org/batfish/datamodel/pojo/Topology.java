@@ -1,10 +1,13 @@
 package org.batfish.datamodel.pojo;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -15,15 +18,15 @@ public class Topology extends BfObject {
 
   private static final String PROP_TESTRIG_NAME = "testrigName";
 
-  private Set<Aggregate> _aggregates;
+  @Nonnull private Set<Aggregate> _aggregates;
 
-  private Set<Interface> _interfaces;
+  @Nonnull private Set<Interface> _interfaces;
 
-  private Set<Link> _links;
+  @Nonnull private Set<Link> _links;
 
-  private Set<Node> _nodes;
+  @Nonnull private Set<Node> _nodes;
 
-  private final String _testrigName;
+  @Nonnull private final String _testrigName;
 
   public static Topology create(
       String testrigName,
@@ -100,14 +103,23 @@ public class Topology extends BfObject {
     return pojoTopology;
   }
 
+  public Topology(String testrigName) {
+    this(getId(testrigName), testrigName);
+  }
+
   @JsonCreator
-  public Topology(@JsonProperty(PROP_TESTRIG_NAME) String name) {
-    super(getId(name));
-    _testrigName = name;
+  public Topology(
+      @JsonProperty(PROP_ID) String topologyId,
+      @JsonProperty(PROP_TESTRIG_NAME) String testrigName) {
+    super(firstNonNull(topologyId, getId(testrigName)));
+    _testrigName = testrigName;
     _aggregates = new HashSet<>();
     _interfaces = new HashSet<>();
     _links = new HashSet<>();
     _nodes = new HashSet<>();
+    if (testrigName == null) {
+      throw new IllegalArgumentException("Cannot build Topology: testrigName is null");
+    }
   }
 
   public Set<Aggregate> getAggregates() {

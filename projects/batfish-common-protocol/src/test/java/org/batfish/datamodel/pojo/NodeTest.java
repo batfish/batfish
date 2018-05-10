@@ -20,7 +20,7 @@ public class NodeTest {
   @Test
   public void constructorFail() throws IOException {
     String nodeStr = "{\"nonamefield\" : \"nodeName\"}";
-    _thrown.expect(com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class);
+    _thrown.expect(com.fasterxml.jackson.databind.exc.InvalidDefinitionException.class);
     BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
   }
 
@@ -29,7 +29,7 @@ public class NodeTest {
     String nodeStr = "{\"name\" : \"nodeName\"}";
     Node node = BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
 
-    assertThat(node.getId(), equalTo(null));
+    assertThat(node.getId(), equalTo("node-nodeName"));
     assertThat(node.getName(), equalTo("nodeName"));
   }
 
@@ -38,7 +38,7 @@ public class NodeTest {
     String nodeStr = "{\"name\" : \"nodeName\", \"properties\" : { \"key\": \"value\"}}";
     Node node = BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
 
-    assertThat(node.getId(), equalTo(null));
+    assertThat(node.getId(), equalTo("node-nodeName"));
     assertThat(node.getName(), equalTo("nodeName"));
     assertThat(node.getProperties().size(), equalTo(1));
     assertThat(node.getProperties().get("key"), equalTo("value"));

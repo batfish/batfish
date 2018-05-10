@@ -5,9 +5,11 @@ import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
@@ -16,6 +18,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.representation.juniper.BaseApplication.Term;
 
 public enum JunosApplication implements Application {
+  /**
+   * TODO(https://github.com/batfish/batfish/issues/1325): separate applications from
+   * application-sets
+   */
   JUNOS_AOL,
   JUNOS_BGP,
   JUNOS_BIFF,
@@ -33,8 +39,13 @@ public enum JunosApplication implements Application {
   JUNOS_ECHO,
   JUNOS_FINGER,
   JUNOS_FTP,
+  JUNOS_FTP_DATA,
   JUNOS_GNUTELLA,
   JUNOS_GOPHER,
+  JUNOS_GPRS_GTP_C,
+  JUNOS_GPRS_GTP_U,
+  JUNOS_GPRS_GTP_V0,
+  JUNOS_GPRS_SCTP,
   JUNOS_GRE,
   JUNOS_GTP,
   JUNOS_H323,
@@ -51,7 +62,7 @@ public enum JunosApplication implements Application {
   JUNOS_ICMP6_DST_UNREACH_ROUTE,
   JUNOS_ICMP6_ECHO_REPLY,
   JUNOS_ICMP6_ECHO_REQUEST,
-  JUNOS_ICMP6_PACKET_TO_BIG,
+  JUNOS_ICMP6_PACKET_TOO_BIG,
   JUNOS_ICMP6_PARAM_PROB_HEADER,
   JUNOS_ICMP6_PARAM_PROB_NEXTHDR,
   JUNOS_ICMP6_PARAM_PROB_OPTION,
@@ -137,6 +148,7 @@ public enum JunosApplication implements Application {
   JUNOS_SMB,
   JUNOS_SMB_SESSION,
   JUNOS_SMTP,
+  JUNOS_SMTPS,
   JUNOS_SNMP_AGENTX,
   JUNOS_SNPP,
   JUNOS_SQL_MONITOR,
@@ -229,117 +241,356 @@ public enum JunosApplication implements Application {
     return _baseApplication.get().getIpv6();
   }
 
+  private void setHeaderSpaceInfo(
+      HeaderSpace.Builder hb,
+      @Nullable IpProtocol ipProtocol,
+      @Nullable Integer portRangeStart,
+      @Nullable Integer portRangeEnd) {
+    if (ipProtocol != null) {
+      hb.setIpProtocols(ImmutableSet.of(ipProtocol));
+    }
+    if (portRangeStart != null) {
+      hb.setDstPorts(
+          ImmutableSet.of(
+              new SubRange(portRangeStart, portRangeEnd == null ? portRangeStart : portRangeEnd)));
+    }
+  }
+
   private BaseApplication init() {
     BaseApplication baseApplication =
         new BaseApplication(name(), DefinedStructure.IGNORED_DEFINITION_LINE);
     Map<String, Term> terms = baseApplication.getTerms();
+
+    Integer portRangeStart = null;
+    Integer portRangeEnd = null;
+    IpProtocol ipProtocol = null;
+    Integer icmpType = null;
+
     switch (this) {
+      case JUNOS_AOL:
+        {
+          portRangeStart = NamedPort.AOL.number();
+          portRangeEnd = portRangeStart + 3;
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_BGP:
+        {
+          portRangeStart = NamedPort.BGP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_BIFF:
+        {
+          portRangeStart = NamedPort.BIFFudp_OR_EXECtcp.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_BOOTPC:
+        {
+          portRangeStart = NamedPort.BOOTPC.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_BOOTPS:
+        {
+          portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_CHARGEN:
+        {
+          portRangeStart = NamedPort.CHARGEN.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_CVSPSERVER:
+        {
+          portRangeStart = NamedPort.CVSPSERVER.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_DHCP_CLIENT:
+        {
+          portRangeStart =
+              NamedPort.BOOTPC.number(); // TODO: rename BOOTPC to BOOTPC_OR_DHCP_CLIENT
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DHCP_RELAY:
+        {
+          portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DHCP_SERVER:
+        {
+          portRangeStart = NamedPort.BOOTPS_OR_DHCP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DISCARD:
+        {
+          portRangeStart = NamedPort.DISCARD.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_DNS_TCP:
+        {
+          portRangeStart = NamedPort.DOMAIN.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_DNS_UDP:
+        {
+          portRangeStart = NamedPort.DOMAIN.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_ECHO:
+        {
+          portRangeStart = NamedPort.ECHO.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_FINGER:
+        {
+          portRangeStart = NamedPort.FINGER.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_FTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.FTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.FTP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_FTP_DATA:
+        {
+          portRangeStart = NamedPort.FTP_DATA.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_GNUTELLA:
+        {
+          portRangeStart = NamedPort.GNUTELLA.number();
+          portRangeEnd = portRangeStart + 1;
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_GOPHER:
+        {
+          portRangeStart = NamedPort.GOPHER.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_GPRS_GTP_C:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_C.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_GPRS_GTP_U:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_U.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_GPRS_GTP_V0:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_V0.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_GRE:
+        {
+          ipProtocol = IpProtocol.GRE;
+          break;
+        }
+
+      case JUNOS_GTP:
+        {
+          portRangeStart = NamedPort.GPRS_GTP_C.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_H323:
+        {
+          portRangeStart = NamedPort.H323.number();
+          ipProtocol = IpProtocol.TCP;
+
+          String t2Name = "t2";
+          Term t2 = new Term(t2Name);
+          HeaderSpace.Builder l2 = t2.getHeaderSpace().rebuild();
+          setHeaderSpaceInfo(l2, IpProtocol.UDP, NamedPort.H323_T2.number(), null);
+          t2.setHeaderSpace(l2.build());
+
+          String t3Name = "t3";
+          Term t3 = new Term(t3Name);
+          HeaderSpace.Builder l3 = t3.getHeaderSpace().rebuild();
+          setHeaderSpaceInfo(l3, IpProtocol.TCP, NamedPort.H323_T3.number(), null);
+          t3.setHeaderSpace(l3.build());
+
+          String t4Name = "t4";
+          Term t4 = new Term(t4Name);
+          HeaderSpace.Builder l4 = t4.getHeaderSpace().rebuild();
+          setHeaderSpaceInfo(
+              l4,
+              IpProtocol.TCP,
+              NamedPort.LDAP.number(),
+              null); // TODO: rename LDAP to LDAP_OR_H323_T4
+          t4.setHeaderSpace(l4.build());
+
+          String t5Name = "t5";
+          Term t5 = new Term(t5Name);
+          HeaderSpace.Builder l5 = t5.getHeaderSpace().rebuild();
+          setHeaderSpaceInfo(l5, IpProtocol.TCP, NamedPort.H323_T5.number(), null);
+          t5.setHeaderSpace(l5.build());
+
+          String t6Name = "t6";
+          Term t6 = new Term(t6Name);
+          HeaderSpace.Builder l6 = t6.getHeaderSpace().rebuild();
+          setHeaderSpaceInfo(l6, IpProtocol.TCP, NamedPort.H323_T6.number(), null);
+          t6.setHeaderSpace(l6.build());
+
+          terms.put(t2Name, t2);
+          terms.put(t3Name, t3);
+          terms.put(t4Name, t4);
+          terms.put(t5Name, t5);
+          terms.put(t6Name, t6);
           break;
         }
 
       case JUNOS_HTTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.HTTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.HTTP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_HTTP_EXT:
+        {
+          portRangeStart = NamedPort.HTTP_EXT.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_HTTPS:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.HTTPS.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.HTTPS.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_ICMP_ALL:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.ICMP));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          ipProtocol = IpProtocol.ICMP;
+          break;
+        }
+
+      case JUNOS_ICMP_PING:
+        {
+          ipProtocol = IpProtocol.ICMP;
+          icmpType = IcmpType.ECHO_REQUEST;
           break;
         }
 
       case JUNOS_ICMP6_ALL:
         {
           baseApplication.setIpv6(true);
-          // TODO
+          ipProtocol = IpProtocol.IPV6_ICMP;
+          break;
+        }
+
+      case JUNOS_MS_RPC_TCP:
+        {
+          portRangeStart = NamedPort.MSRPC.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_MS_RPC_UDP:
+        {
+          portRangeStart = NamedPort.MSRPC.number();
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_NNTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.NNTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.NNTP.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
       case JUNOS_NTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.UDP));
-          int portNum = NamedPort.NTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.NTP.number();
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
       case JUNOS_PPTP:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.PPTP.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.PPTP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_PRINTER:
+        {
+          portRangeStart = NamedPort.LPD.number(); // TODO: rename LPD to LPD_OR_PRINTER
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_SMB:
+        {
+          portRangeStart =
+              NamedPort.NETBIOS_SSN.number(); // TODO: rename NETBIOS_SSN to NETBIOS_SSN_OR_SMB
+          ipProtocol = IpProtocol.TCP;
+
+          String t2Name = "t2";
+          Term t2 = new Term(t2Name);
+          HeaderSpace.Builder l2 = t2.getHeaderSpace().rebuild();
+          setHeaderSpaceInfo(
+              l2,
+              IpProtocol.TCP,
+              NamedPort.MICROSOFT_DS.number(),
+              null); // TODO: rename MICROSOFT_DS to MICROSOFT_DS_OR_SMB_T2
+          t2.setHeaderSpace(l2.build());
+
+          terms.put(t2Name, t2);
           break;
         }
 
       case JUNOS_SSH:
         {
-          String t1Name = "t1";
-          Term t1 = new Term(t1Name);
-          HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
-          l1.setIpProtocols(ImmutableSet.of(IpProtocol.TCP));
-          int portNum = NamedPort.SSH.number();
-          l1.setDstPorts(ImmutableSet.of(new SubRange(portNum, portNum)));
-          t1.setHeaderSpace(l1.build());
-          terms.put(t1Name, t1);
+          portRangeStart = NamedPort.SSH.number();
+          ipProtocol = IpProtocol.TCP;
           break;
         }
 
@@ -347,6 +598,18 @@ public enum JunosApplication implements Application {
       default:
         return null;
     }
+
+    String t1Name = "t1";
+    Term t1 = new Term(t1Name);
+    HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
+
+    setHeaderSpaceInfo(l1, ipProtocol, portRangeStart, portRangeEnd);
+    if (icmpType != null) {
+      l1.setIcmpTypes(ImmutableSet.of(new SubRange(icmpType)));
+    }
+    t1.setHeaderSpace(l1.build());
+    terms.put(t1Name, t1);
+
     return baseApplication;
   }
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,12 +67,15 @@ public final class Interface extends ComparableStructure<String> {
 
     private Vrf _vrf;
 
+    private SortedMap<Integer, VrrpGroup> _vrrpGroups;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
+      _vrrpGroups = ImmutableSortedMap.of();
     }
 
     @Override
@@ -114,6 +118,7 @@ public final class Interface extends ComparableStructure<String> {
           iface.setOspfCost(proc.computeInterfaceCost(iface));
         }
       }
+      iface.setVrrpGroups(_vrrpGroups);
       return iface;
     }
 
@@ -261,6 +266,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setVrf(Vrf vrf) {
       _vrf = vrf;
+      return this;
+    }
+
+    public Builder setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
+      _vrrpGroups = ImmutableSortedMap.copyOf(vrrpGroups);
       return this;
     }
   }
@@ -659,19 +669,22 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     Interface other = (Interface) o;
-    if (this._accessVlan != other._accessVlan) {
+    if (_accessVlan != other._accessVlan) {
       return false;
     }
-    if (this._active != other._active) {
+    if (_active != other._active) {
       return false;
     }
-    if (!this._allowedVlans.equals(other._allowedVlans)) {
+    if (!Objects.equals(_address, other._address)) {
       return false;
     }
-    if (!this._allAddresses.equals(other._allAddresses)) {
+    if (!Objects.equals(_allowedVlans, other._allowedVlans)) {
       return false;
     }
-    if (this._autoState != other._autoState) {
+    if (!Objects.equals(_allAddresses, other._allAddresses)) {
+      return false;
+    }
+    if (_autoState != other._autoState) {
       return false;
     }
     if (!Objects.equals(_bandwidth, other._bandwidth)) {
@@ -682,40 +695,35 @@ public final class Interface extends ComparableStructure<String> {
     if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
       return false;
     }
-
     if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(), other.getIncomingFilter())) {
       return false;
     }
-
     if (this._interfaceType != other._interfaceType) {
       return false;
     }
-
-    // TODO: check ISIS settings for equality.
-    if (this._mtu != other._mtu) {
+    if (!Objects.equals(_key, other._key)) {
       return false;
     }
-    if (this._nativeVlan != other._nativeVlan) {
+    // TODO: check ISIS settings for equality.
+    if (_mtu != other._mtu) {
+      return false;
+    }
+    if (_nativeVlan != other._nativeVlan) {
       return false;
     }
     // TODO: check OSPF settings for equality.
-
     if (!IpAccessList.bothNullOrSameName(this._outgoingFilter, other._outgoingFilter)) {
       return false;
     }
-
-    if (!Objects.equals(this._address, other._address)) {
+    if (!_proxyArp == other._proxyArp) {
       return false;
     }
-
     if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
       return false;
     }
-
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
-
     if (!Objects.equals(this._zone, other._zone)) {
       return false;
     }
