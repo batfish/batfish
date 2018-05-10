@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
@@ -33,7 +34,7 @@ public class TableMetadata {
   }
 
   @JsonProperty(PROP_COLUMN_METADATA)
-  public SortedMap<String, ColumnMetadata> getColumnMetadata() {
+  public Map<String, ColumnMetadata> getColumnMetadata() {
     return _columnMetadata;
   }
 

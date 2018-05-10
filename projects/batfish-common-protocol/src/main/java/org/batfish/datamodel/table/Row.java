@@ -3,11 +3,11 @@ package org.batfish.datamodel.table;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.Map.Entry;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
@@ -90,13 +90,9 @@ public class Row implements Comparable<Row> {
     }
   }
 
-  /**
-   * Fetch the names of the columns in this Row
-   *
-   * @return An Iterator over the column names
-   */
-  public Iterator<String> getColumnNames() {
-    return _data.fieldNames();
+  @JsonValue
+  private ObjectNode getData() {
+    return _data;
   }
 
   public String getKey(TableMetadata metadata) {
