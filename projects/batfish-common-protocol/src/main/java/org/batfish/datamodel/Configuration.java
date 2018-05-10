@@ -44,7 +44,7 @@ public final class Configuration extends ComparableStructure<String> {
 
     private LineAction _defaultInboundAction;
 
-    public Builder(NetworkFactory networkFactory) {
+    Builder(NetworkFactory networkFactory) {
       super(networkFactory, Configuration.class);
     }
 

@@ -146,10 +146,10 @@ public class TracerouteEngineTest {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
-        new Configuration.Builder(nf).setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration config = cb.build();
-    Vrf.Builder vb = new Vrf.Builder(nf).setOwner(config);
-    Interface.Builder ib = new Interface.Builder(nf).setActive(true).setOwner(config);
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(config);
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(config);
 
     Vrf vrf1 = vb.build();
     Vrf vrf2 = vb.build();
@@ -195,10 +195,10 @@ public class TracerouteEngineTest {
     // Construct network
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
-        new Configuration.Builder(nf).setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration config = cb.build();
-    Vrf.Builder vb = new Vrf.Builder(nf).setOwner(config);
-    Interface.Builder ib = new Interface.Builder(nf).setActive(true).setOwner(config);
+    Vrf.Builder vb = nf.vrfBuilder().setOwner(config);
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true).setOwner(config);
 
     Vrf vrf1 = vb.build();
     Vrf vrf2 = vb.build();
