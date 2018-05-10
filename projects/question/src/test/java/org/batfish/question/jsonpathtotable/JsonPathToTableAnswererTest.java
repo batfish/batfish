@@ -25,14 +25,16 @@ public class JsonPathToTableAnswererTest {
 
     // build an extraction to recover *Val
     JsonPathToTableExtraction extraction =
-        new JsonPathToTableExtraction(Schema.STRING, Method.SUFFIXOFSUFFIX, "$", null);
+        new JsonPathToTableExtraction(
+            Schema.STRING, Method.SUFFIXOFSUFFIX, "$", null, null, null, null, null);
     Map<String, JsonPathToTableExtraction> extractions = new HashMap<>();
     extractions.put("val", extraction);
 
     // build a Node composition that use "val" as name
     Map<String, String> dict = new HashMap<>();
     dict.put("name", "val");
-    JsonPathToTableComposition composition = new JsonPathToTableComposition(Schema.NODE, dict);
+    JsonPathToTableComposition composition =
+        new JsonPathToTableComposition(Schema.NODE, dict, null, null, null, null);
     Map<String, JsonPathToTableComposition> compositions = new HashMap<>();
     compositions.put("node", composition);
 
