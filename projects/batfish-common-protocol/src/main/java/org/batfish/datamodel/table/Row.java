@@ -111,7 +111,7 @@ public class Row implements Comparable<Row> {
       String columnName = entry.getKey();
       ColumnMetadata columnMetadata = entry.getValue();
       if (columnMetadata.getIsKey()) {
-        key.append(_data.get(columnName).toString());
+        key.append("[" + _data.get(columnName).toString() + "]");
       }
     }
     return key.toString();
@@ -123,7 +123,7 @@ public class Row implements Comparable<Row> {
       String columnName = entry.getKey();
       ColumnMetadata columnMetadata = entry.getValue();
       if (columnMetadata.getIsValue()) {
-        key.append(_data.get(columnName).toString());
+        key.append("[" + _data.get(columnName).toString() + "]");
       }
     }
     return key.toString();

@@ -39,8 +39,8 @@ public class RowTest {
     TableMetadata metadataTwoKeys = initMetadataThree(true, false, true, false, false, false);
 
     assertThat(row.getKey(metadataNoKeys), equalTo(""));
-    assertThat(row.getKey(metadataOneKey), equalTo("\"value2\""));
-    assertThat(row.getKey(metadataTwoKeys), equalTo("\"value1\"\"value3\""));
+    assertThat(row.getKey(metadataOneKey), equalTo("[\"value2\"]"));
+    assertThat(row.getKey(metadataTwoKeys), equalTo("[\"value1\"][\"value3\"]"));
   }
 
   @Test
@@ -51,7 +51,7 @@ public class RowTest {
     TableMetadata metadataTwoValues = initMetadataThree(true, false, true, true, false, true);
 
     assertThat(row.getValue(metadataNoValues), equalTo(""));
-    assertThat(row.getValue(metadataOneValue), equalTo("\"value2\""));
-    assertThat(row.getValue(metadataTwoValues), equalTo("\"value1\"\"value3\""));
+    assertThat(row.getValue(metadataOneValue), equalTo("[\"value2\"]"));
+    assertThat(row.getValue(metadataTwoValues), equalTo("[\"value1\"][\"value3\"]"));
   }
 }
