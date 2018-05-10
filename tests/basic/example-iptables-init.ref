@@ -63,6 +63,18 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "internet-host" : { },
+        "r1" : { },
+        "r2" : { },
+        "r3" : { },
+        "z1-firewall" : { },
+        "z1-host1" : { },
+        "z1-host2" : { },
+        "z2-firewall" : { },
+        "z2-host1" : { },
+        "z2-host2" : { }
+      },
       "version" : "0.36.0"
     },
     {

@@ -1,5 +1,6 @@
 package org.batfish.grammar.flatjuniper;
 
+import static java.util.Collections.emptyMap;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
@@ -1043,7 +1044,7 @@ public class FlatJuniperGrammarTest {
     /*
      * VLAN should not contribute to defined structures
      */
-    assertThat(ccae.getDefinedStructures().keySet(), hasSize(0));
+    assertThat(ccae.getDefinedStructures().get(hostname), equalTo(emptyMap()));
   }
 
   @Test
