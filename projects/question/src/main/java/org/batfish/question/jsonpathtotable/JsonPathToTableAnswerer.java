@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +21,6 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 
 public class JsonPathToTableAnswerer extends Answerer {
@@ -80,8 +78,8 @@ public class JsonPathToTableAnswerer extends Answerer {
       String innerAnswer, JsonPathToTableQuestion question) {
 
     JsonPathToTableQuery query = question.getPathQuery();
-    TableMetadata tableMetadata = JsonPathToTableAnswerElement.create(question);
-    JsonPathToTableAnswerElement answer = new JsonPathToTableAnswerElement(tableMetadata);
+    JsonPathToTableAnswerElement answer =
+        new JsonPathToTableAnswerElement(question.computeTableMetadata());
 
     // 1. get all the results
     List<JsonPathResult> jsonPathResults =
@@ -89,8 +87,7 @@ public class JsonPathToTableAnswerer extends Answerer {
 
     // 2. Put them in the answer element based on whether they are covered by an exclusion
     for (JsonPathResult result : jsonPathResults) {
-      Row answerValues =
-          computeRowValues(query.getExtractions(), query.getCompositions(), result, tableMetadata);
+      Row answerValues = computeRowValues(query.getExtractions(), query.getCompositions(), result);
       Exclusion exclusion = Exclusion.covered(answerValues, question.getExclusions());
       if (exclusion != null) {
         answer.addExcludedRow(answerValues, exclusion.getName());
@@ -108,21 +105,11 @@ public class JsonPathToTableAnswerer extends Answerer {
   private static Row computeRowValues(
       Map<String, JsonPathToTableExtraction> extractions,
       Map<String, JsonPathToTableComposition> compositions,
-      JsonPathResult jpResult,
-      TableMetadata tableMetadata) {
+      JsonPathResult jpResult) {
     ObjectNode answerValues = BatfishObjectMapper.mapper().createObjectNode();
     computeExtractions(extractions, jpResult, answerValues);
     doCompositions(compositions, extractions, answerValues);
-
-    Row row = new Row();
-    Iterator<String> iterator = answerValues.fieldNames();
-    while (iterator.hasNext()) {
-      String columnName = iterator.next();
-      if (tableMetadata.getColumnMetadata().containsKey(columnName)) {
-        row.put(columnName, answerValues.get(columnName));
-      }
-    }
-    return row;
+    return new Row(answerValues);
   }
 
   private static void computeExtractions(
