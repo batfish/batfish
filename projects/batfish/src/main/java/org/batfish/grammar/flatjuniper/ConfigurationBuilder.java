@@ -457,6 +457,7 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
+import org.batfish.vendor.StructureType;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -489,6 +490,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       "policy-statement - term - then - next-hop";
 
   private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
+
+  private void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
+    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
+      _configuration.defineStructure(type, name, i);
+    }
+  }
 
   public static NamedPort getNamedPort(PortContext ctx) {
     if (ctx.AFS() != null) {
@@ -1575,6 +1582,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentApplication =
         _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication(n, line));
     _currentApplicationTerm = _currentApplication.getMainTerm();
+    defineStructure(JuniperStructureType.APPLICATION, name, ctx);
   }
 
   @Override
@@ -1583,6 +1591,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     int line = ctx.name.getStart().getLine();
     _currentApplicationSet =
         _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet(n, line));
+    _configuration.defineStructure(JuniperStructureType.APPLICATION_SET, name, line);
   }
 
   @Override
@@ -4241,6 +4250,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
     Vlan vlan = new Vlan(_currentVlanName, ctx.id.getLine(), toInt(ctx.id));
     _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
+    defineStructure(JuniperStructureType.VLAN, ctx.id.getText(), ctx);
   }
 
   @Nullable

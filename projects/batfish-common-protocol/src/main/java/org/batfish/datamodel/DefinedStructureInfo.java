@@ -38,4 +38,8 @@ public class DefinedStructureInfo implements Serializable {
   public int getNumReferrers() {
     return _numReferrers;
   }
+
+  public void setNumReferrers(int numReferrers) {
+    _numReferrers = numReferrers;
+  }
 }

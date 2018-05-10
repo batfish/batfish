@@ -24,13 +24,17 @@
         "crypto ipsec profile" : {
           "ipsec-vpn-ba2e34a8-0" : {
             "definitionLines" : [
-              92
+              92,
+              93,
+              94
             ],
             "numReferrers" : 1
           },
           "ipsec-vpn-ba2e34a8-1" : {
             "definitionLines" : [
-              96
+              96,
+              97,
+              98
             ],
             "numReferrers" : 1
           }
@@ -38,27 +42,75 @@
         "crypto ipsec transform-set" : {
           "ipsec-prop-vpn-ba2e34a8-0" : {
             "definitionLines" : [
-              85
+              85,
+              86
             ],
             "numReferrers" : 1
           },
           "ipsec-prop-vpn-ba2e34a8-1" : {
             "definitionLines" : [
-              87
+              87,
+              88
             ],
             "numReferrers" : 1
+          }
+        },
+        "crypto isakmp policy" : {
+          "200" : {
+            "definitionLines" : [
+              62,
+              63,
+              64,
+              65,
+              66
+            ],
+            "numReferrers" : 0
+          },
+          "201" : {
+            "definitionLines" : [
+              68,
+              69,
+              70,
+              71,
+              72
+            ],
+            "numReferrers" : 0
+          }
+        },
+        "crypto isakmp profile" : {
+          "isakmp-vpn-ba2e34a8-0" : {
+            "definitionLines" : [
+              74,
+              75,
+              76,
+              77
+            ],
+            "numReferrers" : 0
+          },
+          "isakmp-vpn-ba2e34a8-1" : {
+            "definitionLines" : [
+              78,
+              79,
+              80,
+              81
+            ],
+            "numReferrers" : 0
           }
         },
         "crypto keyring" : {
           "keyring-vpn-ba2e34a8-0" : {
             "definitionLines" : [
-              52
+              52,
+              53,
+              54
             ],
             "numReferrers" : 1
           },
           "keyring-vpn-ba2e34a8-1" : {
             "definitionLines" : [
-              55
+              55,
+              56,
+              57
             ],
             "numReferrers" : 1
           }
@@ -66,19 +118,23 @@
         "extended ip access-list" : {
           "2001" : {
             "definitionLines" : [
-              248
+              248,
+              249
             ],
             "numReferrers" : 0
           },
           "LIMIT_PEER" : {
             "definitionLines" : [
-              239
+              239,
+              240,
+              241
             ],
             "numReferrers" : 1
           },
           "MATCH_ALL_BGP" : {
             "definitionLines" : [
-              242
+              242,
+              243
             ],
             "numReferrers" : 2
           }
@@ -86,7 +142,8 @@
         "ipv4 prefix-list" : {
           "PROTECT_LOOPBACK" : {
             "definitionLines" : [
-              246
+              246,
+              247
             ],
             "numReferrers" : 1
           }
@@ -94,13 +151,17 @@
         "route-map" : {
           "PROTECT_LOOPBACK" : {
             "definitionLines" : [
-              251
+              251,
+              252
             ],
             "numReferrers" : 3
           },
           "SET_LOCAL_PREF" : {
             "definitionLines" : [
-              254
+              254,
+              255,
+              257,
+              258
             ],
             "numReferrers" : 1
           }

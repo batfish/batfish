@@ -34,6 +34,8 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   private VendorConfiguration _overlayConfiguration;
 
+  protected final SortedMap<String, SortedMap<String, DefinedStructureInfo>> _structureDefinitions;
+
   protected final SortedMap<
           StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>>
       _structureReferences;
@@ -43,6 +45,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   protected transient Warnings _w;
 
   public VendorConfiguration() {
+    _structureDefinitions = new TreeMap<>();
     _structureReferences = new TreeMap<>();
   }
 
@@ -136,6 +139,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
 
   public final void setAnswerElement(ConvertConfigurationAnswerElement answerElement) {
     _answerElement = answerElement;
+    _answerElement.getDefinedStructures().put(getHostname(), _structureDefinitions);
   }
 
   public void setFilename(String filename) {
@@ -174,17 +178,24 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
+  public void defineStructure(StructureType structureType, String name, int line) {
+    recordStructure(structureType, name, 0, line);
+  }
+
   public void recordStructure(
       StructureType structureType, String name, int numReferrers, int line) {
-    String hostname = getHostname();
     String type = structureType.getDescription();
-    SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType =
-        _answerElement.getDefinedStructures().computeIfAbsent(hostname, k -> new TreeMap<>());
     SortedMap<String, DefinedStructureInfo> byName =
-        byType.computeIfAbsent(type, k -> new TreeMap<>());
+        _structureDefinitions.computeIfAbsent(type, k -> new TreeMap<>());
     DefinedStructureInfo info =
-        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), numReferrers));
+        byName.computeIfAbsent(name, k -> new DefinedStructureInfo(new TreeSet<>(), 0));
     info.getDefinitionLines().add(line);
+    if (info.getNumReferrers() == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS
+        || numReferrers == DefinedStructureInfo.UNKNOWN_NUM_REFERRERS) {
+      info.setNumReferrers(DefinedStructureInfo.UNKNOWN_NUM_REFERRERS);
+    } else {
+      info.setNumReferrers(info.getNumReferrers() + numReferrers);
+    }
   }
 
   public void recordStructure(
