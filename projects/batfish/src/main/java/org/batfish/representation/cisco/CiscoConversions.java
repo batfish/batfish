@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Collections.singletonList;
 
 import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
@@ -31,6 +32,8 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.Route6FilterLine;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterLine;
@@ -41,11 +44,41 @@ import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
+import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.Statements;
 
 /** Utilities that convert Cisco-specific representations to vendor-independent model. */
 @ParametersAreNonnullByDefault
 class CiscoConversions {
+
+  /**
+   * Generates and returns a {@link RoutingPolicy} that matches routes that should be aggregated for
+   * aggregate network indicated by the given {@link Prefix}.
+   *
+   * <p>Does the bookkeeping in the provided {@link Configuration} to ensure the generated policy is
+   * available and tracked.
+   */
+  static RoutingPolicy generateAggregateRoutePolicy(
+      Configuration c, String vrfName, Prefix prefix) {
+    BooleanExpr matchLongerNetworks =
+        new MatchPrefixSet(
+            new DestinationNetwork(),
+            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix))));
+    If currentGeneratedRouteConditional =
+        new If(matchLongerNetworks, singletonList(Statements.ReturnTrue.toStaticStatement()));
+
+    RoutingPolicy policy =
+        new RoutingPolicy("~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix + "~", c);
+    policy.setStatements(ImmutableList.of(currentGeneratedRouteConditional));
+    c.getRoutingPolicies().put(policy.getName(), policy);
+    return policy;
+  }
 
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
     List<AsPathAccessListLine> lines =

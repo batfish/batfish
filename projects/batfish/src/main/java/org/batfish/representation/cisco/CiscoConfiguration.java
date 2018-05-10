@@ -1361,22 +1361,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
 
       // create generation policy for aggregate network
-      String generationPolicyName = "~AGGREGATE_ROUTE_GEN:" + vrfName + ":" + prefix + "~";
-      RoutingPolicy currentGeneratedRoutePolicy = new RoutingPolicy(generationPolicyName, c);
-      If currentGeneratedRouteConditional = new If();
-      currentGeneratedRoutePolicy.getStatements().add(currentGeneratedRouteConditional);
-      currentGeneratedRouteConditional.setGuard(
-          new MatchPrefixSet(
-              new DestinationNetwork(),
-              new ExplicitPrefixSet(new PrefixSpace(PrefixRange.moreSpecificThan(prefix)))));
-      currentGeneratedRouteConditional
-          .getTrueStatements()
-          .add(Statements.ReturnTrue.toStaticStatement());
-      c.getRoutingPolicies().put(generationPolicyName, currentGeneratedRoutePolicy);
+      RoutingPolicy currentGeneratedRoutePolicy =
+          CiscoConversions.generateAggregateRoutePolicy(c, vrfName, prefix);
       GeneratedRoute.Builder gr = new GeneratedRoute.Builder();
       gr.setNetwork(prefix);
       gr.setAdmin(CISCO_AGGREGATE_ROUTE_ADMIN_COST);
-      gr.setGenerationPolicy(generationPolicyName);
+      gr.setGenerationPolicy(currentGeneratedRoutePolicy.getName());
       gr.setDiscard(true);
 
       // set attribute map for aggregate network
