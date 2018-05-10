@@ -244,8 +244,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private static final int VLAN_NORMAL_MIN_CISCO = 2;
 
-  public static String computeObjectGroupAclName(String name) {
-    return String.format("~OBJECT_GROUP~%s~", name);
+  public static String computeProtocolObjectGroupAclName(String name) {
+    return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
+  }
+
+  public static String computeServiceObjectGroupAclName(String name) {
+    return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
 
   @Override
@@ -383,6 +387,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private CiscoNxBgpGlobalConfiguration _nxBgpGlobalConfiguration;
 
+  private final Map<String, ObjectGroup> _objectGroups;
+
   private final Set<String> _pimAcls;
 
   private final Set<String> _pimRouteMaps;
@@ -481,6 +487,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups = new TreeMap<>();
     _ntpAccessGroups = new TreeSet<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
+    _objectGroups = new TreeMap<>();
     _pimAcls = new TreeSet<>();
     _pimRouteMaps = new TreeSet<>();
     _prefixLists = new TreeMap<>();
@@ -3131,7 +3138,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList);
+      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList, this._objectGroups);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3144,14 +3151,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
             c.getIpAccessLists()
-                .put(computeObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
+                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
 
     // convert each ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
         (name, serviceObjectGroup) ->
             c.getIpAccessLists()
                 .put(
-                    computeObjectGroupAclName(name),
+                    computeServiceObjectGroupAclName(name),
                     CiscoConversions.toIpAccessList(serviceObjectGroup)));
 
     // convert standard/extended ipv6 access lists to ipv6 access lists or
@@ -3486,7 +3493,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 IpAccessListLine.accepting()
                     .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
                     .build()))
-        .setName(computeObjectGroupAclName(protocolObjectGroup.getName()))
+        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
         .build();
   }
 
@@ -3962,6 +3969,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, ObjectGroup> getObjectGroups() {
+    return _objectGroups;
   }
 
   public Map<String, ProtocolObjectGroup> getProtocolObjectGroups() {

@@ -704,6 +704,7 @@ import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
 import org.batfish.representation.cisco.ProtocolObjectGroup;
 import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
+import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
@@ -786,7 +787,6 @@ import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.SecurityZone;
 import org.batfish.representation.cisco.SecurityZonePair;
 import org.batfish.representation.cisco.ServiceObjectGroup;
-import org.batfish.representation.cisco.ServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -1907,10 +1907,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterOg_network(Og_networkContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentNetworkObjectGroup =
-        _configuration
-            .getNetworkObjectGroups()
-            .computeIfAbsent(name, n -> new NetworkObjectGroup(n, definitionLine));
+    // If there is a conflict, create a dummy object group
+    if (_configuration.getObjectGroups().get(name) != null) {
+      _currentNetworkObjectGroup = new NetworkObjectGroup(name, definitionLine);
+      _w.redFlag("Object group defined multiple times: '" + name + "'");
+    } else {
+      _currentNetworkObjectGroup =
+          _configuration
+              .getNetworkObjectGroups()
+              .computeIfAbsent(name, n -> new NetworkObjectGroup(n, definitionLine));
+      _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
+    }
   }
 
   @Override
@@ -1922,10 +1929,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterOg_service(Og_serviceContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentServiceObjectGroup =
-        _configuration
-            .getServiceObjectGroups()
-            .computeIfAbsent(name, n -> new ServiceObjectGroup(n, definitionLine));
+    // If there is a conflict, create a dummy object group
+    if (_configuration.getObjectGroups().get(name) != null) {
+      _currentServiceObjectGroup = new ServiceObjectGroup(name, definitionLine);
+      _w.redFlag("Object group defined multiple times: '" + name + "'");
+    } else {
+      _currentServiceObjectGroup =
+          _configuration
+              .getServiceObjectGroups()
+              .computeIfAbsent(name, n -> new ServiceObjectGroup(n, definitionLine));
+      _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
+    }
   }
 
   @Override
@@ -1937,10 +1951,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterOg_protocol(Og_protocolContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentProtocolObjectGroup =
-        _configuration
-            .getProtocolObjectGroups()
-            .computeIfAbsent(name, n -> new ProtocolObjectGroup(n, definitionLine));
+    // If there is a conflict, create a dummy object group
+    if (_configuration.getObjectGroups().get(name) != null) {
+      _currentProtocolObjectGroup = new ProtocolObjectGroup(name, definitionLine);
+      _w.redFlag("Object group defined multiple times: '" + name + "'");
+    } else {
+      _currentProtocolObjectGroup =
+          _configuration
+              .getProtocolObjectGroups()
+              .computeIfAbsent(name, n -> new ProtocolObjectGroup(n, definitionLine));
+      _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
+    }
   }
 
   @Override
@@ -3774,7 +3795,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           name,
           CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
           line);
-      return new ServiceObjectGroupServiceSpecifier(name);
+      return new ProtocolOrServiceObjectGroupServiceSpecifier(name);
     } else {
       throw convError(AccessListServiceSpecifier.class, ctx);
     }

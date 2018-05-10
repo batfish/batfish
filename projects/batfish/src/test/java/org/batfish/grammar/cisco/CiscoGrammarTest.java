@@ -52,7 +52,8 @@ import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
-import static org.batfish.representation.cisco.CiscoConfiguration.computeObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
 import static org.hamcrest.CoreMatchers.is;
@@ -268,7 +269,8 @@ public class CiscoGrammarTest {
                                                     hasSrcIps(
                                                         isIpSpaceReferenceThat(hasName("ogn1")))))),
                                         isPermittedByAclThat(
-                                            hasAclName(computeObjectGroupAclName("ogs1"))))))))))));
+                                            hasAclName(
+                                                computeServiceObjectGroupAclName("ogs1"))))))))))));
 
     /*
      * We expect only object-groups ogsunused1, ognunused1 to have zero referrers
@@ -428,14 +430,17 @@ public class CiscoGrammarTest {
     String ogpIcmpName = "ogp1";
     String ogpTcpUdpName = "ogp2";
     String ogpEmptyName = "ogp3";
-    String ogpUnusedName = "ogp4";
+    String ogpDuplicateName = "ogp4";
+    String ogpUnusedName = "ogp5";
     String ogpUndefName = "ogpundef";
     String aclIcmpName = "aclicmp";
     String aclTcpUdpName = "acltcpudp";
     String aclEmptyName = "aclempty";
-    String ogpAclIcmpName = computeObjectGroupAclName(ogpIcmpName);
-    String ogpAclTcpUdpName = computeObjectGroupAclName(ogpTcpUdpName);
-    String ogpAclEmptyName = computeObjectGroupAclName(ogpEmptyName);
+    String aclDuplicateName = "aclduplicate";
+    String ogpAclIcmpName = computeProtocolObjectGroupAclName(ogpIcmpName);
+    String ogpAclTcpUdpName = computeProtocolObjectGroupAclName(ogpTcpUdpName);
+    String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
+    String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
     Flow icmpFlow =
         Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.ICMP).build();
     Flow tcpFlow =
@@ -482,6 +487,13 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(tcpFlow, null, c)));
     assertThat(c, hasIpAccessList(aclEmptyName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(aclEmptyName, rejects(tcpFlow, null, c)));
+    /*
+     * Empty protocol object group that is erroneously redefined should still reject everything
+     */
+    assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(tcpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclDuplicateName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclDuplicateName, rejects(tcpFlow, null, c)));
   }
 
   @Test
@@ -492,7 +504,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIpAccessList(
-            computeObjectGroupAclName("og-icmp"),
+            computeServiceObjectGroupAclName("og-icmp"),
             hasLines(
                 containsInAnyOrder(
                     ImmutableList.of(
@@ -508,7 +520,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIpAccessList(
-            computeObjectGroupAclName("og-tcp"),
+            computeServiceObjectGroupAclName("og-tcp"),
             hasLines(
                 containsInAnyOrder(
                     ImmutableList.of(
@@ -553,7 +565,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIpAccessList(
-            computeObjectGroupAclName("og-udp"),
+            computeServiceObjectGroupAclName("og-udp"),
             hasLines(
                 containsInAnyOrder(
                     ImmutableList.of(

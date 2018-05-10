@@ -12,9 +12,25 @@ object-group protocol ogp2
 object-group protocol ogp3
 !
 object-group protocol ogp4
+! Redefining this object group with a new protocol-object should have no effect
+object-group protocol ogp4
+ protocol-object icmp
+!
+object-group protocol ogp5
 !
 !
-access-list aclicmp extended permit object-group ogp1 any any
-access-list acltcpudp extended permit object-group ogp2 any any
-access-list aclempty extended permit object-group ogp3 any any
-access-list acl extended permit object-group ogpundef any any
+ip access-list extended aclicmp
+ permit object-group ogp1 any any
+!
+ip access-list extended acltcpudp
+ permit object-group ogp2 any any
+!
+ip access-list extended aclempty
+ permit object-group ogp3 any any
+!
+ip access-list extended aclduplicate
+ permit object-group ogp4 any any
+!
+ip access-list extended acl
+ permit object-group ogpundef any any
+!

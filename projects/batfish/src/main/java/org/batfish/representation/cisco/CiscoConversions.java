@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -120,12 +121,13 @@ class CiscoConversions {
     return new Ip6AccessList(name, lines);
   }
 
-  static IpAccessList toIpAccessList(ExtendedAccessList eaList) {
+  static IpAccessList toIpAccessList(
+      ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
     List<IpAccessListLine> lines =
         eaList
             .getLines()
             .stream()
-            .map(CiscoConversions::toIpAccessListLine)
+            .map(l -> toIpAccessListLine(l, objectGroups))
             .collect(ImmutableList.toImmutableList());
     return new IpAccessList(eaList.getName(), lines);
   }
@@ -206,14 +208,15 @@ class CiscoConversions {
                 IpAccessListLine.accepting()
                     .setMatchCondition(serviceObjectGroup.toAclLineMatchExpr())
                     .build()))
-        .setName(CiscoConfiguration.computeObjectGroupAclName(serviceObjectGroup.getName()))
+        .setName(CiscoConfiguration.computeServiceObjectGroupAclName(serviceObjectGroup.getName()))
         .build();
   }
 
-  private static IpAccessListLine toIpAccessListLine(ExtendedAccessListLine line) {
+  private static IpAccessListLine toIpAccessListLine(
+      ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
-    AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr();
+    AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr(objectGroups);
     AclLineMatchExpr match;
     if (matchService instanceof MatchHeaderSpace) {
       match =
