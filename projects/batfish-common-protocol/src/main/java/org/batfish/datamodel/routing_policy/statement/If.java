@@ -79,8 +79,7 @@ public class If extends Statement {
     If other = (If) obj;
     return Objects.equals(_guard, other._guard)
         && Objects.equals(_trueStatements, other._trueStatements)
-        && Objects.equals(_falseStatements, other._falseStatements)
-        && Objects.equals(getComment(), other.getComment());
+        && Objects.equals(_falseStatements, other._falseStatements);
   }
 
   @Override
