@@ -1,5 +1,6 @@
 package org.batfish.symbolic.interpreter;
 
+import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 import net.sf.javabdd.BDD;
@@ -22,14 +23,14 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
 
   private BDDRouteFactory _routeFactory;
 
-  private BDD _existsCommunities;
+  private Set<BDD> _projectVariables;
 
   ReachabilityAbstractDomainBDD(BDDRouteFactory routeFactory) {
     _routeFactory = routeFactory;
-    _existsCommunities = factory.one();
+    _projectVariables = new HashSet<>();
     for (Entry<CommunityVar, BDD> e : _routeFactory.variables().getCommunities().entrySet()) {
       BDD c = e.getValue();
-      _existsCommunities = _existsCommunities.and(c);
+      _projectVariables.add(c);
     }
   }
 
@@ -41,7 +42,7 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
       if (res) {
         acc = acc.and(bits[i]);
       } else {
-        acc = acc.and(bits[i].not());
+        acc = acc.andWith(bits[i].not());
       }
     }
     return acc;
@@ -69,10 +70,10 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
     } else {
       for (int i = lower; i <= upper; i++) {
         BDD equalLen = record.getPrefixLength().value(i);
-        acc = acc.or(equalLen);
+        acc = acc.orWith(equalLen);
       }
     }
-    return acc.and(lowerBitsMatch);
+    return acc.andWith(lowerBitsMatch);
   }
 
   @Override
@@ -82,10 +83,17 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
       SubRange r = new SubRange(32, 32);
       PrefixRange range = new PrefixRange(prefix, r);
       BDD pfx = isRelevantFor(_routeFactory.variables(), range);
-      acc = acc.or(pfx);
+      acc = acc.orWith(pfx);
     }
     BDD dst = _routeFactory.variables().getDstRouter().value(router);
     return acc.and(dst);
+  }
+
+  private BDD project(BDD val) {
+    for (BDD var : _projectVariables) {
+      val = val.exist(var);
+    }
+    return val;
   }
 
   @Override
@@ -94,13 +102,13 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
     // Filter routes that can not pass through the transformer
     BDD acc;
     BDD allow = f.getFilter();
-    if (_existsCommunities.isOne()) {
+    if (_projectVariables.isEmpty()) {
       acc = input.and(allow);
     } else {
       BDD block = allow.not();
-      BDD blockedInputs = input.and(block);
-      BDD blockedInputsWithoutCommunities = blockedInputs.exist(_existsCommunities);
-      acc = input.and(blockedInputsWithoutCommunities.not());
+      BDD blockedInputs = input.andWith(block);
+      BDD blockedInputsWithoutCommunities = project(blockedInputs);
+      acc = input.andWith(blockedInputsWithoutCommunities.not());
     }
     // Modify the result
     BDDRoute mods = f.getRoute();
@@ -112,7 +120,7 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
         BDD temp = _routeFactory.variables().getTemporary(x);
         BDD expr = mods.getCommunities().get(cvar);
         BDD equal = temp.biimp(expr);
-        acc = acc.and(equal);
+        acc = acc.andWith(equal);
         pairing.set(x.var(), temp.var());
       }
     }
@@ -122,7 +130,7 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public BDD join(BDD x, BDD y) {
+  public BDD merge(BDD x, BDD y) {
     return x.or(y);
   }
 

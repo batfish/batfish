@@ -26,6 +26,7 @@ public class FiniteIndexMap<T> {
     return _indices.get(value);
   }
 
+  @SuppressWarnings("unchecked")
   public T value(int idx) {
     return (T) _values[idx];
   }

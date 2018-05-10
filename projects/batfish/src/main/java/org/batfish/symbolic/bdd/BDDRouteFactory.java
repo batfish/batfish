@@ -138,21 +138,21 @@ public class BDDRouteFactory {
 
     private SortedMap<CommunityVar, BDD> _communities;
 
-    private BDDDomain<Integer> _localPref;
+    private BDDFiniteDomain<Integer> _localPref;
 
     private BDDInteger _med;
 
     private BDDInteger _metric;
 
-    private BDDDomain<OspfType> _ospfMetric;
+    private BDDFiniteDomain<OspfType> _ospfMetric;
 
-    private BDDDomain<String> _dstRouter;
+    private BDDFiniteDomain<String> _dstRouter;
 
     private final BDDInteger _prefix;
 
     private final BDDInteger _prefixLength;
 
-    private final BDDDomain<Protocol> _protocolHistory;
+    private final BDDFiniteDomain<Protocol> _protocolHistory;
 
     /*
      * Creates a collection of BDD variables representing the
@@ -178,12 +178,12 @@ public class BDDRouteFactory {
       int idx = 0;
 
       if (_config.getKeepDstRouter()) {
-        _dstRouter = new BDDDomain<>(factory, new ArrayList<>(_allRouters), idx);
+        _dstRouter = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
         addBitNames("router", _dstRouter.numBits(), idx, false);
         idx += _dstRouter.numBits();
       }
       if (_config.getKeepHistory()) {
-        _protocolHistory = new BDDDomain<>(factory, allProtos, idx);
+        _protocolHistory = new BDDFiniteDomain<>(factory, allProtos, idx);
         addBitNames("proto", _protocolHistory.numBits(), idx, false);
         idx += _protocolHistory.numBits();
       } else {
@@ -205,7 +205,7 @@ public class BDDRouteFactory {
         idx += 32;
       }
       if (_config.getKeepLp()) {
-        _localPref = new BDDDomain<>(factory, _allLocalPrefs, idx);
+        _localPref = new BDDFiniteDomain<>(factory, _allLocalPrefs, idx);
         // _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
         addBitNames("lp", _localPref.numBits(), idx, false);
         idx += _localPref.numBits();
@@ -229,7 +229,7 @@ public class BDDRouteFactory {
       }
       // Initialize OSPF type
       if (_config.getKeepOspfMetric()) {
-        _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
+        _ospfMetric = new BDDFiniteDomain<>(factory, allMetricTypes, idx);
         addBitNames("ospfMetric", _ospfMetric.numBits(), idx, false);
         // idx += _ospfMetric.numBits();
       }
@@ -256,18 +256,18 @@ public class BDDRouteFactory {
         _med = new BDDInteger(other._med);
       }
       if (_config.getKeepLp()) {
-        _localPref = new BDDDomain<>(other._localPref);
+        _localPref = new BDDFiniteDomain<>(other._localPref);
       }
       if (_config.getKeepHistory()) {
-        _protocolHistory = new BDDDomain<>(other._protocolHistory);
+        _protocolHistory = new BDDFiniteDomain<>(other._protocolHistory);
       } else {
         _protocolHistory = null;
       }
       if (_config.getKeepOspfMetric()) {
-        _ospfMetric = new BDDDomain<>(other._ospfMetric);
+        _ospfMetric = new BDDFiniteDomain<>(other._ospfMetric);
       }
       if (_config.getKeepDstRouter()) {
-        _dstRouter = new BDDDomain<>(other._dstRouter);
+        _dstRouter = new BDDFiniteDomain<>(other._dstRouter);
       }
       _bitNames = other._bitNames;
     }
@@ -369,11 +369,11 @@ public class BDDRouteFactory {
       this._communities = communities;
     }
 
-    public BDDDomain<Integer> getLocalPref() {
+    public BDDFiniteDomain<Integer> getLocalPref() {
       return _localPref;
     }
 
-    public void setLocalPref(BDDDomain<Integer> localPref) {
+    public void setLocalPref(BDDFiniteDomain<Integer> localPref) {
       this._localPref = localPref;
     }
 
@@ -393,11 +393,11 @@ public class BDDRouteFactory {
       this._metric = metric;
     }
 
-    public BDDDomain<OspfType> getOspfMetric() {
+    public BDDFiniteDomain<OspfType> getOspfMetric() {
       return _ospfMetric;
     }
 
-    public void setOspfMetric(BDDDomain<OspfType> ospfMetric) {
+    public void setOspfMetric(BDDFiniteDomain<OspfType> ospfMetric) {
       this._ospfMetric = ospfMetric;
     }
 
@@ -409,15 +409,15 @@ public class BDDRouteFactory {
       return _prefixLength;
     }
 
-    public BDDDomain<Protocol> getProtocolHistory() {
+    public BDDFiniteDomain<Protocol> getProtocolHistory() {
       return _protocolHistory;
     }
 
-    public BDDDomain<String> getDstRouter() {
+    public BDDFiniteDomain<String> getDstRouter() {
       return _dstRouter;
     }
 
-    public void setDstRouter(BDDDomain<String> dstRouter) {
+    public void setDstRouter(BDDFiniteDomain<String> dstRouter) {
       this._dstRouter = dstRouter;
     }
 

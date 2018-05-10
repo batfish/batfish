@@ -48,7 +48,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
       if (res) {
         acc = acc.and(bits[i]);
       } else {
-        acc = acc.and(bits[i].not());
+        acc = acc.andWith(bits[i].not());
       }
     }
     return acc;

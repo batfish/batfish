@@ -117,7 +117,7 @@ public class ReachabilityAbstractDomainAP implements IAbstractDomain<LocatedAP> 
   }
 
   @Override
-  public LocatedAP join(LocatedAP x, LocatedAP y) {
+  public LocatedAP merge(LocatedAP x, LocatedAP y) {
     return x.or(y);
   }
 

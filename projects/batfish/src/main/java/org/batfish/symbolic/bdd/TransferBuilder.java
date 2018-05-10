@@ -127,7 +127,7 @@ class TransferBuilder {
       if (res) {
         acc = acc.and(bits[i]);
       } else {
-        acc = acc.and(bits[i].not());
+        acc = acc.andWith(bits[i].not());
       }
     }
     return acc;
@@ -158,12 +158,12 @@ class TransferBuilder {
   /*
    * Apply the effect of modifying an integer value (e.g., to set the local pref)
    */
-  private BDDDomain<Integer> applyIntExprModification(
-      TransferParam<BDDRoute> p, BDDDomain<Integer> x, IntExpr e) {
+  private BDDFiniteDomain<Integer> applyIntExprModification(
+      TransferParam<BDDRoute> p, BDDFiniteDomain<Integer> x, IntExpr e) {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
       p.debug("LiteralInt: " + z.getValue());
-      BDDDomain<Integer> y = new BDDDomain<>(x);
+      BDDFiniteDomain<Integer> y = new BDDFiniteDomain<>(x);
       y.setValue(z.getValue());
       return y;
     }
@@ -235,7 +235,7 @@ class TransferBuilder {
       for (BooleanExpr be : d.getDisjuncts()) {
         TransferResult<BDDTransferFunction, BDD> r = compute(be, p.indent());
         result = result.addChangedVariables(r);
-        acc = acc.or(r.getReturnValue().getFilter());
+        acc = acc.orWith(r.getReturnValue().getFilter());
       }
       BDDTransferFunction ret = new BDDTransferFunction(p.getData(), acc);
       p.debug("Disjunction return: " + acc);
@@ -578,8 +578,8 @@ class TransferBuilder {
         if (p.getData().getConfig().getKeepOspfMetric()) {
           SetOspfMetricType somt = (SetOspfMetricType) stmt;
           OspfMetricType mt = somt.getMetricType();
-          BDDDomain<OspfType> current = result.getReturnValue().getRoute().getOspfMetric();
-          BDDDomain<OspfType> newValue = new BDDDomain<>(current);
+          BDDFiniteDomain<OspfType> current = result.getReturnValue().getRoute().getOspfMetric();
+          BDDFiniteDomain<OspfType> newValue = new BDDFiniteDomain<>(current);
           if (mt == OspfMetricType.E1) {
             p.indent().debug("Value: E1");
             newValue.setValue(OspfType.E1);
@@ -596,7 +596,7 @@ class TransferBuilder {
         if (p.getData().getConfig().getKeepLp()) {
           SetLocalPreference slp = (SetLocalPreference) stmt;
           IntExpr ie = slp.getLocalPreference();
-          BDDDomain<Integer> newValue =
+          BDDFiniteDomain<Integer> newValue =
               applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
           newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
           p.getData().setLocalPref(newValue);
@@ -750,10 +750,10 @@ class TransferBuilder {
     } else {
       for (int i = lower; i <= upper; i++) {
         BDD equalLen = record.getPrefixLength().value(i);
-        acc = acc.or(equalLen);
+        acc = acc.orWith(equalLen);
       }
     }
-    return acc.and(lowerBitsMatch);
+    return acc.andWith(lowerBitsMatch);
   }
 
   /*
@@ -771,10 +771,10 @@ class TransferBuilder {
   }
 
   /*
-   * Map ite over BDDDomain type
+   * Map ite over BDDFiniteDomain type
    */
-  private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
-    BDDDomain<T> result = new BDDDomain<>(x);
+  private <T> BDDFiniteDomain<T> ite(BDD b, BDDFiniteDomain<T> x, BDDFiniteDomain<T> y) {
+    BDDFiniteDomain<T> result = new BDDFiniteDomain<>(x);
     BDDInteger i = ite(b, x.getInteger(), y.getInteger());
     result.setInteger(i);
     return result;
@@ -793,8 +793,8 @@ class TransferBuilder {
     }
 
     if (_routeFactory.getConfig().getKeepLp()) {
-      BDDDomain<Integer> a = r1.getLocalPref();
-      BDDDomain<Integer> b = r2.getLocalPref();
+      BDDFiniteDomain<Integer> a = r1.getLocalPref();
+      BDDFiniteDomain<Integer> b = r2.getLocalPref();
       ret.getLocalPref().setInteger(ite(guard, a, b).getInteger());
     }
 
@@ -922,7 +922,7 @@ class TransferBuilder {
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);
         if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
-          acc = acc.or(isRelevantFor(other, range));
+          acc = acc.orWith(isRelevantFor(other, range));
         }
       }
       return acc;

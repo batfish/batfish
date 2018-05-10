@@ -10,7 +10,7 @@ public interface IAbstractDomain<T> {
 
   public T transform(T input, EdgeTransformer f);
 
-  public T join(T x, T y);
+  public T merge(T x, T y);
 
   public BDD finalize(T value);
 }

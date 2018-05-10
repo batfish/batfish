@@ -62,8 +62,6 @@ public class ReachabilityInterpreter {
       originatedConnected.put(router, Graph.getOriginatedNetworks(conf, Protocol.CONNECTED));
     }
 
-    FiniteIndexMap<String> routerIndexMap = new FiniteIndexMap<>(g.getRouters());
-
     Map<String, T> reachable = new HashMap<>();
 
     t = System.currentTimeMillis();
@@ -129,7 +127,7 @@ public class ReachabilityInterpreter {
             nr = domain.transform(nr, imp);
           }
 
-          rprime = domain.join(rprime, nr);
+          rprime = domain.merge(rprime, nr);
         }
       }
 
@@ -175,12 +173,12 @@ public class ReachabilityInterpreter {
 
     ReachabilityAbstractDomainBDD domain = new ReachabilityAbstractDomainBDD(routeFactory);
 
-    t = System.currentTimeMillis();
-    ReachabilityAbstractDomainAP domain2 =
-        new ReachabilityAbstractDomainAP(domain, g.getRouters(), network);
-    System.out.println("Time for atomic preds: " + (System.currentTimeMillis() - t));
+    // t = System.currentTimeMillis();
+    // ReachabilityAbstractDomainAP domain2 =
+    //    new ReachabilityAbstractDomainAP(domain, g.getRouters(), network);
+    // System.out.println("Time for atomic preds: " + (System.currentTimeMillis() - t));
 
-    Map<String, BDD> reachable = computeFixedPoint(g, network, routeFactory, domain2);
+    Map<String, BDD> reachable = computeFixedPoint(g, network, routeFactory, domain);
     return new StringAnswerElement("Foo Bar");
   }
 }

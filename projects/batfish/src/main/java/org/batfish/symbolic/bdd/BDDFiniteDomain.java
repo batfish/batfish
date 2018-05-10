@@ -9,7 +9,7 @@ import net.sf.javabdd.BDDFactory;
  * Class that wraps a BDDInteger around a finite collection of values
  * and provides an API for dealing directly with the values.
  */
-public class BDDDomain<T> {
+public class BDDFiniteDomain<T> {
 
   private BDDFactory _factory;
 
@@ -17,14 +17,14 @@ public class BDDDomain<T> {
 
   private BDDInteger _integer;
 
-  public BDDDomain(BDDFactory factory, List<T> values, int index) {
+  public BDDFiniteDomain(BDDFactory factory, List<T> values, int index) {
     int bits = numBits(values);
     _factory = factory;
     _values = values;
     _integer = BDDInteger.makeFromIndex(_factory, bits, index, false);
   }
 
-  public BDDDomain(BDDDomain<T> other) {
+  public BDDFiniteDomain(BDDFiniteDomain<T> other) {
     _factory = other._factory;
     _values = other._values;
     _integer = new BDDInteger(other._integer);
@@ -65,10 +65,10 @@ public class BDDDomain<T> {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof BDDDomain<?>)) {
+    if (!(o instanceof BDDFiniteDomain<?>)) {
       return false;
     }
-    BDDDomain<?> other = (BDDDomain<?>) o;
+    BDDFiniteDomain<?> other = (BDDFiniteDomain<?>) o;
     return Objects.equals(_integer, other._integer);
   }
 
