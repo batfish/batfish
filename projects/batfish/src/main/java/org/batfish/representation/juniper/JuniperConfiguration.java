@@ -2067,6 +2067,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String riName = e.getKey();
       RoutingInstance ri = e.getValue();
       Vrf vrf = _c.getVrfs().get(riName);
+      ImmutableSortedSet.Builder<SubRange> exportLocalRoutePrefixLengthRange =
+          ImmutableSortedSet.naturalOrder();
+      if (ri.getExportLocalRoutesLan()) {
+        exportLocalRoutePrefixLengthRange.add(new SubRange(0, Prefix.MAX_PREFIX_LENGTH - 2));
+      }
+      if (ri.getExportLocalRoutesPointToPoint()) {
+        exportLocalRoutePrefixLengthRange.add(
+            new SubRange(Prefix.MAX_PREFIX_LENGTH - 1, Prefix.MAX_PREFIX_LENGTH - 1));
+      }
+      vrf.setExportLocalRoutePrefixLengthRange(exportLocalRoutePrefixLengthRange.build());
 
       // dhcp relay
       for (Entry<String, DhcpRelayGroup> e2 : ri.getDhcpRelayGroups().entrySet()) {

@@ -1,9 +1,12 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -11,6 +14,8 @@ import java.util.NavigableSet;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
@@ -18,6 +23,8 @@ import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 public class Vrf extends ComparableStructure<String> {
 
   public static class Builder extends NetworkFactoryBuilder<Vrf> {
+
+    private SortedSet<SubRange> _exportLocalRoutePrefixLengthRange;
 
     private String _name;
 
@@ -34,7 +41,15 @@ public class Vrf extends ComparableStructure<String> {
       if (_owner != null) {
         _owner.getVrfs().put(name, vrf);
       }
+      vrf.setExportLocalRoutePrefixLengthRange(_exportLocalRoutePrefixLengthRange);
       return vrf;
+    }
+
+    public Builder setExportLocalRoutePrefixLengthRange(
+        @Nonnull Iterable<SubRange> exportLocalRoutePrefixLengthRange) {
+      _exportLocalRoutePrefixLengthRange =
+          ImmutableSortedSet.copyOf(exportLocalRoutePrefixLengthRange);
+      return this;
     }
 
     public Builder setName(String name) {
@@ -51,6 +66,9 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_BGP_PROCESS = "bgpProcess";
 
   private static final String PROP_DESCRIPTION = "description";
+
+  private static final String PROP_EXPORT_LOCAL_ROUTE_PREFIX_LENGTH_RANGE =
+      "exportLocalRoutePrefixLengthRange";
 
   private static final String PROP_GENERATED_ROUTES = "aggregateRoutes";
 
@@ -111,9 +129,12 @@ public class Vrf extends ComparableStructure<String> {
 
   private SortedSet<StaticRoute> _staticRoutes;
 
+  private SortedSet<SubRange> _exportLocalRoutePrefixLengthRange;
+
   @JsonCreator
   public Vrf(@JsonProperty(PROP_NAME) String name) {
     super(name);
+    _exportLocalRoutePrefixLengthRange = ImmutableSortedSet.of();
     _generatedRoutes = new TreeSet<>();
     _generatedIpv6Routes = new TreeSet<>();
     _interfaces = new TreeMap<>();
@@ -135,6 +156,11 @@ public class Vrf extends ComparableStructure<String> {
   @JsonPropertyDescription("Description for this VRF")
   public String getDescription() {
     return _description;
+  }
+
+  @JsonProperty(PROP_EXPORT_LOCAL_ROUTE_PREFIX_LENGTH_RANGE)
+  public SortedSet<SubRange> getExportLocalRoutePrefixLengthRange() {
+    return _exportLocalRoutePrefixLengthRange;
   }
 
   @JsonPropertyDescription("Generated IPV6 routes for this VRF")
@@ -242,6 +268,7 @@ public class Vrf extends ComparableStructure<String> {
 
   public void initBgpAdvertisements() {
     _bgpAdvertisements = new TreeSet<>();
+    _exportLocalRoutePrefixLengthRange = ImmutableSortedSet.of();
     _originatedAdvertisements = new TreeSet<>();
     _originatedEbgpAdvertisements = new TreeSet<>();
     _originatedIbgpAdvertisements = new TreeSet<>();
@@ -273,6 +300,14 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_DESCRIPTION)
   public void setDescription(String description) {
     _description = description;
+  }
+
+  @JsonProperty(PROP_EXPORT_LOCAL_ROUTE_PREFIX_LENGTH_RANGE)
+  public void setExportLocalRoutePrefixLengthRange(
+      @Nullable Iterable<SubRange> exportLocalRoutePrefixLengthRange) {
+    _exportLocalRoutePrefixLengthRange =
+        ImmutableSortedSet.copyOf(
+            firstNonNull(exportLocalRoutePrefixLengthRange, ImmutableSortedSet.of()));
   }
 
   public void setGeneratedIpv6Routes(NavigableSet<GeneratedRoute6> generatedIpv6Routes) {

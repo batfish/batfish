@@ -111,4 +111,8 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
   public String toString() {
     return "[" + _start + "," + _end + "]";
   }
+
+  public boolean includes(int integer) {
+    return _start <= integer && integer <= _end;
+  }
 }

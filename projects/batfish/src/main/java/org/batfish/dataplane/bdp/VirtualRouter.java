@@ -33,6 +33,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
@@ -95,6 +96,8 @@ public class VirtualRouter extends ComparableStructure<String> {
    * iterations (hence, independent).
    */
   transient Rib _independentRib;
+
+  transient LocalRib _localRib;
 
   /** The finalized RIB, a combination different protocol RIBs */
   Rib _mainRib;
@@ -168,8 +171,10 @@ public class VirtualRouter extends ComparableStructure<String> {
    */
   void initRibsForBdp(Map<Ip, Set<String>> ipOwners, Set<BgpAdvertisement> externalAdverts) {
     initConnectedRib();
+    initLocalRib();
     initStaticRib();
     importRib(_independentRib, _connectedRib);
+    importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
     initIntraAreaOspfRoutes();
@@ -728,6 +733,26 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
+  /**
+   * Initialize the local RIB -- a RIB containing non-forwarding /32 routes for exact addresses of
+   * interfaces
+   */
+  @VisibleForTesting
+  void initLocalRib() {
+    // Look at all connected interfaces
+    for (Interface i : _vrf.getInterfaces().values()) {
+      if (i.getActive()) { // Make sure the interface is active
+        // Create a route for each interface prefix
+        for (InterfaceAddress ifaceAddress : i.getAllAddresses()) {
+          if (ifaceAddress.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
+            LocalRoute lr = new LocalRoute(ifaceAddress, i.getName());
+            _localRib.mergeRoute(lr);
+          }
+        }
+      }
+    }
+  }
+
   @Nullable
   @VisibleForTesting
   OspfExternalRoute computeOspfExportRoute(
@@ -803,6 +828,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   void initRibs() {
     _bgpMultipathRib = new BgpMultipathRib(this);
     _connectedRib = new ConnectedRib(this);
+    _localRib = new LocalRib(this);
     _ebgpMultipathRib = new BgpMultipathRib(this);
     _ebgpStagingRib = new BgpMultipathRib(this);
     _ibgpMultipathRib = new BgpMultipathRib(this);
@@ -894,10 +920,19 @@ public class VirtualRouter extends ComparableStructure<String> {
       Set<AbstractRoute> activeRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
       activeRoutes.addAll(_mainRib.getRoutes());
       for (AbstractRoute candidateRoute : activeRoutes) {
-        if (candidateRoute.getProtocol() != RoutingProtocol.BGP
-            && candidateRoute.getProtocol() != RoutingProtocol.IBGP) {
-          candidateRoutes.add(candidateRoute);
+        if (candidateRoute.getProtocol() == RoutingProtocol.BGP
+            || candidateRoute.getProtocol() == RoutingProtocol.IBGP) {
+          continue;
         }
+        if (candidateRoute.getProtocol() == RoutingProtocol.LOCAL) {
+          int sourcePrefixLength = ((LocalRoute) candidateRoute).getSourcePrefixLength();
+          if (_vrf.getExportLocalRoutePrefixLengthRange()
+              .stream()
+              .noneMatch(range -> range.includes(sourcePrefixLength))) {
+            continue;
+          }
+        }
+        candidateRoutes.add(candidateRoute);
       }
 
       /*
@@ -1163,10 +1198,20 @@ public class VirtualRouter extends ComparableStructure<String> {
         Set<AbstractRoute> activeRemoteRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
         activeRemoteRoutes.addAll(remoteVirtualRouter._prevMainRib.getRoutes());
         for (AbstractRoute remoteCandidateRoute : activeRemoteRoutes) {
-          if (remoteCandidateRoute.getProtocol() != RoutingProtocol.BGP
-              && remoteCandidateRoute.getProtocol() != RoutingProtocol.IBGP) {
-            remoteCandidateRoutes.add(remoteCandidateRoute);
+          if (remoteCandidateRoute.getProtocol() == RoutingProtocol.BGP
+              || remoteCandidateRoute.getProtocol() == RoutingProtocol.IBGP) {
+            continue;
           }
+          if (remoteCandidateRoute.getProtocol() == RoutingProtocol.LOCAL) {
+            int sourcePrefixLength = ((LocalRoute) remoteCandidateRoute).getSourcePrefixLength();
+            if (remoteVrf
+                .getExportLocalRoutePrefixLengthRange()
+                .stream()
+                .noneMatch(range -> range.includes(sourcePrefixLength))) {
+              continue;
+            }
+          }
+          remoteCandidateRoutes.add(remoteCandidateRoute);
         }
 
         /*
