@@ -45,7 +45,9 @@ import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralCommunitySetElemHalf;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.MatchCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -56,6 +58,7 @@ import org.batfish.datamodel.routing_policy.statement.AddCommunity;
 import org.batfish.datamodel.routing_policy.statement.DeleteCommunity;
 import org.batfish.datamodel.routing_policy.statement.RetainCommunity;
 import org.batfish.datamodel.routing_policy.statement.SetCommunity;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.symbolic.collections.Table2;
 
 /**
@@ -826,6 +829,42 @@ public class Graph {
 
   public Map<String, String> getNamedCommunities() {
     return _namedCommunities;
+  }
+
+  /*
+   * Finds all unique local preference values that can be set at each router
+   */
+  public Map<String, Set<Integer>> findAllLocalPrefs() {
+    Map<String, Set<Integer>> lps = new HashMap<>();
+    AstVisitor v = new AstVisitor();
+    for (Entry<String, Configuration> e : _configurations.entrySet()) {
+      String router = e.getKey();
+      Configuration conf = e.getValue();
+      Set<Integer> vals = new HashSet<>();
+      vals.add(100);
+      lps.put(router, vals);
+      for (RoutingPolicy pol : conf.getRoutingPolicies().values()) {
+        v.visit(
+            conf,
+            pol.getStatements(),
+            stmt -> {
+              if (stmt instanceof SetLocalPreference) {
+                SetLocalPreference slp = (SetLocalPreference) stmt;
+                IntExpr ie = slp.getLocalPreference();
+                if (ie instanceof LiteralInt) {
+                  LiteralInt i = (LiteralInt) ie;
+                  Set<Integer> prefs = lps.computeIfAbsent(router, k -> new HashSet<>());
+                  prefs.add(i.getValue());
+                }
+              }
+            },
+            expr -> {});
+      }
+    }
+    for (Entry<String, Set<Integer>> e : lps.entrySet()) {
+      System.out.println("Router " + e.getKey() + " has lps: " + e.getValue());
+    }
+    return lps;
   }
 
   /*

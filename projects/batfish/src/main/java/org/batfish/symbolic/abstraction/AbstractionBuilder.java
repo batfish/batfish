@@ -14,6 +14,7 @@ import java.util.SortedSet;
 import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
@@ -69,6 +70,8 @@ class AbstractionBuilder {
 
   private UnionSplit<String> _abstractGroups;
 
+  private Map<String, Set<Integer>> _localPrefMap;
+
   private AbstractionBuilder(
       DestinationClasses a,
       BDDNetwork network,
@@ -89,6 +92,7 @@ class AbstractionBuilder {
     this._polMap = new Table2<>();
     this._existentialMap = new Table2<>();
     this._universalMap = new HashMap<>();
+    this._localPrefMap = _graph.findAllLocalPrefs();
   }
 
   static NetworkSlice createGraph(
@@ -142,7 +146,7 @@ class AbstractionBuilder {
           continue;
         }
 
-        if (needUniversalAbstraction()) {
+        if (needUniversalAbstraction(partition)) {
           refineAbstraction(todo, ps, partition, false, true);
         } else if (_possibleFailures > 0) {
           refineAbstraction(todo, ps, partition, true, false);
@@ -245,6 +249,8 @@ class AbstractionBuilder {
               routers.add(router);
             }
           });
+      newPartitions.addAll(inversePolicyMap.values());
+
     } else {
       if (countMatters) {
         Map<Map<EdgePolicyToRole, Integer>, Set<String>> inversePolicyMap = new HashMap<>();
@@ -325,11 +331,24 @@ class AbstractionBuilder {
     }
   }
 
-  // TODO: lookup based on local preference
-  private boolean needUniversalAbstraction() {
-    return false;
+  private int maxNumLocalPrefs(Set<String> partition) {
+    if (partition.isEmpty()) {
+      throw new BatfishException("Invalid: empty abstract partition");
+    }
+    int maxSize = 0;
+    for (String router : partition) {
+      Set<Integer> lps = _localPrefMap.get(router);
+      int size = lps.size();
+      if (size > maxSize) {
+        maxSize = size;
+      }
+    }
+    return maxSize;
   }
 
+  private boolean needUniversalAbstraction(Set<String> partition) {
+    return maxNumLocalPrefs(partition) > 1;
+  }
   /*
    * Collect concrete neighbors by their abstract ids
    */
@@ -408,7 +427,7 @@ class AbstractionBuilder {
         Set<String> peers = entry.getValue();
         Set<String> chosenPeers = chosen.computeIfAbsent(j, k -> new HashSet<>());
         // Find how many choices we need, and collect the options
-        int numNeeded = _possibleFailures + 1;
+        int numNeeded = _possibleFailures + maxNumLocalPrefs(peers);
         options.clear();
         for (String x : peers) {
           if (chosenPeers.contains(x)) {

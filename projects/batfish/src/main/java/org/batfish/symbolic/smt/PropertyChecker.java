@@ -243,16 +243,10 @@ public class PropertyChecker {
     if (q.getUseAbstraction()) {
       HeaderSpace h = q.getHeaderSpace();
       int numFailures = q.getFailures();
-      System.out.println("Start verification");
-      System.out.println("Using headerspace: " + h.getDstIps());
       DestinationClasses dcs = DestinationClasses.create(_batfish, graph, h, useDefaultCase);
-      System.out.println("Number of edges: " + dcs.getGraph().getAllRealEdges().size());
-      System.out.println("Created destination classes");
-      System.out.println("Num Classes: " + dcs.getHeaderspaceMap().size());
       long l = System.currentTimeMillis();
       ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
       l = System.currentTimeMillis() - l;
-      System.out.println("Created BDDs");
       return new Tuple<>(ecs.parallelStream(), l);
     } else {
       List<Supplier<NetworkSlice>> singleEc = new ArrayList<>();
