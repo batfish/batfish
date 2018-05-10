@@ -4,15 +4,16 @@ import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import com.google.common.graph.Network;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -592,26 +593,32 @@ public class IncrementalBdpEngine {
     ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
   }
 
+  /**
+   * Return the main RIB routes for each node. Map structure: Hostname -> VRF name -> Set of routes
+   */
   SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByHostname =
-        new TreeMap<>();
-    for (Entry<String, Node> e : dp._nodes.entrySet()) {
-      String hostname = e.getKey();
-      Node node = e.getValue();
-      for (Entry<String, VirtualRouter> e2 : node.getVirtualRouters().entrySet()) {
-        String vrfName = e2.getKey();
-        VirtualRouter vrf = e2.getValue();
-        for (AbstractRoute route : vrf._mainRib.getRoutes()) {
-          SortedMap<String, SortedSet<AbstractRoute>> routesByVrf =
-              routesByHostname.computeIfAbsent(hostname, k -> new TreeMap<>());
-          SortedSet<AbstractRoute> routes =
-              routesByVrf.computeIfAbsent(vrfName, k -> new TreeSet<>());
-          routes.add(route);
-        }
-      }
-    }
-    return routesByHostname;
+    // Scan through all Nodes and their virtual routers, retrieve main rib routes
+    return dp.getNodes()
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(),
+                Entry::getKey,
+                nodeEntry ->
+                    nodeEntry
+                        .getValue()
+                        .getVirtualRouters()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                Comparator.naturalOrder(),
+                                Entry::getKey,
+                                vrfEntry ->
+                                    ImmutableSortedSet.copyOf(
+                                        vrfEntry.getValue().getMainRib().getRoutes())))));
   }
 
   /**
