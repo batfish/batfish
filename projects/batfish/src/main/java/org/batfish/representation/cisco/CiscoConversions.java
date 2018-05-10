@@ -7,9 +7,12 @@ import com.google.common.collect.ImmutableList;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Stream;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AsPathAccessList;
@@ -50,6 +53,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 
@@ -78,6 +82,39 @@ class CiscoConversions {
     policy.setStatements(ImmutableList.of(currentGeneratedRouteConditional));
     c.getRoutingPolicies().put(policy.getName(), policy);
     return policy;
+  }
+
+  /**
+   * Generates and returns a {@link Statement} that suppresses routes that are summarized by the
+   * given set of {@link Prefix prefixes} configured as {@code summary-only}.
+   *
+   * <p>Returns {@code null} if {@code prefixesToSuppress} has no entries.
+   *
+   * <p>If any Batfish-generated structures are generated, does the bookkeeping in the provided
+   * {@link Configuration} to ensure they are available and tracked.
+   */
+  @Nullable
+  static If suppressSummarizedPrefixes(
+      Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
+    Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
+    if (!prefixesToSuppress.hasNext()) {
+      return null;
+    }
+    // Create a RouteFilterList that matches any network longer than a prefix marked summary only.
+    RouteFilterList matchLonger =
+        new RouteFilterList("~MATCH_SUPPRESSED_SUMMARY_ONLY:" + vrfName + "~");
+    prefixesToSuppress.forEachRemaining(
+        p ->
+            matchLonger.addLine(
+                new RouteFilterLine(LineAction.ACCEPT, PrefixRange.moreSpecificThan(p))));
+    // Bookkeeping: record that we created this RouteFilterList to match longer networks.
+    c.getRouteFilterLists().put(matchLonger.getName(), matchLonger);
+
+    return new If(
+        "Suppress longer advertisements of summary-only aggregate-address networks",
+        new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(matchLonger.getName())),
+        ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+        ImmutableList.of());
   }
 
   static AsPathAccessList toAsPathAccessList(AsPathSet asPathSet) {
