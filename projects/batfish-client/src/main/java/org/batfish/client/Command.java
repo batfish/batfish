@@ -13,6 +13,7 @@ public enum Command {
   ADD_BATFISH_OPTION("add-batfish-option"),
   ANSWER("answer"),
   ANSWER_DELTA("answer-delta"),
+  AUTOCOMPLETE("autocomplete"),
   CAT("cat"),
   CHECK_API_KEY("checkapikey"),
   CLEAR_SCREEN("cls"),
@@ -134,11 +135,13 @@ public enum Command {
         new Pair<>(
             "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the delta environment"));
+    descs.put(
+        AUTOCOMPLETE,
+        new Pair<>(
+            "[-maxSuggestions] <completion-type> <query>",
+            "Autocomplete information of question parameters"));
     descs.put(CAT, new Pair<>("<filename>", "Print the contents of the file"));
     descs.put(CHECK_API_KEY, new Pair<>("", "Check if API Key is valid"));
-    // descs.put(CHANGE_DIR, CHANGE_DIR
-    // + " <dirname>\n"
-    // + "\t Change the working directory");
     descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
     descs.put(
         CONFIGURE_TEMPLATE,
