@@ -1050,17 +1050,19 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testSourceAddress() throws IOException {
     Configuration c = parseConfig("firewall-source-address");
+    String filterNameV4 = "FILTER";
+    String filterNameV6 = "FILTERv6";
 
-    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+    assertThat(c.getIpAccessLists().keySet(), containsInAnyOrder(filterNameV4, filterNameV6));
 
-    IpAccessList fwSourceAddressAcl = Iterables.getOnlyElement(c.getIpAccessLists().values());
+    IpAccessList fwSourceAddressAcl = c.getIpAccessLists().get(filterNameV4);
     assertThat(fwSourceAddressAcl.getLines(), hasSize(1));
 
     // should have the same acl as defined in the config
     assertThat(
         c,
         hasIpAccessList(
-            "FILTER",
+            filterNameV4,
             hasLines(
                 equalTo(
                     ImmutableList.of(
@@ -1083,17 +1085,19 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testDestinationAddress() throws IOException {
     Configuration c = parseConfig("firewall-destination-address");
+    String filterNameV4 = "FILTER";
+    String filterNameV6 = "FILTERv6";
 
-    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+    assertThat(c.getIpAccessLists().keySet(), containsInAnyOrder(filterNameV4, filterNameV6));
 
-    IpAccessList fwDestinationAddressAcl = Iterables.getOnlyElement(c.getIpAccessLists().values());
+    IpAccessList fwDestinationAddressAcl = c.getIpAccessLists().get(filterNameV4);
     assertThat(fwDestinationAddressAcl.getLines(), hasSize(1));
 
     // should have the same acl as defined in the config
     assertThat(
         c,
         hasIpAccessList(
-            "FILTER",
+            filterNameV4,
             hasLines(
                 equalTo(
                     ImmutableList.of(
@@ -1117,7 +1121,7 @@ public class FlatJuniperGrammarTest {
   public void testSourceAddressBehavior() throws IOException {
     Configuration c = parseConfig("firewall-source-address");
 
-    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+    assertThat(c.getIpAccessLists().keySet(), hasSize(2));
 
     Flow whiteListedSrc = createFlow("1.8.3.9", "2.5.6.7");
     Flow blackListedSrc = createFlow("5.8.4.9", "2.5.6.7");
@@ -1135,7 +1139,7 @@ public class FlatJuniperGrammarTest {
   public void testDestinationAddressBehavior() throws IOException {
     Configuration c = parseConfig("firewall-destination-address");
 
-    assertThat(c.getIpAccessLists().keySet(), hasSize(1));
+    assertThat(c.getIpAccessLists().keySet(), hasSize(2));
 
     Flow whiteListedDst = createFlow("2.5.6.7", "1.8.3.9");
     Flow blackListedDst = createFlow("2.5.6.7", "5.8.4.9");
