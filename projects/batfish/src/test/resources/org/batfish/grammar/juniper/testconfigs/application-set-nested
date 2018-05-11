@@ -9,7 +9,8 @@ set applications application-set appset3 application appset2
 #
 set security policies from-zone z1 to-zone z2 policy p1 match application appset1
 set security policies from-zone z1 to-zone z2 policy p1 then permit
-set security policies from-zone z2 to-zone z3 policy p1 match application appset2
-set security policies from-zone z2 to-zone z3 policy p1 then permit
-set security policies from-zone z3 to-zone z4 policy p1 match application appset3
-set security policies from-zone z3 to-zone z4 policy p1 then permit
+set security policies from-zone z1 to-zone z3 policy p1 match application appset2
+set security policies from-zone z1 to-zone z3 policy p1 then permit
+set security policies from-zone z1 to-zone z4 policy p1 match application appset3
+set security policies from-zone z1 to-zone z4 policy p1 then permit
+set security zones security-zone z1 interfaces ge-0/0/0.0

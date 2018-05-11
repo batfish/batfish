@@ -42,6 +42,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_E
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
@@ -147,11 +148,12 @@ public class FlatJuniperGrammarTest {
     return fb.build();
   }
 
-  private static Flow createTcpFlow(int srcPort) {
+  private static Flow createTcpFlow(int port) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
     fb.setIpProtocol(IpProtocol.TCP);
-    fb.setSrcPort(srcPort);
+    fb.setDstPort(port);
+    fb.setSrcPort(port);
     fb.setTag("test");
     return fb.build();
   }
@@ -194,13 +196,12 @@ public class FlatJuniperGrammarTest {
     SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
         undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
-    String aclName = "~FROM_ZONE~z1~TO_ZONE~z2";
 
     /* Check that appset2 contains definition of appset1 concatenated with definition of a3 */
     assertThat(
         c,
         hasIpAccessList(
-            aclName,
+            ACL_NAME_GLOBAL_POLICY,
             hasLines(
                 equalTo(
                     ImmutableList.of(
@@ -292,8 +293,9 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
 
     String aclNameNonNested = "~FROM_ZONE~z1~TO_ZONE~z2";
-    String aclNameNested = "~FROM_ZONE~z2~TO_ZONE~z3";
-    String aclNameMultiNested = "~FROM_ZONE~z3~TO_ZONE~z4";
+    String aclNameNested = "~FROM_ZONE~z1~TO_ZONE~z3";
+    String aclNameMultiNested = "~FROM_ZONE~z1~TO_ZONE~z4";
+    String z1Interface = "ge-0/0/0.0";
     IpAccessList aclNonNested = c.getIpAccessLists().get(aclNameNonNested);
     IpAccessList aclNested = c.getIpAccessLists().get(aclNameNested);
     IpAccessList aclMultiNested = c.getIpAccessLists().get(aclNameMultiNested);
@@ -305,28 +307,33 @@ public class FlatJuniperGrammarTest {
      * Confirm non-nested application-set acl accepts the allowed protocol-port combo and reject
      * others
      */
-    assertThat(aclNonNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
-    assertThat(aclNonNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclNonNested, accepts(permittedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclNonNested, rejects(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
 
     /*
      * Confirm nested application-set acl accepts the allowed protocol-port combo and reject others
      */
-    assertThat(aclNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
-    assertThat(aclNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclNested, accepts(permittedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclNested, rejects(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
 
     /*
      * Confirm multi-nested application-set acl accepts the allowed protocol-port combo and reject
      * others
      */
-    assertThat(aclMultiNested, accepts(permittedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
-    assertThat(aclMultiNested, rejects(rejectedFlow, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclMultiNested, accepts(permittedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclMultiNested, rejects(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
   public void testApplicationWithTerms() throws IOException {
     String hostname = "application-with-terms";
     Configuration c = parseConfig(hostname);
-    String aclName = "~FROM_ZONE~z1~TO_ZONE~z2";
 
     /*
      * An IpAccessList should be generated for the cross-zone policy from z1 to z2. Its definition
@@ -336,7 +343,7 @@ public class FlatJuniperGrammarTest {
     assertThat(
         c,
         hasIpAccessList(
-            aclName,
+            ACL_NAME_GLOBAL_POLICY,
             hasLines(
                 equalTo(
                     ImmutableList.of(
@@ -458,6 +465,89 @@ public class FlatJuniperGrammarTest {
     assertThat(multipleAsDisabled, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
     assertThat(multipleAsEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(multipleAsMixed, equalTo(MultipathEquivalentAsPathMatchMode.FIRST_AS));
+  }
+
+  @Test
+  public void testDefaultApplications() throws IOException {
+    String hostname = "default-applications";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
+        undefinedReferences = ccae.getUndefinedReferences();
+    Configuration c = parseConfig(hostname);
+
+    String aclApplicationsName = "~FROM_ZONE~z1~TO_ZONE~z2";
+    String aclApplicationSetName = "~FROM_ZONE~z1~TO_ZONE~z3";
+    String aclApplicationSetAnyName = "~FROM_ZONE~z1~TO_ZONE~z4";
+    String aclApplicationAnyName = "~FROM_ZONE~z1~TO_ZONE~z5";
+    String z1Interface = "ge-0/0/0.0";
+    IpAccessList aclApplication = c.getIpAccessLists().get(aclApplicationsName);
+    IpAccessList aclApplicationSet = c.getIpAccessLists().get(aclApplicationSetName);
+    IpAccessList aclApplicationSetAny = c.getIpAccessLists().get(aclApplicationSetAnyName);
+    IpAccessList aclApplicationAny = c.getIpAccessLists().get(aclApplicationAnyName);
+    /* Allowed applications permits TCP to port 80 and 443 */
+    Flow permittedHttpFlow = createTcpFlow(80);
+    Flow permittedHttpsFlow = createTcpFlow(443);
+    Flow rejectedFlow = createTcpFlow(100);
+
+    /*
+     * Confirm there are no undefined references
+     */
+    assertThat(undefinedReferences.keySet(), emptyIterable());
+
+    /*
+     * Confirm acl with explicit application constraints accepts http and https flows and rejects
+     * others
+     */
+    assertThat(
+        aclApplication,
+        accepts(permittedHttpFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplication,
+        accepts(permittedHttpsFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplication, rejects(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm acl with indirect constraints (application-set) accepts http and https flows and
+     * rejects others
+     */
+    assertThat(
+        aclApplicationSet,
+        accepts(permittedHttpFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationSet,
+        accepts(permittedHttpsFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationSet,
+        rejects(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm policy referencing permissive application-set accepts all three flows
+     */
+    assertThat(
+        aclApplicationSetAny,
+        accepts(permittedHttpFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationSetAny,
+        accepts(permittedHttpsFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationSetAny,
+        accepts(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /*
+     * Confirm policy directly permitting any application accepts all three flows
+     */
+    assertThat(
+        aclApplicationAny,
+        accepts(permittedHttpFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationAny,
+        accepts(permittedHttpsFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclApplicationAny,
+        accepts(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test

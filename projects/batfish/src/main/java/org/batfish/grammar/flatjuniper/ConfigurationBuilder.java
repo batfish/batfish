@@ -636,7 +636,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private static JunosApplication toJunosApplication(Junos_applicationContext ctx) {
-    if (ctx.JUNOS_AOL() != null) {
+    if (ctx.ANY() != null) {
+      return JunosApplication.ANY;
+    } else if (ctx.JUNOS_AOL() != null) {
       return JunosApplication.JUNOS_AOL;
     } else if (ctx.JUNOS_BGP() != null) {
       return JunosApplication.JUNOS_BGP;
@@ -1601,8 +1603,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAas_application(Aas_applicationContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    String name;
+    int line;
+    if (ctx.junos_application() != null) {
+      JunosApplication application = toJunosApplication(ctx.junos_application());
+      name = application.toString();
+      line = ctx.junos_application().getStart().getLine();
+      if (!application.hasDefinition()) {
+        _w.redFlag(
+            String.format(
+                "unimplemented pre-defined junos application: '%s'",
+                ctx.junos_application().getText()));
+        return;
+      }
+      // Need to add this default application to the config so it can be referenced later
+      _configuration.getApplications().putIfAbsent(name, application.getBaseApplication());
+    } else {
+      name = ctx.name.getText();
+      line = ctx.name.getStart().getLine();
+    }
     _configuration.referenceStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         name,
@@ -3974,9 +3993,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSepctxpm_application(Sepctxpm_applicationContext ctx) {
-    if (ctx.ANY() != null) {
-      return;
-    } else if (ctx.junos_application() != null) {
+    if (ctx.junos_application() != null) {
       JunosApplication application = toJunosApplication(ctx.junos_application());
       if (!application.hasDefinition()) {
         _w.redFlag(
@@ -3992,8 +4009,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentFwTerm.getFromApplications().add(from);
       }
     } else {
-      String name = ctx.name.getText();
-      int line = ctx.name.getStart().getLine();
+      String name;
+      int line;
+      if (ctx.ANY() != null) {
+        name = "any";
+        line = ctx.ANY().getSymbol().getLine();
+        // Create an empty application definition to match anything, so it can be referenced later
+        _configuration
+            .getApplications()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  BaseApplication base = new BaseApplication(n, -1);
+                  Term term = new Term("permit");
+                  base.getTerms().put("permit", term);
+                  return base;
+                });
+      } else {
+        name = ctx.name.getText();
+        line = ctx.name.getStart().getLine();
+      }
       _configuration.referenceStructure(
           JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
           name,
