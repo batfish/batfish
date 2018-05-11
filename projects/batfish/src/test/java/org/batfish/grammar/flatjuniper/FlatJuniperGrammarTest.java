@@ -1199,40 +1199,39 @@ public class FlatJuniperGrammarTest {
     Flow testFlow2 = createFlow("1.2.3.4", "1.2.3.4");
     Flow testFlow3 = createFlow("0.0.0.0", "9.8.7.6");
 
-    IpAccessList incomingFilterSource = c.getInterfaces().get("p-e-s.0").getIncomingFilter();
-    IpAccessList incomingFilterSourceExcept =
-        c.getInterfaces().get("p-e-s-e.0").getIncomingFilter();
+    IpAccessList incomingFilterSource = c.getIpAccessLists().get("TEST_FILTER_SOURCE");
+    IpAccessList incomingFilterSourceExcept = c.getIpAccessLists().get("TEST_FILTER_SOURCE_EXCEPT");
 
-    IpAccessList incomingFilterDestination = c.getInterfaces().get("p-e-d.0").getIncomingFilter();
+    IpAccessList incomingFilterDestination = c.getIpAccessLists().get("TEST_FILTER_DESTINATION");
     IpAccessList incomingFilterDestinationxcept =
-        c.getInterfaces().get("p-e-d-e.0").getIncomingFilter();
+        c.getIpAccessLists().get("TEST_FILTER_DESTINATION_EXCEPT");
 
-    IpAccessList incomingFilter = c.getInterfaces().get("p-e.0").getIncomingFilter();
+    IpAccessList incomingFilter = c.getIpAccessLists().get("TEST_FILTER");
 
     // No source IP should match the empty prefix list
-    assertThat(incomingFilterSource, rejects(testFlow1, "p-e-s.0", c));
-    assertThat(incomingFilterSource, rejects(testFlow2, "p-e-s.0", c));
-    assertThat(incomingFilterSource, rejects(testFlow3, "p-e-s.0", c));
+    assertThat(incomingFilterSource, rejects(testFlow1, "interface", c));
+    assertThat(incomingFilterSource, rejects(testFlow2, "interface", c));
+    assertThat(incomingFilterSource, rejects(testFlow3, "interface", c));
 
     // Every source IP should match the empty prefix list
-    assertThat(incomingFilterSourceExcept, accepts(testFlow1, "p-e-s-e.0", c));
-    assertThat(incomingFilterSourceExcept, accepts(testFlow2, "p-e-s-e.0", c));
-    assertThat(incomingFilterSourceExcept, accepts(testFlow3, "p-e-s-e.0", c));
+    assertThat(incomingFilterSourceExcept, accepts(testFlow1, "interface", c));
+    assertThat(incomingFilterSourceExcept, accepts(testFlow2, "interface", c));
+    assertThat(incomingFilterSourceExcept, accepts(testFlow3, "interface", c));
 
     // No destination IP should match the empty prefix list
-    assertThat(incomingFilterDestination, rejects(testFlow1, "p-e-d.0", c));
-    assertThat(incomingFilterDestination, rejects(testFlow2, "p-e-d.0", c));
-    assertThat(incomingFilterDestination, rejects(testFlow3, "p-e-d.0", c));
+    assertThat(incomingFilterDestination, rejects(testFlow1, "interface", c));
+    assertThat(incomingFilterDestination, rejects(testFlow2, "interface", c));
+    assertThat(incomingFilterDestination, rejects(testFlow3, "interface", c));
 
     // Every destination IP should match the empty prefix list
-    assertThat(incomingFilterDestinationxcept, accepts(testFlow1, "p-e-d-e.0", c));
-    assertThat(incomingFilterDestinationxcept, accepts(testFlow2, "p-e-d-e.0", c));
-    assertThat(incomingFilterDestinationxcept, accepts(testFlow3, "p-e-d-e.0", c));
+    assertThat(incomingFilterDestinationxcept, accepts(testFlow1, "interface", c));
+    assertThat(incomingFilterDestinationxcept, accepts(testFlow2, "interface", c));
+    assertThat(incomingFilterDestinationxcept, accepts(testFlow3, "interface", c));
 
-    // Everything dest or source IP should match by the empty prefix list
-    assertThat(incomingFilterDestination, rejects(testFlow1, "p-e-d.0", c));
-    assertThat(incomingFilterDestination, rejects(testFlow2, "p-e-d.0", c));
-    assertThat(incomingFilterDestination, rejects(testFlow3, "p-e-d.0", c));
+    // Everything dest or source IP should match the empty prefix list
+    assertThat(incomingFilter, rejects(testFlow1, "interface", c));
+    assertThat(incomingFilter, rejects(testFlow2, "interface", c));
+    assertThat(incomingFilter, rejects(testFlow3, "interface", c));
   }
 
   @Test

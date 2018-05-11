@@ -2,21 +2,6 @@ set system host-name prefix-list-empty
 
 set policy-options prefix-list EMPTY_PREFIX_LIST
 
-set interfaces p-e-s unit 0 family inet address 1.2.3.4/24
-set interfaces p-e-s unit 0 family inet filter input TEST_FILTER_SOURCE
-
-set interfaces p-e-s-e unit 0 family inet address 1.2.3.5/24
-set interfaces p-e-s-e unit 0 family inet filter input TEST_FILTER_SOURCE_EXCEPT
-
-set interfaces p-e-d unit 0 family inet address 1.2.3.4/24
-set interfaces p-e-d unit 0 family inet filter input TEST_FILTER_DESTINATION
-
-set interfaces p-e-d-e unit 0 family inet address 1.2.3.5/24
-set interfaces p-e-d-e unit 0 family inet filter input TEST_FILTER_DESTINATION_EXCEPT
-
-set interfaces p-e unit 0 family inet address 1.2.3.4/24
-set interfaces p-e unit 0 family inet filter input TEST_FILTER
-
 
 set firewall family inet filter TEST_FILTER_SOURCE term TEST_TERM from source-prefix-list EMPTY_PREFIX_LIST
 set firewall family inet filter TEST_FILTER_SOURCE term TEST_TERM then accept
