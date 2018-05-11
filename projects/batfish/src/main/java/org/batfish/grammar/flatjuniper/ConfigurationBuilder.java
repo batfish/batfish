@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -4255,7 +4256,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Nullable
   private IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
     IpWildcard ipWildcard = null;
-    if (ctx.ip_address != null && ctx.wildcard_mask != null) {
+    if (ctx == null) {
+      return null;
+    } else if (ctx.ip_address != null && ctx.wildcard_mask != null) {
       Ip ipAddress = new Ip(ctx.ip_address.getText());
       Ip mask = new Ip(ctx.wildcard_mask.getText());
       ipWildcard = new IpWildcard(ipAddress, mask.inverted());
