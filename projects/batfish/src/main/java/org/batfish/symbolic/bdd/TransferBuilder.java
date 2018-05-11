@@ -28,12 +28,10 @@ import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
-import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
-import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.InlineCommunitySet;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
@@ -135,7 +133,7 @@ class TransferBuilder {
   /*
    * Apply the effect of modifying an integer value (e.g., to set the local pref)
    */
-  private BDDInteger applyIntExprModification(TransferParam<BDDRoute> p, BDDInteger x, IntExpr e) {
+  /* private BDDInteger applyIntExprModification(TransferParam<BDDRoute> p, BDDInteger x, IntExpr e) {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
       p.debug("LiteralInt: " + z.getValue());
@@ -152,7 +150,7 @@ class TransferBuilder {
       return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     }
     throw new BatfishException("TODO: int expr transfer function: " + e);
-  }
+  } */
 
   /*
    * Apply the effect of modifying an integer value (e.g., to set the local pref)
