@@ -171,19 +171,6 @@ public class BatfishTestUtils {
   }
 
   /**
-   * Get a new Batfish instance with given configurations.
-   *
-   * @param configurations Map of all Configuration Name -> Configuration Object
-   * @return New Batfish instance
-   */
-  public static Batfish getBatfish(SortedMap<String, Configuration> configurations)
-      throws IOException {
-    TemporaryFolder tempFolder = new TemporaryFolder();
-    tempFolder.create();
-    return initBatfish(configurations, tempFolder);
-  }
-
-  /**
    * Get a new Batfish instance with given configurations, tempFolder should be present for
    * non-empty configurations
    *
