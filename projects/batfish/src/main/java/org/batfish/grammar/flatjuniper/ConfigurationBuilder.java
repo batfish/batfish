@@ -457,6 +457,7 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
+import org.batfish.vendor.StructureType;
 
 public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
@@ -489,6 +490,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       "policy-statement - term - then - next-hop";
 
   private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
+
+  private void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
+    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
+      _configuration.defineStructure(type, name, i);
+    }
+  }
 
   public static NamedPort getNamedPort(PortContext ctx) {
     if (ctx.AFS() != null) {
@@ -629,7 +636,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private static JunosApplication toJunosApplication(Junos_applicationContext ctx) {
-    if (ctx.JUNOS_AOL() != null) {
+    if (ctx.ANY() != null) {
+      return JunosApplication.ANY;
+    } else if (ctx.JUNOS_AOL() != null) {
       return JunosApplication.JUNOS_AOL;
     } else if (ctx.JUNOS_BGP() != null) {
       return JunosApplication.JUNOS_BGP;
@@ -1575,6 +1584,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentApplication =
         _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication(n, line));
     _currentApplicationTerm = _currentApplication.getMainTerm();
+    defineStructure(JuniperStructureType.APPLICATION, name, ctx);
   }
 
   @Override
@@ -1583,6 +1593,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     int line = ctx.name.getStart().getLine();
     _currentApplicationSet =
         _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet(n, line));
+    _configuration.defineStructure(JuniperStructureType.APPLICATION_SET, name, line);
   }
 
   @Override
@@ -1592,8 +1603,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAas_application(Aas_applicationContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    String name;
+    int line;
+    if (ctx.junos_application() != null) {
+      JunosApplication application = toJunosApplication(ctx.junos_application());
+      name = application.toString();
+      line = ctx.junos_application().getStart().getLine();
+      if (!application.hasDefinition()) {
+        _w.redFlag(
+            String.format(
+                "unimplemented pre-defined junos application: '%s'",
+                ctx.junos_application().getText()));
+        return;
+      }
+      // Need to add this default application to the config so it can be referenced later
+      _configuration.getApplications().putIfAbsent(name, application.getBaseApplication());
+    } else {
+      name = ctx.name.getText();
+      line = ctx.name.getStart().getLine();
+    }
     _configuration.referenceStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         name,
@@ -3965,9 +3993,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSepctxpm_application(Sepctxpm_applicationContext ctx) {
-    if (ctx.ANY() != null) {
-      return;
-    } else if (ctx.junos_application() != null) {
+    if (ctx.junos_application() != null) {
       JunosApplication application = toJunosApplication(ctx.junos_application());
       if (!application.hasDefinition()) {
         _w.redFlag(
@@ -3983,8 +4009,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentFwTerm.getFromApplications().add(from);
       }
     } else {
-      String name = ctx.name.getText();
-      int line = ctx.name.getStart().getLine();
+      String name;
+      int line;
+      if (ctx.ANY() != null) {
+        name = "any";
+        line = ctx.ANY().getSymbol().getLine();
+        // Create an empty application definition to match anything, so it can be referenced later
+        _configuration
+            .getApplications()
+            .computeIfAbsent(
+                name,
+                n -> {
+                  BaseApplication base = new BaseApplication(n, -1);
+                  Term term = new Term("permit");
+                  base.getTerms().put("permit", term);
+                  return base;
+                });
+      } else {
+        name = ctx.name.getText();
+        line = ctx.name.getStart().getLine();
+      }
       _configuration.referenceStructure(
           JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
           name,
@@ -4246,7 +4290,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Nullable
   private IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
     IpWildcard ipWildcard = null;
-    if (ctx.ip_address != null && ctx.wildcard_mask != null) {
+    if (ctx == null) {
+      return null;
+    } else if (ctx.ip_address != null && ctx.wildcard_mask != null) {
       Ip ipAddress = new Ip(ctx.ip_address.getText());
       Ip mask = new Ip(ctx.wildcard_mask.getText());
       ipWildcard = new IpWildcard(ipAddress, mask.inverted());

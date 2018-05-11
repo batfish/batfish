@@ -27,6 +27,8 @@ public enum CiscoStructureType implements StructureType {
   IPV6_ACCESS_LIST("ipv6 acl"),
   IPV6_ACCESS_LIST_EXTENDED("extended ipv6 access-list"),
   IPV6_ACCESS_LIST_STANDARD("standard ipv6 access-list"),
+  ISAKMP_PROFILE("crypto isakmp profile"),
+  ISAKMP_POLICY("crypto isakmp policy"),
   KEYRING("crypto keyring"),
   L2TP_CLASS("l2tp-class"),
   MAC_ACCESS_LIST("mac acl"),

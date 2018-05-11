@@ -17,23 +17,32 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
+        "host1" : { },
         "us_border" : {
           "extended ip access-list" : {
             "acl-atlantis-nat" : {
               "definitionLines" : [
-                28
+                28,
+                29
               ],
               "numReferrers" : 1
             },
             "acl-atlantis-to-us" : {
               "definitionLines" : [
-                21
+                21,
+                22,
+                23,
+                24,
+                25,
+                26
               ],
               "numReferrers" : 1
             },
             "acl-us-to-atlantis" : {
               "definitionLines" : [
-                18
+                18,
+                19,
+                20
               ],
               "numReferrers" : 1
             }
@@ -55,7 +64,8 @@
           "nat pool" : {
             "np-atlantis" : {
               "definitionLines" : [
-                34
+                34,
+                35
               ],
               "numReferrers" : 1
             }
@@ -63,18 +73,25 @@
           "route-map" : {
             "rm-atlantis-to-us" : {
               "definitionLines" : [
-                41
+                41,
+                42,
+                43,
+                44,
+                45
               ],
               "numReferrers" : 1
             },
             "rm-us-to-atlantis" : {
               "definitionLines" : [
-                37
+                37,
+                38,
+                39
               ],
               "numReferrers" : 1
             }
           }
-        }
+        },
+        "us_switch" : { }
       },
       "version" : "0.36.0"
     },

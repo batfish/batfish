@@ -278,6 +278,11 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "as1r1" : { },
+        "as1r2" : { },
+        "as2r1" : { }
+      },
       "version" : "0.36.0"
     },
     {
