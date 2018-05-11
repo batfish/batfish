@@ -861,9 +861,6 @@ public class Graph {
             expr -> {});
       }
     }
-    for (Entry<String, Set<Integer>> e : lps.entrySet()) {
-      System.out.println("Router " + e.getKey() + " has lps: " + e.getValue());
-    }
     return lps;
   }
 
