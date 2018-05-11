@@ -41,15 +41,7 @@ public class MockDataPlane implements DataPlane {
     }
 
     public MockDataPlane build() {
-      return new MockDataPlane(
-          _bgpTopology,
-          _configurations,
-          _fibs,
-          _ipOwners,
-          _ipVrfOwners,
-          _ribs,
-          _topology,
-          _topologyEdges);
+      return new MockDataPlane(this);
     }
 
     public Builder setBgpTopology(Network<BgpNeighbor, BgpSession> bgpTopology) {
@@ -100,23 +92,15 @@ public class MockDataPlane implements DataPlane {
 
   private final SortedSet<Edge> _topologyEdges;
 
-  private MockDataPlane(
-      Network<BgpNeighbor, BgpSession> bgpTopology,
-      Map<String, Configuration> configurations,
-      Map<String, Map<String, Fib>> fibs,
-      Map<Ip, Set<String>> ipOwners,
-      Map<Ip, Map<String, Set<String>>> ipVrfOwners,
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
-      @Nullable Topology topology,
-      SortedSet<Edge> topologyEdges) {
-    _bgpTopology = bgpTopology;
-    _configurations = configurations;
-    _fibs = fibs;
-    _ipOwners = ipOwners;
-    _ipVrfOwners = ipVrfOwners;
-    _ribs = ImmutableSortedMap.copyOf(ribs);
-    _topology = topology;
-    _topologyEdges = ImmutableSortedSet.copyOf(topologyEdges);
+  private MockDataPlane(Builder builder) {
+    _bgpTopology = builder._bgpTopology;
+    _configurations = builder._configurations;
+    _fibs = builder._fibs;
+    _ipOwners = builder._ipOwners;
+    _ipVrfOwners = builder._ipVrfOwners;
+    _ribs = ImmutableSortedMap.copyOf(builder._ribs);
+    _topology = builder._topology;
+    _topologyEdges = ImmutableSortedSet.copyOf(builder._topologyEdges);
   }
 
   @Override
