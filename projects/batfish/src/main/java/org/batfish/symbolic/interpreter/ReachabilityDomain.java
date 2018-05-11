@@ -36,10 +36,8 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
       _projectVariables.add(c);
     }
 
-    _projectVariables.addAll(Arrays.asList(_routeFactory.variables()
-        .getProtocolHistory()
-        .getInteger()
-        .getBitvec()));
+    _projectVariables.addAll(
+        Arrays.asList(_routeFactory.variables().getProtocolHistory().getInteger().getBitvec()));
   }
 
   private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {

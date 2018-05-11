@@ -169,7 +169,6 @@ public class BDDRouteFactory {
 
     private final BDDInteger _prefixLength;
 
-
     /*
      * Creates a collection of BDD variables representing the
      * various attributes of a control plane advertisement.
@@ -281,7 +280,6 @@ public class BDDRouteFactory {
         addBitNames("ospfMetric", _ospfMetric.numBits(), idx, false);
         idx += _ospfMetricTemp.numBits();
       }
-
     }
 
     /*

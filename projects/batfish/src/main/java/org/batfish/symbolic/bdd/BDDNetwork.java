@@ -82,8 +82,7 @@ public class BDDNetwork {
   /*
    * Compute a BDD representation of a routing policy.
    */
-  private BDDTransferFunction computeBDD(
-      Graph g, Configuration conf, RoutingPolicy pol) {
+  private BDDTransferFunction computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
     Set<Prefix> networks = new HashSet<>();
     if (_ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);

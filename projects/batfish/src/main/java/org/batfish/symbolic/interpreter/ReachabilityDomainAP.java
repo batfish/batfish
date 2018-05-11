@@ -31,8 +31,7 @@ public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
 
   private Map<String, BDD> _origins;
 
-  ReachabilityDomainAP(
-      ReachabilityDomain domain, Set<String> routers, BDDNetwork network) {
+  ReachabilityDomainAP(ReachabilityDomain domain, Set<String> routers, BDDNetwork network) {
     Set<BDD> allFilters = new HashSet<>();
     Map<EdgeTransformer, BDDTransferFunction> allTransforms = new HashMap<>();
 
@@ -80,7 +79,8 @@ public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
             }); */
   }
 
-  @Override public LocatedAP init() {
+  @Override
+  public LocatedAP init() {
     return new LocatedAP(new BitSet(), new BitSet[_atomicPredicates.getDisjoint().size()]);
   }
 
