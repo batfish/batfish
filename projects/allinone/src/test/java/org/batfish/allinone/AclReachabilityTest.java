@@ -57,29 +57,31 @@ public class AclReachabilityTest {
   public void testIndirection() throws IOException {
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
 
-    IpAccessList acl1 = aclb.setLines(ImmutableList.of()).setName("acl1").build();
-    IpAccessList acl2 =
+    IpAccessList independentAcl = aclb.setLines(ImmutableList.of()).setName("acl1").build();
+    IpAccessList dependentAcl =
         aclb.setLines(
                 ImmutableList.of(
                     IpAccessListLine.accepting()
-                        .setMatchCondition(new PermittedByAcl(acl1.getName()))
+                        .setMatchCondition(new PermittedByAcl(independentAcl.getName()))
                         .build()))
             .setName("acl2")
             .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
 
-    assertThat(_c, hasIpAccessLists(hasEntry(acl1.getName(), acl1)));
-    assertThat(_c, hasIpAccessLists(hasEntry(acl2.getName(), acl2)));
+    assertThat(_c, hasIpAccessLists(hasEntry(independentAcl.getName(), independentAcl)));
+    assertThat(_c, hasIpAccessLists(hasEntry(dependentAcl.getName(), dependentAcl)));
 
     AclReachabilityQuestion question = new AclReachabilityQuestion();
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
 
-    /*
-     *  Test for NPE introduced by reverted PR #1272 due to missing definition for acl1 when
-     *  processing acl2.
-     */
-    answerer.answer();
+    AnswerElement answer = answerer.answer();
+    assertThat(answer, instanceOf(AclLinesAnswerElement.class));
+    AclLinesAnswerElement aclLinesAnswerElement = (AclLinesAnswerElement) answer;
+
+    assertThat(
+        aclLinesAnswerElement.getUnreachableLines(),
+        hasEntry(equalTo(_c.getName()), hasEntry(equalTo(dependentAcl.getName()), hasSize(1))));
   }
 
   @Test

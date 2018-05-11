@@ -680,9 +680,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             linesToCheck
                 .entrySet()
                 .stream()
-                .collect(
-                    Collectors.toMap(
-                        e -> e.getKey(), e -> ImmutableSet.copyOf(e.getValue().keySet()))));
+                .collect(toMap(e -> e.getKey(), e -> ImmutableSet.copyOf(e.getValue().keySet()))));
     linesToCheck.forEach(
         (hostname, aclNames) -> {
           aclNames.forEach(
