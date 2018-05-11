@@ -1,6 +1,8 @@
 package org.batfish.dataplane;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -114,6 +116,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                     configurations,
                     dataPlane.getFibs(),
                     ingressNodeName,
+                    Configuration.DEFAULT_VRF_NAME,
                     visitedEdges,
                     hops,
                     currentFlowTraces,
@@ -165,26 +168,6 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
               hopFlow(originalFlow, transformedFlow));
       newVisitedEdges.add(edge);
       newHops.add(newHop);
-      /*
-       * Check to see whether neighbor would refrain from sending ARP reply
-       * (NEIGHBOR_UNREACHABLE)
-       *
-       * This occurs if:
-       *
-       * - Using interface-only route
-       *
-       * AND
-       *
-       * - Neighbor does not own arpIp
-       *
-       * AND EITHER
-       *
-       * -- Neighbor not using proxy-arp
-       *
-       * - OR
-       *
-       * -- Subnet of neighbor's receiving-interface contains arpIp
-       */
       if (arp) {
         Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
         boolean neighborUnreachable =
@@ -230,8 +213,9 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
           }
         }
       }
-      IpAccessList inFilter =
-          configurations.get(nextNodeName).getInterfaces().get(edge.getInt2()).getIncomingFilter();
+      Interface nextInterface =
+          configurations.get(nextNodeName).getInterfaces().get(edge.getInt2());
+      IpAccessList inFilter = nextInterface.getIncomingFilter();
       if (!ignoreAcls && inFilter != null) {
         FlowDisposition disposition = FlowDisposition.DENIED_IN;
         boolean denied =
@@ -256,6 +240,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
           configurations,
           fibs,
           nextNodeName,
+          nextInterface.getVrfName(),
           newVisitedEdges,
           newHops,
           flowTraces,
@@ -279,17 +264,22 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
 
   @VisibleForTesting
   static boolean interfaceRepliesToArpRequestForIp(DataPlane dp, Interface iface, Ip arpIp) {
-    // TODO this is wrong. without proxy-arp, only reply to the interface's owned IPs.
-    Set<String> arpIpOwners = dp.getIpOwners().get(arpIp);
-    if (arpIpOwners != null && arpIpOwners.contains(iface.getOwner().getHostname())) {
-      // neighbor owns arpIp
+    if (iface.getAllAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
       return true;
     }
 
-    // neighbor does not own arpIp. Request succeeds if proxy-arp is enabled and the destination
-    // is not on the incoming edge.
-    // TODO _AND_ the VRF has a route to arpIp!
+    /*
+     * iface does not own arpIp, so it replies if and only if:
+     * 1. proxy-arp is enabled
+     * 2. the interface's vrf has a route to the destination
+     * 3. the destination is not on the incoming edge.
+     */
     return iface.getProxyArp()
+        && !dp.getFibs()
+            .get(iface.getOwner().getHostname())
+            .get(iface.getVrfName())
+            .getNextHopInterfaces(arpIp)
+            .isEmpty()
         && iface.getAllAddresses().stream().noneMatch(addr -> addr.getPrefix().containsIp(arpIp));
   }
 
@@ -343,6 +333,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs,
       String currentNodeName,
+      String currentVrfName,
       Set<Edge> visitedEdges,
       List<FlowTraceHop> hopsSoFar,
       Set<FlowTrace> flowTraces,
@@ -350,10 +341,11 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Flow transformedFlow,
       boolean ignoreAcls) {
     Ip dstIp = transformedFlow.getDstIp();
-    Set<String> dstIpOwners = dp.getIpOwners().get(dstIp);
     Configuration currentConfiguration = configurations.get(currentNodeName);
-    // TODO: ipVrfOwners
-    if (dstIpOwners != null && dstIpOwners.contains(currentNodeName)) {
+    if (dp.getIpVrfOwners()
+        .getOrDefault(dstIp, ImmutableMap.of())
+        .getOrDefault(currentNodeName, ImmutableSet.of())
+        .contains(currentVrfName)) {
       FlowTrace trace =
           new FlowTrace(FlowDisposition.ACCEPTED, hopsSoFar, FlowDisposition.ACCEPTED.toString());
       flowTraces.add(trace);
