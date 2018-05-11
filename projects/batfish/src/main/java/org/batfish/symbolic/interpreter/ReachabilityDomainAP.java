@@ -13,16 +13,17 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.GraphEdge;
+import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRouteFactory;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.smt.EdgeType;
 
-public class ReachabilityAbstractDomainAP implements IAbstractDomain<LocatedAP> {
+public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
 
   private static BDDFactory factory = BDDRouteFactory.factory;
 
-  private ReachabilityAbstractDomainBDD _domain;
+  private ReachabilityDomain _domain;
 
   private AtomicPredicates _atomicPredicates;
 
@@ -30,8 +31,8 @@ public class ReachabilityAbstractDomainAP implements IAbstractDomain<LocatedAP> 
 
   private Map<String, BDD> _origins;
 
-  ReachabilityAbstractDomainAP(
-      ReachabilityAbstractDomainBDD domain, Set<String> routers, BDDNetwork network) {
+  ReachabilityDomainAP(
+      ReachabilityDomain domain, Set<String> routers, BDDNetwork network) {
     Set<BDD> allFilters = new HashSet<>();
     Map<EdgeTransformer, BDDTransferFunction> allTransforms = new HashMap<>();
 
@@ -80,8 +81,8 @@ public class ReachabilityAbstractDomainAP implements IAbstractDomain<LocatedAP> 
   }
 
   @Override
-  public LocatedAP init(String router, Set<Prefix> prefixes) {
-    _origins.put(router, _domain.init(router, prefixes));
+  public LocatedAP init(String router, Protocol proto, Set<Prefix> prefixes) {
+    _origins.put(router, _domain.init(router, proto, prefixes));
     int n = _atomicPredicates.getDisjoint().size();
     int routerIndex = _routerIndexMap.index(router);
     BitSet b = new BitSet(n);

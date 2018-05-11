@@ -11,11 +11,12 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.SubRange;
 import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDRouteFactory;
 import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 
-public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
+public class ReachabilityDomain implements IAbstractDomain<BDD> {
 
   private static BDDFactory factory = BDDRouteFactory.factory;
 
@@ -25,7 +26,7 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
 
   private Set<BDD> _projectVariables;
 
-  ReachabilityAbstractDomainBDD(BDDRouteFactory routeFactory) {
+  ReachabilityDomain(BDDRouteFactory routeFactory) {
     _routeFactory = routeFactory;
     _projectVariables = new HashSet<>();
     for (Entry<CommunityVar, BDD> e : _routeFactory.variables().getCommunities().entrySet()) {
@@ -77,16 +78,19 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public BDD init(String router, Set<Prefix> prefixes) {
+  public BDD init(String router, Protocol proto, Set<Prefix> prefixes) {
     BDD acc = factory.zero();
-    for (Prefix prefix : prefixes) {
-      SubRange r = new SubRange(32, 32);
-      PrefixRange range = new PrefixRange(prefix, r);
-      BDD pfx = isRelevantFor(_routeFactory.variables(), range);
-      acc = acc.orWith(pfx);
+    if (prefixes != null) {
+      for (Prefix prefix : prefixes) {
+        SubRange r = new SubRange(32, 32);
+        PrefixRange range = new PrefixRange(prefix, r);
+        BDD pfx = isRelevantFor(_routeFactory.variables(), range);
+        acc = acc.orWith(pfx);
+      }
     }
+    BDD prot = _routeFactory.variables().getProtocolHistory().value(proto);
     BDD dst = _routeFactory.variables().getDstRouter().value(router);
-    return acc.and(dst);
+    return acc.and(dst).and(prot);
   }
 
   private BDD project(BDD val) {
@@ -119,12 +123,12 @@ public class ReachabilityAbstractDomainBDD implements IAbstractDomain<BDD> {
         BDD x = e.getValue();
         BDD temp = _routeFactory.variables().getTemporary(x);
         BDD expr = mods.getCommunities().get(cvar);
-        BDD equal = temp.biimp(expr);
+        BDD equal = temp.biimpWith(expr);
         acc = acc.andWith(equal);
         pairing.set(x.var(), temp.var());
       }
     }
-    // TODO for other fields
+
     acc = acc.replace(pairing);
     return acc;
   }

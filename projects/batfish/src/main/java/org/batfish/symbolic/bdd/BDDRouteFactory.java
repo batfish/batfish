@@ -163,7 +163,7 @@ public class BDDRouteFactory {
       int numNeeded =
           2
               * (32 * 4
-                  + 5
+                  + 6
                   + _allCommunities.size()
                   + _allLocalPrefs.size()
                   + _allRouters.size()
@@ -177,11 +177,6 @@ public class BDDRouteFactory {
 
       int idx = 0;
 
-      if (_config.getKeepDstRouter()) {
-        _dstRouter = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
-        addBitNames("router", _dstRouter.numBits(), idx, false);
-        idx += _dstRouter.numBits();
-      }
       if (_config.getKeepHistory()) {
         _protocolHistory = new BDDFiniteDomain<>(factory, allProtos, idx);
         addBitNames("proto", _protocolHistory.numBits(), idx, false);
@@ -210,9 +205,9 @@ public class BDDRouteFactory {
         addBitNames("lp", _localPref.numBits(), idx, false);
         idx += _localPref.numBits();
       }
-      _prefixLength = BDDInteger.makeFromIndex(factory, 5, idx, true);
-      addBitNames("pfxLen", 5, idx, true);
-      idx += 5;
+      _prefixLength = BDDInteger.makeFromIndex(factory, 6, idx, true);
+      addBitNames("pfxLen", 6, idx, true);
+      idx += 6;
       _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
       addBitNames("pfx", 32, idx, true);
       idx += 32;
@@ -226,6 +221,11 @@ public class BDDRouteFactory {
             idx++;
           }
         }
+      }
+      if (_config.getKeepDstRouter()) {
+        _dstRouter = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
+        addBitNames("router", _dstRouter.numBits(), idx, false);
+        idx += _dstRouter.numBits();
       }
       // Initialize OSPF type
       if (_config.getKeepOspfMetric()) {
