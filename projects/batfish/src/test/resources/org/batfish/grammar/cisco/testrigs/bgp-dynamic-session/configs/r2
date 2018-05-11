@@ -7,6 +7,7 @@ interface FastEthernet0/0
  duplex half
  speed 100
  ip address 1.2.0.2 255.255.255.0
+ ip proxy-arp
 !
 interface FastEthernet1/0
  no shutdown
@@ -14,6 +15,7 @@ interface FastEthernet1/0
  speed 100
  description connect to r3
  ip address 2.0.3.23 255.255.255.0
+ ip proxy-arp
 !
 interface FastEthernet1/1
  no shutdown
@@ -21,6 +23,7 @@ interface FastEthernet1/1
  speed 100
  description connect to r4
  ip address 2.0.4.24 255.255.255.0
+ ip proxy-arp
 !
 interface Loopback0
  ip address 2.2.2.2 255.255.255.255

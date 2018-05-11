@@ -7,6 +7,7 @@ interface FastEthernet0/0
  duplex half
  speed 100
  ip address 2.0.4.42 255.255.255.0
+ ip proxy-arp
 !
 interface Loopback0
  ip address 9.9.9.4 255.255.255.255
