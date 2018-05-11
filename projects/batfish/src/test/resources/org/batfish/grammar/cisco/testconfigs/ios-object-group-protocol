@@ -31,6 +31,6 @@ ip access-list extended aclempty
 ip access-list extended aclduplicate
  permit object-group ogp4 any any
 !
-ip access-list extended acl
+ip access-list extended aclundef
  permit object-group ogpundef any any
 !

@@ -1910,7 +1910,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
       _currentNetworkObjectGroup = new NetworkObjectGroup(name, definitionLine);
-      _w.redFlag("Object group defined multiple times: '" + name + "'");
+      warnObjectGroupRedefinition(name);
     } else {
       _currentNetworkObjectGroup =
           _configuration
@@ -1932,7 +1932,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
       _currentServiceObjectGroup = new ServiceObjectGroup(name, definitionLine);
-      _w.redFlag("Object group defined multiple times: '" + name + "'");
+      warnObjectGroupRedefinition(name);
     } else {
       _currentServiceObjectGroup =
           _configuration
@@ -1954,7 +1954,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
       _currentProtocolObjectGroup = new ProtocolObjectGroup(name, definitionLine);
-      _w.redFlag("Object group defined multiple times: '" + name + "'");
+      warnObjectGroupRedefinition(name);
     } else {
       _currentProtocolObjectGroup =
           _configuration
@@ -8645,6 +8645,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw convError(IntExpr.class, ctx);
     }
+  }
+
+  private void warnObjectGroupRedefinition(String name) {
+    _w.redFlag("Object group defined multiple times: '" + name + "'");
   }
 
   @Override

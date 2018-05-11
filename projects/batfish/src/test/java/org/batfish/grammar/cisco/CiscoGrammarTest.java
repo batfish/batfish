@@ -437,6 +437,7 @@ public class CiscoGrammarTest {
     String aclTcpUdpName = "acltcpudp";
     String aclEmptyName = "aclempty";
     String aclDuplicateName = "aclduplicate";
+    String aclUndefName = "aclundef";
     String ogpAclIcmpName = computeProtocolObjectGroupAclName(ogpIcmpName);
     String ogpAclTcpUdpName = computeProtocolObjectGroupAclName(ogpTcpUdpName);
     String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
@@ -487,6 +488,7 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(tcpFlow, null, c)));
     assertThat(c, hasIpAccessList(aclEmptyName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(aclEmptyName, rejects(tcpFlow, null, c)));
+
     /*
      * Empty protocol object group that is erroneously redefined should still reject everything
      */
@@ -494,6 +496,12 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(tcpFlow, null, c)));
     assertThat(c, hasIpAccessList(aclDuplicateName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(aclDuplicateName, rejects(tcpFlow, null, c)));
+
+    /*
+     * Undefined protocol object group should reject everything
+     */
+    assertThat(c, hasIpAccessList(aclUndefName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclUndefName, rejects(tcpFlow, null, c)));
   }
 
   @Test
