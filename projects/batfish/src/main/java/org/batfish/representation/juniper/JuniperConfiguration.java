@@ -1448,21 +1448,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
         fromApplication.applyTo(this, matchCondition, action, lines, _w);
       }
       if (addLine) {
-        AclLineMatchExpr aclLineMatchExpr = new MatchHeaderSpace(matchCondition.build());
-        if (conjunctMatchExpr != null) {
-          aclLineMatchExpr =
-              new AndMatchExpr(ImmutableList.of(aclLineMatchExpr, conjunctMatchExpr));
-        }
         IpAccessListLine line =
             IpAccessListLine.builder()
                 .setAction(action)
-                .setMatchCondition(aclLineMatchExpr)
+                .setMatchCondition(new MatchHeaderSpace(matchCondition.build()))
                 .setName(term.getName())
                 .build();
         lines.add(line);
       }
     }
-    return new IpAccessList(aclName, lines);
+    return new IpAccessList(aclName, mergeIpAccessListLines(lines, conjunctMatchExpr));
+  }
+
+  /** Merge the list of lines with the specified conjunct match expression. */
+  private static List<IpAccessListLine> mergeIpAccessListLines(
+      List<IpAccessListLine> lines, @Nullable AclLineMatchExpr conjunctMatchExpr) {
+    if (conjunctMatchExpr == null) {
+      return lines;
+    } else {
+      return lines
+          .stream()
+          .map(
+              l ->
+                  new IpAccessListLine(
+                      l.getAction(),
+                      new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
+                      l.getName()))
+          .collect(ImmutableList.toImmutableList());
+    }
   }
 
   /** Convert a firewallFilter into an equivalent ACL. */
