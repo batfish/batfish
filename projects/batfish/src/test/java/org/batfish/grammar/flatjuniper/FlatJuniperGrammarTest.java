@@ -1203,7 +1203,7 @@ public class FlatJuniperGrammarTest {
     IpAccessList incomingFilterSourceExcept = c.getIpAccessLists().get("TEST_FILTER_SOURCE_EXCEPT");
 
     IpAccessList incomingFilterDestination = c.getIpAccessLists().get("TEST_FILTER_DESTINATION");
-    IpAccessList incomingFilterDestinationxcept =
+    IpAccessList incomingFilterDestinationExcept =
         c.getIpAccessLists().get("TEST_FILTER_DESTINATION_EXCEPT");
 
     IpAccessList incomingFilter = c.getIpAccessLists().get("TEST_FILTER");
@@ -1224,11 +1224,11 @@ public class FlatJuniperGrammarTest {
     assertThat(incomingFilterDestination, rejects(testFlow3, "interface", c));
 
     // Every destination IP should match the empty prefix list
-    assertThat(incomingFilterDestinationxcept, accepts(testFlow1, "interface", c));
-    assertThat(incomingFilterDestinationxcept, accepts(testFlow2, "interface", c));
-    assertThat(incomingFilterDestinationxcept, accepts(testFlow3, "interface", c));
+    assertThat(incomingFilterDestinationExcept, accepts(testFlow1, "interface", c));
+    assertThat(incomingFilterDestinationExcept, accepts(testFlow2, "interface", c));
+    assertThat(incomingFilterDestinationExcept, accepts(testFlow3, "interface", c));
 
-    // Everything dest or source IP should match the empty prefix list
+    // No dest or source IP should match the empty prefix list
     assertThat(incomingFilter, rejects(testFlow1, "interface", c));
     assertThat(incomingFilter, rejects(testFlow2, "interface", c));
     assertThat(incomingFilter, rejects(testFlow3, "interface", c));
