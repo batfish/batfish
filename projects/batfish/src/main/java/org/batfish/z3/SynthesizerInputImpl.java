@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -58,7 +59,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private Map<String, Configuration> _configurations;
 
-    private Map<String, Set<String>> _disabledAcls;
+    private Map<String, Set<String>> _enabledAclNames;
 
     private Map<String, Set<String>> _disabledInterfaces;
 
@@ -78,10 +79,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private Set<String> _transitNodes;
 
+    private boolean _useEnabledAclNames = false;
+
     private Set<Type> _vectorizedParameters;
 
     private Builder() {
-      _disabledAcls = ImmutableMap.of();
+      _enabledAclNames = ImmutableMap.of();
       _disabledInterfaces = ImmutableMap.of();
       _disabledNodes = ImmutableSet.of();
       _disabledVrfs = ImmutableMap.of();
@@ -97,7 +100,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return new SynthesizerInputImpl(
           _forwardingAnalysis,
           _configurations,
-          _disabledAcls,
+          _useEnabledAclNames,
+          _enabledAclNames,
           _disabledInterfaces,
           _disabledNodes,
           _disabledVrfs,
@@ -120,8 +124,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
-    public Builder setDisabledAcls(Map<String, Set<String>> disabledAcls) {
-      _disabledAcls = disabledAcls;
+    public Builder setEnabledAcls(Map<String, Set<String>> enabledAcls) {
+      _useEnabledAclNames = true;
+      _enabledAclNames = enabledAcls;
       return this;
     }
 
@@ -190,8 +195,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Configuration> _configurations;
 
-  private final @Nonnull Map<String, Set<String>> _disabledAcls;
-
   private final @Nonnull Map<String, Set<String>> _disabledInterfaces;
 
   private final @Nonnull Set<String> _disabledNodes;
@@ -259,7 +262,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   public SynthesizerInputImpl(
       ForwardingAnalysis forwardingAnalysis,
       Map<String, Configuration> configurations,
-      Map<String, Set<String>> disabledAcls,
+      boolean useEnabledAclNames,
+      Map<String, Set<String>> enabledAclNames,
       Map<String, Set<String>> disabledInterfaces,
       Set<String> disabledNodes,
       Map<String, Set<String>> disabledVrfs,
@@ -296,10 +300,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                     new IpAccessListSpecializer(headerSpace, namedIpSpacesEntry.getValue()))
             : ImmutableMap.of();
     _configurations = ImmutableMap.copyOf(configurations);
-    _disabledAcls = ImmutableMap.copyOf(disabledAcls);
     _disabledInterfaces = ImmutableMap.copyOf(disabledInterfaces);
     _disabledNodes = ImmutableSet.copyOf(disabledNodes);
     _disabledVrfs = ImmutableMap.copyOf(disabledVrfs);
+    _enabledAcls =
+        useEnabledAclNames ? computeEnabledAcls(enabledAclNames) : computeDefaultEnabledAcls();
     _enabledNodes = computeEnabledNodes();
     _enabledVrfs = computeEnabledVrfs();
     _enabledInterfacesByNodeVrf = computeEnabledInterfacesByNodeVrf();
@@ -334,7 +339,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _topologyInterfaces = null;
       _sourceNats = null;
     }
-    _enabledAcls = computeEnabledAcls();
     _aclActions = computeAclActions();
     _nodeInterfaces = computeNodeInterfaces();
     _nodesWithSrcInterfaceConstraints = computeNodesWithSrcInterfaceConstraints();
@@ -429,7 +433,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         Entry::getKey, /* Node name */
         e -> {
           String node = e.getKey();
-          Map<String, IpAccessList> nodeAcls = e.getValue();
+          Map<String, IpAccessList> nodeAcls =
+              _configurations.get(node).getIpAccessLists(); // e.getValue();
           AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
               new AclLineMatchExprToBooleanExpr(
                   nodeAcls,
@@ -499,11 +504,23 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                         Entry::getValue)))));
   }
 
-  private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
+  private Map<String, Map<String, IpAccessList>> computeDefaultEnabledAcls() {
     return _configurations
         .entrySet()
         .stream()
         .filter(e -> !_disabledNodes.contains(e.getKey()))
+        .collect(
+            Collectors.toMap(
+                Entry::getKey, e -> ImmutableMap.copyOf(e.getValue().getIpAccessLists())));
+  }
+
+  private Map<String, Map<String, IpAccessList>> computeEnabledAcls(
+      Map<String, Set<String>> enabledAclNames) {
+    return _configurations
+        .entrySet()
+        .stream()
+        .filter(e -> !_disabledNodes.contains(e.getKey()))
+        .filter(e -> enabledAclNames.containsKey(e.getKey()))
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey,
@@ -511,13 +528,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                   String hostname = e.getKey();
                   IpAccessListSpecializer ipAccessListSpecializer =
                       _ipAccessListSpecializers.get(hostname);
-                  Set<String> disabledAcls =
-                      _disabledAcls.getOrDefault(hostname, ImmutableSet.of());
+                  Set<String> acls = enabledAclNames.getOrDefault(hostname, ImmutableSet.of());
                   return e.getValue()
                       .getIpAccessLists()
                       .entrySet()
                       .stream()
-                      .filter(e2 -> !disabledAcls.contains(e2.getKey()))
+                      .filter(e2 -> acls.contains(e2.getKey()))
                       .collect(
                           ImmutableMap.toImmutableMap(
                               Entry::getKey,
