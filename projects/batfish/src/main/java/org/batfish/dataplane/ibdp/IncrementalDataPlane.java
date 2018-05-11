@@ -121,8 +121,8 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
     _ipOwnersSimple = ipOwnersSimple;
   }
 
-  public void setIpVrfOwners(Map<Ip, Map<String, Set<String>>> _ipVrfOwners) {
-    this._ipVrfOwners = _ipVrfOwners;
+  public void setIpVrfOwners(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    this._ipVrfOwners = ipVrfOwners;
   }
 
   public void setNodes(Map<String, Node> nodes) {

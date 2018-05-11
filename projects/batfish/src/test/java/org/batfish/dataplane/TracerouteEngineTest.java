@@ -40,7 +40,6 @@ import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link TracerouteEngineImpl} */
 public class TracerouteEngineTest {
@@ -160,9 +159,7 @@ public class TracerouteEngineTest {
 
     // Compute data plane
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs);
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
 
@@ -214,9 +211,7 @@ public class TracerouteEngineTest {
 
     // Compute data plane
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(config.getHostname(), config);
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    Batfish batfish = BatfishTestUtils.getBatfish(configs, tmp);
+    Batfish batfish = BatfishTestUtils.getBatfish(configs);
     batfish.computeDataPlane(false);
     DataPlane dp = batfish.loadDataPlane();
 

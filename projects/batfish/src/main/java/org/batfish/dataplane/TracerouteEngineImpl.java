@@ -1,5 +1,7 @@
 package org.batfish.dataplane;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -116,7 +118,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                     configurations,
                     dataPlane.getFibs(),
                     ingressNodeName,
-                    Configuration.DEFAULT_VRF_NAME,
+                    firstNonNull(flow.getIngressVrf(), Configuration.DEFAULT_VRF_NAME),
                     visitedEdges,
                     hops,
                     currentFlowTraces,
