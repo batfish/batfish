@@ -523,7 +523,7 @@ public class FlatJuniperGrammarTest {
         rejects(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
 
     /*
-     * Confirm indirectly permissive acl accepts all three flows
+     * Confirm policy referencing permissive application-set accepts all three flows
      */
     assertThat(
         aclApplicationSetAny,
@@ -536,7 +536,7 @@ public class FlatJuniperGrammarTest {
         accepts(rejectedFlow, z1Interface, c.getIpAccessLists(), c.getIpSpaces()));
 
     /*
-     * Confirm explicitly permissive acl accepts all three flows
+     * Confirm policy directly permitting any application accepts all three flows
      */
     assertThat(
         aclApplicationAny,

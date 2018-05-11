@@ -49,8 +49,7 @@ aas_application
 :
    APPLICATION
    (
-      ANY
-      | junos_application
+      junos_application
       | name = variable
    )
 ;

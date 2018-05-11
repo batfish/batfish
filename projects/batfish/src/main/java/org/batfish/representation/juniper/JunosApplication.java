@@ -22,6 +22,7 @@ public enum JunosApplication implements Application {
    * TODO(https://github.com/batfish/batfish/issues/1325): separate applications from
    * application-sets
    */
+  ANY,
   JUNOS_AOL,
   JUNOS_BGP,
   JUNOS_BIFF,
@@ -271,6 +272,11 @@ public enum JunosApplication implements Application {
     Integer icmpType = null;
 
     switch (this) {
+      case ANY:
+        {
+          break;
+        }
+
       case JUNOS_AOL:
         {
           portRangeStart = NamedPort.AOL.number();

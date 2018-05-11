@@ -629,7 +629,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private static JunosApplication toJunosApplication(Junos_applicationContext ctx) {
-    if (ctx.JUNOS_AOL() != null) {
+    if (ctx.ANY() != null) {
+      return JunosApplication.ANY;
+    } else if (ctx.JUNOS_AOL() != null) {
       return JunosApplication.JUNOS_AOL;
     } else if (ctx.JUNOS_BGP() != null) {
       return JunosApplication.JUNOS_BGP;
@@ -1594,21 +1596,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitAas_application(Aas_applicationContext ctx) {
     String name;
     int line;
-    if (ctx.ANY() != null) {
-      name = "any";
-      line = ctx.ANY().getSymbol().getLine();
-      // Create an empty application definition to match anything, so it can be referenced later
-      _configuration
-          .getApplications()
-          .computeIfAbsent(
-              name,
-              n -> {
-                BaseApplication base = new BaseApplication(n, -1);
-                Term term = new Term("permit");
-                base.getTerms().put("permit", term);
-                return base;
-              });
-    } else if (ctx.junos_application() != null) {
+    if (ctx.junos_application() != null) {
       JunosApplication application = toJunosApplication(ctx.junos_application());
       name = application.toString();
       line = ctx.junos_application().getStart().getLine();

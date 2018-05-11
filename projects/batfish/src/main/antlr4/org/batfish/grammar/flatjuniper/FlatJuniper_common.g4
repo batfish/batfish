@@ -173,7 +173,8 @@ ip_protocol
 
 junos_application
 :
-   JUNOS_AOL
+   ANY
+   | JUNOS_AOL
    | JUNOS_BGP
    | JUNOS_BIFF
    | JUNOS_BOOTPC
