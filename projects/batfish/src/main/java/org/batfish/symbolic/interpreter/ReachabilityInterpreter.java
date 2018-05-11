@@ -11,6 +11,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
@@ -43,8 +44,8 @@ public class ReachabilityInterpreter {
 
     Map<String, Set<Prefix>> originatedBGP = new HashMap<>();
     Map<String, Set<Prefix>> originatedOSPF = new HashMap<>();
-    Map<String, Set<Prefix>> originatedStatic = new HashMap<>();
     Map<String, Set<Prefix>> originatedConnected = new HashMap<>();
+    Map<String, Map<String, Set<Prefix>>> originatedStatic = new HashMap<>();
 
     // create the initial route message sets
     for (String router : g.getRouters()) {
@@ -57,7 +58,15 @@ public class ReachabilityInterpreter {
         originatedBGP.put(router, Graph.getOriginatedNetworks(conf, Protocol.BGP));
       }
       if (vrf.getStaticRoutes() != null) {
-        originatedStatic.put(router, Graph.getOriginatedNetworks(conf, Protocol.STATIC));
+
+        for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
+          if (sr.getNetwork() != null) {
+            Map<String, Set<Prefix>> map =
+                originatedStatic.computeIfAbsent(router, k -> new HashMap<>());
+            Set<Prefix> pfxs = map.computeIfAbsent(sr.getNextHop(), k -> new HashSet<>());
+            pfxs.add(sr.getNetwork());
+          }
+        }
       }
       originatedConnected.put(router, Graph.getOriginatedNetworks(conf, Protocol.CONNECTED));
     }
@@ -72,6 +81,7 @@ public class ReachabilityInterpreter {
       Set<Prefix> bgpPrefixes = originatedBGP.get(router);
       Set<Prefix> ospfPrefixes = originatedOSPF.get(router);
       Set<Prefix> connPrefixes = originatedConnected.get(router);
+      Map<String, Set<Prefix>> staticPrefixes = originatedStatic.get(router);
 
       if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
         initialRouters.add(router);
@@ -80,11 +90,22 @@ public class ReachabilityInterpreter {
         initialRouters.add(router);
       }
 
-      T bgp = domain.init(router, Protocol.BGP, bgpPrefixes);
+      T bgp = domain.init();
       T ospf = domain.init(router, Protocol.OSPF, ospfPrefixes);
       T conn = domain.init(router, Protocol.CONNECTED, connPrefixes);
-      T rib = domain.merge(domain.merge(bgp, ospf), conn);
-      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, conn, rib);
+      T stat = domain.init();
+      if (staticPrefixes != null) {
+        for (Entry<String, Set<Prefix>> e : staticPrefixes.entrySet()) {
+          String neighbor = e.getKey();
+          Set<Prefix> prefixes = e.getValue();
+          neighbor = (neighbor == null ? "null" : neighbor);
+          T statForNeighbor = domain.init(neighbor, Protocol.STATIC, prefixes);
+          stat = domain.merge(stat, statForNeighbor);
+        }
+      }
+      T rib = domain.merge(domain.merge(domain.merge(bgp, ospf), stat), conn);
+
+      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib);
       reachable.put(router, abstractRib);
     }
 
@@ -110,6 +131,7 @@ public class ReachabilityInterpreter {
       T routerRib = r.getRibEntry();
 
       // System.out.println("Looking at router: " + router);
+      // System.out.println("RIB is " + "\n" + factory.variables().dot(domain.finalize(routerRib)));
 
       for (GraphEdge ge : g.getEdgeMap().get(router)) {
         GraphEdge rev = g.getOtherEnd().get(ge);
@@ -119,6 +141,7 @@ public class ReachabilityInterpreter {
 
           AbstractRib<T> nr = reachable.get(neighbor);
           T neighborConn = nr.getConnectedRib();
+          T neighborStat = nr.getStaticRib();
           T neighborBgp = nr.getBgpRib();
           T neighborOspf = nr.getOspfRib();
           T neighborRib = nr.getRibEntry();
@@ -135,11 +158,15 @@ public class ReachabilityInterpreter {
 
           // Update BGP
           if (g.isEdgeUsed(conf, Protocol.BGP, ge)) {
-            BDDTransferFunction exportFilter = network.getExportBgpPolicies().get(rev);
-            BDDTransferFunction importFilter = network.getImportBgpPolicies().get(ge);
+            BDDTransferFunction exportFilter = network.getExportBgpPolicies().get(ge);
+            BDDTransferFunction importFilter = network.getImportBgpPolicies().get(rev);
 
             T tmpBgp = routerRib;
             if (exportFilter != null) {
+              /* System.out.println(
+              "  Export filter for "
+                  + "\n"
+                  + factory.variables().dot(exportFilter.getFilter())); */
               EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, exportFilter);
               tmpBgp = domain.transform(tmpBgp, exp);
             }
@@ -149,17 +176,23 @@ public class ReachabilityInterpreter {
               tmpBgp = domain.transform(tmpBgp, imp);
             }
 
+            /* System.out.println(
+            "  After processing: " + "\n" + factory.variables().dot(domain.finalize(tmpBgp))); */
+
             newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
           }
 
           // Update RIB
           T newNeighborRib =
-              domain.merge(domain.merge(newNeighborBgp, newNeighborOspf), neighborConn);
+              domain.merge(
+                  domain.merge(domain.merge(newNeighborBgp, newNeighborOspf), neighborStat),
+                  neighborConn);
 
           // If changed, then add it to the workset
           if (!newNeighborRib.equals(neighborRib) || !newNeighborOspf.equals(neighborOspf)) {
             AbstractRib<T> newAbstractRib =
-                new AbstractRib<>(newNeighborBgp, newNeighborOspf, neighborConn, newNeighborRib);
+                new AbstractRib<>(
+                    newNeighborBgp, newNeighborOspf, neighborStat, neighborConn, newNeighborRib);
             reachable.put(neighbor, newAbstractRib);
             if (!updateSet.contains(neighbor)) {
               updateSet.add(neighbor);
@@ -179,8 +212,8 @@ public class ReachabilityInterpreter {
     for (Entry<String, AbstractRib<T>> e : reachable.entrySet()) {
       BDD val = domain.finalize(e.getValue().getRibEntry());
       reach.put(e.getKey(), val);
-      System.out.println("Final router: " + e.getKey());
-      System.out.println("" + factory.variables().dot(val));
+      // System.out.println("Final router: " + e.getKey());
+      // System.out.println("" + factory.variables().dot(val));
     }
     return reach;
   }
@@ -193,7 +226,7 @@ public class ReachabilityInterpreter {
     NodesSpecifier ns = new NodesSpecifier(_question.getIngressNodeRegex());
 
     long t = System.currentTimeMillis();
-    BDDNetwork network = BDDNetwork.create(g, ns, config);
+    BDDNetwork network = BDDNetwork.create(g, ns, config, false);
     System.out.println("Time to build BDDs: " + (System.currentTimeMillis() - t));
 
     ReachabilityDomain domain = new ReachabilityDomain(routeFactory);

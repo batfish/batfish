@@ -34,7 +34,7 @@ public class NetworkSlice {
   }
 
   public static ArrayList<Supplier<NetworkSlice>> allSlices(DestinationClasses dcs, int fails) {
-    BDDNetwork network = BDDNetwork.create(dcs.getGraph(), new BDDRouteConfig(false));
+    BDDNetwork network = BDDNetwork.create(dcs.getGraph(), new BDDRouteConfig(false), true);
     ArrayList<Supplier<NetworkSlice>> classes = new ArrayList<>();
     for (Entry<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> entry :
         dcs.getHeaderspaceMap().entrySet()) {

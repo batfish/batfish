@@ -80,6 +80,10 @@ public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
             }); */
   }
 
+  @Override public LocatedAP init() {
+    return new LocatedAP(new BitSet(), new BitSet[_atomicPredicates.getDisjoint().size()]);
+  }
+
   @Override
   public LocatedAP init(String router, Protocol proto, Set<Prefix> prefixes) {
     _origins.put(router, _domain.init(router, proto, prefixes));

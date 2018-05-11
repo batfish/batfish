@@ -8,6 +8,8 @@ import org.batfish.symbolic.Protocol;
 
 public interface IAbstractDomain<T> {
 
+  public T init();
+
   public T init(String router, Protocol proto, @Nullable Set<Prefix> prefixes);
 
   public T transform(T input, EdgeTransformer f);

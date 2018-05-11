@@ -1,5 +1,6 @@
 package org.batfish.symbolic.interpreter;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -12,6 +13,7 @@ import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.SubRange;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDRouteFactory;
 import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
@@ -33,6 +35,11 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
       BDD c = e.getValue();
       _projectVariables.add(c);
     }
+
+    _projectVariables.addAll(Arrays.asList(_routeFactory.variables()
+        .getProtocolHistory()
+        .getInteger()
+        .getBitvec()));
   }
 
   private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
@@ -43,7 +50,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
       if (res) {
         acc = acc.and(bits[i]);
       } else {
-        acc = acc.andWith(bits[i].not());
+        acc = acc.and(bits[i].not());
       }
     }
     return acc;
@@ -71,10 +78,15 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     } else {
       for (int i = lower; i <= upper; i++) {
         BDD equalLen = record.getPrefixLength().value(i);
-        acc = acc.orWith(equalLen);
+        acc = acc.or(equalLen);
       }
     }
-    return acc.andWith(lowerBitsMatch);
+    return acc.and(lowerBitsMatch);
+  }
+
+  @Override
+  public BDD init() {
+    return factory.zero();
   }
 
   @Override
@@ -82,10 +94,10 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     BDD acc = factory.zero();
     if (prefixes != null) {
       for (Prefix prefix : prefixes) {
-        SubRange r = new SubRange(32, 32);
+        SubRange r = new SubRange(prefix.getPrefixLength(), prefix.getPrefixLength());
         PrefixRange range = new PrefixRange(prefix, r);
         BDD pfx = isRelevantFor(_routeFactory.variables(), range);
-        acc = acc.orWith(pfx);
+        acc = acc.or(pfx);
       }
     }
     BDD prot = _routeFactory.variables().getProtocolHistory().value(proto);
@@ -106,14 +118,16 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     // Filter routes that can not pass through the transformer
     BDD acc;
     BDD allow = f.getFilter();
+
     if (_projectVariables.isEmpty()) {
       acc = input.and(allow);
     } else {
       BDD block = allow.not();
-      BDD blockedInputs = input.andWith(block);
-      BDD blockedInputsWithoutCommunities = project(blockedInputs);
-      acc = input.andWith(blockedInputsWithoutCommunities.not());
+      BDD blockedInputs = input.and(block);
+      BDD blockedPrefixes = project(blockedInputs);
+      acc = input.and(blockedPrefixes.not());
     }
+
     // Modify the result
     BDDRoute mods = f.getRoute();
     pairing.reset();
@@ -121,14 +135,31 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
       for (Entry<CommunityVar, BDD> e : _routeFactory.variables().getCommunities().entrySet()) {
         CommunityVar cvar = e.getKey();
         BDD x = e.getValue();
-        BDD temp = _routeFactory.variables().getTemporary(x);
+        BDD temp = _routeFactory.variables().getCommunitiesTemp().get(cvar);
         BDD expr = mods.getCommunities().get(cvar);
-        BDD equal = temp.biimpWith(expr);
-        acc = acc.andWith(equal);
-        pairing.set(x.var(), temp.var());
+        BDD equal = temp.biimp(expr);
+        acc = acc.and(equal);
+        pairing.set(temp.var(), x.var());
       }
     }
 
+    if (mods.getConfig().getKeepHistory()) {
+      BDDFiniteDomain<Protocol> prot =
+          new BDDFiniteDomain<>(_routeFactory.variables().getProtocolHistory());
+      prot.setValue(Protocol.BGP);
+
+      BDD[] vec = _routeFactory.variables().getProtocolHistory().getInteger().getBitvec();
+      for (int i = 0; i < vec.length; i++) {
+        BDD x = vec[i];
+        BDD temp = _routeFactory.variables().getProtocolHistoryTemp().getInteger().getBitvec()[i];
+        BDD expr = prot.getInteger().getBitvec()[i];
+        BDD equal = temp.biimp(expr);
+        acc = acc.and(equal);
+        pairing.set(temp.var(), x.var());
+      }
+    }
+
+    acc = project(acc);
     acc = acc.replace(pairing);
     return acc;
   }

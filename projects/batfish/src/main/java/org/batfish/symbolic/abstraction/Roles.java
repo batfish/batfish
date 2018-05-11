@@ -56,7 +56,7 @@ public class Roles {
 
   private Roles(IBatfish batfish, NodesSpecifier nodesSpecifier) {
     _graph = new Graph(batfish);
-    _network = BDDNetwork.create(_graph, nodesSpecifier, new BDDRouteConfig(false));
+    _network = BDDNetwork.create(_graph, nodesSpecifier, new BDDRouteConfig(false), true);
     _nodeSpecifier = nodesSpecifier;
     _bgpInEcs = null;
     _bgpOutEcs = null;

@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
-import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
@@ -306,7 +305,7 @@ class TransferBuilder {
     }
 
     if (expr instanceof Not) {
-      p.debug("mkNot");
+      p.debug("Not");
       Not n = (Not) expr;
       TransferResult<BDDTransferFunction, BDD> result = compute(n.getExpr(), p);
       BDDTransferFunction r = result.getReturnValue();
@@ -1020,7 +1019,7 @@ class TransferBuilder {
    * the RoutingPolicy given the input variables.
    */
   public TransferResult<BDDTransferFunction, BDD> compute(
-      BDDRouteFactory routeFactory, @Nullable Set<Prefix> ignoredNetworks) {
+      BDDRouteFactory routeFactory, Set<Prefix> ignoredNetworks) {
     _routeFactory = routeFactory;
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();

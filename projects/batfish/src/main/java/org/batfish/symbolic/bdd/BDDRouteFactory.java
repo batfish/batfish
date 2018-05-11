@@ -102,7 +102,8 @@ public class BDDRouteFactory {
   public BDDRouteFactory(Graph g, BDDRouteConfig config) {
     _config = config;
     _allCommunities = g.getAllCommunities();
-    _allRouters = g.getRouters();
+    _allRouters = new HashSet<>(g.getRouters());
+    _allRouters.add("null"); // special unknown neighbor
     _allLocalPrefs = new ArrayList<>(findAllLocalPrefs(g));
     _variables = createRoute();
   }
@@ -132,19 +133,35 @@ public class BDDRouteFactory {
 
     private int _numVars;
 
+    private Map<Integer, String> _bitNames;
+
     private BDDInteger _adminDist;
 
-    private Map<Integer, String> _bitNames;
+    private BDDInteger _adminDistTemp;
 
     private SortedMap<CommunityVar, BDD> _communities;
 
+    private SortedMap<CommunityVar, BDD> _communitiesTemp;
+
     private BDDFiniteDomain<Integer> _localPref;
+
+    private BDDFiniteDomain<Integer> _localPrefTemp;
 
     private BDDInteger _med;
 
+    private BDDInteger _medTemp;
+
     private BDDInteger _metric;
 
+    private BDDInteger _metricTemp;
+
     private BDDFiniteDomain<OspfType> _ospfMetric;
+
+    private BDDFiniteDomain<OspfType> _ospfMetricTemp;
+
+    private final BDDFiniteDomain<Protocol> _protocolHistory;
+
+    private final BDDFiniteDomain<Protocol> _protocolHistoryTemp;
 
     private BDDFiniteDomain<String> _dstRouter;
 
@@ -152,7 +169,6 @@ public class BDDRouteFactory {
 
     private final BDDInteger _prefixLength;
 
-    private final BDDFiniteDomain<Protocol> _protocolHistory;
 
     /*
      * Creates a collection of BDD variables representing the
@@ -167,6 +183,7 @@ public class BDDRouteFactory {
                   + _allCommunities.size()
                   + _allLocalPrefs.size()
                   + _allRouters.size()
+                  + allProtos.size()
                   + 4);
       if (numVars < numNeeded) {
         factory.setVarNum(numNeeded); // allow for temporary variables
@@ -181,30 +198,50 @@ public class BDDRouteFactory {
         _protocolHistory = new BDDFiniteDomain<>(factory, allProtos, idx);
         addBitNames("proto", _protocolHistory.numBits(), idx, false);
         idx += _protocolHistory.numBits();
+        _protocolHistoryTemp = new BDDFiniteDomain<>(factory, allProtos, idx);
+        addBitNames("proto'", _protocolHistoryTemp.numBits(), idx, false);
+        idx += _protocolHistoryTemp.numBits();
       } else {
         _protocolHistory = null;
+        _protocolHistoryTemp = null;
       }
+
       if (_config.getKeepMetric()) {
         _metric = BDDInteger.makeFromIndex(factory, 32, idx, false);
         addBitNames("metric", 32, idx, false);
         idx += 32;
+        _metricTemp = BDDInteger.makeFromIndex(factory, 32, idx, false);
+        addBitNames("metric'", 32, idx, false);
+        idx += 32;
       }
+
       if (_config.getKeepMed()) {
         _med = BDDInteger.makeFromIndex(factory, 32, idx, false);
         addBitNames("med", 32, idx, false);
         idx += 32;
+        _medTemp = BDDInteger.makeFromIndex(factory, 32, idx, false);
+        addBitNames("med'", 32, idx, false);
+        idx += 32;
       }
+
       if (_config.getKeepAd()) {
         _adminDist = BDDInteger.makeFromIndex(factory, 32, idx, false);
         addBitNames("ad", 32, idx, false);
         idx += 32;
+        _adminDistTemp = BDDInteger.makeFromIndex(factory, 32, idx, false);
+        addBitNames("ad'", 32, idx, false);
+        idx += 32;
       }
+
       if (_config.getKeepLp()) {
         _localPref = new BDDFiniteDomain<>(factory, _allLocalPrefs, idx);
-        // _localPref = BDDInteger.makeFromIndex(factory, 32, idx, false);
         addBitNames("lp", _localPref.numBits(), idx, false);
         idx += _localPref.numBits();
+        _localPrefTemp = new BDDFiniteDomain<>(factory, _allLocalPrefs, idx);
+        addBitNames("lp", _localPref.numBits(), idx, false);
+        idx += _localPrefTemp.numBits();
       }
+
       _prefixLength = BDDInteger.makeFromIndex(factory, 6, idx, true);
       addBitNames("pfxLen", 6, idx, true);
       idx += 6;
@@ -221,6 +258,14 @@ public class BDDRouteFactory {
             idx++;
           }
         }
+        _communitiesTemp = new TreeMap<>();
+        for (CommunityVar comm : _allCommunities) {
+          if (comm.getType() != Type.REGEX) {
+            _communitiesTemp.put(comm, factory.ithVar(idx));
+            _bitNames.put(idx, comm.getValue());
+            idx++;
+          }
+        }
       }
       if (_config.getKeepDstRouter()) {
         _dstRouter = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
@@ -231,8 +276,12 @@ public class BDDRouteFactory {
       if (_config.getKeepOspfMetric()) {
         _ospfMetric = new BDDFiniteDomain<>(factory, allMetricTypes, idx);
         addBitNames("ospfMetric", _ospfMetric.numBits(), idx, false);
-        // idx += _ospfMetric.numBits();
+        idx += _ospfMetric.numBits();
+        _ospfMetricTemp = new BDDFiniteDomain<>(factory, allMetricTypes, idx);
+        addBitNames("ospfMetric", _ospfMetric.numBits(), idx, false);
+        idx += _ospfMetricTemp.numBits();
       }
+
     }
 
     /*
@@ -245,26 +294,34 @@ public class BDDRouteFactory {
       _prefix = new BDDInteger(other._prefix);
       if (_config.getKeepCommunities()) {
         _communities = new TreeMap<>(other._communities);
+        _communitiesTemp = new TreeMap<>(other._communitiesTemp);
       }
       if (_config.getKeepMetric()) {
         _metric = new BDDInteger(other._metric);
+        _metricTemp = new BDDInteger(other._metricTemp);
       }
       if (_config.getKeepAd()) {
         _adminDist = new BDDInteger(other._adminDist);
+        _adminDistTemp = new BDDInteger(other._adminDistTemp);
       }
       if (_config.getKeepMed()) {
         _med = new BDDInteger(other._med);
+        _medTemp = new BDDInteger(other._medTemp);
       }
       if (_config.getKeepLp()) {
         _localPref = new BDDFiniteDomain<>(other._localPref);
+        _localPrefTemp = new BDDFiniteDomain<>(other._localPrefTemp);
       }
       if (_config.getKeepHistory()) {
         _protocolHistory = new BDDFiniteDomain<>(other._protocolHistory);
+        _protocolHistoryTemp = new BDDFiniteDomain<>(other._protocolHistoryTemp);
       } else {
         _protocolHistory = null;
+        _protocolHistoryTemp = null;
       }
       if (_config.getKeepOspfMetric()) {
         _ospfMetric = new BDDFiniteDomain<>(other._ospfMetric);
+        _ospfMetricTemp = new BDDFiniteDomain<>(other._ospfMetricTemp);
       }
       if (_config.getKeepDstRouter()) {
         _dstRouter = new BDDFiniteDomain<>(other._dstRouter);
@@ -284,10 +341,6 @@ public class BDDRouteFactory {
           _bitNames.put(i, s + (i - index + 1));
         }
       }
-    }
-
-    public BDD getTemporary(BDD var) {
-      return factory.ithVar(var.var() + _numVars);
     }
 
     /*
@@ -419,6 +472,34 @@ public class BDDRouteFactory {
 
     public void setDstRouter(BDDFiniteDomain<String> dstRouter) {
       this._dstRouter = dstRouter;
+    }
+
+    public BDDInteger getAdminDistTemp() {
+      return _adminDistTemp;
+    }
+
+    public SortedMap<CommunityVar, BDD> getCommunitiesTemp() {
+      return _communitiesTemp;
+    }
+
+    public BDDFiniteDomain<Integer> getLocalPrefTemp() {
+      return _localPrefTemp;
+    }
+
+    public BDDInteger getMedTemp() {
+      return _medTemp;
+    }
+
+    public BDDInteger getMetricTemp() {
+      return _metricTemp;
+    }
+
+    public BDDFiniteDomain<OspfType> getOspfMetricTemp() {
+      return _ospfMetricTemp;
+    }
+
+    public BDDFiniteDomain<Protocol> getProtocolHistoryTemp() {
+      return _protocolHistoryTemp;
     }
 
     @Override

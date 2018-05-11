@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Objects;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.common.BatfishException;
 
 /*
  * Class that wraps a BDDInteger around a finite collection of values
@@ -43,6 +44,9 @@ public class BDDFiniteDomain<T> {
 
   public BDD value(T value) {
     int idx = _values.indexOf(value);
+    if (idx < 0) {
+      throw new BatfishException("Invalid value for finite domain: " + value);
+    }
     return _integer.value(idx);
   }
 

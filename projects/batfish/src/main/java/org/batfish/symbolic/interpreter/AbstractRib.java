@@ -6,13 +6,16 @@ public class AbstractRib<T> {
 
   private T _ospfRib;
 
+  private T _staticRib;
+
   private T _connectedRib;
 
   private T _ribEntry;
 
-  public AbstractRib(T bgpRib, T ospfRib, T connectedRib, T ribEntry) {
+  public AbstractRib(T bgpRib, T ospfRib, T staticRib, T connectedRib, T ribEntry) {
     this._bgpRib = bgpRib;
     this._ospfRib = ospfRib;
+    this._staticRib = staticRib;
     this._connectedRib = connectedRib;
     this._ribEntry = ribEntry;
   }
@@ -23,6 +26,10 @@ public class AbstractRib<T> {
 
   public T getOspfRib() {
     return _ospfRib;
+  }
+
+  public T getStaticRib() {
+    return _staticRib;
   }
 
   public T getConnectedRib() {

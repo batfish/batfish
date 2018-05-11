@@ -1,6 +1,7 @@
 package org.batfish.symbolic.bdd;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,6 +32,8 @@ public class BDDNetwork {
 
   private NodesSpecifier _nodeSpecifier;
 
+  private boolean _ignoreNetworks;
+
   private PolicyQuotient _policyQuotient;
 
   private Map<GraphEdge, BDDTransferFunction> _exportBgpPolicies;
@@ -46,9 +49,14 @@ public class BDDNetwork {
   private Map<GraphEdge, BDDAcl> _outAcls;
 
   private BDDNetwork(
-      Graph graph, NodesSpecifier nodesSpecifier, BDDRouteConfig config, PolicyQuotient pq) {
+      Graph graph,
+      NodesSpecifier nodesSpecifier,
+      BDDRouteConfig config,
+      PolicyQuotient pq,
+      boolean ignoreNetworks) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
+    _ignoreNetworks = ignoreNetworks;
     _routeFactory = new BDDRouteFactory(graph, config);
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
@@ -59,13 +67,14 @@ public class BDDNetwork {
     _outAcls = new HashMap<>();
   }
 
-  public static BDDNetwork create(Graph g, BDDRouteConfig config) {
-    return create(g, NodesSpecifier.ALL, config);
+  public static BDDNetwork create(Graph g, BDDRouteConfig config, boolean ignoreNetworks) {
+    return create(g, NodesSpecifier.ALL, config, ignoreNetworks);
   }
 
-  public static BDDNetwork create(Graph g, NodesSpecifier nodesSpecifier, BDDRouteConfig config) {
+  public static BDDNetwork create(
+      Graph g, NodesSpecifier nodesSpecifier, BDDRouteConfig config, boolean ignoreNetworks) {
     PolicyQuotient pq = new PolicyQuotient(g);
-    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, config, pq);
+    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, config, pq, ignoreNetworks);
     network.computeInterfacePolicies();
     return network;
   }
@@ -74,9 +83,9 @@ public class BDDNetwork {
    * Compute a BDD representation of a routing policy.
    */
   private BDDTransferFunction computeBDD(
-      Graph g, Configuration conf, RoutingPolicy pol, boolean ignoreNetworks) {
-    Set<Prefix> networks = null;
-    if (ignoreNetworks) {
+      Graph g, Configuration conf, RoutingPolicy pol) {
+    Set<Prefix> networks = new HashSet<>();
+    if (_ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);
     }
     TransferBuilder t = new TransferBuilder(g, conf, pol.getStatements(), _policyQuotient);
@@ -102,13 +111,13 @@ public class BDDNetwork {
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         if (importBgp != null) {
-          BDDTransferFunction rec = computeBDD(_graph, conf, importBgp, true);
+          BDDTransferFunction rec = computeBDD(_graph, conf, importBgp);
           _importBgpPolicies.put(ge, rec);
         }
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
         if (exportBgp != null) {
-          BDDTransferFunction rec = computeBDD(_graph, conf, exportBgp, true);
+          BDDTransferFunction rec = computeBDD(_graph, conf, exportBgp);
           _exportBgpPolicies.put(ge, rec);
         }
 
