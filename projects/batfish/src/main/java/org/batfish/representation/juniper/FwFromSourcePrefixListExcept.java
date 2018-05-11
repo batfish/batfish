@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.UniverseIpSpace;
 
 public class FwFromSourcePrefixListExcept extends FwFrom {
 
@@ -36,7 +36,7 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
 
       // if referenced prefix list is empty, it should not match anything
       if (sourcePrefixList.getLines().isEmpty()) {
-        headerSpaceBuilder.addNotSrcIp(UniverseIpSpace.INSTANCE);
+        headerSpaceBuilder.addNotSrcIp(EmptyIpSpace.INSTANCE);
         return;
       }
 

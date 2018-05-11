@@ -2,16 +2,34 @@ set system host-name prefix-list-empty
 
 set policy-options prefix-list EMPTY_PREFIX_LIST
 
+set interfaces p-e-s unit 0 family inet address 1.2.3.4/24
+set interfaces p-e-s unit 0 family inet filter input TEST_FILTER_SOURCE
+
+set interfaces p-e-s-e unit 0 family inet address 1.2.3.5/24
+set interfaces p-e-s-e unit 0 family inet filter input TEST_FILTER_SOURCE_EXCEPT
+
+set interfaces p-e-d unit 0 family inet address 1.2.3.4/24
+set interfaces p-e-d unit 0 family inet filter input TEST_FILTER_DESTINATION
+
+set interfaces p-e-d-e unit 0 family inet address 1.2.3.5/24
+set interfaces p-e-d-e unit 0 family inet filter input TEST_FILTER_DESTINATION_EXCEPT
+
 set interfaces p-e unit 0 family inet address 1.2.3.4/24
 set interfaces p-e unit 0 family inet filter input TEST_FILTER
 
-set interfaces p-e-except unit 0 family inet address 1.2.3.5/24
-set interfaces p-e-except unit 0 family inet filter input TEST_FILTER_EXCEPT
+
+set firewall family inet filter TEST_FILTER_SOURCE term TEST_TERM from source-prefix-list EMPTY_PREFIX_LIST
+set firewall family inet filter TEST_FILTER_SOURCE term TEST_TERM then accept
+
+set firewall family inet filter TEST_FILTER_SOURCE_EXCEPT term TEST_TERM_EXCEPT from source-prefix-list EMPTY_PREFIX_LIST except
+set firewall family inet filter TEST_FILTER_SOURCE_EXCEPT term TEST_TERM_EXCEPT then accept
 
 
+set firewall family inet filter TEST_FILTER_DESTINATION term TEST_TERM from destination-prefix-list EMPTY_PREFIX_LIST
+set firewall family inet filter TEST_FILTER_DESTINATION term TEST_TERM then accept
 
-set firewall family inet filter TEST_FILTER term TEST_TERM from source-prefix-list EMPTY_PREFIX_LIST
+set firewall family inet filter TEST_FILTER_DESTINATION_EXCEPT term TEST_TERM_EXCEPT from destination-prefix-list EMPTY_PREFIX_LIST except
+set firewall family inet filter TEST_FILTER_DESTINATION_EXCEPT term TEST_TERM_EXCEPT then accept
+
+set firewall family inet filter TEST_FILTER term TEST_TERM from prefix-list EMPTY_PREFIX_LIST
 set firewall family inet filter TEST_FILTER term TEST_TERM then accept
-
-set firewall family inet filter TEST_FILTER_EXCEPT term TEST_TERM_EXCEPT from source-prefix-list EMPTY_PREFIX_LIST except
-set firewall family inet filter TEST_FILTER_EXCEPT term TEST_TERM_EXCEPT then accept
