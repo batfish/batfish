@@ -19,6 +19,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.ITracerouteEngine;
@@ -172,11 +173,13 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       newHops.add(newHop);
       if (arp) {
         Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
+        Interface arpInterface =
+            configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2());
+        Fib arpInterfaceFib =
+            dp.getFibs().get(arpInterface.getOwner().getHostname()).get(arpInterface.getVrfName());
+
         boolean neighborUnreachable =
-            !interfaceRepliesToArpRequestForIp(
-                dp.getFibs(),
-                configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2()),
-                arpIp);
+            !interfaceRepliesToArpRequestForIp(arpInterface, arpInterfaceFib, arpIp);
         if (neighborUnreachable) {
           unreachableNeighbors++;
           continue;
@@ -267,8 +270,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
   }
 
   @VisibleForTesting
-  static boolean interfaceRepliesToArpRequestForIp(
-      Map<String, Map<String, Fib>> fibs, Interface iface, Ip arpIp) {
+  static boolean interfaceRepliesToArpRequestForIp(Interface iface, Fib ifaceFib, Ip arpIp) {
     if (iface.getAllAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
       return true;
     }
@@ -279,10 +281,9 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
      * 2. the interface's vrf has a route to the destination
      * 3. the destination is not on the incoming edge.
      */
+    @Nonnull
     Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces =
-        fibs.get(iface.getOwner().getHostname())
-            .get(iface.getVrfName())
-            .getNextHopInterfaces(arpIp);
+        ifaceFib.getNextHopInterfaces(arpIp);
     return iface.getProxyArp()
         && !nextHopInterfaces.isEmpty()
         && nextHopInterfaces.keySet().stream().noneMatch(iface.getName()::equals);

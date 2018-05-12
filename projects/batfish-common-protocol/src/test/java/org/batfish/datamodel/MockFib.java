@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public class MockFib implements Fib {
 
@@ -78,23 +79,24 @@ public class MockFib implements Fib {
   }
 
   @Override
-  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces() {
+  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      getNextHopInterfaces() {
     return _nextHopInterfaces;
   }
 
   @Override
-  public Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
+  public @Nonnull Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
     return _nextHopInterfacesByIp.get(ip);
   }
 
   @Override
-  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
-      Ip dstIp) {
+  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      getNextHopInterfacesByRoute(Ip dstIp) {
     return _nextHopInterfacesByRoute.get(dstIp);
   }
 
   @Override
-  public Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
+  public @Nonnull Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
     return _routesByNextHopInterface;
   }
 }
