@@ -174,7 +174,9 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
         Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
         boolean neighborUnreachable =
             !interfaceRepliesToArpRequestForIp(
-                dp, configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2()), arpIp);
+                dp.getFibs(),
+                configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2()),
+                arpIp);
         if (neighborUnreachable) {
           unreachableNeighbors++;
           continue;
@@ -265,7 +267,8 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
   }
 
   @VisibleForTesting
-  static boolean interfaceRepliesToArpRequestForIp(DataPlane dp, Interface iface, Ip arpIp) {
+  static boolean interfaceRepliesToArpRequestForIp(
+      Map<String, Map<String, Fib>> fibs, Interface iface, Ip arpIp) {
     if (iface.getAllAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
       return true;
     }
@@ -276,13 +279,13 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
      * 2. the interface's vrf has a route to the destination
      * 3. the destination is not on the incoming edge.
      */
-    return iface.getProxyArp()
-        && !dp.getFibs()
-            .get(iface.getOwner().getHostname())
+    Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces =
+        fibs.get(iface.getOwner().getHostname())
             .get(iface.getVrfName())
-            .getNextHopInterfaces(arpIp)
-            .isEmpty()
-        && iface.getAllAddresses().stream().noneMatch(addr -> addr.getPrefix().containsIp(arpIp));
+            .getNextHopInterfaces(arpIp);
+    return iface.getProxyArp()
+        && !nextHopInterfaces.isEmpty()
+        && nextHopInterfaces.keySet().stream().noneMatch(iface.getName()::equals);
   }
 
   /**
