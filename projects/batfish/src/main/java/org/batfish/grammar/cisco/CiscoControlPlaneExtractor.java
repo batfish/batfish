@@ -2718,7 +2718,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               + "'. Duplicate clause will be merged with original clause.");
     }
     _currentRouteMapClause = clause;
-    defineStructure(CiscoStructureType.ROUTE_MAP, name, ctx);
+    defineStructure(ROUTE_MAP, name, ctx);
   }
 
   @Override
