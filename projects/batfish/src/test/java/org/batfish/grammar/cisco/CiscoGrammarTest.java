@@ -52,6 +52,7 @@ import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
+import static org.batfish.representation.cisco.CiscoConfiguration.computeProtocolObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeServiceObjectGroupAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeZonePairAclName;
 import static org.batfish.representation.cisco.OspfProcess.getReferenceOspfBandwidth;
@@ -298,9 +299,9 @@ public class CiscoGrammarTest {
         ccae,
         hasUndefinedReference(
             hostname,
-            CiscoStructureType.SERVICE_OBJECT_GROUP,
+            CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
             "ogsfake",
-            CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP));
+            CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP));
     assertThat(
         ccae,
         hasUndefinedReference(
@@ -417,6 +418,90 @@ public class CiscoGrammarTest {
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
     assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
     assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
+  }
+
+  @Test
+  public void testIosObjectGroupProtocol() throws IOException {
+    String hostname = "ios-object-group-protocol";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    String ogpIcmpName = "ogp1";
+    String ogpTcpUdpName = "ogp2";
+    String ogpEmptyName = "ogp3";
+    String ogpDuplicateName = "ogp4";
+    String ogpUnusedName = "ogp5";
+    String ogpUndefName = "ogpundef";
+    String aclIcmpName = "aclicmp";
+    String aclTcpUdpName = "acltcpudp";
+    String aclEmptyName = "aclempty";
+    String aclDuplicateName = "aclduplicate";
+    String aclUndefName = "aclundef";
+    String ogpAclIcmpName = computeProtocolObjectGroupAclName(ogpIcmpName);
+    String ogpAclTcpUdpName = computeProtocolObjectGroupAclName(ogpTcpUdpName);
+    String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
+    String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
+    Flow icmpFlow =
+        Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.ICMP).build();
+    Flow tcpFlow =
+        Flow.builder().setTag("").setIngressNode("").setIpProtocol(IpProtocol.TCP).build();
+
+    /* Confirm the used object groups have referrers */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpIcmpName, 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpTcpUdpName, 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpEmptyName, 1));
+    /* Confirm the unused object group has no referrers */
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, CiscoStructureType.PROTOCOL_OBJECT_GROUP, ogpUnusedName, 0));
+    /* Confirm the undefined reference shows up as such */
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname, CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
+
+    /*
+     * Icmp protocol object group and the acl referencing it should only accept Icmp and reject Tcp
+     */
+    assertThat(c, hasIpAccessList(ogpAclIcmpName, accepts(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(ogpAclIcmpName, rejects(tcpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclIcmpName, accepts(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclIcmpName, rejects(tcpFlow, null, c)));
+
+    /*
+     * TcpUdp protocol object group and the acl referencing it should reject Icmp and accept Tcp
+     */
+    assertThat(c, hasIpAccessList(ogpAclTcpUdpName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(ogpAclTcpUdpName, accepts(tcpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclTcpUdpName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclTcpUdpName, accepts(tcpFlow, null, c)));
+
+    /*
+     * Empty protocol object group and the acl referencing it should reject everything
+     */
+    assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(tcpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclEmptyName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclEmptyName, rejects(tcpFlow, null, c)));
+
+    /*
+     * Empty protocol object group that is erroneously redefined should still reject everything
+     */
+    assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(tcpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclDuplicateName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclDuplicateName, rejects(tcpFlow, null, c)));
+
+    /*
+     * Undefined protocol object group should reject everything
+     */
+    assertThat(c, hasIpAccessList(aclUndefName, rejects(icmpFlow, null, c)));
+    assertThat(c, hasIpAccessList(aclUndefName, rejects(tcpFlow, null, c)));
   }
 
   @Test

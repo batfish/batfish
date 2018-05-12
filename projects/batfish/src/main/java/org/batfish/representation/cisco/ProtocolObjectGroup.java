@@ -6,19 +6,19 @@ import java.util.List;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
 
-public class ServiceObjectGroup extends ObjectGroup {
+public class ProtocolObjectGroup extends ObjectGroup {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final List<ServiceObjectGroupLine> _lines;
+  private final List<ProtocolObjectGroupLine> _lines;
 
-  public ServiceObjectGroup(String name, int definitionLine) {
+  public ProtocolObjectGroup(String name, int definitionLine) {
     super(name, definitionLine);
     _lines = new LinkedList<>();
   }
 
-  public List<ServiceObjectGroupLine> getLines() {
+  public List<ProtocolObjectGroupLine> getLines() {
     return _lines;
   }
 
@@ -26,7 +26,7 @@ public class ServiceObjectGroup extends ObjectGroup {
     return new OrMatchExpr(
         _lines
             .stream()
-            .map(ServiceObjectGroupLine::toAclLineMatchExpr)
+            .map(ProtocolObjectGroupLine::toAclLineMatchExpr)
             .collect(ImmutableSet.toImmutableSet()));
   }
 }

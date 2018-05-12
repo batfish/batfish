@@ -36,6 +36,8 @@ public enum CiscoStructureType implements StructureType {
   NETWORK_OBJECT_GROUP("object-group network"),
   PREFIX_LIST("ipv4 prefix-list"),
   PREFIX6_LIST("ipv6 prefix-list"),
+  PROTOCOL_OBJECT_GROUP("object-group protocol"),
+  PROTOCOL_OR_SERVICE_OBJECT_GROUP("object-group protocol or service"),
   ROUTE_MAP("route-map"),
   ROUTE_MAP_CLAUSE("route-map-clause"),
   SECURITY_ZONE("zone security"),
