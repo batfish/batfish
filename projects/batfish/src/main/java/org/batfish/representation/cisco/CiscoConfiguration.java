@@ -250,6 +250,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
   }
 
+  public static String computeProtocolObjectGroupAclName(String name) {
+    return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
+  }
+
   public static String computeServiceObjectGroupAclName(String name) {
     return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
@@ -389,6 +393,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private CiscoNxBgpGlobalConfiguration _nxBgpGlobalConfiguration;
 
+  private final Map<String, ObjectGroup> _objectGroups;
+
   private final Set<String> _pimAcls;
 
   private final Set<String> _pimRouteMaps;
@@ -396,6 +402,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private final Map<String, Prefix6List> _prefix6Lists;
 
   private final Map<String, PrefixList> _prefixLists;
+
+  private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
 
   private final Set<String> _referencedRouteMaps;
 
@@ -485,10 +493,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups = new TreeMap<>();
     _ntpAccessGroups = new TreeSet<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
+    _objectGroups = new TreeMap<>();
     _pimAcls = new TreeSet<>();
     _pimRouteMaps = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
+    _protocolObjectGroups = new TreeMap<>();
     _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
@@ -1163,6 +1173,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markNetworkObjectGroups(CiscoStructureUsage usage) {
     markStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage, _networkObjectGroups);
+  }
+
+  private void markProtocolOrServiceObjectGroups(CiscoStructureUsage usage) {
+    markStructure(
+        CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        usage,
+        ImmutableList.of(_protocolObjectGroups, _serviceObjectGroups));
   }
 
   private void markRouteMaps(CiscoStructureUsage usage) {
@@ -3099,7 +3116,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         RouteFilterList rfList = CiscoConversions.toRouteFilterList(eaList);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList);
+      IpAccessList ipaList = CiscoConversions.toIpAccessList(eaList, this._objectGroups);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -3107,6 +3124,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _networkObjectGroups.forEach(
         (name, networkObjectGroup) ->
             c.getIpSpaces().put(name, CiscoConversions.toIpSpace(networkObjectGroup)));
+
+    // convert each ProtocolObjectGroup to IpAccessList
+    _protocolObjectGroups.forEach(
+        (name, protocolObjectGroup) ->
+            c.getIpAccessLists()
+                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
 
     // convert each ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
@@ -3396,6 +3419,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // object-group
     markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
+    markProtocolOrServiceObjectGroups(
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP);
     markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
 
     // zone
@@ -3424,6 +3449,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
     recordStructure(_prefixLists, CiscoStructureType.PREFIX_LIST);
     recordStructure(_prefix6Lists, CiscoStructureType.PREFIX6_LIST);
+    recordStructure(_protocolObjectGroups, CiscoStructureType.PROTOCOL_OBJECT_GROUP);
     recordPeerGroups();
     recordPeerSessions();
     recordStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
@@ -3436,6 +3462,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
     c.computeRoutingPolicySources(_w);
 
     return c;
+  }
+
+  private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
+                    .build()))
+        .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
+        .build();
   }
 
   private void createInspectClassMapAcls(Configuration c) {
@@ -3910,6 +3947,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Map<String, NetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
+  }
+
+  public Map<String, ObjectGroup> getObjectGroups() {
+    return _objectGroups;
+  }
+
+  public Map<String, ProtocolObjectGroup> getProtocolObjectGroups() {
+    return _protocolObjectGroups;
   }
 
   public Map<String, ServiceObjectGroup> getServiceObjectGroups() {

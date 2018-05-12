@@ -400,9 +400,11 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
+import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
@@ -700,6 +702,9 @@ import org.batfish.representation.cisco.Prefix6List;
 import org.batfish.representation.cisco.Prefix6ListLine;
 import org.batfish.representation.cisco.PrefixList;
 import org.batfish.representation.cisco.PrefixListLine;
+import org.batfish.representation.cisco.ProtocolObjectGroup;
+import org.batfish.representation.cisco.ProtocolObjectGroupProtocolLine;
+import org.batfish.representation.cisco.ProtocolOrServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco.RipProcess;
 import org.batfish.representation.cisco.RouteMap;
 import org.batfish.representation.cisco.RouteMapClause;
@@ -782,7 +787,6 @@ import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.SecurityZone;
 import org.batfish.representation.cisco.SecurityZonePair;
 import org.batfish.representation.cisco.ServiceObjectGroup;
-import org.batfish.representation.cisco.ServiceObjectGroupServiceSpecifier;
 import org.batfish.representation.cisco.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -1097,6 +1101,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private final Warnings _w;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
+
+  private ProtocolObjectGroup _currentProtocolObjectGroup;
 
   private ServiceObjectGroup _currentServiceObjectGroup;
 
@@ -1924,11 +1930,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterOg_network(Og_networkContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentNetworkObjectGroup =
-        _configuration
-            .getNetworkObjectGroups()
-            .computeIfAbsent(name, n -> new NetworkObjectGroup(n, definitionLine));
-    defineStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, name, ctx);
+    // If there is a conflict, create a dummy object group
+    if (_configuration.getObjectGroups().get(name) != null) {
+      _currentNetworkObjectGroup = new NetworkObjectGroup(name, definitionLine);
+      warnObjectGroupRedefinition(name);
+    } else {
+      _currentNetworkObjectGroup =
+          _configuration
+              .getNetworkObjectGroups()
+              .computeIfAbsent(name, n -> new NetworkObjectGroup(n, definitionLine));
+      _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
+      defineStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, name, ctx);
+    }
   }
 
   @Override
@@ -1940,16 +1953,46 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterOg_service(Og_serviceContext ctx) {
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
-    _currentServiceObjectGroup =
-        _configuration
-            .getServiceObjectGroups()
-            .computeIfAbsent(name, n -> new ServiceObjectGroup(n, definitionLine));
-    defineStructure(CiscoStructureType.SERVICE_OBJECT_GROUP, name, ctx);
+    // If there is a conflict, create a dummy object group
+    if (_configuration.getObjectGroups().get(name) != null) {
+      _currentServiceObjectGroup = new ServiceObjectGroup(name, definitionLine);
+      warnObjectGroupRedefinition(name);
+    } else {
+      _currentServiceObjectGroup =
+          _configuration
+              .getServiceObjectGroups()
+              .computeIfAbsent(name, n -> new ServiceObjectGroup(n, definitionLine));
+      _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
+      defineStructure(CiscoStructureType.SERVICE_OBJECT_GROUP, name, ctx);
+    }
   }
 
   @Override
   public void exitOg_service(Og_serviceContext ctx) {
     _currentServiceObjectGroup = null;
+  }
+
+  @Override
+  public void enterOg_protocol(Og_protocolContext ctx) {
+    String name = ctx.name.getText();
+    int definitionLine = ctx.name.getStart().getLine();
+    // If there is a conflict, create a dummy object group
+    if (_configuration.getObjectGroups().get(name) != null) {
+      _currentProtocolObjectGroup = new ProtocolObjectGroup(name, definitionLine);
+      warnObjectGroupRedefinition(name);
+    } else {
+      _currentProtocolObjectGroup =
+          _configuration
+              .getProtocolObjectGroups()
+              .computeIfAbsent(name, n -> new ProtocolObjectGroup(n, definitionLine));
+      _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
+      defineStructure(CiscoStructureType.PROTOCOL_OBJECT_GROUP, name, ctx);
+    }
+  }
+
+  @Override
+  public void exitOg_protocol(Og_protocolContext ctx) {
+    _currentProtocolObjectGroup = null;
   }
 
   @Override
@@ -1962,6 +2005,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)));
+  }
+
+  @Override
+  public void exitOgp_protocol_object(Ogp_protocol_objectContext ctx) {
+    _currentProtocolObjectGroup
+        .getLines()
+        .add(new ProtocolObjectGroupProtocolLine(toIpProtocol(ctx.protocol())));
   }
 
   @Override
@@ -3774,14 +3824,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           .setTcpFlags(tcpFlags)
           .build();
     } else if (ctx.ogs != null) {
+      // This object group specifier could be a service or protocol object group
       String name = ctx.ogs.getText();
       int line = ctx.ogs.getStart().getLine();
       _configuration.referenceStructure(
-          CiscoStructureType.SERVICE_OBJECT_GROUP,
+          CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
           name,
-          CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP,
+          CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
           line);
-      return new ServiceObjectGroupServiceSpecifier(name);
+      return new ProtocolOrServiceObjectGroupServiceSpecifier(name);
     } else {
       throw convError(AccessListServiceSpecifier.class, ctx);
     }
@@ -8636,6 +8687,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw convError(IntExpr.class, ctx);
     }
+  }
+
+  private void warnObjectGroupRedefinition(String name) {
+    _w.redFlag("Object group defined multiple times: '" + name + "'");
   }
 
   @Override
