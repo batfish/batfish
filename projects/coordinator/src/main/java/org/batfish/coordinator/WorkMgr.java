@@ -1578,7 +1578,8 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       Question.parseQuestion(questionJson);
     } catch (Exception e) {
-      throw new BatfishException(String.format("Invalid question %s/%s", containerName, qName), e);
+      throw new BatfishException(
+          String.format("Invalid question %s/%s: %s", containerName, qName, e.getMessage()), e);
     }
 
     Path containerDir = getdirContainer(containerName);
