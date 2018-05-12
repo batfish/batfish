@@ -83,6 +83,6 @@ public class JsonPathResult {
 
   /** Tells us if the suffix is null or empty */
   public boolean isNullOrEmptySuffix() {
-    return _suffix == null || ((ArrayNode) _suffix).size() == 0;
+    return _suffix == null || (_suffix.isArray() && ((ArrayNode) _suffix).size() == 0);
   }
 }
