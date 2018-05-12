@@ -157,7 +157,8 @@ oa_stub
    STUB
    (
       oas_no_summaries
-   )
+      | DEFAULT_METRIC DEC
+   )?
 ;
 
 oaa_override_metric

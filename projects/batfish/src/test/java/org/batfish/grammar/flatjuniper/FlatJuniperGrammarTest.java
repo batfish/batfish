@@ -1077,6 +1077,12 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testOspfStub() throws IOException {
+    /* allow all ospf stub command variations */
+    parseConfig("ospf-stub");
+  }
+
+  @Test
   public void testTacplusPsk() throws IOException {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
