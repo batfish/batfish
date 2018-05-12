@@ -33,32 +33,10 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   }
 
   /*
-   * Check if the first length bits match the BDDInteger
-   * representing the advertisement prefix.
-   *
-   * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
-  private BDD firstBitsEqual(BDD[] bits, Ip ip, int length) {
-    long b = ip.asLong();
-    BDD acc = _factory.one();
-    for (int i = 0; i < length; i++) {
-      boolean res = Ip.getBitAtPosition(b, i);
-      if (res) {
-        acc = acc.and(bits[i]);
-      } else {
-        acc = acc.andWith(bits[i].not());
-      }
-    }
-    return acc;
-  }
-
-  /*
    * Does the 32 bit integer match the prefix using lpm?
    */
   private BDD isRelevantFor(Prefix p) {
-    return firstBitsEqual(_var.getBitvec(), p.getStartIp(), p.getPrefixLength());
+    return BDDUtils.firstBitsEqual(_factory, _var.getBitvec(), p.getStartIp(), p.getPrefixLength());
   }
 
   public BDD toBDD(Ip ip) {

@@ -1,6 +1,6 @@
 package org.batfish.symbolic.interpreter;
 
-import java.util.ArrayList;
+/* import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,9 +17,11 @@ import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRouteFactory;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
-import org.batfish.symbolic.smt.EdgeType;
+import org.batfish.symbolic.smt.EdgeType; */
 
-public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
+public class ReachabilityDomainAP {
+
+  /*
 
   private static BDDFactory factory = BDDRouteFactory.factory;
 
@@ -65,7 +67,7 @@ public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
     _atomicPredicates = AtomOps.computeAtomicPredicates(filters, transforms);
     _routerIndexMap = new FiniteIndexMap<>(routers);
 
-    /* System.out.println("Disjoint: ");
+    System.out.println("Disjoint: ");
     for (BDD bdd : _atomicPredicates.getDisjoint()) {
       System.out.println(domain.getVariables().dot(bdd));
     }
@@ -76,7 +78,7 @@ public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
             (bdd, is) -> {
               System.out.println(domain.getVariables().dot(bdd));
               System.out.println("goes to: " + is);
-            }); */
+            });
   }
 
   @Override
@@ -145,4 +147,6 @@ public class ReachabilityDomainAP implements IAbstractDomain<LocatedAP> {
     }
     return acc;
   }
+
+  */
 }

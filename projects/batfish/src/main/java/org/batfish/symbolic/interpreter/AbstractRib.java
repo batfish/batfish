@@ -1,5 +1,7 @@
 package org.batfish.symbolic.interpreter;
 
+import net.sf.javabdd.BDD;
+
 public class AbstractRib<T> {
 
   private T _bgpRib;
@@ -12,12 +14,15 @@ public class AbstractRib<T> {
 
   private T _ribEntry;
 
-  public AbstractRib(T bgpRib, T ospfRib, T staticRib, T connectedRib, T ribEntry) {
+  private BDD _headerspace;
+
+  public AbstractRib(T bgpRib, T ospfRib, T staticRib, T connectedRib, T ribEntry, BDD h) {
     this._bgpRib = bgpRib;
     this._ospfRib = ospfRib;
     this._staticRib = staticRib;
     this._connectedRib = connectedRib;
     this._ribEntry = ribEntry;
+    this._headerspace = h;
   }
 
   public T getBgpRib() {
@@ -38,5 +43,9 @@ public class AbstractRib<T> {
 
   public T getRibEntry() {
     return _ribEntry;
+  }
+
+  public BDD getHeaderspace() {
+    return _headerspace;
   }
 }

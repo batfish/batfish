@@ -1,13 +1,16 @@
 package org.batfish.symbolic.interpreter;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
@@ -17,36 +20,50 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
+import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRouteConfig;
 import org.batfish.symbolic.bdd.BDDRouteFactory;
+import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
+import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.smt.EdgeType;
 
-public class ReachabilityInterpreter {
+/*
+ * Computes an overapproximation of some concrete set of states in the
+ * network using abstract interpretation
+ */
+public class AbstractInterpreter {
 
   private IBatfish _batfish;
 
   private HeaderLocationQuestion _question;
 
-  public ReachabilityInterpreter(IBatfish batfish, HeaderLocationQuestion q) {
+  private BDDPairing _pairing;
+
+  private BDDRoute _variables;
+
+  private Set<BDD> _communityAndProtocolBits;
+
+  public AbstractInterpreter(IBatfish batfish, HeaderLocationQuestion q) {
     _batfish = batfish;
     _question = q;
   }
 
-  private <T> Map<String, BDD> computeFixedPoint(
-      Graph g, BDDNetwork network, BDDRouteFactory factory, IAbstractDomain<T> domain) {
-
-    long t;
-
-    Map<String, Set<Prefix>> originatedBGP = new HashMap<>();
-    Map<String, Set<Prefix>> originatedOSPF = new HashMap<>();
-    Map<String, Set<Prefix>> originatedConnected = new HashMap<>();
-    Map<String, Map<String, Set<Prefix>>> originatedStatic = new HashMap<>();
-
+  /*
+   * Initialize what prefixes are 'originated' at each router
+   * and for each routing protocol.
+   */
+  private void initializeOriginatedPrefixes(
+      Graph g,
+      Map<String, Set<Prefix>> originatedBGP,
+      Map<String, Set<Prefix>> originatedOSPF,
+      Map<String, Set<Prefix>> originatedConnected,
+      Map<String, Map<String, Set<Prefix>>> originatedStatic) {
     // create the initial route message sets
     for (String router : g.getRouters()) {
       Configuration conf = g.getConfigurations().get(router);
@@ -70,6 +87,50 @@ public class ReachabilityInterpreter {
       }
       originatedConnected.put(router, Graph.getOriginatedNetworks(conf, Protocol.CONNECTED));
     }
+  }
+
+  private BDD toHeaderspace(BDD rib, boolean removeRouters) {
+    BDD pfxOnly = BDDUtils.project(rib, _communityAndProtocolBits);
+    BDD acc = BDDRouteFactory.factory.zero();
+    for (int i = 0; i <= 32; i++) {
+      _pairing.reset();
+      BDDInteger pfxLen = _variables.getPrefixLength();
+      BDDInteger newVal = new BDDInteger(pfxLen);
+      newVal.setValue(i);
+      // restrict prefix length
+      for (int j = 0; j < pfxLen.getBitvec().length; j++) {
+        BDD var = pfxLen.getBitvec()[j];
+        BDD val = newVal.getBitvec()[j];
+        _pairing.set(var.var(), val);
+      }
+      // quantify out prefix bits
+      Set<BDD> dstBits =
+          new HashSet<>(Arrays.asList(_variables.getPrefix().getBitvec()).subList(i, 32));
+      if (removeRouters) {
+        dstBits.addAll(Arrays.asList(_variables.getDstRouter().getInteger().getBitvec()));
+      }
+
+      BDD withLen = pfxOnly.veccompose(_pairing);
+      withLen = BDDUtils.project(withLen, dstBits);
+      acc = acc.or(withLen);
+    }
+    return acc;
+  }
+
+  /*
+   * Iteratively compute reachable sets until a fixed point is reached
+   */
+  private <T> Map<String, BDD> computeFixedPoint(
+      Graph g, BDDNetwork network, BDDRouteFactory factory, IAbstractDomain<T> domain) {
+
+    long t;
+
+    Map<String, Set<Prefix>> originatedBGP = new HashMap<>();
+    Map<String, Set<Prefix>> originatedOSPF = new HashMap<>();
+    Map<String, Set<Prefix>> originatedConnected = new HashMap<>();
+    Map<String, Map<String, Set<Prefix>>> originatedStatic = new HashMap<>();
+    initializeOriginatedPrefixes(
+        g, originatedBGP, originatedOSPF, originatedConnected, originatedStatic);
 
     Map<String, AbstractRib<T>> reachable = new HashMap<>();
     Set<String> initialRouters = new HashSet<>();
@@ -90,22 +151,23 @@ public class ReachabilityInterpreter {
         initialRouters.add(router);
       }
 
-      T bgp = domain.init();
-      T ospf = domain.init(router, Protocol.OSPF, ospfPrefixes);
-      T conn = domain.init(router, Protocol.CONNECTED, connPrefixes);
-      T stat = domain.init();
+      T bgp = domain.bot();
+      T ospf = domain.value(router, Protocol.OSPF, ospfPrefixes);
+      T conn = domain.value(router, Protocol.CONNECTED, connPrefixes);
+      T stat = domain.bot();
       if (staticPrefixes != null) {
         for (Entry<String, Set<Prefix>> e : staticPrefixes.entrySet()) {
           String neighbor = e.getKey();
           Set<Prefix> prefixes = e.getValue();
           neighbor = (neighbor == null ? "null" : neighbor);
-          T statForNeighbor = domain.init(neighbor, Protocol.STATIC, prefixes);
+          T statForNeighbor = domain.value(neighbor, Protocol.STATIC, prefixes);
           stat = domain.merge(stat, statForNeighbor);
         }
       }
       T rib = domain.merge(domain.merge(domain.merge(bgp, ospf), stat), conn);
+      BDD headerspace = toHeaderspace(domain.toBdd(rib), false);
 
-      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib);
+      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, headerspace);
       reachable.put(router, abstractRib);
     }
 
@@ -129,9 +191,10 @@ public class ReachabilityInterpreter {
       AbstractRib<T> r = reachable.get(router);
       T routerOspf = r.getOspfRib();
       T routerRib = r.getRibEntry();
+      BDD routerHeaderspace = r.getHeaderspace();
 
       // System.out.println("Looking at router: " + router);
-      // System.out.println("RIB is " + "\n" + factory.variables().dot(domain.finalize(routerRib)));
+      // System.out.println("RIB is " + "\n" + factory.variables().dot(domain.toBdd(routerRib)));
 
       for (GraphEdge ge : g.getEdgeMap().get(router)) {
         GraphEdge rev = g.getOtherEnd().get(ge);
@@ -145,15 +208,31 @@ public class ReachabilityInterpreter {
           T neighborBgp = nr.getBgpRib();
           T neighborOspf = nr.getOspfRib();
           T neighborRib = nr.getRibEntry();
+          BDD neighborHeaderspace = nr.getHeaderspace();
 
           // System.out.println("  Got neighbor: " + neighbor);
 
           T newNeighborOspf = neighborOspf;
           T newNeighborBgp = neighborBgp;
 
+          BDD transferedHeaderspace = BDDRouteFactory.factory.zero();
+
+          // Update static
+          List<StaticRoute> srs = g.getStaticRoutes().get(neighbor, rev.getStart().getName());
+          if (srs != null) {
+            for (StaticRoute sr : srs) {
+              Set<Prefix> pfxs = originatedStatic.get(neighbor).get(router);
+              T stat = domain.value(neighbor, Protocol.STATIC, pfxs);
+              BDD h = toHeaderspace(domain.toBdd(stat), true);
+              transferedHeaderspace = transferedHeaderspace.or(h);
+            }
+          }
+
           // Update OSPF
           if (g.isEdgeUsed(conf, Protocol.OSPF, ge)) {
             newNeighborOspf = domain.merge(neighborOspf, routerOspf);
+            BDD h = toHeaderspace(domain.toBdd(routerOspf), false);
+            transferedHeaderspace = transferedHeaderspace.or(h);
           }
 
           // Update BGP
@@ -176,11 +255,28 @@ public class ReachabilityInterpreter {
               tmpBgp = domain.transform(tmpBgp, imp);
             }
 
-            /* System.out.println(
-            "  After processing: " + "\n" + factory.variables().dot(domain.finalize(tmpBgp))); */
+            // System.out.println(
+            //    "  After processing: " + "\n" + factory.variables().dot(domain.toBdd(tmpBgp)));
 
             newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
+
+            BDD h = toHeaderspace(domain.toBdd(tmpBgp), false);
+            transferedHeaderspace = transferedHeaderspace.or(h);
           }
+
+          // TODO: conjoin with acls
+          // TODO: need to replace destination IP with prefix bits in ACLs
+          // TODO: only restrict to prefix lengths that appear in the configuration?
+          /* BDDAcl out = network.getOutAcls().get(rev);
+          BDDAcl in = network.getInAcls().get(ge);
+          if (out != null) {
+            out.
+          } */
+
+          transferedHeaderspace = transferedHeaderspace.and(routerHeaderspace);
+          BDD newHeaderspace = neighborHeaderspace.or(transferedHeaderspace);
+
+          // System.out.println("  New Headerspace: \n" + factory.variables().dot(newHeaderspace));
 
           // Update RIB
           T newNeighborRib =
@@ -189,10 +285,17 @@ public class ReachabilityInterpreter {
                   neighborConn);
 
           // If changed, then add it to the workset
-          if (!newNeighborRib.equals(neighborRib) || !newNeighborOspf.equals(neighborOspf)) {
+          if (!newNeighborRib.equals(neighborRib)
+              || !newNeighborOspf.equals(neighborOspf)
+              || !newHeaderspace.equals(neighborHeaderspace)) {
             AbstractRib<T> newAbstractRib =
                 new AbstractRib<>(
-                    newNeighborBgp, newNeighborOspf, neighborStat, neighborConn, newNeighborRib);
+                    newNeighborBgp,
+                    newNeighborOspf,
+                    neighborStat,
+                    neighborConn,
+                    newNeighborRib,
+                    newHeaderspace);
             reachable.put(neighbor, newAbstractRib);
             if (!updateSet.contains(neighbor)) {
               updateSet.add(neighbor);
@@ -210,7 +313,7 @@ public class ReachabilityInterpreter {
 
     Map<String, BDD> reach = new HashMap<>();
     for (Entry<String, AbstractRib<T>> e : reachable.entrySet()) {
-      BDD val = domain.finalize(e.getValue().getRibEntry());
+      BDD val = domain.toBdd(e.getValue().getRibEntry());
       reach.put(e.getKey(), val);
       // System.out.println("Final router: " + e.getKey());
       // System.out.println("" + factory.variables().dot(val));
@@ -218,18 +321,38 @@ public class ReachabilityInterpreter {
     return reach;
   }
 
+  /*
+   * Variables that will be existentially quantified away
+   */
+  private void initializeQuantificationVariables() {
+    _communityAndProtocolBits = new HashSet<>();
+    for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
+      BDD c = e.getValue();
+      _communityAndProtocolBits.add(c);
+    }
+    BDD[] protoHistory = _variables.getProtocolHistory().getInteger().getBitvec();
+    _communityAndProtocolBits.addAll(Arrays.asList(protoHistory));
+  }
+
+  /*
+   * Compute an underapproximation of all-pairs reachability
+   */
   public AnswerElement interpret() {
     Graph g = new Graph(_batfish);
-    BDDRouteConfig config = new BDDRouteConfig(true);
-    BDDRouteFactory routeFactory = new BDDRouteFactory(g, config);
-
     NodesSpecifier ns = new NodesSpecifier(_question.getIngressNodeRegex());
+    BDDRouteConfig config = new BDDRouteConfig(true);
+
+    BDDRouteFactory routeFactory = new BDDRouteFactory(g, config);
+    _variables = routeFactory.variables();
+    _pairing = BDDRouteFactory.factory.makePair();
 
     long t = System.currentTimeMillis();
     BDDNetwork network = BDDNetwork.create(g, ns, config, false);
     System.out.println("Time to build BDDs: " + (System.currentTimeMillis() - t));
 
-    ReachabilityDomain domain = new ReachabilityDomain(routeFactory);
+    initializeQuantificationVariables();
+
+    ReachabilityDomain domain = new ReachabilityDomain(_variables, _communityAndProtocolBits);
 
     // t = System.currentTimeMillis();
     // ReachabilityDomainAP domain2 =

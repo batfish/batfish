@@ -8,13 +8,13 @@ import org.batfish.symbolic.Protocol;
 
 public interface IAbstractDomain<T> {
 
-  public T init();
+  public T bot();
 
-  public T init(String router, Protocol proto, @Nullable Set<Prefix> prefixes);
+  public T value(String router, Protocol proto, @Nullable Set<Prefix> prefixes);
 
   public T transform(T input, EdgeTransformer f);
 
   public T merge(T x, T y);
 
-  public BDD finalize(T value);
+  public BDD toBdd(T value);
 }

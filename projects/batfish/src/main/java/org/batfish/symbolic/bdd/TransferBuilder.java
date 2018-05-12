@@ -12,7 +12,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
@@ -106,28 +105,6 @@ class TransferBuilder {
     _conf = conf;
     _policyQuotient = pq;
     _statements = statements;
-  }
-
-  /*
-   * Check if the first length bits match the BDDInteger
-   * representing the advertisement prefix.
-   *
-   * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
-  public static BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
-    long b = p.getStartIp().asLong();
-    BDD acc = factory.one();
-    for (int i = 0; i < length; i++) {
-      boolean res = Ip.getBitAtPosition(b, i);
-      if (res) {
-        acc = acc.and(bits[i]);
-      } else {
-        acc = acc.andWith(bits[i].not());
-      }
-    }
-    return acc;
   }
 
   /*
@@ -726,34 +703,6 @@ class TransferBuilder {
   }
 
   /*
-   * Check if a prefix range match is applicable for the packet destination
-   * Ip address, given the prefix length variable.
-   *
-   * Since aggregation is modelled separately, we assume that prefixLen
-   * is not modified, and thus will contain only the underlying variables:
-   * [var(0), ..., var(n)]
-   */
-  private BDD isRelevantFor(BDDRoute record, PrefixRange range) {
-    Prefix p = range.getPrefix();
-    SubRange r = range.getLengthRange();
-    int len = p.getPrefixLength();
-    int lower = r.getStart();
-    int upper = r.getEnd();
-
-    BDD lowerBitsMatch = firstBitsEqual(record.getPrefix().getBitvec(), p, len);
-    BDD acc = factory.zero();
-    if (lower == 0 && upper == 32) {
-      acc = factory.one();
-    } else {
-      for (int i = lower; i <= upper; i++) {
-        BDD equalLen = record.getPrefixLength().value(i);
-        acc = acc.orWith(equalLen);
-      }
-    }
-    return acc.andWith(lowerBitsMatch);
-  }
-
-  /*
    * If-then-else statement
    */
   private BDD ite(BDD b, BDD x, BDD y) {
@@ -893,7 +842,7 @@ class TransferBuilder {
         PrefixRange range = new PrefixRange(pfx, r);
         p.debug("Prefix Range: " + range);
         p.debug("Action: " + line.getAction());
-        BDD matches = isRelevantFor(other, range);
+        BDD matches = BDDUtils.prefixRangeToBdd(factory, other, range);
         BDD action = mkBDD(line.getAction() == LineAction.ACCEPT);
         acc = ite(matches, action, acc);
       }
@@ -919,7 +868,7 @@ class TransferBuilder {
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);
         if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
-          acc = acc.orWith(isRelevantFor(other, range));
+          acc = acc.orWith(BDDUtils.prefixRangeToBdd(factory, other, range));
         }
       }
       return acc;
