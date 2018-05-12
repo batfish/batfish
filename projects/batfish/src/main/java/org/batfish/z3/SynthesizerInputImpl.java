@@ -81,6 +81,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private Set<Type> _vectorizedParameters = ImmutableSet.of();
 
+    private Builder() {}
+
     public SynthesizerInputImpl build() {
       return new SynthesizerInputImpl(this);
     }
