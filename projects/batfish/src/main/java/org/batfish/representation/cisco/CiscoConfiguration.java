@@ -3645,12 +3645,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     markPrefixSets(CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
 
-    // mark references to route-maps that may not appear in data model
+    // mark references to route-maps
+    markRouteMaps(CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP);
     markRouteMaps(CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_LISP_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP);
     markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP);
+    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE);
+    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_ATTRIBUTE);
     markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_OTHER);
+    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS);
     markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP);
     markRouteMaps(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP);
+
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER_POLICY, CiscoStructureUsage.BGP_INHERITED_PEER_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
 
     // Cable
     markDepiClasses(CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
