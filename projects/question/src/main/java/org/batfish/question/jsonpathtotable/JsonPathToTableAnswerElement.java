@@ -4,7 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
@@ -25,6 +27,37 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
 
   public JsonPathToTableAnswerElement(@Nonnull TableMetadata metadata) {
     this(metadata, new HashMap<>());
+  }
+
+  public static TableMetadata create(JsonPathToTableQuestion question) {
+    Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
+    for (Entry<String, JsonPathToTableExtraction> entry :
+        question.getPathQuery().getExtractions().entrySet()) {
+      JsonPathToTableExtraction extraction = entry.getValue();
+      if (extraction.getInclude()) {
+        columnMetadataMap.put(
+            entry.getKey(),
+            new ColumnMetadata(
+                extraction.getSchema(),
+                extraction.getDescription(),
+                extraction.getIsKey(),
+                extraction.getIsValue()));
+      }
+    }
+    for (Entry<String, JsonPathToTableComposition> entry :
+        question.getPathQuery().getCompositions().entrySet()) {
+      JsonPathToTableComposition composition = entry.getValue();
+      if (composition.getInclude()) {
+        columnMetadataMap.put(
+            entry.getKey(),
+            new ColumnMetadata(
+                composition.getSchema(),
+                composition.getDescription(),
+                composition.getIsKey(),
+                composition.getIsValue()));
+      }
+    }
+    return new TableMetadata(columnMetadataMap, question.getDisplayHints());
   }
 
   @Override

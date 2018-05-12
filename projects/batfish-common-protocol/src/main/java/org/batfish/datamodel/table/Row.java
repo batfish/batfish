@@ -8,6 +8,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -64,6 +67,12 @@ public class Row implements Comparable<Row> {
    * @return The result
    */
   public <T> T get(String columnName, Class<T> valueType) {
+    if (!_data.has(columnName)) {
+      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+    }
+    if (_data.get(columnName) == null) {
+      return null;
+    }
     try {
       return BatfishObjectMapper.mapper().treeToValue(_data.get(columnName), valueType);
     } catch (JsonProcessingException e) {
@@ -76,6 +85,12 @@ public class Row implements Comparable<Row> {
   }
 
   public <T> T get(String columnName, TypeReference<?> valueTypeRef) {
+    if (!_data.has(columnName)) {
+      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+    }
+    if (_data.get(columnName) == null) {
+      return null;
+    }
     try {
       return BatfishObjectMapper.mapper()
           .readValue(
@@ -89,9 +104,42 @@ public class Row implements Comparable<Row> {
     }
   }
 
+  /**
+   * Fetch the names of the columns in this Row
+   *
+   * @return An Iterator over the column names
+   */
+  public Iterator<String> getColumnNames() {
+    return _data.fieldNames();
+  }
+
   @JsonValue
   private ObjectNode getData() {
     return _data;
+  }
+
+  public String getKey(TableMetadata metadata) {
+    StringBuilder key = new StringBuilder();
+    for (Entry<String, ColumnMetadata> entry : metadata.getColumnMetadata().entrySet()) {
+      String columnName = entry.getKey();
+      ColumnMetadata columnMetadata = entry.getValue();
+      if (columnMetadata.getIsKey()) {
+        key.append("[" + _data.get(columnName).toString() + "]");
+      }
+    }
+    return key.toString();
+  }
+
+  public String getValue(TableMetadata metadata) {
+    StringBuilder key = new StringBuilder();
+    for (Entry<String, ColumnMetadata> entry : metadata.getColumnMetadata().entrySet()) {
+      String columnName = entry.getKey();
+      ColumnMetadata columnMetadata = entry.getValue();
+      if (columnMetadata.getIsValue()) {
+        key.append("[" + _data.get(columnName).toString() + "]");
+      }
+    }
+    return key.toString();
   }
 
   @Override
