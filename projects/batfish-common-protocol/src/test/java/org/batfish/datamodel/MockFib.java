@@ -30,26 +30,27 @@ public class MockFib implements Fib {
     }
 
     public Builder setNextHopInterfaces(
-        Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces) {
+        @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces) {
       _nextHopInterfaces = nextHopInterfaces;
       return this;
     }
 
     public Builder setNextHopInterfacesByIp(
-        Map<Ip, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByIp) {
+        @Nonnull Map<Ip, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByIp) {
       _nextHopInterfacesByIp = nextHopInterfacesByIp;
       return this;
     }
 
     public Builder setNextHopInterfacesByRoute(
-        Map<Ip, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
-            nextHopInterfacesByRoute) {
+        @Nonnull
+            Map<Ip, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
+                nextHopInterfacesByRoute) {
       _nextHopInterfacesByRoute = nextHopInterfacesByRoute;
       return this;
     }
 
     public Builder setRoutesByNextHopInterface(
-        Map<String, Set<AbstractRoute>> routesByNextHopInterface) {
+        @Nonnull Map<String, Set<AbstractRoute>> routesByNextHopInterface) {
       _routesByNextHopInterface = routesByNextHopInterface;
       return this;
     }
