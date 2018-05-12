@@ -366,7 +366,7 @@ public abstract class Question implements IQuestion {
       Question question = BatfishObjectMapper.mapper().readValue(questionText, Question.class);
       return question;
     } catch (IOException e) {
-      throw new BatfishException("Could not parse JSON question", e);
+      throw new BatfishException("Could not parse JSON question: " + e.getMessage(), e);
     }
   }
 
