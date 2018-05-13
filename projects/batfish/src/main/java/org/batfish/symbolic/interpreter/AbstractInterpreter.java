@@ -2,6 +2,7 @@ package org.batfish.symbolic.interpreter;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.batfish.symbolic.bdd.BDDRouteFactory;
 import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
+import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.smt.EdgeType;
 
 /*
@@ -49,9 +51,18 @@ public class AbstractInterpreter {
 
   private Set<BDD> _communityAndProtocolBits;
 
+  private Map<Integer, BDD> _lengthCache;
+
+  private Table2<Boolean, Integer, Set<BDD>> _dstBitsCache;
+
+  private Set<BDD> _lenBits;
+
   public AbstractInterpreter(IBatfish batfish, HeaderLocationQuestion q) {
     _batfish = batfish;
     _question = q;
+    _lengthCache = new HashMap<>();
+    _dstBitsCache = new Table2<>();
+    _lenBits = new HashSet<>();
   }
 
   /*
@@ -60,7 +71,6 @@ public class AbstractInterpreter {
    */
   private void initializeOriginatedPrefixes(
       Graph g,
-      Map<String, Set<Prefix>> originatedBGP,
       Map<String, Set<Prefix>> originatedOSPF,
       Map<String, Set<Prefix>> originatedConnected,
       Map<String, Map<String, Set<Prefix>>> originatedStatic) {
@@ -70,9 +80,6 @@ public class AbstractInterpreter {
       Vrf vrf = conf.getDefaultVrf();
       if (vrf.getOspfProcess() != null) {
         originatedOSPF.put(router, Graph.getOriginatedNetworks(conf, Protocol.OSPF));
-      }
-      if (vrf.getBgpProcess() != null) {
-        originatedBGP.put(router, Graph.getOriginatedNetworks(conf, Protocol.BGP));
       }
       if (vrf.getStaticRoutes() != null) {
 
@@ -89,32 +96,62 @@ public class AbstractInterpreter {
     }
   }
 
-  private BDD toHeaderspace(BDD rib, boolean removeRouters) {
-    BDD pfxOnly = BDDUtils.project(rib, _communityAndProtocolBits);
-    BDD acc = BDDRouteFactory.factory.zero();
-    for (int i = 0; i <= 32; i++) {
-      _pairing.reset();
+  private BDD makeLength(int i) {
+    BDD len = _lengthCache.get(i);
+    if (len == null) {
       BDDInteger pfxLen = _variables.getPrefixLength();
       BDDInteger newVal = new BDDInteger(pfxLen);
       newVal.setValue(i);
-      // restrict prefix length
+      len = BDDRouteFactory.factory.zero();
+      for (BDD x : newVal.getBitvec()) {
+        len = len.and(x);
+      }
+      _lengthCache.put(i, len);
+    }
+    return len;
+  }
+
+  private Set<BDD> dstBits(boolean b, int i) {
+    Set<BDD> dstBits = _dstBitsCache.get(b, i);
+    if (dstBits == null) {
+      dstBits = new HashSet<>(Arrays.asList(_variables.getPrefix().getBitvec()).subList(i, 32));
+      _dstBitsCache.put(b, i, dstBits);
+    }
+    return dstBits;
+  }
+
+  private BDD toHeaderspace(BDD rib, boolean removeRouters) {
+    BDD pfxOnly = BDDUtils.exists(rib, _communityAndProtocolBits);
+    if (pfxOnly.isZero()) {
+      return pfxOnly;
+    }
+
+    BDD acc = BDDRouteFactory.factory.zero();
+    for (int i = 0; i <= 32; i++) {
+      // _pairing.reset();
+      BDD len = makeLength(i);
+      /* restrict prefix length
       for (int j = 0; j < pfxLen.getBitvec().length; j++) {
         BDD var = pfxLen.getBitvec()[j];
         BDD val = newVal.getBitvec()[j];
         _pairing.set(var.var(), val);
-      }
+      } */
       // quantify out prefix bits
-      Set<BDD> dstBits =
-          new HashSet<>(Arrays.asList(_variables.getPrefix().getBitvec()).subList(i, 32));
-      if (removeRouters) {
-        dstBits.addAll(Arrays.asList(_variables.getDstRouter().getInteger().getBitvec()));
+      Set<BDD> dstBits = dstBits(removeRouters, i);
+      BDD withLen = pfxOnly.and(len);
+
+      if (withLen.isZero()) {
+        continue;
       }
 
-      BDD withLen = pfxOnly.veccompose(_pairing);
-      withLen = BDDUtils.project(withLen, dstBits);
+      withLen = BDDUtils.exists(withLen, dstBits);
       acc = acc.or(withLen);
     }
-    return acc;
+
+    if (_lenBits.isEmpty()) {
+      Collections.addAll(_lenBits, _variables.getPrefixLength().getBitvec());
+    }
+    return BDDUtils.exists(acc, _lenBits);
   }
 
   /*
@@ -123,28 +160,23 @@ public class AbstractInterpreter {
   private <T> Map<String, BDD> computeFixedPoint(
       Graph g, BDDNetwork network, BDDRouteFactory factory, IAbstractDomain<T> domain) {
 
-    long t;
-
-    Map<String, Set<Prefix>> originatedBGP = new HashMap<>();
     Map<String, Set<Prefix>> originatedOSPF = new HashMap<>();
     Map<String, Set<Prefix>> originatedConnected = new HashMap<>();
     Map<String, Map<String, Set<Prefix>>> originatedStatic = new HashMap<>();
-    initializeOriginatedPrefixes(
-        g, originatedBGP, originatedOSPF, originatedConnected, originatedStatic);
+    initializeOriginatedPrefixes(g, originatedOSPF, originatedConnected, originatedStatic);
 
     Map<String, AbstractRib<T>> reachable = new HashMap<>();
     Set<String> initialRouters = new HashSet<>();
 
-    t = System.currentTimeMillis();
+    long t = System.currentTimeMillis();
     // initialize for BGP by converting prefixes to BDDs
 
     for (String router : g.getRouters()) {
-      Set<Prefix> bgpPrefixes = originatedBGP.get(router);
       Set<Prefix> ospfPrefixes = originatedOSPF.get(router);
       Set<Prefix> connPrefixes = originatedConnected.get(router);
       Map<String, Set<Prefix>> staticPrefixes = originatedStatic.get(router);
 
-      if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
+      if (staticPrefixes != null && !staticPrefixes.isEmpty()) {
         initialRouters.add(router);
       }
       if (ospfPrefixes != null && !ospfPrefixes.isEmpty()) {
@@ -220,12 +252,13 @@ public class AbstractInterpreter {
           // Update static
           List<StaticRoute> srs = g.getStaticRoutes().get(neighbor, rev.getStart().getName());
           if (srs != null) {
+            Set<Prefix> pfxs = new HashSet<>();
             for (StaticRoute sr : srs) {
-              Set<Prefix> pfxs = originatedStatic.get(neighbor).get(router);
-              T stat = domain.value(neighbor, Protocol.STATIC, pfxs);
-              BDD h = toHeaderspace(domain.toBdd(stat), true);
-              transferedHeaderspace = transferedHeaderspace.or(h);
+              pfxs.add(sr.getNetwork());
             }
+            T stat = domain.value(neighbor, Protocol.STATIC, pfxs);
+            BDD h = toHeaderspace(domain.toBdd(stat), true);
+            transferedHeaderspace = transferedHeaderspace.or(h);
           }
 
           // Update OSPF

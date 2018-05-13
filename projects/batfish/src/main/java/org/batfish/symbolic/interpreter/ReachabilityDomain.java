@@ -49,7 +49,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
   }
 
   private BDD projectCommunitiesAndProtocol(BDD val) {
-    return BDDUtils.project(val, _projectVariables);
+    return BDDUtils.exists(val, _projectVariables);
   }
 
   @Override
