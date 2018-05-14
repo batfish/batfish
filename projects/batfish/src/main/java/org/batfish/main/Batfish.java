@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -824,10 +823,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String aclName = line.getAclName();
       int lineNumber = line.getLine();
       boolean lineIsReachable = e.getValue();
-      SortedMap<String, SortedSet<Integer>> aclsWithUnmatchableLinesOnThisHost =
-          firstNonNull(unmatchableLines.get(hostname), new TreeMap<>());
       SortedSet<Integer> unmatchableLinesOnThisAcl =
-          firstNonNull(aclsWithUnmatchableLinesOnThisHost.get(aclName), new TreeSet<>());
+          unmatchableLines
+              .getOrDefault(hostname, ImmutableSortedMap.of())
+              .getOrDefault(aclName, ImmutableSortedSet.of());
 
       // TODO add ipAccessList to ACL mapping so we don't have to get it multiple times for one ACL
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
@@ -963,7 +962,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String hostname = e.getKey();
       Configuration c = configurations.get(hostname);
       Map<String, SortedSet<Integer>> unmatchableLinesForHostname =
-          firstNonNull(unmatchableLines.get(hostname), ImmutableMap.of());
+          unmatchableLines.getOrDefault(hostname, ImmutableSortedMap.of());
       List<String> nodeInterfaces =
           ImmutableList.sortedCopyOf(
               c.getInterfaces()
@@ -976,7 +975,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
         SortedSet<Integer> unmatchableLinesForAcl =
-            firstNonNull(unmatchableLinesForHostname.get(aclName), ImmutableSortedSet.of());
+            unmatchableLinesForHostname.getOrDefault(aclName, ImmutableSortedSet.of());
         // Generate job for earlier blocking lines in this ACL
         IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
         List<AclLine> lines = e2.getValue();
