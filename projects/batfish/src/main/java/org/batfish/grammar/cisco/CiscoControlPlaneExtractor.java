@@ -5793,7 +5793,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .getPrefix6Lists()
                 .computeIfAbsent(name, n -> new Prefix6List(n, _currentPrefixSetDefinitionLine));
         _configuration.defineStructure(
-            CiscoStructureType.NETWORK_OBJECT_GROUP, name, _currentPrefixSetDefinitionLine);
+            CiscoStructureType.PREFIX_SET, name, _currentPrefixSetDefinitionLine);
         Prefix6 prefix6;
         if (ctx.ipv6a != null) {
           prefix6 = new Prefix6(toIp6(ctx.ipv6a), Prefix6.MAX_PREFIX_LENGTH);

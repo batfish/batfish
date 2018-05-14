@@ -17,11 +17,14 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
@@ -112,6 +115,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
@@ -721,6 +725,46 @@ public class CiscoGrammarTest {
     assertThat(
         ccae,
         hasUndefinedReference(hostname, CiscoStructureType.INSPECT_POLICY_MAP, "pmiundefined"));
+  }
+
+  @Test
+  public void testIosPrefixSet() throws IOException {
+    String hostname = "ios-prefix-set";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    Prefix permittedPrefix = Prefix.parse("1.2.3.4/30");
+    Prefix6 permittedPrefix6 = new Prefix6("2001::ffff:0/124");
+    Prefix rejectedPrefix = Prefix.parse("1.2.4.4/30");
+    Prefix6 rejectedPrefix6 = new Prefix6("2001::fffe:0/124");
+
+    /*
+     * pre_unused should be the only prefix set without a referrer
+     */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv4", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv6", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_unused", 0));
+
+    /*
+     * pre_undef should be the only undefined reference
+     */
+    assertThat(
+        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv4")));
+    assertThat(
+        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv6")));
+    assertThat(ccae, hasUndefinedReference(hostname, CiscoStructureType.PREFIX_SET, "pre_undef"));
+
+    /*
+     * Confirm the generated route filter lists permit correct prefixes and do not permit others
+     */
+    assertThat(c, hasRouteFilterList("pre_ipv4", permits(permittedPrefix)));
+    assertThat(c, hasRouteFilterList("pre_ipv4", not(permits(rejectedPrefix))));
+    assertThat(c, hasRoute6FilterList("pre_ipv6", permits(permittedPrefix6)));
+    assertThat(c, hasRoute6FilterList("pre_ipv6", not(permits(rejectedPrefix6))));
+
+    String test = "Test";
   }
 
   @Test

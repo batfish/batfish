@@ -1,0 +1,26 @@
+!
+hostname ios-prefix-set
+!
+prefix-set pre_ipv4
+  1.2.3.4/30
+end-set
+prefix-set pre_ipv6
+  2001::ffff:0/124
+end-set
+prefix-set pre_unused
+  3.4.5.6/30
+end-set
+route-policy rp_ipv4
+  if destination in pre_ipv4 then
+    pass
+    done
+  endif
+  if destination in pre_ipv6 then
+    pass
+    done
+  endif
+  if destination in pre_undef then
+    pass
+    done
+  endif
+end-policy
