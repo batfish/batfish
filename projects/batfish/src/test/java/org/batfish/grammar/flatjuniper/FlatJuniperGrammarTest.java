@@ -572,20 +572,6 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testbed() throws IOException {
-    String hostname = "application-set-2";
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    /* esfilter should be referred, while esfilter2 should be unreferred */
-    assertThat(
-        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter", 1));
-    assertThat(
-        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter2", 0));
-  }
-
-  @Test
   public void testFirewallGlobalAddressBook() throws IOException {
     Configuration c = parseConfig("firewall-global-address-book");
     String interfaceNameTrust = "ge-0/0/0.0";
