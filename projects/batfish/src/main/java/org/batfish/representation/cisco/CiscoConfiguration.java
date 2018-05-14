@@ -1510,7 +1510,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                             new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
                         new Not(new MatchProtocol(RoutingProtocol.BGP)),
                         new Not(new MatchProtocol(RoutingProtocol.IBGP)),
-                        // TODO: ban aggregates?
                         new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
                             _routeMaps.containsKey(routeMapOrEmpty)
@@ -1535,7 +1534,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 new Prefix6Space(Prefix6Range.fromPrefix6(prefix6)))),
                         new Not(new MatchProtocol(RoutingProtocol.BGP)),
                         new Not(new MatchProtocol(RoutingProtocol.IBGP)),
-                        // TODO: ban aggregates?
                         new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
                         bgpRedistributeWithEnvironmentExpr(
                             _routeMaps.containsKey(routeMapOrEmpty)
@@ -1952,7 +1950,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               exportNetworkConditions
                   .getConjuncts()
                   .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
-              // TODO: ban aggregates?
               exportNetworkConditions
                   .getConjuncts()
                   .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));
@@ -1991,7 +1988,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     exportNetwork6Conditions
                         .getConjuncts()
                         .add(new Not(new MatchProtocol(RoutingProtocol.IBGP)));
-                    // TODO: ban aggregates?
                     exportNetwork6Conditions
                         .getConjuncts()
                         .add(new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)));

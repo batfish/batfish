@@ -1,4 +1,4 @@
-! Real config from c7200 emulator in GNS3, edited heavily to remove unrelated bits.
+! Real config from iOS emulator in GNS3, edited heavily to remove unrelated bits.
 ! All commands that matter are below, enter them after `configure terminal` / `conf t`.
 !
 ! Relevant IOS command to confirm route is received:
