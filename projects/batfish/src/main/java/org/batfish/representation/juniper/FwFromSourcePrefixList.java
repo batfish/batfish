@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
@@ -32,6 +33,12 @@ public final class FwFromSourcePrefixList extends FwFrom {
         return;
       }
       RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
+
+      // if referenced prefix list is empty, it should not match anything
+      if (sourcePrefixList.getLines().isEmpty()) {
+        headerSpaceBuilder.addSrcIp(EmptyIpSpace.INSTANCE);
+        return;
+      }
 
       headerSpaceBuilder.addSrcIp(
           AclIpSpace.union(
