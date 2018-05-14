@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Range;
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -652,11 +651,9 @@ public class SynthesizerInputImplTest {
 
   /**
    * Test that synthesizer only encodes whitelisted ACL when given a configuration with two ACLs.
-   *
-   * @throws IOException
    */
   @Test
-  public void testEnabledAcls() throws IOException {
+  public void testEnabledAcls() {
     Configuration config = _cb.build();
     Builder aclb = _nf.aclBuilder().setOwner(config);
     IpAccessList acl1 = aclb.setLines(ImmutableList.of()).setName("acl1").build();
