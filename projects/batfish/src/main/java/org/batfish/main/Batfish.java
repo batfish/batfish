@@ -803,7 +803,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Produces a map of acl line -> line number of earliest more general reachable line
     List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs =
         generateEarliestMoreGeneralAclLineJobs(
-            hostnamesToAclsWithUnreachableLinesMap, linesReachableMap, configurations);
+            hostnamesToAclsWithUnreachableLinesMap,
+            linesReachableMap,
+            unmatchableLines,
+            configurations);
     Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
     computeNodFirstUnsatOutput(step2Jobs, blockingLinesMap);
 
@@ -826,10 +829,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String aclName = line.getAclName();
       int lineNumber = line.getLine();
       boolean lineIsReachable = e.getValue();
-      SortedMap<String, SortedSet<Integer>> aclsWithUnmatchableLinesOnThisHost =
-          firstNonNull(unmatchableLines.get(hostname), new TreeMap<>());
       SortedSet<Integer> unmatchableLinesOnThisAcl =
-          firstNonNull(aclsWithUnmatchableLinesOnThisHost.get(aclName), new TreeSet<>());
+          unmatchableLines
+              .getOrDefault(hostname, ImmutableSortedMap.of())
+              .getOrDefault(aclName, ImmutableSortedSet.of());
 
       // TODO add ipAccessList to ACL mapping so we don't have to get it multiple times for one ACL
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
@@ -953,11 +956,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private List<NodFirstUnsatJob<AclLine, Integer>> generateEarliestMoreGeneralAclLineJobs(
       Map<String, Map<String, List<AclLine>>> unreachableAclLinesMap,
       Map<AclLine, Boolean> aclLinesReachabilityMap, // map of acl line -> isReachable boolean
+      SortedMap<String, SortedMap<String, SortedSet<Integer>>> unmatchableLines,
       Map<String, Configuration> configurations) {
     List<NodFirstUnsatJob<AclLine, Integer>> jobs = new ArrayList<>();
     for (Entry<String, Map<String, List<AclLine>>> e : unreachableAclLinesMap.entrySet()) {
       String hostname = e.getKey();
       Configuration c = configurations.get(hostname);
+      Map<String, SortedSet<Integer>> unmatchableLinesForHostname =
+          unmatchableLines.getOrDefault(hostname, ImmutableSortedMap.of());
       List<String> nodeInterfaces =
           ImmutableList.sortedCopyOf(
               c.getInterfaces()
@@ -972,13 +978,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
             synthesizeAcls(
                 Collections.singletonMap(hostname, c),
                 Collections.singletonMap(hostname, ImmutableSet.of(aclName)));
+        SortedSet<Integer> unmatchableLinesForAcl =
+            unmatchableLinesForHostname.getOrDefault(aclName, ImmutableSortedSet.of());
         // Generate job for earlier blocking lines in this ACL
         IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
         List<AclLine> lines = e2.getValue();
         for (int i = 0; i < lines.size(); i++) {
           AclLine line = lines.get(i);
           boolean reachable = aclLinesReachabilityMap.get(line);
-          if (!reachable) {
+          // Create job to find blocking line if current line is unreachable but not unmatchable
+          if (!reachable && !unmatchableLinesForAcl.contains(line.getLine())) {
             List<AclLine> toCheck = new ArrayList<>();
             for (int j = 0; j < i; j++) {
               AclLine earlierLine = lines.get(j);
