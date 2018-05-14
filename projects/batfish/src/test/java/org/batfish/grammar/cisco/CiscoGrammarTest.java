@@ -763,8 +763,6 @@ public class CiscoGrammarTest {
     assertThat(c, hasRouteFilterList("pre_ipv4", not(permits(rejectedPrefix))));
     assertThat(c, hasRoute6FilterList("pre_ipv6", permits(permittedPrefix6)));
     assertThat(c, hasRoute6FilterList("pre_ipv6", not(permits(rejectedPrefix6))));
-
-    String test = "Test";
   }
 
   @Test
