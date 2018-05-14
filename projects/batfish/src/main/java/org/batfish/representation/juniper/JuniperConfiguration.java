@@ -86,6 +86,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -444,11 +445,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .add(Statements.ExitReject.toStaticStatement());
 
       // export policies
-      String peerExportPolicyName = "~PEER_EXPORT_POLICY:" + ig.getRemoteAddress() + "~";
+      String peerExportPolicyName = computePeerExportPolicyName(ig.getRemoteAddress());
       neighbor.setExportPolicy(peerExportPolicyName);
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
+      applyLocalRoutePolicy(routingInstance, peerExportPolicy);
 
       /*
        * For new BGP advertisements, i.e. those that are created from non-BGP
@@ -589,6 +591,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
     proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
 
     return proc;
+  }
+
+  public static String computePeerExportPolicyName(Prefix remoteAddress) {
+    return "~PEER_EXPORT_POLICY:" + remoteAddress + "~";
+  }
+
+  private void applyLocalRoutePolicy(RoutingInstance routingInstance, RoutingPolicy targetPolicy) {
+    boolean lan = routingInstance.getExportLocalRoutesLan();
+    boolean ptp = routingInstance.getExportLocalRoutesPointToPoint();
+    if (lan && ptp) {
+      // All local routes are allowed, so no need for filter
+      return;
+    }
+    BooleanExpr matchProtocol = new MatchProtocol(RoutingProtocol.LOCAL);
+    BooleanExpr match;
+    if (!lan && !ptp) {
+      // No need to check length, since all local routes will be rejected
+      match = matchProtocol;
+    } else {
+      SubRange rejectedLength =
+          !lan
+              ? new SubRange(0, Prefix.MAX_PREFIX_LENGTH - 2)
+              : new SubRange(Prefix.MAX_PREFIX_LENGTH - 1, Prefix.MAX_PREFIX_LENGTH - 1);
+      match =
+          new Conjunction(
+              ImmutableList.of(
+                  matchProtocol, new MatchLocalRouteSourcePrefixLength(rejectedLength)));
+    }
+    targetPolicy
+        .getStatements()
+        .add(new If(match, ImmutableList.of(Statements.ExitReject.toStaticStatement())));
   }
 
   private IsisProcess createIsisProcess(RoutingInstance routingInstance, IsoAddress netAddress) {
@@ -2080,16 +2113,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String riName = e.getKey();
       RoutingInstance ri = e.getValue();
       Vrf vrf = _c.getVrfs().get(riName);
-      ImmutableSortedSet.Builder<SubRange> exportLocalRoutePrefixLengthRange =
-          ImmutableSortedSet.naturalOrder();
-      if (ri.getExportLocalRoutesLan()) {
-        exportLocalRoutePrefixLengthRange.add(new SubRange(0, Prefix.MAX_PREFIX_LENGTH - 2));
-      }
-      if (ri.getExportLocalRoutesPointToPoint()) {
-        exportLocalRoutePrefixLengthRange.add(
-            new SubRange(Prefix.MAX_PREFIX_LENGTH - 1, Prefix.MAX_PREFIX_LENGTH - 1));
-      }
-      vrf.setExportLocalRoutePrefixLengthRange(exportLocalRoutePrefixLengthRange.build());
 
       // dhcp relay
       for (Entry<String, DhcpRelayGroup> e2 : ri.getDhcpRelayGroups().entrySet()) {
