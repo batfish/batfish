@@ -74,14 +74,6 @@
           ]
         }
       },
-      "undefined:bgp group:usage:inherited BGP group:KLMN" : {
-        "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'KLMN'",
-        "files" : {
-          "neighbor_nxos" : [
-            0
-          ]
-        }
-      },
       "undefined:bgp group:usage:inherited BGP group:p3" : {
         "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'p3'",
         "files" : {
@@ -103,6 +95,14 @@
         "files" : {
           "ios_xr_bgp_neighbor_group" : [
             88
+          ]
+        }
+      },
+      "undefined:bgp template peer:usage:inherited BGP peer:KLMN" : {
+        "description" : "Undefined reference to structure of type: 'bgp template peer' with usage: 'inherited BGP peer' named 'KLMN'",
+        "files" : {
+          "neighbor_nxos" : [
+            8
           ]
         }
       },
@@ -193,9 +193,6 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback1'",
         "files" : {
           "foundry_bgp" : [
-            0
-          ],
-          "peer_template" : [
             0
           ]
         }
@@ -1019,7 +1016,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 126
+      "numResults" : 125
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1697,10 +1694,10 @@
         }
       },
       "neighbor_nxos" : {
-        "bgp group" : {
+        "bgp template peer" : {
           "KLMN" : {
-            "inherited BGP group" : [
-              0
+            "inherited BGP peer" : [
+              8
             ]
           }
         }
@@ -1749,13 +1746,6 @@
         }
       },
       "peer_template" : {
-        "interface" : {
-          "Loopback1" : {
-            "update-source interface" : [
-              0
-            ]
-          }
-        },
         "route-map" : {
           "PROTECT-LEAF" : {
             "bgp inbound route-map" : [
