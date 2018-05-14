@@ -973,12 +973,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .map(Interface::getName)
                   .collect(Collectors.toList()));
       Map<String, List<AclLine>> byAclName = e.getValue();
-      Synthesizer aclSynthesizer =
-          synthesizeAcls(
-              Collections.singletonMap(hostname, c),
-              Collections.singletonMap(hostname, ImmutableSet.copyOf(byAclName.keySet())));
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
+        Synthesizer aclSynthesizer =
+            synthesizeAcls(
+                Collections.singletonMap(hostname, c),
+                Collections.singletonMap(hostname, ImmutableSet.of(aclName)));
         // Generate job for earlier blocking lines in this ACL
         IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
         List<AclLine> lines = e2.getValue();
