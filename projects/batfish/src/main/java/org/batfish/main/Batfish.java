@@ -674,7 +674,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Map<String, Configuration> configurations,
           Map<String, Map<String, Set<Integer>>> linesToCheck) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
-    Synthesizer aclSynthesizer = synthesizeAcls(configurations);
+    Synthesizer aclSynthesizer =
+        synthesizeAcls(
+            configurations,
+            linesToCheck
+                .entrySet()
+                .stream()
+                .collect(toMap(e -> e.getKey(), e -> ImmutableSet.copyOf(e.getValue().keySet()))));
     linesToCheck.forEach(
         (hostname, aclNames) -> {
           aclNames.forEach(
@@ -933,11 +939,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
         AclReachabilityQuerySynthesizer query =
             new AclReachabilityQuerySynthesizer(hostname, aclName, numLines);
-        Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
+        Synthesizer aclSynthesizer =
+            synthesizeAcls(
+                Collections.singletonMap(hostname, c),
+                Collections.singletonMap(hostname, ImmutableSet.of(aclName)));
         NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query);
         jobs.add(job);
       }
-      // Add current ACL back into ACL list before moving on to next ACL
     }
     return jobs;
   }
@@ -957,10 +965,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .stream()
                   .map(Interface::getName)
                   .collect(Collectors.toList()));
-      Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
+        Synthesizer aclSynthesizer =
+            synthesizeAcls(
+                Collections.singletonMap(hostname, c),
+                Collections.singletonMap(hostname, ImmutableSet.of(aclName)));
         // Generate job for earlier blocking lines in this ACL
         IpAccessList ipAccessList = c.getIpAccessLists().get(aclName);
         List<AclLine> lines = e2.getValue();
@@ -4385,7 +4396,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
   }
 
-  private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
+  private Synthesizer synthesizeAcls(
+      Map<String, Configuration> configurations, Map<String, Set<String>> enabledAcls) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4394,6 +4406,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new Synthesizer(
             SynthesizerInputImpl.builder()
                 .setConfigurations(configurations)
+                .setEnabledAcls(enabledAcls)
                 .setSimplify(_settings.getSimplify())
                 .build());
 

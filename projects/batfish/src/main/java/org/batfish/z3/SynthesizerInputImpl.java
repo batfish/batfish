@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -54,60 +55,36 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
 
   public static class Builder {
-    private ForwardingAnalysis _forwardingAnalysis;
-
     private Map<String, Configuration> _configurations;
 
-    private Map<String, Set<String>> _disabledAcls;
+    private Map<String, Set<String>> _disabledInterfaces = ImmutableMap.of();
 
-    private Map<String, Set<String>> _disabledInterfaces;
+    private Set<String> _disabledNodes = ImmutableSet.of();
 
-    private Set<String> _disabledNodes;
+    private Map<String, Set<String>> _disabledVrfs = ImmutableMap.of();
 
-    private Map<String, Set<String>> _disabledVrfs;
+    private Map<String, Set<String>> _enabledAclNames;
+
+    private ForwardingAnalysis _forwardingAnalysis;
 
     @Nullable private HeaderSpace _headerSpace;
 
-    private Set<String> _nonTransitNodes;
+    private Set<String> _nonTransitNodes = ImmutableSortedSet.of();
 
-    private boolean _simplify;
+    private boolean _simplify = false;
 
-    private boolean _specialize;
+    private boolean _specialize = false;
 
     private Topology _topology;
 
-    private Set<String> _transitNodes;
+    private Set<String> _transitNodes = ImmutableSortedSet.of();
 
-    private Set<Type> _vectorizedParameters;
+    private Set<Type> _vectorizedParameters = ImmutableSet.of();
 
-    private Builder() {
-      _disabledAcls = ImmutableMap.of();
-      _disabledInterfaces = ImmutableMap.of();
-      _disabledNodes = ImmutableSet.of();
-      _disabledVrfs = ImmutableMap.of();
-      _headerSpace = null;
-      _nonTransitNodes = ImmutableSortedSet.of();
-      _simplify = false;
-      _specialize = false;
-      _transitNodes = ImmutableSortedSet.of();
-      _vectorizedParameters = ImmutableSet.of();
-    }
+    private Builder() {}
 
     public SynthesizerInputImpl build() {
-      return new SynthesizerInputImpl(
-          _forwardingAnalysis,
-          _configurations,
-          _disabledAcls,
-          _disabledInterfaces,
-          _disabledNodes,
-          _disabledVrfs,
-          _headerSpace != null ? _headerSpace : new HeaderSpace(),
-          _nonTransitNodes,
-          _simplify,
-          _specialize,
-          _topology,
-          _transitNodes,
-          _vectorizedParameters);
+      return new SynthesizerInputImpl(this);
     }
 
     public Builder setForwardingAnalysis(ForwardingAnalysis forwardingAnalysis) {
@@ -120,8 +97,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       return this;
     }
 
-    public Builder setDisabledAcls(Map<String, Set<String>> disabledAcls) {
-      _disabledAcls = disabledAcls;
+    public Builder setEnabledAcls(Map<String, Set<String>> enabledAcls) {
+      _enabledAclNames = enabledAcls;
       return this;
     }
 
@@ -190,8 +167,6 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Map<String, Configuration> _configurations;
 
-  private final @Nonnull Map<String, Set<String>> _disabledAcls;
-
   private final @Nonnull Map<String, Set<String>> _disabledInterfaces;
 
   private final @Nonnull Set<String> _disabledNodes;
@@ -256,27 +231,17 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
   private final @Nonnull Set<Type> _vectorizedParameters;
 
-  public SynthesizerInputImpl(
-      ForwardingAnalysis forwardingAnalysis,
-      Map<String, Configuration> configurations,
-      Map<String, Set<String>> disabledAcls,
-      Map<String, Set<String>> disabledInterfaces,
-      Set<String> disabledNodes,
-      Map<String, Set<String>> disabledVrfs,
-      HeaderSpace headerSpace,
-      Set<String> nonTransitNodes,
-      boolean simplify,
-      boolean specialize,
-      Topology topology,
-      Set<String> transitNodes,
-      Set<Type> vectorizedParameters) {
-    if (configurations == null) {
+  private SynthesizerInputImpl(Builder builder) {
+    if (builder._configurations == null) {
       throw new BatfishException("Must supply configurations");
     }
+    _configurations = ImmutableMap.copyOf(builder._configurations);
     _namedIpSpaces =
-        toImmutableMap(configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
+        toImmutableMap(_configurations, Entry::getKey, entry -> entry.getValue().getIpSpaces());
+    HeaderSpace headerSpace =
+        builder._headerSpace != null ? builder._headerSpace : new HeaderSpace();
     _specializationIpSpace =
-        specialize
+        builder._specialize
             ? firstNonNull(
                 AclIpSpace.difference(headerSpace.getDstIps(), headerSpace.getNotDstIps()),
                 UniverseIpSpace.INSTANCE)
@@ -288,27 +253,30 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             namedIpSpacesEntry ->
                 new IpSpaceSpecializer(_specializationIpSpace, namedIpSpacesEntry.getValue()));
     _ipAccessListSpecializers =
-        specialize
+        builder._specialize
             ? toImmutableMap(
                 _namedIpSpaces,
                 Entry::getKey,
                 namedIpSpacesEntry ->
                     new IpAccessListSpecializer(headerSpace, namedIpSpacesEntry.getValue()))
             : ImmutableMap.of();
-    _configurations = ImmutableMap.copyOf(configurations);
-    _disabledAcls = ImmutableMap.copyOf(disabledAcls);
-    _disabledInterfaces = ImmutableMap.copyOf(disabledInterfaces);
-    _disabledNodes = ImmutableSet.copyOf(disabledNodes);
-    _disabledVrfs = ImmutableMap.copyOf(disabledVrfs);
+    _disabledInterfaces = ImmutableMap.copyOf(builder._disabledInterfaces);
+    _disabledNodes = ImmutableSet.copyOf(builder._disabledNodes);
+    _disabledVrfs = ImmutableMap.copyOf(builder._disabledVrfs);
+    _enabledAcls =
+        builder._enabledAclNames != null
+            ? computeEnabledAcls(builder._enabledAclNames)
+            : computeDefaultEnabledAcls();
     _enabledNodes = computeEnabledNodes();
     _enabledVrfs = computeEnabledVrfs();
     _enabledInterfacesByNodeVrf = computeEnabledInterfacesByNodeVrf();
     _enabledInterfaces = computeEnabledInterfaces();
     _incomingAcls = computeIncomingAcls();
     _outgoingAcls = computeOutgoingAcls();
-    _simplify = simplify;
-    _vectorizedParameters = vectorizedParameters;
+    _simplify = builder._simplify;
+    _vectorizedParameters = builder._vectorizedParameters;
 
+    ForwardingAnalysis forwardingAnalysis = builder._forwardingAnalysis;
     _dataPlane = forwardingAnalysis != null;
     if (_dataPlane) {
       _arpTrueEdge = computeArpTrueEdge(forwardingAnalysis.getArpTrueEdge());
@@ -318,7 +286,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _routableIps = computeRoutableIps(forwardingAnalysis.getRoutableIps());
       _ipsByHostname = computeIpsByHostname();
       _ipsByNodeVrf = computeIpsByNodeVrf();
-      _edges = topology.getEdges();
+      _edges = builder._topology.getEdges();
       _enabledEdges = computeEnabledEdges();
       _topologyInterfaces = computeTopologyInterfaces();
       _sourceNats = computeSourceNats();
@@ -334,14 +302,13 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
       _topologyInterfaces = null;
       _sourceNats = null;
     }
-    _enabledAcls = computeEnabledAcls();
     _aclActions = computeAclActions();
     _nodeInterfaces = computeNodeInterfaces();
     _nodesWithSrcInterfaceConstraints = computeNodesWithSrcInterfaceConstraints();
     _sourceInterfaceField = computeSourceInterfaceField();
     _sourceInterfaceFieldValues = computeSourceInterfaceFieldValues();
-    _nonTransitNodes = ImmutableSortedSet.copyOf(nonTransitNodes);
-    _transitNodes = ImmutableSortedSet.copyOf(transitNodes);
+    _nonTransitNodes = ImmutableSortedSet.copyOf(builder._nonTransitNodes);
+    _transitNodes = ImmutableSortedSet.copyOf(builder._transitNodes);
     _aclConditions = computeAclConditions();
   }
 
@@ -429,7 +396,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
         Entry::getKey, /* Node name */
         e -> {
           String node = e.getKey();
-          Map<String, IpAccessList> nodeAcls = e.getValue();
+          Map<String, IpAccessList> nodeAcls =
+              _configurations.get(node).getIpAccessLists(); // e.getValue();
           AclLineMatchExprToBooleanExpr aclLineMatchExprToBooleanExpr =
               new AclLineMatchExprToBooleanExpr(
                   nodeAcls,
@@ -499,11 +467,23 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                         Entry::getValue)))));
   }
 
-  private Map<String, Map<String, IpAccessList>> computeEnabledAcls() {
+  private Map<String, Map<String, IpAccessList>> computeDefaultEnabledAcls() {
     return _configurations
         .entrySet()
         .stream()
         .filter(e -> !_disabledNodes.contains(e.getKey()))
+        .collect(
+            Collectors.toMap(
+                Entry::getKey, e -> ImmutableMap.copyOf(e.getValue().getIpAccessLists())));
+  }
+
+  private Map<String, Map<String, IpAccessList>> computeEnabledAcls(
+      Map<String, Set<String>> enabledAclNames) {
+    return _configurations
+        .entrySet()
+        .stream()
+        .filter(e -> !_disabledNodes.contains(e.getKey()))
+        .filter(e -> enabledAclNames.containsKey(e.getKey()))
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey,
@@ -511,13 +491,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                   String hostname = e.getKey();
                   IpAccessListSpecializer ipAccessListSpecializer =
                       _ipAccessListSpecializers.get(hostname);
-                  Set<String> disabledAcls =
-                      _disabledAcls.getOrDefault(hostname, ImmutableSet.of());
+                  Set<String> acls = enabledAclNames.getOrDefault(hostname, ImmutableSet.of());
                   return e.getValue()
                       .getIpAccessLists()
                       .entrySet()
                       .stream()
-                      .filter(e2 -> !disabledAcls.contains(e2.getKey()))
+                      .filter(e2 -> acls.contains(e2.getKey()))
                       .collect(
                           ImmutableMap.toImmutableMap(
                               Entry::getKey,
