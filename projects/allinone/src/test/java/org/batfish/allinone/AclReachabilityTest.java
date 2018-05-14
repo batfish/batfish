@@ -57,29 +57,78 @@ public class AclReachabilityTest {
   public void testIndirection() throws IOException {
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
 
-    IpAccessList acl1 = aclb.setLines(ImmutableList.of()).setName("acl1").build();
-    IpAccessList acl2 =
+    /*
+    Reference ACL contains 1 line: Permit 1.0.0.0/24
+    Main ACL contains 2 lines:
+    0. Permit anything that reference ACL permits
+    1. Permit 1.0.0.0/24
+
+    Runs two questions:
+    1. General ACL reachability (reference ACL won't be encoded after first NoD step)
+    2. Reachability specifically for main ACL (reference ACL won't be encoded at all)
+    Tests that both find line 1 to be blocked by line 0 in main ACL.
+     */
+
+    IpAccessList referencedAcl =
+        aclb.setLines(
+                ImmutableList.of(
+                    acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                            .build())))
+            .setName("acl1")
+            .build();
+    IpAccessList acl =
         aclb.setLines(
                 ImmutableList.of(
                     IpAccessListLine.accepting()
-                        .setMatchCondition(new PermittedByAcl(acl1.getName()))
-                        .build()))
+                        .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
+                        .build(),
+                    acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                            .build())))
             .setName("acl2")
             .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
 
-    assertThat(_c, hasIpAccessLists(hasEntry(acl1.getName(), acl1)));
-    assertThat(_c, hasIpAccessLists(hasEntry(acl2.getName(), acl2)));
+    assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
+    assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
 
     AclReachabilityQuestion question = new AclReachabilityQuestion();
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
+    question.setAclNameRegex(acl.getName());
+    AclReachabilityAnswerer specificAnswerer = new AclReachabilityAnswerer(question, batfish);
 
-    /*
-     *  Test for NPE introduced by reverted PR #1272 due to missing definition for acl1 when
-     *  processing acl2.
-     */
-    answerer.answer();
+    AnswerElement answer = answerer.answer();
+    AnswerElement specificAnswer = specificAnswerer.answer();
+    assertThat(answer, instanceOf(AclLinesAnswerElement.class));
+    assertThat(specificAnswer, instanceOf(AclLinesAnswerElement.class));
+    AclLinesAnswerElement aclLinesAnswerElement = (AclLinesAnswerElement) answer;
+    AclLinesAnswerElement specificAclLinesAnswerElement = (AclLinesAnswerElement) specificAnswer;
+
+    // Tests for general ACL reachability answer
+    assertThat(
+        aclLinesAnswerElement.getUnreachableLines(),
+        hasEntry(equalTo(_c.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    AclReachabilityEntry blockedLine =
+        aclLinesAnswerElement.getUnreachableLines().get(_c.getName()).get(acl.getName()).first();
+    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
+
+    // Tests for ACL reachability of main ACL specifically
+    assertThat(
+        specificAclLinesAnswerElement.getUnreachableLines(),
+        hasEntry(equalTo(_c.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    blockedLine =
+        specificAclLinesAnswerElement
+            .getUnreachableLines()
+            .get(_c.getName())
+            .get(acl.getName())
+            .first();
+    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
   }
 
   @Test

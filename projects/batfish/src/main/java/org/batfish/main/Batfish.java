@@ -674,7 +674,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
           Map<String, Configuration> configurations,
           Map<String, Map<String, Set<Integer>>> linesToCheck) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
-    Synthesizer aclSynthesizer = synthesizeAcls(configurations);
+    Synthesizer aclSynthesizer =
+        synthesizeAcls(
+            configurations,
+            linesToCheck
+                .entrySet()
+                .stream()
+                .collect(toMap(e -> e.getKey(), e -> ImmutableSet.copyOf(e.getValue().keySet()))));
     linesToCheck.forEach(
         (hostname, aclNames) -> {
           aclNames.forEach(
@@ -920,13 +926,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!aclNameRegex.matcher(aclName).matches()) {
         continue;
       }
-      // skip juniper srx inbound filters, as they can't really contain
-      // operator error
-      // todo: Verify comment and bring this back (https://github.com/batfish/batfish/issues/1275)
-      //      if (aclName.contains("~ZONE_INTERFACE_FILTER~")
-      //          || aclName.contains("~INBOUND_ZONE_FILTER~")) {
-      //        continue;
-      //      }
 
       Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
@@ -943,11 +942,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
         }
         AclReachabilityQuerySynthesizer query =
             new AclReachabilityQuerySynthesizer(hostname, aclName, numLines);
-        Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
+        Synthesizer aclSynthesizer =
+            synthesizeAcls(
+                Collections.singletonMap(hostname, c),
+                Collections.singletonMap(hostname, ImmutableSet.of(aclName)));
         NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query);
         jobs.add(job);
       }
-      // Add current ACL back into ACL list before moving on to next ACL
     }
     return jobs;
   }
@@ -970,10 +971,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   .stream()
                   .map(Interface::getName)
                   .collect(Collectors.toList()));
-      Synthesizer aclSynthesizer = synthesizeAcls(Collections.singletonMap(hostname, c));
       Map<String, List<AclLine>> byAclName = e.getValue();
       for (Entry<String, List<AclLine>> e2 : byAclName.entrySet()) {
         String aclName = e2.getKey();
+        Synthesizer aclSynthesizer =
+            synthesizeAcls(
+                Collections.singletonMap(hostname, c),
+                Collections.singletonMap(hostname, ImmutableSet.of(aclName)));
         SortedSet<Integer> unmatchableLinesForAcl =
             unmatchableLinesForHostname.getOrDefault(aclName, ImmutableSortedSet.of());
         // Generate job for earlier blocking lines in this ACL
@@ -4401,7 +4405,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
   }
 
-  private Synthesizer synthesizeAcls(Map<String, Configuration> configurations) {
+  private Synthesizer synthesizeAcls(
+      Map<String, Configuration> configurations, Map<String, Set<String>> enabledAcls) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4410,6 +4415,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new Synthesizer(
             SynthesizerInputImpl.builder()
                 .setConfigurations(configurations)
+                .setEnabledAcls(enabledAcls)
                 .setSimplify(_settings.getSimplify())
                 .build());
 
