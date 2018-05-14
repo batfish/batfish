@@ -917,13 +917,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!aclNameRegex.matcher(aclName).matches()) {
         continue;
       }
-      // skip juniper srx inbound filters, as they can't really contain
-      // operator error
-      // todo: Verify comment and bring this back (https://github.com/batfish/batfish/issues/1275)
-      //      if (aclName.contains("~ZONE_INTERFACE_FILTER~")
-      //          || aclName.contains("~INBOUND_ZONE_FILTER~")) {
-      //        continue;
-      //      }
 
       Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
@@ -1924,6 +1917,22 @@ public class Batfish extends PluginConsumer implements IBatfish {
       blacklistNodes = parseNodeBlacklist(nodeBlacklistPath);
     }
     return blacklistNodes;
+  }
+
+  /**
+   * Gets the {@link NodeRolesData} for the testrig
+   *
+   * @return The {@link NodeRolesData} object.
+   */
+  @Override
+  public NodeRolesData getNodeRolesData() {
+    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    try {
+      return NodeRolesData.read(nodeRoleDataPath);
+    } catch (IOException e) {
+      _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      return null;
+    }
   }
 
   /**

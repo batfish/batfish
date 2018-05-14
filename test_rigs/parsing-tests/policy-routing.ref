@@ -1945,11 +1945,14 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
+        "D1" : { },
         "D2" : {
           "extended ip access-list" : {
             "drop10" : {
               "definitionLines" : [
-                74
+                74,
+                75,
+                76
               ],
               "numReferrers" : 1
             }
@@ -1959,7 +1962,8 @@
           "extended ip access-list" : {
             "policy-filter" : {
               "definitionLines" : [
-                84
+                84,
+                85
               ],
               "numReferrers" : 1
             }
@@ -1967,12 +1971,17 @@
           "route-map" : {
             "redirect-S-loopback" : {
               "definitionLines" : [
-                88
+                88,
+                89,
+                90
               ],
               "numReferrers" : 1
             }
           }
-        }
+        },
+        "S" : { },
+        "SL" : { },
+        "SR" : { }
       },
       "version" : "0.36.0"
     },

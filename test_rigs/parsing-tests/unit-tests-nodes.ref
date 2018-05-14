@@ -372,7 +372,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {
@@ -4908,7 +4908,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {
@@ -17409,6 +17409,62 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "ospf-stub" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "ospf-stub",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                "metricType" : "E2"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "ospfProcess" : {
+              "areas" : {
+                "7" : {
+                  "name" : 7
+                },
+                "46" : {
+                  "name" : 46
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "referenceBandwidth" : 1.0E9
+            }
           }
         }
       },

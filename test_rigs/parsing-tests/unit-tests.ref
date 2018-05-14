@@ -219,6 +219,7 @@
         "nxos_route_map_continue" : "nxos_route_map_continue",
         "nxos_system" : "nxos_system",
         "openflow" : "openflow",
+        "ospf-stub" : "juniper_ospf_stub_areas",
         "peer_template" : "peer_template",
         "pim" : "pim",
         "pim_snooping" : "pim_snooping",
@@ -465,6 +466,7 @@
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
+        "ospf-stub" : "PASSED",
         "peer_template" : "PASSED",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",
@@ -48221,6 +48223,77 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "ospf-stub" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'ospf-stub'  <== mode:DEFAULT_MODE))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_ospf",
+            "              OSPF:'ospf'  <== mode:DEFAULT_MODE",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'  <== mode:DEFAULT_MODE",
+            "                  IP_ADDRESS:'0.0.0.46'  <== mode:DEFAULT_MODE",
+            "                  (oa_stub",
+            "                    STUB:'stub'  <== mode:DEFAULT_MODE))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_ospf",
+            "              OSPF:'ospf'  <== mode:DEFAULT_MODE",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'  <== mode:DEFAULT_MODE",
+            "                  IP_ADDRESS:'0.0.0.46'  <== mode:DEFAULT_MODE",
+            "                  (oa_stub",
+            "                    STUB:'stub'  <== mode:DEFAULT_MODE",
+            "                    (oas_no_summaries",
+            "                      NO_SUMMARIES:'no-summaries'  <== mode:DEFAULT_MODE)))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_protocols",
+            "            PROTOCOLS:'protocols'  <== mode:DEFAULT_MODE",
+            "            (p_ospf",
+            "              OSPF:'ospf'  <== mode:DEFAULT_MODE",
+            "              (o_common",
+            "                (o_area",
+            "                  AREA:'area'  <== mode:DEFAULT_MODE",
+            "                  IP_ADDRESS:'0.0.0.7'  <== mode:DEFAULT_MODE",
+            "                  (oa_stub",
+            "                    STUB:'stub'  <== mode:DEFAULT_MODE",
+            "                    (oas_default_metric",
+            "                      DEFAULT_METRIC:'default-metric'  <== mode:DEFAULT_MODE",
+            "                      DEC:'10'  <== mode:DEFAULT_MODE)))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "peer_template" : {
           "sentences" : [
             "(cisco_configuration",
@@ -52199,6 +52272,14 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
+        "IosXrMultiCast" : { },
+        "L2VPN" : { },
+        "MCastRouting" : { },
+        "aaa_accounting" : { },
+        "aaa_authentication_login_default_tacacs_local" : { },
+        "aaa_group_server_source_interface" : { },
+        "access_list" : { },
+        "address_family" : { },
         "aggAddress" : {
           "ipv4 prefix-list" : {
             "ScienceDMZ-networks" : {
@@ -52211,17 +52292,21 @@
           "ipv6 prefix-list" : {
             "ScienceDMZ-networks" : {
               "definitionLines" : [
-                16
+                16,
+                17
               ],
               "numReferrers" : 0
             }
           }
         },
+        "arista-event-handler" : { },
         "arista_acl" : {
           "extended ip access-list" : {
             "abcd" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6
               ],
               "numReferrers" : 0
             }
@@ -52245,21 +52330,63 @@
             }
           }
         },
+        "arista_dhcp_relay" : { },
+        "arista_interface" : { },
+        "arista_ip_route" : { },
+        "arista_logging" : { },
         "arista_misc" : {
           "standard ip access-list" : {
             "sshabc" : {
               "definitionLines" : [
-                25
+                25,
+                26
               ],
               "numReferrers" : 1
             }
           }
         },
+        "arista_ospf" : { },
+        "arista_queue_monitor" : { },
+        "arista_username" : { },
+        "arista_vrf" : { },
+        "aruba_aaa" : { },
+        "aruba_acl" : { },
+        "aruba_airgroup" : { },
+        "aruba_crypto" : {
+          "crypto isakmp policy" : {
+            "1" : {
+              "definitionLines" : [
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "aruba_dhcp" : { },
+        "aruba_interface" : { },
+        "aruba_logging" : { },
+        "aruba_misc" : { },
+        "aruba_net" : { },
+        "aruba_snmp" : { },
+        "aruba_time_range" : { },
+        "aruba_user_role" : { },
+        "aruba_vlan" : { },
+        "aruba_voice" : { },
+        "aruba_vpn" : { },
         "as_path_prepend" : {
           "route-map" : {
             "rmap" : {
               "definitionLines" : [
-                4
+                4,
+                5
               ],
               "numReferrers" : 0
             }
@@ -52289,6 +52416,11 @@
             }
           }
         },
+        "asa_banner" : { },
+        "asa_ospf" : { },
+        "asa_ssh" : { },
+        "banner" : { },
+        "banner_dos" : { },
         "bgp-allow" : {
           "bgp group" : {
             "GROUP" : {
@@ -52357,6 +52489,8 @@
             }
           }
         },
+        "bgp_nsr" : { },
+        "bgp_route_policy" : { },
         "cadant_acl" : {
           "extended ipv6 access-list" : {
             "ipv6-acl-foo" : {
@@ -52369,19 +52503,26 @@
           "standard ip access-list" : {
             "50" : {
               "definitionLines" : [
-                5
+                5,
+                6,
+                7,
+                8
               ],
               "numReferrers" : 0
             },
             "51" : {
               "definitionLines" : [
-                10
+                10,
+                11,
+                12
               ],
               "numReferrers" : 0
             },
             "99" : {
               "definitionLines" : [
-                14
+                14,
+                15,
+                16
               ],
               "numReferrers" : 0
             },
@@ -52397,8 +52538,29 @@
               ],
               "numReferrers" : 0
             }
+          },
+          "standard ipv6 access-list" : {
+            "ipv6-acl-foo" : {
+              "definitionLines" : [
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
+              ],
+              "numReferrers" : 0
+            }
           }
         },
+        "cadant_banner" : { },
+        "cadant_bgp" : { },
         "cadant_cable" : {
           "docsis-policy" : {
             "1" : {
@@ -52411,12 +52573,23 @@
           "docsis-policy-rule" : {
             "1" : {
               "definitionLines" : [
-                49
+                49,
+                50,
+                51,
+                52,
+                53,
+                54
               ],
               "numReferrers" : 1
             }
           }
         },
+        "cadant_interface" : { },
+        "cadant_ip_route" : { },
+        "cadant_isis" : { },
+        "cadant_line" : { },
+        "cadant_logging" : { },
+        "cadant_misc" : { },
         "cadant_prefix_list" : {
           "ipv4 prefix-list" : {
             "A+C" : {
@@ -52427,7 +52600,8 @@
             },
             "foo" : {
               "definitionLines" : [
-                5
+                5,
+                6
               ],
               "numReferrers" : 0
             }
@@ -52435,28 +52609,36 @@
           "ipv6 prefix-list" : {
             "bar" : {
               "definitionLines" : [
-                8
+                8,
+                9
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cadant_qos" : { },
+        "cadant_rip" : { },
         "cadant_route_map" : {
           "route-map" : {
             "bar" : {
               "definitionLines" : [
-                9
+                9,
+                10,
+                11
               ],
               "numReferrers" : 0
             },
             "foo" : {
               "definitionLines" : [
-                5
+                5,
+                6,
+                7
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cadant_snmp" : { },
         "cisco-zone" : {
           "zone security" : {
             "z1" : {
@@ -52473,17 +52655,38 @@
             }
           }
         },
+        "cisco_aaa" : { },
         "cisco_acl" : {
           "extended ip access-list" : {
             "BLAH-BLAH" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23
               ],
               "numReferrers" : 0
             },
             "blah" : {
               "definitionLines" : [
-                30
+                30,
+                31
               ],
               "numReferrers" : 0
             },
@@ -52503,18 +52706,22 @@
           "ipv4 prefix-list" : {
             "allowprefix" : {
               "definitionLines" : [
-                33
+                33,
+                34
               ],
               "numReferrers" : 0
             },
             "allowprefix-asa" : {
               "definitionLines" : [
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cisco_additional_paths" : { },
+        "cisco_authentication" : { },
         "cisco_bgp" : {
           "bgp group" : {
             "p1" : {
@@ -52539,11 +52746,23 @@
             }
           }
         },
+        "cisco_bgp_confederation" : { },
         "cisco_cable" : {
           "cable service-class" : {
             "1" : {
               "definitionLines" : [
-                88
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99
               ],
               "numReferrers" : 0
             }
@@ -52551,7 +52770,8 @@
           "depi-class" : {
             "depiclass1" : {
               "definitionLines" : [
-                131
+                131,
+                132
               ],
               "numReferrers" : 1
             }
@@ -52559,13 +52779,18 @@
           "depi-tunnel" : {
             "bar1" : {
               "definitionLines" : [
-                137
+                137,
+                138,
+                139,
+                140,
+                141
               ],
               "numReferrers" : 0
             },
             "foo1" : {
               "definitionLines" : [
-                134
+                134,
+                135
               ],
               "numReferrers" : 1
             }
@@ -52605,11 +52830,16 @@
             }
           }
         },
+        "cisco_callhome" : { },
+        "cisco_control_plane" : { },
+        "cisco_controller" : { },
         "cisco_crypto" : {
           "crypto ipsec profile" : {
             "abcdefg" : {
               "definitionLines" : [
-                138
+                138,
+                139,
+                140
               ],
               "numReferrers" : 0
             }
@@ -52617,7 +52847,9 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
               "definitionLines" : [
-                145
+                145,
+                146,
+                147
               ],
               "numReferrers" : 0
             },
@@ -52640,46 +52872,92 @@
               "numReferrers" : 0
             }
           },
+          "crypto isakmp policy" : {
+            "1" : {
+              "definitionLines" : [
+                157,
+                158,
+                159,
+                160,
+                161,
+                162
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "crypto isakmp profile" : {
+            "myprofile" : {
+              "definitionLines" : [
+                164,
+                165,
+                166,
+                167,
+                168
+              ],
+              "numReferrers" : 0
+            }
+          },
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                187
+                187,
+                188
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cisco_dhcp" : { },
+        "cisco_domain" : { },
+        "cisco_dot11" : { },
+        "cisco_dot1x" : { },
+        "cisco_dspfarm" : { },
+        "cisco_dynamic_access_policy_record" : { },
         "cisco_eigrp" : {
           "extended ip access-list" : {
             "bippety" : {
               "definitionLines" : [
-                21
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27
               ],
               "numReferrers" : 0
             },
             "bloop_blop" : {
               "definitionLines" : [
-                90
+                90,
+                91
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cisco_enable" : { },
+        "cisco_flow" : { },
+        "cisco_hardware" : { },
+        "cisco_hsrp" : { },
         "cisco_interface" : {
           "extended ip access-list" : {
             "abc" : {
               "definitionLines" : [
-                4
+                4,
+                5
               ],
               "numReferrers" : 1
             }
           }
         },
+        "cisco_ip" : { },
         "cisco_ip_nat" : {
           "nat pool" : {
             "abc" : {
               "definitionLines" : [
-                4
+                4,
+                5
               ],
               "numReferrers" : 0
             },
@@ -52703,6 +52981,9 @@
             }
           }
         },
+        "cisco_ip_route" : { },
+        "cisco_ipsla" : { },
+        "cisco_ipv6" : { },
         "cisco_ipv6_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-XO" : {
@@ -52717,18 +52998,67 @@
               ],
               "numReferrers" : 0
             }
-          }
-        },
-        "cisco_l2tp" : {
-          "l2tp-class" : {
-            "foobar" : {
+          },
+          "standard ipv6 access-list" : {
+            "RT404888-XO" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
+              ],
+              "numReferrers" : 0
+            },
+            "abcdefg" : {
+              "definitionLines" : [
+                19,
+                20,
+                21,
+                22,
+                23
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cisco_isis" : { },
+        "cisco_l2tp" : {
+          "l2tp-class" : {
+            "foobar" : {
+              "definitionLines" : [
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "cisco_line" : { },
+        "cisco_logging" : { },
         "cisco_mac_acl" : {
           "mac acl" : {
             "1199" : {
@@ -52745,7 +53075,8 @@
             },
             "copp-system-p-acl-mac-cdp-udld-vtp" : {
               "definitionLines" : [
-                6
+                6,
+                7
               ],
               "numReferrers" : 0
             }
@@ -52755,17 +53086,23 @@
           "object-group service" : {
             "SVCGRP-ICMP" : {
               "definitionLines" : [
-                176
+                176,
+                177
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cisco_monitor" : { },
+        "cisco_mpls" : { },
+        "cisco_multicast" : { },
+        "cisco_ntp" : { },
         "cisco_nxos" : {
           "extended ip access-list" : {
             "copp-system-acl-icmp" : {
               "definitionLines" : [
-                5
+                5,
+                6
               ],
               "numReferrers" : 1
             }
@@ -52775,23 +53112,32 @@
           "route-map" : {
             "MATCH_ASN" : {
               "definitionLines" : [
-                6
+                6,
+                7
               ],
               "numReferrers" : 1
             }
           }
         },
+        "cisco_ospf" : { },
+        "cisco_pim" : { },
+        "cisco_platform" : { },
+        "cisco_privilege" : { },
         "cisco_qos" : {
           "object-group network" : {
             "dns_servers" : {
               "definitionLines" : [
-                26
+                26,
+                27,
+                28
               ],
               "numReferrers" : 0
             },
             "ntp_servers" : {
               "definitionLines" : [
-                29
+                29,
+                30,
+                31
               ],
               "numReferrers" : 0
             }
@@ -52799,29 +53145,54 @@
           "policy-map type inspect" : {
             "pminspect" : {
               "definitionLines" : [
-                32
+                32,
+                33,
+                34,
+                35,
+                36,
+                37
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cisco_queue_monitor" : { },
+        "cisco_redundancy" : { },
+        "cisco_rip" : { },
+        "cisco_role" : { },
         "cisco_route_map" : {
           "route-map" : {
             "MSDP-SA-RP-FILTER" : {
               "definitionLines" : [
-                19
+                19,
+                20,
+                21
               ],
               "numReferrers" : 0
             },
             "beeble" : {
               "definitionLines" : [
-                30
+                30,
+                31,
+                32,
+                33,
+                35,
+                36,
+                37,
+                38,
+                39
               ],
               "numReferrers" : 0
             },
             "connected-to-bgp" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10
               ],
               "numReferrers" : 0
             },
@@ -52833,35 +53204,46 @@
             },
             "mgmt" : {
               "definitionLines" : [
-                26
+                26,
+                27,
+                28
               ],
               "numReferrers" : 0
             },
             "multicaststuff" : {
               "definitionLines" : [
-                41
+                41,
+                42
               ],
               "numReferrers" : 0
             },
             "next-hop-null" : {
               "definitionLines" : [
-                23
+                23,
+                24
               ],
               "numReferrers" : 0
             },
             "to_svl-hub-router" : {
               "definitionLines" : [
-                12
+                12,
+                13
               ],
               "numReferrers" : 0
             }
           }
         },
+        "cisco_sccp" : { },
+        "cisco_snmp" : { },
+        "cisco_spanning_tree" : { },
+        "cisco_ssh" : { },
+        "cisco_stcapp" : { },
         "cisco_style_acl1" : {
           "extended ip access-list" : {
             "blah" : {
               "definitionLines" : [
-                1
+                1,
+                2
               ],
               "numReferrers" : 0
             }
@@ -52877,11 +53259,31 @@
             }
           }
         },
+        "cisco_system" : { },
+        "cisco_tacacs" : { },
+        "cisco_track" : { },
+        "cisco_username" : { },
+        "cisco_username_without_password" : { },
+        "cisco_vdc" : { },
+        "cisco_vlan" : { },
+        "cisco_voice" : { },
+        "cisco_vpdn" : { },
+        "cisco_vpn" : { },
+        "cisco_vrf" : { },
+        "cisco_vrrp" : { },
+        "cisco_webvpn" : { },
+        "cisco_wsma" : { },
+        "colon_in_vrf" : { },
+        "commSet" : { },
         "community-name-numbers" : {
           "route-map" : {
             "AAA1-BBB-CCC" : {
               "definitionLines" : [
-                6
+                6,
+                7,
+                8,
+                9,
+                10
               ],
               "numReferrers" : 0
             }
@@ -52899,7 +53301,11 @@
           "route-map" : {
             "AAA1-BBB-CCC" : {
               "definitionLines" : [
-                6
+                6,
+                7,
+                8,
+                9,
+                10
               ],
               "numReferrers" : 0
             }
@@ -52925,7 +53331,9 @@
           "route-map" : {
             "TO_NEIGHBOR" : {
               "definitionLines" : [
-                8
+                8,
+                9,
+                10
               ],
               "numReferrers" : 0
             }
@@ -52939,11 +53347,29 @@
             }
           }
         },
+        "community_set" : { },
         "foundry_access_list" : {
           "extended ipv6 access-list" : {
             "RT404888-Caltech" : {
               "definitionLines" : [
                 8
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "standard ipv6 access-list" : {
+            "RT404888-Caltech" : {
+              "definitionLines" : [
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17
               ],
               "numReferrers" : 0
             }
@@ -52965,6 +53391,18 @@
             }
           }
         },
+        "foundry_interface" : { },
+        "foundry_misc" : { },
+        "foundry_vlan_group" : { },
+        "host1" : { },
+        "host2" : { },
+        "if_tag_is" : { },
+        "interface_exit" : { },
+        "interface_name" : { },
+        "interface_sdr" : { },
+        "ios_bgp" : { },
+        "ios_xr_acl" : { },
+        "ios_xr_bgp" : { },
         "ios_xr_bgp_neighbor_group" : {
           "bgp group" : {
             "BGPMonitor" : {
@@ -53037,6 +53475,13 @@
             }
           }
         },
+        "ios_xr_isis" : { },
+        "ios_xr_multipart" : { },
+        "ios_xr_ntp" : { },
+        "ios_xr_ospf" : { },
+        "ios_xr_router_static" : { },
+        "ios_xr_ssh" : { },
+        "ios_xr_taskgroup" : { },
         "ip_prefix_list_single_line" : {
           "ipv4 prefix-list" : {
             "DENY-IPV4-ANY-IN" : {
@@ -53047,6 +53492,7 @@
             }
           }
         },
+        "juniper-ospf" : { },
         "juniper-tcpflags" : {
           "firewall filter" : {
             "foo" : {
@@ -53057,6 +53503,7 @@
             }
           }
         },
+        "juniper_apply_macro" : { },
         "juniper_bgp" : {
           "bgp group" : {
             "someinternalipv4group" : {
@@ -53109,6 +53556,7 @@
             }
           }
         },
+        "juniper_extended_community" : { },
         "juniper_firewall" : {
           "firewall filter" : {
             "blah" : {
@@ -53141,6 +53589,12 @@
             }
           }
         },
+        "juniper_interfaces" : { },
+        "juniper_isis" : { },
+        "juniper_l2_learning" : { },
+        "juniper_misc" : { },
+        "juniper_ntp" : { },
+        "juniper_passwords" : { },
         "juniper_relay" : {
           "dhcp-relay server-group" : {
             "site-dhcp" : {
@@ -53167,6 +53621,7 @@
             }
           }
         },
+        "juniper_routing_options" : { },
         "juniper_security" : {
           "firewall filter" : {
             "~GLOBAL_SECURITY_POLICY~" : {
@@ -53177,6 +53632,10 @@
             }
           }
         },
+        "juniper_snmp" : { },
+        "juniper_syslog" : { },
+        "juniper_system" : { },
+        "juniper_tacplus" : { },
         "local_v6_addr" : {
           "bgp group" : {
             "NEIGH" : {
@@ -53191,7 +53650,10 @@
           "mac acl" : {
             "STPDENY" : {
               "definitionLines" : [
-                13
+                13,
+                14,
+                15,
+                16
               ],
               "numReferrers" : 0
             },
@@ -53203,23 +53665,32 @@
             },
             "ipmi_test" : {
               "definitionLines" : [
-                9
+                9,
+                10,
+                11
               ],
               "numReferrers" : 0
             },
             "permitCDP" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6,
+                7
               ],
               "numReferrers" : 0
             }
           }
         },
+        "mos_interface" : { },
+        "mos_misc" : { },
+        "msdp_originator_id" : { },
         "named_and_numbered_lists" : {
           "route-map" : {
             "foo" : {
               "definitionLines" : [
-                4
+                4,
+                5
               ],
               "numReferrers" : 0
             }
@@ -53303,6 +53774,11 @@
             }
           }
         },
+        "neighbor_mix" : { },
+        "neighbor_nxos" : { },
+        "network6" : { },
+        "nexus" : { },
+        "nexus-arista-router-bgp" : { },
         "nexus_bgp" : {
           "bgp group" : {
             "PEER_BLLF" : {
@@ -53313,11 +53789,16 @@
             }
           }
         },
+        "nexus_ntp" : { },
+        "nexus_ssh" : { },
+        "no_aaa_group_server" : { },
+        "non_nexus_neighbor_af" : { },
         "nxos_acl" : {
           "extended ip access-list" : {
             "blah" : {
               "definitionLines" : [
-                9
+                9,
+                10
               ],
               "numReferrers" : 0
             },
@@ -53335,16 +53816,131 @@
             }
           }
         },
+        "nxos_bgp" : { },
+        "nxos_interface" : { },
+        "nxos_misc" : { },
+        "nxos_ospf" : { },
         "nxos_route_map_continue" : {
           "route-map" : {
             "foobar" : {
               "definitionLines" : [
-                6
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29,
+                30,
+                31,
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41,
+                42,
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49,
+                50,
+                51,
+                52,
+                53,
+                54,
+                55,
+                56,
+                57,
+                58,
+                59,
+                60,
+                61,
+                62,
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70,
+                71,
+                72,
+                73,
+                74,
+                75,
+                76,
+                77,
+                78,
+                79,
+                80,
+                81,
+                82,
+                83,
+                84,
+                85,
+                86,
+                87,
+                88,
+                89,
+                90,
+                91,
+                92,
+                93,
+                94,
+                95,
+                96,
+                97,
+                98,
+                99,
+                100,
+                101,
+                102,
+                103,
+                104,
+                105,
+                106,
+                107,
+                108,
+                109,
+                110,
+                111,
+                112,
+                113,
+                114
               ],
               "numReferrers" : 0
             }
           }
         },
+        "nxos_system" : { },
+        "openflow" : { },
+        "ospf-stub" : { },
         "peer_template" : {
           "bgp group" : {
             "RAAS" : {
@@ -53361,8 +53957,10 @@
             }
           }
         },
+        "pim" : { },
+        "pim_snooping" : { },
         "preSet" : {
-          "ipv4 prefix-list" : {
+          "prefix-set" : {
             "default_route" : {
               "definitionLines" : [
                 4
@@ -53387,7 +53985,8 @@
             },
             "test" : {
               "definitionLines" : [
-                4
+                4,
+                5
               ],
               "numReferrers" : 0
             }
@@ -53395,12 +53994,14 @@
           "route-map" : {
             "to_elacc" : {
               "definitionLines" : [
-                9
+                9,
+                10
               ],
               "numReferrers" : 0
             }
           }
         },
+        "rP" : { },
         "route_maps_in_two_address_families" : {
           "bgp group" : {
             "ABC" : {
@@ -53429,13 +54030,15 @@
           "route-map" : {
             "FROM_ABC_V4" : {
               "definitionLines" : [
-                24
+                24,
+                25
               ],
               "numReferrers" : 1
             },
             "FROM_ABC_V6" : {
               "definitionLines" : [
-                27
+                27,
+                28
               ],
               "numReferrers" : 1
             }
@@ -53463,26 +54066,47 @@
             }
           }
         },
+        "route_policy_igp_cost" : { },
+        "route_policy_metric_type" : { },
+        "route_policy_param" : { },
+        "router_msdp" : { },
+        "set_inline_community" : { },
+        "statistics" : { },
+        "switchport_range" : { },
+        "syslog_source_interface" : { },
+        "taskgroup" : { },
         "tcpflags" : {
           "extended ip access-list" : {
             "100" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
               ],
               "numReferrers" : 0
             }
           }
         },
+        "test" : { },
         "underscore_variable" : {
           "route-map" : {
             "JKL_MNO_PQR" : {
               "definitionLines" : [
-                4
+                4,
+                5
               ],
               "numReferrers" : 0
             }
           }
-        }
+        },
+        "variables" : { },
+        "variables_dos" : { },
+        "vlan_access_map4" : { },
+        "vrf_context" : { },
+        "vxlan" : { }
       },
       "undefinedReferences" : {
         "IosXrMultiCast" : {
@@ -54255,7 +54879,7 @@
               ]
             }
           },
-          "ipv4 prefix-list" : {
+          "prefix-set" : {
             "EBGP-PEER-BOGONS" : {
               "route-policy prefix-set" : [
                 78
@@ -54311,7 +54935,7 @@
           }
         },
         "route_policy_as_path_set" : {
-          "ipv4 prefix-list" : {
+          "prefix-set" : {
             "CENIC_DC_Internal" : {
               "route-policy prefix-set" : [
                 25
@@ -54325,7 +54949,7 @@
           }
         },
         "route_policy_metric_type" : {
-          "ipv4 prefix-list" : {
+          "prefix-set" : {
             "DC_Internal" : {
               "route-policy prefix-set" : [
                 7
@@ -54334,7 +54958,7 @@
           }
         },
         "route_policy_param" : {
-          "ipv4 prefix-list" : {
+          "prefix-set" : {
             "$cust_v4_pfx" : {
               "route-policy prefix-set" : [
                 5
@@ -54738,6 +55362,7 @@
         "nxos_route_map_continue" : "PASSED",
         "nxos_system" : "PASSED",
         "openflow" : "PASSED",
+        "ospf-stub" : "PASSED",
         "peer_template" : "PASSED",
         "pim" : "PASSED",
         "pim_snooping" : "PASSED",

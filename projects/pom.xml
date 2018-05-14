@@ -451,6 +451,12 @@
       <!-- Batfish modules. -->
       <dependency>
         <groupId>org.batfish</groupId>
+        <artifactId>allinone</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.batfish</groupId>
         <artifactId>batfish</artifactId>
         <version>${project.version}</version>
       </dependency>
