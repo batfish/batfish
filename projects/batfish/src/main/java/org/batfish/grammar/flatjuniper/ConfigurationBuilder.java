@@ -650,8 +650,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_BOOTPS;
     } else if (ctx.JUNOS_CHARGEN() != null) {
       return JunosApplication.JUNOS_CHARGEN;
-    } else if (ctx.JUNOS_CIFS() != null) {
-      return JunosApplication.JUNOS_CIFS;
+      //    } else if (ctx.JUNOS_CIFS() != null) {
+      //      return JunosApplication.JUNOS_CIFS;
     } else if (ctx.JUNOS_CVSPSERVER() != null) {
       return JunosApplication.JUNOS_CVSPSERVER;
     } else if (ctx.JUNOS_DHCP_CLIENT() != null) {

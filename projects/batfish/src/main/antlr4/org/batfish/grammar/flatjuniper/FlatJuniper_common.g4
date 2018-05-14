@@ -180,7 +180,6 @@ junos_application
    | JUNOS_BOOTPC
    | JUNOS_BOOTPS
    | JUNOS_CHARGEN
-   | JUNOS_CIFS
    | JUNOS_CVSPSERVER
    | JUNOS_DHCP_CLIENT
    | JUNOS_DHCP_RELAY
@@ -371,6 +370,11 @@ junos_application
    | JUNOS_XNM_CLEAR_TEXT
    | JUNOS_XNM_SSL
    | JUNOS_YMSG
+;
+
+junos_application_set
+:
+   JUNOS_CIFS
 ;
 
 null_filler

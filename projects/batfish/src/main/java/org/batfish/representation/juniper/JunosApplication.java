@@ -535,6 +535,35 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_IKE:
+        {
+          portRangeStart = NamedPort.ISAKMP.number(); // TODO: change this to ISAKMP_OR_IKE
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_IKE_NAT:
+        {
+          portRangeStart =
+              NamedPort.NON500_ISAKMP.number(); // TODO: change this to NON500_ISAKMP_OR_IKE_NAT
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_LDAP:
+        {
+          portRangeStart = NamedPort.LDAP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_MSN:
+        {
+          portRangeStart = NamedPort.MSN.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_MS_RPC_TCP:
         {
           portRangeStart = NamedPort.MSRPC.number();
@@ -549,6 +578,13 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_MS_SQL:
+        {
+          portRangeStart = NamedPort.MS_SQL.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_NNTP:
         {
           portRangeStart = NamedPort.NNTP.number();
@@ -559,6 +595,13 @@ public enum JunosApplication implements Application {
       case JUNOS_NTP:
         {
           portRangeStart = NamedPort.NTP.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
+      case JUNOS_PC_ANYWHERE:
+        {
+          portRangeStart = NamedPort.PCANYWHERE_STATUS.number();
           ipProtocol = IpProtocol.UDP;
           break;
         }
@@ -597,6 +640,13 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_SMTP:
+        {
+          portRangeStart = NamedPort.SMTP.number();
+          ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
       case JUNOS_SSH:
         {
           portRangeStart = NamedPort.SSH.number();
@@ -608,6 +658,11 @@ public enum JunosApplication implements Application {
       default:
         return null;
     }
+
+    //    MISCELLANEOUS: unimplemented pre-defined junos application: 'junos-cifs'
+    //    MISCELLANEOUS: unimplemented pre-defined junos application: 'junos-ms-rpc'
+    //    MISCELLANEOUS: unimplemented pre-defined junos application: 'junos-sun-rpc'
+    //    MISCELLANEOUS: unimplemented pre-defined junos application: 'junos-ms-rpc-any'
 
     String t1Name = "t1";
     Term t1 = new Term(t1Name);

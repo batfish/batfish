@@ -1017,6 +1017,7 @@ sepctxpm_application
    (
       ANY
       | junos_application
+      | junos_application_set
       | name = variable
    )
 ;
