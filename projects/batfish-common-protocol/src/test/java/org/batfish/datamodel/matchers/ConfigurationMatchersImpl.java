@@ -110,8 +110,8 @@ final class ConfigurationMatchersImpl {
         @Nonnull String name, @Nonnull Matcher<? super Route6FilterList> subMatcher) {
       super(
           subMatcher,
-          "A Configuration with route6FilterList " + name + ":",
-          "route6FilterList " + name);
+          "A Configuration with Route6FilterList " + name + ":",
+          "Route6FilterList " + name);
       _name = name;
     }
 
@@ -127,8 +127,8 @@ final class ConfigurationMatchersImpl {
     HasRouteFilterList(@Nonnull String name, @Nonnull Matcher<? super RouteFilterList> subMatcher) {
       super(
           subMatcher,
-          "A Configuration with routeFilterList " + name + ":",
-          "routeFilterList " + name);
+          "A Configuration with RouteFilterList " + name + ":",
+          "RouteFilterList " + name);
       _name = name;
     }
 
