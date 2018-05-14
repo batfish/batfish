@@ -917,13 +917,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (!aclNameRegex.matcher(aclName).matches()) {
         continue;
       }
-      // skip juniper srx inbound filters, as they can't really contain
-      // operator error
-      // todo: Verify comment and bring this back (https://github.com/batfish/batfish/issues/1275)
-      //      if (aclName.contains("~ZONE_INTERFACE_FILTER~")
-      //          || aclName.contains("~INBOUND_ZONE_FILTER~")) {
-      //        continue;
-      //      }
 
       Set<?> s = (Set<?>) e.getValue();
       for (Object o : s) {
