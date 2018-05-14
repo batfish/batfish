@@ -661,8 +661,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     OspfProcess newProc = new OspfProcess();
     String vrfName = routingInstance.getName();
     // export policies
-    String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
+    String ospfExportPolicyName = computeOspfExportPolicyName(vrfName);
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, _c);
+    applyLocalRoutePolicy(routingInstance, ospfExportPolicy);
     _c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
     newProc.setExportPolicy(ospfExportPolicyName);
     If ospfExportPolicyConditional = new If();
@@ -706,6 +707,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newProc.setRouterId(routingInstance.getRouterId());
     newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
+  }
+
+  public static String computeOspfExportPolicyName(String vrfName) {
+    return "~OSPF_EXPORT_POLICY:" + vrfName + "~";
   }
 
   public Set<Long> getAllStandardCommunities() {

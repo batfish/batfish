@@ -41,6 +41,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
@@ -84,6 +85,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
@@ -1251,8 +1253,8 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testLocalRouteExport() throws IOException {
-    Configuration c = parseConfig("local-route-export");
+  public void testLocalRouteExportBgp() throws IOException {
+    Configuration c = parseConfig("local-route-export-bgp");
     Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
 
     String peer1Vrf = "peer1Vrf";
@@ -1320,6 +1322,103 @@ public class FlatJuniperGrammarTest {
     assertThat(
         peer4AllowAllLocal
             .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(true));
+  }
+
+  @Test
+  public void testLocalRouteExportOspf() throws IOException {
+    Configuration c = parseConfig("local-route-export-ospf");
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
+
+    String vrf1 = "vrf1";
+    RoutingPolicy vrf1RejectAllLocal =
+        c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf1));
+
+    String vrf2 = "vrf2";
+    RoutingPolicy vrf2RejectPtpLocal =
+        c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf2));
+
+    String vrf3 = "vrf3";
+    RoutingPolicy vrf3RejectLanLocal =
+        c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf3));
+
+    String vrf4 = "vrf4";
+    RoutingPolicy vrf4AllowAllLocal = c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf4));
+
+    LocalRoute localRoutePtp = new LocalRoute(new InterfaceAddress("10.0.0.0/31"), "ge-0/0/0.0");
+    LocalRoute localRouteLan = new LocalRoute(new InterfaceAddress("10.0.1.0/30"), "ge-0/0/1.0");
+
+    // Peer policies should reject local routes not exported by their VRFs
+    eb.setVrf(vrf1);
+    assertThat(
+        vrf1RejectAllLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        vrf1RejectAllLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    eb.setVrf(vrf2);
+    assertThat(
+        vrf2RejectPtpLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        vrf2RejectPtpLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(true));
+
+    eb.setVrf(vrf3);
+    assertThat(
+        vrf3RejectLanLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        vrf3RejectLanLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    eb.setVrf(vrf4);
+    assertThat(
+        vrf4AllowAllLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        vrf4AllowAllLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
             .getBooleanValue(),
         equalTo(true));
   }
