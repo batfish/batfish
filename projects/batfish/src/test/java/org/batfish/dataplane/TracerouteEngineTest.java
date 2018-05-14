@@ -205,17 +205,17 @@ public class TracerouteEngineTest {
 
     Ip arpIp = new Ip("4.4.4.4");
 
-    String iface1 = "iface1";
-    String iface4 = "iface4";
+    String i1Name = i1.getName();
+    String i4Name = i4.getName();
 
     // vrf1 has no routes to arpIp
     Fib vrf1Fib = MockFib.builder().setNextHopInterfacesByIp(ImmutableMap.of()).build();
 
-    // vrf2 has routes arpIp through iface4
+    // vrf2 routes arpIp through i4
     Fib vrf2Fib =
         MockFib.builder()
             .setNextHopInterfacesByIp(
-                ImmutableMap.of(arpIp, ImmutableMap.of(iface4, ImmutableMap.of())))
+                ImmutableMap.of(arpIp, ImmutableMap.of(i4Name, ImmutableMap.of())))
             .build();
 
     assertFalse(
@@ -231,19 +231,22 @@ public class TracerouteEngineTest {
         "ARP request to interface that owns arpIp should succeed",
         TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
 
-    // now arpIp isn't owned by the VRF, but is routable
+    // arpIp isn't owned by the VRF, but is routable
     arpIp = new Ip("4.4.4.0");
     assertFalse(
         "ARP request for interface subnet to the same interface should fail",
         TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
 
-    // now there are routes for arpIp through multiple interfaces, but i4 still doesn't reply
+    /*
+     * There are routes for arpIp through multiple interfaces, but i4 still doesn't reply because
+     * there is a route for arpIp through i4 itself.
+     */
     arpIp = new Ip("4.4.4.0");
     vrf2Fib =
         MockFib.builder()
             .setNextHopInterfacesByIp(
                 ImmutableMap.of(
-                    arpIp, ImmutableMap.of(iface1, ImmutableMap.of(), iface4, ImmutableMap.of())))
+                    arpIp, ImmutableMap.of(i1Name, ImmutableMap.of(), i4Name, ImmutableMap.of())))
             .build();
     assertFalse(
         "ARP request for interface subnet to the same interface should fail, "
