@@ -6,17 +6,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Set;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
@@ -36,7 +31,6 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.AclReachabilityQuestionPlugin.AclReachabilityAnswerer;
 import org.batfish.question.AclReachabilityQuestionPlugin.AclReachabilityQuestion;
-import org.batfish.z3.SynthesizerInputImpl;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -135,37 +129,6 @@ public class AclReachabilityTest {
             .first();
     assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
     assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
-  }
-
-  @Test
-  public void testCorrectAclsEncoded() throws IOException {
-    // Test that synthesizer only encodes whitelisted ACL when given a configuration with two ACLs.
-    IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
-    IpAccessList acl1 = aclb.setLines(ImmutableList.of()).setName("acl1").build();
-    IpAccessList acl2 = aclb.setLines(ImmutableList.of()).setName("acl2").build();
-
-    assertThat(_c, hasIpAccessLists(hasEntry(equalTo("acl1"), equalTo(acl1))));
-    assertThat(_c, hasIpAccessLists(hasEntry(equalTo("acl2"), equalTo(acl2))));
-
-    Map<String, Configuration> configurations = ImmutableMap.of(_c.getName(), _c);
-    Map<String, Set<String>> enabledAcls =
-        ImmutableMap.of(_c.getName(), ImmutableSet.of(acl1.getName()));
-    SynthesizerInputImpl inputImpl =
-        SynthesizerInputImpl.builder()
-            .setConfigurations(configurations)
-            .setEnabledAcls(enabledAcls)
-            .build();
-
-    // ACL actions and ACL conditions should both contain acl1 and not acl2.
-    assertThat(
-        inputImpl.getAclActions(),
-        hasEntry(equalTo(_c.getName()), hasKey(equalTo(acl1.getName()))));
-    assertThat(inputImpl.getAclActions().get(_c.getName()).size(), equalTo(1));
-
-    assertThat(
-        inputImpl.getAclConditions(),
-        hasEntry(equalTo(_c.getName()), hasKey(equalTo(acl1.getName()))));
-    assertThat(inputImpl.getAclConditions().get(_c.getName()).size(), equalTo(1));
   }
 
   @Test
