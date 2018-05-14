@@ -221,7 +221,18 @@
         "description" : "Unused structure of type: 'cable service-class' with name: '1'",
         "files" : {
           "cisco_cable" : [
-            88
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99
           ]
         }
       },
@@ -229,7 +240,9 @@
         "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
         "files" : {
           "cisco_crypto" : [
-            138
+            138,
+            139,
+            140
           ]
         }
       },
@@ -237,7 +250,9 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
         "files" : {
           "cisco_crypto" : [
-            145
+            145,
+            146,
+            147
           ]
         }
       },
@@ -265,11 +280,48 @@
           ]
         }
       },
+      "unused:crypto isakmp policy:1" : {
+        "description" : "Unused structure of type: 'crypto isakmp policy' with name: '1'",
+        "files" : {
+          "aruba_crypto" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ],
+          "cisco_crypto" : [
+            157,
+            158,
+            159,
+            160,
+            161,
+            162
+          ]
+        }
+      },
+      "unused:crypto isakmp profile:myprofile" : {
+        "description" : "Unused structure of type: 'crypto isakmp profile' with name: 'myprofile'",
+        "files" : {
+          "cisco_crypto" : [
+            164,
+            165,
+            166,
+            167,
+            168
+          ]
+        }
+      },
       "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            187
+            187,
+            188
           ]
         }
       },
@@ -277,7 +329,11 @@
         "description" : "Unused structure of type: 'depi-tunnel' with name: 'bar1'",
         "files" : {
           "cisco_cable" : [
-            137
+            137,
+            138,
+            139,
+            140,
+            141
           ]
         }
       },
@@ -341,7 +397,12 @@
         "description" : "Unused structure of type: 'extended ip access-list' with name: '100'",
         "files" : {
           "tcpflags" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
           ]
         }
       },
@@ -349,7 +410,26 @@
         "description" : "Unused structure of type: 'extended ip access-list' with name: 'BLAH-BLAH'",
         "files" : {
           "cisco_acl" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
           ]
         }
       },
@@ -357,7 +437,9 @@
         "description" : "Unused structure of type: 'extended ip access-list' with name: 'abcd'",
         "files" : {
           "arista_acl" : [
-            4
+            4,
+            5,
+            6
           ]
         }
       },
@@ -365,7 +447,13 @@
         "description" : "Unused structure of type: 'extended ip access-list' with name: 'bippety'",
         "files" : {
           "cisco_eigrp" : [
-            21
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27
           ]
         }
       },
@@ -373,13 +461,16 @@
         "description" : "Unused structure of type: 'extended ip access-list' with name: 'blah'",
         "files" : {
           "cisco_acl" : [
-            30
+            30,
+            31
           ],
           "cisco_style_acl1" : [
-            1
+            1,
+            2
           ],
           "nxos_acl" : [
-            9
+            9,
+            10
           ]
         }
       },
@@ -387,7 +478,8 @@
         "description" : "Unused structure of type: 'extended ip access-list' with name: 'bloop_blop'",
         "files" : {
           "cisco_eigrp" : [
-            90
+            90,
+            91
           ]
         }
       },
@@ -521,7 +613,8 @@
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'allowprefix'",
         "files" : {
           "cisco_acl" : [
-            33
+            33,
+            34
           ]
         }
       },
@@ -529,15 +622,8 @@
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'allowprefix-asa'",
         "files" : {
           "cisco_acl" : [
-            36
-          ]
-        }
-      },
-      "unused:ipv4 prefix-list:default_route" : {
-        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'default_route'",
-        "files" : {
-          "ios_xr_prefix_set" : [
-            4
+            36,
+            37
           ]
         }
       },
@@ -545,7 +631,8 @@
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'foo'",
         "files" : {
           "cadant_prefix_list" : [
-            5
+            5,
+            6
           ]
         }
       },
@@ -553,15 +640,8 @@
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'test'",
         "files" : {
           "prefix_list_ipv4" : [
-            4
-          ]
-        }
-      },
-      "unused:ipv4 prefix-list:ucla_networks" : {
-        "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'ucla_networks'",
-        "files" : {
-          "ios_xr_prefix_set" : [
-            7
+            4,
+            5
           ]
         }
       },
@@ -569,7 +649,8 @@
         "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'ScienceDMZ-networks'",
         "files" : {
           "ios_bgp_aggregate_address" : [
-            16
+            16,
+            17
           ]
         }
       },
@@ -577,7 +658,8 @@
         "description" : "Unused structure of type: 'ipv6 prefix-list' with name: 'bar'",
         "files" : {
           "cadant_prefix_list" : [
-            8
+            8,
+            9
           ]
         }
       },
@@ -585,7 +667,23 @@
         "description" : "Unused structure of type: 'l2tp-class' with name: 'foobar'",
         "files" : {
           "cisco_l2tp" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
           ]
         }
       },
@@ -609,7 +707,10 @@
         "description" : "Unused structure of type: 'mac acl' with name: 'STPDENY'",
         "files" : {
           "mac_access_list" : [
-            13
+            13,
+            14,
+            15,
+            16
           ]
         }
       },
@@ -617,7 +718,8 @@
         "description" : "Unused structure of type: 'mac acl' with name: 'copp-system-p-acl-mac-cdp-udld-vtp'",
         "files" : {
           "cisco_mac_acl" : [
-            6
+            6,
+            7
           ]
         }
       },
@@ -633,7 +735,9 @@
         "description" : "Unused structure of type: 'mac acl' with name: 'ipmi_test'",
         "files" : {
           "mac_access_list" : [
-            9
+            9,
+            10,
+            11
           ]
         }
       },
@@ -641,7 +745,10 @@
         "description" : "Unused structure of type: 'mac acl' with name: 'permitCDP'",
         "files" : {
           "mac_access_list" : [
-            4
+            4,
+            5,
+            6,
+            7
           ]
         }
       },
@@ -649,7 +756,8 @@
         "description" : "Unused structure of type: 'nat pool' with name: 'abc'",
         "files" : {
           "cisco_ip_nat" : [
-            4
+            4,
+            5
           ]
         }
       },
@@ -681,7 +789,9 @@
         "description" : "Unused structure of type: 'object-group network' with name: 'dns_servers'",
         "files" : {
           "cisco_qos" : [
-            26
+            26,
+            27,
+            28
           ]
         }
       },
@@ -689,7 +799,9 @@
         "description" : "Unused structure of type: 'object-group network' with name: 'ntp_servers'",
         "files" : {
           "cisco_qos" : [
-            29
+            29,
+            30,
+            31
           ]
         }
       },
@@ -697,7 +809,8 @@
         "description" : "Unused structure of type: 'object-group service' with name: 'SVCGRP-ICMP'",
         "files" : {
           "cisco_misc" : [
-            176
+            176,
+            177
           ]
         }
       },
@@ -705,7 +818,12 @@
         "description" : "Unused structure of type: 'policy-map type inspect' with name: 'pminspect'",
         "files" : {
           "cisco_qos" : [
-            32
+            32,
+            33,
+            34,
+            35,
+            36,
+            37
           ]
         }
       },
@@ -725,14 +843,38 @@
           ]
         }
       },
+      "unused:prefix-set:default_route" : {
+        "description" : "Unused structure of type: 'prefix-set' with name: 'default_route'",
+        "files" : {
+          "ios_xr_prefix_set" : [
+            4
+          ]
+        }
+      },
+      "unused:prefix-set:ucla_networks" : {
+        "description" : "Unused structure of type: 'prefix-set' with name: 'ucla_networks'",
+        "files" : {
+          "ios_xr_prefix_set" : [
+            7
+          ]
+        }
+      },
       "unused:route-map:AAA1-BBB-CCC" : {
         "description" : "Unused structure of type: 'route-map' with name: 'AAA1-BBB-CCC'",
         "files" : {
           "community_name_numbers" : [
-            6
+            6,
+            7,
+            8,
+            9,
+            10
           ],
           "community_name_numbers_dos" : [
-            6
+            6,
+            7,
+            8,
+            9,
+            10
           ]
         }
       },
@@ -740,7 +882,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'JKL_MNO_PQR'",
         "files" : {
           "underscore_variable" : [
-            4
+            4,
+            5
           ]
         }
       },
@@ -748,7 +891,9 @@
         "description" : "Unused structure of type: 'route-map' with name: 'MSDP-SA-RP-FILTER'",
         "files" : {
           "cisco_route_map" : [
-            19
+            19,
+            20,
+            21
           ]
         }
       },
@@ -756,7 +901,9 @@
         "description" : "Unused structure of type: 'route-map' with name: 'TO_NEIGHBOR'",
         "files" : {
           "community_list_named" : [
-            8
+            8,
+            9,
+            10
           ]
         }
       },
@@ -764,7 +911,9 @@
         "description" : "Unused structure of type: 'route-map' with name: 'bar'",
         "files" : {
           "cadant_route_map" : [
-            9
+            9,
+            10,
+            11
           ]
         }
       },
@@ -772,7 +921,15 @@
         "description" : "Unused structure of type: 'route-map' with name: 'beeble'",
         "files" : {
           "cisco_route_map" : [
-            30
+            30,
+            31,
+            32,
+            33,
+            35,
+            36,
+            37,
+            38,
+            39
           ]
         }
       },
@@ -780,7 +937,13 @@
         "description" : "Unused structure of type: 'route-map' with name: 'connected-to-bgp'",
         "files" : {
           "cisco_route_map" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
           ]
         }
       },
@@ -788,10 +951,13 @@
         "description" : "Unused structure of type: 'route-map' with name: 'foo'",
         "files" : {
           "cadant_route_map" : [
-            5
+            5,
+            6,
+            7
           ],
           "named_and_numbered_lists" : [
-            4
+            4,
+            5
           ]
         }
       },
@@ -799,7 +965,115 @@
         "description" : "Unused structure of type: 'route-map' with name: 'foobar'",
         "files" : {
           "nxos_route_map_continue" : [
-            6
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114
           ]
         }
       },
@@ -815,7 +1089,9 @@
         "description" : "Unused structure of type: 'route-map' with name: 'mgmt'",
         "files" : {
           "cisco_route_map" : [
-            26
+            26,
+            27,
+            28
           ]
         }
       },
@@ -823,7 +1099,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'multicaststuff'",
         "files" : {
           "cisco_route_map" : [
-            41
+            41,
+            42
           ]
         }
       },
@@ -831,7 +1108,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'next-hop-null'",
         "files" : {
           "cisco_route_map" : [
-            23
+            23,
+            24
           ]
         }
       },
@@ -839,7 +1117,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'rmap'",
         "files" : {
           "as_path_prepend" : [
-            4
+            4,
+            5
           ]
         }
       },
@@ -847,7 +1126,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'to_elacc'",
         "files" : {
           "prefix_list_ipv4" : [
-            9
+            9,
+            10
           ]
         }
       },
@@ -855,7 +1135,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'to_svl-hub-router'",
         "files" : {
           "cisco_route_map" : [
-            12
+            12,
+            13
           ]
         }
       },
@@ -879,7 +1160,10 @@
         "description" : "Unused structure of type: 'standard ip access-list' with name: '50'",
         "files" : {
           "cadant_acl" : [
-            5
+            5,
+            6,
+            7,
+            8
           ]
         }
       },
@@ -887,7 +1171,9 @@
         "description" : "Unused structure of type: 'standard ip access-list' with name: '51'",
         "files" : {
           "cadant_acl" : [
-            10
+            10,
+            11,
+            12
           ]
         }
       },
@@ -895,7 +1181,9 @@
         "description" : "Unused structure of type: 'standard ip access-list' with name: '99'",
         "files" : {
           "cadant_acl" : [
-            14
+            14,
+            15,
+            16
           ]
         }
       },
@@ -922,12 +1210,80 @@
             5
           ]
         }
+      },
+      "unused:standard ipv6 access-list:RT404888-Caltech" : {
+        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'RT404888-Caltech'",
+        "files" : {
+          "foundry_access_list" : [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
+          ]
+        }
+      },
+      "unused:standard ipv6 access-list:RT404888-XO" : {
+        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'RT404888-XO'",
+        "files" : {
+          "cisco_ipv6_access_list" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ]
+        }
+      },
+      "unused:standard ipv6 access-list:abcdefg" : {
+        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'abcdefg'",
+        "files" : {
+          "cisco_ipv6_access_list" : [
+            19,
+            20,
+            21,
+            22,
+            23
+          ]
+        }
+      },
+      "unused:standard ipv6 access-list:ipv6-acl-foo" : {
+        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'ipv6-acl-foo'",
+        "files" : {
+          "cadant_acl" : [
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
+          ]
+        }
       }
     },
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 122
+      "numResults" : 129
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -938,14 +1294,17 @@
         },
         "ipv6 prefix-list" : {
           "ScienceDMZ-networks" : [
-            16
+            16,
+            17
           ]
         }
       },
       "arista_acl" : {
         "extended ip access-list" : {
           "abcd" : [
-            4
+            4,
+            5,
+            6
           ]
         }
       },
@@ -956,10 +1315,26 @@
           ]
         }
       },
+      "aruba_crypto" : {
+        "crypto isakmp policy" : {
+          "1" : [
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+          ]
+        }
+      },
       "as_path_prepend" : {
         "route-map" : {
           "rmap" : [
-            4
+            4,
+            5
           ]
         }
       },
@@ -1010,19 +1385,42 @@
         },
         "standard ip access-list" : {
           "50" : [
-            5
+            5,
+            6,
+            7,
+            8
           ],
           "51" : [
-            10
+            10,
+            11,
+            12
           ],
           "99" : [
-            14
+            14,
+            15,
+            16
           ],
           "stdAcl-bar" : [
             14
           ],
           "stdAcl-foo" : [
             5
+          ]
+        },
+        "standard ipv6 access-list" : {
+          "ipv6-acl-foo" : [
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
           ]
         }
       },
@@ -1039,32 +1437,58 @@
             7
           ],
           "foo" : [
-            5
+            5,
+            6
           ]
         },
         "ipv6 prefix-list" : {
           "bar" : [
-            8
+            8,
+            9
           ]
         }
       },
       "cadant_route_map" : {
         "route-map" : {
           "bar" : [
-            9
+            9,
+            10,
+            11
           ],
           "foo" : [
-            5
+            5,
+            6,
+            7
           ]
         }
       },
       "cisco_acl" : {
         "extended ip access-list" : {
           "BLAH-BLAH" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23
           ],
           "blah" : [
-            30
+            30,
+            31
           ],
           "extended" : [
             26
@@ -1075,10 +1499,12 @@
         },
         "ipv4 prefix-list" : {
           "allowprefix" : [
-            33
+            33,
+            34
           ],
           "allowprefix-asa" : [
-            36
+            36,
+            37
           ]
         }
       },
@@ -1092,12 +1518,27 @@
       "cisco_cable" : {
         "cable service-class" : {
           "1" : [
-            88
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99
           ]
         },
         "depi-tunnel" : {
           "bar1" : [
-            137
+            137,
+            138,
+            139,
+            140,
+            141
           ]
         },
         "docsis-policy-rule" : {
@@ -1115,12 +1556,16 @@
       "cisco_crypto" : {
         "crypto ipsec profile" : {
           "abcdefg" : [
-            138
+            138,
+            139,
+            140
           ]
         },
         "crypto ipsec transform-set" : {
           "ESP-3DES-MD5" : [
-            145
+            145,
+            146,
+            147
           ],
           "IPSEC_AES_256" : [
             148
@@ -1132,26 +1577,54 @@
             150
           ]
         },
+        "crypto isakmp policy" : {
+          "1" : [
+            157,
+            158,
+            159,
+            160,
+            161,
+            162
+          ]
+        },
+        "crypto isakmp profile" : {
+          "myprofile" : [
+            164,
+            165,
+            166,
+            167,
+            168
+          ]
+        },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            187
+            187,
+            188
           ]
         }
       },
       "cisco_eigrp" : {
         "extended ip access-list" : {
           "bippety" : [
-            21
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27
           ],
           "bloop_blop" : [
-            90
+            90,
+            91
           ]
         }
       },
       "cisco_ip_nat" : {
         "nat pool" : {
           "abc" : [
-            4
+            4,
+            5
           ],
           "dynamic-srcnat" : [
             12
@@ -1172,12 +1645,52 @@
           "abcdefg" : [
             19
           ]
+        },
+        "standard ipv6 access-list" : {
+          "RT404888-XO" : [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
+          ],
+          "abcdefg" : [
+            19,
+            20,
+            21,
+            22,
+            23
+          ]
         }
       },
       "cisco_l2tp" : {
         "l2tp-class" : {
           "foobar" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
           ]
         }
       },
@@ -1190,64 +1703,97 @@
             4
           ],
           "copp-system-p-acl-mac-cdp-udld-vtp" : [
-            6
+            6,
+            7
           ]
         }
       },
       "cisco_misc" : {
         "object-group service" : {
           "SVCGRP-ICMP" : [
-            176
+            176,
+            177
           ]
         }
       },
       "cisco_qos" : {
         "object-group network" : {
           "dns_servers" : [
-            26
+            26,
+            27,
+            28
           ],
           "ntp_servers" : [
-            29
+            29,
+            30,
+            31
           ]
         },
         "policy-map type inspect" : {
           "pminspect" : [
-            32
+            32,
+            33,
+            34,
+            35,
+            36,
+            37
           ]
         }
       },
       "cisco_route_map" : {
         "route-map" : {
           "MSDP-SA-RP-FILTER" : [
-            19
+            19,
+            20,
+            21
           ],
           "beeble" : [
-            30
+            30,
+            31,
+            32,
+            33,
+            35,
+            36,
+            37,
+            38,
+            39
           ],
           "connected-to-bgp" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10
           ],
           "ijfw$%^&****(((([]grr" : [
             17
           ],
           "mgmt" : [
-            26
+            26,
+            27,
+            28
           ],
           "multicaststuff" : [
-            41
+            41,
+            42
           ],
           "next-hop-null" : [
-            23
+            23,
+            24
           ],
           "to_svl-hub-router" : [
-            12
+            12,
+            13
           ]
         }
       },
       "cisco_style_acl1" : {
         "extended ip access-list" : {
           "blah" : [
-            1
+            1,
+            2
           ]
         }
       },
@@ -1261,21 +1807,31 @@
       "community-name-numbers" : {
         "route-map" : {
           "AAA1-BBB-CCC" : [
-            6
+            6,
+            7,
+            8,
+            9,
+            10
           ]
         }
       },
       "community-name-numbers_dos" : {
         "route-map" : {
           "AAA1-BBB-CCC" : [
-            6
+            6,
+            7,
+            8,
+            9,
+            10
           ]
         }
       },
       "community_list_named" : {
         "route-map" : {
           "TO_NEIGHBOR" : [
-            8
+            8,
+            9,
+            10
           ]
         },
         "standard community-list" : {
@@ -1288,6 +1844,20 @@
         "extended ipv6 access-list" : {
           "RT404888-Caltech" : [
             8
+          ]
+        },
+        "standard ipv6 access-list" : {
+          "RT404888-Caltech" : [
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
           ]
         }
       },
@@ -1393,23 +1963,32 @@
       "mac_access_list" : {
         "mac acl" : {
           "STPDENY" : [
-            13
+            13,
+            14,
+            15,
+            16
           ],
           "filtermac" : [
             8
           ],
           "ipmi_test" : [
-            9
+            9,
+            10,
+            11
           ],
           "permitCDP" : [
-            4
+            4,
+            5,
+            6,
+            7
           ]
         }
       },
       "named_and_numbered_lists" : {
         "route-map" : {
           "foo" : [
-            4
+            4,
+            5
           ]
         }
       },
@@ -1468,7 +2047,8 @@
       "nxos_acl" : {
         "extended ip access-list" : {
           "blah" : [
-            9
+            9,
+            10
           ],
           "extended" : [
             5
@@ -1481,12 +2061,120 @@
       "nxos_route_map_continue" : {
         "route-map" : {
           "foobar" : [
-            6
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29,
+            30,
+            31,
+            32,
+            33,
+            34,
+            35,
+            36,
+            37,
+            38,
+            39,
+            40,
+            41,
+            42,
+            43,
+            44,
+            45,
+            46,
+            47,
+            48,
+            49,
+            50,
+            51,
+            52,
+            53,
+            54,
+            55,
+            56,
+            57,
+            58,
+            59,
+            60,
+            61,
+            62,
+            63,
+            64,
+            65,
+            66,
+            67,
+            68,
+            69,
+            70,
+            71,
+            72,
+            73,
+            74,
+            75,
+            76,
+            77,
+            78,
+            79,
+            80,
+            81,
+            82,
+            83,
+            84,
+            85,
+            86,
+            87,
+            88,
+            89,
+            90,
+            91,
+            92,
+            93,
+            94,
+            95,
+            96,
+            97,
+            98,
+            99,
+            100,
+            101,
+            102,
+            103,
+            104,
+            105,
+            106,
+            107,
+            108,
+            109,
+            110,
+            111,
+            112,
+            113,
+            114
           ]
         }
       },
       "preSet" : {
-        "ipv4 prefix-list" : {
+        "prefix-set" : {
           "default_route" : [
             4
           ],
@@ -1498,12 +2186,14 @@
       "prefix_list_ipv4" : {
         "ipv4 prefix-list" : {
           "test" : [
-            4
+            4,
+            5
           ]
         },
         "route-map" : {
           "to_elacc" : [
-            9
+            9,
+            10
           ]
         }
       },
@@ -1523,14 +2213,20 @@
       "tcpflags" : {
         "extended ip access-list" : {
           "100" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
           ]
         }
       },
       "underscore_variable" : {
         "route-map" : {
           "JKL_MNO_PQR" : [
-            4
+            4,
+            5
           ]
         }
       }

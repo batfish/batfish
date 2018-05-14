@@ -2508,6 +2508,15 @@
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+      "definedStructures" : {
+        "A1Border" : { },
+        "A1Dist" : { },
+        "A1Inter" : { },
+        "A2Dist1" : { },
+        "A2Dist2" : { },
+        "A2Inter" : { },
+        "ISP" : { }
+      },
       "version" : "0.36.0"
     },
     {

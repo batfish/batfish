@@ -684,6 +684,11 @@ AMON
    'amon'
 ;
 
+AMT
+:
+   'amt'
+;
+
 AND
 :
    'and'
@@ -1109,6 +1114,11 @@ AUTO_CERT_PROV
 AUTO_COST
 :
    'auto-cost'
+;
+
+AUTO_DISCARD
+:
+   'auto-discard'
 ;
 
 AUTO_IMPORT
@@ -14257,9 +14267,19 @@ M_ObjectGroup_NETWORK
   'network' -> type ( NETWORK ) , popMode
 ;
 
+M_ObjectGroup_PROTOCOL
+:
+  'protocol' -> type ( PROTOCOL ) , popMode
+;
+
 M_ObjectGroup_SERVICE
 :
   'service' -> type ( SERVICE ) , popMode
+;
+
+M_ObjectGroup_USER
+:
+  'user' -> type ( USER ) , popMode
 ;
 
 /* Do not reorder above literals */
