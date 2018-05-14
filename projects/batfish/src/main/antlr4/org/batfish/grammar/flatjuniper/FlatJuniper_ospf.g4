@@ -157,7 +157,8 @@ oa_stub
    STUB
    (
       oas_no_summaries
-   )
+      | oas_default_metric
+   )?
 ;
 
 oaa_override_metric
@@ -277,6 +278,11 @@ oand_type_7
 oas_no_summaries
 :
    NO_SUMMARIES
+;
+
+oas_default_metric
+:
+   DEFAULT_METRIC DEC
 ;
 
 ot_credibility_protocol_preference

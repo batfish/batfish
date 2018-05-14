@@ -4302,7 +4302,15 @@ vrfc_null
       (
          IP
          (
-            PIM
+            AMT
+            | AUTO_DISCARD
+            | DOMAIN_LIST
+            | DOMAIN_NAME
+            | IGMP
+            | MROUTE
+            | MSDP
+            | NAME_SERVER
+            | PIM
          )
       )
       | MDT
