@@ -920,19 +920,10 @@ public class VirtualRouter extends ComparableStructure<String> {
       Set<AbstractRoute> activeRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
       activeRoutes.addAll(_mainRib.getRoutes());
       for (AbstractRoute candidateRoute : activeRoutes) {
-        if (candidateRoute.getProtocol() == RoutingProtocol.BGP
-            || candidateRoute.getProtocol() == RoutingProtocol.IBGP) {
-          continue;
+        if (candidateRoute.getProtocol() != RoutingProtocol.BGP
+            && candidateRoute.getProtocol() != RoutingProtocol.IBGP) {
+          candidateRoutes.add(candidateRoute);
         }
-        if (candidateRoute.getProtocol() == RoutingProtocol.LOCAL) {
-          int sourcePrefixLength = ((LocalRoute) candidateRoute).getSourcePrefixLength();
-          if (_vrf.getExportLocalRoutePrefixLengthRange()
-              .stream()
-              .noneMatch(range -> range.includes(sourcePrefixLength))) {
-            continue;
-          }
-        }
-        candidateRoutes.add(candidateRoute);
       }
 
       /*
@@ -1198,20 +1189,10 @@ public class VirtualRouter extends ComparableStructure<String> {
         Set<AbstractRoute> activeRemoteRoutes = Collections.newSetFromMap(new IdentityHashMap<>());
         activeRemoteRoutes.addAll(remoteVirtualRouter._prevMainRib.getRoutes());
         for (AbstractRoute remoteCandidateRoute : activeRemoteRoutes) {
-          if (remoteCandidateRoute.getProtocol() == RoutingProtocol.BGP
-              || remoteCandidateRoute.getProtocol() == RoutingProtocol.IBGP) {
-            continue;
+          if (remoteCandidateRoute.getProtocol() != RoutingProtocol.BGP
+              && remoteCandidateRoute.getProtocol() != RoutingProtocol.IBGP) {
+            remoteCandidateRoutes.add(remoteCandidateRoute);
           }
-          if (remoteCandidateRoute.getProtocol() == RoutingProtocol.LOCAL) {
-            int sourcePrefixLength = ((LocalRoute) remoteCandidateRoute).getSourcePrefixLength();
-            if (remoteVrf
-                .getExportLocalRoutePrefixLengthRange()
-                .stream()
-                .noneMatch(range -> range.includes(sourcePrefixLength))) {
-              continue;
-            }
-          }
-          remoteCandidateRoutes.add(remoteCandidateRoute);
         }
 
         /*
