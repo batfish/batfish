@@ -35,17 +35,15 @@ import org.hamcrest.Matcher;
 public final class DataModelMatchers {
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
-   * {@link RouteFilterList} with specified name.
+   * Provides a matcher that matches if the RouteFilterList accepts the given {@code prefix}.
    */
   public static RouteFilterListMatchersImpl.Permits permits(@Nonnull Prefix prefix) {
     return new RouteFilterListMatchersImpl.Permits(prefix);
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
-   * {@link Route6FilterList} with specified name.
-   * */
+   * Provides a matcher that matches if the Route6FilterList accepts the given {@code prefix}.
+   */
   public static Route6FilterListMatchersImpl.Permits permits(@Nonnull Prefix6 prefix) {
     return new Route6FilterListMatchersImpl.Permits(prefix);
   }
