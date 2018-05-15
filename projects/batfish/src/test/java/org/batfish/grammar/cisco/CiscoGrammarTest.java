@@ -413,6 +413,24 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosKeyring() throws IOException {
+    String hostname = "ios-keyrings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.KEYRING, "kused", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.KEYRING, "kunused", 0));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.KEYRING,
+            "kundefined",
+            CiscoStructureUsage.ISAKMP_PROFILE_KEYRING));
+  }
+
+  @Test
   public void testIosObjectGroupNetwork() throws IOException {
     Configuration c = parseConfig("ios-object-group-network");
     Ip ogn1TestIp = new Ip("1.128.0.0");
