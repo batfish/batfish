@@ -2210,15 +2210,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // mark references to authentication key chain that may not appear in data model
     markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
 
-    markAbstractStructure(
+    markStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
-        ImmutableList.of(JuniperStructureType.APPLICATION, JuniperStructureType.APPLICATION_SET));
-
-    /*markStructure(
-        JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
-        JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
-        ImmutableList.of(_applications, _applicationSets));*/
+        ImmutableList.of(_applications, _applicationSets));
     markStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,

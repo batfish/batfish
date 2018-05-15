@@ -188,20 +188,6 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testApplicationSetRefs() throws IOException {
-    String hostname = "application-set-2";
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    /* a1 should be used, while a2 should be unused */
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a2", 0));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a3", 1));
-  }
-
-  @Test
   public void testApplicationSet() throws IOException {
     String hostname = "application-set";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
