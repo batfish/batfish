@@ -2186,7 +2186,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterPrefix_set_stanza(Prefix_set_stanzaContext ctx) {
     _currentPrefixSetName = ctx.name.getText();
     _currentPrefixSetDefinitionLine = ctx.name.getStart().getLine();
-    defineStructure(CiscoStructureType.PREFIX_SET, _currentPrefixSetName, ctx);
+    defineStructure(PREFIX_SET, _currentPrefixSetName, ctx);
   }
 
   @Override
