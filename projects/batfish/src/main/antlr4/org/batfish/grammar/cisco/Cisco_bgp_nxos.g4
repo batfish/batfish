@@ -147,7 +147,7 @@ rbnx_af_inject_map
 
 rbnx_af_maximum_paths
 :
-    MAXIMUM_PATHS IBGP? numpaths = DEC NEWLINE
+    MAXIMUM_PATHS (EIBGP | IBGP)? numpaths = DEC NEWLINE
 ;
 
 rbnx_af_network

@@ -11,6 +11,28 @@ import org.hamcrest.Matcher;
 
 final class BgpProcessMatchersImpl {
 
+  static final class HasMultipathEbgp extends FeatureMatcher<BgpProcess, Boolean> {
+    HasMultipathEbgp(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A BGP process with multipath EBGP:", "multipath EBGP");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpProcess actual) {
+      return actual.getMultipathEbgp();
+    }
+  }
+
+  static final class HasMultipathIbgp extends FeatureMatcher<BgpProcess, Boolean> {
+    HasMultipathIbgp(@Nonnull Matcher<? super Boolean> subMatcher) {
+      super(subMatcher, "A BGP process with multipath IBGP:", "multipath IBGP");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpProcess actual) {
+      return actual.getMultipathIbgp();
+    }
+  }
+
   static final class HasNeighbor extends FeatureMatcher<BgpProcess, BgpNeighbor> {
     private final Prefix _prefix;
 
