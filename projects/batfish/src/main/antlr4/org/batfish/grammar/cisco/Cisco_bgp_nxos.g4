@@ -74,6 +74,7 @@ rbnx_af_inner
     | rbnx_af_redistribute_isis
     | rbnx_af_redistribute_lisp
     | rbnx_af_redistribute_ospf
+    | rbnx_af_redistribute_ospfv3
     | rbnx_af_redistribute_rip
     | rbnx_af_redistribute_static
     | rbnx_af_suppress_inactive
@@ -194,6 +195,11 @@ rbnx_af_redistribute_lisp
 rbnx_af_redistribute_ospf
 :
     REDISTRIBUTE OSPF source_tag = variable ROUTE_MAP mapname = variable NEWLINE
+;
+
+rbnx_af_redistribute_ospfv3
+:
+    REDISTRIBUTE OSPFV3 source_tag = variable ROUTE_MAP mapname = variable NEWLINE
 ;
 
 rbnx_af_redistribute_rip
