@@ -9,6 +9,13 @@ route-map MATCH_ASN permit 10
 router bgp 1
   neighbor 123.123.123.0/24 remote-as route-map MATCH_ASN
   log-neighbor-changes
+  event-history periodic
+  event-history events
+  event-history cli
+  reconnect-interval 30
+  graceful-restart
+  graceful-restart restart-time 120
+  graceful-restart stalepath-time 300
   address-family ipv4 unicast
   neighbor 2.2.2.2 remote-as 6600
     local-as 65500 no-prepend replace-as

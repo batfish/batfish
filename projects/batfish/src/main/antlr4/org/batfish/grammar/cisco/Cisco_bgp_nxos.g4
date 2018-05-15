@@ -39,6 +39,7 @@ rbnx_proc_vrf_common
     | rbnx_log_neighbor_changes
     | rbnx_maxas_limit
     | rbnx_neighbor
+    | rbnx_reconnect_interval
     | rbnx_router_id
     | rbnx_suppress_fib_pending         // TODO
     | rbnx_timers_bestpath_limit        // TODO
@@ -254,8 +255,8 @@ rbnx_enforce_first_as
 
 rbnx_event_history
 :
-    EVENT_HISTORY (CLI | DETAIL | EVENTS | PERIOD)
-    (SIZE (DISABLE | LARGE | MEDIUM | SMALL))?
+    EVENT_HISTORY (CLI | DETAIL | ERRORS | EVENTS | OBJSTORE | PERIODIC)
+    (SIZE (DISABLE | LARGE | MEDIUM | SMALL | sizebytes = DEC))?
     NEWLINE
 ;
 
@@ -592,6 +593,11 @@ rbnx_n_transport
 rbnx_n_update_source
 :
     UPDATE_SOURCE interface_name NEWLINE
+;
+
+rbnx_reconnect_interval
+:
+    RECONNECT_INTERVAL secs = DEC NEWLINE
 ;
 
 rbnx_router_id

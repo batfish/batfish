@@ -7578,6 +7578,11 @@ OBJECT_GROUP
    'object-group' -> pushMode(M_ObjectGroup)
 ;
 
+OBJSTORE
+:
+   'objstore'
+;
+
 ON
 :
    'on'
