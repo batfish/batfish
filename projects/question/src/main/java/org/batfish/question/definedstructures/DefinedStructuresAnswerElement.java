@@ -30,35 +30,25 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
 
   public static TableMetadata createMetadata(Question question) {
     List<ColumnMetadata> columnMetadataMap =
-        new ImmutableList.Builder<ColumnMetadata>()
-            .add(
-                new ColumnMetadata(
-                    COL_NODE_NAME,
-                    Schema.STRING,
-                    "Node where the structure is defined",
-                    true,
-                    false))
-            .add(
-                new ColumnMetadata(
-                    COL_STRUCT_TYPE, Schema.STRING, "Type of the structure", true, false))
-            .add(
-                new ColumnMetadata(
-                    COL_STRUCT_NAME, Schema.STRING, "Name of the structure", true, false))
-            .add(
-                new ColumnMetadata(
-                    COL_DEFINITION_LINES,
-                    Schema.list(Schema.INTEGER),
-                    "Lines where the structure is defined",
-                    false,
-                    true))
-            .add(
-                new ColumnMetadata(
-                    COL_NUM_REFERENCES,
-                    Schema.INTEGER,
-                    "Number of references to this structure",
-                    false,
-                    true))
-            .build();
+        ImmutableList.of(
+            new ColumnMetadata(
+                COL_NODE_NAME, Schema.STRING, "Node where the structure is defined", true, false),
+            new ColumnMetadata(
+                COL_STRUCT_TYPE, Schema.STRING, "Type of the structure", true, false),
+            new ColumnMetadata(
+                COL_STRUCT_NAME, Schema.STRING, "Name of the structure", true, false),
+            new ColumnMetadata(
+                COL_DEFINITION_LINES,
+                Schema.list(Schema.INTEGER),
+                "Lines where the structure is defined",
+                false,
+                true),
+            new ColumnMetadata(
+                COL_NUM_REFERENCES,
+                Schema.INTEGER,
+                "Number of references to this structure",
+                false,
+                true));
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
