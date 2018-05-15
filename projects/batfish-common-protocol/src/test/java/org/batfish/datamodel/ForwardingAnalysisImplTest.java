@@ -212,15 +212,24 @@ public class ForwardingAnalysisImplTest {
             .setAddress(new InterfaceAddress(P2.getStartIp(), P2.getPrefixLength()))
             .setProxyArp(false)
             .build();
+    Interface i3 = _ib.setAddress(null).setProxyArp(true).build();
     IpSpace ipsRoutedOutI1 =
         IpWildcardSetIpSpace.builder().including(new IpWildcard(P1), new IpWildcard(P3)).build();
     IpSpace ipsRoutedOutI2 = IpWildcardSetIpSpace.builder().including(new IpWildcard(P2)).build();
-    Map<String, Interface> interfaces = ImmutableMap.of(i1.getName(), i1, i2.getName(), i2);
+    IpSpace ipsRoutedOutI3 = EmptyIpSpace.INSTANCE;
+    Map<String, Interface> interfaces =
+        ImmutableMap.of(i1.getName(), i1, i2.getName(), i2, i3.getName(), i3);
     Map<String, IpSpace> routableIpsByVrf =
         ImmutableMap.of(
             vrf1.getName(), UniverseIpSpace.INSTANCE, vrf2.getName(), UniverseIpSpace.INSTANCE);
     Map<String, IpSpace> ipsRoutedOutInterfaces =
-        ImmutableMap.of(i1.getName(), ipsRoutedOutI1, i2.getName(), ipsRoutedOutI2);
+        ImmutableMap.of(
+            i1.getName(),
+            ipsRoutedOutI1,
+            i2.getName(),
+            ipsRoutedOutI2,
+            i3.getName(),
+            ipsRoutedOutI3);
 
     Map<String, Configuration> configs = ImmutableMap.of(config.getHostname(), config);
     _interfaceOwnedIps = CommonUtil.computeInterfaceOwnedIps(configs, false);
@@ -239,6 +248,8 @@ public class ForwardingAnalysisImplTest {
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P2.getEndIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P3.getStartIp()))));
     assertThat(result, hasEntry(equalTo(i2.getName()), not(containsIp(P1.getStartIp()))));
+    /* No interface IPs: reject everything */
+    assertThat(result, hasEntry(equalTo(i3.getName()), equalTo(EmptyIpSpace.INSTANCE)));
   }
 
   @Test
