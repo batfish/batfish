@@ -7,8 +7,9 @@ end-set
 prefix-set pre_ipv6
   2001::ffff:0/124
 end-set
-prefix-set pre_unused
-  3.4.5.6/30
+prefix-set pre_combo
+  1.2.3.4/30,
+  2001::ffff:0/124
 end-set
 route-policy rp_ip
   if destination in pre_ipv4 then

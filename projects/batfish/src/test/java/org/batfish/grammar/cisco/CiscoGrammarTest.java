@@ -741,11 +741,11 @@ public class CiscoGrammarTest {
     Prefix6 rejectedPrefix6 = new Prefix6("2001::fffe:0/124");
 
     /*
-     * pre_unused should be the only prefix set without a referrer
+     * pre_combo should be the only prefix set without a referrer
      */
     assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv4", 1));
     assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_ipv6", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_unused", 0));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_SET, "pre_combo", 0));
 
     /*
      * pre_undef should be the only undefined reference
@@ -763,6 +763,10 @@ public class CiscoGrammarTest {
     assertThat(c, hasRouteFilterList("pre_ipv4", not(permits(rejectedPrefix))));
     assertThat(c, hasRoute6FilterList("pre_ipv6", permits(permittedPrefix6)));
     assertThat(c, hasRoute6FilterList("pre_ipv6", not(permits(rejectedPrefix6))));
+    assertThat(c, hasRouteFilterList("pre_combo", permits(permittedPrefix)));
+    assertThat(c, hasRouteFilterList("pre_combo", not(permits(rejectedPrefix))));
+    assertThat(c, hasRoute6FilterList("pre_combo", permits(permittedPrefix6)));
+    assertThat(c, hasRoute6FilterList("pre_combo", not(permits(rejectedPrefix6))));
   }
 
   @Test

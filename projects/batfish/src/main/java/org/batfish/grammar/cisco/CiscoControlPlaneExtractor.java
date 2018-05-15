@@ -2186,6 +2186,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterPrefix_set_stanza(Prefix_set_stanzaContext ctx) {
     _currentPrefixSetName = ctx.name.getText();
     _currentPrefixSetDefinitionLine = ctx.name.getStart().getLine();
+    defineStructure(CiscoStructureType.PREFIX_SET, _currentPrefixSetName, ctx);
   }
 
   @Override
@@ -5950,7 +5951,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             _configuration
                 .getPrefixLists()
                 .computeIfAbsent(name, n -> new PrefixList(n, _currentPrefixSetDefinitionLine));
-        _configuration.defineStructure(PREFIX_SET, name, _currentPrefixSetDefinitionLine);
         Prefix prefix;
         if (ctx.ipa != null) {
           prefix = new Prefix(toIp(ctx.ipa), Prefix.MAX_PREFIX_LENGTH);
@@ -5979,7 +5979,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             _configuration
                 .getPrefix6Lists()
                 .computeIfAbsent(name, n -> new Prefix6List(n, _currentPrefixSetDefinitionLine));
-        _configuration.defineStructure(PREFIX_SET, name, _currentPrefixSetDefinitionLine);
         Prefix6 prefix6;
         if (ctx.ipv6a != null) {
           prefix6 = new Prefix6(toIp6(ctx.ipv6a), Prefix6.MAX_PREFIX_LENGTH);
