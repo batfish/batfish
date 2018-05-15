@@ -23,13 +23,13 @@
       "completedOscillationRecoveryAttempts" : 0,
       "dependentRoutesIterations" : 7,
       "mainRibRoutesByIteration" : {
-        "1" : 172,
-        "2" : 269,
-        "3" : 283,
-        "4" : 300,
-        "5" : 301,
-        "6" : 301,
-        "7" : 301
+        "1" : 213,
+        "2" : 310,
+        "3" : 324,
+        "4" : 341,
+        "5" : 342,
+        "6" : 342,
+        "7" : 342
       },
       "ospfInternalIterations" : 3,
       "version" : "0.36.0"
