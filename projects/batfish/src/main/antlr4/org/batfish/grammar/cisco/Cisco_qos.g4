@@ -705,7 +705,10 @@ s_policy_map
             | NETWORK_QOS
             | PBR
             | QUEUEING
-         ) variable
+            | QUEUING
+            | QOS
+         ) mapname = variable
+         (TEMPLATE template = variable)?
       )
    ) NEWLINE
    (
