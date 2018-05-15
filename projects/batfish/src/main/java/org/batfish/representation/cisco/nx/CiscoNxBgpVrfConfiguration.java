@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Prefix6;
 
 /**
  * Represents the top-level configuration of a VRF in a BGP process for Cisco NX-OS.
@@ -23,7 +25,9 @@ public final class CiscoNxBgpVrfConfiguration implements Serializable {
     this._logNeighborChanges = false; // disabled by default
     this._maxAsLimit = null; // default no limit
     this._neighbors = new HashMap<>(); // no neighbors by default.
+    this._neighbors6 = new HashMap<>(); // no neighbors by default.
     this._passiveNeighbors = new HashMap<>(); // no neighbors by default.
+    this._passiveNeighbors6 = new HashMap<>(); // no neighbors by default.
     this._routerId = null; // use device's default router id unless overridden.
   }
 
@@ -45,8 +49,17 @@ public final class CiscoNxBgpVrfConfiguration implements Serializable {
     return _neighbors.computeIfAbsent(address, a -> new CiscoNxBgpVrfNeighborConfiguration());
   }
 
+  public CiscoNxBgpVrfNeighborConfiguration getOrCreateNeighbor(Ip6 address) {
+    return _neighbors6.computeIfAbsent(address, a -> new CiscoNxBgpVrfNeighborConfiguration());
+  }
+
   public CiscoNxBgpVrfNeighborConfiguration getOrCreatePassiveNeighbor(Prefix prefix) {
     return _passiveNeighbors.computeIfAbsent(prefix, p -> new CiscoNxBgpVrfNeighborConfiguration());
+  }
+
+  public CiscoNxBgpVrfNeighborConfiguration getOrCreatePassiveNeighbor(Prefix6 prefix) {
+    return _passiveNeighbors6.computeIfAbsent(
+        prefix, p -> new CiscoNxBgpVrfNeighborConfiguration());
   }
 
   public Map<Ip, CiscoNxBgpVrfNeighborConfiguration> getNeighbors() {
@@ -170,6 +183,8 @@ public final class CiscoNxBgpVrfConfiguration implements Serializable {
   private boolean _logNeighborChanges;
   @Nullable private Integer _maxAsLimit;
   private final Map<Ip, CiscoNxBgpVrfNeighborConfiguration> _neighbors;
+  private final Map<Ip6, CiscoNxBgpVrfNeighborConfiguration> _neighbors6;
   private final Map<Prefix, CiscoNxBgpVrfNeighborConfiguration> _passiveNeighbors;
+  private final Map<Prefix6, CiscoNxBgpVrfNeighborConfiguration> _passiveNeighbors6;
   @Nullable private Ip _routerId;
 }
