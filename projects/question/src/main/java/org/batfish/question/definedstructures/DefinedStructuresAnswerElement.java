@@ -75,7 +75,7 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
     return new TableMetadata(columnMetadataMap, dhints);
   }
 
-  protected static Row toRowStatic(DefinedStructureRow info) {
+  static Row toRow(DefinedStructureRow info) {
     Row row = new Row();
     row.put(COL_DEFINITION_LINES, info.getDefinitionLines())
         .put(COL_NODE_NAME, info.getNodeName())

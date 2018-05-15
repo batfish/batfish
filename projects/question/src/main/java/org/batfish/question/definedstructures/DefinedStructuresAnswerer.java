@@ -50,7 +50,7 @@ public class DefinedStructuresAnswerer extends Answerer {
                                   structName,
                                   info.getNumReferrers(),
                                   info.getDefinitionLines());
-                          structures.add(DefinedStructuresAnswerElement.toRowStatic(row));
+                          structures.add(DefinedStructuresAnswerElement.toRow(row));
                         });
                   });
             });

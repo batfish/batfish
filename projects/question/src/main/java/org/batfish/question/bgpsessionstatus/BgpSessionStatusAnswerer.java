@@ -38,7 +38,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
         question,
         sessions
             .stream()
-            .map(s -> BgpSessionStatusAnswerElement.toRowStatic(s))
+            .map(s -> BgpSessionStatusAnswerElement.toRow(s))
             .collect(Collectors.toCollection(HashMultiset::create)));
     return answer;
   }

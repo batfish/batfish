@@ -99,7 +99,13 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
     return new TableMetadata(columnMetadata, dhints);
   }
 
-  public static BgpSessionInfo fromRowStatic(Row row) {
+  /**
+   * Creates a {@link BgpSessionInfo} object from the corresponding {@link Row} object.
+   *
+   * @param row The input row
+   * @return The output object
+   */
+  public static BgpSessionInfo fromRow(Row row) {
     Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
     SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
     Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);
@@ -122,7 +128,13 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         vrfName);
   }
 
-  public static Row toRowStatic(BgpSessionInfo info) {
+  /**
+   * Creates a {@link Row} object from the corresponding {@link BgpSessionInfo} object.
+   *
+   * @param info The input object
+   * @return The output row
+   */
+  public static Row toRow(BgpSessionInfo info) {
     Row row = new Row();
     row.put(COL_CONFIGURED_STATUS, info.getConfiguredStatus())
         .put(COL_ESTABLISHED_NEIGHBORS, info.getEstablishedNeighbors())
