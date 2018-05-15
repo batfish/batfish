@@ -1005,7 +1005,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                     c.getIpAccessLists(),
                     nodeInterfaces);
             NodFirstUnsatJob<AclLine, Integer> job =
-                new NodFirstUnsatJob<>(_settings, aclSynthesizer, query);
+                new NodFirstUnsatJob<>(_settings, aclSynthesizer, query, true);
             jobs.add(job);
           }
         }

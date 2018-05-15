@@ -10,8 +10,10 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
@@ -23,6 +25,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.job.BatfishJob;
 import org.batfish.job.BatfishJobResult;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.ReachabilityProgramOptimizer;
+import org.batfish.z3.expr.RuleStatement;
 
 public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends BatfishJob<R> {
 
@@ -190,5 +195,44 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
       fix.addRule(rule, null);
     }
     return fix;
+  }
+
+  protected NodProgram optimizedProgram(
+      Context ctx, ReachabilityProgram baseProgram, ReachabilityProgram queryProgram) {
+    List<RuleStatement> allRules = new ArrayList<>(baseProgram.getRules());
+    allRules.addAll(queryProgram.getRules());
+
+    List<QueryStatement> allQueries = new ArrayList<>(baseProgram.getQueries());
+    allQueries.addAll(queryProgram.getQueries());
+
+    Set<RuleStatement> optimizedRules = ReachabilityProgramOptimizer.optimize(allRules, allQueries);
+
+    ReachabilityProgram optimizedBaseProgram =
+        ReachabilityProgram.builder()
+            .setInput(baseProgram.getInput())
+            .setRules(
+                baseProgram
+                    .getRules()
+                    .stream()
+                    .filter(optimizedRules::contains)
+                    .collect(Collectors.toList()))
+            .setQueries(baseProgram.getQueries())
+            .setSmtConstraint(baseProgram.getSmtConstraint())
+            .build();
+
+    ReachabilityProgram optimizedQueryProgram =
+        ReachabilityProgram.builder()
+            .setInput(queryProgram.getInput())
+            .setRules(
+                queryProgram
+                    .getRules()
+                    .stream()
+                    .filter(optimizedRules::contains)
+                    .collect(Collectors.toList()))
+            .setQueries(queryProgram.getQueries())
+            .setSmtConstraint(queryProgram.getSmtConstraint())
+            .build();
+
+    return new NodProgram(ctx, optimizedBaseProgram, optimizedQueryProgram);
   }
 }
