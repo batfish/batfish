@@ -20,7 +20,7 @@ import org.batfish.dataplane.matchers.PrefixTracerMatchersImpl.WasSent;
 import org.hamcrest.Matcher;
 
 /** A set of matchers for testing {@link PrefixTracer} */
-public class PrefixTracerMatchers {
+public final class PrefixTracerMatchers {
 
   /** Matches if a matched by the submatcher prefix was sent */
   public static WasSent wasSent(Matcher<? super Map<Prefix, Set<Neighbor>>> submatcher) {
