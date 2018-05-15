@@ -1,7 +1,5 @@
 #
 set system host-name firewall-filter-ip-protocol
 #
-set firewall family inet filter FILTER term TERM from ip-protocol tcp
-set firewall family inet filter FILTER term TERM then accept
-set interfaces fw-ip-protocol unit 0 family inet address 1.2.3.4/24
-set interfaces fw-ip-protocol unit 0 family inet filter input FILTER
+set firewall filter FILTER term TERM from ip-protocol tcp
+set firewall filter FILTER term TERM then accept
