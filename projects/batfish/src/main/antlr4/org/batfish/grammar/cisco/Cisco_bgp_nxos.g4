@@ -157,6 +157,7 @@ rbnx_af_network
     NETWORK (
         address = IP MASK mask = IP
         | prefix = IP_PREFIX
+        | prefix6 = IPV6_PREFIX
     ) (ROUTE_MAP mapname = variable)? NEWLINE
 ;
 
