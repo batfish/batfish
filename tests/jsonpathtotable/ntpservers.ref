@@ -2,20 +2,22 @@
   {
     "class" : "org.batfish.question.jsonpathtotable.JsonPathToTableAnswerElement",
     "metadata" : {
-      "columnMetadata" : {
-        "node" : {
-          "description" : "No description provided",
-          "isKey" : true,
-          "isValue" : false,
-          "schema" : "Node"
-        },
-        "ntpServers" : {
+      "columnMetadata" : [
+        {
           "description" : "No description provided",
           "isKey" : false,
           "isValue" : true,
+          "name" : "ntpServers",
           "schema" : "List<Ip>"
+        },
+        {
+          "description" : "No description provided",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "node",
+          "schema" : "Node"
         }
-      },
+      ],
       "displayHints" : {
         "textDesc" : "The NTP servers of ${node} are ${ntpServers}"
       }
