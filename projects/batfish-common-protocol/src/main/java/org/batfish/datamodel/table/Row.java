@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import org.batfish.common.BatfishException;
@@ -118,28 +117,36 @@ public class Row implements Comparable<Row> {
     return _data;
   }
 
+  /**
+   * Returns string-concatenation of the values in all columns declared as key in the metadata.
+   *
+   * @param metadata The metadata to consult when judging if the column is a key
+   * @return The concatenated string
+   */
   public String getKey(TableMetadata metadata) {
     StringBuilder key = new StringBuilder();
-    for (Entry<String, ColumnMetadata> entry : metadata.getColumnMetadata().entrySet()) {
-      String columnName = entry.getKey();
-      ColumnMetadata columnMetadata = entry.getValue();
-      if (columnMetadata.getIsKey()) {
-        key.append("[" + _data.get(columnName).toString() + "]");
+    for (ColumnMetadata column : metadata.getColumnMetadata()) {
+      if (column.getIsKey()) {
+        key.append("[" + _data.get(column.getName()).toString() + "]");
       }
     }
     return key.toString();
   }
 
+  /**
+   * Returns string-concatenation of the values in all columns declared as value in the metadata.
+   *
+   * @param metadata The metadata to consult when judging if the column is a value
+   * @return The concatenated string
+   */
   public String getValue(TableMetadata metadata) {
-    StringBuilder key = new StringBuilder();
-    for (Entry<String, ColumnMetadata> entry : metadata.getColumnMetadata().entrySet()) {
-      String columnName = entry.getKey();
-      ColumnMetadata columnMetadata = entry.getValue();
-      if (columnMetadata.getIsValue()) {
-        key.append("[" + _data.get(columnName).toString() + "]");
+    StringBuilder value = new StringBuilder();
+    for (ColumnMetadata column : metadata.getColumnMetadata()) {
+      if (column.getIsValue()) {
+        value.append("[" + _data.get(column.getName()).toString() + "]");
       }
     }
-    return key.toString();
+    return value.toString();
   }
 
   @Override
