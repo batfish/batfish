@@ -3714,6 +3714,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordIpv6AccessLists();
+    recordKeyrings();
     recordStructure(_natPools, CiscoStructureType.NAT_POOL);
     recordStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
     recordStructure(_protocolObjectGroups, CiscoStructureType.PROTOCOL_OBJECT_GROUP);
