@@ -56,6 +56,7 @@
     <errorprone.version>2.0.18</errorprone.version>
     <grizzly.version>2.3.18</grizzly.version>
     <guava.version>22.0</guava.version>
+    <hamcrest-junit.version>2.0.0.0</hamcrest-junit.version>
     <jackson.version>2.9.0</jackson.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-annotation-api.version>1.2</javax-annotation-api.version>
@@ -798,8 +799,14 @@
 
       <dependency>
         <groupId>org.hamcrest</groupId>
-        <artifactId>hamcrest-junit</artifactId>
+        <artifactId>java-hamcrest</artifactId>
         <version>${java-hamcrest.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.hamcrest</groupId>
+        <artifactId>hamcrest-junit</artifactId>
+        <version>${hamcrest-junit.version}</version>
       </dependency>
 
       <dependency>

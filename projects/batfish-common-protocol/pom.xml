@@ -281,7 +281,7 @@
 
     <dependency>
       <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-junit</artifactId>
+      <artifactId>java-hamcrest</artifactId>
       <scope>test</scope>
     </dependency>
 
