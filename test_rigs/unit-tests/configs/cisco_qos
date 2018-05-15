@@ -93,6 +93,8 @@ policy-map type queueing qqqqq
     priority level 1
     bandwidth remaining percent 14
       dbl
+policy-map type queuing qqqqq2
+  class type queuing bleefee2
 policy-map type network-qos default-bleeb-policy
   class type network-qos c-bleeb-drop
     no pause
