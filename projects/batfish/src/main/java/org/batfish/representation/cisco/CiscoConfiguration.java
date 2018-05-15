@@ -3714,7 +3714,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordIpv6AccessLists();
-    recordKeyrings();
     recordStructure(_natPools, CiscoStructureType.NAT_POOL);
     recordStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
     recordStructure(_protocolObjectGroups, CiscoStructureType.PROTOCOL_OBJECT_GROUP);
@@ -4157,10 +4156,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void recordIpv6AccessLists() {
     recordStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
     recordStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
-  }
-
-  private void recordKeyrings() {
-    recordStructure(_keyrings, CiscoStructureType.KEYRING);
   }
 
   private void recordPeerGroups() {
