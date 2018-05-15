@@ -96,6 +96,7 @@ rbnx_af_aggregate_address
     AGGREGATE_ADDRESS (
         network = IP_ADDRESS MASK subnet = IP_ADDRESS
         | prefix = IP_PREFIX
+        | prefix6 = IPV6_PREFIX
     ) rbnx_af_aa_tail* NEWLINE
 ;
 
