@@ -21,8 +21,7 @@ public class NodePropertiesAnswererTest {
 
   @Test
   public void answer() {
-    // TODO: write an "end-to-end" test here. Requires the Batfish object, and thus moving the
-    // BatfishTestUtils class to common
+    // TODO: write an "end-to-end" test here.
   }
 
   @Test
