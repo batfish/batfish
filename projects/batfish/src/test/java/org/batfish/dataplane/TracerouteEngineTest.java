@@ -198,10 +198,11 @@ public class TracerouteEngineTest {
     NetworkFactory nf = new NetworkFactory();
     Interface.Builder ib = nf.interfaceBuilder();
 
-    Interface i1 = ib.setProxyArp(true).build();
-    Interface i2 = ib.setProxyArp(true).build();
-    Interface i3 = ib.setProxyArp(false).build();
+    Interface i1 = ib.setAddress(new InterfaceAddress("1.1.1.0/24")).setProxyArp(true).build();
+    Interface i2 = ib.setAddress(new InterfaceAddress("2.2.2.0/24")).setProxyArp(true).build();
+    Interface i3 = ib.setAddress(new InterfaceAddress("3.3.3.0/24")).setProxyArp(false).build();
     Interface i4 = ib.setAddress(new InterfaceAddress("4.4.4.4/24")).setProxyArp(false).build();
+    Interface i5 = ib.setAddress(null).setProxyArp(true).build();
 
     Ip arpIp = new Ip("4.4.4.4");
 
@@ -230,6 +231,9 @@ public class TracerouteEngineTest {
     assertTrue(
         "ARP request to interface that owns arpIp should succeed",
         TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+    assertFalse(
+        "ARP request to interface with no address should fail",
+        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp));
 
     // arpIp isn't owned by the VRF, but is routable
     arpIp = new Ip("4.4.4.0");

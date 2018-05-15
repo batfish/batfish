@@ -271,6 +271,11 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
 
   @VisibleForTesting
   static boolean interfaceRepliesToArpRequestForIp(Interface iface, Fib ifaceFib, Ip arpIp) {
+    // interfaces without addresses never reply
+    if (iface.getAllAddresses().isEmpty()) {
+      return false;
+    }
+    // the interface that owns the arpIp always replies
     if (iface.getAllAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
       return true;
     }
