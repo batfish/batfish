@@ -1,4 +1,3 @@
-! boot system flash:EOS.swi
 hostname r4
 !
 interface FastEthernet0/0

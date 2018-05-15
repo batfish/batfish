@@ -29,6 +29,8 @@ public class MockDataPlane implements DataPlane {
 
     Map<Ip, Set<String>> _ipOwners;
 
+    Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
+
     private Builder() {
       _bgpTopology = NetworkBuilder.directed().build();
       _configurations = ImmutableMap.of();
@@ -39,8 +41,7 @@ public class MockDataPlane implements DataPlane {
     }
 
     public MockDataPlane build() {
-      return new MockDataPlane(
-          _bgpTopology, _configurations, _fibs, _ipOwners, _ribs, _topology, _topologyEdges);
+      return new MockDataPlane(this);
     }
 
     public Builder setBgpTopology(Network<BgpNeighbor, BgpSession> bgpTopology) {
@@ -83,27 +84,23 @@ public class MockDataPlane implements DataPlane {
 
   private final Map<Ip, Set<String>> _ipOwners;
 
+  private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
+
   private final SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> _ribs;
 
   @Nullable private final Topology _topology;
 
   private final SortedSet<Edge> _topologyEdges;
 
-  private MockDataPlane(
-      Network<BgpNeighbor, BgpSession> bgpTopology,
-      Map<String, Configuration> configurations,
-      Map<String, Map<String, Fib>> fibs,
-      Map<Ip, Set<String>> ipOwners,
-      SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
-      @Nullable Topology topology,
-      SortedSet<Edge> topologyEdges) {
-    _bgpTopology = bgpTopology;
-    _configurations = configurations;
-    _fibs = fibs;
-    _ribs = ImmutableSortedMap.copyOf(ribs);
-    _topology = topology;
-    _topologyEdges = ImmutableSortedSet.copyOf(topologyEdges);
-    _ipOwners = ipOwners;
+  private MockDataPlane(Builder builder) {
+    _bgpTopology = builder._bgpTopology;
+    _configurations = builder._configurations;
+    _fibs = builder._fibs;
+    _ipOwners = builder._ipOwners;
+    _ipVrfOwners = builder._ipVrfOwners;
+    _ribs = ImmutableSortedMap.copyOf(builder._ribs);
+    _topology = builder._topology;
+    _topologyEdges = ImmutableSortedSet.copyOf(builder._topologyEdges);
   }
 
   @Override
@@ -114,6 +111,11 @@ public class MockDataPlane implements DataPlane {
   @Override
   public Map<Ip, Set<String>> getIpOwners() {
     return _ipOwners;
+  }
+
+  @Override
+  public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
+    return _ipVrfOwners;
   }
 
   @Override

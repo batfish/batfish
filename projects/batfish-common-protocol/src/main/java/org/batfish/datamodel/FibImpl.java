@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 public class FibImpl implements Fib {
@@ -17,11 +18,12 @@ public class FibImpl implements Fib {
 
   private static final long serialVersionUID = 1L;
 
-  private final Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> _nextHopInterfaces;
+  private final @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      _nextHopInterfaces;
 
-  private final GenericRib<AbstractRoute> _rib;
+  private final @Nonnull GenericRib<AbstractRoute> _rib;
 
-  public FibImpl(GenericRib<AbstractRoute> rib) {
+  public FibImpl(@Nonnull GenericRib<AbstractRoute> rib) {
     _rib = rib;
     _nextHopInterfaces = new HashMap<>();
     for (AbstractRoute route : rib.getRoutes()) {
@@ -74,12 +76,15 @@ public class FibImpl implements Fib {
     }
   }
 
-  /** Mapping: route -> nexthopinterface -> nextHopIp -> interfaceRoutes */
-  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces() {
+  /** Mapping: route -> nextHopInterface -> nextHopIp -> interfaceRoutes */
+  @Override
+  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      getNextHopInterfaces() {
     return _nextHopInterfaces;
   }
 
-  public Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
+  @Override
+  public @Nonnull Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
     Map<String, Map<Ip, Set<AbstractRoute>>> outputNextHopInterfaces = new TreeMap<>();
     Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(ip);
     for (AbstractRoute nextHopRoute : nextHopRoutes) {
@@ -96,8 +101,9 @@ public class FibImpl implements Fib {
     return outputNextHopInterfaces;
   }
 
-  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
-      Ip dstIp) {
+  @Override
+  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      getNextHopInterfacesByRoute(Ip dstIp) {
     Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByRoute =
         new HashMap<>();
     Set<AbstractRoute> nextHopRoutes = _rib.longestPrefixMatch(dstIp);
@@ -109,7 +115,8 @@ public class FibImpl implements Fib {
     return nextHopInterfacesByRoute;
   }
 
-  public Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
+  @Override
+  public @Nonnull Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
     Map<String, ImmutableSet.Builder<AbstractRoute>> routesByNextHopInterface = new HashMap<>();
     _nextHopInterfaces.forEach(
         (route, nextHopInterfaceMap) ->

@@ -1,5 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
+import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
@@ -71,7 +73,9 @@ public class IncrementalBdpEngine {
 
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
-    dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        computeIpVrfOwners(true, computeNodeInterfaces(configurations));
+    dp.initIpOwners(ipOwners, ipOwnersSimple, ipVrfOwners);
 
     // Generate our nodes, keyed by name, sorted for determinism
     ImmutableSortedMap.Builder<String, Node> builder =
