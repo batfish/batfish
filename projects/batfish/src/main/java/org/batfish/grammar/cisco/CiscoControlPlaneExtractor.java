@@ -2482,6 +2482,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.prefix != null) {
       Prefix prefix = Prefix.parse(ctx.prefix.getText());
       _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
+    } else if (ctx.ip6 != null) {
+      Ip6 ip = toIp6(ctx.ip6);
+      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreateNeighbor(ip);
+    } else if (ctx.prefix6 != null) {
+      Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
+      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
     } else {
       throw new BatfishException(
           "BGP neighbor IP definition not supported in line " + ctx.getText());
