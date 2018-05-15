@@ -3196,15 +3196,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
       switch (rmClause.getAction()) {
         case ACCEPT:
           if (continueStatement == null) {
-            onMatchStatements.add(Statements.ReturnTrue.toStaticStatement());
+            onMatchStatements.add(Statements.ExitAccept.toStaticStatement());
           } else {
-            onMatchStatements.add(Statements.SetLocalDefaultActionAccept.toStaticStatement());
+            onMatchStatements.add(Statements.SetDefaultActionAccept.toStaticStatement());
             onMatchStatements.add(new CallStatement(continueTargetPolicy.getName()));
           }
           break;
 
         case REJECT:
-          onMatchStatements.add(Statements.ReturnFalse.toStaticStatement());
+          onMatchStatements.add(Statements.ExitReject.toStaticStatement());
           break;
 
         default:
@@ -4156,10 +4156,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void recordIpv6AccessLists() {
     recordStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
     recordStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
-  }
-
-  private void recordKeyrings() {
-    recordStructure(_keyrings, CiscoStructureType.KEYRING);
   }
 
   private void recordPeerGroups() {

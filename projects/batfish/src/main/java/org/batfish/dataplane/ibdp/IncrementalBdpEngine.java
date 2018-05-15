@@ -1,5 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
+import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
@@ -71,7 +73,9 @@ public class IncrementalBdpEngine {
 
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
-    dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
+    Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+        computeIpVrfOwners(true, computeNodeInterfaces(configurations));
+    dp.initIpOwners(ipOwners, ipOwnersSimple, ipVrfOwners);
 
     // Generate our nodes, keyed by name, sorted for determinism
     ImmutableSortedMap.Builder<String, Node> builder =
@@ -144,7 +148,6 @@ public class IncrementalBdpEngine {
    *
    * @param nodes nodes that are participating in the computation
    * @param topology network Topology
-   * @param dp data place instance
    * @param iteration iteration number (for stats tracking)
    * @param allNodes all nodes in the network (for correct neighbor referencing)
    * @param bgpTopology the bgp peering relationships
@@ -152,7 +155,6 @@ public class IncrementalBdpEngine {
   private void computeDependentRoutesIteration(
       Map<String, Node> nodes,
       Topology topology,
-      IncrementalDataPlane dp,
       int iteration,
       Map<String, Node> allNodes,
       Network<BgpNeighbor, BgpSession> bgpTopology) {
@@ -246,12 +248,11 @@ public class IncrementalBdpEngine {
               });
     }
 
-    computeIterationOfBgpRoutes(nodes, dp, iteration, allNodes, bgpTopology);
+    computeIterationOfBgpRoutes(nodes, iteration, allNodes, bgpTopology);
   }
 
   private void computeIterationOfBgpRoutes(
       Map<String, Node> nodes,
-      IncrementalDataPlane dp,
       int iteration,
       Map<String, Node> allNodes,
       Network<BgpNeighbor, BgpSession> bgpTopology) {
@@ -281,7 +282,7 @@ public class IncrementalBdpEngine {
                   continue;
                 }
                 Map<BgpMultipathRib, RibDelta<BgpRoute>> deltas =
-                    vr.processBgpMessages(dp.getIpOwners(), bgpTopology);
+                    vr.processBgpMessages(bgpTopology, allNodes);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                     proc.getMultipathEbgp(),
                     proc.getMultipathIbgp(),
@@ -445,7 +446,7 @@ public class IncrementalBdpEngine {
       while (schedule.hasNext()) {
         Map<String, Node> iterationNodes = schedule.next();
         computeDependentRoutesIteration(
-            iterationNodes, topology, dp, _numIterations, nodes, bgpTopology);
+            iterationNodes, topology, _numIterations, nodes, bgpTopology);
       }
 
       /*

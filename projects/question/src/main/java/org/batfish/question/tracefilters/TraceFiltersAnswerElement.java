@@ -33,15 +33,13 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
    */
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
     List<ColumnMetadata> columnMetadata =
-        new ImmutableList.Builder<ColumnMetadata>()
-            .add(new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false))
-            .add(new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false))
-            .add(new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false))
-            .add(new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true))
-            .add(new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true))
-            .add(
-                new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true))
-            .build();
+        ImmutableList.of(
+            new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false),
+            new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false),
+            new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true),
+            new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
+            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true));
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();

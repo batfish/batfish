@@ -206,7 +206,9 @@ public class BdpEngine {
         assert computeIpOwnersSpan != null;
         Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
-        dp.initIpOwners(configurations, ipOwners, ipOwnersSimple);
+        Map<Ip, Map<String, Set<String>>> ipVrfOwners =
+            CommonUtil.computeIpVrfOwners(true, CommonUtil.computeNodeInterfaces(configurations));
+        dp.initIpOwners(ipOwners, ipOwnersSimple, ipVrfOwners);
       }
       SortedMap<String, Node> nodes = new TreeMap<>();
       SortedMap<Integer, SortedMap<Integer, Integer>> recoveryIterationHashCodes = new TreeMap<>();

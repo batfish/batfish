@@ -589,6 +589,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_eigrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_lispContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfv3Context;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_suppress_inactiveContext;
@@ -619,6 +620,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_ebgp_multihopContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_inheritContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_local_asContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_no_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remote_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_shutdownContext;
@@ -2203,14 +2205,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRbnx_af_aggregate_address(Rbnx_af_aggregate_addressContext ctx) {
-    Prefix prefix;
     if (ctx.prefix != null) {
-      prefix = Prefix.parse(ctx.prefix.getText());
-    } else {
-      prefix = new Prefix(toIp(ctx.network), toIp(ctx.subnet));
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentBgpNxVrfAddressFamilyAggregateNetwork =
+          _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
+    } else if (ctx.network != null && ctx.subnet != null) {
+      Prefix prefix = new Prefix(toIp(ctx.network), toIp(ctx.subnet));
+      _currentBgpNxVrfAddressFamilyAggregateNetwork =
+          _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
+    } else if (ctx.prefix6 != null) {
+      Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
+      _currentBgpNxVrfAddressFamilyAggregateNetwork =
+          _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
     }
-    _currentBgpNxVrfAddressFamilyAggregateNetwork =
-        _currentBgpNxVrfAddressFamily.getOrCreateAggregateNetwork(prefix);
   }
 
   @Override
@@ -2295,6 +2302,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int limit = toInteger(ctx.numpaths);
     if (ctx.IBGP() != null) {
       _currentBgpNxVrfAddressFamily.setMaximumPathsIbgp(limit);
+    } else if (ctx.EIBGP() != null) {
+      _currentBgpNxVrfAddressFamily.setMaximumPathsEbgp(limit);
+      _currentBgpNxVrfAddressFamily.setMaximumPathsIbgp(limit);
     } else {
       _currentBgpNxVrfAddressFamily.setMaximumPathsEbgp(limit);
     }
@@ -2302,19 +2312,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRbnx_af_network(Rbnx_af_networkContext ctx) {
-    Prefix prefix =
-        (ctx.prefix != null)
-            ? Prefix.parse(ctx.prefix.getText())
-            : new Prefix(toIp(ctx.address), toIp(ctx.mask));
-
-    String prefixName = "";
+    String mapname = "";
     if (ctx.mapname != null) {
-      prefixName = ctx.mapname.getText();
+      mapname = ctx.mapname.getText();
       _configuration.referenceStructure(
-          ROUTE_MAP, prefixName, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
+          ROUTE_MAP, mapname, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
     }
 
-    _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, prefixName);
+    if (ctx.prefix != null) {
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
+    } else if (ctx.address != null && ctx.mask != null) {
+      Prefix prefix = new Prefix(toIp(ctx.address), toIp(ctx.mask));
+      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
+    } else if (ctx.prefix6 != null) {
+      Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
+      _currentBgpNxVrfAddressFamily.addIpv6Network(prefix, mapname);
+    }
   }
 
   @Override
@@ -2365,6 +2379,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_MAP, ctx.getStart().getLine());
     _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+  }
+
+  @Override
+  public void exitRbnx_af_redistribute_ospfv3(Rbnx_af_redistribute_ospfv3Context ctx) {
+    String name = ctx.mapname.getText();
+    String sourceTag = ctx.source_tag.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.getStart().getLine());
+    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF3, name, sourceTag);
   }
 
   @Override
@@ -2458,6 +2481,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreateNeighbor(ip);
     } else if (ctx.prefix != null) {
       Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
+    } else if (ctx.ip6 != null) {
+      Ip6 ip = toIp6(ctx.ip6);
+      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreateNeighbor(ip);
+    } else if (ctx.prefix6 != null) {
+      Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
       _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
     } else {
       throw new BatfishException(
@@ -2644,6 +2673,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRbnx_n_local_as(Rbnx_n_local_asContext ctx) {
     long asn = toAsNum(ctx.bgp_asn());
     _currentBgpNxVrfNeighbor.setLocalAs(asn);
+  }
+
+  @Override
+  public void exitRbnx_n_no_shutdown(Rbnx_n_no_shutdownContext ctx) {
+    _currentBgpNxVrfNeighbor.setShutdown(false);
   }
 
   @Override

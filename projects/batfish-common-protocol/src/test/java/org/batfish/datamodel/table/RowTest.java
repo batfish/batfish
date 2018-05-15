@@ -22,11 +22,10 @@ public class RowTest {
       boolean valueCol2,
       boolean valueCol3) {
     List<ColumnMetadata> columns =
-        new ImmutableList.Builder<ColumnMetadata>()
-            .add(new ColumnMetadata("col1", Schema.STRING, "desc", keyCol1, valueCol1))
-            .add(new ColumnMetadata("col2", Schema.STRING, "desc", keyCol2, valueCol2))
-            .add(new ColumnMetadata("col3", Schema.STRING, "desc", keyCol3, valueCol3))
-            .build();
+        ImmutableList.of(
+            new ColumnMetadata("col1", Schema.STRING, "desc", keyCol1, valueCol1),
+            new ColumnMetadata("col2", Schema.STRING, "desc", keyCol2, valueCol2),
+            new ColumnMetadata("col3", Schema.STRING, "desc", keyCol3, valueCol3));
     return new TableMetadata(columns, null);
   }
 

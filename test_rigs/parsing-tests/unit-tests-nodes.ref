@@ -8351,6 +8351,18 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
+        "route6FilterLists" : {
+          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "lengthRange" : "120-120",
+                "prefix" : "fe80:0:0:0:0:0:0:0/120"
+              }
+            ],
+            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
+          }
+        },
         "routingPolicies" : {
           "MATCH_ASN" : {
             "name" : "MATCH_ASN",
@@ -8992,7 +9004,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnTrue"
+                "type" : "ExitAccept"
               }
             ]
           },
@@ -16199,7 +16211,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16232,7 +16244,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "ExitReject"
                   }
                 ]
               }
@@ -16250,7 +16262,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "SetLocalDefaultActionAccept"
+                "type" : "SetDefaultActionAccept"
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16288,7 +16300,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16328,7 +16340,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16368,7 +16380,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16408,7 +16420,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16448,7 +16460,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16488,7 +16500,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16528,7 +16540,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16568,7 +16580,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16608,7 +16620,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16641,7 +16653,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ReturnFalse"
+                    "type" : "ExitReject"
                   }
                 ]
               }
@@ -16677,7 +16689,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16710,7 +16722,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16725,7 +16737,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ExitReject"
               }
             ]
           },
@@ -16770,7 +16782,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16821,7 +16833,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16872,7 +16884,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16923,7 +16935,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -16974,7 +16986,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17025,7 +17037,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17076,7 +17088,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "SetLocalDefaultActionAccept"
+                "type" : "SetDefaultActionAccept"
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17107,7 +17119,7 @@
                 "trueStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17122,7 +17134,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnTrue"
+                "type" : "ExitAccept"
               }
             ]
           },
@@ -17131,7 +17143,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "ReturnFalse"
+                "type" : "ExitReject"
               }
             ]
           },
@@ -17168,7 +17180,7 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                "type" : "SetLocalDefaultActionAccept"
+                "type" : "SetDefaultActionAccept"
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17234,7 +17246,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17302,7 +17314,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17370,7 +17382,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",
@@ -17438,7 +17450,7 @@
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "SetLocalDefaultActionAccept"
+                    "type" : "SetDefaultActionAccept"
                   },
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.CallStatement",

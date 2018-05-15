@@ -21,6 +21,12 @@ public interface DataPlane extends Serializable {
    */
   Map<Ip, Set<String>> getIpOwners();
 
+  /**
+   * Return the map of Vrfs that own each Ip (as computed during dataplane computation). Map
+   * structure: Ip -> hostname -> set of Vrfs
+   */
+  Map<Ip, Map<String, Set<String>>> getIpVrfOwners();
+
   /** Return the set of all (main) RIBs. Map structure: hostname -> VRF name -> GenericRib */
   SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs();
 

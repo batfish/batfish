@@ -73,7 +73,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
@@ -410,6 +410,24 @@ public class CiscoGrammarTest {
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testIosKeyring() throws IOException {
+    String hostname = "ios-keyrings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.KEYRING, "kused", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.KEYRING, "kunused", 0));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.KEYRING,
+            "kundefined",
+            CiscoStructureUsage.ISAKMP_PROFILE_KEYRING));
   }
 
   @Test
@@ -1413,15 +1431,15 @@ public class CiscoGrammarTest {
     Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
     Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
 
-    assertThat("Loopback0", isIn(iosRecoveryInterfaceNames));
-    assertThat("Loopback1", isIn(iosRecoveryInterfaceNames));
-    assertThat("Loopback2", not(isIn(iosRecoveryInterfaceNames)));
-    assertThat("Loopback3", isIn(iosRecoveryInterfaceNames));
-    assertThat(new InterfaceAddress("10.0.0.1/32"), not(isIn(l3Prefixes)));
-    assertThat(new InterfaceAddress("10.0.0.2/32"), isIn(l3Prefixes));
-    assertThat("Loopback4", isIn(iosRecoveryInterfaceNames));
-    assertThat(new InterfaceAddress("10.0.0.3/32"), not(isIn(l4Prefixes)));
-    assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
+    assertThat("Loopback0", in(iosRecoveryInterfaceNames));
+    assertThat("Loopback1", in(iosRecoveryInterfaceNames));
+    assertThat("Loopback2", not(in(iosRecoveryInterfaceNames)));
+    assertThat("Loopback3", in(iosRecoveryInterfaceNames));
+    assertThat(new InterfaceAddress("10.0.0.1/32"), not(in(l3Prefixes)));
+    assertThat(new InterfaceAddress("10.0.0.2/32"), in(l3Prefixes));
+    assertThat("Loopback4", in(iosRecoveryInterfaceNames));
+    assertThat(new InterfaceAddress("10.0.0.3/32"), not(in(l4Prefixes)));
+    assertThat(new InterfaceAddress("10.0.0.4/32"), in(l4Prefixes));
   }
 
   @Test

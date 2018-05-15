@@ -38,55 +38,37 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
 
   public static TableMetadata createMetadata(Question question) {
     List<ColumnMetadata> columnMetadata =
-        new ImmutableList.Builder<ColumnMetadata>()
-            .add(
-                new ColumnMetadata(
-                    COL_NODE,
-                    Schema.NODE,
-                    "The node where this session is configured",
-                    true,
-                    false))
-            .add(
-                new ColumnMetadata(
-                    COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false))
-            .add(
-                new ColumnMetadata(
-                    COL_VRF_NAME,
-                    Schema.STRING,
-                    "The VRF in which this session is configured",
-                    true,
-                    false))
-            .add(
-                new ColumnMetadata(
-                    COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false))
-            .add(
-                new ColumnMetadata(
-                    COL_REMOTE_PREFIX,
-                    Schema.PREFIX,
-                    "Remote prefix for this session",
-                    true,
-                    false))
-            .add(
-                new ColumnMetadata(
-                    COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false))
-            .add(
-                new ColumnMetadata(
-                    COL_CONFIGURED_STATUS, Schema.STRING, "Configured status", false, true))
-            .add(
-                new ColumnMetadata(
-                    COL_ESTABLISHED_NEIGHBORS,
-                    Schema.INTEGER,
-                    "Number of neighbors with whom BGP session was established",
-                    false,
-                    true))
-            .add(
-                new ColumnMetadata(
-                    COL_ON_LOOPBACK,
-                    Schema.BOOLEAN,
-                    "Whether the session was established on loopback interface",
-                    false,
-                    true))
-            .build();
+        ImmutableList.of(
+            new ColumnMetadata(
+                COL_NODE, Schema.NODE, "The node where this session is configured", true, false),
+            new ColumnMetadata(
+                COL_LOCAL_IP, Schema.IP, "The local IP of the session", false, false),
+            new ColumnMetadata(
+                COL_VRF_NAME,
+                Schema.STRING,
+                "The VRF in which this session is configured",
+                true,
+                false),
+            new ColumnMetadata(
+                COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
+            new ColumnMetadata(
+                COL_REMOTE_PREFIX, Schema.PREFIX, "Remote prefix for this session", true, false),
+            new ColumnMetadata(
+                COL_SESSION_TYPE, Schema.STRING, "The type of this session", false, false),
+            new ColumnMetadata(
+                COL_CONFIGURED_STATUS, Schema.STRING, "Configured status", false, true),
+            new ColumnMetadata(
+                COL_ESTABLISHED_NEIGHBORS,
+                Schema.INTEGER,
+                "Number of neighbors with whom BGP session was established",
+                false,
+                true),
+            new ColumnMetadata(
+                COL_ON_LOOPBACK,
+                Schema.BOOLEAN,
+                "Whether the session was established on loopback interface",
+                false,
+                true));
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
