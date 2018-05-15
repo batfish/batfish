@@ -3,14 +3,57 @@ package org.batfish.datamodel.matchers;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import org.batfish.common.Warning;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.hamcrest.Description;
+import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeDiagnosingMatcher;
 
 final class ConvertConfigurationAnswerElementMatchers {
+
+  static final class HasRedFlagWarning
+      extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
+
+    private final @Nonnull Matcher<? super String> _subMatcher;
+
+    private final @Nonnull String _hostname;
+
+    HasRedFlagWarning(@Nonnull String hostname, @Nonnull Matcher<? super String> subMatcher) {
+      _hostname = hostname;
+      _subMatcher = subMatcher;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description
+          .appendText("A ConvertConfigurationAnswerElement with a red-flag warning with text:")
+          .appendDescriptionOf(_subMatcher);
+    }
+
+    @Override
+    protected boolean matchesSafely(
+        ConvertConfigurationAnswerElement item, Description mismatchDescription) {
+      Warnings warnings = item.getWarnings().get(_hostname);
+      if (warnings == null) {
+        mismatchDescription.appendText(String.format("No warnings for host '%s'", _hostname));
+        return false;
+      }
+      if (warnings
+          .getRedFlagWarnings()
+          .stream()
+          .map(Warning::getText)
+          .noneMatch(_subMatcher::matches)) {
+        mismatchDescription.appendText(
+            String.format("No red-flag warnings for host '%s' match", _hostname));
+        return false;
+      }
+      return true;
+    }
+  }
 
   static final class HasUndefinedReference
       extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
