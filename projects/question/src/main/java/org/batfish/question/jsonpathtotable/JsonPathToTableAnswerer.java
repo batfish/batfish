@@ -118,7 +118,7 @@ public class JsonPathToTableAnswerer extends Answerer {
     Iterator<String> iterator = answerValues.fieldNames();
     while (iterator.hasNext()) {
       String columnName = iterator.next();
-      if (tableMetadata.getColumnMetadata().containsKey(columnName)) {
+      if (tableMetadata.containsColumn(columnName)) {
         row.put(columnName, answerValues.get(columnName));
       }
     }

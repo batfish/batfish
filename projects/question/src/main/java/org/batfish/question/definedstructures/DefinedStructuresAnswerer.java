@@ -8,6 +8,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.Row;
 
 public class DefinedStructuresAnswerer extends Answerer {
 
@@ -18,15 +19,15 @@ public class DefinedStructuresAnswerer extends Answerer {
   @Override
   public AnswerElement answer() {
     DefinedStructuresQuestion question = (DefinedStructuresQuestion) _question;
-    Multiset<DefinedStructureRow> structures = rawAnswer(question);
+    Multiset<Row> structures = rawAnswer(question);
     DefinedStructuresAnswerElement answer =
         new DefinedStructuresAnswerElement(DefinedStructuresAnswerElement.createMetadata(question));
     answer.postProcessAnswer(question, structures);
     return answer;
   }
 
-  private Multiset<DefinedStructureRow> rawAnswer(DefinedStructuresQuestion question) {
-    Multiset<DefinedStructureRow> structures = HashMultiset.create();
+  private Multiset<Row> rawAnswer(DefinedStructuresQuestion question) {
+    Multiset<Row> structures = HashMultiset.create();
     Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
     ConvertConfigurationAnswerElement ccae =
@@ -49,7 +50,7 @@ public class DefinedStructuresAnswerer extends Answerer {
                                   structName,
                                   info.getNumReferrers(),
                                   info.getDefinitionLines());
-                          structures.add(row);
+                          structures.add(DefinedStructuresAnswerElement.toRow(row));
                         });
                   });
             });

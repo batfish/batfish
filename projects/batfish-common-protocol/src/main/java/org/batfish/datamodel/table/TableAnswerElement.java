@@ -16,7 +16,7 @@ import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 
 /** A base class for tabular answers */
-public abstract class TableAnswerElement extends AnswerElement {
+public class TableAnswerElement extends AnswerElement {
 
   protected static final String PROP_EXCLUDED_ROWS = "excludedRows";
 
@@ -121,16 +121,6 @@ public abstract class TableAnswerElement extends AnswerElement {
     }
   }
 
-  /**
-   * Converts the {@link Row} object into the actual object that is produced by concrete (child)
-   * TableAnswerElement. This method is overriden by the child classes that are aware of what is
-   * embedded in the object and provides a standard way to obtain the object from their Row objects.
-   *
-   * @param row The row to convert
-   * @return The converted object
-   */
-  public abstract Object fromRow(Row row);
-
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {
     return _excludedRows;
@@ -147,23 +137,21 @@ public abstract class TableAnswerElement extends AnswerElement {
   }
 
   /**
-   * Given all initial answer objects for a question, this function will first process the
-   * exclusions and then compute the summary.
+   * Given an initial set of rows produced by an {@link org.batfish.common.Answerer}, this procedure
+   * processes exclusions, assertions, and summary to update this object.
    *
-   * @param question The question that produced the answer objects
-   * @param objects The answer objects to process
+   * @param question The question that generated the initial set of rows
+   * @param initialSet The initial set of rows
    */
-  public void postProcessAnswer(Question question, Multiset<?> objects) {
-    objects.forEach(
-        object -> {
-          Row row = toRow(object);
-
+  public void postProcessAnswer(Question question, Multiset<Row> initialSet) {
+    initialSet.forEach(
+        initialRow -> {
           // exclude or not?
-          Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
+          Exclusion exclusion = Exclusion.covered(initialRow, question.getExclusions());
           if (exclusion != null) {
-            addExcludedRow(row, exclusion.getName());
+            addExcludedRow(initialRow, exclusion.getName());
           } else {
-            addRow(row);
+            addRow(initialRow);
           }
         });
 
@@ -179,14 +167,4 @@ public abstract class TableAnswerElement extends AnswerElement {
   private void setRows(Rows rows) {
     _rows = rows == null ? new Rows() : rows;
   }
-
-  /**
-   * Convert the given object into a {@link Row}. This method, which is overridden by child classes
-   * that are aware of what is embedded in the object, allows for a generic {@link
-   * TableAnswerElement#postProcessAnswer(Question, Multiset)} method.
-   *
-   * @param object The object to convert
-   * @return The converted {@link Row}
-   */
-  public abstract Row toRow(Object object);
 }

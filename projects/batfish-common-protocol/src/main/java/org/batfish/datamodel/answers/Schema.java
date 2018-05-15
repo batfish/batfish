@@ -3,7 +3,10 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
@@ -29,7 +32,7 @@ public class Schema {
           .put("FileLine", getClassString(FileLinePair.class))
           .put("Flow", getClassString(Flow.class))
           .put("FlowTrace", getClassString(FlowTrace.class))
-          .put("Integer", getClassString(Long.class))
+          .put("Integer", getClassString(Integer.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
           .put("Issue", getClassString(Issue.class))
@@ -93,6 +96,63 @@ public class Schema {
     } catch (ClassNotFoundException e) {
       throw new BatfishException("Could not get a class from " + baseTypeName);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || !(o instanceof Schema)) {
+      return false;
+    }
+    return Objects.equals(_baseType, ((Schema) o)._baseType)
+        && Objects.equals(_isListType, ((Schema) o)._isListType);
+  }
+
+  /**
+   * Infers the {@link Schema} type from provided value. Turns Sets into Lists.
+   *
+   * @param value The provided value
+   * @return The {@link Schema} object or null if the right Schema object is not found
+   * @throws IllegalArgumentException if a Map is provided
+   * @throws IllegalStateException if the internal schema alias map is corrupted
+   */
+  public static Schema fromValue(Object value) {
+    boolean isList = false;
+    Object baseValue = value;
+
+    if (value instanceof Map<?, ?>) {
+      throw new IllegalArgumentException("No Schema exists for maps. Value: " + value.getClass());
+    }
+
+    if (value instanceof Collection<?>) { // list, set
+      isList = true;
+      Collection<?> collection = (Collection<?>) value;
+      if (collection.isEmpty()) {
+        return null;
+      }
+      baseValue = collection.iterator().next();
+    }
+
+    Schema baseSchema = null;
+
+    for (Entry<String, String> entry : schemaAliases.entrySet()) {
+      Class clazz;
+      try {
+        clazz = Class.forName(entry.getValue().replaceFirst("class:", ""));
+      } catch (ClassNotFoundException e) {
+        throw new IllegalStateException(
+            "Could not convert schemaAlias value to a class: " + entry.getValue());
+      }
+      // ignore Object because everything is an Object
+      if (!entry.getKey().equals("Object") && clazz.isInstance(baseValue)) {
+        baseSchema = new Schema(entry.getKey());
+      }
+    }
+
+    if (baseSchema != null) {
+      return isList ? Schema.list(baseSchema) : baseSchema;
+    }
+
+    return null;
   }
 
   public Class<?> getBaseType() {
