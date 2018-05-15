@@ -109,6 +109,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_lengthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_length_exceptContext;
@@ -1185,13 +1186,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static int toIcmpCode(Icmp_codeContext ctx) {
+  @Nullable
+  private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
     if (ctx.FRAGMENTATION_NEEDED() != null) {
       return IcmpCode.PACKET_TOO_BIG;
     } else if (ctx.HOST_UNREACHABLE() != null) {
       return IcmpCode.DESTINATION_HOST_UNREACHABLE;
     } else {
-      throw new BatfishException("Missing mapping for icmp-code: '" + ctx.getText() + "'");
+      w.redFlag(String.format("Missing mapping for icmp-code: '%s'", ctx.getText()));
+      return null;
     }
   }
 
@@ -2814,17 +2817,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       // TODO: support icmpv6
       return;
     }
-    SubRange icmpCodeRange;
+    SubRange icmpCodeRange = null;
     if (ctx.subrange() != null) {
       icmpCodeRange = toSubRange(ctx.subrange());
     } else if (ctx.icmp_code() != null) {
-      int icmpCode = toIcmpCode(ctx.icmp_code());
-      icmpCodeRange = new SubRange(icmpCode, icmpCode);
+      Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
+      if (icmpCode != null) {
+        icmpCodeRange = new SubRange(icmpCode, icmpCode);
+      }
     } else {
-      throw new BatfishException("Invalid icmp-code");
+      _w.redFlag(String.format("Invalid icmp-code: '%s'", ctx.getText()));
     }
-    FwFrom from = new FwFromIcmpCode(icmpCodeRange);
-    _currentFwTerm.getFroms().add(from);
+    if (icmpCodeRange != null) {
+      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
+      _currentFwTerm.getFroms().add(from);
+    }
   }
 
   @Override
@@ -2843,6 +2850,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       throw new BatfishException("Invalid icmp-type");
     }
     FwFrom from = new FwFromIcmpType(icmpTypeRange);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitFftf_ip_protocol(Fftf_ip_protocolContext ctx) {
+    IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
+    FwFrom from = new FwFromProtocol(protocol);
     _currentFwTerm.getFroms().add(from);
   }
 

@@ -586,6 +586,11 @@ COMMIT
    'commit'
 ;
 
+COMMUNICATION_PROHIBITED_BY_FILTERING
+:
+   'communication-prohibited-by-filtering'
+;
+
 COMMUNITY
 :
    'community'
@@ -760,6 +765,11 @@ DESTINATION_ADDRESS_EXCLUDED
    'destination-address-excluded'
 ;
 
+DESTINATION_HOST_PROHIBITED
+:
+   'destination-host-prohibited'
+;
+
 DESTINATION_HOST_UNKNOWN
 :
    'destination-host-unknown'
@@ -768,6 +778,11 @@ DESTINATION_HOST_UNKNOWN
 DESTINATION_IP
 :
    'destination-ip'
+;
+
+DESTINATION_NETWORK_PROHIBITED
+:
+   'destination-network-prohibited'
 ;
 
 DESTINATION_NETWORK_UNKNOWN
@@ -1360,9 +1375,19 @@ HOST_NAME
    'host-name'
 ;
 
+HOST_PRECEDENCE_VIOLATION
+:
+   'host-precedence-violation'
+;
+
 HOST_UNREACHABLE
 :
    'host-unreachable'
+;
+
+HOST_UNREACHABLE_FOR_TOS
+:
+   'host-unreachable-for-tos'
 ;
 
 HOSTNAME
@@ -1685,9 +1710,19 @@ IP
    'ip'
 ;
 
+IP_HEADER_BAD
+:
+   'ip-header-bad'
+;
+
 IP_OPTIONS
 :
    'ip-options'
+;
+
+IP_PROTOCOL
+:
+   'ip-protocol'
 ;
 
 IPIP
@@ -3292,6 +3327,11 @@ NETWORK_SUMMARY_EXPORT
    'network-summary-export'
 ;
 
+NETWORK_UNREACHABLE_FOR_TOS
+:
+   'network-unreachable-for-tos'
+;
+
 NETWORK_UNREACHABLE
 :
    'network-unreachable'
@@ -3797,6 +3837,11 @@ PRECEDENCE
    'precedence'
 ;
 
+PRECEDENCE_CUTOFF_IN_EFFECT
+:
+   'precedence-cutoff-in-effect'
+;
+
 PRECISION_TIMERS
 :
    'precision-timers'
@@ -3912,6 +3957,11 @@ PROTOCOL
    'protocol'
 ;
 
+PROTOCOL_UNREACHABLE
+:
+   'protocol-unreachable'
+;
+
 PROTOCOLS
 :
    'protocols'
@@ -4007,6 +4057,26 @@ REDIRECT
    'redirect'
 ;
 
+REDIRECT_FOR_HOST
+:
+   'redirect-for-host'
+;
+
+REDIRECT_FOR_NETWORK
+:
+   'redirect-for-network'
+;
+
+REDIRECT_FOR_TOS_AND_HOST
+:
+   'redirect-for-tos-and-host'
+;
+
+REDIRECT_FOR_TOS_AND_NET
+:
+   'redirect-for-tos-and-net'
+;
+
 REDUNDANCY_GROUP
 :
    'redundancy-group'
@@ -4050,6 +4120,11 @@ REMOVE_PRIVATE
 REMOVED
 :
    'Removed'
+;
+
+REQUIRED_OPTION_MISSING
+:
+   'required-option-missing'
 ;
 
 RESOLUTION
@@ -4452,6 +4527,11 @@ SOURCE_ADDRESS_FILTER
    'source-address-filter'
 ;
 
+SOURCE_HOST_ISOLATED
+:
+   'source-host-isolated'
+;
+
 SOURCE_IDENTITY
 :
    'source-identity'
@@ -4480,6 +4560,11 @@ SOURCE_PORT
 SOURCE_PREFIX_LIST
 :
    'source-prefix-list'
+;
+
+SOURCE_ROUTE_FAILED
+:
+   'source-route-failed'
 ;
 
 SOURCE_QUENCH
@@ -4804,6 +4889,16 @@ TRUST
 TTL
 :
    'ttl'
+;
+
+TTL_EQ_ZERO_DURING_REASSEMBLY
+:
+   'ttl-eq-zero-during-reassembly'
+;
+
+TTL_EQ_ZERO_DURING_TRANSIT
+:
+   'ttl-eq-zero-during-transit'
 ;
 
 TUNNEL
