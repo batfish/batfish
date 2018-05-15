@@ -589,6 +589,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_eigrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_lispContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfv3Context;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_suppress_inactiveContext;
@@ -2378,6 +2379,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_MAP, ctx.getStart().getLine());
     _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+  }
+
+  @Override
+  public void exitRbnx_af_redistribute_ospfv3(Rbnx_af_redistribute_ospfv3Context ctx) {
+    String name = ctx.mapname.getText();
+    String sourceTag = ctx.source_tag.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.getStart().getLine());
+    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF3, name, sourceTag);
   }
 
   @Override
