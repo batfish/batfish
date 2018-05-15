@@ -282,9 +282,13 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_localContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authenticationContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_httpContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_privilege_modeContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_serialContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_sshContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_telnetContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_new_modelContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_actionContext;
 import org.batfish.grammar.cisco.CiscoParser.Access_list_ip6_rangeContext;
@@ -1377,6 +1381,58 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterAaa_authentication_login(Aaa_authentication_loginContext ctx) {
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
+    }
+  }
+
+  @Override
+  public void enterAaa_authentication_ssh(Aaa_authentication_sshContext ctx) {
+    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
+      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
+    }
+    if (ctx.aaa_authentication_asa_console().group != null) {
+      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
+      String name = ctx.SSH().getText();
+      _currentAaaAuthenticationLoginList =
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+    }
+  }
+
+  @Override
+  public void enterAaa_authentication_http(Aaa_authentication_httpContext ctx) {
+    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
+      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
+    }
+    if (ctx.aaa_authentication_asa_console().group != null) {
+      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
+      String name = ctx.HTTP().getText();
+      _currentAaaAuthenticationLoginList =
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+    }
+  }
+
+  @Override
+  public void enterAaa_authentication_serial(Aaa_authentication_serialContext ctx) {
+    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
+      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
+    }
+    if (ctx.aaa_authentication_asa_console().group != null) {
+      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
+      String name = ctx.SERIAL().getText();
+      _currentAaaAuthenticationLoginList =
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+    }
+  }
+
+  @Override
+  public void enterAaa_authentication_telnet(Aaa_authentication_telnetContext ctx) {
+    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
+      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
+    }
+    if (ctx.aaa_authentication_asa_console().group != null) {
+      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
+      String name = ctx.TELNET().getText();
+      _currentAaaAuthenticationLoginList =
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
     }
   }
 
