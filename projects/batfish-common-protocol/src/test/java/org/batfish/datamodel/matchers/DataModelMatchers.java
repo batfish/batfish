@@ -26,6 +26,7 @@ import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
+import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.vendor.StructureType;
@@ -95,6 +96,15 @@ public final class DataModelMatchers {
   public static Matcher<Configuration> hasRouteFilterList(
       @Nonnull String name, @Nonnull Matcher<? super RouteFilterList> subMatcher) {
     return new HasRouteFilterList(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
+   * red-flag warning with text matched by {@code subMatcher}.
+   */
+  public static Matcher<ConvertConfigurationAnswerElement> hasRedFlagWarning(
+      @Nonnull String hostname, @Nonnull Matcher<? super String> subMatcher) {
+    return new HasRedFlagWarning(hostname, subMatcher);
   }
 
   /**
