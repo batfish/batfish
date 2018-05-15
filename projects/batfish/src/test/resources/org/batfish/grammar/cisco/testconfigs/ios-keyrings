@@ -1,0 +1,11 @@
+!
+hostname ios-keyrings
+!
+crypto keyring kused
+crypto keyring kunused
+!
+crypto isakmp profile p1
+ keyring kused
+ keyring kundefined
+!
+!
