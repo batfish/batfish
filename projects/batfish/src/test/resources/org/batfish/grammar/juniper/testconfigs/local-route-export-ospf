@@ -1,0 +1,36 @@
+#
+set system host-name local-route-export-ospf
+#
+set routing-options autonomous-system 100
+#
+set interfaces xe-0/0/1 unit 0 family inet address 1.0.0.0/31
+set interfaces xe-0/0/2 unit 0 family inet address 2.0.0.0/31
+set interfaces xe-0/0/3 unit 0 family inet address 3.0.0.0/31
+set interfaces xe-0/0/4 unit 0 family inet address 4.0.0.0/31
+#
+set routing-instances vrf1 instance-type virtual-router
+set routing-instances vrf1 interface xe-0/0/1.0
+set routing-instances vrf1 protocols ospf area 0.0.0.1 interface xe-0/0/1.0
+set routing-instances vrf1 protocols ospf export allowall
+#
+set routing-instances vrf2 instance-type virtual-router
+set routing-instances vrf2 interface xe-0/0/2.0
+set routing-instances vrf2 routing-options interface-routes family inet export lan
+set routing-instances vrf2 protocols ospf area 0.0.0.2 interface xe-0/0/2.0
+set routing-instances vrf2 protocols ospf export allowall
+#
+set routing-instances vrf3 instance-type virtual-router
+set routing-instances vrf3 interface xe-0/0/3.0
+set routing-instances vrf3 routing-options interface-routes family inet export point-to-point
+set routing-instances vrf3 protocols ospf area 0.0.0.3 interface xe-0/0/3.0
+set routing-instances vrf3 protocols ospf export allowall
+#
+set routing-instances vrf4 instance-type virtual-router
+set routing-instances vrf4 interface xe-0/0/4.0
+set routing-instances vrf4 routing-options interface-routes family inet export lan
+set routing-instances vrf4 routing-options interface-routes family inet export point-to-point
+set routing-instances vrf4 protocols ospf area 0.0.0.4 interface xe-0/0/4.0
+set routing-instances vrf4 protocols ospf export allowall
+#
+set policy-options policy-statement allowall term t1 then accept
+#

@@ -51,6 +51,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
@@ -78,6 +79,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.ConnectedRib;
+import org.batfish.dataplane.rib.LocalRib;
 import org.batfish.dataplane.rib.OspfExternalType1Rib;
 import org.batfish.dataplane.rib.OspfExternalType2Rib;
 import org.batfish.dataplane.rib.OspfInterAreaRib;
@@ -156,6 +158,8 @@ public class VirtualRouter extends ComparableStructure<String> {
    * iterations (hence, independent).
    */
   transient Rib _independentRib;
+
+  transient LocalRib _localRib;
 
   /** The finalized RIB, a combination different protocol RIBs */
   Rib _mainRib;
@@ -238,8 +242,10 @@ public class VirtualRouter extends ComparableStructure<String> {
     _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
 
     initConnectedRib();
+    initLocalRib();
     initStaticRib();
     importRib(_independentRib, _connectedRib);
+    importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
     initIntraAreaOspfRoutes();
@@ -914,6 +920,26 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
+  /**
+   * Initialize the local RIB -- a RIB containing non-forwarding /32 routes for exact addresses of
+   * interfaces
+   */
+  @VisibleForTesting
+  void initLocalRib() {
+    // Look at all connected interfaces
+    for (Interface i : _vrf.getInterfaces().values()) {
+      if (i.getActive()) { // Make sure the interface is active
+        // Create a route for each interface prefix
+        for (InterfaceAddress ifaceAddress : i.getAllAddresses()) {
+          if (ifaceAddress.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
+            LocalRoute lr = new LocalRoute(ifaceAddress, i.getName());
+            _localRib.mergeRoute(lr);
+          }
+        }
+      }
+    }
+  }
+
   @Nullable
   @VisibleForTesting
   OspfExternalRoute computeOspfExportRoute(
@@ -991,6 +1017,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   @VisibleForTesting
   void initRibs() {
     _connectedRib = new ConnectedRib();
+    _localRib = new LocalRib();
     // If bgp process is null, doesn't matter
     MultipathEquivalentAsPathMatchMode mpTieBreaker =
         _vrf.getBgpProcess() == null

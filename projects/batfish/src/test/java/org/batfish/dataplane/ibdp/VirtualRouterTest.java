@@ -50,6 +50,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -443,6 +444,30 @@ public class VirtualRouterTest {
                 .map(e -> new ConnectedRoute(e.getValue().getPrefix(), e.getKey()))
                 .collect(Collectors.toList())
                 .toArray(new ConnectedRoute[] {})));
+  }
+
+  /** Check that initialization of Local RIB is as expected */
+  @Test
+  public void testInitLocalRib() {
+    // Setup
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+    vr.initRibs();
+
+    // Test
+    vr.initLocalRib();
+
+    // Assert that all interface prefixes have been processed
+    assertThat(
+        vr._localRib.getRoutes(),
+        containsInAnyOrder(
+            exampleInterfaceAddresses
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
+                .map(e -> new LocalRoute(e.getValue(), e.getKey()))
+                .collect(Collectors.toList())
+                .toArray(new LocalRoute[] {})));
   }
 
   @Test
