@@ -6,6 +6,8 @@ import static org.hamcrest.collection.IsMapContaining.hasEntry;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.dataplane.ibdp.PrefixTracer;
@@ -15,6 +17,18 @@ import org.hamcrest.Matcher;
 
 /** A set of matchers for testing {@link PrefixTracer} */
 public final class PrefixTracerMatchers {
+
+  static final class WasOriginated extends FeatureMatcher<PrefixTracer, SortedSet<Prefix>> {
+
+    WasOriginated(Matcher<? super SortedSet<Prefix>> subMatcher) {
+      super(subMatcher, "Originated:", "originated");
+    }
+
+    @Override
+    protected SortedSet<Prefix> featureValueOf(PrefixTracer prefixTracer) {
+      return prefixTracer.getOriginated();
+    }
+  }
 
   static final class FilteredOut extends FeatureMatcher<PrefixTracer, Map<Prefix, Set<Neighbor>>> {
 
@@ -75,6 +89,17 @@ public final class PrefixTracerMatchers {
     }
   }
 
+  static final class HasIp extends FeatureMatcher<Neighbor, Ip> {
+    public HasIp(Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "Neighbor with Ip:", "ip");
+    }
+
+    @Override
+    protected Ip featureValueOf(Neighbor neighbor) {
+      return neighbor.getIp();
+    }
+  }
+
   /** Matches if a matched by the submatcher prefix was sent */
   public static WasSent wasSent(Matcher<? super Map<Prefix, Set<Neighbor>>> submatcher) {
     return new WasSent(submatcher);
@@ -84,6 +109,11 @@ public final class PrefixTracerMatchers {
   public static WasInstalled wasInstalled(
       Prefix prefix, Matcher<? super Set<Neighbor>> submatcher) {
     return new WasInstalled(hasEntry(equalTo(prefix), submatcher));
+  }
+
+  /** Matches if a prefix was considered for export */
+  public static WasOriginated wasOriginated(Prefix prefix) {
+    return new WasOriginated(hasItem(prefix));
   }
 
   /** Matches if a prefix was sent to any neighbors specified by the submatcher */
@@ -110,6 +140,16 @@ public final class PrefixTracerMatchers {
   /** Matches if any of the neighbors have a specified hostname */
   public static Matcher<? super Iterable<Neighbor>> toHostname(String hostname) {
     return hasItem(new HasHostname(equalTo(hostname)));
+  }
+
+  /** Matches if any of the neighbors have a specified ip */
+  public static Matcher<? super Iterable<Neighbor>> toIp(Ip ip) {
+    return hasItem(new HasIp(equalTo(ip)));
+  }
+
+  /** Matches if any of the neighbors have a specified ip */
+  public static Matcher<? super Iterable<Neighbor>> fromIp(Ip ip) {
+    return hasItem(new HasIp(equalTo(ip)));
   }
 
   /** Matches if any of the neighbors have a specified hostname */

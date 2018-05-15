@@ -91,15 +91,15 @@ public class PrefixTracer implements Serializable {
     }
   }
 
-  private Map<Prefix, Set<Neighbor>> _filteredOnImport;
+  private final Map<Prefix, Set<Neighbor>> _filteredOnImport;
 
-  private Map<Prefix, Set<Neighbor>> _filteredOnExport;
+  private final Map<Prefix, Set<Neighbor>> _filteredOnExport;
 
-  private Set<Prefix> _originated;
+  private final Set<Prefix> _originated;
 
-  private Map<Prefix, Set<Neighbor>> _installed;
+  private final Map<Prefix, Set<Neighbor>> _installed;
 
-  private Map<Prefix, Set<Neighbor>> _sent;
+  private final Map<Prefix, Set<Neighbor>> _sent;
 
   PrefixTracer() {
     _originated = new HashSet<>();
