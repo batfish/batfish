@@ -2311,19 +2311,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRbnx_af_network(Rbnx_af_networkContext ctx) {
-    Prefix prefix =
-        (ctx.prefix != null)
-            ? Prefix.parse(ctx.prefix.getText())
-            : new Prefix(toIp(ctx.address), toIp(ctx.mask));
-
-    String prefixName = "";
+    String mapname = "";
     if (ctx.mapname != null) {
-      prefixName = ctx.mapname.getText();
+      mapname = ctx.mapname.getText();
       _configuration.referenceStructure(
-          ROUTE_MAP, prefixName, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
+          ROUTE_MAP, mapname, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
     }
 
-    _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, prefixName);
+    if (ctx.prefix != null) {
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
+    } else if (ctx.address != null && ctx.mask != null) {
+      Prefix prefix = new Prefix(toIp(ctx.address), toIp(ctx.mask));
+      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
+    } else if (ctx.prefix6 != null) {
+      Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
+      _currentBgpNxVrfAddressFamily.addIpv6Network(prefix, mapname);
+    }
   }
 
   @Override

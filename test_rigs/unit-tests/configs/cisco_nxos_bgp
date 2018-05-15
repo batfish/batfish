@@ -19,6 +19,7 @@ router bgp 1
   address-family ipv4 unicast
   address-family ipv6 unicast
     aggregate-address fe80::/10 advertise-map AGG6_MAP
+    network fe80::/120
   neighbor 2.2.2.2 remote-as 6600
     local-as 65500 no-prepend replace-as
     no shutdown
