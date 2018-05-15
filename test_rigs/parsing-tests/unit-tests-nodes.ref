@@ -1950,6 +1950,19 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
@@ -2171,6 +2184,19 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
                 "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -12471,6 +12497,19 @@
             "name" : "~OSPF_EXPORT_POLICY:default~",
             "statements" : [
               {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
                 "metricType" : "E2"
               },
@@ -12694,6 +12733,19 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
@@ -12743,6 +12795,19 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
                 "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -12993,6 +13058,19 @@
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
                 "falseStatements" : [
                   {
                     "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
@@ -13042,6 +13120,19 @@
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy",
                 "defaultPolicy" : "~DEFAULT_BGP_EXPORT_POLICY~"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
               },
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
@@ -17409,6 +17500,75 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        }
+      },
+      "ospf-stub" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "ospf-stub",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                "metricType" : "E2"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "ospfProcess" : {
+              "areas" : {
+                "7" : {
+                  "name" : 7
+                },
+                "46" : {
+                  "name" : 46
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "referenceBandwidth" : 1.0E9
+            }
           }
         }
       },

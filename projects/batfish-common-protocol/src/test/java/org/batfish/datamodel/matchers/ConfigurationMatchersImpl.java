@@ -6,6 +6,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.Route6FilterList;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.vendor_family.VendorFamily;
@@ -98,6 +100,41 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, IpSpace> featureValueOf(Configuration actual) {
       return actual.getIpSpaces();
+    }
+  }
+
+  static final class HasRoute6FilterList extends FeatureMatcher<Configuration, Route6FilterList> {
+    private final String _name;
+
+    HasRoute6FilterList(
+        @Nonnull String name, @Nonnull Matcher<? super Route6FilterList> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with Route6FilterList " + name + ":",
+          "Route6FilterList " + name);
+      _name = name;
+    }
+
+    @Override
+    protected Route6FilterList featureValueOf(Configuration actual) {
+      return actual.getRoute6FilterLists().get(_name);
+    }
+  }
+
+  static final class HasRouteFilterList extends FeatureMatcher<Configuration, RouteFilterList> {
+    private final String _name;
+
+    HasRouteFilterList(@Nonnull String name, @Nonnull Matcher<? super RouteFilterList> subMatcher) {
+      super(
+          subMatcher,
+          "A Configuration with RouteFilterList " + name + ":",
+          "RouteFilterList " + name);
+      _name = name;
+    }
+
+    @Override
+    protected RouteFilterList featureValueOf(Configuration actual) {
+      return actual.getRouteFilterLists().get(_name);
     }
   }
 

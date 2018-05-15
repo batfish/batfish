@@ -240,6 +240,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_lanContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_point_to_pointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_metricContext;
@@ -3694,6 +3696,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       int line = ctx.policy.getStart().getLine();
       _currentGeneratedRoute.getPolicies().put(policy, line);
     }
+  }
+
+  @Override
+  public void enterRoifie_lan(Roifie_lanContext ctx) {
+    _currentRoutingInstance.setExportLocalRoutesLan(true);
+  }
+
+  @Override
+  public void exitRoifie_point_to_point(Roifie_point_to_pointContext ctx) {
+    _currentRoutingInstance.setExportLocalRoutesPointToPoint(true);
   }
 
   @Override

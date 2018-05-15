@@ -847,7 +847,9 @@
         "description" : "Unused structure of type: 'prefix-set' with name: 'default_route'",
         "files" : {
           "ios_xr_prefix_set" : [
-            4
+            4,
+            5,
+            6
           ]
         }
       },
@@ -855,7 +857,18 @@
         "description" : "Unused structure of type: 'prefix-set' with name: 'ucla_networks'",
         "files" : {
           "ios_xr_prefix_set" : [
-            7
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
           ]
         }
       },
@@ -2176,10 +2189,23 @@
       "preSet" : {
         "prefix-set" : {
           "default_route" : [
-            4
+            4,
+            5,
+            6
           ],
           "ucla_networks" : [
-            7
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18
           ]
         }
       },

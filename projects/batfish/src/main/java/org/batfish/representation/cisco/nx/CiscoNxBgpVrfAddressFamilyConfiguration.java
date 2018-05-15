@@ -1,11 +1,13 @@
 package org.batfish.representation.cisco.nx;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.RoutingProtocol;
 
 /**
  * Represents the BGP configuration for a single address family at the VRF level.
@@ -17,16 +19,30 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpVrfAddressFamilyConfiguration() {
+    _aggregateNetworks = new HashMap<>();
     _clientToClientReflection = false; // disabled by default
     _defaultMetric = null; // there is no default, and metric must be set to redistribute routes
-    _defaultOriginate = false; // disabled by default
+    _defaultInformationOriginate = false; // disabled by default
     _distanceEbgp = 20; // documented under "address-family (BGP router)" and NX-OS CLI
     _distanceIbgp = 200; // documented under "address-family (BGP router)" and NX-OS CLI
     _distanceLocal = 220; // documented under "address-family (BGP router)" and NX-OS CLI
-    _ipNetworks = new TreeMap<>();
-    _ipv6Networks = new TreeMap<>();
+    _ipNetworks = new HashMap<>();
+    _ipv6Networks = new HashMap<>();
     _maximumPathsEbgp = 1; // multipath disabled by default
     _maximumPathsIbgp = 1; // multipath disabled by default
+    _redistributionPolicies = new HashMap<>();
+    _suppressInactive = false; // inactive routes not suppressed by default
+  }
+
+  public Map<Prefix, CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration>
+      getAggregateNetworks() {
+    return Collections.unmodifiableMap(_aggregateNetworks);
+  }
+
+  public CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration getOrCreateAggregateNetwork(
+      Prefix prefix) {
+    return _aggregateNetworks.computeIfAbsent(
+        prefix, p -> new CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration());
   }
 
   public boolean getClientToClientReflection() {
@@ -37,6 +53,14 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
     this._clientToClientReflection = clientToClientReflection;
   }
 
+  public boolean getDefaultInformationOriginate() {
+    return _defaultInformationOriginate;
+  }
+
+  public void setDefaultInformationOriginate(boolean defaultInformationOriginate) {
+    this._defaultInformationOriginate = defaultInformationOriginate;
+  }
+
   @Nullable
   public Long getDefaultMetric() {
     return _defaultMetric;
@@ -44,14 +68,6 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
 
   public void setDefaultMetric(@Nullable Long defaultMetric) {
     this._defaultMetric = defaultMetric;
-  }
-
-  public boolean getDefaultOriginate() {
-    return _defaultOriginate;
-  }
-
-  public void setDefaultOriginate(boolean defaultOriginate) {
-    this._defaultOriginate = defaultOriginate;
   }
 
   public int getDistanceEbgp() {
@@ -78,8 +94,16 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
     this._distanceLocal = distanceLocal;
   }
 
+  public Map<Prefix, String> getIpNetworks() {
+    return Collections.unmodifiableMap(_ipNetworks);
+  }
+
   public void addIpNetwork(Prefix prefix, String routeMapNameOrEmpty) {
     _ipNetworks.put(prefix, routeMapNameOrEmpty);
+  }
+
+  public Map<Prefix6, String> getIpv6Networks() {
+    return Collections.unmodifiableMap(_ipv6Networks);
   }
 
   public void addIpv6Network(Prefix6 prefix, String routeMapNameOrEmpty) {
@@ -102,14 +126,38 @@ public class CiscoNxBgpVrfAddressFamilyConfiguration implements Serializable {
     this._maximumPathsIbgp = maximumPathsIbgp;
   }
 
+  @Nullable
+  public CiscoNxBgpRedistributionPolicy getRedistributionPolicy(RoutingProtocol protocol) {
+    return _redistributionPolicies.get(protocol);
+  }
+
+  public void setRedistributionPolicy(
+      RoutingProtocol protocol, String routeMap, @Nullable String sourceTag) {
+    CiscoNxBgpRedistributionPolicy policy = new CiscoNxBgpRedistributionPolicy(routeMap);
+    policy.setSourceTag(sourceTag);
+    _redistributionPolicies.put(protocol, policy);
+  }
+
+  public boolean getSuppressInactive() {
+    return _suppressInactive;
+  }
+
+  public void setSuppressInactive(boolean suppressInactive) {
+    _suppressInactive = suppressInactive;
+  }
+
+  private final Map<Prefix, CiscoNxBgpVrfAddressFamilyAggregateNetworkConfiguration>
+      _aggregateNetworks;
   private boolean _clientToClientReflection;
   @Nullable private Long _defaultMetric;
-  private boolean _defaultOriginate;
+  private boolean _defaultInformationOriginate;
   private int _distanceEbgp;
   private int _distanceIbgp;
   private int _distanceLocal;
-  private Map<Prefix, String> _ipNetworks;
-  private Map<Prefix6, String> _ipv6Networks;
+  private final Map<Prefix, String> _ipNetworks;
+  private final Map<Prefix6, String> _ipv6Networks;
   private int _maximumPathsEbgp;
   private int _maximumPathsIbgp;
+  private final Map<RoutingProtocol, CiscoNxBgpRedistributionPolicy> _redistributionPolicies;
+  private boolean _suppressInactive;
 }

@@ -1,10 +1,12 @@
 package org.batfish.representation.cisco.nx;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 
 /**
  * Represents the top-level configuration of a VRF in a BGP process for Cisco NX-OS.
@@ -16,10 +18,12 @@ public final class CiscoNxBgpVrfConfiguration implements Serializable {
   private static final long serialVersionUID = 1L;
 
   public CiscoNxBgpVrfConfiguration() {
-    this._addressFamilies = new TreeMap<>(); // all address families disabled by default
+    this._addressFamilies = new HashMap<>(); // all address families disabled by default
     this._clusterId = null; // route reflection is disabled by default.
     this._logNeighborChanges = false; // disabled by default
     this._maxAsLimit = null; // default no limit
+    this._neighbors = new HashMap<>(); // no neighbors by default.
+    this._passiveNeighbors = new HashMap<>(); // no neighbors by default.
     this._routerId = null; // use device's default router id unless overridden.
   }
 
@@ -35,6 +39,22 @@ public final class CiscoNxBgpVrfConfiguration implements Serializable {
 
   public CiscoNxBgpVrfAddressFamilyConfiguration getOrCreateAddressFamily(String af) {
     return _addressFamilies.computeIfAbsent(af, a -> new CiscoNxBgpVrfAddressFamilyConfiguration());
+  }
+
+  public CiscoNxBgpVrfNeighborConfiguration getOrCreateNeighbor(Ip address) {
+    return _neighbors.computeIfAbsent(address, a -> new CiscoNxBgpVrfNeighborConfiguration());
+  }
+
+  public CiscoNxBgpVrfNeighborConfiguration getOrCreatePassiveNeighbor(Prefix prefix) {
+    return _passiveNeighbors.computeIfAbsent(prefix, p -> new CiscoNxBgpVrfNeighborConfiguration());
+  }
+
+  public Map<Ip, CiscoNxBgpVrfNeighborConfiguration> getNeighbors() {
+    return Collections.unmodifiableMap(_neighbors);
+  }
+
+  public Map<Prefix, CiscoNxBgpVrfNeighborConfiguration> getPassiveNeighbors() {
+    return Collections.unmodifiableMap(_passiveNeighbors);
   }
 
   public boolean getBestpathAlwaysCompareMed() {
@@ -145,9 +165,11 @@ public final class CiscoNxBgpVrfConfiguration implements Serializable {
   private boolean _bestpathMedConfed;
   private boolean _bestpathMedMissingAsWorst;
   private boolean _bestpathMedNonDeterministic;
+  @Nullable private Ip _clusterId;
   @Nullable private Long _localAs;
   private boolean _logNeighborChanges;
-  @Nullable private Ip _clusterId;
   @Nullable private Integer _maxAsLimit;
+  private final Map<Ip, CiscoNxBgpVrfNeighborConfiguration> _neighbors;
+  private final Map<Prefix, CiscoNxBgpVrfNeighborConfiguration> _passiveNeighbors;
   @Nullable private Ip _routerId;
 }
