@@ -309,7 +309,7 @@ rbnx_maxas_limit
 
 rbnx_neighbor
 :
-    NEIGHBOR (ip = IP_ADDRESS | prefix = IP_PREFIX)
+    NEIGHBOR (ip = IP_ADDRESS | prefix = IP_PREFIX | ip6 = IPV6_ADDRESS | prefix6 = IPV6_PREFIX)
     (
         REMOTE_AS (
             bgp_asn?
