@@ -1192,6 +1192,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return IcmpCode.PACKET_TOO_BIG;
     } else if (ctx.HOST_UNREACHABLE() != null) {
       return IcmpCode.DESTINATION_HOST_UNREACHABLE;
+    } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
+      return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
     } else {
       w.redFlag(String.format("Missing mapping for icmp-code: '%s'", ctx.getText()));
       return null;
