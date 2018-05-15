@@ -27,6 +27,10 @@ public class RoutingInstance implements Serializable {
 
   private String _domainName;
 
+  private boolean _exportLocalRoutesLan;
+
+  private boolean _exportLocalRoutesPointToPoint;
+
   private String _forwardingTableExportPolicy;
 
   private int _forwardingTableExportPolicyLine;
@@ -118,6 +122,14 @@ public class RoutingInstance implements Serializable {
     return _domainName;
   }
 
+  public boolean getExportLocalRoutesLan() {
+    return _exportLocalRoutesLan;
+  }
+
+  public boolean getExportLocalRoutesPointToPoint() {
+    return _exportLocalRoutesPointToPoint;
+  }
+
   public String getForwardingTableExportPolicy() {
     return _forwardingTableExportPolicy;
   }
@@ -196,6 +208,14 @@ public class RoutingInstance implements Serializable {
 
   public void setDomainName(String domainName) {
     _domainName = domainName;
+  }
+
+  public void setExportLocalRoutesLan(boolean exportLocalRoutesLan) {
+    _exportLocalRoutesLan = exportLocalRoutesLan;
+  }
+
+  public void setExportLocalRoutesPointToPoint(boolean exportLocalRoutesPointToPoint) {
+    _exportLocalRoutesPointToPoint = exportLocalRoutesPointToPoint;
   }
 
   public void setForwardingTableExportPolicy(String forwardingTableExportPolicy) {

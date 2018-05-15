@@ -400,9 +400,19 @@ roifi_export
 :
    EXPORT
    (
-      LAN
-      | POINT_TO_POINT
+      roifie_lan
+      | roifie_point_to_point
    )
+;
+
+roifie_lan
+:
+   LAN
+;
+
+roifie_point_to_point
+:
+   POINT_TO_POINT
 ;
 
 roir_inet
