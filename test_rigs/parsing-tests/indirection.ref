@@ -999,7 +999,14 @@
           "prefix-set" : {
             "bgp_sub2_route_filter" : {
               "definitionLines" : [
-                63
+                63,
+                64,
+                65,
+                66,
+                67,
+                68,
+                69,
+                70
               ],
               "numReferrers" : 1
             }
