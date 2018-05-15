@@ -3,6 +3,7 @@ package org.batfish.question.nodeproperties;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -75,13 +76,44 @@ public class NodePropertiesAnswerer extends Answerer {
 
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
 
-    row.put(columnName, propertyValue);
-
-    // fill the schema information if it hasn't been filled out
-    if (!schemas.containsKey(columnName)) {
+    // figure out the schema and populate the row accordingly
+    if (propertyValue == null
+        || (propertyValue instanceof Collection<?> && ((Collection<?>) propertyValue).isEmpty())) {
+      row.put(columnName, propertyValue);
+    } else if (!schemas.containsKey(columnName)) {
+      // we haven't yet figured out the schema of this column
       Schema schema = Schema.fromValue(propertyValue);
-      if (schema != null) {
+      if (schema == null) {
+        // force String schema when inference fails
+        if (propertyValue instanceof Collection<?>) {
+          schemas.put(columnName, Schema.list(Schema.STRING));
+          row.put(
+              columnName,
+              ((Collection<?>) propertyValue)
+                  .stream()
+                  .map(val -> val.toString())
+                  .collect(Collectors.toList()));
+        } else {
+          schemas.put(columnName, Schema.STRING);
+          row.put(columnName, propertyValue.toString());
+        }
+      } else {
         schemas.put(columnName, schema);
+        row.put(columnName, propertyValue);
+      }
+    } else {
+      // the first two branches are for when we forced a String schema
+      if (schemas.get(columnName).equals(Schema.STRING)) {
+        row.put(columnName, propertyValue.toString());
+      } else if (schemas.get(columnName).equals(Schema.list(Schema.STRING))) {
+        row.put(
+            columnName,
+            ((Collection<?>) propertyValue)
+                .stream()
+                .map(val -> val.toString())
+                .collect(Collectors.toList()));
+      } else {
+        row.put(columnName, propertyValue);
       }
     }
   }
