@@ -20,6 +20,12 @@ import org.junit.Test;
 public class NodePropertiesAnswererTest {
 
   @Test
+  public void answer() {
+    // TODO: write an "end-to-end" test here. Requires the Batfish object, and thus moving the
+    // BatfishTestUtils class to common
+  }
+
+  @Test
   public void fillPropertyAndSchemaEmptyList() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     Map<String, Schema> schemas = new HashMap<>();

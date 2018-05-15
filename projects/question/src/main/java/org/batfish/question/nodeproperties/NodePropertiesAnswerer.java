@@ -1,5 +1,6 @@
 package org.batfish.question.nodeproperties;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 import java.util.HashMap;
@@ -35,13 +36,14 @@ public class NodePropertiesAnswerer extends Answerer {
     return answer;
   }
 
-  public Multiset<Row> rawAnswer(NodePropertiesQuestion question, Map<String, Schema> schemas) {
+  private Multiset<Row> rawAnswer(NodePropertiesQuestion question, Map<String, Schema> schemas) {
     Multiset<Row> rows = HashMultiset.create();
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodeNames = question.getNodeRegex().getMatchingNodes(_batfish);
 
     for (String nodeName : nodeNames) {
       Row row = new Row().put(NodePropertiesAnswerElement.COL_NODE, new Node(nodeName));
+      rows.add(row);
 
       for (NodePropertySpecifier nodePropertySpec : question.getProperties()) {
         fillPropertyAndSchema(configurations.get(nodeName), nodePropertySpec, row, schemas);
@@ -51,6 +53,7 @@ public class NodePropertiesAnswerer extends Answerer {
     return rows;
   }
 
+  @VisibleForTesting
   static void fillPropertyAndSchema(
       Configuration configuration,
       NodePropertySpecifier nodePropertySpec,

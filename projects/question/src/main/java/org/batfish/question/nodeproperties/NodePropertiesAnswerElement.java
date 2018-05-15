@@ -23,7 +23,14 @@ public class NodePropertiesAnswerElement extends TableAnswerElement {
     super(tableMetadata);
   }
 
-  public static TableMetadata createMetadata(
+  /**
+   * Creates a {@link TableMetadata} object from the question and a map of schemas.
+   *
+   * @param question The question
+   * @param schemas The schemas map
+   * @return The resulting {@link TableMetadata} object
+   */
+  static TableMetadata createMetadata(
       NodePropertiesQuestion question, Map<String, Schema> schemas) {
     List<ColumnMetadata> columnMetadata =
         new ImmutableList.Builder<ColumnMetadata>()
