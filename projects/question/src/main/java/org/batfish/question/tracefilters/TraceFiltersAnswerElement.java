@@ -2,9 +2,8 @@ package org.batfish.question.tracefilters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedMap;
-import java.util.Comparator;
-import java.util.SortedMap;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.LineAction;
@@ -33,15 +32,15 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
    * @return The creates the answer element object.
    */
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
-    SortedMap<String, ColumnMetadata> columnMetadata =
-        new ImmutableSortedMap.Builder<String, ColumnMetadata>(Comparator.naturalOrder())
-            .put(COLUMN_NODE, new ColumnMetadata(Schema.NODE, "Node", true, false))
-            .put(COLUMN_FILTER_NAME, new ColumnMetadata(Schema.STRING, "Filter name", true, false))
-            .put(COLUMN_FLOW, new ColumnMetadata(Schema.FLOW, "Evaluated flow", true, false))
-            .put(COLUMN_ACTION, new ColumnMetadata(Schema.STRING, "Outcome", false, true))
-            .put(COLUMN_LINE_NUMBER, new ColumnMetadata(Schema.INTEGER, "Line number", false, true))
-            .put(
-                COLUMN_LINE_CONTENT, new ColumnMetadata(Schema.STRING, "Line content", false, true))
+    List<ColumnMetadata> columnMetadata =
+        new ImmutableList.Builder<ColumnMetadata>()
+            .add(new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false))
+            .add(new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false))
+            .add(new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false))
+            .add(new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true))
+            .add(new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true))
+            .add(
+                new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true))
             .build();
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
@@ -66,12 +65,6 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
     super(tableMetadata);
   }
 
-  @Override
-  public Object fromRow(Row o) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
   public Row getRow(
       String nodeName,
       String filterName,
@@ -87,11 +80,5 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
         .put(COLUMN_LINE_NUMBER, matchLine)
         .put(COLUMN_LINE_CONTENT, lineContent);
     return row;
-  }
-
-  @Override
-  public Row toRow(Object object) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

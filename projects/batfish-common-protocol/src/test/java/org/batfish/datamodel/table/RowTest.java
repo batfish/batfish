@@ -3,9 +3,8 @@ package org.batfish.datamodel.table;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
-import com.google.common.collect.ImmutableSortedMap;
-import java.util.Comparator;
-import java.util.Map;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import org.batfish.datamodel.answers.Schema;
 import org.junit.Test;
 
@@ -22,11 +21,11 @@ public class RowTest {
       boolean valueCol1,
       boolean valueCol2,
       boolean valueCol3) {
-    Map<String, ColumnMetadata> columns =
-        new ImmutableSortedMap.Builder<String, ColumnMetadata>(Comparator.naturalOrder())
-            .put("col1", new ColumnMetadata(Schema.STRING, "desc", keyCol1, valueCol1))
-            .put("col2", new ColumnMetadata(Schema.STRING, "desc", keyCol2, valueCol2))
-            .put("col3", new ColumnMetadata(Schema.STRING, "desc", keyCol3, valueCol3))
+    List<ColumnMetadata> columns =
+        new ImmutableList.Builder<ColumnMetadata>()
+            .add(new ColumnMetadata("col1", Schema.STRING, "desc", keyCol1, valueCol1))
+            .add(new ColumnMetadata("col2", Schema.STRING, "desc", keyCol2, valueCol2))
+            .add(new ColumnMetadata("col3", Schema.STRING, "desc", keyCol3, valueCol3))
             .build();
     return new TableMetadata(columns, null);
   }
