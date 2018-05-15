@@ -2295,6 +2295,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int limit = toInteger(ctx.numpaths);
     if (ctx.IBGP() != null) {
       _currentBgpNxVrfAddressFamily.setMaximumPathsIbgp(limit);
+    } else if (ctx.EIBGP() != null) {
+      _currentBgpNxVrfAddressFamily.setMaximumPathsEbgp(limit);
+      _currentBgpNxVrfAddressFamily.setMaximumPathsIbgp(limit);
     } else {
       _currentBgpNxVrfAddressFamily.setMaximumPathsEbgp(limit);
     }
