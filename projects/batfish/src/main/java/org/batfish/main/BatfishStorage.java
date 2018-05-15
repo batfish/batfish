@@ -186,12 +186,15 @@ final class BatfishStorage {
           String.format("Unable to create output directory '%s'", outputDir));
     }
 
-    configurations.forEach(
-        (name, c) -> {
-          Path currentOutputPath = outputDir.resolve(name);
-          serializeObject(c, currentOutputPath);
-          progressCount.incrementAndGet();
-        });
+    configurations
+        .entrySet()
+        .parallelStream()
+        .forEach(
+            e -> {
+              Path currentOutputPath = outputDir.resolve(e.getKey());
+              serializeObject(e.getValue(), currentOutputPath);
+              progressCount.incrementAndGet();
+            });
   }
 
   /**
