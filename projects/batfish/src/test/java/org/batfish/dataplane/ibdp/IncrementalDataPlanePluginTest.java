@@ -6,8 +6,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
@@ -290,7 +290,7 @@ public class IncrementalDataPlanePluginTest {
      * Initialize the matchers with respect to the output route set
      */
     Set<BgpRoute> postMergeRoutes = bmr.getRoutes();
-    Matcher<BgpRoute> present = isIn(postMergeRoutes);
+    Matcher<BgpRoute> present = in(postMergeRoutes);
     Matcher<BgpRoute> absent = not(present);
 
     /*
@@ -515,9 +515,9 @@ public class IncrementalDataPlanePluginTest {
     Prefix r3Loopback0Prefix = Prefix.parse("3.0.0.3/32");
 
     // Ensure that r3loopback was accepted by r1
-    assertThat(r3Loopback0Prefix, isIn(r1Prefixes));
+    assertThat(r3Loopback0Prefix, in(r1Prefixes));
     // Check the other direction (r1loopback is accepted by r3)
-    assertThat(r1Loopback0Prefix, isIn(r3Prefixes));
+    assertThat(r1Loopback0Prefix, in(r3Prefixes));
   }
 
   @Test
@@ -654,9 +654,9 @@ public class IncrementalDataPlanePluginTest {
     Prefix r1AdvertisedPrefix = Prefix.parse("9.9.9.9/32");
 
     // Ensure that the prefix is accepted by r2, because router ids are different
-    assertThat(r1AdvertisedPrefix, isIn(r2Prefixes));
+    assertThat(r1AdvertisedPrefix, in(r2Prefixes));
     // Ensure that the prefix is rejected by r3, because router ids are the same
-    assertThat(r1AdvertisedPrefix, not(isIn(r3Prefixes)));
+    assertThat(r1AdvertisedPrefix, not(in(r3Prefixes)));
   }
 
   @Test
