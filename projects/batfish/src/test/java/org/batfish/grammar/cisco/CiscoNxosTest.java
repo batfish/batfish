@@ -1,10 +1,13 @@
 package org.batfish.grammar.cisco;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.main.BatfishTestUtils.getBatfishForTextConfigs;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
@@ -60,6 +63,19 @@ public class CiscoNxosTest {
     Batfish batfish = getBatfishForTextConfigs(_folder, names);
     batfish.getSettings().setEnableCiscoNxParser(true);
     return batfish;
+  }
+
+  @Test
+  public void testMaximumPaths() {
+    Configuration c = parseConfig("nxosBgpMaximumPaths");
+    assertThat(
+        c,
+        hasVrf("justibgp", hasBgpProcess(allOf(hasMultipathEbgp(false), hasMultipathIbgp(true)))));
+    assertThat(
+        c,
+        hasVrf("justebgp", hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false)))));
+    assertThat(
+        c, hasVrf("both", hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true)))));
   }
 
   @Test

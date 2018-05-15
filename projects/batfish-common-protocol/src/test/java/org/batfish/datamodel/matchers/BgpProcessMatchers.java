@@ -8,6 +8,8 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEbgp;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathIbgp;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasNeighbor;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasNeighbors;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasRouterId;
@@ -15,6 +17,38 @@ import org.hamcrest.Matcher;
 
 /** {@link Matcher Hamcrest matchers} for {@link BgpProcess}. */
 public class BgpProcessMatchers {
+
+  /**
+   * Provides a matcher that matches if the provided {@code value} matches whether the BGP process
+   * uses multipath for EBGP.
+   */
+  public static HasMultipathEbgp hasMultipathEbgp(boolean value) {
+    return new HasMultipathEbgp(equalTo(value));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches whether the BGP
+   * process uses multipath for EBGP.
+   */
+  public static HasMultipathEbgp hasMultipathEbgp(@Nonnull Matcher<? super Boolean> subMatcher) {
+    return new HasMultipathEbgp(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code value} matches whether the BGP process
+   * uses multipath for IBGP.
+   */
+  public static HasMultipathIbgp hasMultipathIbgp(boolean value) {
+    return new HasMultipathIbgp(equalTo(value));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches whether the BGP
+   * process uses multipath for IBGP.
+   */
+  public static HasMultipathIbgp hasMultipathIbgp(@Nonnull Matcher<? super Boolean> subMatcher) {
+    return new HasMultipathIbgp(subMatcher);
+  }
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the BGP process's
