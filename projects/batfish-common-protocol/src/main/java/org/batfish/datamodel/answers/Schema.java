@@ -108,7 +108,8 @@ public class Schema {
   }
 
   /**
-   * Infers the {@link Schema} type from provided value. Turns Sets into Lists.
+   * Infers the {@link Schema} type from provided value. Turns Sets into Lists. The function will
+   * not return the Object schema, but will instead return null if no other schema matches.
    *
    * @param value The provided value
    * @return The {@link Schema} object or null if the right Schema object is not found
@@ -135,7 +136,7 @@ public class Schema {
     Schema baseSchema = null;
 
     for (Entry<String, String> entry : schemaAliases.entrySet()) {
-      Class clazz;
+      Class<?> clazz;
       try {
         clazz = Class.forName(entry.getValue().replaceFirst("class:", ""));
       } catch (ClassNotFoundException e) {
@@ -159,6 +160,11 @@ public class Schema {
     return _baseType;
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(_baseType, _isListType);
+  }
+
   public boolean isList() {
     return _isListType;
   }
@@ -170,6 +176,6 @@ public class Schema {
   }
 
   public boolean isIntOrIntList() {
-    return _baseType.equals(Long.class);
+    return _baseType.equals(Integer.class);
   }
 }
