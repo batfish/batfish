@@ -29,7 +29,7 @@ public class Schema {
           .put("FileLine", getClassString(FileLinePair.class))
           .put("Flow", getClassString(Flow.class))
           .put("FlowTrace", getClassString(FlowTrace.class))
-          .put("Integer", getClassString(Long.class))
+          .put("Integer", getClassString(Integer.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
           .put("Issue", getClassString(Issue.class))
@@ -110,6 +110,6 @@ public class Schema {
   }
 
   public boolean isIntOrIntList() {
-    return _baseType.equals(Long.class);
+    return _baseType.equals(Integer.class);
   }
 }
