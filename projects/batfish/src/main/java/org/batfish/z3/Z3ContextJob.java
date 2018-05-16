@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.microsoft.z3.BitVecExpr;
@@ -10,6 +11,10 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -145,7 +150,29 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   protected BoolExpr computeSmtConstraintsViaNod(NodProgram program, boolean negate) {
     Fixedpoint fix = mkFixedpoint(program, true);
     Expr answer = answerFixedPoint(fix, program);
-    return getSolverInput(answer, program, negate);
+    BoolExpr solverInput = getSolverInput(answer, program, negate);
+    if (_settings.debugFlagEnabled("saveSolverInput")) {
+      saveSolverInput(solverInput.simplify());
+    }
+    return solverInput;
+  }
+
+  private void saveSolverInput(Expr expr) {
+    // synchronize to avoid z3 concurrency bugs
+    synchronized (NodJob.class) {
+      Path nodPath =
+          _settings
+              .getActiveTestrigSettings()
+              .getBasePath()
+              .resolve(
+                  String.format(
+                      "solverInput-%s-%d.smt2", Instant.now(), Thread.currentThread().getId()));
+      try (FileWriter writer = new FileWriter(nodPath.toFile())) {
+        writer.write(expr.toString());
+      } catch (IOException e) {
+        _logger.warnf("Error saving Nod program to file: %s", Throwables.getStackTraceAsString(e));
+      }
+    }
   }
 
   protected BoolExpr getSolverInput(Expr answer, NodProgram program, boolean negate) {
