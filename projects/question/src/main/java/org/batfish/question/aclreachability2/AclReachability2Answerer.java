@@ -1,5 +1,6 @@
 package org.batfish.question.aclreachability2;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -71,38 +72,37 @@ public class AclReachability2Answerer extends Answerer {
                 .map(l -> l.getName())
                 .collect(Collectors.toList());
         for (AclReachabilityEntry reachabilityEntry : e2.getValue()) {
-          SortedSet<Integer> lineNumbers = new TreeSet<>();
-          int earliestMoreGeneralLineIndex = reachabilityEntry.getEarliestMoreGeneralLineIndex();
-          if (earliestMoreGeneralLineIndex != -1) {
-            lineNumbers.add(earliestMoreGeneralLineIndex);
-          }
+          SortedMap<Integer, String> blockingLines = reachabilityEntry.getBlockingLines();
+          ImmutableSortedSet.Builder<Integer> lineNumbers = ImmutableSortedSet.naturalOrder();
+          lineNumbers.addAll(blockingLines.keySet());
           lineNumbers.add(reachabilityEntry.getIndex());
-          String message =
-              earliestMoreGeneralLineIndex == -1
-                  ? String.format(
-                      "In node(s) '%s', ACL '%s' has an unreachable line '%d: %s'. %s",
+          StringBuilder sb =
+              new StringBuilder(
+                  String.format(
+                      "In node(s) '%s', ACL '%s' has an unreachable line '%d: %s'. ",
                       String.join("', '", nodes),
                       aclName,
                       reachabilityEntry.getIndex(),
-                      reachabilityEntry.getName(),
-                      reachabilityEntry.getEarliestMoreGeneralLineName())
-                  : String.format(
-                      "In node(s) '%s', ACL '%s' has an unreachable line '%d: %s' covered by line '%d: %s'",
-                      String.join("', '", nodes),
-                      aclName,
-                      reachabilityEntry.getIndex(),
-                      reachabilityEntry.getName(),
-                      earliestMoreGeneralLineIndex,
-                      reachabilityEntry.getEarliestMoreGeneralLineName());
+                      reachabilityEntry.getName()));
+          if (reachabilityEntry.unmatchable()) {
+            sb.append("This line will never match any packet, independent of preceding lines.");
+          } else if (reachabilityEntry.multipleBlockingLines()) {
+            sb.append("Multiple earlier lines partially block this line, making it unreachable.");
+          } else {
+            sb.append("Blocking line(s):\n");
+            for (Entry<Integer, String> e : blockingLines.entrySet()) {
+              sb.append(String.format("  [index %d] %s\n", e.getKey(), e.getValue()));
+            }
+          }
           answer.addRow(
               new Row()
                   .put(COL_ID, id)
                   .put(COL_NODES, nodes)
                   .put(COL_ACL, aclName)
                   .put(COL_LINES, lines)
-                  .put(COL_LINE_NUMS, lineNumbers)
+                  .put(COL_LINE_NUMS, lineNumbers.build())
                   .put(COL_DIFF_ACTION, reachabilityEntry.getDifferentAction())
-                  .put(COL_MESSAGE, message));
+                  .put(COL_MESSAGE, sb.toString()));
           id++;
         }
       }

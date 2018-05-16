@@ -2,6 +2,7 @@ package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Map.Entry;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -16,15 +17,17 @@ public class AclLinesAnswerElement extends AnswerElement {
 
     private static final String PROP_NAME = "name";
 
+    private SortedMap<Integer, String> _blockingLines = new TreeMap<>();
+
     private boolean _differentAction;
 
-    private Integer _earliestMoreGeneralLineIndex;
-
-    private String _earliestMoreGeneralLineName;
+    private boolean _multipleBlockingLines = false;
 
     private final int _index;
 
     private final String _name;
+
+    private boolean _unmatchable = false;
 
     @JsonCreator
     public AclReachabilityEntry(
@@ -48,39 +51,16 @@ public class AclLinesAnswerElement extends AnswerElement {
       return _index == ((AclReachabilityEntry) o)._index;
     }
 
+    public void addBlockingLine(Integer index, String line) {
+      _blockingLines.put(index, line);
+    }
+
     public boolean getDifferentAction() {
       return _differentAction;
     }
 
-    /**
-     * Returns the line number of the earliest more general reachable line, which may be -1 if:
-     *
-     * <ul>
-     *   <li>The line is independently unmatchable (no blocking line)
-     *   <li>The line is blocked by multiple partially covering earlier lines
-     * </ul>
-     *
-     * <p>This is a temporary solution for communicating these cases and will be changed soon.
-     */
-    public Integer getEarliestMoreGeneralLineIndex() {
-      return _earliestMoreGeneralLineIndex;
-    }
-
-    /**
-     * Returns the text of the earliest more general reachable line, except in these cases:
-     *
-     * <ul>
-     *   <li>If line is independently unmatchable, returns "This line will never match any packet,
-     *       independent of preceding lines."
-     *   <li>If line has multiple partially blocking lines, returns "Multiple earlier lines
-     *       partially block this line, making it unreachable."
-     * </ul>
-     *
-     * <p>This is a temporary solution for communicating the latter two cases and will be changed
-     * soon.
-     */
-    public String getEarliestMoreGeneralLineName() {
-      return _earliestMoreGeneralLineName;
+    public SortedMap<Integer, String> getBlockingLines() {
+      return _blockingLines;
     }
 
     public int getIndex() {
@@ -96,13 +76,21 @@ public class AclLinesAnswerElement extends AnswerElement {
       return _name.hashCode();
     }
 
+    public boolean multipleBlockingLines() {
+      return _multipleBlockingLines;
+    }
+
+    public boolean unmatchable() {
+      return _unmatchable;
+    }
+
     public String prettyPrint(String indent) {
       StringBuilder sb = new StringBuilder();
       sb.append(String.format("%s[index %d] %s\n", indent, _index, _name));
-      sb.append(
-          String.format(
-              "%s  Earliest covering line: [index %d] %s\n",
-              indent, _earliestMoreGeneralLineIndex, _earliestMoreGeneralLineName));
+      sb.append(String.format("%s  Blocking line(s):\n", indent));
+      for (Entry<Integer, String> e : _blockingLines.entrySet()) {
+        sb.append(String.format("%s    [index %d] %s\n", indent, e.getKey(), e.getValue()));
+      }
       sb.append(String.format("%s  Is different action: %s\n", indent, _differentAction));
       return sb.toString();
     }
@@ -111,12 +99,12 @@ public class AclLinesAnswerElement extends AnswerElement {
       _differentAction = differentAction;
     }
 
-    public void setEarliestMoreGeneralLineIndex(Integer earliestMoreGeneralLineIndex) {
-      _earliestMoreGeneralLineIndex = earliestMoreGeneralLineIndex;
+    public void setMultipleBlockingLines(boolean multipleBlockingLines) {
+      _multipleBlockingLines = multipleBlockingLines;
     }
 
-    public void setEarliestMoreGeneralLineName(String earliestMoreGeneralLineName) {
-      _earliestMoreGeneralLineName = earliestMoreGeneralLineName;
+    public void setUnmatchable(boolean unmatchable) {
+      _unmatchable = unmatchable;
     }
   }
 
@@ -200,24 +188,5 @@ public class AclLinesAnswerElement extends AnswerElement {
       }
     }
     return sb.toString();
-  }
-
-  public void setAcls(SortedMap<String, SortedMap<String, IpAccessList>> acls) {
-    _acls = acls;
-  }
-
-  public void setEquivalenceClasses(
-      SortedMap<String, SortedMap<String, SortedSet<String>>> equivalenceClasses) {
-    _equivalenceClasses = equivalenceClasses;
-  }
-
-  public void setReachableLines(
-      SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> reachableLines) {
-    _reachableLines = reachableLines;
-  }
-
-  public void setUnreachableLines(
-      SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> unreachableLines) {
-    _unreachableLines = unreachableLines;
   }
 }

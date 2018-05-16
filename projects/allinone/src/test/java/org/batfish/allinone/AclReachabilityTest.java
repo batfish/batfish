@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
@@ -114,7 +115,7 @@ public class AclReachabilityTest {
         hasEntry(equalTo(_c.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
     AclReachabilityEntry blockedLine =
         aclLinesAnswerElement.getUnreachableLines().get(_c.getName()).get(acl.getName()).first();
-    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 0 is blocking", blockedLine.getBlockingLines(), hasKey(0));
     assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
 
     // Tests for ACL reachability of main ACL specifically
@@ -127,7 +128,7 @@ public class AclReachabilityTest {
             .get(_c.getName())
             .get(acl.getName())
             .first();
-    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 0 is blocking", blockedLine.getBlockingLines(), hasKey(0));
     assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
   }
 
@@ -170,10 +171,8 @@ public class AclReachabilityTest {
         hasEntry(equalTo(_c.getName()), hasEntry(equalTo(aclName), hasSize(1))));
     AclReachabilityEntry multipleBlockingLinesEntry =
         aclLinesAnswerElement.getUnreachableLines().get(_c.getName()).get(aclName).first();
-    assertThat(multipleBlockingLinesEntry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
-    assertThat(
-        multipleBlockingLinesEntry.getEarliestMoreGeneralLineName(),
-        equalTo("Multiple earlier lines partially block this line, making it unreachable."));
+    assertThat(multipleBlockingLinesEntry.getBlockingLines().size(), equalTo(0));
+    assertThat(multipleBlockingLinesEntry.multipleBlockingLines(), equalTo(true));
   }
 
   @Test
@@ -229,13 +228,11 @@ public class AclReachabilityTest {
     for (AclReachabilityEntry entry : unreachableLines) {
       if (entry.getIndex() == 1 || entry.getIndex() == 3) {
         // Lines 1 and 3: Blocked by line 0 but not unmatchable
-        assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(0));
+        assertThat(entry.getBlockingLines(), hasKey(0));
       } else {
         // Line 2: Unmatchable
-        assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
-        assertThat(
-            entry.getEarliestMoreGeneralLineName(),
-            equalTo("This line will never match any packet, independent of preceding lines."));
+        assertThat(entry.getBlockingLines().size(), equalTo(0));
+        assertThat(entry.unmatchable(), equalTo(true));
       }
     }
   }
