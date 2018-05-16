@@ -420,7 +420,8 @@ public class CiscoGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ci", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ciunused", 0));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ciunused", 0));
     assertThat(
         ccae,
         hasUndefinedReference(
