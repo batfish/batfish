@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
@@ -100,7 +101,7 @@ public class Schema {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof Schema)) {
+    if (!(o instanceof Schema)) {
       return false;
     }
     return Objects.equals(_baseType, ((Schema) o)._baseType)
@@ -116,6 +117,7 @@ public class Schema {
    * @throws IllegalArgumentException if a Map is provided
    * @throws IllegalStateException if the internal schema alias map is corrupted
    */
+  @Nullable
   public static Schema fromValue(Object value) {
     boolean isList = false;
     Object baseValue = value;
