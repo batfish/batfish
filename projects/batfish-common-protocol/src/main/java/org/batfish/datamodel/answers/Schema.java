@@ -3,13 +3,10 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
-import java.util.Collection;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
@@ -108,56 +105,6 @@ public class Schema {
         && Objects.equals(_isListType, ((Schema) o)._isListType);
   }
 
-  /**
-   * Infers the {@link Schema} type from provided value. Turns Sets into Lists. The function will
-   * not return the Object schema, but will instead return null if no other schema matches.
-   *
-   * @param value The provided value
-   * @return The {@link Schema} object or null if the right Schema object is not found
-   * @throws IllegalArgumentException if a Map is provided
-   * @throws IllegalStateException if the internal schema alias map is corrupted
-   */
-  @Nullable
-  public static Schema fromValue(Object value) {
-    boolean isList = false;
-    Object baseValue = value;
-
-    if (value instanceof Map<?, ?>) {
-      throw new IllegalArgumentException("No Schema exists for maps. Value: " + value.getClass());
-    }
-
-    if (value instanceof Collection<?>) { // list, set
-      isList = true;
-      Collection<?> collection = (Collection<?>) value;
-      if (collection.isEmpty()) {
-        return null;
-      }
-      baseValue = collection.iterator().next();
-    }
-
-    Schema baseSchema = null;
-
-    for (Entry<String, String> entry : schemaAliases.entrySet()) {
-      Class<?> clazz;
-      try {
-        clazz = Class.forName(entry.getValue().replaceFirst("class:", ""));
-      } catch (ClassNotFoundException e) {
-        throw new IllegalStateException(
-            "Could not convert schemaAlias value to a class: " + entry.getValue());
-      }
-      // ignore Object because everything is an Object
-      if (!entry.getKey().equals("Object") && clazz.isInstance(baseValue)) {
-        baseSchema = new Schema(entry.getKey());
-      }
-    }
-
-    if (baseSchema != null) {
-      return isList ? Schema.list(baseSchema) : baseSchema;
-    }
-
-    return null;
-  }
-
   public Class<?> getBaseType() {
     return _baseType;
   }
@@ -165,6 +112,10 @@ public class Schema {
   @Override
   public int hashCode() {
     return Objects.hash(_baseType, _isListType);
+  }
+
+  public boolean isIntOrIntList() {
+    return _baseType.equals(Integer.class);
   }
 
   public boolean isList() {
@@ -175,9 +126,5 @@ public class Schema {
   @JsonValue
   public String toString() {
     return _schemaStr;
-  }
-
-  public boolean isIntOrIntList() {
-    return _baseType.equals(Integer.class);
   }
 }
