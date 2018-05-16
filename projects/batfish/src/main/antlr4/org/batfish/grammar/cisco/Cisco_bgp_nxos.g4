@@ -19,6 +19,7 @@ router_bgp_nxos_toplevel
     | rbnx_fast_external_fallover
     | rbnx_flush_routes
     | rbnx_isolate
+    | rbnx_no_enforce_first_as
     | rbnx_proc_vrf_common
     | rbnx_shutdown
     | rbnx_template_peer
@@ -74,6 +75,7 @@ rbnx_af_inner
     | rbnx_af_redistribute_isis
     | rbnx_af_redistribute_lisp
     | rbnx_af_redistribute_ospf
+    | rbnx_af_redistribute_ospfv3
     | rbnx_af_redistribute_rip
     | rbnx_af_redistribute_static
     | rbnx_af_suppress_inactive
@@ -157,6 +159,7 @@ rbnx_af_network
     NETWORK (
         address = IP MASK mask = IP
         | prefix = IP_PREFIX
+        | prefix6 = IPV6_PREFIX
     ) (ROUTE_MAP mapname = variable)? NEWLINE
 ;
 
@@ -193,6 +196,11 @@ rbnx_af_redistribute_lisp
 rbnx_af_redistribute_ospf
 :
     REDISTRIBUTE OSPF source_tag = variable ROUTE_MAP mapname = variable NEWLINE
+;
+
+rbnx_af_redistribute_ospfv3
+:
+    REDISTRIBUTE OSPFV3 source_tag = variable ROUTE_MAP mapname = variable NEWLINE
 ;
 
 rbnx_af_redistribute_rip
@@ -302,7 +310,7 @@ rbnx_maxas_limit
 
 rbnx_neighbor
 :
-    NEIGHBOR (ip = IP_ADDRESS | prefix = IP_PREFIX)
+    NEIGHBOR (ip = IP_ADDRESS | prefix = IP_PREFIX | ip6 = IPV6_ADDRESS | prefix6 = IPV6_PREFIX)
     (
         REMOTE_AS (
             bgp_asn?
@@ -600,6 +608,11 @@ rbnx_n_transport
 rbnx_n_update_source
 :
     UPDATE_SOURCE interface_name NEWLINE
+;
+
+rbnx_no_enforce_first_as
+:
+    NO ENFORCE_FIRST_AS NEWLINE
 ;
 
 rbnx_reconnect_interval

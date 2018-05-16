@@ -589,6 +589,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_eigrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_lispContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ospfv3Context;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_af_suppress_inactiveContext;
@@ -625,6 +626,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_no_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peerContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_policyContext;
@@ -2011,7 +2013,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip ip = toIp(ctx.ip);
       _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
       if (_currentIpPeerGroup == null) {
-        if (create) {
+        if (create || _format == ARISTA) {
           proc.addIpPeerGroup(ip);
           _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
           pushPeer(_currentIpPeerGroup);
@@ -2027,7 +2029,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
       if (pg6 == null) {
-        if (create) {
+        if (create || _format == ARISTA) {
           proc.addIpv6PeerGroup(ip6);
           pg6 = proc.getIpv6PeerGroups().get(ip6);
           pushPeer(pg6);
@@ -2045,7 +2047,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int definitionLine = ctx.peergroup.getLine();
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
-        if (create || _configuration.getVendor() == ARISTA) {
+        if (create || _format == ARISTA) {
           proc.addNamedPeerGroup(name, definitionLine);
           _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
         } else {
@@ -2311,19 +2313,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitRbnx_af_network(Rbnx_af_networkContext ctx) {
-    Prefix prefix =
-        (ctx.prefix != null)
-            ? Prefix.parse(ctx.prefix.getText())
-            : new Prefix(toIp(ctx.address), toIp(ctx.mask));
-
-    String prefixName = "";
+    String mapname = "";
     if (ctx.mapname != null) {
-      prefixName = ctx.mapname.getText();
+      mapname = ctx.mapname.getText();
       _configuration.referenceStructure(
-          ROUTE_MAP, prefixName, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
+          ROUTE_MAP, mapname, BGP_ROUTE_MAP_OTHER, ctx.getStart().getLine());
     }
 
-    _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, prefixName);
+    if (ctx.prefix != null) {
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
+    } else if (ctx.address != null && ctx.mask != null) {
+      Prefix prefix = new Prefix(toIp(ctx.address), toIp(ctx.mask));
+      _currentBgpNxVrfAddressFamily.addIpNetwork(prefix, mapname);
+    } else if (ctx.prefix6 != null) {
+      Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
+      _currentBgpNxVrfAddressFamily.addIpv6Network(prefix, mapname);
+    }
   }
 
   @Override
@@ -2374,6 +2380,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.referenceStructure(
         ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPF_MAP, ctx.getStart().getLine());
     _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF, name, sourceTag);
+  }
+
+  @Override
+  public void exitRbnx_af_redistribute_ospfv3(Rbnx_af_redistribute_ospfv3Context ctx) {
+    String name = ctx.mapname.getText();
+    String sourceTag = ctx.source_tag.getText();
+    _configuration.referenceStructure(
+        ROUTE_MAP, name, BGP_REDISTRIBUTE_OSPFV3_MAP, ctx.getStart().getLine());
+    _currentBgpNxVrfAddressFamily.setRedistributionPolicy(RoutingProtocol.OSPF3, name, sourceTag);
   }
 
   @Override
@@ -2467,6 +2482,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreateNeighbor(ip);
     } else if (ctx.prefix != null) {
       Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
+    } else if (ctx.ip6 != null) {
+      Ip6 ip = toIp6(ctx.ip6);
+      _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreateNeighbor(ip);
+    } else if (ctx.prefix6 != null) {
+      Prefix6 prefix = new Prefix6(ctx.prefix6.getText());
       _currentBgpNxVrfNeighbor = _currentBgpNxVrfConfiguration.getOrCreatePassiveNeighbor(prefix);
     } else {
       throw new BatfishException(
@@ -2686,6 +2707,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentBgpNxVrfNeighbor.setUpdateSource(name);
     _configuration.referenceStructure(
         INTERFACE, name, BGP_UPDATE_SOURCE_INTERFACE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRbnx_no_enforce_first_as(Rbnx_no_enforce_first_asContext ctx) {
+    _configuration.getNxBgpGlobalConfiguration().setEnforceFirstAs(false);
   }
 
   @Override
@@ -3700,7 +3726,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCm_iosi_match(Cm_iosi_matchContext ctx) {
-    _currentInspectClassMap.getMatches().add(toInspectClassMapMatch(ctx));
+    InspectClassMapMatch match = toInspectClassMapMatch(ctx);
+    if (match != null) {
+      _currentInspectClassMap.getMatches().add(match);
+    }
   }
 
   private InspectClassMapMatch toInspectClassMapMatch(Cm_iosi_matchContext ctx) {
@@ -3714,7 +3743,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new InspectClassMapMatchProtocol(
           toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
     } else {
-      throw convError(InspectClassMapMatch.class, ctx);
+      _w.redFlag("Class-map match unsupported " + getFullText(ctx));
+      return null;
     }
   }
 

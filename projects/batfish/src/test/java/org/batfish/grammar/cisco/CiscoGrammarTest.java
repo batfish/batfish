@@ -2,6 +2,9 @@ package org.batfish.grammar.cisco;
 
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -17,6 +20,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRoute6FilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasSrcOrDstPorts;
@@ -48,6 +52,7 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasAreas;
+import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
@@ -67,13 +72,14 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anything;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertFalse;
@@ -410,6 +416,25 @@ public class CiscoGrammarTest {
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testIosHttpInspection() throws IOException {
+    String hostname = "ios-http-inspection";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ci", 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ciunused", 0));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.INSPECT_CLASS_MAP,
+            "ciundefined",
+            CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS));
   }
 
   @Test
@@ -1232,6 +1257,32 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testEosBgpPeers() throws IOException {
+    String hostname = "eos-bgp-peers";
+    Prefix neighborWithRemoteAs = Prefix.parse("1.1.1.1/32");
+    Prefix neighborWithoutRemoteAs = Prefix.parse("2.2.2.2/32");
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /*
+     * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
+     * should not appear, and there should be a warning about the missing remote-as.
+     */
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborWithRemoteAs, hasRemoteAs(1)))));
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
+    assertThat(
+        ccae,
+        hasRedFlagWarning(
+            hostname,
+            containsString(
+                String.format(
+                    "No remote-as set for peer: %s", neighborWithoutRemoteAs.getStartIp()))));
+  }
+
+  @Test
   public void testInterfaceNames() throws IOException {
     String testrigName = "interface-names";
     String iosHostname = "ios";
@@ -1431,15 +1482,15 @@ public class CiscoGrammarTest {
     Set<InterfaceAddress> l3Prefixes = iosRecoveryInterfaces.get("Loopback3").getAllAddresses();
     Set<InterfaceAddress> l4Prefixes = iosRecoveryInterfaces.get("Loopback4").getAllAddresses();
 
-    assertThat("Loopback0", isIn(iosRecoveryInterfaceNames));
-    assertThat("Loopback1", isIn(iosRecoveryInterfaceNames));
-    assertThat("Loopback2", not(isIn(iosRecoveryInterfaceNames)));
-    assertThat("Loopback3", isIn(iosRecoveryInterfaceNames));
-    assertThat(new InterfaceAddress("10.0.0.1/32"), not(isIn(l3Prefixes)));
-    assertThat(new InterfaceAddress("10.0.0.2/32"), isIn(l3Prefixes));
-    assertThat("Loopback4", isIn(iosRecoveryInterfaceNames));
-    assertThat(new InterfaceAddress("10.0.0.3/32"), not(isIn(l4Prefixes)));
-    assertThat(new InterfaceAddress("10.0.0.4/32"), isIn(l4Prefixes));
+    assertThat("Loopback0", in(iosRecoveryInterfaceNames));
+    assertThat("Loopback1", in(iosRecoveryInterfaceNames));
+    assertThat("Loopback2", not(in(iosRecoveryInterfaceNames)));
+    assertThat("Loopback3", in(iosRecoveryInterfaceNames));
+    assertThat(new InterfaceAddress("10.0.0.1/32"), not(in(l3Prefixes)));
+    assertThat(new InterfaceAddress("10.0.0.2/32"), in(l3Prefixes));
+    assertThat("Loopback4", in(iosRecoveryInterfaceNames));
+    assertThat(new InterfaceAddress("10.0.0.3/32"), not(in(l4Prefixes)));
+    assertThat(new InterfaceAddress("10.0.0.4/32"), in(l4Prefixes));
   }
 
   @Test

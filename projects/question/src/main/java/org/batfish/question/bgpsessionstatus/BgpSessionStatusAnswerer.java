@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import com.google.common.graph.Network;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -33,7 +34,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Multiset<BgpSessionInfo> sessions = rawAnswer(question);
     BgpSessionStatusAnswerElement answer =
         new BgpSessionStatusAnswerElement(BgpSessionStatusAnswerElement.createMetadata(question));
-    answer.postProcessAnswer(question, sessions);
+    answer.postProcessAnswer(
+        question,
+        sessions
+            .stream()
+            .map(s -> BgpSessionStatusAnswerElement.toRow(s))
+            .collect(Collectors.toCollection(HashMultiset::create)));
     return answer;
   }
 

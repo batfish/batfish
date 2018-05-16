@@ -2,44 +2,50 @@
   {
     "class" : "org.batfish.question.tracefilters.TraceFiltersAnswerElement",
     "metadata" : {
-      "columnMetadata" : {
-        "action" : {
-          "description" : "Outcome",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "String"
-        },
-        "filterName" : {
-          "description" : "Filter name",
-          "isKey" : true,
-          "isValue" : false,
-          "schema" : "String"
-        },
-        "flow" : {
-          "description" : "Evaluated flow",
-          "isKey" : true,
-          "isValue" : false,
-          "schema" : "Flow"
-        },
-        "lineContent" : {
-          "description" : "Line content",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "String"
-        },
-        "lineNumber" : {
-          "description" : "Line number",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "Integer"
-        },
-        "node" : {
+      "columnMetadata" : [
+        {
           "description" : "Node",
           "isKey" : true,
           "isValue" : false,
+          "name" : "node",
           "schema" : "Node"
+        },
+        {
+          "description" : "Filter name",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "filterName",
+          "schema" : "String"
+        },
+        {
+          "description" : "Evaluated flow",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "flow",
+          "schema" : "Flow"
+        },
+        {
+          "description" : "Outcome",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "action",
+          "schema" : "String"
+        },
+        {
+          "description" : "Line number",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "lineNumber",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Line content",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "lineContent",
+          "schema" : "String"
         }
-      },
+      ],
       "displayHints" : {
         "textDesc" : "Filter ${filterName} on node ${node} will ${action} flow ${flow} at line ${lineNumber} ${lineContent}"
       }

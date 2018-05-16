@@ -2,8 +2,8 @@ package org.batfish.datamodel;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -44,9 +44,9 @@ public class NetworkFactoryTest {
     assertThat(v1.getName(), is(notNullValue()));
     assertThat(v2.getName(), is(notNullValue()));
     assertThat(v1.getName(), not(equalTo(v2.getName())));
-    assertThat(v1.getName(), not(isIn(c.getVrfs().keySet())));
-    assertThat(v2.getName(), not(isIn(c.getVrfs().keySet())));
-    assertThat(v3.getName(), isIn(c.getVrfs().keySet()));
+    assertThat(c.getVrfs(), not(hasKey(v1.getName())));
+    assertThat(c.getVrfs(), not(hasKey(v2.getName())));
+    assertThat(c.getVrfs(), hasKey(v3.getName()));
   }
 
   @Test
@@ -64,14 +64,14 @@ public class NetworkFactoryTest {
 
     assertThat(i1.getName(), is(notNullValue()));
     assertThat(i1.getName(), not(equalTo(i2.getName())));
-    assertThat(i1.getName(), not(isIn(c.getInterfaces().keySet())));
+    assertThat(c.getInterfaces(), not(hasKey(i1.getName())));
     assertThat(i2.getName(), is(notNullValue()));
-    assertThat(i2.getName(), not(isIn(c.getInterfaces().keySet())));
-    assertThat(i3.getName(), isIn(c.getInterfaces().keySet()));
+    assertThat(c.getInterfaces(), not(hasKey(i2.getName())));
+    assertThat(c.getInterfaces(), hasKey(i3.getName()));
     assertThat(i3.getOwner(), sameInstance(c));
-    assertThat(i3.getName(), not(isIn(vrf.getInterfaces().keySet())));
-    assertThat(i4.getName(), isIn(c.getInterfaces().keySet()));
-    assertThat(i4.getName(), isIn(vrf.getInterfaces().keySet()));
+    assertThat(vrf.getInterfaces(), not(hasKey(i3.getName())));
+    assertThat(c.getInterfaces(), hasKey(i4.getName()));
+    assertThat(vrf.getInterfaces(), hasKey(i4.getName()));
     assertThat(i4.getVrf(), sameInstance(vrf));
   }
 

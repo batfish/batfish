@@ -4,8 +4,6 @@ import com.google.common.base.Throwables;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Fixedpoint;
-import com.microsoft.z3.Status;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -13,7 +11,6 @@ import java.time.Instant;
 import java.util.Map;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 
 public final class NodJob extends AbstractNodJob {
@@ -37,25 +34,6 @@ public final class NodJob extends AbstractNodJob {
     _optimize = optimize;
   }
 
-  protected Status computeNodSat(long startTime, Context ctx) {
-    NodProgram program = getNodProgram(ctx);
-    Fixedpoint fix = mkFixedpoint(program, true);
-    for (BoolExpr query : program.getQueries()) {
-      Status status = fix.query(query);
-      switch (status) {
-        case SATISFIABLE:
-          return status;
-        case UNKNOWN:
-          throw new BatfishException("Query satisfiability unknown");
-        case UNSATISFIABLE:
-          return status;
-        default:
-          throw new BatfishException("invalid status");
-      }
-    }
-    throw new BatfishException("No queries");
-  }
-
   @Override
   protected SmtInput computeSmtInput(long startTime, Context ctx) {
     NodProgram program = getNodProgram(ctx);
@@ -68,7 +46,8 @@ public final class NodJob extends AbstractNodJob {
   }
 
   private void saveNodProgram(NodProgram program) {
-    // synchronize to avoid z3 concurrency bugs
+    // synchronize to avoid z3 concurrency bugs. TODO: is this really needed?
+    // other writers also use NodJob.class to synchronize writes.
     synchronized (NodJob.class) {
       Path nodPath =
           _settings
@@ -86,7 +65,7 @@ public final class NodJob extends AbstractNodJob {
   }
 
   @Nonnull
-  protected NodProgram getNodProgram(Context ctx) {
+  private NodProgram getNodProgram(Context ctx) {
     ReachabilityProgram baseProgram =
         instrumentReachabilityProgram(_dataPlaneSynthesizer.synthesizeNodProgram());
     ReachabilityProgram queryProgram =
