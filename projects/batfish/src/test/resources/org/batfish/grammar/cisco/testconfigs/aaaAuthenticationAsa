@@ -1,0 +1,5 @@
+!
+hostname aaaAuthenticationAsa
+!
+aaa authentication ssh console authServer LOCAL
+!

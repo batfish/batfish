@@ -158,6 +158,33 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testAaaAuthenticationLogin() throws IOException {
+    Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
+    boolean aaaAuthIos =
+        !aaaAuthIosConfiguration
+            .getVendorFamily()
+            .getCisco()
+            .getAaa()
+            .getAuthentication()
+            .getLogin()
+            .getLists()
+            .isEmpty();
+    assertTrue(aaaAuthIos);
+
+    Configuration aaaAuthAsaConfiguration = parseConfig("aaaAuthenticationAsa");
+    boolean aaaAuthAsa =
+        !aaaAuthAsaConfiguration
+            .getVendorFamily()
+            .getCisco()
+            .getAaa()
+            .getAuthentication()
+            .getLogin()
+            .getLists()
+            .isEmpty();
+    assertTrue(aaaAuthAsa);
+  }
+
+  @Test
   public void testAGAclReferrers() throws IOException {
     String hostName = "iosAccessGroupAcl";
     String testrigName = "access-group-acl";

@@ -1389,11 +1389,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
     }
+    ArrayList<String> methods = new ArrayList<>();
     if (ctx.aaa_authentication_asa_console().group != null) {
+      methods.add(ctx.aaa_authentication_asa_console().group.getText());
+    }
+    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
+      methods.add(ctx.aaa_authentication_asa_console().LOCAL_ASA().getText());
+    }
+    if (!methods.isEmpty()) {
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.SSH().getText();
       _currentAaaAuthenticationLoginList =
-          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
     }
   }
 
@@ -1402,11 +1409,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
     }
+    ArrayList<String> methods = new ArrayList<>();
     if (ctx.aaa_authentication_asa_console().group != null) {
+      methods.add(ctx.aaa_authentication_asa_console().group.getText());
+    }
+    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
+      methods.add(ctx.aaa_authentication_asa_console().LOCAL_ASA().getText());
+    }
+    if (!methods.isEmpty()) {
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.HTTP().getText();
       _currentAaaAuthenticationLoginList =
-          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
     }
   }
 
@@ -1415,11 +1429,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
     }
+    ArrayList<String> methods = new ArrayList<>();
     if (ctx.aaa_authentication_asa_console().group != null) {
+      methods.add(ctx.aaa_authentication_asa_console().group.getText());
+    }
+    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
+      methods.add(ctx.aaa_authentication_asa_console().LOCAL_ASA().getText());
+    }
+    if (!methods.isEmpty()) {
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.SERIAL().getText();
       _currentAaaAuthenticationLoginList =
-          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
     }
   }
 
@@ -1428,11 +1449,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
     }
+    ArrayList<String> methods = new ArrayList<>();
     if (ctx.aaa_authentication_asa_console().group != null) {
+      methods.add(ctx.aaa_authentication_asa_console().group.getText());
+    }
+    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
+      methods.add(ctx.aaa_authentication_asa_console().LOCAL_ASA().getText());
+    }
+    if (!methods.isEmpty()) {
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.TELNET().getText();
       _currentAaaAuthenticationLoginList =
-          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
     }
   }
 
@@ -1447,8 +1475,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unsupported mode");
     }
+    List<String> methods =
+        ctx.aaa_authentication_list_method()
+            .stream()
+            .map(m -> m.getText())
+            .collect(Collectors.toList());
     _currentAaaAuthenticationLoginList =
-        login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+        login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
   }
 
   @Override

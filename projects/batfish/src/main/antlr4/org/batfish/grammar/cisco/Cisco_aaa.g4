@@ -301,7 +301,14 @@ aaa_authentication
 
 aaa_authentication_asa_console
 :
-   CONSOLE group = variable? TACACS_PLUS_ASA? LOCAL_ASA? NEWLINE
+   CONSOLE
+   (
+      LOCAL_ASA ignored += ~NEWLINE
+      |
+      (
+         group = variable LOCAL_ASA? ignored += ~NEWLINE
+      )
+   ) NEWLINE
 ;
 
 aaa_authentication_banner
