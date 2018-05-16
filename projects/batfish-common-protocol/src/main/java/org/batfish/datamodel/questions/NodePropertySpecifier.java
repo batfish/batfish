@@ -1,4 +1,4 @@
-package org.batfish.question.nodeproperties;
+package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -20,7 +20,7 @@ import org.batfish.datamodel.Configuration;
  */
 public class NodePropertySpecifier {
 
-  static Map<String, Function<Configuration, Object>> JAVA_MAP =
+  public static final Map<String, Function<Configuration, Object>> JAVA_MAP =
       new ImmutableMap.Builder<String, Function<Configuration, Object>>()
           .put("as-path-access-lists", Configuration::getAsPathAccessLists)
           .put("authentication-key-chains", Configuration::getAuthenticationKeyChains)

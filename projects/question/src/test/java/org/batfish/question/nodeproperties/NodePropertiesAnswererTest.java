@@ -15,6 +15,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
 

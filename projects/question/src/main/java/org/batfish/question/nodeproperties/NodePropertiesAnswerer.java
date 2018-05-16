@@ -15,6 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 
