@@ -3705,13 +3705,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.cm_iosim_protocol() != null) {
       return new InspectClassMapMatchProtocol(
           toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
-    } else if (ctx.cm_iosim_req_resp() != null
-        || ctx.cm_iosim_request() != null
-        || ctx.cm_iosim_response() != null) {
-      _w.redFlag("Http inspection class-map matches not supported yet");
-      return null;
     } else {
-      throw convError(InspectClassMapMatch.class, ctx);
+      _w.redFlag("Class-map match unsupported " + getFullText(ctx));
+      return null;
     }
   }
 
