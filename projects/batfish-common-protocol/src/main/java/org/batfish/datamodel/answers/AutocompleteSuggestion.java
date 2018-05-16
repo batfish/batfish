@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -8,7 +9,8 @@ import org.batfish.common.util.BatfishObjectMapper;
 public class AutocompleteSuggestion {
 
   public enum CompletionType {
-    NODE
+    NODE,
+    NODE_PROPERTY
   }
 
   @Nullable private final String _description;
@@ -31,6 +33,18 @@ public class AutocompleteSuggestion {
     _rank = rank;
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (o == null || !(o instanceof AutocompleteSuggestion)) {
+      return false;
+    }
+    AutocompleteSuggestion os = (AutocompleteSuggestion) o;
+    return Objects.equals(_description, os._description)
+        && Objects.equals(_isPartial, os._isPartial)
+        && Objects.equals(_rank, os._rank)
+        && Objects.equals(_text, os._text);
+  }
+
   public String getDescription() {
     return _description;
   }
@@ -45,6 +59,11 @@ public class AutocompleteSuggestion {
 
   public String getText() {
     return _text;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_description, _isPartial, _rank, _text);
   }
 
   public void setRank(int rank) {
