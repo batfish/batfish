@@ -158,7 +158,8 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   }
 
   private void saveSolverInput(Expr expr) {
-    // synchronize to avoid z3 concurrency bugs
+    // synchronize to avoid z3 concurrency bugs.
+    // use NodJob to synchronize with any other similar writers.
     synchronized (NodJob.class) {
       Path nodPath =
           _settings

@@ -68,7 +68,8 @@ public final class NodJob extends AbstractNodJob {
   }
 
   private void saveNodProgram(NodProgram program) {
-    // synchronize to avoid z3 concurrency bugs
+    // synchronize to avoid z3 concurrency bugs. TODO: is this really needed?
+    // other writers also use NodJob.class to synchronize writes.
     synchronized (NodJob.class) {
       Path nodPath =
           _settings
