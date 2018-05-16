@@ -1197,10 +1197,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.ROUTE_MAP, usage);
   }
 
-  private void markSecurityZones(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.SECURITY_ZONE, usage);
-  }
-
   private void markServiceClasses(CiscoStructureUsage usage) {
     markConcreteStructure(CiscoStructureType.SERVICE_CLASS, usage);
   }
@@ -3642,23 +3638,25 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markPrefixSets(CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
 
     // mark references to route-maps
-    markRouteMaps(CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_LISP_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP);
-    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE);
-    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_ATTRIBUTE);
-    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_OTHER);
-    markRouteMaps(CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS);
-    markRouteMaps(CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP);
-    markRouteMaps(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP);
+    markConcreteStructure(
+        CiscoStructureType.ROUTE_MAP,
+        CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
+        CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
+        CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_LISP_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_OSPF_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_OSPFV3_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_RIP_MAP,
+        CiscoStructureUsage.BGP_REDISTRIBUTE_STATIC_MAP,
+        CiscoStructureUsage.BGP_ROUTE_MAP_ADVERTISE,
+        CiscoStructureUsage.BGP_ROUTE_MAP_ATTRIBUTE,
+        CiscoStructureUsage.BGP_ROUTE_MAP_OTHER,
+        CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS,
+        CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
+        CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP);
 
     markConcreteStructure(
         CiscoStructureType.BGP_TEMPLATE_PEER, CiscoStructureUsage.BGP_INHERITED_PEER);
@@ -3696,9 +3694,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
 
     // zone
-    markSecurityZones(CiscoStructureUsage.INTERFACE_ZONE_MEMBER);
-    markSecurityZones(CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE);
-    markSecurityZones(CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
+    markConcreteStructure(
+        CiscoStructureType.SECURITY_ZONE,
+        CiscoStructureUsage.INTERFACE_ZONE_MEMBER,
+        CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
+        CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
     // record references to defined structures
     recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);

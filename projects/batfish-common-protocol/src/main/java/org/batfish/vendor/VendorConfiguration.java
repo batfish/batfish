@@ -168,8 +168,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    * {@link StructureType}. Compared to {@link #markAbstractStructure}, this function is used when
    * the reference type and the structure type are guaranteed to match.
    */
-  protected void markConcreteStructure(StructureType type, StructureUsage usage) {
-    markAbstractStructure(type, usage, ImmutableList.of(type));
+  protected void markConcreteStructure(StructureType type, StructureUsage... usages) {
+    for (StructureUsage usage : usages) {
+      markAbstractStructure(type, usage, ImmutableList.of(type));
+    }
   }
 
   protected void markStructure(

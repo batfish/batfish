@@ -253,12 +253,22 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testIosAclObjectGroup() throws IOException {
-    String hostname = "ios-acl-object-group";
+  public void testStructureUsage() throws IOException {
+    String hostname = "ios-testbed-3";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    String test = "test";
+  }
+
+    @Test
+    public void testIosAclObjectGroup() throws IOException {
+      String hostname = "ios-acl-object-group";
+      Batfish batfish = getBatfishForConfigurationNames(hostname);
+      Configuration c = batfish.loadConfigurations().get(hostname);
+      ConvertConfigurationAnswerElement ccae =
+          batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /*
      * The produced ACL should permit if source matchers object-group ogn1, destination matches
