@@ -2012,7 +2012,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip ip = toIp(ctx.ip);
       _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
       if (_currentIpPeerGroup == null) {
-        if (create) {
+        if (create || _format == ARISTA) {
           proc.addIpPeerGroup(ip);
           _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
           pushPeer(_currentIpPeerGroup);
@@ -2028,7 +2028,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
       if (pg6 == null) {
-        if (create) {
+        if (create || _format == ARISTA) {
           proc.addIpv6PeerGroup(ip6);
           pg6 = proc.getIpv6PeerGroups().get(ip6);
           pushPeer(pg6);
@@ -2046,7 +2046,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int definitionLine = ctx.peergroup.getLine();
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
-        if (create || _configuration.getVendor() == ARISTA) {
+        if (create || _format == ARISTA) {
           proc.addNamedPeerGroup(name, definitionLine);
           _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
         } else {

@@ -75,6 +75,7 @@ fft_from
       | fftf_icmp_code
       | fftf_icmp_type
       | fftf_ip_options
+      | fftf_ip_protocol
       | fftf_is_fragment
       | fftf_learn_vlan_1p_priority
       | fftf_next_header
@@ -211,6 +212,11 @@ fftf_icmp_type
 fftf_ip_options
 :
    IP_OPTIONS ip_option
+;
+
+fftf_ip_protocol
+:
+   IP_PROTOCOL ip_protocol
 ;
 
 fftf_is_fragment
