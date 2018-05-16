@@ -626,6 +626,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_no_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peerContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_policyContext;
@@ -2706,6 +2707,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentBgpNxVrfNeighbor.setUpdateSource(name);
     _configuration.referenceStructure(
         INTERFACE, name, BGP_UPDATE_SOURCE_INTERFACE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRbnx_no_enforce_first_as(Rbnx_no_enforce_first_asContext ctx) {
+    _configuration.getNxBgpGlobalConfiguration().setEnforceFirstAs(false);
   }
 
   @Override
