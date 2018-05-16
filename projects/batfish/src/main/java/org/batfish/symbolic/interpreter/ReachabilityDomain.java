@@ -22,9 +22,9 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
 
   private BDDRoute _variables;
 
-  private Set<BDD> _projectVariables;
+  private BDD _projectVariables;
 
-  ReachabilityDomain(BDDRoute variables, Set<BDD> projectVariables) {
+  ReachabilityDomain(BDDRoute variables, BDD projectVariables) {
     _variables = variables;
     _projectVariables = projectVariables;
   }
@@ -48,10 +48,6 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     return acc.and(dst).and(prot);
   }
 
-  private BDD projectCommunitiesAndProtocol(BDD val) {
-    return BDDUtils.exists(val, _projectVariables);
-  }
-
   @Override
   public BDD transform(BDD input, EdgeTransformer t) {
     BDDTransferFunction f = t.getBgpTransfer();
@@ -59,12 +55,12 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     BDD acc;
     BDD allow = f.getFilter();
 
-    if (_projectVariables.isEmpty()) {
+    if (_projectVariables.isOne()) {
       acc = input.and(allow);
     } else {
       BDD block = allow.not();
       BDD blockedInputs = input.and(block);
-      BDD blockedPrefixes = projectCommunitiesAndProtocol(blockedInputs);
+      BDD blockedPrefixes = blockedInputs.exist(_projectVariables);
       acc = input.and(blockedPrefixes.not());
     }
 
@@ -98,7 +94,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
       }
     }
 
-    acc = projectCommunitiesAndProtocol(acc);
+    acc = acc.exist(_projectVariables);
     acc = acc.replace(pairing);
     return acc;
   }

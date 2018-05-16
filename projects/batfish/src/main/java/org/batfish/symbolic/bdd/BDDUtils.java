@@ -1,6 +1,5 @@
 package org.batfish.symbolic.bdd;
 
-import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
@@ -53,15 +52,5 @@ public class BDDUtils {
     BDD bitsMatch = firstBitsEqual(factory, record.getPrefix().getBitvec(), p, 32);
     BDD correctLen = record.getPrefixLength().value(p.getPrefixLength());
     return bitsMatch.and(correctLen);
-  }
-
-  /*
-   * Existentially quantifies away the variables in the set
-   */
-  public static BDD exists(BDD val, Set<BDD> variables) {
-    for (BDD var : variables) {
-      val = val.exist(var);
-    }
-    return val;
   }
 }

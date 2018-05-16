@@ -31,7 +31,7 @@ public class BDDRouteFactory {
 
   public static BDDFactory factory;
 
-  private static List<Protocol> allProtos;
+  public static List<Protocol> allProtos;
 
   private static List<OspfType> allMetricTypes;
 
@@ -74,7 +74,7 @@ public class BDDRouteFactory {
 
   private Set<CommunityVar> _allCommunities;
 
-  Set<String> _allRouters;
+  List<String> _allRouters;
 
   private List<Integer> _allLocalPrefs;
 
@@ -102,8 +102,7 @@ public class BDDRouteFactory {
   public BDDRouteFactory(Graph g, BDDRouteConfig config) {
     _config = config;
     _allCommunities = g.getAllCommunities();
-    _allRouters = new HashSet<>(g.getRouters());
-    _allRouters.add("null"); // special unknown neighbor
+    _allRouters = new ArrayList<>(g.getRouters());
     _allLocalPrefs = new ArrayList<>(findAllLocalPrefs(g));
     _variables = createRoute();
   }
@@ -122,6 +121,10 @@ public class BDDRouteFactory {
 
   public BDDRouteConfig getConfig() {
     return _config;
+  }
+
+  public String getRouter(int i) {
+    return _allRouters.get(i);
   }
 
   /**
@@ -241,11 +244,11 @@ public class BDDRouteFactory {
         idx += _localPrefTemp.numBits();
       }
 
-      _prefixLength = BDDInteger.makeFromIndex(factory, 6, idx, true);
-      addBitNames("pfxLen", 6, idx, true);
+      _prefixLength = BDDInteger.makeFromIndex(factory, 6, idx, false);
+      addBitNames("pfxLen", 6, idx, false);
       idx += 6;
-      _prefix = BDDInteger.makeFromIndex(factory, 32, idx, true);
-      addBitNames("pfx", 32, idx, true);
+      _prefix = BDDInteger.makeFromIndex(factory, 32, idx, false);
+      addBitNames("pfx", 32, idx, false);
       idx += 32;
 
       if (_config.getKeepCommunities()) {
@@ -266,11 +269,7 @@ public class BDDRouteFactory {
           }
         }
       }
-      if (_config.getKeepDstRouter()) {
-        _dstRouter = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
-        addBitNames("router", _dstRouter.numBits(), idx, false);
-        idx += _dstRouter.numBits();
-      }
+
       // Initialize OSPF type
       if (_config.getKeepOspfMetric()) {
         _ospfMetric = new BDDFiniteDomain<>(factory, allMetricTypes, idx);
@@ -279,6 +278,12 @@ public class BDDRouteFactory {
         _ospfMetricTemp = new BDDFiniteDomain<>(factory, allMetricTypes, idx);
         addBitNames("ospfMetric", _ospfMetric.numBits(), idx, false);
         idx += _ospfMetricTemp.numBits();
+      }
+
+      if (_config.getKeepDstRouter()) {
+        _dstRouter = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
+        addBitNames("router", _dstRouter.numBits(), idx, false);
+        idx += _dstRouter.numBits();
       }
     }
 
@@ -398,6 +403,10 @@ public class BDDRouteFactory {
       visited.add(bdd);
       dotRec(sb, bdd.low(), visited);
       dotRec(sb, bdd.high(), visited);
+    }
+
+    public String name(int i) {
+      return _bitNames.get(i);
     }
 
     public BDDRouteConfig getConfig() {
