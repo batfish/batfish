@@ -214,7 +214,7 @@ class TransferSSA {
     Collections.reverse(lines);
 
     for (RouteFilterLine line : lines) {
-      Prefix p = line.getPrefix();
+      Prefix p = line.getIpWildcard().toPrefix();
       SubRange r = line.getLengthRange();
       PrefixRange range = new PrefixRange(p, r);
       BoolExpr matches = _enc.isRelevantFor(other.getPrefixLength(), range);

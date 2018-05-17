@@ -157,10 +157,10 @@ public class FlatJuniperGrammarTest {
     return fb.build();
   }
 
-  private static Flow createFlow(IpProtocol protocol, int port) {
+  private static Flow createTcpFlow(int port) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
-    fb.setIpProtocol(protocol);
+    fb.setIpProtocol(IpProtocol.TCP);
     fb.setDstPort(port);
     fb.setSrcPort(port);
     fb.setTag("test");
@@ -309,8 +309,8 @@ public class FlatJuniperGrammarTest {
     IpAccessList aclNested = c.getIpAccessLists().get(aclNameNested);
     IpAccessList aclMultiNested = c.getIpAccessLists().get(aclNameMultiNested);
     /* Allowed application permits TCP from port 1 only */
-    Flow permittedFlow = createFlow(IpProtocol.TCP, 1);
-    Flow rejectedFlow = createFlow(IpProtocol.TCP, 2);
+    Flow permittedFlow = createTcpFlow(1);
+    Flow rejectedFlow = createTcpFlow(2);
 
     /*
      * Confirm non-nested application-set acl accepts the allowed protocol-port combo and reject
@@ -496,9 +496,9 @@ public class FlatJuniperGrammarTest {
     IpAccessList aclApplicationSetAny = c.getIpAccessLists().get(aclApplicationSetAnyName);
     IpAccessList aclApplicationAny = c.getIpAccessLists().get(aclApplicationAnyName);
     /* Allowed applications permits TCP to port 80 and 443 */
-    Flow permittedHttpFlow = createFlow(IpProtocol.TCP, 80);
-    Flow permittedHttpsFlow = createFlow(IpProtocol.TCP, 443);
-    Flow rejectedFlow = createFlow(IpProtocol.TCP, 100);
+    Flow permittedHttpFlow = createTcpFlow(80);
+    Flow permittedHttpsFlow = createTcpFlow(443);
+    Flow rejectedFlow = createTcpFlow(100);
 
     /*
      * Confirm there are no undefined references
@@ -560,7 +560,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEnforceFirstAs() throws IOException {
+  public void testEnforceFistAs() throws IOException {
     String hostname = "bgp-enforce-first-as";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasValue(hasEnforceFirstAs())))));
@@ -1147,16 +1147,8 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpProtocol() throws IOException {
-    String hostname = "firewall-filter-ip-protocol";
-    Configuration c = parseConfig(hostname);
-
-    Flow tcpFlow = createFlow(IpProtocol.TCP, 0);
-    Flow icmpFlow = createFlow(IpProtocol.ICMP, 0);
-
-    // Tcp flow should be accepted by the filter and others should be rejected
-    assertThat(c, hasIpAccessList("FILTER", accepts(tcpFlow, null, c)));
-    assertThat(c, hasIpAccessList("FILTER", rejects(icmpFlow, null, c)));
+  public void testRouteFilter() throws IOException{
+    Configuration c = parseConfig("route-filter");
   }
 
   @Test

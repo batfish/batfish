@@ -848,7 +848,7 @@ class TransferBDD {
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
     for (RouteFilterLine line : lines) {
-      Prefix pfx = line.getPrefix();
+      Prefix pfx = line.getIpWildcard().toPrefix();
       if (!PrefixUtils.isContainedBy(pfx, _ignoredNetworks)) {
         SubRange r = line.getLengthRange();
         PrefixRange range = new PrefixRange(pfx, r);

@@ -63,16 +63,10 @@ public class RouteFilterList extends ComparableStructure<String> {
   private boolean newPermits(Prefix prefix) {
     boolean accept = false;
     for (RouteFilterLine line : _lines) {
-      Prefix linePrefix = line.getPrefix();
-      int lineBits = linePrefix.getPrefixLength();
-      Prefix truncatedLinePrefix = new Prefix(linePrefix.getStartIp(), lineBits);
-      Prefix relevantPortion = new Prefix(prefix.getStartIp(), lineBits);
-      if (relevantPortion.equals(truncatedLinePrefix)) {
+      if (line.getIpWildcard().containsIp(prefix.getStartIp())) {
         int prefixLength = prefix.getPrefixLength();
         SubRange range = line.getLengthRange();
-        int min = range.getStart();
-        int max = range.getEnd();
-        if (prefixLength >= min && prefixLength <= max) {
+        if (prefixLength >= range.getStart() && prefixLength <= range.getEnd()) {
           accept = line.getAction() == LineAction.ACCEPT;
           break;
         }
@@ -111,7 +105,7 @@ public class RouteFilterList extends ComparableStructure<String> {
                 throw new BatfishException(
                     "Expected accept action for routerfilterlist from juniper");
               } else {
-                return new IpWildcard(rfLine.getPrefix());
+                return rfLine.getIpWildcard();
               }
             })
         .collect(Collectors.toList());

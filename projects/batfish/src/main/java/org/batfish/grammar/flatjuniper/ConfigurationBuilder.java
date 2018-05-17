@@ -36,6 +36,7 @@ import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
@@ -207,6 +208,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_exactContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_longerContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_orlongerContext;
@@ -441,6 +443,7 @@ import org.batfish.representation.juniper.PsThenNextHopIp;
 import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.Route4FilterLine;
+import org.batfish.representation.juniper.Route4FilterLineAddressMask;
 import org.batfish.representation.juniper.Route4FilterLineExact;
 import org.batfish.representation.juniper.Route4FilterLineLengthRange;
 import org.batfish.representation.juniper.Route4FilterLineLonger;
@@ -448,6 +451,7 @@ import org.batfish.representation.juniper.Route4FilterLineOrLonger;
 import org.batfish.representation.juniper.Route4FilterLineThrough;
 import org.batfish.representation.juniper.Route4FilterLineUpTo;
 import org.batfish.representation.juniper.Route6FilterLine;
+import org.batfish.representation.juniper.Route6FilterLineAddressMask;
 import org.batfish.representation.juniper.Route6FilterLineExact;
 import org.batfish.representation.juniper.Route6FilterLineLengthRange;
 import org.batfish.representation.juniper.Route6FilterLineLonger;
@@ -2039,6 +2043,35 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.IPV6_PREFIX() != null) {
       _currentRoute6FilterPrefix = new Prefix6(ctx.IPV6_PREFIX().getText());
       _currentRouteFilter.setIpv6(true);
+    }
+  }
+
+  @Override
+  public void exitPopsfrf_address_mask(Popsfrf_address_maskContext ctx) {
+    if (_currentRouteFilterPrefix != null) { // ipv4
+      if (ctx.IP_ADDRESS().getText() != null) {
+        Route4FilterLine line =
+            new Route4FilterLineAddressMask(
+                _currentRouteFilterPrefix, new Ip(ctx.IP_ADDRESS().getText()));
+        _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
+      } else {
+        _w.redFlag(
+            String.format(
+                "Route filter mask does not match version for prefix %s",
+                _currentRouteFilterPrefix));
+      }
+    } else if (_currentRoute6FilterPrefix != null) { // ipv6
+      if (ctx.IPV6_ADDRESS().getText() != null) {
+        Route6FilterLine line =
+            new Route6FilterLineAddressMask(
+                _currentRoute6FilterPrefix, new Ip6(ctx.IPV6_ADDRESS().getText()));
+        _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
+      } else {
+        _w.redFlag(
+            String.format(
+                "Route filter mask does not match version for prefix %s",
+                _currentRouteFilterPrefix));
+      }
     }
   }
 

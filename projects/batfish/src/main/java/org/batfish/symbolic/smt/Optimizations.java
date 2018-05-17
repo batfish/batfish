@@ -524,7 +524,7 @@ class Optimizations {
                       (name, filter) -> {
                         if (name.contains(AGGREGATION_SUPPRESS_NAME)) {
                           for (RouteFilterLine line : filter.getLines()) {
-                            prefixes.add(line.getPrefix());
+                            prefixes.add(line.getIpWildcard().toPrefix());
                           }
                         }
                       });

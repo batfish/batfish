@@ -65,16 +65,10 @@ public class Route6FilterList extends ComparableStructure<String> {
   private boolean newPermits(Prefix6 prefix) {
     boolean accept = false;
     for (Route6FilterLine line : _lines) {
-      Prefix6 linePrefix = line.getPrefix();
-      int lineBits = linePrefix.getPrefixLength();
-      Prefix6 truncatedLinePrefix = new Prefix6(linePrefix.getAddress(), lineBits);
-      Prefix6 relevantPortion = new Prefix6(prefix.getAddress(), lineBits).getNetworkPrefix();
-      if (relevantPortion.equals(truncatedLinePrefix)) {
+      if (line.getIpWildcard().contains(prefix.getAddress())) {
         int prefixLength = prefix.getPrefixLength();
         SubRange range = line.getLengthRange();
-        int min = range.getStart();
-        int max = range.getEnd();
-        if (prefixLength >= min && prefixLength <= max) {
+        if (prefixLength >= range.getStart() && prefixLength <= range.getEnd()) {
           accept = line.getAction() == LineAction.ACCEPT;
           break;
         }
