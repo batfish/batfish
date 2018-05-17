@@ -35,7 +35,7 @@ public class AutocompleteSuggestion {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof AutocompleteSuggestion)) {
+    if (!(o instanceof AutocompleteSuggestion)) {
       return false;
     }
     AutocompleteSuggestion os = (AutocompleteSuggestion) o;
