@@ -89,10 +89,16 @@ public class AclReachability2Answerer extends Answerer {
           } else if (reachabilityEntry.multipleBlockingLines()) {
             sb.append("Multiple earlier lines partially block this line, making it unreachable.");
           } else {
-            sb.append("Blocking line(s):\n");
-            for (Entry<Integer, String> e : blockingLines.entrySet()) {
-              sb.append(String.format("  [index %d] %s\n", e.getKey(), e.getValue()));
-            }
+            sb.append(
+                String.format(
+                    "Blocking line(s):\n%s",
+                    String.join(
+                        "\n",
+                        blockingLines
+                            .entrySet()
+                            .stream()
+                            .map(e -> String.format("  [index %d] %s", e.getKey(), e.getValue()))
+                            .collect(Collectors.toList()))));
           }
           answer.addRow(
               new Row()
@@ -107,6 +113,7 @@ public class AclReachability2Answerer extends Answerer {
         }
       }
     }
+    answer.postProcessAnswer(question, answer.getRows().getData());
     return answer;
   }
 }
