@@ -13,11 +13,11 @@ import org.batfish.datamodel.table.TableMetadata;
 
 @ParametersAreNonnullByDefault
 public class AclReachability2AnswerElement extends TableAnswerElement {
-  public static final String COL_ID = "id";
   public static final String COL_NODES = "nodes";
   public static final String COL_ACL = "acl";
   public static final String COL_LINES = "lines";
-  public static final String COL_LINE_NUMS = "linenumbers";
+  public static final String COL_BLOCKED_LINE_NUM = "blockedlinenum";
+  public static final String COL_BLOCKING_LINE_NUMS = "blockinglinenums";
   public static final String COL_DIFF_ACTION = "differentaction";
   public static final String COL_MESSAGE = "message";
 
@@ -35,18 +35,25 @@ public class AclReachability2AnswerElement extends TableAnswerElement {
   static TableMetadata createMetadata(AclReachability2Question question) {
     List<ColumnMetadata> columnMetadata =
         new ImmutableList.Builder<ColumnMetadata>()
-            .add(new ColumnMetadata(COL_ID, Schema.INTEGER, "ID", true, false))
-            .add(new ColumnMetadata(COL_NODES, Schema.list(Schema.NODE), "Nodes", false, true))
-            .add(new ColumnMetadata(COL_ACL, Schema.STRING, "ACL name", false, true))
-            .add(
-                new ColumnMetadata(COL_LINES, Schema.list(Schema.STRING), "ACL lines", false, true))
+            .add(new ColumnMetadata(COL_NODES, Schema.list(Schema.NODE), "Nodes", true, false))
+            .add(new ColumnMetadata(COL_ACL, Schema.STRING, "ACL name", true, false))
             .add(
                 new ColumnMetadata(
-                    COL_LINE_NUMS, Schema.list(Schema.INTEGER), "Line numbers", false, true))
+                    COL_LINES, Schema.list(Schema.STRING), "ACL lines", false, false))
+            .add(
+                new ColumnMetadata(
+                    COL_BLOCKED_LINE_NUM, Schema.INTEGER, "Blocked line number", true, false))
+            .add(
+                new ColumnMetadata(
+                    COL_BLOCKING_LINE_NUMS,
+                    Schema.list(Schema.INTEGER),
+                    "Blocking line numbers",
+                    false,
+                    true))
             .add(
                 new ColumnMetadata(
                     COL_DIFF_ACTION, Schema.BOOLEAN, "Different action", false, true))
-            .add(new ColumnMetadata(COL_MESSAGE, Schema.STRING, "Message", false, true))
+            .add(new ColumnMetadata(COL_MESSAGE, Schema.STRING, "Message", false, false))
             .build();
 
     DisplayHints dhints = question.getDisplayHints();

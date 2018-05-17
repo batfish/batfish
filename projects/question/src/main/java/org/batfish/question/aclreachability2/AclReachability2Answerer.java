@@ -1,6 +1,5 @@
 package org.batfish.question.aclreachability2;
 
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
@@ -21,11 +20,11 @@ import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameAnswere
 import org.batfish.question.CompareSameNameQuestionPlugin.CompareSameNameQuestion;
 
 public class AclReachability2Answerer extends Answerer {
-  public static final String COL_ID = "id";
   public static final String COL_NODES = "nodes";
   public static final String COL_ACL = "acl";
   public static final String COL_LINES = "lines";
-  public static final String COL_LINE_NUMS = "linenumbers";
+  public static final String COL_BLOCKED_LINE_NUM = "blockedlinenum";
+  public static final String COL_BLOCKING_LINE_NUMS = "blockinglinenums";
   public static final String COL_DIFF_ACTION = "differentaction";
   public static final String COL_MESSAGE = "message";
 
@@ -54,7 +53,6 @@ public class AclReachability2Answerer extends Answerer {
 
     AclReachability2AnswerElement answer =
         new AclReachability2AnswerElement(AclReachability2AnswerElement.createMetadata(question));
-    int id = 0;
     for (Entry<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> e1 :
         oldAnswer.getUnreachableLines().entrySet()) {
       String representativeNode = e1.getKey();
@@ -73,9 +71,6 @@ public class AclReachability2Answerer extends Answerer {
                 .collect(Collectors.toList());
         for (AclReachabilityEntry reachabilityEntry : e2.getValue()) {
           SortedMap<Integer, String> blockingLines = reachabilityEntry.getBlockingLines();
-          ImmutableSortedSet.Builder<Integer> lineNumbers = ImmutableSortedSet.naturalOrder();
-          lineNumbers.addAll(blockingLines.keySet());
-          lineNumbers.add(reachabilityEntry.getIndex());
           StringBuilder sb =
               new StringBuilder(
                   String.format(
@@ -102,14 +97,13 @@ public class AclReachability2Answerer extends Answerer {
           }
           answer.addRow(
               new Row()
-                  .put(COL_ID, id)
                   .put(COL_NODES, nodes)
                   .put(COL_ACL, aclName)
                   .put(COL_LINES, lines)
-                  .put(COL_LINE_NUMS, lineNumbers.build())
+                  .put(COL_BLOCKED_LINE_NUM, reachabilityEntry.getIndex())
+                  .put(COL_BLOCKING_LINE_NUMS, blockingLines.keySet())
                   .put(COL_DIFF_ACTION, reachabilityEntry.getDifferentAction())
                   .put(COL_MESSAGE, sb.toString()));
-          id++;
         }
       }
     }
