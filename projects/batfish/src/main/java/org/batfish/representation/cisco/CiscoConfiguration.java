@@ -5,7 +5,6 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
-import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -1156,7 +1155,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markIpv6Acls(CiscoStructureUsage usage) {
     markAbstractStructure(
-        IPV6_ACCESS_LIST,
+        CiscoStructureType.IPV6_ACCESS_LIST,
         usage,
         ImmutableList.of(
             CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
