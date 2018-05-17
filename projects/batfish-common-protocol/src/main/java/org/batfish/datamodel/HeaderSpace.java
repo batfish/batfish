@@ -1353,6 +1353,43 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     _tcpFlags = ImmutableList.copyOf(tcpFlags);
   }
 
+  public Builder toBuilder() {
+    Builder bld = new Builder();
+    bld._dscps = _dscps;
+    bld._dstIps = _dstIps;
+    bld._dstPorts = _dstPorts;
+    bld._dstProtocols = _dstProtocols;
+    bld._ecns = _ecns;
+    bld._fragmentOffsets = _fragmentOffsets;
+    bld._icmpCodes = _icmpCodes;
+    bld._icmpTypes = _icmpTypes;
+    bld._ipProtocols = _ipProtocols;
+    bld._negate = _negate;
+    bld._notDscps = _notDscps;
+    bld._notDstIps = _notDstIps;
+    bld._notDstPorts = _notDstPorts;
+    bld._notDstProtocols = _notDstProtocols;
+    bld._notEcns = _notEcns;
+    bld._notFragmentOffsets = _notFragmentOffsets;
+    bld._notIcmpCodes = _notIcmpCodes;
+    bld._notIcmpTypes = _notIcmpTypes;
+    bld._notIpProtocols = _notIpProtocols;
+    bld._notPacketLengths = _notPacketLengths;
+    bld._notSrcIps = _notSrcIps;
+    bld._notSrcPorts = _notSrcPorts;
+    bld._notSrcProtocols = _notSrcProtocols;
+    bld._packetLengths = _packetLengths;
+    bld._srcIps = _srcIps;
+    bld._srcOrDstIps = _srcOrDstIps;
+    bld._srcOrDstPorts = _srcOrDstPorts;
+    bld._srcOrDstProtocols = _srcOrDstProtocols;
+    bld._srcPorts = _srcPorts;
+    bld._srcProtocols = _srcProtocols;
+    bld._states = _states;
+    bld._tcpFlags = _tcpFlags;
+    return bld;
+  }
+
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass())
