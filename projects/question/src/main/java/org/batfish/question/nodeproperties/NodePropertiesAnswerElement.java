@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
@@ -25,14 +24,12 @@ public class NodePropertiesAnswerElement extends TableAnswerElement {
   }
 
   /**
-   * Creates a {@link TableMetadata} object from the question and a map of schemas.
+   * Creates a {@link TableMetadata} object from the question.
    *
    * @param question The question
-   * @param schemas The schemas map
    * @return The resulting {@link TableMetadata} object
    */
-  static TableMetadata createMetadata(
-      NodePropertiesQuestion question, Map<String, Schema> schemas) {
+  static TableMetadata createMetadata(NodePropertiesQuestion question) {
     List<ColumnMetadata> columnMetadata =
         new ImmutableList.Builder<ColumnMetadata>()
             .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
@@ -41,17 +38,13 @@ public class NodePropertiesAnswerElement extends TableAnswerElement {
                     .getProperties()
                     .stream()
                     .map(
-                        nps -> {
-                          String columnName = getColumnNameFromPropertySpec(nps);
-                          return new ColumnMetadata(
-                              columnName,
-                              schemas.containsKey(columnName)
-                                  ? schemas.get(columnName)
-                                  : Schema.OBJECT,
-                              "Property " + nps.toString(),
-                              false,
-                              true);
-                        })
+                        nps ->
+                            new ColumnMetadata(
+                                getColumnNameFromPropertySpec(nps),
+                                NodePropertySpecifier.JAVA_MAP.get(nps.toString()).getSchema(),
+                                "Property " + nps.toString(),
+                                false,
+                                true))
                     .collect(Collectors.toList()))
             .build();
 

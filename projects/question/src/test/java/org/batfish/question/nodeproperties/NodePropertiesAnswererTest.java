@@ -1,149 +1,145 @@
 package org.batfish.question.nodeproperties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.util.HashMap;
+import com.google.common.collect.Multiset;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.NodePropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.table.Row;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class NodePropertiesAnswererTest {
 
+  @Rule public ExpectedException _thrown = ExpectedException.none();
+
   @Test
-  public void answer() {
-    // TODO: write an "end-to-end" test here.
+  public void rawAnswer() {
+    NodePropertySpecifier propSpec1 = new NodePropertySpecifier("configuration-format");
+    NodePropertySpecifier propSpec2 = new NodePropertySpecifier("ntp-servers");
+    NodePropertiesQuestion question =
+        new NodePropertiesQuestion(null, ImmutableList.of(propSpec1, propSpec2));
+
+    Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
+    Configuration conf2 = new Configuration("node2", ConfigurationFormat.HOST);
+    conf2.setNtpServers(ImmutableSortedSet.of("sa"));
+    Map<String, Configuration> configurations = ImmutableMap.of("node1", conf1, "node2", conf2);
+
+    Set<String> nodes = ImmutableSet.of("node1", "node2");
+
+    Multiset<Row> propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes);
+
+    // we should have exactly these two rows
+    String colName1 = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(propSpec1);
+    String colName2 = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(propSpec2);
+    Row row1 =
+        new Row()
+            .put(NodePropertiesAnswerElement.COL_NODE, new Node("node1"))
+            .put(colName1, ConfigurationFormat.CISCO_IOS)
+            .put(colName2, ImmutableList.of());
+    Row row2 =
+        new Row()
+            .put(NodePropertiesAnswerElement.COL_NODE, new Node("node2"))
+            .put(colName1, ConfigurationFormat.HOST)
+            .put(colName2, ImmutableList.of("sa"));
+
+    assertThat(propertyRows.size(), equalTo(2));
+    assertThat(propertyRows, hasItems(row1, row2));
   }
 
   @Test
-  public void fillPropertyAndSchemaEmptyList() {
-    Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    Map<String, Schema> schemas = new HashMap<>();
-    NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-servers");
-    Row row = new Row();
+  public void fillPropertyFail() {
+    PropertyDescriptor propDescriptor = new PropertyDescriptor(null, Schema.list(Schema.STRING));
 
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration, nodePropertySpec, row, schemas);
+    _thrown.expect(BatfishException.class);
+    _thrown.expectMessage("Could not recover object");
 
-    // the row should be filled out with an empty list and the schemas map shouldn't have anything
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
-    assertThat(row, equalTo(new Row().put(columnName, new LinkedList<String>())));
-    assertThat(schemas.size(), equalTo(0));
+    NodePropertiesAnswerer.fillProperty("col", "stringNotList", new Row(), propDescriptor);
   }
 
   @Test
-  public void fillPropertyAndSchemaForcedString() {
+  public void fillPropertyForcedString() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setDefaultInboundAction(LineAction.ACCEPT);
-    Map<String, Schema> schemas = new HashMap<>();
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("default-inbound-action");
     Row row = new Row();
 
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration, nodePropertySpec, row, schemas);
+    NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
-    // the row should be filled out with the String value and the schemas should be appropriate
+    // the row should be filled out with the String value
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
     assertThat(row, equalTo(new Row().put(columnName, LineAction.ACCEPT.toString())));
-    assertThat(schemas, hasEntry(columnName, Schema.STRING));
   }
 
   @Test
-  public void fillPropertyAndSchemaList() {
+  public void fillPropertyListEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    configuration.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
-    Map<String, Schema> schemas = new HashMap<>();
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-servers");
     Row row = new Row();
 
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration, nodePropertySpec, row, schemas);
+    NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
+
+    // the row should be filled out with an empty list
+    String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
+    assertThat(row, equalTo(new Row().put(columnName, new LinkedList<String>())));
+  }
+
+  @Test
+  public void fillPropertyListNonEmpty() {
+    Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
+    configuration.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
+    NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-servers");
+    Row row = new Row();
+
+    NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with the right list and the schemas map should be List<String>
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
     assertThat(row, equalTo(new Row().put(columnName, ImmutableList.of("sa", "sb"))));
-    assertThat(schemas, hasEntry(columnName, Schema.list(Schema.STRING)));
   }
 
   @Test
-  public void fillPropertyAndSchemaMap() {
+  public void fillPropertyMap() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setInterfaces(ImmutableSortedMap.of("i1", new Interface("i1")));
-    Map<String, Schema> schemas = new HashMap<>();
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("interfaces");
     Row row = new Row();
 
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration, nodePropertySpec, row, schemas);
+    NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with the right list and the schemas map should be List<String>
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
     assertThat(row, equalTo(new Row().put(columnName, ImmutableList.of("i1"))));
-    assertThat(schemas, hasEntry(columnName, Schema.list(Schema.STRING)));
   }
 
   @Test
-  public void fillPropertyAndSchemaNull() {
+  public void fillPropertyNull() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    Map<String, Schema> schemas = new HashMap<>();
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-source-interface");
     Row row = new Row();
 
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration, nodePropertySpec, row, schemas);
+    NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with null and the schemas shouldn't be
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
     assertThat(row, equalTo(new Row().put(columnName, null)));
-    assertThat(schemas.size(), equalTo(0));
-  }
-
-  @Test
-  public void fillPropertyAndSchemaSequenceForcedString() {
-    Map<String, Schema> schemas = new HashMap<>();
-    NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("default-inbound-action");
-
-    Row row1 = new Row();
-    Configuration configuration1 = new Configuration("hostname1", ConfigurationFormat.CISCO_IOS);
-    configuration1.setDefaultInboundAction(LineAction.ACCEPT);
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration1, nodePropertySpec, row1, schemas);
-
-    Row row2 = new Row();
-    Configuration configuration2 = new Configuration("hostname2", ConfigurationFormat.CISCO_IOS);
-    configuration2.setDefaultInboundAction(LineAction.REJECT);
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration2, nodePropertySpec, row2, schemas);
-
-    // the schema shouldn't be List<String> and the two rows should be good
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
-    assertThat(row1, equalTo(new Row().put(columnName, LineAction.ACCEPT.toString())));
-    assertThat(row2, equalTo(new Row().put(columnName, LineAction.REJECT.toString())));
-    assertThat(schemas, hasEntry(columnName, Schema.STRING));
-  }
-
-  @Test
-  public void fillPropertyAndSchemaSequenceValueAfterEmpty() {
-    Map<String, Schema> schemas = new HashMap<>();
-    NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-servers");
-
-    Row row1 = new Row();
-    Configuration configuration1 = new Configuration("hostname1", ConfigurationFormat.CISCO_IOS);
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration1, nodePropertySpec, row1, schemas);
-
-    Row row2 = new Row();
-    Configuration configuration2 = new Configuration("hostname2", ConfigurationFormat.CISCO_IOS);
-    configuration2.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
-    NodePropertiesAnswerer.fillPropertyAndSchema(configuration2, nodePropertySpec, row2, schemas);
-
-    // the schema shouldn't be List<String> and the two rows should be good
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
-    assertThat(row1, equalTo(new Row().put(columnName, new LinkedList<String>())));
-    assertThat(row2, equalTo(new Row().put(columnName, ImmutableList.of("sa", "sb"))));
-    assertThat(schemas, hasEntry(columnName, Schema.list(Schema.STRING)));
   }
 }

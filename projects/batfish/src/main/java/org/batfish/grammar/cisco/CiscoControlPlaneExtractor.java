@@ -626,6 +626,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_no_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peerContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_policyContext;
@@ -2709,6 +2710,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRbnx_no_enforce_first_as(Rbnx_no_enforce_first_asContext ctx) {
+    _configuration.getNxBgpGlobalConfiguration().setEnforceFirstAs(false);
+  }
+
+  @Override
   public void exitRbnx_router_id(Rbnx_router_idContext ctx) {
     Ip ip = toIp(ctx.IP_ADDRESS());
     _currentBgpNxVrfConfiguration.setRouterId(ip);
@@ -3720,7 +3726,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCm_iosi_match(Cm_iosi_matchContext ctx) {
-    _currentInspectClassMap.getMatches().add(toInspectClassMapMatch(ctx));
+    InspectClassMapMatch match = toInspectClassMapMatch(ctx);
+    if (match != null) {
+      _currentInspectClassMap.getMatches().add(match);
+    }
   }
 
   private InspectClassMapMatch toInspectClassMapMatch(Cm_iosi_matchContext ctx) {
@@ -3734,7 +3743,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new InspectClassMapMatchProtocol(
           toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
     } else {
-      throw convError(InspectClassMapMatch.class, ctx);
+      _w.redFlag("Class-map match unsupported " + getFullText(ctx));
+      return null;
     }
   }
 
