@@ -13,6 +13,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterList;
@@ -29,6 +30,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
+import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwidth;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.hamcrest.Matcher;
@@ -105,6 +107,15 @@ public final class DataModelMatchers {
   public static Matcher<ConvertConfigurationAnswerElement> hasRedFlagWarning(
       @Nonnull String hostname, @Nonnull Matcher<? super String> subMatcher) {
     return new HasRedFlagWarning(hostname, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * OspfProcess}'s reference-bandwidth.
+   */
+  public static Matcher<OspfProcess> hasReferenceBandwidth(
+      @Nonnull Matcher<? super Double> subMatcher) {
+    return new HasReferenceBandwidth(subMatcher);
   }
 
   /**

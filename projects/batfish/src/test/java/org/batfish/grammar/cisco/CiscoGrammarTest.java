@@ -419,6 +419,25 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosHttpInspection() throws IOException {
+    String hostname = "ios-http-inspection";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ci", 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.INSPECT_CLASS_MAP, "ciunused", 0));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.INSPECT_CLASS_MAP,
+            "ciundefined",
+            CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS));
+  }
+
+  @Test
   public void testIosKeyring() throws IOException {
     String hostname = "ios-keyrings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);

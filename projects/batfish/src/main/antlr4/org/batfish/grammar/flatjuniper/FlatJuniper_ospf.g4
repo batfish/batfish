@@ -33,6 +33,7 @@ o_common
    | o_import
    | o_no_active_backbone
    | o_null
+   | o_reference_bandwidth
    | o_rib_group
    | o_traffic_engineering
 ;
@@ -62,10 +63,19 @@ o_null
    (
       NO_RFC_1583
       | OVERLOAD
-      | REFERENCE_BANDWIDTH
       | SPF_OPTIONS
       | TRACEOPTIONS
    ) null_filler
+;
+
+o_reference_bandwidth
+:
+   REFERENCE_BANDWIDTH base = DEC
+   (
+      K
+      | M
+      | G
+   )?
 ;
 
 o_rib_group
