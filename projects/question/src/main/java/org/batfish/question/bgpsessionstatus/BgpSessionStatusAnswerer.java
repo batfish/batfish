@@ -94,17 +94,17 @@ public class BgpSessionStatusAnswerer extends Answerer {
       boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
       boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
       Prefix remotePrefix = bgpNeighbor.getPrefix();
-      BgpSessionInfoBuilder bsiBuilder = new BgpSessionInfoBuilder(hostname, vrfName, remotePrefix);
       SessionType sessionType =
           ebgp
               ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
               : SessionType.IBGP;
-
       // Skip session types we don't care about
       if (!question.matchesType(sessionType)) {
         continue;
       }
-      bsiBuilder.withSessionType(sessionType);
+      BgpSessionInfoBuilder bsiBuilder =
+          new BgpSessionInfoBuilder(hostname, vrfName, remotePrefix, sessionType);
+
       SessionStatus configuredStatus;
 
       Ip localIp = bgpNeighbor.getLocalIp();
