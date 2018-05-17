@@ -13,8 +13,6 @@ public class ReachabilityParameters {
   public static class Builder {
     private SortedSet<ForwardingAction> _actions;
 
-    private LocationSpecifier _destinationSpecifier;
-
     private NodeSpecifier _finalNodeSpecifier;
 
     private HeaderSpace _headerSpace;
@@ -29,7 +27,7 @@ public class ReachabilityParameters {
 
     private boolean _specialize;
 
-    private NodeSpecifier _transitNodes;
+    private NodeSpecifier _transitNodesSpecifier;
 
     private boolean _useCompression;
 
@@ -39,11 +37,6 @@ public class ReachabilityParameters {
 
     public Builder setActions(SortedSet<ForwardingAction> actions) {
       _actions = ImmutableSortedSet.copyOf(actions);
-      return this;
-    }
-
-    public Builder setDestinationSpecifier(LocationSpecifier destinationSpecifier) {
-      _destinationSpecifier = destinationSpecifier;
       return this;
     }
 
@@ -77,8 +70,8 @@ public class ReachabilityParameters {
       return this;
     }
 
-    public Builder setTransitNodesSpecifier(NodeSpecifier transitNodes) {
-      _transitNodes = transitNodes;
+    public Builder setTransitNodesSpecifier(NodeSpecifier transitNodesSpecifier) {
+      _transitNodesSpecifier = transitNodesSpecifier;
       return this;
     }
 
@@ -94,8 +87,6 @@ public class ReachabilityParameters {
   }
 
   private final SortedSet<ForwardingAction> _actions;
-
-  private final LocationSpecifier _destinationSpecifier;
 
   private final NodeSpecifier _finalNodeSpecifier;
 
@@ -117,7 +108,6 @@ public class ReachabilityParameters {
 
   private ReachabilityParameters(Builder builder) {
     _actions = builder._actions;
-    _destinationSpecifier = builder._destinationSpecifier;
     _finalNodeSpecifier = builder._finalNodeSpecifier;
     _headerSpace = builder._headerSpace;
     _maxChunkSize = builder._maxChunkSize;
@@ -125,7 +115,7 @@ public class ReachabilityParameters {
     _sourceIpSpaceSpecifier = builder._sourceIpSpaceSpecifier;
     _sourceNatted = builder._sourceNatted;
     _specialize = builder._specialize;
-    _transitNodes = builder._transitNodes;
+    _transitNodes = builder._transitNodesSpecifier;
     _useCompression = builder._useCompression;
   }
 
@@ -135,10 +125,6 @@ public class ReachabilityParameters {
 
   public SortedSet<ForwardingAction> getActions() {
     return _actions;
-  }
-
-  public LocationSpecifier getDestinationSpecifier() {
-    return _destinationSpecifier;
   }
 
   public NodeSpecifier getFinalNodesSpecifier() {
@@ -169,7 +155,7 @@ public class ReachabilityParameters {
     return _specialize;
   }
 
-  public NodeSpecifier getTransitNodes() {
+  public NodeSpecifier getTransitNodesSpecifier() {
     return _transitNodes;
   }
 

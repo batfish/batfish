@@ -35,7 +35,6 @@ public class ReachabilitySettingsToReachabilityParameters {
   public static ReachabilityParameters convert(ReachabilitySettings settings) {
     return ReachabilityParameters.builder()
         .setActions(settings.getActions())
-        .setDestinationSpecifier(destinationLocationSpecifier(settings))
         .setFinalNodesSpecifier(finalNodesSpecifier(settings))
         .setHeaderSpace(headerSpace(settings))
         .setMaxChunkSize(settings.getMaxChunkSize())
@@ -46,16 +45,6 @@ public class ReachabilitySettingsToReachabilityParameters {
         .setTransitNodesSpecifier(transitNodesSpecifier(settings))
         .setUseCompression(settings.getUseCompression())
         .build();
-  }
-
-  private static LocationSpecifier destinationLocationSpecifier(ReachabilitySettings settings) {
-    /*
-     * If the only action is ACCEPT, then we can use the finalNodes as the destination.
-     * Otherwise, destination can be anything.
-     *
-     * For now, just retain the old behavior, which does nothing with destinations.
-     */
-    return null;
   }
 
   private static NodeSpecifier differenceNodesSpecifier(

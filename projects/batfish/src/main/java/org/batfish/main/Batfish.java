@@ -178,6 +178,8 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -3618,6 +3620,31 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
+  /** Resolve reachability parameters. TODO factor this out into a separate testable class. */
+  private ResolvedReachabilityParameters resolveReachabilityParameters(
+      ReachabilityParameters params) {
+    Map<String, Configuration> configs =
+        params.getUseCompression()
+            ? loadCompressedConfigurations(getSnapshot())
+            : loadConfigurations(getSnapshot());
+
+    SpecifierContext context = new SpecifierContextImpl(this, configs);
+    return ResolvedReachabilityParameters.builder()
+        .setActions(params.getActions())
+        .setFinalNodes(params.getFinalNodesSpecifier().resolve(context))
+        .setHeaderSpace(params.getHeaderSpace())
+        .setMaxChunkSize(params.getMaxChunkSize())
+        .setSourceIpSpaceByLocations(
+            params
+                .getSourceIpSpaceSpecifier()
+                .resolve(params.getSourceLocationSpecifier().resolve(context), context))
+        .setSourceNatted(params.getSourceNatted())
+        .setSpecialize(params.getSpecialize())
+        .setTransitNodes(params.getTransitNodesSpecifier().resolve(context))
+        .setUseCompression(params.getUseCompression())
+        .build();
+  }
+
   /**
    * Applies the current environment to the specified configurations and updates the given {@link
    * ValidateEnvironmentAnswerElement}. Applying the environment includes:
@@ -4171,6 +4198,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
+
+    ResolvedReachabilityParameters reachabilityParameters =
+        resolveReachabilityParameters(
+            ReachabilitySettingsToReachabilityParameters.convert(reachabilitySettings));
+
     Set<ForwardingAction> actions = reachabilitySettings.getActions();
     boolean useCompression = reachabilitySettings.getUseCompression();
 
