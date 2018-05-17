@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vendor_family.cisco;
 
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 
@@ -8,13 +9,10 @@ public class AaaAuthenticationLoginList implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private List<String> _methods;
-
-  /** TODO: Remove when meaningful fields are added to this class */
-  public Object _placeholder;
+  private final List<String> _methods;
 
   public AaaAuthenticationLoginList(List<String> methods) {
-    _methods = methods;
+    _methods = ImmutableList.copyOf(methods);
   }
 
   public List<String> getMethods() {

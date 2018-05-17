@@ -275,23 +275,20 @@ aaa_authentication
 :
    AUTHENTICATION
    (
-      aaa_authentication_banner
+      aaa_authentication_asa
+      | aaa_authentication_banner
       | aaa_authentication_captive_portal
       | aaa_authentication_dot1x
       | aaa_authentication_enable
-      | aaa_authentication_http
       | aaa_authentication_include
       | aaa_authentication_login
       | aaa_authentication_mac
       | aaa_authentication_mgmt
       | aaa_authentication_policy
       | aaa_authentication_ppp
-      | aaa_authentication_serial
-      | aaa_authentication_ssh
       | aaa_authentication_stateful_dot1x
       | aaa_authentication_stateful_kerberos
       | aaa_authentication_stateful_ntlm
-      | aaa_authentication_telnet
       | aaa_authentication_username_prompt
       | aaa_authentication_vpn
       | aaa_authentication_wired
@@ -299,14 +296,24 @@ aaa_authentication
    )
 ;
 
+aaa_authentication_asa
+:
+   (
+      linetype=HTTP
+      | linetype=SERIAL
+      | linetype=SSH
+      | linetype=TELNET
+   ) aaa_authentication_asa_console
+;
+
 aaa_authentication_asa_console
 :
    CONSOLE
    (
-      LOCAL_ASA ignored += ~NEWLINE
+      LOCAL_ASA
       |
       (
-         group = variable LOCAL_ASA? ignored += ~NEWLINE
+         group = variable LOCAL_ASA?
       )
    ) NEWLINE
 ;
@@ -385,11 +392,6 @@ aaa_authentication_enable
       ) NEWLINE
       | aaa_authentication_asa_console
    )
-;
-
-aaa_authentication_http
-:
-   HTTP aaa_authentication_asa_console
 ;
 
 aaa_authentication_include
@@ -587,11 +589,6 @@ aaa_authentication_ppp
    ) aaa_authentication_list_method+ NEWLINE
 ;
 
-aaa_authentication_serial
-:
-   SERIAL aaa_authentication_asa_console
-;
-
 aaa_authentication_server
 :
    AUTHENTICATION_SERVER
@@ -634,11 +631,6 @@ aaa_authentication_server_tacacs_null
    ) null_rest_of_line
 ;
 
-aaa_authentication_ssh
-:
-   SSH aaa_authentication_asa_console
-;
-
 aaa_authentication_stateful_dot1x
 :
    STATEFUL_DOT1X NEWLINE
@@ -652,11 +644,6 @@ aaa_authentication_stateful_kerberos
 aaa_authentication_stateful_ntlm
 :
    STATEFUL_NTLM double_quoted_string NEWLINE
-;
-
-aaa_authentication_telnet
-:
-   TELNET aaa_authentication_asa_console
 ;
 
 aaa_authentication_username_prompt
