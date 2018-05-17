@@ -5,6 +5,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PAT
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
 import static org.batfish.representation.cisco.CiscoConversions.generateAggregateRoutePolicy;
 import static org.batfish.representation.cisco.CiscoConversions.suppressSummarizedPrefixes;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -1155,7 +1156,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markIpv6Acls(CiscoStructureUsage usage) {
     markAbstractStructure(
-        CiscoStructureType.IPV6_ACCESS_LIST,
+        IPV6_ACCESS_LIST,
         usage,
         ImmutableList.of(
             CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
@@ -1174,27 +1175,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage);
   }
 
-  private void markPrefixLists(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.PREFIX_LIST, usage);
-  }
-
-  private void markPrefix6Lists(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.PREFIX6_LIST, usage);
-  }
-
   private void markPrefixSets(CiscoStructureUsage usage) {
     markConcreteStructure(CiscoStructureType.PREFIX_SET, usage);
-  }
-
-  private void markProtocolOrServiceObjectGroups(CiscoStructureUsage usage) {
-    markStructure(
-        CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-        usage,
-        ImmutableList.of(_protocolObjectGroups, _serviceObjectGroups));
-  }
-
-  private void markRouteMaps(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.ROUTE_MAP, usage);
   }
 
   private void markServiceClasses(CiscoStructureUsage usage) {
@@ -3632,17 +3614,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to mac-ACLs that may not appear in data model
     // TODO: fill in
 
-    markPrefixLists(CiscoStructureUsage.ROUTE_MAP_MATCH_IP_PREFIX_LIST);
-    markPrefix6Lists(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
+    markConcreteStructure(
+        CiscoStructureType.PREFIX_LIST,
+        CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
+        CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IP_PREFIX_LIST);
+    markConcreteStructure(
+        CiscoStructureType.PREFIX6_LIST,
+        CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
+        CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
     markPrefixSets(CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
 
     // mark references to route-maps
     markConcreteStructure(
         CiscoStructureType.ROUTE_MAP,
+        CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
+        CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP,
         CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP,
+        CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP,
+        CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP,
         CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP,
+        CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP,
         CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP,
         CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP,
         CiscoStructureUsage.BGP_REDISTRIBUTE_ISIS_MAP,
@@ -3656,6 +3651,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ROUTE_MAP_OTHER,
         CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS,
         CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
+        CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
+        CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
+        CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
+        CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
+        CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
         CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP);
 
     markConcreteStructure(
@@ -3689,9 +3689,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // object-group
     markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
-    markProtocolOrServiceObjectGroups(
-        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP);
-    markServiceObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_SERVICE_OBJECT_GROUP);
+    markAbstractStructure(
+        CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+        ImmutableList.of(
+            CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
 
     // zone
     markConcreteStructure(
@@ -3715,13 +3717,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordIpv6AccessLists();
     recordStructure(_natPools, CiscoStructureType.NAT_POOL);
-    recordStructure(_networkObjectGroups, CiscoStructureType.NETWORK_OBJECT_GROUP);
-    recordStructure(_protocolObjectGroups, CiscoStructureType.PROTOCOL_OBJECT_GROUP);
     recordPeerGroups();
     recordPeerSessions();
-    recordStructure(_routeMaps, CiscoStructureType.ROUTE_MAP);
     recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
-    recordStructure(_serviceObjectGroups, CiscoStructureType.SERVICE_OBJECT_GROUP);
     recordServiceClasses();
 
     c.simplifyRoutingPolicies();

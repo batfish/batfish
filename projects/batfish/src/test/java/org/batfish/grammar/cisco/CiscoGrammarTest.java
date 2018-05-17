@@ -253,22 +253,12 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testStructureUsage() throws IOException {
-    String hostname = "ios-testbed-3";
+  public void testIosAclObjectGroup() throws IOException {
+    String hostname = "ios-acl-object-group";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
-    ConvertConfigurationAnswerElement ccae = batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    String test = "test";
-  }
-
-    @Test
-    public void testIosAclObjectGroup() throws IOException {
-      String hostname = "ios-acl-object-group";
-      Batfish batfish = getBatfishForConfigurationNames(hostname);
-      Configuration c = batfish.loadConfigurations().get(hostname);
-      ConvertConfigurationAnswerElement ccae =
-          batfish.loadConvertConfigurationAnswerElementOrReparse();
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     /*
      * The produced ACL should permit if source matchers object-group ogn1, destination matches
@@ -448,10 +438,24 @@ public class CiscoGrammarTest {
 
   @Test
   public void testIosObjectGroupNetwork() throws IOException {
-    Configuration c = parseConfig("ios-object-group-network");
+    String hostname = "ios-object-group-network";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
     Ip ogn1TestIp = new Ip("1.128.0.0");
     Ip ogn2TestIp1 = new Ip("2.0.0.0");
     Ip ogn2TestIp2 = new Ip("2.0.0.1");
+
+    /* Confirm the used object groups have referrers */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1", 2));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2", 1));
+    /* Confirm the unused object group has no referrers */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn3", 0));
+    /* Confirm the undefined reference shows up as such */
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn_undef"));
 
     /* Each object group should permit an IP iff it is in its space. */
     assertThat(c, hasIpSpace("ogn1", containsIp(ogn1TestIp)));
@@ -548,7 +552,25 @@ public class CiscoGrammarTest {
 
   @Test
   public void testIosObjectGroupService() throws IOException {
-    Configuration c = parseConfig("ios-object-group-service");
+    String hostname = "ios-object-group-service";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm the used object groups have referrers */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "og-icmp", 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "og-tcp", 1));
+    /* Confirm the unused object group has no referrers */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.SERVICE_OBJECT_GROUP, "og-udp", 0));
+    /* Confirm the undefined reference shows up as such */
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname, CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP, "og-undef"));
 
     /* og-icmp */
     assertThat(
@@ -693,6 +715,44 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
+  }
+
+  @Test
+  public void testIosPrefixList() throws IOException {
+    String hostname = "ios-prefix-list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm prefix list uses are counted correctly */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_LIST, "pre_list", 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.PREFIX_LIST, "pre_list_unused", 0));
+
+    /* Confirm undefined prefix lists are detected in different contexts */
+    /* Bgp neighbor context */
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.PREFIX_LIST, "pre_list_undef1"));
+    /* Route-map match context */
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.PREFIX_LIST, "pre_list_undef2"));
+  }
+
+  @Test
+  public void testIosRouteMap() throws IOException {
+    String hostname = "ios-route-map";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm route map uses are counted correctly */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_if", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_ospf", 4));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_bgp", 9));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.ROUTE_MAP, "rm_unused", 0));
+
+    /* Confirm undefined route-map is detected */
+    assertThat(ccae, hasUndefinedReference(hostname, CiscoStructureType.ROUTE_MAP, "rm_undef"));
   }
 
   @Test

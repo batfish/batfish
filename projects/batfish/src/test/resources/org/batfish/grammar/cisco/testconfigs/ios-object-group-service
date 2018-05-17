@@ -17,4 +17,11 @@ object-group service og-udp
  udp eq syslog
  udp eq tftp
 !
+ip access-list extended acl_used
+ permit object-group og-icmp any any
+ permit object-group og-tcp any any
+ permit object-group og-undef any any
+!
+ip access-list extended acl_reused
+ permit object-group og-icmp any any
 !
