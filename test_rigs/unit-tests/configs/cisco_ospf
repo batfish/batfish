@@ -47,6 +47,7 @@ router ospf 1
   graceful-restart
   graceful-restart grace-period 180
   ip ospf event-history hello size small
+  ispf
   log-adjacency-changes detail
   log-adj-changes
   maximum-paths 32

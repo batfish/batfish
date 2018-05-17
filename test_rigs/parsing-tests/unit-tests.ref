@@ -29234,6 +29234,11 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (ro_common",
             "        (ro_null",
+            "          ISPF:'ispf'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (ro_common",
+            "        (ro_null",
             "          LOG_ADJACENCY_CHANGES:'log-adjacency-changes'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
             "            DETAIL:'detail'  <== mode:DEFAULT_MODE",
@@ -54546,7 +54551,7 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                53
+                54
               ]
             }
           }
