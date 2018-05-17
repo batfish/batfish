@@ -10,7 +10,7 @@ public class AaaMatchersImpl {
 
   static final class HasAuthentication extends FeatureMatcher<Aaa, AaaAuthentication> {
     HasAuthentication(@Nonnull Matcher<? super AaaAuthentication> subMatcher) {
-      super(subMatcher, "aaa with authentication", "aaaAuthentication");
+      super(subMatcher, "a aaa with authentication", "authentication");
     }
 
     @Override

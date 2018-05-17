@@ -1,10 +1,13 @@
 package org.batfish.datamodel.matchers;
 
-import org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchersImpl.HasMethod;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+
+import org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchersImpl.HasMethods;
 
 public class AaaAuthenticationLoginListMatchers {
 
-  public static HasMethod hasMethod(String method) {
-    return new HasMethod(method);
+  public static HasMethods hasMethod(String method) {
+    return new HasMethods(hasItem(equalTo(method)));
   }
 }

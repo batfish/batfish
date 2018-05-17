@@ -13,7 +13,7 @@ public class AaaAuthenticationLoginMatchersImpl {
       extends FeatureMatcher<
           AaaAuthenticationLogin, SortedMap<String, AaaAuthenticationLoginList>> {
     HasLists(@Nonnull Matcher<? super SortedMap<String, AaaAuthenticationLoginList>> subMatcher) {
-      super(subMatcher, "AaaAuthenticationLogin with method lists", "AaaAuthenticationLogin lists");
+      super(subMatcher, "a AaaAuthenticationLogin with method lists", "lists");
     }
 
     @Override
@@ -30,8 +30,8 @@ public class AaaAuthenticationLoginMatchersImpl {
     HasListForKey(@Nonnull Matcher<? super AaaAuthenticationLoginList> subMatcher, String key) {
       super(
           subMatcher,
-          "AaaAuthenticationLogin has list for key",
-          "AaaAuthenticationLogin list for key");
+          String.format("a AaaAuthenticationLogin with list for key '%s'", key),
+          "list for key");
       _key = key;
     }
 
