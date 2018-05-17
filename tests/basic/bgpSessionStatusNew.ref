@@ -2,62 +2,71 @@
   {
     "class" : "org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerElement",
     "metadata" : {
-      "columnMetadata" : {
-        "configuredStatus" : {
-          "description" : "Configured status",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "String"
-        },
-        "establishedNeighbors" : {
-          "description" : "Number of neighbors with whom BGP session was established",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "Integer"
-        },
-        "localIp" : {
-          "description" : "The local IP of the session",
-          "isKey" : false,
-          "isValue" : false,
-          "schema" : "Ip"
-        },
-        "node" : {
+      "columnMetadata" : [
+        {
           "description" : "The node where this session is configured",
           "isKey" : true,
           "isValue" : false,
+          "name" : "node",
           "schema" : "Node"
         },
-        "onLoopback" : {
-          "description" : "Whether the session was established on loopback interface",
-          "isKey" : false,
-          "isValue" : true,
-          "schema" : "Boolean"
-        },
-        "remoteNode" : {
-          "description" : "Remote node for this session",
+        {
+          "description" : "The local IP of the session",
           "isKey" : false,
           "isValue" : false,
-          "schema" : "Node"
+          "name" : "localIp",
+          "schema" : "Ip"
         },
-        "remotePrefix" : {
-          "description" : "Remote prefix for this session",
-          "isKey" : true,
-          "isValue" : false,
-          "schema" : "Prefix"
-        },
-        "sessionType" : {
-          "description" : "The type of this session",
-          "isKey" : false,
-          "isValue" : false,
-          "schema" : "String"
-        },
-        "vrfName" : {
+        {
           "description" : "The VRF in which this session is configured",
           "isKey" : true,
           "isValue" : false,
+          "name" : "vrfName",
           "schema" : "String"
+        },
+        {
+          "description" : "Remote node for this session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "remoteNode",
+          "schema" : "Node"
+        },
+        {
+          "description" : "Remote prefix for this session",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "remotePrefix",
+          "schema" : "Prefix"
+        },
+        {
+          "description" : "The type of this session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "sessionType",
+          "schema" : "String"
+        },
+        {
+          "description" : "Configured status",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "configuredStatus",
+          "schema" : "String"
+        },
+        {
+          "description" : "Number of neighbors with whom BGP session was established",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "establishedNeighbors",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Whether the session was established on loopback interface",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "onLoopback",
+          "schema" : "Boolean"
         }
-      },
+      ],
       "displayHints" : {
         "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
       }

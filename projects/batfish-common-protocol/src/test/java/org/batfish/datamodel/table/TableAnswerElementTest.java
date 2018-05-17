@@ -24,16 +24,6 @@ public class TableAnswerElementTest {
     public TableAnswerElementChild(TableMetadata metadata) {
       super(metadata);
     }
-
-    @Override
-    public Object fromRow(Row o) {
-      return null;
-    }
-
-    @Override
-    public Row toRow(Object object) {
-      return null;
-    }
   }
 
   /** Does computerSummary compute the correct summary? */

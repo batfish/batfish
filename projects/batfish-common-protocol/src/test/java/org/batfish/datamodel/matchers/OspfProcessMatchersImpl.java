@@ -47,4 +47,15 @@ final class OspfProcessMatchersImpl {
       return actual.getOspfNeighbors();
     }
   }
+
+  static final class HasReferenceBandwidth extends FeatureMatcher<OspfProcess, Double> {
+    HasReferenceBandwidth(@Nonnull Matcher<? super Double> subMatcher) {
+      super(subMatcher, "An OspfProcess with referenceBandwidth:", "referenceBandwidth");
+    }
+
+    @Override
+    protected Double featureValueOf(OspfProcess actual) {
+      return actual.getReferenceBandwidth();
+    }
+  }
 }
