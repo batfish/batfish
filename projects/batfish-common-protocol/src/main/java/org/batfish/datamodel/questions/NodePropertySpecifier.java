@@ -174,7 +174,7 @@ public class NodePropertySpecifier {
         JAVA_MAP
             .keySet()
             .stream()
-            .filter(prop -> prop.startsWith(finalQuery.toLowerCase()))
+            .filter(prop -> prop.contains(finalQuery.toLowerCase()))
             .map(prop -> new AutocompleteSuggestion(prop, false))
             .collect(Collectors.toList());
     return suggestions;
