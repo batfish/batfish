@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
@@ -1083,6 +1084,17 @@ public class FlatJuniperGrammarTest {
   public void testOspfPsk() throws IOException {
     /* allow both encrypted and unencrypted key */
     parseConfig("ospf-psk");
+  }
+
+  @Test
+  public void testOspfReferenceBandwidth() throws IOException {
+    String hostname = "ospf-reference-bandwidth";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasReferenceBandwidth(equalTo(1E9D)))));
+    assertThat(c, hasVrf("vrf1", hasOspfProcess(hasReferenceBandwidth(equalTo(2E9D)))));
+    assertThat(c, hasVrf("vrf2", hasOspfProcess(hasReferenceBandwidth(equalTo(3E9D)))));
+    assertThat(c, hasVrf("vrf3", hasOspfProcess(hasReferenceBandwidth(equalTo(4E9D)))));
+    assertThat(c, hasVrf("vrf4", hasOspfProcess(hasReferenceBandwidth(equalTo(5E9D)))));
   }
 
   @Test

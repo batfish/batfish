@@ -182,6 +182,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -1252,6 +1253,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static int toInt(Token token) {
     return Integer.parseInt(token.getText());
+  }
+
+  private static long toLong(Token token) {
+    return Long.parseLong(token.getText());
   }
 
   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
@@ -3313,6 +3318,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _currentRoutingInstance.getOspfExportPolicies().put(name, line);
+  }
+
+  @Override
+  public void exitO_reference_bandwidth(O_reference_bandwidthContext ctx) {
+    long base = toLong(ctx.base);
+    long referenceBandwidth;
+    if (ctx.K() != null) {
+      referenceBandwidth = base * 1000L;
+    } else if (ctx.M() != null) {
+      referenceBandwidth = base * 1000000L;
+    } else if (ctx.G() != null) {
+      referenceBandwidth = base * 1000000000L;
+    } else {
+      referenceBandwidth = base;
+    }
+    _currentRoutingInstance.setOspfReferenceBandwidth((double) referenceBandwidth);
   }
 
   @Override
