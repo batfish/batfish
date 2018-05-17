@@ -1,21 +1,9 @@
 package org.batfish.main;
 
-import com.google.common.collect.ImmutableList;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.AndHeaderSpaceConstraint;
-import org.batfish.datamodel.DstIpHeaderSpaceConstraint;
-import org.batfish.datamodel.DstPortHeaderSpaceConstraint;
-import org.batfish.datamodel.DstProtocolHeaderSpaceConstraint;
-import org.batfish.datamodel.HeaderFieldsHeaderSpaceConstraint;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.HeaderSpaceConstraint;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.NotHeaderSpaceConstraint;
-import org.batfish.datamodel.OrHeaderSpaceConstraint;
-import org.batfish.datamodel.SrcIpHeaderSpaceConstraint;
-import org.batfish.datamodel.SrcPortHeaderSpaceConstraint;
-import org.batfish.datamodel.SrcProtocolHeaderSpaceConstraint;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.ReachabilitySettings;
@@ -49,7 +37,7 @@ public class ReachabilitySettingsToReachabilityParameters {
         .setActions(settings.getActions())
         .setDestinationSpecifier(destinationLocationSpecifier(settings))
         .setFinalNodesSpecifier(finalNodesSpecifier(settings))
-        .setHeaderSpaceConstraint(headerSpaceConstraint(settings))
+        .setHeaderSpace(headerSpace(settings))
         .setMaxChunkSize(settings.getMaxChunkSize())
         .setSourceIpSpaceSpecifier(sourceIpSpaceSpecifier(settings))
         .setSourceSpecifier(sourceSpecifier(settings))
@@ -88,64 +76,15 @@ public class ReachabilitySettingsToReachabilityParameters {
         nodesSpecifier(settings.getFinalNodes()), nodesSpecifier(settings.getNotFinalNodes()));
   }
 
-  private static HeaderSpaceConstraint headerSpaceConstraint(ReachabilitySettings settings) {
-    HeaderSpace headerSpace = settings.getHeaderSpace();
-
-    ImmutableList.Builder<HeaderSpaceConstraint> conjuncts = ImmutableList.builder();
-
-    // add positive header fields constraint
-    conjuncts.add(
-        HeaderFieldsHeaderSpaceConstraint.builder()
-            .setDscps(headerSpace.getDscps())
-            .setDstProtocols(headerSpace.getDstProtocols())
-            .setEcns(headerSpace.getEcns())
-            .setFragmentOffsets(headerSpace.getFragmentOffsets())
-            .setIcmpCodes(headerSpace.getIcmpCodes())
-            .setIcmpTypes(headerSpace.getIcmpTypes())
-            .setIpProtocols(headerSpace.getIpProtocols())
-            .setPacketLengths(headerSpace.getPacketLengths())
-            .setSrcProtocols(headerSpace.getSrcProtocols())
-            .setStates(headerSpace.getStates())
-            .setTcpFlags(headerSpace.getTcpFlags())
-            .build());
-
-    // add negative header fields constraint
-    conjuncts.add(
-        new NotHeaderSpaceConstraint(
-            HeaderFieldsHeaderSpaceConstraint.builder()
-                .setDscps(headerSpace.getNotDscps())
-                .setDstProtocols(headerSpace.getNotDstProtocols())
-                .setEcns(headerSpace.getNotEcns())
-                .setFragmentOffsets(headerSpace.getNotFragmentOffsets())
-                .setIcmpCodes(headerSpace.getNotIcmpCodes())
-                .setIcmpTypes(headerSpace.getNotIcmpTypes())
-                .setIpProtocols(headerSpace.getNotIpProtocols())
-                .setPacketLengths(headerSpace.getNotPacketLengths())
-                .setSrcProtocols(headerSpace.getNotSrcProtocols())
-                .build()));
-
-    // add srcOrDst constraints
-    if (headerSpace.getSrcOrDstIps() != null) {
-      conjuncts.add(
-          new OrHeaderSpaceConstraint(
-              new SrcIpHeaderSpaceConstraint(headerSpace.getSrcOrDstIps()),
-              new DstIpHeaderSpaceConstraint(headerSpace.getSrcOrDstIps())));
-    }
-    if (headerSpace.getSrcOrDstPorts() != null) {
-      conjuncts.add(
-          new OrHeaderSpaceConstraint(
-              new SrcPortHeaderSpaceConstraint(headerSpace.getSrcOrDstPorts()),
-              new DstPortHeaderSpaceConstraint(headerSpace.getSrcOrDstPorts())));
-    }
-    if (headerSpace.getSrcOrDstProtocols() != null) {
-      conjuncts.add(
-          new OrHeaderSpaceConstraint(
-              new SrcProtocolHeaderSpaceConstraint(headerSpace.getSrcOrDstProtocols()),
-              new DstProtocolHeaderSpaceConstraint(headerSpace.getSrcOrDstProtocols())));
-    }
-
-    HeaderSpaceConstraint and = new AndHeaderSpaceConstraint(conjuncts.build());
-    return headerSpace.getNegate() ? new NotHeaderSpaceConstraint(and) : and;
+  private static HeaderSpace headerSpace(ReachabilitySettings settings) {
+    // remove constraints on src IP because those are handled elsewhere
+    IpSpace nullIpSpace = null;
+    return settings
+        .getHeaderSpace()
+        .toBuilder()
+        .setNotSrcIps(nullIpSpace)
+        .setSrcIps(nullIpSpace)
+        .build();
   }
 
   private static LocationSpecifier locationSpecifier(InterfacesSpecifier ingressInterfaces) {

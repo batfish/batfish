@@ -3,7 +3,7 @@ package org.batfish.main;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.HeaderSpaceConstraint;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -17,7 +17,7 @@ public class ReachabilityParameters {
 
     private NodeSpecifier _finalNodeSpecifier;
 
-    private HeaderSpaceConstraint _headerSpace;
+    private HeaderSpace _headerSpace;
 
     private int _maxChunkSize;
 
@@ -62,7 +62,7 @@ public class ReachabilityParameters {
       return this;
     }
 
-    public Builder setHeaderSpaceConstraint(HeaderSpaceConstraint headerSpace) {
+    public Builder setHeaderSpace(HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
       return null;
     }
@@ -99,7 +99,7 @@ public class ReachabilityParameters {
 
   private final NodeSpecifier _finalNodeSpecifier;
 
-  private final HeaderSpaceConstraint _headerSpace;
+  private final HeaderSpace _headerSpace;
 
   private final int _maxChunkSize;
 
@@ -145,7 +145,7 @@ public class ReachabilityParameters {
     return _finalNodeSpecifier;
   }
 
-  public HeaderSpaceConstraint getHeaderSpaceConstraint() {
+  public HeaderSpace getHeaderSpace() {
     return _headerSpace;
   }
 
