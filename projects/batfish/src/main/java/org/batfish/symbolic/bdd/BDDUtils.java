@@ -18,7 +18,7 @@ public class BDDUtils {
       if (res) {
         acc = acc.and(bits[i]);
       } else {
-        acc = acc.andWith(bits[i].not());
+        acc.andWith(bits[i].not());
       }
     }
     return acc;
@@ -42,15 +42,15 @@ public class BDDUtils {
     } else {
       for (int i = lower; i <= upper; i++) {
         BDD equalLen = record.getPrefixLength().value(i);
-        acc = acc.or(equalLen);
+        acc.orWith(equalLen);
       }
     }
-    return acc.and(lowerBitsMatch);
+    return acc.andWith(lowerBitsMatch);
   }
 
   public static BDD prefixToBdd(BDDFactory factory, BDDRoute record, Prefix p) {
     BDD bitsMatch = firstBitsEqual(factory, record.getPrefix().getBitvec(), p, 32);
     BDD correctLen = record.getPrefixLength().value(p.getPrefixLength());
-    return bitsMatch.and(correctLen);
+    return bitsMatch.andWith(correctLen);
   }
 }

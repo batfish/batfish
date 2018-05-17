@@ -1,6 +1,6 @@
 package org.batfish.symbolic.interpreter;
 
-import net.sf.javabdd.BDD;
+import java.util.BitSet;
 
 public class AbstractRib<T> {
 
@@ -12,17 +12,17 @@ public class AbstractRib<T> {
 
   private T _connectedRib;
 
-  private T _ribEntry;
+  private T _mainRib;
 
-  private BDD _headerspace;
+  private BitSet _aclIds;
 
-  public AbstractRib(T bgpRib, T ospfRib, T staticRib, T connectedRib, T ribEntry, BDD h) {
+  public AbstractRib(T bgpRib, T ospfRib, T staticRib, T connectedRib, T ribEntry, BitSet acls) {
     this._bgpRib = bgpRib;
     this._ospfRib = ospfRib;
     this._staticRib = staticRib;
     this._connectedRib = connectedRib;
-    this._ribEntry = ribEntry;
-    this._headerspace = h;
+    this._mainRib = ribEntry;
+    this._aclIds = acls;
   }
 
   public T getBgpRib() {
@@ -41,11 +41,11 @@ public class AbstractRib<T> {
     return _connectedRib;
   }
 
-  public T getRibEntry() {
-    return _ribEntry;
+  public T getMainRib() {
+    return _mainRib;
   }
 
-  public BDD getHeaderspace() {
-    return _headerspace;
+  public BitSet getAclIds() {
+    return _aclIds;
   }
 }

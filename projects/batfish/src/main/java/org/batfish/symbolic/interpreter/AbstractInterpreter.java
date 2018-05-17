@@ -1,6 +1,7 @@
 package org.batfish.symbolic.interpreter;
 
 import java.util.ArrayDeque;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
@@ -23,6 +25,7 @@ import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRouteConfig;
@@ -32,7 +35,7 @@ import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.smt.EdgeType;
 
 // TODO: Take ACLs into account. Will likely require using a single Factory object
-// TODO: Compute end-to-end reachability
+// TODO: Compute end-to-end reachability (i.e., transitive closure)
 
 /*
  * Computes an overapproximation of some concrete set of states in the
@@ -40,8 +43,17 @@ import org.batfish.symbolic.smt.EdgeType;
  */
 public class AbstractInterpreter {
 
-  // Handle the the batfish object
-  private IBatfish _batfish;
+  // The network topology graph
+  private Graph _graph;
+
+  // BDDs representing every transfer function in the network
+  private BDDNetwork _network;
+
+  // BDD Route factory
+  private BDDRouteFactory _routeFactory;
+
+  // Convert acls to a unique identifier
+  private FiniteIndexMap<BDDAcl> _aclIndexes;
 
   // The question asked
   private HeaderLocationQuestion _question;
@@ -61,7 +73,11 @@ public class AbstractInterpreter {
   // The prefix length bits that we will quantify away
   private BDD _lenBits;
 
-  private long _time;
+  // The source router bits that we will quantify away
+  private BDD _srcRouterBits;
+
+  // Substitution of dst router bits for src router bits used to compute transitive closure
+  private BDDPairing _dstToSrcRouterSubstitution;
 
   /*
    * Construct an abstract interpreter the answer a particular question.
@@ -69,12 +85,30 @@ public class AbstractInterpreter {
    * the computation once and then answer many questions.
    */
   public AbstractInterpreter(IBatfish batfish, HeaderLocationQuestion q) {
-    _batfish = batfish;
+    _graph = new Graph(batfish);
     _question = q;
     _lengthCache = new HashMap<>();
     _dstBitsCache = new HashMap<>();
     _lenBits = BDDRouteFactory.factory.one();
-    _time = 0;
+    NodesSpecifier ns = new NodesSpecifier(_question.getIngressNodeRegex());
+    BDDRouteConfig config = new BDDRouteConfig(true);
+    _routeFactory = new BDDRouteFactory(_graph, config);
+    _variables = _routeFactory.variables();
+    _network = BDDNetwork.create(_graph, ns, config, false);
+    Set<BDDAcl> acls = new HashSet<>();
+    acls.addAll(_network.getInAcls().values());
+    acls.addAll(_network.getOutAcls().values());
+    _aclIndexes = new FiniteIndexMap<>(acls);
+
+    BDD[] srcRouterBits = _variables.getSrcRouter().getInteger().getBitvec();
+    BDD[] dstRouterBits = _variables.getDstRouter().getInteger().getBitvec();
+    _dstToSrcRouterSubstitution = BDDRouteFactory.factory.makePair();
+
+    _srcRouterBits = BDDRouteFactory.factory.one();
+    for (int i = 0; i < srcRouterBits.length; i++) {
+      _srcRouterBits = _srcRouterBits.and(srcRouterBits[i]);
+      _dstToSrcRouterSubstitution.set(dstRouterBits[i].var(), srcRouterBits[i].var());
+    }
   }
 
   /*
@@ -83,13 +117,12 @@ public class AbstractInterpreter {
    * starting values for the fixed point computation.
    */
   private void initializeOriginatedPrefixes(
-      Graph g,
       Map<String, Set<Prefix>> originatedOSPF,
       Map<String, Set<Prefix>> originatedConnected,
       Map<String, Map<String, Set<Prefix>>> originatedStatic) {
 
-    for (String router : g.getRouters()) {
-      Configuration conf = g.getConfigurations().get(router);
+    for (String router : _graph.getRouters()) {
+      Configuration conf = _graph.getConfigurations().get(router);
       Vrf vrf = conf.getDefaultVrf();
       if (vrf.getOspfProcess() != null) {
         originatedOSPF.put(router, Graph.getOriginatedNetworks(conf, Protocol.OSPF));
@@ -126,7 +159,7 @@ public class AbstractInterpreter {
         if (val.isOne()) {
           len = len.and(var);
         } else {
-          len = len.and(var.not());
+          len.andWith(var.not());
         }
       }
       _lengthCache.put(i, len);
@@ -153,67 +186,23 @@ public class AbstractInterpreter {
   }
 
   /*
-   * Convert a RIB represented as a BDD to the actual headerspace that
-   * it matches. Normally, the final destination router is preserved
-   * in this operation. The removeRouters flag allows the routers to
-   * be projected away.
-   */
-  private BDD toHeaderspace(BDD rib) {
-    BDD pfxOnly = rib.exist(_communityAndProtocolBits);
-    if (pfxOnly.isZero()) {
-      return pfxOnly;
-    }
-    BDD acc = BDDRouteFactory.factory.zero();
-    for (int i = 32; i >= 0; i--) {
-      BDD len = makeLength(i);
-      BDD withLen = pfxOnly.and(len);
-      if (withLen.isZero()) {
-        continue;
-      }
-
-      /* System.out.println("Remove bits:");
-      for (BDD x : removeBits) {
-        System.out.println(" " + _variables.name(x.var()) + ", " + x.var());
-      } */
-
-      // long t = System.currentTimeMillis();
-
-      BDD removeBits = removeBits(i);
-      if (!removeBits.isOne()) {
-        withLen = withLen.exist(removeBits);
-      }
-
-      acc = acc.or(withLen);
-    }
-    if (_lenBits.isOne()) {
-      BDD[] pfxLen = _variables.getPrefixLength().getBitvec();
-      for (BDD x : pfxLen) {
-        _lenBits = _lenBits.and(x);
-      }
-    }
-
-    return acc.exist(_lenBits);
-  }
-
-  /*
    * Iteratively computes a fixed point over an abstract domain.
    * Starts with some initial advertisements that are 'originated'
    * by different protocols and maintains an underapproximation of
    * reachable sets at each router for every iteration.
    */
-  private <T> Map<String, AbstractRib<BDD>> computeFixedPoint(
-      Graph g, BDDNetwork network, IAbstractDomain<T> domain) {
+  private <T> Map<String, AbstractFib<BDD>> computeFixedPoint(IAbstractDomain<T> domain) {
 
     Map<String, Set<Prefix>> originatedOSPF = new HashMap<>();
     Map<String, Set<Prefix>> originatedConnected = new HashMap<>();
     Map<String, Map<String, Set<Prefix>>> originatedStatic = new HashMap<>();
-    initializeOriginatedPrefixes(g, originatedOSPF, originatedConnected, originatedStatic);
+    initializeOriginatedPrefixes(originatedOSPF, originatedConnected, originatedStatic);
 
     Map<String, AbstractRib<T>> reachable = new HashMap<>();
     Set<String> initialRouters = new HashSet<>();
 
     long t = System.currentTimeMillis();
-    for (String router : g.getRouters()) {
+    for (String router : _graph.getRouters()) {
       Set<Prefix> ospfPrefixes = originatedOSPF.get(router);
       Set<Prefix> connPrefixes = originatedConnected.get(router);
       Map<String, Set<Prefix>> staticPrefixes = originatedStatic.get(router);
@@ -238,10 +227,9 @@ public class AbstractInterpreter {
           stat = domain.merge(stat, statForNeighbor);
         }
       }
-      T rib = domain.merge(domain.merge(domain.merge(bgp, ospf), stat), conn);
-      BDD headerspace = toHeaderspace(domain.toBdd(rib));
 
-      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, headerspace);
+      T rib = domain.merge(domain.merge(domain.merge(bgp, ospf), stat), conn);
+      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, new BitSet());
       reachable.put(router, abstractRib);
     }
 
@@ -259,60 +247,53 @@ public class AbstractInterpreter {
     while (!update.isEmpty()) {
       String router = update.poll();
       updateSet.remove(router);
-      Configuration conf = g.getConfigurations().get(router);
+      Configuration conf = _graph.getConfigurations().get(router);
 
       AbstractRib<T> r = reachable.get(router);
       T routerOspf = r.getOspfRib();
-      T routerRib = r.getRibEntry();
-      BDD routerHeaderspace = r.getHeaderspace();
+      T routerRib = r.getMainRib();
+      BitSet routerAclsSoFar = r.getAclIds();
 
       // System.out.println("Looking at router: " + router);
       // System.out.println("RIB is " + "\n" + _variables.dot(domain.toBdd(routerRib)));
 
-      for (GraphEdge ge : g.getEdgeMap().get(router)) {
-        GraphEdge rev = g.getOtherEnd().get(ge);
+      for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
+        GraphEdge rev = _graph.getOtherEnd().get(ge);
         if (ge.getPeer() != null && rev != null) {
 
           String neighbor = ge.getPeer();
+          // System.out.println("  Got neighbor: " + neighbor);
 
           AbstractRib<T> nr = reachable.get(neighbor);
           T neighborConn = nr.getConnectedRib();
           T neighborStat = nr.getStaticRib();
           T neighborBgp = nr.getBgpRib();
           T neighborOspf = nr.getOspfRib();
-          T neighborRib = nr.getRibEntry();
-          BDD neighborHeaderspace = nr.getHeaderspace();
-
-          // System.out.println("  Got neighbor: " + neighbor);
+          T neighborRib = nr.getMainRib();
+          BitSet neighborAclsSoFar = nr.getAclIds();
 
           T newNeighborOspf = neighborOspf;
           T newNeighborBgp = neighborBgp;
 
-          BDD transferedHeaderspace = BDDRouteFactory.factory.zero();
-
           // Update static
-          List<StaticRoute> srs = g.getStaticRoutes().get(neighbor, rev.getStart().getName());
+          List<StaticRoute> srs = _graph.getStaticRoutes().get(neighbor, rev.getStart().getName());
           if (srs != null) {
             Set<Prefix> pfxs = new HashSet<>();
             for (StaticRoute sr : srs) {
               pfxs.add(sr.getNetwork());
             }
             T stat = domain.value(neighbor, Protocol.STATIC, pfxs);
-            BDD h = toHeaderspace(domain.toBdd(stat));
-            transferedHeaderspace = transferedHeaderspace.or(h);
           }
 
           // Update OSPF
-          if (g.isEdgeUsed(conf, Protocol.OSPF, ge)) {
+          if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)) {
             newNeighborOspf = domain.merge(neighborOspf, routerOspf);
-            BDD h = toHeaderspace(domain.toBdd(routerOspf));
-            transferedHeaderspace = transferedHeaderspace.or(h);
           }
 
           // Update BGP
-          if (g.isEdgeUsed(conf, Protocol.BGP, ge)) {
-            BDDTransferFunction exportFilter = network.getExportBgpPolicies().get(ge);
-            BDDTransferFunction importFilter = network.getImportBgpPolicies().get(rev);
+          if (_graph.isEdgeUsed(conf, Protocol.BGP, ge)) {
+            BDDTransferFunction exportFilter = _network.getExportBgpPolicies().get(ge);
+            BDDTransferFunction importFilter = _network.getImportBgpPolicies().get(rev);
 
             T tmpBgp = routerRib;
             if (exportFilter != null) {
@@ -333,20 +314,21 @@ public class AbstractInterpreter {
             //    "  After processing: " + "\n" + _variables.dot(domain.toBdd(tmpBgp)));
 
             newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
-            BDD h = toHeaderspace(domain.toBdd(tmpBgp));
-            transferedHeaderspace = transferedHeaderspace.or(h);
           }
 
-          // TODO: conjoin with acls
-          // TODO: need to replace destination IP with prefix bits in ACLs
-          /* BDDAcl out = network.getOutAcls().get(rev);
-          BDDAcl in = network.getInAcls().get(ge);
+          // Update set of relevant ACLs so far
+          BitSet newNeighborAclsSoFar = (BitSet) neighborAclsSoFar.clone();
+          newNeighborAclsSoFar.or(routerAclsSoFar);
+          BDDAcl out = _network.getOutAcls().get(rev);
           if (out != null) {
-            out.
-          } */
-
-          transferedHeaderspace = transferedHeaderspace.and(routerHeaderspace);
-          BDD newHeaderspace = neighborHeaderspace.or(transferedHeaderspace);
+            int idx = _aclIndexes.index(out);
+            newNeighborAclsSoFar.set(idx);
+          }
+          BDDAcl in = _network.getInAcls().get(ge);
+          if (in != null) {
+            int idx = _aclIndexes.index(in);
+            newNeighborAclsSoFar.set(idx);
+          }
 
           // System.out.println("  New Headerspace: \n" + _variables.dot(newHeaderspace));
 
@@ -357,9 +339,7 @@ public class AbstractInterpreter {
                   neighborConn);
 
           // If changed, then add it to the workset
-          if (!newNeighborRib.equals(neighborRib)
-              || !newNeighborOspf.equals(neighborOspf)
-              || !newHeaderspace.equals(neighborHeaderspace)) {
+          if (!newNeighborRib.equals(neighborRib) || !newNeighborOspf.equals(neighborOspf)) {
             AbstractRib<T> newAbstractRib =
                 new AbstractRib<>(
                     newNeighborBgp,
@@ -367,7 +347,7 @@ public class AbstractInterpreter {
                     neighborStat,
                     neighborConn,
                     newNeighborRib,
-                    newHeaderspace);
+                    newNeighborAclsSoFar);
             reachable.put(neighbor, newAbstractRib);
             if (!updateSet.contains(neighbor)) {
               updateSet.add(neighbor);
@@ -377,28 +357,126 @@ public class AbstractInterpreter {
         }
       }
     }
-    System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
 
-    Map<String, AbstractRib<BDD>> reach = new HashMap<>();
+    Map<String, AbstractFib<BDD>> reach = new HashMap<>();
     for (Entry<String, AbstractRib<T>> e : reachable.entrySet()) {
       AbstractRib<T> val = e.getValue();
-      BDD bgp = domain.toBdd(val.getRibEntry());
+      BDD bgp = domain.toBdd(val.getMainRib());
       BDD ospf = domain.toBdd(val.getOspfRib());
       BDD conn = domain.toBdd(val.getConnectedRib());
       BDD stat = domain.toBdd(val.getStaticRib());
-      BDD rib = domain.toBdd(val.getRibEntry());
-      BDD headerspace = val.getHeaderspace();
-      AbstractRib<BDD> bddRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, headerspace);
-      reach.put(e.getKey(), bddRib);
+      BDD rib = domain.toBdd(val.getMainRib());
+      AbstractRib<BDD> bddRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, val.getAclIds());
+      AbstractFib<BDD> bddFib = new AbstractFib<>(bddRib, toHeaderspace(rib));
+      reach.put(e.getKey(), bddFib);
     }
+
+    System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
+
     return reach;
+  }
+
+  /*
+   * Convert a RIB represented as a BDD to the actual headerspace that
+   * it matches. Normally, the final destination router is preserved
+   * in this operation. The removeRouters flag allows the routers to
+   * be projected away.
+   */
+  private BDD toHeaderspace(BDD rib) {
+    BDD pfxOnly = rib.exist(_communityAndProtocolBits);
+    if (pfxOnly.isZero()) {
+      return pfxOnly;
+    }
+    BDD acc = BDDRouteFactory.factory.zero();
+    for (int i = 32; i >= 0; i--) {
+      // pick out the routes with prefix length i
+      BDD len = makeLength(i);
+      BDD withLen = pfxOnly.and(len);
+      if (withLen.isZero()) {
+        continue;
+      }
+      // quantify out bits i+1 to 32
+      BDD removeBits = removeBits(i);
+      if (!removeBits.isOne()) {
+        withLen = withLen.exist(removeBits);
+      }
+      // accumulate resulting headers
+      acc.orWith(withLen);
+    }
+
+    if (_lenBits.isOne()) {
+      BDD[] pfxLen = _variables.getPrefixLength().getBitvec();
+      for (BDD x : pfxLen) {
+        _lenBits = _lenBits.and(x);
+      }
+    }
+    return acc.exist(_lenBits);
+  }
+
+  /*
+   * Computes the transitive closure of a fib
+   */
+  private BDD transitiveClosure(BDD fib, BDD allFibs) {
+    BDD oldFib;
+    BDD newFib = fib;
+    do {
+      oldFib = newFib;
+
+      // System.out.println("old: ");
+      // System.out.println(_variables.dot(oldFib));
+
+      newFib = newFib.replace(_dstToSrcRouterSubstitution);
+
+      // System.out.println("replace dst with src: ");
+      // System.out.println(_variables.dot(newFib));
+
+      newFib = newFib.and(allFibs);
+
+      // System.out.println("step with (and): ");
+      // System.out.println(_variables.dot(newFib));
+
+      newFib = newFib.exist(_srcRouterBits);
+
+      // System.out.println("remove src bits: ");
+      // System.out.println(_variables.dot(newFib));
+
+    } while (!newFib.equals(oldFib));
+    return newFib;
+  }
+
+  private <T> Map<String, AbstractFib<T>> transitiveClosure(Map<String, AbstractFib<T>> fibs) {
+    Map<String, AbstractFib<T>> result = new HashMap<>();
+
+    // Create the BDD representing all fibs together
+    BDD allFibs = BDDRouteFactory.factory.zero();
+    for (Entry<String, AbstractFib<T>> e : fibs.entrySet()) {
+      String router = e.getKey();
+      AbstractFib<T> fib = e.getValue();
+      BDD routerBdd = _variables.getSrcRouter().value(router);
+      BDD annotatedFib = fib.getHeaderspace().and(routerBdd);
+      allFibs = allFibs.or(annotatedFib);
+    }
+
+    // Compute transitive closure from each router
+    for (Entry<String, AbstractFib<T>> e : fibs.entrySet()) {
+      String router = e.getKey();
+      AbstractFib<T> fib = e.getValue();
+
+      System.out.println("Compute TC for: " + router);
+
+      BDD tc = transitiveClosure(fib.getHeaderspace(), allFibs);
+      AbstractFib<T> tcFib = new AbstractFib<>(fib.getRib(), tc);
+      result.put(router, tcFib);
+    }
+
+    return result;
   }
 
   /*
    * Print a collection of routes in a BDD as representative examples
    * that can be understood by a human.
    */
-  private void debug(BDDRouteFactory factory, BDD routes, boolean isFib) {
+  private void debug(BDD routes, boolean isFib) {
     List assignments = routes.allsat();
     for (Object o : assignments) {
       long pfx = 0;
@@ -421,9 +499,9 @@ public class AbstractInterpreter {
               len = len + (1 << (6 - num));
             } else if (name.startsWith("pfx") && !name.contains("'")) {
               int num = Integer.parseInt(name.substring(3));
-              pfx = pfx + (1 << (32 - num));
-            } else if (name.startsWith("router") && !name.contains("'")) {
-              int num = Integer.parseInt(name.substring(6));
+              pfx = pfx + (1L << (32 - num));
+            } else if (name.startsWith("dstRouter") && !name.contains("'")) {
+              int num = Integer.parseInt(name.substring(9));
               router =
                   router + (1 << (_variables.getDstRouter().getInteger().getBitvec().length - num));
             }
@@ -436,7 +514,7 @@ public class AbstractInterpreter {
         System.out.println("  " + ip);
       } else {
         Protocol prot = BDDRouteFactory.allProtos.get(proto);
-        String r = factory.getRouter(router);
+        String r = _routeFactory.getRouter(router);
         Ip ip = new Ip(pfx);
         Prefix p = new Prefix(ip, len);
         System.out.println("  " + prot.name() + ", " + p + " --> " + r);
@@ -463,33 +541,22 @@ public class AbstractInterpreter {
    * Compute an underapproximation of all-pairs reachability
    */
   public AnswerElement interpret() {
-    Graph g = new Graph(_batfish);
-    NodesSpecifier ns = new NodesSpecifier(_question.getIngressNodeRegex());
-    BDDRouteConfig config = new BDDRouteConfig(true);
-
-    BDDRouteFactory routeFactory = new BDDRouteFactory(g, config);
-    _variables = routeFactory.variables();
-
     long t = System.currentTimeMillis();
-    BDDNetwork network = BDDNetwork.create(g, ns, config, false);
     System.out.println("Time to build BDDs: " + (System.currentTimeMillis() - t));
-
     initializeQuantificationVariables();
-
     ReachabilityDomain domain = new ReachabilityDomain(_variables, _communityAndProtocolBits);
-    Map<String, AbstractRib<BDD>> reachable = computeFixedPoint(g, network, domain);
+    Map<String, AbstractFib<BDD>> reachable = computeFixedPoint(domain);
 
-    System.out.println("To headerspace time: " + _time);
+    reachable = transitiveClosure(reachable);
 
-    /* for (Entry<String, AbstractRib<BDD>> e : reachable.entrySet()) {
-      AbstractRib<BDD> rib = e.getValue();
+    for (Entry<String, AbstractFib<BDD>> e : reachable.entrySet()) {
+      AbstractFib<BDD> fib = e.getValue();
       System.out.println("Router " + e.getKey() + " RIB:");
-      debug(routeFactory, rib.getRibEntry(), false);
-      System.out.println("Router " + e.getKey() + " FIB:");
-      // System.out.println(_variables.dot(rib.getHeaderspace()));
-      debug(routeFactory, rib.getHeaderspace(), true);
-    } */
-
+      debug(fib.getRib().getMainRib(), false);
+      // System.out.println("Router " + e.getKey() + " FIB:");
+      // System.out.println(_variables.dot(fib.getHeaderspace()));
+      // debug(toHeaderspace(rib.getMainRib()), true);
+    }
     return new StringAnswerElement("Done");
   }
 }

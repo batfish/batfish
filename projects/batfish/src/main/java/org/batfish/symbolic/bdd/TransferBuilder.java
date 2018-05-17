@@ -210,7 +210,7 @@ class TransferBuilder {
       for (BooleanExpr be : d.getDisjuncts()) {
         TransferResult<BDDTransferFunction, BDD> r = compute(be, p.indent());
         result = result.addChangedVariables(r);
-        acc = acc.orWith(r.getReturnValue().getFilter());
+        acc = acc.or(r.getReturnValue().getFilter());
       }
       BDDTransferFunction ret = new BDDTransferFunction(p.getData(), acc);
       p.debug("Disjunction return: " + acc);
@@ -869,7 +869,7 @@ class TransferBuilder {
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: " + range);
         if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
-          acc = acc.orWith(BDDUtils.prefixRangeToBdd(factory, other, range));
+          acc.orWith(BDDUtils.prefixRangeToBdd(factory, other, range));
         }
       }
       return acc;

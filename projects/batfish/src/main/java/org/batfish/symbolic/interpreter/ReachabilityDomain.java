@@ -40,29 +40,27 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     if (prefixes != null) {
       for (Prefix prefix : prefixes) {
         BDD pfx = BDDUtils.prefixToBdd(factory, _variables, prefix);
-        acc = acc.or(pfx);
+        acc.orWith(pfx);
       }
     }
     BDD prot = _variables.getProtocolHistory().value(proto);
     BDD dst = _variables.getDstRouter().value(router);
-    return acc.and(dst).and(prot);
+    acc.andWith(dst);
+    acc.andWith(prot);
+    return acc;
   }
 
   @Override
   public BDD transform(BDD input, EdgeTransformer t) {
     BDDTransferFunction f = t.getBgpTransfer();
     // Filter routes that can not pass through the transformer
-    BDD acc;
     BDD allow = f.getFilter();
-
-    if (_projectVariables.isOne()) {
-      acc = input.and(allow);
-    } else {
-      BDD block = allow.not();
-      BDD blockedInputs = input.and(block);
-      BDD blockedPrefixes = blockedInputs.exist(_projectVariables);
-      acc = input.and(blockedPrefixes.not());
-    }
+    BDD block = allow.not();
+    BDD blockedInputs = input.and(block);
+    BDD blockedPrefixes = blockedInputs.exist(_projectVariables);
+    BDD notBlockedPrefixes = blockedPrefixes.not();
+    // Not sure why, but andWith does not work here (JavaBDD bug?)
+    input = input.and(notBlockedPrefixes);
 
     // Modify the result
     BDDRoute mods = f.getRoute();
@@ -74,7 +72,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
         BDD temp = _variables.getCommunitiesTemp().get(cvar);
         BDD expr = mods.getCommunities().get(cvar);
         BDD equal = temp.biimp(expr);
-        acc = acc.and(equal);
+        input.andWith(equal);
         pairing.set(temp.var(), x.var());
       }
     }
@@ -89,14 +87,14 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
         BDD temp = _variables.getProtocolHistoryTemp().getInteger().getBitvec()[i];
         BDD expr = prot.getInteger().getBitvec()[i];
         BDD equal = temp.biimp(expr);
-        acc = acc.and(equal);
+        input.andWith(equal);
         pairing.set(temp.var(), x.var());
       }
     }
 
-    acc = acc.exist(_projectVariables);
-    acc = acc.replace(pairing);
-    return acc;
+    input = input.exist(_projectVariables);
+    input.replaceWith(pairing);
+    return input;
   }
 
   @Override
