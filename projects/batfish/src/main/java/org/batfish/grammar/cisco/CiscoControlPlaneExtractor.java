@@ -1398,7 +1398,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.linetype.getText();
       _currentAaaAuthenticationLoginList =
-          login.getLists().put(name, new AaaAuthenticationLoginList(methods));
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
     }
   }
 
