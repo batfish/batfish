@@ -22,8 +22,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
@@ -47,20 +47,19 @@ import org.batfish.symbolic.smt.EdgeType;
  */
 public class AbstractInterpreter {
 
+  private static BDDNetFactory netFactory;
+
   // The network topology graph
   private Graph _graph;
 
   // BDDs representing every transfer function in the network
   private BDDNetwork _network;
 
-  // BDD Route factory
+  // BDD _factory
   private BDDNetFactory _netFactory;
 
   // Convert acls to a unique identifier
   private FiniteIndexMap<BDDAcl> _aclIndexes;
-
-  // The question asked
-  private HeaderLocationQuestion _question;
 
   // A collection of single node BDDs representing the individual variables
   private BDDRoute _variables;
@@ -91,18 +90,21 @@ public class AbstractInterpreter {
    * This could be done more in a fashion like Batfish, where we run
    * the computation once and then answer many questions.
    */
-  public AbstractInterpreter(IBatfish batfish, HeaderLocationQuestion q) {
+  public AbstractInterpreter(IBatfish batfish) {
+
     _graph = new Graph(batfish);
-    _question = q;
     _lengthCache = new HashMap<>();
     _dstBitsCache = new HashMap<>();
-    NodesSpecifier ns = new NodesSpecifier(_question.getIngressNodeRegex());
+    NodesSpecifier ns = new NodesSpecifier(".*");
     BDDNetConfig config = new BDDNetConfig(true);
-
     _network = BDDNetwork.create(_graph, ns, config, false);
 
+    if (netFactory == null) {
+      netFactory = _network.getNetFactory();
+    }
+
     _netFactory = _network.getNetFactory();
-    _lenBits = _netFactory.factory.one();
+    _lenBits = _netFactory.one();
     _variables = _netFactory.variables();
 
     Set<BDDAcl> acls = new HashSet<>();
@@ -114,14 +116,24 @@ public class AbstractInterpreter {
     BDD[] tempRouterBits = _variables.getRouterTemp().getInteger().getBitvec();
     BDD[] dstRouterBits = _variables.getDstRouter().getInteger().getBitvec();
 
-    _dstToTempRouterSubstitution = _netFactory.factory.makePair();
-    _srcToTempRouterSubstitution = _netFactory.factory.makePair();
+    _dstToTempRouterSubstitution = _netFactory.makePair();
+    _srcToTempRouterSubstitution = _netFactory.makePair();
 
-    _tempRouterBits = _netFactory.factory.one();
+    _tempRouterBits = _netFactory.one();
     for (int i = 0; i < srcRouterBits.length; i++) {
       _tempRouterBits = _tempRouterBits.and(tempRouterBits[i]);
       _dstToTempRouterSubstitution.set(dstRouterBits[i].var(), tempRouterBits[i].var());
       _srcToTempRouterSubstitution.set(srcRouterBits[i].var(), tempRouterBits[i].var());
+    }
+
+    _communityAndProtocolBits = _netFactory.one();
+    BDD[] protoHistory = _variables.getProtocolHistory().getInteger().getBitvec();
+    for (BDD x : protoHistory) {
+      _communityAndProtocolBits = _communityAndProtocolBits.and(x);
+    }
+    for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
+      BDD c = e.getValue();
+      _communityAndProtocolBits = _communityAndProtocolBits.and(c);
     }
   }
 
@@ -166,14 +178,14 @@ public class AbstractInterpreter {
       BDDInteger pfxLen = _variables.getPrefixLength();
       BDDInteger newVal = new BDDInteger(pfxLen);
       newVal.setValue(i);
-      len = _netFactory.factory.one();
+      len = _netFactory.one();
       for (int j = 0; j < pfxLen.getBitvec().length; j++) {
         BDD var = pfxLen.getBitvec()[j];
         BDD val = newVal.getBitvec()[j];
         if (val.isOne()) {
           len = len.and(var);
         } else {
-          len.andWith(var.not());
+          len = len.andWith(var.not());
         }
       }
       _lengthCache.put(i, len);
@@ -189,7 +201,7 @@ public class AbstractInterpreter {
   private BDD removeBits(int len) {
     BDD removeBits = _dstBitsCache.get(len);
     if (removeBits == null) {
-      removeBits = _netFactory.factory.one();
+      removeBits = _netFactory.one();
       for (int i = len; i < 32; i++) {
         BDD x = _variables.getPrefix().getBitvec()[i];
         removeBits = removeBits.and(x);
@@ -276,6 +288,7 @@ public class AbstractInterpreter {
         if (ge.getPeer() != null && rev != null) {
 
           String neighbor = ge.getPeer();
+
           // System.out.println("  Got neighbor: " + neighbor);
 
           AbstractRib<T> nr = reachable.get(neighbor);
@@ -290,7 +303,8 @@ public class AbstractInterpreter {
           T newNeighborBgp = neighborBgp;
 
           // Update static
-          /* List<StaticRoute> srs = _graph.getStaticRoutes().get(neighbor, rev.getStart().getName());
+          /* List<StaticRoute> srs = _graph.getStaticRoutes().get(neighbor,
+          //            rev.getStart().getName());
           if (srs != null) {
             Set<Prefix> pfxs = new HashSet<>();
             for (StaticRoute sr : srs) {
@@ -311,10 +325,9 @@ public class AbstractInterpreter {
 
             T tmpBgp = routerRib;
             if (exportFilter != null) {
-              /* System.out.println(
-              "  Export filter for "
-                  + "\n"
-                  + factory.variables().dot(exportFilter.getFilter())); */
+              // System.out.println(
+              // "  Export filter \n"
+              //    + _variables.dot(exportFilter.getFilter()));
               EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, exportFilter);
               tmpBgp = domain.transform(tmpBgp, exp);
             }
@@ -401,7 +414,7 @@ public class AbstractInterpreter {
     if (pfxOnly.isZero()) {
       return pfxOnly;
     }
-    BDD acc = _netFactory.factory.zero();
+    BDD acc = _netFactory.zero();
     for (int i = 32; i >= 0; i--) {
       // pick out the routes with prefix length i
       BDD len = makeLength(i);
@@ -415,7 +428,7 @@ public class AbstractInterpreter {
         withLen = withLen.exist(removeBits);
       }
       // accumulate resulting headers
-      acc.orWith(withLen);
+      acc = acc.orWith(withLen);
     }
 
     if (_lenBits.isOne()) {
@@ -434,7 +447,7 @@ public class AbstractInterpreter {
       IAbstractDomain<T> domain, Map<String, AbstractRib<T>> ribs, String router, Ip dstIp) {
     BDD ip =
         BDDUtils.firstBitsEqual(
-            BDDNetFactory.factory, _variables.getPrefix().getBitvec(), dstIp, 32);
+            BDDNetFactory._factory, _variables.getPrefix().getBitvec(), dstIp, 32);
 
     AbstractRib<T> rib = ribs.get(router);
     BDD headerspace = toHeaderspace(domain.toBdd(rib.getMainRib()));
@@ -475,7 +488,7 @@ public class AbstractInterpreter {
   }
 
   private <T> BDD transitiveClosure(Map<String, AbstractFib<T>> fibs) {
-    BDD allFibs = _netFactory.factory.zero();
+    BDD allFibs = _netFactory.zero();
     for (Entry<String, AbstractFib<T>> e : fibs.entrySet()) {
       String router = e.getKey();
       AbstractFib<T> fib = e.getValue();
@@ -525,7 +538,7 @@ public class AbstractInterpreter {
       }
 
       String r = _netFactory.getRouter(router);
-      Protocol prot = _netFactory.allProtos.get(proto);
+      Protocol prot = _netFactory.getAllProtos().get(proto);
       Ip ip = new Ip(pfx);
       Prefix p = new Prefix(ip, len);
       RibEntry entry = new RibEntry(hostname, p, Protocol.toRoutingProtocol(prot), r);
@@ -536,49 +549,33 @@ public class AbstractInterpreter {
   }
 
   /*
-   * Variables that will be existentially quantified away
-   */
-  private void initializeQuantificationVariables() {
-    _communityAndProtocolBits = _netFactory.factory.one();
-    BDD[] protoHistory = _variables.getProtocolHistory().getInteger().getBitvec();
-    for (BDD x : protoHistory) {
-      _communityAndProtocolBits = _communityAndProtocolBits.and(x);
-    }
-    for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
-      BDD c = e.getValue();
-      _communityAndProtocolBits = _communityAndProtocolBits.and(c);
-    }
-  }
-
-  /*
    * Compute an underapproximation of all-pairs reachability
    */
-  public AnswerElement routes() {
-    initializeQuantificationVariables();
-    ReachabilityDomain domain =
-        new ReachabilityDomain(_netFactory, _variables, _communityAndProtocolBits);
+  public AnswerElement routes(NodesSpecifier ns) {
+    ReachabilityDomain domain = new ReachabilityDomain(_netFactory, _communityAndProtocolBits);
     Map<String, AbstractFib<BDD>> reachable = computeFixedPoint(domain);
-
-    // long t = System.currentTimeMillis();
-    // BDD fibs = transitiveClosure(reachable);
-    // System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
-
     SortedSet<RibEntry> routes = new TreeSet<>();
     SortedMap<String, SortedSet<RibEntry>> routesByHostname = new TreeMap<>();
-
-    for (Entry<String, AbstractFib<BDD>> e : reachable.entrySet()) {
-      String router = e.getKey();
-      AbstractFib<BDD> fib = e.getValue();
+    Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
+    for (String router : routers) {
+      AbstractFib<BDD> fib = reachable.get(router);
       BDD rib = fib.getRib().getMainRib();
-
       SortedSet<RibEntry> entries = toRoutes(router, rib);
-      // routesByHostname.put(router, entries);
-      // routes.addAll(entries);
+      routesByHostname.put(router, entries);
+      routes.addAll(entries);
     }
-
     AIRoutesAnswerElement answer = new AIRoutesAnswerElement();
     answer.setRoutes(routes);
     answer.setRoutesByHostname(routesByHostname);
     return answer;
+  }
+
+  public AnswerElement reachability() {
+    ReachabilityDomain domain = new ReachabilityDomain(_netFactory, _communityAndProtocolBits);
+    Map<String, AbstractFib<BDD>> reachable = computeFixedPoint(domain);
+    long t = System.currentTimeMillis();
+    BDD fibs = transitiveClosure(reachable);
+    System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
+    return new StringAnswerElement("Done");
   }
 }

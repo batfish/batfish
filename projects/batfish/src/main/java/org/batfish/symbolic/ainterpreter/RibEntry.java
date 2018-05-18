@@ -2,6 +2,7 @@ package org.batfish.symbolic.ainterpreter;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 
@@ -53,7 +54,24 @@ public class RibEntry implements Comparable<RibEntry> {
 
   @Override
   public String toString() {
-    return _protocol.name() + ", " + _prefix + " --> " + _fromHostname;
+    String route;
+    switch(_protocol) {
+    case OSPF:
+      route = "OspfRoute";
+      break;
+    case BGP:
+      route = "BgpRoute";
+      break;
+    case STATIC:
+      route = "StaticRoute";
+      break;
+    case CONNECTED:
+      route = "ConnectedRoute";
+      break;
+    default:
+      throw new BatfishException("Unsupported protocol");
+    }
+    return route + "<" + _prefix + "> learned via " + _fromHostname;
   }
 
   @Override

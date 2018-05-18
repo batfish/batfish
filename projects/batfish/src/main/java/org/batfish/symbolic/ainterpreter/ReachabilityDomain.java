@@ -23,31 +23,31 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
 
   private BDD _projectVariables;
 
-  ReachabilityDomain(BDDNetFactory netFactory, BDDRoute variables, BDD projectVariables) {
+  ReachabilityDomain(BDDNetFactory netFactory, BDD projectVariables) {
     _netFactory = netFactory;
-    _variables = variables;
+    _variables = _netFactory.variables();
     _projectVariables = projectVariables;
-    _pairing = _netFactory.factory.makePair();
+    _pairing = _netFactory.makePair();
   }
 
   @Override
   public BDD bot() {
-    return _netFactory.factory.zero();
+    return _netFactory.zero();
   }
 
   @Override
   public BDD value(String router, Protocol proto, Set<Prefix> prefixes) {
-    BDD acc = _netFactory.factory.zero();
+    BDD acc = _netFactory.zero();
     if (prefixes != null) {
       for (Prefix prefix : prefixes) {
-        BDD pfx = BDDUtils.prefixToBdd(_netFactory.factory, _variables, prefix);
+        BDD pfx = BDDUtils.prefixToBdd(_netFactory.getFactory(), _variables, prefix);
         acc.orWith(pfx);
       }
     }
     BDD prot = _variables.getProtocolHistory().value(proto);
     BDD dst = _variables.getDstRouter().value(router);
-    acc.andWith(dst);
-    acc.andWith(prot);
+    acc = acc.andWith(dst);
+    acc = acc.andWith(prot);
     return acc;
   }
 
@@ -57,6 +57,10 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     // Filter routes that can not pass through the transformer
     BDD allow = f.getFilter();
     BDD block = allow.not();
+
+    // System.out.println(_variables.dot(input));
+    // System.out.println(_variables.dot(block));
+
     BDD blockedInputs = input.and(block);
     BDD blockedPrefixes = blockedInputs.exist(_projectVariables);
     BDD notBlockedPrefixes = blockedPrefixes.not();
@@ -73,7 +77,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
         BDD temp = _variables.getCommunitiesTemp().get(cvar);
         BDD expr = mods.getCommunities().get(cvar);
         BDD equal = temp.biimp(expr);
-        input.andWith(equal);
+        input = input.andWith(equal);
         _pairing.set(temp.var(), x.var());
       }
     }
@@ -94,7 +98,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     }
 
     input = input.exist(_projectVariables);
-    input.replaceWith(_pairing);
+    input = input.replaceWith(_pairing);
     return input;
   }
 

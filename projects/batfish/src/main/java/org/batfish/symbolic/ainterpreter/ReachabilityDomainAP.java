@@ -23,7 +23,7 @@ public class ReachabilityDomainAP {
 
   /*
 
-  private static BDDFactory factory = BDDNetFactory.factory;
+  private static BDDFactory _factory = BDDNetFactory._factory;
 
   private ReachabilityDomain _domain;
 
@@ -131,12 +131,12 @@ public class ReachabilityDomainAP {
   // TODO: need to track where it came from
   @Override
   public BDD finalize(LocatedAP value) {
-    BDD acc = factory.zero();
+    BDD acc = _factory.zero();
     BitSet atoms = value.getPredicates();
     for (int i = atoms.nextSetBit(0); i != -1; i = atoms.nextSetBit(i + 1)) {
       BDD b = _atomicPredicates.getDisjoint().get(i);
       // collect original prefixes
-      BDD origin = factory.zero();
+      BDD origin = _factory.zero();
       BitSet locs = value.getDestinationLocations()[i];
       for (int j = locs.nextSetBit(0); j != -1; j = locs.nextSetBit(j + 1)) {
         String router = _routerIndexMap.value(j);

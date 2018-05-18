@@ -31,6 +31,7 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilitySettings;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
@@ -43,6 +44,8 @@ import org.batfish.role.NodeRoleDimension;
 public interface IBatfish extends IPluginConsumer {
 
   AnswerElement aiReachability(HeaderLocationQuestion q);
+
+  AnswerElement aiRoutes(NodesSpecifier ns);
 
   AnswerElement answerAclReachability(
       String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets);

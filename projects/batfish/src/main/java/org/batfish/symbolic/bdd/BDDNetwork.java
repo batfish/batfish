@@ -23,8 +23,11 @@ import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferResult;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
+import org.batfish.symbolic.collections.Table2;
 
 public class BDDNetwork {
+
+  private Table2<String, String, TransferResult<BDDTransferFunction, BDD>> _transferCache;
 
   private Graph _graph;
 
@@ -54,6 +57,7 @@ public class BDDNetwork {
       BDDNetConfig config,
       PolicyQuotient pq,
       boolean ignoreNetworks) {
+    _transferCache = new Table2<>();
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
     _ignoreNetworks = ignoreNetworks;
@@ -82,14 +86,14 @@ public class BDDNetwork {
   /*
    * Compute a BDD representation of a routing policy.
    */
-  private BDDTransferFunction computeBDD(Graph g, Configuration conf, RoutingPolicy pol) {
+  private BDDTransferFunction computeBDD(Configuration conf, RoutingPolicy pol) {
     Set<Prefix> networks = new HashSet<>();
     if (_ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);
     }
     TransferBuilder t =
-        new TransferBuilder(_netFactory, g, conf, pol.getStatements(), _policyQuotient);
-    TransferResult<BDDTransferFunction, BDD> result = t.compute(_netFactory, networks);
+        new TransferBuilder(this, _graph, conf, pol.getStatements(), _policyQuotient);
+    TransferResult<BDDTransferFunction, BDD> result = t.compute(networks);
     return result.getReturnValue();
   }
 
@@ -111,13 +115,13 @@ public class BDDNetwork {
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         if (importBgp != null) {
-          BDDTransferFunction rec = computeBDD(_graph, conf, importBgp);
+          BDDTransferFunction rec = computeBDD(conf, importBgp);
           _importBgpPolicies.put(ge, rec);
         }
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
         if (exportBgp != null) {
-          BDDTransferFunction rec = computeBDD(_graph, conf, exportBgp);
+          BDDTransferFunction rec = computeBDD(conf, exportBgp);
           _exportBgpPolicies.put(ge, rec);
         }
 
@@ -196,5 +200,9 @@ public class BDDNetwork {
 
   public BDDNetFactory getNetFactory() {
     return _netFactory;
+  }
+
+  public Table2<String, String, TransferResult<BDDTransferFunction, BDD>> getTransferCache() {
+    return _transferCache;
   }
 }

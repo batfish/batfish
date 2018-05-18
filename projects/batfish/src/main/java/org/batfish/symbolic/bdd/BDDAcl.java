@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -25,21 +24,21 @@ public class BDDAcl {
 
   private BDD _bdd;
 
-  private BDDFactory _factory;
+  private BDDNetFactory _netFactory;
 
   private BDDPacket _pkt;
 
   private BDDAcl(BDDNetFactory netFactory, IpAccessList acl) {
     _bdd = null;
     _acl = acl;
-    _factory = netFactory.factory;
+    _netFactory = netFactory;
     _pkt = netFactory.createPacket();
   }
 
   private BDDAcl(BDDAcl other) {
     _bdd = other._bdd;
     _acl = other._acl;
-    _factory = other._factory;
+    _netFactory = other._netFactory;
     _pkt = other._pkt;
   }
 
@@ -56,19 +55,21 @@ public class BDDAcl {
   private void computeACL() {
     // Check if there is an ACL first
     if (_acl == null) {
-      _bdd = _factory.one();
+      _bdd = _netFactory.one();
     }
 
-    _bdd = _factory.zero();
+    _bdd = _netFactory.zero();
 
-    AclLineMatchExprToBDD aclLineMatchExprToBDD = new AclLineMatchExprToBDD(_factory, _pkt);
+    AclLineMatchExprToBDD aclLineMatchExprToBDD =
+        new AclLineMatchExprToBDD(_netFactory.getFactory(), _pkt);
 
     List<IpAccessListLine> lines = new ArrayList<>(_acl.getLines());
     Collections.reverse(lines);
 
     for (IpAccessListLine line : lines) {
       BDD lineBDD = aclLineMatchExprToBDD.toBDD(line.getMatchCondition());
-      BDD actionBDD = line.getAction() == LineAction.ACCEPT ? _factory.one() : _factory.zero();
+      BDD actionBDD =
+          line.getAction() == LineAction.ACCEPT ? _netFactory.one() : _netFactory.zero();
       _bdd = lineBDD.ite(actionBDD, _bdd);
     }
   }
@@ -77,7 +78,7 @@ public class BDDAcl {
    * Convert a set of ip protocols to a boolean expression on the symbolic packet
    */
   private BDD computeIpProtocols(Set<IpProtocol> ipProtos) {
-    BDD acc = _factory.zero();
+    BDD acc = _netFactory.zero();
     for (IpProtocol proto : ipProtos) {
       BDD isValue = _pkt.getIpProtocol().value(proto.number());
       acc = acc.or(isValue);
@@ -89,7 +90,7 @@ public class BDDAcl {
    * Convert Tcp flags to a boolean expression on the symbolic packet
    */
   private BDD computeTcpFlags(List<TcpFlags> flags) {
-    BDD acc = _factory.zero();
+    BDD acc = _netFactory.zero();
     for (TcpFlags fs : flags) {
       acc = acc.or(computeTcpFlags(fs));
     }
@@ -100,7 +101,7 @@ public class BDDAcl {
    * Convert a Tcp flag to a boolean expression on the symbolic packet
    */
   private BDD computeTcpFlags(TcpFlags flags) {
-    BDD acc = _factory.one();
+    BDD acc = _netFactory.one();
     if (flags.getUseAck()) {
       BDD value = flags.getAck() ? _pkt.getTcpAck() : _pkt.getTcpAck().not();
       acc = acc.and(value);
@@ -140,7 +141,7 @@ public class BDDAcl {
    * Convert a set of ranges and a packet field to a symbolic boolean expression
    */
   private BDD computeValidRange(Set<SubRange> ranges, BDDInteger field) {
-    BDD acc = _factory.zero();
+    BDD acc = _netFactory.zero();
     for (SubRange range : ranges) {
       int start = range.getStart();
       int end = range.getEnd();
@@ -160,7 +161,7 @@ public class BDDAcl {
    * Convert a set of wildcards and a packet field to a symbolic boolean expression
    */
   private BDD computeWildcardMatch(Set<IpWildcard> wcs, BDDInteger field) {
-    BDD acc = _factory.zero();
+    BDD acc = _netFactory.zero();
     for (IpWildcard wc : wcs) {
       if (!wc.isPrefix()) {
         throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
@@ -188,7 +189,7 @@ public class BDDAcl {
    */
   private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {
     long b = p.getStartIp().asLong();
-    BDD acc = _factory.one();
+    BDD acc = _netFactory.one();
     for (int i = 0; i < length; i++) {
       boolean res = Ip.getBitAtPosition(b, i);
       if (res) {
@@ -206,10 +207,6 @@ public class BDDAcl {
 
   public BDD getBdd() {
     return _bdd;
-  }
-
-  public BDDFactory getFactory() {
-    return _factory;
   }
 
   public BDDPacket getPkt() {
