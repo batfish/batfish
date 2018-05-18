@@ -23,15 +23,25 @@ import org.batfish.symbolic.IDeepCopy;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 
+/*
+ * Class to manage the various BDD indexes and operations. This is useful
+ * because, which variables are used or needed depends on a number of
+ * factors such as what we want to model, if we are doing abstraction etc.
+ *
+ * It is also made more complicated by the fact that the number of BDD bits
+ * needed depends on the particular topology. For example, we may use one
+ * bit for every community variable, or a number of bits to encode a router.
+ *
+ */
 public class BDDNetFactory {
 
   public BDDFactory factory;
 
   public List<Protocol> allProtos;
 
-  private List<OspfType> allMetricTypes;
+  private List<OspfType> _allMetricTypes;
 
-  private BDDPairing pairing;
+  private BDDPairing _pairing;
 
   private BDDNetConfig _config;
 
@@ -98,11 +108,11 @@ public class BDDNetFactory {
   private int _hcode = 0;
 
   public BDDNetFactory(Graph g, BDDNetConfig config) {
-    allMetricTypes = new ArrayList<>();
-    allMetricTypes.add(OspfType.O);
-    allMetricTypes.add(OspfType.OIA);
-    allMetricTypes.add(OspfType.E1);
-    allMetricTypes.add(OspfType.E2);
+    _allMetricTypes = new ArrayList<>();
+    _allMetricTypes.add(OspfType.O);
+    _allMetricTypes.add(OspfType.OIA);
+    _allMetricTypes.add(OspfType.E1);
+    _allMetricTypes.add(OspfType.E2);
 
     allProtos = new ArrayList<>();
     allProtos.add(Protocol.CONNECTED);
@@ -125,7 +135,7 @@ public class BDDNetFactory {
       e.printStackTrace();
     }
     */
-    pairing = factory.makePair();
+    _pairing = factory.makePair();
 
     _config = config;
     _allCommunities = g.getAllCommunities();
@@ -359,10 +369,9 @@ public class BDDNetFactory {
         }
       }
 
-      // Initialize OSPF type
       if (_config.getKeepOspfMetric()) {
-        _ospfMetric = new BDDFiniteDomain<>(factory, allMetricTypes, _indexOspfMetric);
-        _ospfMetricTemp = new BDDFiniteDomain<>(factory, allMetricTypes, _indexOspfMetricTemp);
+        _ospfMetric = new BDDFiniteDomain<>(factory, _allMetricTypes, _indexOspfMetric);
+        _ospfMetricTemp = new BDDFiniteDomain<>(factory, _allMetricTypes, _indexOspfMetricTemp);
         addBitNames("ospfMetric", _ospfMetric.numBits(), _indexOspfMetric, false);
         addBitNames("ospfMetric'", _ospfMetricTemp.numBits(), _indexOspfMetricTemp, false);
       }
@@ -424,10 +433,6 @@ public class BDDNetFactory {
       _bitNames = other._bitNames;
     }
 
-    /*
-     * Helper function that builds a map from BDD variable index
-     * to some more meaningful name. Helpful for debugging.
-     */
     private void addBitNames(String s, int length, int index, boolean reverse) {
       for (int i = index; i < index + length; i++) {
         if (reverse) {
@@ -438,17 +443,11 @@ public class BDDNetFactory {
       }
     }
 
-    /*
-     * Convenience method for the copy constructor
-     */
     @Override
     public BDDRoute deepCopy() {
       return new BDDRoute(this);
     }
 
-    /*
-     * Converts a BDD to the graphviz DOT format for debugging.
-     */
     public String dot(BDD bdd) {
       StringBuilder sb = new StringBuilder();
       sb.append("digraph G {\n");
@@ -463,10 +462,6 @@ public class BDDNetFactory {
       return sb.toString();
     }
 
-    /*
-     * Creates a unique id for a bdd node when generating
-     * a DOT file for graphviz
-     */
     private Integer dotId(BDD bdd) {
       if (bdd.isZero()) {
         return 0;
@@ -477,10 +472,6 @@ public class BDDNetFactory {
       return bdd.hashCode() + 2;
     }
 
-    /*
-     * Recursively builds each of the intermediate BDD nodes in the
-     * graphviz DOT format.
-     */
     private void dotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
       if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
         return;
@@ -637,9 +628,6 @@ public class BDDNetFactory {
           && Objects.equals(_adminDist, other._adminDist);
     }
 
-    /*
-     * Take the point-wise disjunction of two BDDRecords
-     */
     public void orWith(BDDRoute other) {
 
       if (_config.getKeepMetric()) {
@@ -697,56 +685,56 @@ public class BDDNetFactory {
       long bits = pfx.getStartIp().asLong();
       int[] vars = new int[len];
       BDD[] vals = new BDD[len];
-      // NOTE: do not create a new pairing each time
+      // NOTE: do not create a new _pairing each time
       // JavaBDD will start to memory leak
-      pairing.reset();
+      _pairing.reset();
       for (int i = 0; i < len; i++) {
         int var = _prefix.getBitvec()[i].var(); // prefixIndex + i;
         BDD subst = Ip.getBitAtPosition(bits, i) ? factory.one() : factory.zero();
         vars[i] = var;
         vals[i] = subst;
       }
-      pairing.set(vars, vals);
+      _pairing.set(vars, vals);
 
       BDDRoute rec = new BDDRoute(this);
 
       if (_config.getKeepMetric()) {
         BDD[] metric = rec.getMetric().getBitvec();
         for (int i = 0; i < 32; i++) {
-          metric[i] = metric[i].veccompose(pairing);
+          metric[i] = metric[i].veccompose(_pairing);
         }
       }
 
       if (_config.getKeepAd()) {
         BDD[] adminDist = rec.getAdminDist().getBitvec();
         for (int i = 0; i < 32; i++) {
-          adminDist[i] = adminDist[i].veccompose(pairing);
+          adminDist[i] = adminDist[i].veccompose(_pairing);
         }
       }
 
       if (_config.getKeepMed()) {
         BDD[] med = rec.getMed().getBitvec();
         for (int i = 0; i < 32; i++) {
-          med[i] = med[i].veccompose(pairing);
+          med[i] = med[i].veccompose(_pairing);
         }
       }
 
       if (_config.getKeepLp()) {
         BDD[] localPref = rec.getLocalPref().getInteger().getBitvec();
         for (int i = 0; i < 32; i++) {
-          localPref[i] = localPref[i].veccompose(pairing);
+          localPref[i] = localPref[i].veccompose(_pairing);
         }
       }
 
       if (_config.getKeepOspfMetric()) {
         BDD[] ospfMet = rec.getOspfMetric().getInteger().getBitvec();
         for (int i = 0; i < ospfMet.length; i++) {
-          ospfMet[i] = ospfMet[i].veccompose(pairing);
+          ospfMet[i] = ospfMet[i].veccompose(_pairing);
         }
       }
 
       if (_config.getKeepCommunities()) {
-        rec.getCommunities().replaceAll((k, v) -> v.veccompose(pairing));
+        rec.getCommunities().replaceAll((k, v) -> v.veccompose(_pairing));
       }
 
       return rec;
@@ -770,9 +758,8 @@ public class BDDNetFactory {
    * Symbolic encoding of a packet using BDDs. Includes packet header
    * fields such as dstIp, srcIp, dstPort, etc.
    *
-   * The dstIp
-   *
-   *
+   * The dstIp is shared with the 'prefix' bits from the BDDRoute class
+   * so that we can apply ACLs freely to headers generated from a prefix.
    *
    */
   public class BDDPacket {
@@ -1108,15 +1095,15 @@ public class BDDNetFactory {
       long bits = pfx.getStartIp().asLong();
       int[] vars = new int[len];
       BDD[] vals = new BDD[len];
-      pairing.reset();
+      _pairing.reset();
       for (int i = 0; i < len; i++) {
         int var = _dstIp.getBitvec()[i].var(); // dstIpIndex + i;
         BDD subst = Ip.getBitAtPosition(bits, i) ? factory.one() : factory.zero();
         vars[i] = var;
         vals[i] = subst;
       }
-      pairing.set(vars, vals);
-      return bdd.veccompose(pairing);
+      _pairing.set(vars, vals);
+      return bdd.veccompose(_pairing);
     }
 
     public BDD restrict(BDD bdd, List<Prefix> prefixes) {
