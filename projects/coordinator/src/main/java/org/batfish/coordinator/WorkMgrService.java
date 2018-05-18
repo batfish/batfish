@@ -83,7 +83,6 @@ public class WorkMgrService {
       checkStringParam(containerName, "Container name");
       checkStringParam(testrigName, "Testrig name");
       checkStringParam(completionType, "Completion type");
-      checkStringParam(query, "Query");
 
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
