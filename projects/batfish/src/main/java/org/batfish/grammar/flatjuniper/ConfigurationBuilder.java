@@ -179,6 +179,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protocol_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
@@ -406,6 +407,7 @@ import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.JunosApplication;
+import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.PolicyStatement;
@@ -650,8 +652,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_BOOTPS;
     } else if (ctx.JUNOS_CHARGEN() != null) {
       return JunosApplication.JUNOS_CHARGEN;
-      //    } else if (ctx.JUNOS_CIFS() != null) {
-      //      return JunosApplication.JUNOS_CIFS;
     } else if (ctx.JUNOS_CVSPSERVER() != null) {
       return JunosApplication.JUNOS_CVSPSERVER;
     } else if (ctx.JUNOS_DHCP_CLIENT() != null) {
@@ -754,26 +754,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_LPR;
     } else if (ctx.JUNOS_MAIL() != null) {
       return JunosApplication.JUNOS_MAIL;
-    } else if (ctx.JUNOS_MGCP() != null) {
-      return JunosApplication.JUNOS_MGCP;
     } else if (ctx.JUNOS_MGCP_CA() != null) {
       return JunosApplication.JUNOS_MGCP_CA;
     } else if (ctx.JUNOS_MGCP_UA() != null) {
       return JunosApplication.JUNOS_MGCP_UA;
-    } else if (ctx.JUNOS_MS_RPC() != null) {
-      return JunosApplication.JUNOS_MS_RPC;
-    } else if (ctx.JUNOS_MS_RPC_ANY() != null) {
-      return JunosApplication.JUNOS_MS_RPC_ANY;
     } else if (ctx.JUNOS_MS_RPC_EPM() != null) {
       return JunosApplication.JUNOS_MS_RPC_EPM;
-    } else if (ctx.JUNOS_MS_RPC_IIS_COM() != null) {
-      return JunosApplication.JUNOS_MS_RPC_IIS_COM;
     } else if (ctx.JUNOS_MS_RPC_IIS_COM_1() != null) {
       return JunosApplication.JUNOS_MS_RPC_IIS_COM_1;
     } else if (ctx.JUNOS_MS_RPC_IIS_COM_ADMINBASE() != null) {
       return JunosApplication.JUNOS_MS_RPC_IIS_COM_ADMINBASE;
-    } else if (ctx.JUNOS_MS_RPC_MSEXCHANGE() != null) {
-      return JunosApplication.JUNOS_MS_RPC_MSEXCHANGE;
     } else if (ctx.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP() != null) {
       return JunosApplication.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_NSP;
     } else if (ctx.JUNOS_MS_RPC_MSEXCHANGE_DIRECTORY_RFR() != null) {
@@ -788,8 +778,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_MS_RPC_UUID_ANY_TCP;
     } else if (ctx.JUNOS_MS_RPC_UUID_ANY_UDP() != null) {
       return JunosApplication.JUNOS_MS_RPC_UUID_ANY_UDP;
-    } else if (ctx.JUNOS_MS_RPC_WMIC() != null) {
-      return JunosApplication.JUNOS_MS_RPC_WMIC;
     } else if (ctx.JUNOS_MS_RPC_WMIC_ADMIN() != null) {
       return JunosApplication.JUNOS_MS_RPC_WMIC_ADMIN;
     } else if (ctx.JUNOS_MS_RPC_WMIC_ADMIN2() != null) {
@@ -870,8 +858,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_REALAUDIO;
     } else if (ctx.JUNOS_RIP() != null) {
       return JunosApplication.JUNOS_RIP;
-    } else if (ctx.JUNOS_ROUTING_INBOUND() != null) {
-      return JunosApplication.JUNOS_ROUTING_INBOUND;
     } else if (ctx.JUNOS_RSH() != null) {
       return JunosApplication.JUNOS_RSH;
     } else if (ctx.JUNOS_RTSP() != null) {
@@ -902,66 +888,42 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_SSH;
     } else if (ctx.JUNOS_STUN() != null) {
       return JunosApplication.JUNOS_STUN;
-    } else if (ctx.JUNOS_SUN_RPC() != null) {
-      return JunosApplication.JUNOS_SUN_RPC;
-    } else if (ctx.JUNOS_SUN_RPC_ANY() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_ANY;
     } else if (ctx.JUNOS_SUN_RPC_ANY_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_ANY_TCP;
     } else if (ctx.JUNOS_SUN_RPC_ANY_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_ANY_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_MOUNTD() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_MOUNTD;
     } else if (ctx.JUNOS_SUN_RPC_MOUNTD_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_MOUNTD_TCP;
     } else if (ctx.JUNOS_SUN_RPC_MOUNTD_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_MOUNTD_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_NFS() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_NFS;
-    } else if (ctx.JUNOS_SUN_RPC_NFS_ACCESS() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_NFS_ACCESS;
     } else if (ctx.JUNOS_SUN_RPC_NFS_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_NFS_TCP;
     } else if (ctx.JUNOS_SUN_RPC_NFS_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_NFS_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_NLOCKMGR() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_NLOCKMGR;
     } else if (ctx.JUNOS_SUN_RPC_NLOCKMGR_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_NLOCKMGR_TCP;
     } else if (ctx.JUNOS_SUN_RPC_NLOCKMGR_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_NLOCKMGR_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_PORTMAP() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_PORTMAP;
     } else if (ctx.JUNOS_SUN_RPC_PORTMAP_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_PORTMAP_TCP;
     } else if (ctx.JUNOS_SUN_RPC_PORTMAP_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_PORTMAP_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_RQUOTAD() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_RQUOTAD;
     } else if (ctx.JUNOS_SUN_RPC_RQUOTAD_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_RQUOTAD_TCP;
     } else if (ctx.JUNOS_SUN_RPC_RQUOTAD_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_RQUOTAD_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_RUSERD() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_RUSERD;
     } else if (ctx.JUNOS_SUN_RPC_RUSERD_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_RUSERD_TCP;
     } else if (ctx.JUNOS_SUN_RPC_RUSERD_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_RUSERD_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_SADMIND() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_SADMIND;
     } else if (ctx.JUNOS_SUN_RPC_SADMIND_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_SADMIND_TCP;
     } else if (ctx.JUNOS_SUN_RPC_SADMIND_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_SADMIND_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_SPRAYD() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_SPRAYD;
     } else if (ctx.JUNOS_SUN_RPC_SPRAYD_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_SPRAYD_TCP;
     } else if (ctx.JUNOS_SUN_RPC_SPRAYD_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_SPRAYD_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_STATUS() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_STATUS;
     } else if (ctx.JUNOS_SUN_RPC_STATUS_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_STATUS_TCP;
     } else if (ctx.JUNOS_SUN_RPC_STATUS_UDP() != null) {
@@ -970,20 +932,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return JunosApplication.JUNOS_SUN_RPC_TCP;
     } else if (ctx.JUNOS_SUN_RPC_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_WALLD() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_WALLD;
     } else if (ctx.JUNOS_SUN_RPC_WALLD_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_WALLD_TCP;
     } else if (ctx.JUNOS_SUN_RPC_WALLD_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_WALLD_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_YPBIND() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_YPBIND;
     } else if (ctx.JUNOS_SUN_RPC_YPBIND_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_YPBIND_TCP;
     } else if (ctx.JUNOS_SUN_RPC_YPBIND_UDP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_YPBIND_UDP;
-    } else if (ctx.JUNOS_SUN_RPC_YPSERV() != null) {
-      return JunosApplication.JUNOS_SUN_RPC_YPSERV;
     } else if (ctx.JUNOS_SUN_RPC_YPSERV_TCP() != null) {
       return JunosApplication.JUNOS_SUN_RPC_YPSERV_TCP;
     } else if (ctx.JUNOS_SUN_RPC_YPSERV_UDP() != null) {
@@ -1031,6 +987,59 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       throw new BatfishException(
           "missing application mapping for application: \"" + ctx.getText() + "\"");
+    }
+  }
+
+  private static JunosApplicationSet toJunosApplicationSet(Junos_application_setContext ctx) {
+    if (ctx.JUNOS_CIFS() != null) {
+      return JunosApplicationSet.JUNOS_CIFS;
+    } else if (ctx.JUNOS_MGCP() != null) {
+      return JunosApplicationSet.JUNOS_MGCP;
+    } else if (ctx.JUNOS_MS_RPC() != null) {
+      return JunosApplicationSet.JUNOS_MS_RPC;
+    } else if (ctx.JUNOS_MS_RPC_ANY() != null) {
+      return JunosApplicationSet.JUNOS_MS_RPC_ANY;
+    } else if (ctx.JUNOS_MS_RPC_IIS_COM() != null) {
+      return JunosApplicationSet.JUNOS_MS_RPC_IIS_COM;
+    } else if (ctx.JUNOS_MS_RPC_MSEXCHANGE() != null) {
+      return JunosApplicationSet.JUNOS_MS_RPC_MSEXCHANGE;
+    } else if (ctx.JUNOS_MS_RPC_WMIC() != null) {
+      return JunosApplicationSet.JUNOS_MS_RPC_WMIC;
+    } else if (ctx.JUNOS_ROUTING_INBOUND() != null) {
+      return JunosApplicationSet.JUNOS_ROUTING_INBOUND;
+    } else if (ctx.JUNOS_SUN_RPC() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC;
+    } else if (ctx.JUNOS_SUN_RPC_ANY() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_ANY;
+    } else if (ctx.JUNOS_SUN_RPC_MOUNTD() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_MOUNTD;
+    } else if (ctx.JUNOS_SUN_RPC_NFS() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_NFS;
+    } else if (ctx.JUNOS_SUN_RPC_NFS_ACCESS() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_NFS_ACCESS;
+    } else if (ctx.JUNOS_SUN_RPC_NLOCKMGR() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_NLOCKMGR;
+    } else if (ctx.JUNOS_SUN_RPC_PORTMAP() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_PORTMAP;
+    } else if (ctx.JUNOS_SUN_RPC_RQUOTAD() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_RQUOTAD;
+    } else if (ctx.JUNOS_SUN_RPC_RUSERD() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_RUSERD;
+    } else if (ctx.JUNOS_SUN_RPC_SADMIND() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_SADMIND;
+    } else if (ctx.JUNOS_SUN_RPC_SPRAYD() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_SPRAYD;
+    } else if (ctx.JUNOS_SUN_RPC_STATUS() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_STATUS;
+    } else if (ctx.JUNOS_SUN_RPC_WALLD() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_WALLD;
+    } else if (ctx.JUNOS_SUN_RPC_YPBIND() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_YPBIND;
+    } else if (ctx.JUNOS_SUN_RPC_YPSERV() != null) {
+      return JunosApplicationSet.JUNOS_SUN_RPC_YPSERV;
+    } else {
+      throw new BatfishException(
+          "missing application set mapping for application set: \"" + ctx.getText() + "\"");
     }
   }
 
@@ -4008,6 +4017,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         FwFromApplication from = new FwFromApplication(application);
         _currentFwTerm.getFromApplications().add(from);
       }
+    } else if (ctx.junos_application_set() != null) {
+      JunosApplicationSet applicationSet = toJunosApplicationSet(ctx.junos_application_set());
+
     } else {
       String name;
       int line;
