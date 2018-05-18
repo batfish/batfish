@@ -77,12 +77,7 @@ public final class Version {
 
   /** Returns string indicating the current build of Batfish and Z3. */
   public static String getCompleteVersionString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("Batfish version: ");
-    sb.append(getVersion());
-    sb.append("\nZ3 version: ");
-    sb.append(getZ3Version());
-    return sb.append("\n").toString();
+    return String.format("Batfish version: %s\nZ3 version: %s\n", getVersion(), getZ3Version());
   }
 
   /**
