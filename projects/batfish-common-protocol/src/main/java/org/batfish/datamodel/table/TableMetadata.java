@@ -36,16 +36,11 @@ public class TableMetadata {
 
     // check if there is a duplicate column name
     Set<String> duplicateCheckSet = new HashSet<>();
-    String duplicateName = null;
     for (ColumnMetadata cm : _columnMetadata) {
       if (!duplicateCheckSet.add(cm.getName())) {
-        duplicateName = cm.getName();
-        break;
+        throw new IllegalArgumentException(
+            "Cannot have two columns with the same name '" + cm.getName() + "'");
       }
-    }
-    if (duplicateName != null) {
-      throw new IllegalArgumentException(
-          "Cannot have two columns with the same name '" + duplicateName + "'");
     }
   }
 
@@ -68,7 +63,7 @@ public class TableMetadata {
   }
 
   @JsonProperty(PROP_DISPLAY_HINTS)
-  public DisplayHints getTextDesc() {
+  public DisplayHints getDisplayHints() {
     return _displayHints;
   }
 }
