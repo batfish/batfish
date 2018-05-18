@@ -2248,30 +2248,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // mark references to authentication key chain that may not appear in data model
     markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
 
-    markStructure(
+    markAbstractStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
-        ImmutableList.of(_applications, _applicationSets));
-    markStructure(
+        ImmutableList.of(JuniperStructureType.APPLICATION, JuniperStructureType.APPLICATION_SET));
+    markAbstractStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
-        ImmutableList.of(_applications, _applicationSets));
-    markStructure(
+        ImmutableList.of(JuniperStructureType.APPLICATION, JuniperStructureType.APPLICATION_SET));
+    markConcreteStructure(
         JuniperStructureType.APPLICATION_SET,
-        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET,
-        _applicationSets);
-    markStructure(
-        JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
+        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET);
+    markConcreteStructure(
+        JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER);
+
     markStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN, _vlanNameToVlan);
 
     // record defined structures
-    recordStructure(_applications, JuniperStructureType.APPLICATION);
-    recordStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
     recordAuthenticationKeyChains();
     recordBgpGroups();
     recordDhcpRelayServerGroups();
     recordPolicyStatements();
-    recordFirewallFilters();
     recordIkeProposals();
     recordIkePolicies();
     recordIkeGateways();

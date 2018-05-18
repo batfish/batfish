@@ -1742,6 +1742,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentFilter = new FirewallFilter(name, _currentFirewallFamily, definitionLine);
       filters.put(name, _currentFilter);
     }
+    _configuration.defineStructure(JuniperStructureType.FIREWALL_FILTER, name, definitionLine);
   }
 
   @Override
@@ -3167,10 +3168,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         _currentInterface.setOutgoingFilter(name);
         _currentInterface.setOutgoingFilterLine(line);
       }
-    } else {
-      _configuration.referenceStructure(
-          JuniperStructureType.FIREWALL_FILTER, name, JuniperStructureUsage.INTERFACE_FILTER, line);
     }
+    _configuration.referenceStructure(
+        JuniperStructureType.FIREWALL_FILTER, name, JuniperStructureUsage.INTERFACE_FILTER, line);
   }
 
   @Override
