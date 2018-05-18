@@ -139,6 +139,38 @@ public class Client extends AbstractClient implements IClient {
 
   private static final String STARTUP_FILE = ".batfishclientrc";
 
+  public static void fillTemplate(
+      JSONObject questionJson, Map<String, JsonNode> parameters, String questionName) {
+    JSONObject instanceJson;
+    try {
+      instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
+      instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
+    } catch (JSONException e) {
+      throw new BatfishException("Question is missing instance data", e);
+    }
+    String instanceDataStr = instanceJson.toString();
+    InstanceData instanceData;
+    try {
+      instanceData =
+          BatfishObjectMapper.mapper()
+              .readValue(instanceDataStr, new TypeReference<InstanceData>() {});
+    } catch (IOException e) {
+      throw new BatfishException("Invalid instance data (JSON)", e);
+    }
+    Map<String, Variable> variables = instanceData.getVariables();
+    validateAndSet(parameters, variables);
+    checkVariableState(variables);
+
+    String modifiedInstanceDataStr;
+    try {
+      modifiedInstanceDataStr = BatfishObjectMapper.writePrettyString(instanceData);
+      JSONObject modifiedInstanceData = new JSONObject(modifiedInstanceDataStr);
+      questionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
+    } catch (JSONException | JsonProcessingException e) {
+      throw new BatfishException("Could not process modified instance data", e);
+    }
+  }
+
   /**
    * Verify that every non-optional variable has value assigned to it.
    *
@@ -152,46 +184,6 @@ public class Client extends AbstractClient implements IClient {
       if (!variable.getOptional() && variable.getValue() == null) {
         throw new BatfishException(String.format("Missing parameter: %s", variableName));
       }
-    }
-  }
-
-  /**
-   * For each key in {@code parameters}, validate that its value satisfies the requirements
-   * specified by {@code variables} for that specific key. Set value to {@code variables} if
-   * validation passed.
-   *
-   * @throws BatfishException if the key in parameters does not exist in variable, or the values in
-   *     {@code parameters} do not match the requirements in {@code variables} for that specific
-   *     key.
-   */
-  static void validateAndSet(Map<String, JsonNode> parameters, Map<String, Variable> variables)
-      throws BatfishException {
-    for (Entry<String, JsonNode> e : parameters.entrySet()) {
-      String parameterName = e.getKey();
-      JsonNode value = e.getValue();
-      Variable variable = variables.get(parameterName);
-      if (variable == null) {
-        throw new BatfishException(
-            "No variable named: '" + parameterName + "' in supplied question template");
-      }
-      if (variable.getMinElements() != null) {
-        // Value is an array, check size and validate each elements in it
-        if (!value.isArray() || value.size() < variable.getMinElements()) {
-          throw new BatfishException(
-              String.format(
-                  "Invalid value for parameter %s: %s. "
-                      + "Expecting a JSON array of at least %d "
-                      + "elements",
-                  parameterName, value, variable.getMinElements()));
-        }
-        for (JsonNode node : value) {
-          validateNode(node, variable, parameterName);
-        }
-      } else {
-        validateNode(value, variable, parameterName);
-      }
-      // validation passed.
-      variable.setValue(value);
     }
   }
 
@@ -259,6 +251,46 @@ public class Client extends AbstractClient implements IClient {
               "Invalid %s at interior of %s",
               Variable.Type.JAVA_REGEX.getName(), Variable.Type.JSON_PATH_REGEX.getName()),
           e);
+    }
+  }
+
+  /**
+   * For each key in {@code parameters}, validate that its value satisfies the requirements
+   * specified by {@code variables} for that specific key. Set value to {@code variables} if
+   * validation passed.
+   *
+   * @throws BatfishException if the key in parameters does not exist in variable, or the values in
+   *     {@code parameters} do not match the requirements in {@code variables} for that specific
+   *     key.
+   */
+  static void validateAndSet(Map<String, JsonNode> parameters, Map<String, Variable> variables)
+      throws BatfishException {
+    for (Entry<String, JsonNode> e : parameters.entrySet()) {
+      String parameterName = e.getKey();
+      JsonNode value = e.getValue();
+      Variable variable = variables.get(parameterName);
+      if (variable == null) {
+        throw new BatfishException(
+            "No variable named: '" + parameterName + "' in supplied question template");
+      }
+      if (variable.getMinElements() != null) {
+        // Value is an array, check size and validate each elements in it
+        if (!value.isArray() || value.size() < variable.getMinElements()) {
+          throw new BatfishException(
+              String.format(
+                  "Invalid value for parameter %s: %s. "
+                      + "Expecting a JSON array of at least %d "
+                      + "elements",
+                  parameterName, value, variable.getMinElements()));
+        }
+        for (JsonNode node : value) {
+          validateNode(node, variable, parameterName);
+        }
+      } else {
+        validateNode(value, variable, parameterName);
+      }
+      // validation passed.
+      variable.setValue(value);
     }
   }
 
@@ -569,37 +601,10 @@ public class Client extends AbstractClient implements IClient {
       questionName = parameters.get("questionName").asText();
       parameters.remove("questionName");
     }
-    JSONObject instanceJson;
-    try {
-      instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
-      instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
-    } catch (JSONException e) {
-      throw new BatfishException("Question is missing instance data", e);
-    }
-    String instanceDataStr = instanceJson.toString();
-    InstanceData instanceData;
-    try {
-      instanceData =
-          BatfishObjectMapper.mapper()
-              .readValue(instanceDataStr, new TypeReference<InstanceData>() {});
-    } catch (IOException e) {
-      throw new BatfishException("Invalid instance data (JSON)", e);
-    }
-    Map<String, Variable> variables = instanceData.getVariables();
-    validateAndSet(parameters, variables);
-    checkVariableState(variables);
-
-    String modifiedInstanceDataStr;
-    try {
-      modifiedInstanceDataStr = BatfishObjectMapper.writePrettyString(instanceData);
-      JSONObject modifiedInstanceData = new JSONObject(modifiedInstanceDataStr);
-      questionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
-    } catch (JSONException | JsonProcessingException e) {
-      throw new BatfishException("Could not process modified instance data", e);
-    }
+    Client.fillTemplate(questionJson, parameters, questionName);
     String modifiedQuestionStr = questionJson.toString();
-    boolean questionJsonDifferential = false;
-    // check whether question is valid modulo instance data
+
+    boolean questionJsonDifferential;
     try {
       questionJsonDifferential =
           questionJson.has(BfConsts.PROP_DIFFERENTIAL)
@@ -2686,6 +2691,8 @@ public class Client extends AbstractClient implements IClient {
         return test(options, parameters);
       case UPLOAD_CUSTOM_OBJECT:
         return uploadCustomObject(options, parameters);
+      case VALIDATE_TEMPLATE:
+        return validateTemplate(words, outWriter, options, parameters);
 
       case EXIT:
       case QUIT:
@@ -3366,6 +3373,43 @@ public class Client extends AbstractClient implements IClient {
         throw new BatfishException(v + " is missing description");
       }
     }
+  }
+
+  private boolean validateTemplate(
+      String[] words,
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, Command.VALIDATE_TEMPLATE)) {
+      return false;
+    }
+
+    String questionTemplateName = parameters.get(0);
+    String paramsLine =
+        String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
+    Map<String, JsonNode> parsedParametes = parseParams(paramsLine);
+
+    String questionContentUnmodified = _bfq.get(questionTemplateName.toLowerCase());
+    if (questionContentUnmodified == null) {
+      throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
+    }
+    JSONObject questionJson;
+    try {
+      questionJson = new JSONObject(questionContentUnmodified);
+    } catch (JSONException e) {
+      throw new BatfishException("Question content is not valid JSON", e);
+    }
+
+    Client.fillTemplate(questionJson, parsedParametes, "qname");
+    Question parsedQuestion = Question.parseQuestion(questionJson.toString());
+
+    try {
+      logOutput(outWriter, BatfishObjectMapper.writePrettyString(parsedQuestion));
+    } catch (JsonProcessingException e) {
+      throw new BatfishException("Could not write filled template", e);
+    }
+
+    return true;
   }
 
   private boolean validCommandUsage(String[] words) {
