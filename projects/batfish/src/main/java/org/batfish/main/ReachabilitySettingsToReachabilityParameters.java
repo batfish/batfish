@@ -37,7 +37,7 @@ public class ReachabilitySettingsToReachabilityParameters {
     return ReachabilityParameters.builder()
         .setActions(settings.getActions())
         .setFinalNodesSpecifier(finalNodesSpecifier(settings))
-        .setForbiddenTransitNodesSpecifier(nodesSpecifier(settings.getNotFinalNodes()))
+        .setForbiddenTransitNodesSpecifier(nodesSpecifier(settings.getNonTransitNodes()))
         .setHeaderSpace(headerSpace(settings))
         .setMaxChunkSize(settings.getMaxChunkSize())
         .setRequiredTransitNodesSpecifier(nodesSpecifier(settings.getTransitNodes()))
