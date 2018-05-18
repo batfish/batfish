@@ -1397,6 +1397,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!methods.isEmpty()) {
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.linetype.getText();
+
+      // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
+      // rather than put so we only accept the first login list
       _currentAaaAuthenticationLoginList =
           login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
     }
