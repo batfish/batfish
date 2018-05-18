@@ -5,7 +5,6 @@ router ospf 1
   router-id 10.1.1.1
   passive-interface default
   vrf blah1
-    max-metric router-lsa external-lsa on-startup 86400 wait-for bgp 65601
     default-information originate route-map rm_ospf
     redistribute static route-map rm_ospf
     redistribute bgp 1234 route-map rm_ospf
