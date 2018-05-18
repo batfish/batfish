@@ -4613,9 +4613,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     for (Interface currentInterface : _currentInterfaces) {
       currentInterface.setRoutingPolicy(policyName);
       currentInterface.setRoutingPolicyLine(policyLine);
-      _configuration.referenceStructure(
-          ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, policyLine);
     }
+    _configuration.referenceStructure(
+        ROUTE_MAP, policyName, INTERFACE_POLICY_ROUTING_MAP, policyLine);
   }
 
   @Override
