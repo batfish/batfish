@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
@@ -122,15 +123,16 @@ public class AclReachability2Test {
     Multiset<Row> rows = answer.getInitialRows().getData();
     assertThat(rows.size(), equalTo(1));
     Row row = (Row) rows.toArray()[0];
-    assertThat((List<String>) row.get(COL_NODES, List.class), contains(equalTo(_c.getName())));
-    assertThat((List<String>) row.get(COL_NODES, List.class), hasSize(1));
+    assertThat(
+        row.get(COL_NODES, new TypeReference<List<String>>() {}), contains(equalTo(_c.getName())));
+    assertThat(row.get(COL_NODES, new TypeReference<List<String>>() {}), hasSize(1));
     assertThat(row.get(COL_ACL, String.class), equalTo(acl.getName()));
-    assertThat((List<String>) row.get(COL_LINES, List.class), hasSize(2));
+    assertThat(row.get(COL_LINES, new TypeReference<List<String>>() {}), hasSize(2));
     assertThat("Line 1 is blocked", row.get(COL_BLOCKED_LINE_NUM, Integer.class), equalTo(1));
-    assertThat((List<Integer>) row.get(COL_BLOCKING_LINE_NUMS, List.class), hasSize(1));
+    assertThat(row.get(COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}), hasSize(1));
     assertThat(
         "Line 0 is blocking",
-        (List<Integer>) row.get(COL_BLOCKING_LINE_NUMS, List.class),
+        row.get(COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}),
         contains(0));
     assertThat(row.get(COL_DIFF_ACTION, Boolean.class), equalTo(false));
 
@@ -138,15 +140,16 @@ public class AclReachability2Test {
     rows = specificAnswer.getInitialRows().getData();
     assertThat(rows.size(), equalTo(1));
     row = (Row) rows.toArray()[0];
-    assertThat((List<String>) row.get(COL_NODES, List.class), contains(equalTo(_c.getName())));
-    assertThat((List<String>) row.get(COL_NODES, List.class), hasSize(1));
+    assertThat(
+        row.get(COL_NODES, new TypeReference<List<String>>() {}), contains(equalTo(_c.getName())));
+    assertThat(row.get(COL_NODES, new TypeReference<List<String>>() {}), hasSize(1));
     assertThat(row.get(COL_ACL, String.class), equalTo(acl.getName()));
-    assertThat((List<String>) row.get(COL_LINES, List.class), hasSize(2));
+    assertThat(row.get(COL_LINES, new TypeReference<List<String>>() {}), hasSize(2));
     assertThat("Line 1 is blocked", row.get(COL_BLOCKED_LINE_NUM, Integer.class), equalTo(1));
-    assertThat((List<Integer>) row.get(COL_BLOCKING_LINE_NUMS, List.class), hasSize(1));
+    assertThat(row.get(COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}), hasSize(1));
     assertThat(
         "Line 0 is blocking",
-        (List<Integer>) row.get(COL_BLOCKING_LINE_NUMS, List.class),
+        row.get(COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}),
         contains(0));
     assertThat(row.get(COL_DIFF_ACTION, Boolean.class), equalTo(false));
   }
@@ -187,12 +190,13 @@ public class AclReachability2Test {
     Multiset<Row> rows = answer.getInitialRows().getData();
     assertThat(rows.size(), equalTo(1));
     Row row = (Row) rows.toArray()[0];
-    assertThat((List<String>) row.get(COL_NODES, List.class), contains(equalTo(_c.getName())));
-    assertThat((List<String>) row.get(COL_NODES, List.class), hasSize(1));
+    assertThat(
+        row.get(COL_NODES, new TypeReference<List<String>>() {}), contains(equalTo(_c.getName())));
+    assertThat(row.get(COL_NODES, new TypeReference<List<String>>() {}), hasSize(1));
     assertThat(row.get(COL_ACL, String.class), equalTo(aclName));
-    assertThat((List<String>) row.get(COL_LINES, List.class), hasSize(3));
+    assertThat(row.get(COL_LINES, new TypeReference<List<String>>() {}), hasSize(3));
     assertThat("Line 2 is blocked", row.get(COL_BLOCKED_LINE_NUM, Integer.class), equalTo(2));
-    assertThat((List<Integer>) row.get(COL_BLOCKING_LINE_NUMS, List.class), hasSize(0));
+    assertThat(row.get(COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}), hasSize(0));
     assertThat(row.get(COL_DIFF_ACTION, Boolean.class), equalTo(false));
     assertThat(
         row.get(COL_MESSAGE, String.class)
@@ -243,10 +247,12 @@ public class AclReachability2Test {
 
     // Check that one of the rows has the right nodes, ACL name, and lines
     Row firstRow = (Row) rows.toArray()[0];
-    assertThat((List<String>) firstRow.get(COL_NODES, List.class), contains(equalTo(_c.getName())));
-    assertThat((List<String>) firstRow.get(COL_NODES, List.class), hasSize(1));
+    assertThat(
+        firstRow.get(COL_NODES, new TypeReference<List<String>>() {}),
+        contains(equalTo(_c.getName())));
+    assertThat(firstRow.get(COL_NODES, new TypeReference<List<String>>() {}), hasSize(1));
     assertThat(firstRow.get(COL_ACL, String.class), equalTo(aclName));
-    assertThat((List<String>) firstRow.get(COL_LINES, List.class), hasSize(5));
+    assertThat(firstRow.get(COL_LINES, new TypeReference<List<String>>() {}), hasSize(5));
 
     // Ensure the blocked lines are lines 1, 2, and 3
     assertThat(
@@ -260,11 +266,13 @@ public class AclReachability2Test {
       int blockedLineNum = row.get(COL_BLOCKED_LINE_NUM, Integer.class);
       if (blockedLineNum == 1 || blockedLineNum == 3) {
         // Lines 1 and 3: Blocked by line 0 but not unmatchable
-        assertThat((List<Integer>) row.get(COL_BLOCKING_LINE_NUMS, List.class), contains(0));
+        assertThat(
+            row.get(COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}), contains(0));
         assertThat(row.get(COL_DIFF_ACTION, Boolean.class), equalTo(true));
       } else {
         // Line 2: Unmatchable
-        assertThat((List<Integer>) row.get(COL_BLOCKING_LINE_NUMS, List.class), hasSize(0));
+        assertThat(
+            row.get(COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}), hasSize(0));
         assertThat(
             row.get(COL_MESSAGE, String.class)
                 .contains("This line will never match any packet, independent of preceding lines."),

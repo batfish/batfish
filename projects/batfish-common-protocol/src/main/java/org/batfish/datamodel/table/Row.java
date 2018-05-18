@@ -83,7 +83,7 @@ public class Row implements Comparable<Row> {
     }
   }
 
-  public <T> T get(String columnName, TypeReference<?> valueTypeRef) {
+  public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException("Column '" + columnName + "' does not exist");
     }
