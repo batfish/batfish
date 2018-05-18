@@ -1,13 +1,18 @@
-package org.batfish.question.nodeproperties;
+package org.batfish.datamodel.questions;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 
 /**
@@ -24,11 +29,11 @@ import org.batfish.datamodel.answers.Schema;
 public class NodePropertySpecifier {
 
   @ParametersAreNonnullByDefault
-  static class PropertyDescriptor {
+  public static class PropertyDescriptor {
     @Nonnull Function<Configuration, Object> _getter;
     @Nonnull Schema _schema;
 
-    PropertyDescriptor(Function<Configuration, Object> getter, Schema schema) {
+    public PropertyDescriptor(Function<Configuration, Object> getter, Schema schema) {
       _getter = getter;
       _schema = schema;
     }
@@ -42,7 +47,7 @@ public class NodePropertySpecifier {
     }
   }
 
-  static Map<String, PropertyDescriptor> JAVA_MAP =
+  public static Map<String, PropertyDescriptor> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor>()
           .put(
               "as-path-access-lists",
@@ -154,6 +159,25 @@ public class NodePropertySpecifier {
       throw new IllegalArgumentException(
           "Invalid node property specification: '" + expression + "'");
     }
+  }
+
+  /**
+   * Returns a list of suggestions based on the query. The current implementation treats the query
+   * as a prefix of the property string.
+   *
+   * @param query The query to auto complete
+   * @return The list of suggestions
+   */
+  public static List<AutocompleteSuggestion> autoComplete(String query) {
+    String finalQuery = firstNonNull(query, "");
+    List<AutocompleteSuggestion> suggestions =
+        JAVA_MAP
+            .keySet()
+            .stream()
+            .filter(prop -> prop.contains(finalQuery.toLowerCase()))
+            .map(prop -> new AutocompleteSuggestion(prop, false))
+            .collect(Collectors.toList());
+    return suggestions;
   }
 
   @Override
