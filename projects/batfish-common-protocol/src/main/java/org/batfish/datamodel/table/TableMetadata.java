@@ -34,7 +34,7 @@ public class TableMetadata {
     _columnMetadata = ImmutableList.copyOf(firstNonNull(columnMetadata, new LinkedList<>()));
     _displayHints = displayHints;
 
-    // check if there is a duplicate column name or illegal column name
+    // check if there is a duplicate column name
     Set<String> duplicateCheckSet = new HashSet<>();
     for (ColumnMetadata cm : _columnMetadata) {
       if (!duplicateCheckSet.add(cm.getName())) {

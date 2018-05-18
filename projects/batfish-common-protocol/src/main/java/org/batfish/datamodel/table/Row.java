@@ -84,9 +84,14 @@ public class Row implements Comparable<Row> {
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
     return _data.get(columnName);
+  }
+
+  private String getMissingColumnErrorMessage(String columnName) {
+    return String.format(
+        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
   }
 
   /**
@@ -97,7 +102,7 @@ public class Row implements Comparable<Row> {
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
     if (_data.get(columnName) == null) {
       return null;
@@ -113,7 +118,7 @@ public class Row implements Comparable<Row> {
    */
   public <T> T get(String columnName, TypeReference<?> valueTypeRef) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
     if (_data.get(columnName) == null) {
       return null;
@@ -139,7 +144,7 @@ public class Row implements Comparable<Row> {
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
     if (_data.get(columnName) == null) {
       return null;
