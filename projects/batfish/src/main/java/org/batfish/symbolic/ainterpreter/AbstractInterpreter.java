@@ -1,4 +1,4 @@
-package org.batfish.symbolic.interpreter;
+package org.batfish.symbolic.ainterpreter;
 
 import java.util.ArrayDeque;
 import java.util.BitSet;
@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.SortedSet;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.common.plugin.IBatfish;
@@ -18,13 +22,13 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.answers.AIRoutesAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetwork;
@@ -74,13 +78,16 @@ public class AbstractInterpreter {
   private BDD _lenBits;
 
   // The source router bits that we will quantify away
-  private BDD _srcRouterBits;
+  private BDD _tempRouterBits;
 
   // Substitution of dst router bits for src router bits used to compute transitive closure
-  private BDDPairing _dstToSrcRouterSubstitution;
+  private BDDPairing _dstToTempRouterSubstitution;
+
+  // Substitution of dst router bits for src router bits used to compute transitive closure
+  private BDDPairing _srcToTempRouterSubstitution;
 
   /*
-   * Construct an abstract interpreter the answer a particular question.
+   * Construct an abstract ainterpreter the answer a particular question.
    * This could be done more in a fashion like Batfish, where we run
    * the computation once and then answer many questions.
    */
@@ -101,13 +108,17 @@ public class AbstractInterpreter {
     _aclIndexes = new FiniteIndexMap<>(acls);
 
     BDD[] srcRouterBits = _variables.getSrcRouter().getInteger().getBitvec();
+    BDD[] tempRouterBits = _variables.getRouterTemp().getInteger().getBitvec();
     BDD[] dstRouterBits = _variables.getDstRouter().getInteger().getBitvec();
-    _dstToSrcRouterSubstitution = BDDRouteFactory.factory.makePair();
 
-    _srcRouterBits = BDDRouteFactory.factory.one();
+    _dstToTempRouterSubstitution = BDDRouteFactory.factory.makePair();
+    _srcToTempRouterSubstitution = BDDRouteFactory.factory.makePair();
+
+    _tempRouterBits = BDDRouteFactory.factory.one();
     for (int i = 0; i < srcRouterBits.length; i++) {
-      _srcRouterBits = _srcRouterBits.and(srcRouterBits[i]);
-      _dstToSrcRouterSubstitution.set(dstRouterBits[i].var(), srcRouterBits[i].var());
+      _tempRouterBits = _tempRouterBits.and(tempRouterBits[i]);
+      _dstToTempRouterSubstitution.set(dstRouterBits[i].var(), tempRouterBits[i].var());
+      _srcToTempRouterSubstitution.set(srcRouterBits[i].var(), tempRouterBits[i].var());
     }
   }
 
@@ -414,70 +425,71 @@ public class AbstractInterpreter {
   }
 
   /*
+   * Evaluate a particular packet to check reachability to a router
+   */
+  /* private <T> boolean reachable(
+      IAbstractDomain<T> domain, Map<String, AbstractRib<T>> ribs, String router, Ip dstIp) {
+    BDD ip =
+        BDDUtils.firstBitsEqual(
+            BDDRouteFactory.factory, _variables.getPrefix().getBitvec(), dstIp, 32);
+
+    AbstractRib<T> rib = ribs.get(router);
+    BDD headerspace = toHeaderspace(domain.toBdd(rib.getMainRib()));
+
+    headerspace = headerspace.and(ip);
+  } */
+
+  /*
    * Computes the transitive closure of a fib
    */
-  private BDD transitiveClosure(BDD fib, BDD allFibs) {
-    BDD oldFib;
-    BDD newFib = fib;
+  private BDD transitiveClosure(BDD fibs) {
+    BDD fibsTemp = fibs.replace(_srcToTempRouterSubstitution);
+    Set<BDD> seenFibs = new HashSet<>();
+    BDD newFib = fibs;
     do {
-      oldFib = newFib;
+      seenFibs.add(newFib);
 
       // System.out.println("old: ");
       // System.out.println(_variables.dot(oldFib));
 
-      newFib = newFib.replace(_dstToSrcRouterSubstitution);
+      newFib = newFib.replace(_dstToTempRouterSubstitution);
 
       // System.out.println("replace dst with src: ");
       // System.out.println(_variables.dot(newFib));
 
-      newFib = newFib.and(allFibs);
+      newFib = newFib.and(fibsTemp);
 
       // System.out.println("step with (and): ");
       // System.out.println(_variables.dot(newFib));
 
-      newFib = newFib.exist(_srcRouterBits);
+      newFib = newFib.exist(_tempRouterBits);
 
       // System.out.println("remove src bits: ");
       // System.out.println(_variables.dot(newFib));
 
-    } while (!newFib.equals(oldFib));
+    } while (!seenFibs.contains(newFib));
     return newFib;
   }
 
-  private <T> Map<String, AbstractFib<T>> transitiveClosure(Map<String, AbstractFib<T>> fibs) {
-    Map<String, AbstractFib<T>> result = new HashMap<>();
-
-    // Create the BDD representing all fibs together
+  private <T> BDD transitiveClosure(Map<String, AbstractFib<T>> fibs) {
     BDD allFibs = BDDRouteFactory.factory.zero();
     for (Entry<String, AbstractFib<T>> e : fibs.entrySet()) {
       String router = e.getKey();
       AbstractFib<T> fib = e.getValue();
       BDD routerBdd = _variables.getSrcRouter().value(router);
       BDD annotatedFib = fib.getHeaderspace().and(routerBdd);
-      allFibs = allFibs.or(annotatedFib);
+      allFibs = allFibs.orWith(annotatedFib);
     }
-
-    // Compute transitive closure from each router
-    for (Entry<String, AbstractFib<T>> e : fibs.entrySet()) {
-      String router = e.getKey();
-      AbstractFib<T> fib = e.getValue();
-
-      System.out.println("Compute TC for: " + router);
-
-      BDD tc = transitiveClosure(fib.getHeaderspace(), allFibs);
-      AbstractFib<T> tcFib = new AbstractFib<>(fib.getRib(), tc);
-      result.put(router, tcFib);
-    }
-
-    return result;
+    return transitiveClosure(allFibs);
   }
 
   /*
    * Print a collection of routes in a BDD as representative examples
    * that can be understood by a human.
    */
-  private void debug(BDD routes, boolean isFib) {
-    List assignments = routes.allsat();
+  private SortedSet<RibEntry> toRoutes(String hostname, BDD rib) {
+    SortedSet<RibEntry> routes = new TreeSet<>();
+    List assignments = rib.allsat();
     for (Object o : assignments) {
       long pfx = 0;
       int proto = 0;
@@ -509,17 +521,15 @@ public class AbstractInterpreter {
         }
       }
 
-      if (isFib) {
-        Ip ip = new Ip(pfx);
-        System.out.println("  " + ip);
-      } else {
-        Protocol prot = BDDRouteFactory.allProtos.get(proto);
-        String r = _routeFactory.getRouter(router);
-        Ip ip = new Ip(pfx);
-        Prefix p = new Prefix(ip, len);
-        System.out.println("  " + prot.name() + ", " + p + " --> " + r);
-      }
+      String r = _routeFactory.getRouter(router);
+      Protocol prot = BDDRouteFactory.allProtos.get(proto);
+      Ip ip = new Ip(pfx);
+      Prefix p = new Prefix(ip, len);
+      RibEntry entry = new RibEntry(hostname, p, Protocol.toRoutingProtocol(prot), r);
+      routes.add(entry);
     }
+
+    return routes;
   }
 
   /*
@@ -540,23 +550,30 @@ public class AbstractInterpreter {
   /*
    * Compute an underapproximation of all-pairs reachability
    */
-  public AnswerElement interpret() {
-    long t = System.currentTimeMillis();
-    System.out.println("Time to build BDDs: " + (System.currentTimeMillis() - t));
+  public AnswerElement routes() {
     initializeQuantificationVariables();
     ReachabilityDomain domain = new ReachabilityDomain(_variables, _communityAndProtocolBits);
     Map<String, AbstractFib<BDD>> reachable = computeFixedPoint(domain);
 
-    reachable = transitiveClosure(reachable);
+    // long t = System.currentTimeMillis();
+    // BDD fibs = transitiveClosure(reachable);
+    // System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
+
+    SortedSet<RibEntry> routes = new TreeSet<>();
+    SortedMap<String, SortedSet<RibEntry>> routesByHostname = new TreeMap<>();
 
     for (Entry<String, AbstractFib<BDD>> e : reachable.entrySet()) {
+      String router = e.getKey();
       AbstractFib<BDD> fib = e.getValue();
-      System.out.println("Router " + e.getKey() + " RIB:");
-      debug(fib.getRib().getMainRib(), false);
-      // System.out.println("Router " + e.getKey() + " FIB:");
-      // System.out.println(_variables.dot(fib.getHeaderspace()));
-      // debug(toHeaderspace(rib.getMainRib()), true);
+      BDD rib = fib.getRib().getMainRib();
+      SortedSet<RibEntry> entries = toRoutes(router, rib);
+      routesByHostname.put(router, entries);
+      routes.addAll(entries);
     }
-    return new StringAnswerElement("Done");
+
+    AIRoutesAnswerElement answer = new AIRoutesAnswerElement();
+    answer.setRoutes(routes);
+    answer.setRoutesByHostname(routesByHostname);
+    return answer;
   }
 }

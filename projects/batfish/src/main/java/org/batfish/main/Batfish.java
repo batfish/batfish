@@ -177,7 +177,7 @@ import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
-import org.batfish.symbolic.interpreter.AbstractInterpreter;
+import org.batfish.symbolic.ainterpreter.AbstractInterpreter;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -653,7 +653,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement aiReachability(HeaderLocationQuestion q) {
     AbstractInterpreter i = new AbstractInterpreter(this, q);
-    return i.interpret();
+    return i.routes();
   }
 
   @Override

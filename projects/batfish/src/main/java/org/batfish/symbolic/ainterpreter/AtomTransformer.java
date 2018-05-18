@@ -1,4 +1,4 @@
-package org.batfish.symbolic.interpreter;
+package org.batfish.symbolic.ainterpreter;
 
 import java.util.function.Function;
 import net.sf.javabdd.BDD;

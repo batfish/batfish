@@ -1,4 +1,4 @@
-package org.batfish.symbolic.interpreter;
+package org.batfish.symbolic.ainterpreter;
 
 import java.util.BitSet;
 import java.util.List;

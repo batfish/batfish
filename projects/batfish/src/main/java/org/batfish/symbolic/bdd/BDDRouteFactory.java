@@ -170,6 +170,8 @@ public class BDDRouteFactory {
 
     private BDDFiniteDomain<String> _srcRouter;
 
+    private BDDFiniteDomain<String> _routerTemp;
+
     private final BDDInteger _prefix;
 
     private final BDDInteger _prefixLength;
@@ -186,7 +188,7 @@ public class BDDRouteFactory {
                   + 6
                   + _allCommunities.size()
                   + _allLocalPrefs.size()
-                  + 2 * _allRouters.size()
+                  + 3 * _allRouters.size()
                   + allProtos.size()
                   + 4);
       if (numVars < numNeeded) {
@@ -290,6 +292,10 @@ public class BDDRouteFactory {
         _srcRouter = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
         addBitNames("srcRouter", _srcRouter.numBits(), idx, false);
         idx += _srcRouter.numBits();
+
+        _routerTemp = new BDDFiniteDomain<>(factory, new ArrayList<>(_allRouters), idx);
+        addBitNames("tempRouter", _routerTemp.numBits(), idx, false);
+        idx += _routerTemp.numBits();
       }
     }
 
@@ -335,6 +341,7 @@ public class BDDRouteFactory {
       if (_config.getKeepRouters()) {
         _dstRouter = new BDDFiniteDomain<>(other._dstRouter);
         _srcRouter = new BDDFiniteDomain<>(other._srcRouter);
+        _routerTemp = new BDDFiniteDomain<>(other._routerTemp);
       }
       _bitNames = other._bitNames;
     }
@@ -486,6 +493,10 @@ public class BDDRouteFactory {
 
     public BDDFiniteDomain<String> getSrcRouter() {
       return _srcRouter;
+    }
+
+    public BDDFiniteDomain<String> getRouterTemp() {
+      return _routerTemp;
     }
 
     public void setDstRouter(BDDFiniteDomain<String> dstRouter) {
