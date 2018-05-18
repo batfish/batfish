@@ -70,8 +70,8 @@ public final class Version {
   public static String getZ3Version() {
     try {
       return com.microsoft.z3.Version.getString();
-    } catch (Exception | java.lang.UnsatisfiedLinkError e) {
-      return UNKNOWN_VERSION;
+    } catch (Throwable e) {
+      return "unknown, unable to load library";
     }
   }
 
