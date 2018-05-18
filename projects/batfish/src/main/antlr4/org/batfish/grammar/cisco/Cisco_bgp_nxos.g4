@@ -19,6 +19,7 @@ router_bgp_nxos_toplevel
     | rbnx_fast_external_fallover
     | rbnx_flush_routes
     | rbnx_isolate
+    | rbnx_no_enforce_first_as
     | rbnx_proc_vrf_common
     | rbnx_shutdown
     | rbnx_template_peer
@@ -607,6 +608,11 @@ rbnx_n_transport
 rbnx_n_update_source
 :
     UPDATE_SOURCE interface_name NEWLINE
+;
+
+rbnx_no_enforce_first_as
+:
+    NO ENFORCE_FIRST_AS NEWLINE
 ;
 
 rbnx_reconnect_interval

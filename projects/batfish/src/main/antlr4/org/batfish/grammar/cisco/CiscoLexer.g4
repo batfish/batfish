@@ -2136,6 +2136,11 @@ CONTACT_NAME
    'contact-name' -> pushMode ( M_Description )
 ;
 
+CONTENT_TYPE
+:
+   'content-type'
+;
+
 CONTEXT
 :
    'context'
@@ -6788,6 +6793,11 @@ MIRROR
    'mirror'
 ;
 
+MISMATCH
+:
+   'mismatch'
+;
+
 MISSING_AS_WORST
 :
    'missing-as-worst'
@@ -9171,6 +9181,11 @@ REPLY_TO
 REOPTIMIZE
 :
    'reoptimize'
+;
+
+REQ_RESP
+:
+   'req-resp'
 ;
 
 REQ_TRANS_POLICY

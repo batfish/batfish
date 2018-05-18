@@ -282,6 +282,8 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_localContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authenticationContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_asaContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_methodContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_privilege_modeContext;
@@ -626,6 +628,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_remove_private_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_n_update_sourceContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_neighborContext;
+import org.batfish.grammar.cisco.CiscoParser.Rbnx_no_enforce_first_asContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_router_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peerContext;
 import org.batfish.grammar.cisco.CiscoParser.Rbnx_template_peer_policyContext;
@@ -1383,6 +1386,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterAaa_authentication_asa(Aaa_authentication_asaContext ctx) {
+    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
+      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
+    }
+    ArrayList<String> methods = new ArrayList<>();
+    if (ctx.aaa_authentication_asa_console().group != null) {
+      methods.add(ctx.aaa_authentication_asa_console().group.getText());
+    }
+    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
+      methods.add(ctx.aaa_authentication_asa_console().LOCAL_ASA().getText());
+    }
+    if (!methods.isEmpty()) {
+      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
+      String name = ctx.linetype.getText();
+
+      // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
+      // rather than put so we only accept the first login list
+      _currentAaaAuthenticationLoginList =
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
+    }
+  }
+
+  @Override
   public void enterAaa_authentication_login_list(Aaa_authentication_login_listContext ctx) {
     AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
     String name;
@@ -1393,8 +1419,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unsupported mode");
     }
+    List<String> methods =
+        ctx.aaa_authentication_list_method()
+            .stream()
+            .map(Aaa_authentication_list_methodContext::getText)
+            .collect(ImmutableList.toImmutableList());
     _currentAaaAuthenticationLoginList =
-        login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+        login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
   }
 
   @Override
@@ -2012,7 +2043,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip ip = toIp(ctx.ip);
       _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
       if (_currentIpPeerGroup == null) {
-        if (create) {
+        if (create || _format == ARISTA) {
           proc.addIpPeerGroup(ip);
           _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
           pushPeer(_currentIpPeerGroup);
@@ -2028,7 +2059,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
       if (pg6 == null) {
-        if (create) {
+        if (create || _format == ARISTA) {
           proc.addIpv6PeerGroup(ip6);
           pg6 = proc.getIpv6PeerGroups().get(ip6);
           pushPeer(pg6);
@@ -2046,7 +2077,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int definitionLine = ctx.peergroup.getLine();
       _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
       if (_currentNamedPeerGroup == null) {
-        if (create || _configuration.getVendor() == ARISTA) {
+        if (create || _format == ARISTA) {
           proc.addNamedPeerGroup(name, definitionLine);
           _currentNamedPeerGroup = proc.getNamedPeerGroups().get(name);
         } else {
@@ -2706,6 +2737,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentBgpNxVrfNeighbor.setUpdateSource(name);
     _configuration.referenceStructure(
         INTERFACE, name, BGP_UPDATE_SOURCE_INTERFACE, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitRbnx_no_enforce_first_as(Rbnx_no_enforce_first_asContext ctx) {
+    _configuration.getNxBgpGlobalConfiguration().setEnforceFirstAs(false);
   }
 
   @Override
@@ -3720,7 +3756,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCm_iosi_match(Cm_iosi_matchContext ctx) {
-    _currentInspectClassMap.getMatches().add(toInspectClassMapMatch(ctx));
+    InspectClassMapMatch match = toInspectClassMapMatch(ctx);
+    if (match != null) {
+      _currentInspectClassMap.getMatches().add(match);
+    }
   }
 
   private InspectClassMapMatch toInspectClassMapMatch(Cm_iosi_matchContext ctx) {
@@ -3734,7 +3773,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new InspectClassMapMatchProtocol(
           toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
     } else {
-      throw convError(InspectClassMapMatch.class, ctx);
+      _w.redFlag("Class-map match unsupported " + getFullText(ctx));
+      return null;
     }
   }
 

@@ -109,6 +109,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offsetCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_fragment_offset_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_icmp_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_is_fragmentContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_lengthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_packet_length_exceptContext;
@@ -181,6 +182,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
@@ -1185,13 +1187,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static int toIcmpCode(Icmp_codeContext ctx) {
+  @Nullable
+  private static Integer toIcmpCode(Icmp_codeContext ctx, Warnings w) {
     if (ctx.FRAGMENTATION_NEEDED() != null) {
       return IcmpCode.PACKET_TOO_BIG;
     } else if (ctx.HOST_UNREACHABLE() != null) {
       return IcmpCode.DESTINATION_HOST_UNREACHABLE;
+    } else if (ctx.TTL_EQ_ZERO_DURING_TRANSIT() != null) {
+      return IcmpCode.TTL_EQ_ZERO_DURING_TRANSIT;
     } else {
-      throw new BatfishException("Missing mapping for icmp-code: '" + ctx.getText() + "'");
+      w.redFlag(String.format("Missing mapping for icmp-code: '%s'", ctx.getText()));
+      return null;
     }
   }
 
@@ -1247,6 +1253,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static int toInt(Token token) {
     return Integer.parseInt(token.getText());
+  }
+
+  private static long toLong(Token token) {
+    return Long.parseLong(token.getText());
   }
 
   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
@@ -2814,17 +2824,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       // TODO: support icmpv6
       return;
     }
-    SubRange icmpCodeRange;
+    SubRange icmpCodeRange = null;
     if (ctx.subrange() != null) {
       icmpCodeRange = toSubRange(ctx.subrange());
     } else if (ctx.icmp_code() != null) {
-      int icmpCode = toIcmpCode(ctx.icmp_code());
-      icmpCodeRange = new SubRange(icmpCode, icmpCode);
+      Integer icmpCode = toIcmpCode(ctx.icmp_code(), _w);
+      if (icmpCode != null) {
+        icmpCodeRange = new SubRange(icmpCode, icmpCode);
+      }
     } else {
-      throw new BatfishException("Invalid icmp-code");
+      _w.redFlag(String.format("Invalid icmp-code: '%s'", ctx.getText()));
     }
-    FwFrom from = new FwFromIcmpCode(icmpCodeRange);
-    _currentFwTerm.getFroms().add(from);
+    if (icmpCodeRange != null) {
+      FwFrom from = new FwFromIcmpCode(icmpCodeRange);
+      _currentFwTerm.getFroms().add(from);
+    }
   }
 
   @Override
@@ -2843,6 +2857,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       throw new BatfishException("Invalid icmp-type");
     }
     FwFrom from = new FwFromIcmpType(icmpTypeRange);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitFftf_ip_protocol(Fftf_ip_protocolContext ctx) {
+    IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
+    FwFrom from = new FwFromProtocol(protocol);
     _currentFwTerm.getFroms().add(from);
   }
 
@@ -3297,6 +3318,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _currentRoutingInstance.getOspfExportPolicies().put(name, line);
+  }
+
+  @Override
+  public void exitO_reference_bandwidth(O_reference_bandwidthContext ctx) {
+    long base = toLong(ctx.base);
+    long referenceBandwidth;
+    if (ctx.K() != null) {
+      referenceBandwidth = base * 1000L;
+    } else if (ctx.M() != null) {
+      referenceBandwidth = base * 1000000L;
+    } else if (ctx.G() != null) {
+      referenceBandwidth = base * 1000000000L;
+    } else {
+      referenceBandwidth = base;
+    }
+    _currentRoutingInstance.setOspfReferenceBandwidth((double) referenceBandwidth);
   }
 
   @Override

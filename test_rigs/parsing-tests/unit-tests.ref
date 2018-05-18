@@ -13303,7 +13303,7 @@
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_authentication",
             "        AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
-            "        (aaa_authentication_http",
+            "        (aaa_authentication_asa",
             "          HTTP:'http'  <== mode:M_Authentication",
             "          (aaa_authentication_asa_console",
             "            CONSOLE:'console'  <== mode:DEFAULT_MODE",
@@ -13486,7 +13486,7 @@
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_authentication",
             "        AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
-            "        (aaa_authentication_telnet",
+            "        (aaa_authentication_asa",
             "          TELNET:'telnet'  <== mode:M_Authentication",
             "          (aaa_authentication_asa_console",
             "            CONSOLE:'console'  <== mode:DEFAULT_MODE",
@@ -29231,6 +29231,11 @@
             "            HELLO:'hello'  <== mode:DEFAULT_MODE",
             "            SIZE:'size'  <== mode:DEFAULT_MODE",
             "            SMALL:'small'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (ro_common",
+            "        (ro_null",
+            "          ISPF:'ispf'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (ro_common",
             "        (ro_null",
@@ -54546,7 +54551,7 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                53
+                54
               ]
             }
           }

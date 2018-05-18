@@ -6,13 +6,19 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Exclusion;
 
 /**
@@ -51,12 +57,41 @@ public class Row implements Comparable<Row> {
     }
   }
 
+  private <T> T convertType(JsonNode jsonNode, Class<T> valueType) {
+    try {
+      return BatfishObjectMapper.mapper().treeToValue(jsonNode, valueType);
+    } catch (JsonProcessingException e) {
+      throw new BatfishException(
+          String.format(
+              "Could not recover object of type %s from json %s", valueType.getName(), jsonNode),
+          e);
+    }
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == null || !(o instanceof Row)) {
       return false;
     }
     return _data.equals(((Row) o)._data);
+  }
+
+  /**
+   * Gets the (raw) Json representation of the object stored in the row
+   *
+   * @param columnName The column to fetch
+   * @return The {@link JsonNode} object that represents the stored object
+   */
+  public JsonNode get(String columnName) {
+    if (!_data.has(columnName)) {
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+    }
+    return _data.get(columnName);
+  }
+
+  private String getMissingColumnErrorMessage(String columnName) {
+    return String.format(
+        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
   }
 
   /**
@@ -67,25 +102,23 @@ public class Row implements Comparable<Row> {
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
     if (_data.get(columnName) == null) {
       return null;
     }
-    try {
-      return BatfishObjectMapper.mapper().treeToValue(_data.get(columnName), valueType);
-    } catch (JsonProcessingException e) {
-      throw new BatfishException(
-          String.format(
-              "Could not recover object of type %s from column %s",
-              valueType.getName(), columnName),
-          e);
-    }
+    return convertType(_data.get(columnName), valueType);
   }
 
+  /**
+   * Gets the value of specified column name
+   *
+   * @param columnName The column to fetch
+   * @return The result
+   */
   public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
     if (_data.get(columnName) == null) {
       return null;
@@ -104,12 +137,37 @@ public class Row implements Comparable<Row> {
   }
 
   /**
+   * Gets the value of specified column
+   *
+   * @param columnName The column to fetch
+   * @return The result
+   */
+  public Object get(String columnName, Schema columnSchema) {
+    if (!_data.has(columnName)) {
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+    }
+    if (_data.get(columnName) == null) {
+      return null;
+    }
+    if (columnSchema.isList()) {
+      List<JsonNode> list = get(columnName, new TypeReference<List<JsonNode>>() {});
+      return list.stream()
+          .map(in -> convertType(in, columnSchema.getBaseType()))
+          .collect(Collectors.toList());
+    } else {
+      return convertType(_data.get(columnName), columnSchema.getBaseType());
+    }
+  }
+
+  /**
    * Fetch the names of the columns in this Row
    *
-   * @return An Iterator over the column names
+   * @return The {@link Set} of names
    */
-  public Iterator<String> getColumnNames() {
-    return _data.fieldNames();
+  public Set<String> getColumnNames() {
+    HashSet<String> columns = new HashSet<>();
+    _data.fieldNames().forEachRemaining(column -> columns.add(column));
+    return columns;
   }
 
   @JsonValue
@@ -118,35 +176,35 @@ public class Row implements Comparable<Row> {
   }
 
   /**
-   * Returns string-concatenation of the values in all columns declared as key in the metadata.
+   * Returns the list of values in all columns declared as key in the metadata.
    *
-   * @param metadata The metadata to consult when judging if the column is a key
-   * @return The concatenated string
+   * @param metadata Provides information on which columns are key and their {@link Schema}
+   * @return The list
    */
-  public String getKey(TableMetadata metadata) {
-    StringBuilder key = new StringBuilder();
+  public List<Object> getKey(TableMetadata metadata) {
+    List<Object> keyList = new LinkedList<>();
     for (ColumnMetadata column : metadata.getColumnMetadata()) {
       if (column.getIsKey()) {
-        key.append("[" + _data.get(column.getName()).toString() + "]");
+        keyList.add(get(column.getName(), column.getSchema()));
       }
     }
-    return key.toString();
+    return keyList;
   }
 
   /**
-   * Returns string-concatenation of the values in all columns declared as value in the metadata.
+   * Returns the list of values in all columns declared as value in the metadata.
    *
-   * @param metadata The metadata to consult when judging if the column is a value
-   * @return The concatenated string
+   * @param metadata Provides information on which columns are key and their {@link Schema}
+   * @return The list
    */
-  public String getValue(TableMetadata metadata) {
-    StringBuilder value = new StringBuilder();
+  public List<Object> getValue(TableMetadata metadata) {
+    List<Object> valueList = new LinkedList<>();
     for (ColumnMetadata column : metadata.getColumnMetadata()) {
       if (column.getIsValue()) {
-        value.append("[" + _data.get(column.getName()).toString() + "]");
+        valueList.add(get(column.getName(), column.getSchema()));
       }
     }
-    return value.toString();
+    return valueList;
   }
 
   @Override
@@ -174,6 +232,17 @@ public class Row implements Comparable<Row> {
    */
   public Row put(String columnName, Object value) {
     _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
+    return this;
+  }
+
+  /**
+   * Removes the specified column from this row
+   *
+   * @param columnName The column to remove
+   * @return The Row object itself (to aid chaining)
+   */
+  public Row remove(String columnName) {
+    _data.remove(columnName);
     return this;
   }
 }

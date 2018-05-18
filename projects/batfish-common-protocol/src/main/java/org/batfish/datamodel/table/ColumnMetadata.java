@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.answers.Schema;
 
@@ -13,6 +14,9 @@ public class ColumnMetadata {
   private static final String PROP_IS_VALUE = "isValue";
   private static final String PROP_NAME = "name";
   private static final String PROP_SCHEMA = "schema";
+
+  // cannot start with digits and only contain \w ( i.e., [a-zA-Z_0-9])
+  private static final Pattern COLUMN_NAME_PATTERN = Pattern.compile("[a-zA-Z_]\\w*");
 
   @Nonnull private String _description;
   private boolean _isKey;
@@ -40,11 +44,21 @@ public class ColumnMetadata {
     if (schema == null) {
       throw new IllegalArgumentException("'schema' cannot be null for ColumnMetadata");
     }
+    if (!isLegalColumnName(name)) {
+      throw new IllegalArgumentException(
+          String.format(
+              "Illegal column name '%s'. Column names should match '%s",
+              name, COLUMN_NAME_PATTERN.toString()));
+    }
     _name = name;
     _schema = schema;
     _description = description;
     _isKey = firstNonNull(isKey, true);
     _isValue = firstNonNull(isValue, true);
+  }
+
+  public static boolean isLegalColumnName(String name) {
+    return COLUMN_NAME_PATTERN.matcher(name).matches();
   }
 
   @JsonProperty(PROP_DESCRIPTION)

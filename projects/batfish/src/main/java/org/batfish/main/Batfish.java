@@ -4171,22 +4171,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
     Set<ForwardingAction> actions = reachabilitySettings.getActions();
+    Snapshot snapshot = getSnapshot();
     boolean useCompression = reachabilitySettings.getUseCompression();
 
-    // specialized compression
-    /*
-    CompressDataPlaneResult compressionResult =
-        useCompression ? computeCompressedDataPlane(headerSpace) : null;
-    Map<String, Configuration> configurations =
-        useCompression ? compressionResult._compressedConfigs : loadConfigurations();
-    DataPlane dataPlane = useCompression ? compressionResult._compressedDataPlane : loadDataPlane();
-    */
+    boolean useSpecializedCompression = false;
 
-    // general compression
-    Snapshot snapshot = getSnapshot();
+    CompressDataPlaneResult compressionResult =
+        useCompression && useSpecializedCompression
+            ? computeCompressedDataPlane(reachabilitySettings.getHeaderSpace())
+            : null;
+
     Map<String, Configuration> configurations =
-        useCompression ? loadCompressedConfigurations(snapshot) : loadConfigurations(snapshot);
-    DataPlane dataPlane = loadDataPlane(useCompression);
+        useCompression && useSpecializedCompression
+            ? compressionResult._compressedConfigs
+            : useCompression
+                ? loadCompressedConfigurations(snapshot)
+                : loadConfigurations(snapshot);
+
+    DataPlane dataPlane =
+        useCompression && useSpecializedCompression
+            ? compressionResult._compressedDataPlane
+            : loadDataPlane(useCompression);
 
     if (configurations == null) {
       throw new BatfishException("error loading configurations");
