@@ -662,7 +662,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return i.routes(ns);
   }
 
-
   @Override
   public AnswerElement answerAclReachability(
       String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {

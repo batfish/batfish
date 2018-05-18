@@ -55,21 +55,21 @@ public class RibEntry implements Comparable<RibEntry> {
   @Override
   public String toString() {
     String route;
-    switch(_protocol) {
-    case OSPF:
-      route = "OspfRoute";
-      break;
-    case BGP:
-      route = "BgpRoute";
-      break;
-    case STATIC:
-      route = "StaticRoute";
-      break;
-    case CONNECTED:
-      route = "ConnectedRoute";
-      break;
-    default:
-      throw new BatfishException("Unsupported protocol");
+    switch (_protocol) {
+      case OSPF:
+        route = "OspfRoute";
+        break;
+      case BGP:
+        route = "BgpRoute";
+        break;
+      case STATIC:
+        route = "StaticRoute";
+        break;
+      case CONNECTED:
+        route = "ConnectedRoute";
+        break;
+      default:
+        throw new BatfishException("Unsupported protocol");
     }
     return route + "<" + _prefix + "> learned via " + _fromHostname;
   }

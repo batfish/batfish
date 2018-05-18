@@ -74,7 +74,6 @@ import org.batfish.symbolic.TransferResult;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 import org.batfish.symbolic.utils.PrefixUtils;
 
-
 class TransferBuilder {
 
   private BDDNetwork _network;
