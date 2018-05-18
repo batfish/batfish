@@ -570,9 +570,10 @@ public class AbstractInterpreter {
       String router = e.getKey();
       AbstractFib<BDD> fib = e.getValue();
       BDD rib = fib.getRib().getMainRib();
+
       SortedSet<RibEntry> entries = toRoutes(router, rib);
-      routesByHostname.put(router, entries);
-      routes.addAll(entries);
+      // routesByHostname.put(router, entries);
+      // routes.addAll(entries);
     }
 
     AIRoutesAnswerElement answer = new AIRoutesAnswerElement();

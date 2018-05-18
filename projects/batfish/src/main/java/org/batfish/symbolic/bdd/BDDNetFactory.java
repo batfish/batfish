@@ -120,9 +120,27 @@ public class BDDNetFactory {
     allProtos.add(Protocol.OSPF);
     allProtos.add(Protocol.BGP);
 
-    factory = JFactory.init(100000, 10000);
-    // factory.disableReorder();
-    factory.setCacheRatio(64);
+    int numNodes;
+    int cacheSize;
+    int numRouters = g.getRouters().size();
+    if (numRouters < 100) {
+      numNodes = 10000;
+      cacheSize = 1000;
+    } else if (numRouters < 200) {
+      numNodes = 100000;
+      cacheSize = 10000;
+    } else if (numRouters < 400) {
+      numNodes = 500000;
+      cacheSize = 20000;
+    } else {
+      numNodes = 1000000;
+      cacheSize = 30000;
+    }
+
+    factory = JFactory.init(numNodes, cacheSize);
+    factory.disableReorder();
+    factory.setCacheRatio(32);
+    // factory.setIncreaseFactor(4);
     /*
     try {
       // Disables printing
@@ -136,7 +154,6 @@ public class BDDNetFactory {
     }
     */
     _pairing = factory.makePair();
-
     _config = config;
     _allCommunities = g.getAllCommunities();
     _allRouters = new ArrayList<>(g.getRouters());
@@ -185,14 +202,14 @@ public class BDDNetFactory {
     _indexIpProto = 0;
     _indexRoutingProtocol = _indexIpProto + numIpProto;
     _indexRoutingProtocolTemp = _indexRoutingProtocol + (numProtocol / 2);
-    _indexDstIp = _indexRoutingProtocolTemp + (numProtocol / 2);
+    _indexPrefixLen = _indexRoutingProtocolTemp + (numProtocol / 2);
+    _indexDstIp = _indexPrefixLen + numPrefixLen;
     _indexSrcIp = _indexDstIp + numDstIp;
     _indexDstPort = _indexSrcIp + numSrcIp;
     _indexSrcPort = _indexDstPort + numDstPort;
     _indexIcmpCode = _indexSrcPort + numSrcPort;
     _indexIcmpType = _indexIcmpCode + numIcmpCode;
     _indexTcpFlags = _indexIcmpType + numIcmpType;
-
     _indexMetric = _indexTcpFlags + numTcpFlags;
     _indexMetricTemp = _indexMetric + (numMetric / 2);
     _indexOspfMetric = _indexMetricTemp + (numMetric / 2);
@@ -203,8 +220,7 @@ public class BDDNetFactory {
     _indexAdminDistTemp = _indexAdminDist + (numAd / 2);
     _indexLocalPref = _indexAdminDistTemp + (numAd / 2);
     _indexLocalPrefTemp = _indexLocalPref + (numLocalPref / 2);
-    _indexPrefixLen = _indexLocalPrefTemp + (numLocalPref / 2);
-    _indexCommunities = _indexPrefixLen + numPrefixLen;
+    _indexCommunities = _indexLocalPrefTemp + (numLocalPref / 2);
     _indexCommunitiesTemp = _indexCommunities + (numCommunities / 2);
     _indexDstRouter = _indexCommunitiesTemp + (numCommunities / 2);
     _indexSrcRouter = _indexDstRouter + (numRouter / 3);
