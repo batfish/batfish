@@ -17,5 +17,16 @@ public class CiscoFamilyMatchersImpl {
     }
   }
 
+  static final class HasAaa extends FeatureMatcher<CiscoFamily, Aaa> {
+    HasAaa(@Nonnull Matcher<? super Aaa> subMatcher) {
+      super(subMatcher, "a CiscoFamily with aaa", "aaa");
+    }
+
+    @Override
+    protected Aaa featureValueOf(CiscoFamily actual) {
+      return actual.getAaa();
+    }
+  }
+
   private CiscoFamilyMatchersImpl() {}
 }

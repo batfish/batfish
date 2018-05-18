@@ -282,6 +282,8 @@ import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_accounting_default_localContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authenticationContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_asaContext;
+import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_list_methodContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_loginContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Aaa_authentication_login_privilege_modeContext;
@@ -1384,6 +1386,29 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterAaa_authentication_asa(Aaa_authentication_asaContext ctx) {
+    if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
+      _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
+    }
+    ArrayList<String> methods = new ArrayList<>();
+    if (ctx.aaa_authentication_asa_console().group != null) {
+      methods.add(ctx.aaa_authentication_asa_console().group.getText());
+    }
+    if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
+      methods.add(ctx.aaa_authentication_asa_console().LOCAL_ASA().getText());
+    }
+    if (!methods.isEmpty()) {
+      AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
+      String name = ctx.linetype.getText();
+
+      // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
+      // rather than put so we only accept the first login list
+      _currentAaaAuthenticationLoginList =
+          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
+    }
+  }
+
+  @Override
   public void enterAaa_authentication_login_list(Aaa_authentication_login_listContext ctx) {
     AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
     String name;
@@ -1394,8 +1419,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unsupported mode");
     }
+    List<String> methods =
+        ctx.aaa_authentication_list_method()
+            .stream()
+            .map(Aaa_authentication_list_methodContext::getText)
+            .collect(ImmutableList.toImmutableList());
     _currentAaaAuthenticationLoginList =
-        login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList());
+        login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
   }
 
   @Override
