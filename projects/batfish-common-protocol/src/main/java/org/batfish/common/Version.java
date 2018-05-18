@@ -64,6 +64,28 @@ public final class Version {
   }
 
   /**
+   * Returns the version of the current build of Z3, or {@link #UNKNOWN_VERSION} if the version
+   * could not be detected.
+   */
+  public static String getZ3Version() {
+    try {
+      return com.microsoft.z3.Version.getString();
+    } catch (Exception e) {
+      return UNKNOWN_VERSION;
+    }
+  }
+
+  /** Returns string indicating the current build of Batfish and Z3. */
+  public static String getCompleteVersionString() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("Batfish version: ");
+    sb.append(getVersion());
+    sb.append("\nZ3 version: ");
+    sb.append(getZ3Version());
+    return sb.append("\n").toString();
+  }
+
+  /**
    * Returns {@code true} if the given version of some other endpoint is compatible with the Batfish
    * version of this process.
    *

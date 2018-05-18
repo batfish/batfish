@@ -188,8 +188,7 @@ public class Settings extends BaseSettings {
     }
 
     if (getBooleanOptionValue(ARG_VERSION)) {
-      System.out.printf("Batfish version: %s\n", Version.getVersion());
-      System.out.printf("Z3 version: %s\n", com.microsoft.z3.Version.getString());
+      System.out.printf(Version.getCompleteVersionString());
       System.exit(0);
     }
 

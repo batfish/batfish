@@ -1405,8 +1405,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
     if (getBooleanOptionValue(ARG_VERSION)) {
       _config.setProperty(CAN_EXECUTE, false);
-      System.out.printf("Batfish version: %s\n", Version.getVersion());
-      System.out.printf("Z3 version: %s\n", com.microsoft.z3.Version.getString());
+      System.out.printf(Version.getCompleteVersionString());
       return;
     }
 
