@@ -114,7 +114,8 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
-import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
+import org.batfish.datamodel.answers.AclLinesNewAnswerElement;
+import org.batfish.datamodel.answers.AclLinesOldAnswerElement;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -722,6 +723,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement answerAclReachability(
       String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
+    AclLinesOldAnswerElement answerElement = new AclLinesOldAnswerElement();
+    answerAclReachabilityHelper(aclNameRegexStr, aclEqSets, answerElement);
+    return answerElement;
+  }
+
+  @Override
+  public AnswerElement answerAclReachability2(
+      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
+    AclLinesNewAnswerElement answerElement = new AclLinesNewAnswerElement();
+    answerAclReachabilityHelper(aclNameRegexStr, aclEqSets, answerElement);
+    return answerElement;
+  }
+
+  private void answerAclReachabilityHelper(
+      String aclNameRegexStr,
+      NamedStructureEquivalenceSets<?> aclEqSets,
+      AclLinesAnswerElement answerElement) {
 
     Pattern aclNameRegex;
     try {
@@ -731,7 +749,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Supplied regex for nodes is not a valid Java regex: \"" + aclNameRegexStr + "\"", e);
     }
 
-    AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
     Map<String, Configuration> configurations = loadConfigurations();
 
     // Run first batch of nod jobs to find unreachable lines
@@ -832,7 +849,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
       IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(lineNumber);
       String lineName = firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString());
-      AclReachabilityEntry reachabilityEntry = new AclReachabilityEntry(lineNumber, lineName);
 
       Pair<String, String> hostnameAclPair = new Pair<>(hostname, aclName);
       allAclHostPairs.add(hostnameAclPair);
@@ -844,41 +860,27 @@ public class Batfish extends PluginConsumer implements IBatfish {
         numUnreachableLines++;
         aclHostPairsWithUnreachableLines.add(hostnameAclPair);
 
-        /*
-         * We are using earliestMoreGeneralLineIndex and earliestMoreGeneralLineName inappropriately
-         * here. For both the multiple blocking lines case and the independently unmatchable case,
-         * we set the line index to -1 and set the line name to a hard-coded message (see below).
-         * For right now, it's hard to fix because the JsonPathAnswerElement for ACL reachability
-         * doesn't account for these two cases and changing that would be a breaking change.
-         * TODO Stop using the earliestMoreGeneralLine variables for other answer categories.
-         */
-        if (unmatchableLinesOnThisAcl.contains(lineNumber)) {
-          reachabilityEntry.setUnmatchable(true);
-        } else {
-          Integer earliestMoreGeneralReachableLineNumber = blockingLinesMap.get(line);
-          line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLineNumber);
-
-          if (earliestMoreGeneralReachableLineNumber != null) {
-            IpAccessListLine earliestMoreGeneralLine =
-                ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
-            reachabilityEntry.addBlockingLine(
-                earliestMoreGeneralReachableLineNumber,
-                firstNonNull(
-                    earliestMoreGeneralLine.getName(), earliestMoreGeneralLine.toString()));
-            if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
-              reachabilityEntry.setDifferentAction(true);
-            }
-          } else {
-            // If line is matchable but earliestMoreGeneralReachableLine is null, there must be
-            // multiple partially-blocking lines.
-            reachabilityEntry.setMultipleBlockingLines(true);
-          }
+        boolean unmatchable = unmatchableLinesOnThisAcl.contains(lineNumber);
+        Integer blockingLineNumber = blockingLinesMap.get(line);
+        String blockingLine = "";
+        boolean diffAction = false;
+        if (blockingLineNumber != null) {
+          IpAccessListLine blocker = ipAccessList.getLines().get(blockingLineNumber);
+          blockingLine = firstNonNull(blocker.getName(), blocker.toString());
+          diffAction = !blocker.getAction().equals(ipAccessListLine.getAction());
+          line.setEarliestMoreGeneralReachableLine(blockingLineNumber);
         }
-        answerElement.addUnreachableLine(hostname, ipAccessList, reachabilityEntry);
-
+        answerElement.addUnreachableLine(
+            hostname,
+            aclName,
+            lineNumber,
+            lineName,
+            unmatchable,
+            blockingLineNumber,
+            blockingLine,
+            diffAction);
       } else {
         _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName, lineNumber, lineName);
-        answerElement.addReachableLine(hostname, ipAccessList, reachabilityEntry);
       }
     }
 
@@ -899,8 +901,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf(
         "\t%d/%d (%.1f%%) acl lines are unreachable\n",
         numUnreachableLines, numLines, percentUnreachableLines);
-
-    return answerElement;
   }
 
   private List<NodSatJob<AclLine>> generateUnreachableAclLineJobs(
@@ -921,10 +921,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
         String hostname = aclEqSet.getRepresentativeElement();
         SortedSet<String> eqClassNodes = aclEqSet.getNodes();
-        answerElement.addEquivalenceClass(aclName, hostname, eqClassNodes);
         Configuration c = configurations.get(hostname);
-        IpAccessList acl = c.getIpAccessLists().get(aclName);
-        int numLines = acl.getLines().size();
+        List<IpAccessListLine> aclLines = c.getIpAccessLists().get(aclName).getLines();
+        answerElement.addEquivalenceClass(
+            aclName,
+            hostname,
+            eqClassNodes,
+            aclLines.stream().map(l -> l.getName()).collect(Collectors.toList()));
+        int numLines = aclLines.size();
         if (numLines == 0) {
           _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName + "\" contains no lines\n");
           continue;

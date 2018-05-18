@@ -20,6 +20,10 @@ public class AclReachability2Question extends Question {
   private String _aclNameRegex;
   @Nonnull private NodesSpecifier _nodeRegex;
 
+  public AclReachability2Question() {
+    this(".*", NodesSpecifier.ALL);
+  }
+
   public AclReachability2Question(
       @JsonProperty(PROP_ACL_NAME_REGEX) String aclNameRegex,
       @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex) {

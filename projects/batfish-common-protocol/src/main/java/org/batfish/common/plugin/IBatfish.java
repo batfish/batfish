@@ -46,6 +46,9 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement answerAclReachability(
       String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets);
 
+  AnswerElement answerAclReachability2(
+      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets);
+
   void checkDataPlane();
 
   void checkEnvironmentExists();

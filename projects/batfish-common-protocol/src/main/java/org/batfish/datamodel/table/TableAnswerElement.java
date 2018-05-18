@@ -30,6 +30,11 @@ public class TableAnswerElement extends AnswerElement {
 
   TableMetadata _tableMetadata;
 
+  public TableAnswerElement() {
+    _rows = new Rows();
+    _excludedRows = new LinkedList<>();
+  }
+
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
     _tableMetadata = tableMetadata;
@@ -166,5 +171,10 @@ public class TableAnswerElement extends AnswerElement {
   @JsonProperty(PROP_ROWS)
   private void setRows(Rows rows) {
     _rows = rows == null ? new Rows() : rows;
+  }
+
+  @JsonProperty(PROP_METADATA)
+  public void setMetadata(@Nonnull TableMetadata tableMetadata) {
+    _tableMetadata = tableMetadata;
   }
 }
