@@ -1,22 +1,23 @@
 package org.batfish.specifier;
 
 import java.util.Objects;
+import javax.annotation.Nonnull;
 
 public class InterfaceLocation implements Location {
-  private final String _interfaceName;
+  private final @Nonnull String _interfaceName;
 
-  private final String _nodeName;
+  private final @Nonnull String _nodeName;
 
-  public InterfaceLocation(String nodeName, String interfaceName) {
+  public InterfaceLocation(@Nonnull String nodeName, @Nonnull String interfaceName) {
     _nodeName = nodeName;
     _interfaceName = interfaceName;
   }
 
-  public String getInterfaceName() {
+  public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
-  public String getNodeName() {
+  public @Nonnull String getNodeName() {
     return _nodeName;
   }
 

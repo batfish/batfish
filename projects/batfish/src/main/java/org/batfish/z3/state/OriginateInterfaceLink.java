@@ -5,7 +5,7 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class OriginateInterface extends StateExpr {
+public class OriginateInterfaceLink extends StateExpr {
   public static class State extends StateExpr.State {
 
     public static final State INSTANCE = new State();
@@ -22,7 +22,7 @@ public class OriginateInterface extends StateExpr {
 
   private final @Nonnull String _iface;
 
-  public OriginateInterface(@Nonnull String hostname, @Nonnull String iface) {
+  public OriginateInterfaceLink(@Nonnull String hostname, @Nonnull String iface) {
     _hostname = hostname;
     _iface = iface;
   }

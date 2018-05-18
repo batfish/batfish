@@ -30,6 +30,11 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.job.BatfishJob;
 import org.batfish.job.BatfishJobResult;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationVisitor;
+import org.batfish.specifier.VrfLocation;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.ReachabilityProgramOptimizer;
 import org.batfish.z3.expr.RuleStatement;
@@ -102,19 +107,29 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
           .build();
 
   protected static Flow createFlow(
-      IngressPoint ingressPoint, Map<String, Long> constraints, String tag) {
+      Location ingressLocation, Map<String, Long> constraints, String tag) {
     Flow.Builder flowBuilder = new Flow.Builder();
-    flowBuilder.setIngressNode(ingressPoint.getNode());
-    switch (ingressPoint.getType()) {
-      case INTERFACE:
-        flowBuilder.setIngressInterface(ingressPoint.getInterface());
-        break;
-      case VRF:
-        flowBuilder.setIngressVrf(ingressPoint.getVrf());
-        break;
-      default:
-        throw new BatfishException("Unexpected IngressPoint type");
-    }
+    ingressLocation.accept(
+        new LocationVisitor<Void>() {
+          @Override
+          public Void visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+            flowBuilder.setIngressNode(interfaceLinkLocation.getNodeName());
+            flowBuilder.setIngressInterface(interfaceLinkLocation.getInterfaceName());
+            return null;
+          }
+
+          @Override
+          public Void visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+            throw new BatfishException("TODO: create flow that originates from an interface");
+          }
+
+          @Override
+          public Void visitVrfLocation(VrfLocation vrfLocation) {
+            flowBuilder.setIngressNode(vrfLocation.getHostname());
+            flowBuilder.setIngressVrf(vrfLocation.getVrf());
+            return null;
+          }
+        });
     flowBuilder.setTag(tag);
     constraints.forEach(
         (name, value) -> {

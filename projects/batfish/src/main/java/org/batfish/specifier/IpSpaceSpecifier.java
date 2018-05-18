@@ -1,9 +1,9 @@
 package org.batfish.specifier;
 
-import java.util.Map;
+import com.google.common.collect.Multimap;
 import java.util.Set;
 import org.batfish.datamodel.IpSpace;
 
 public interface IpSpaceSpecifier {
-  Map<Set<Location>, IpSpace> resolve(Set<Location> locations, SpecifierContext ctxt);
+  Multimap<IpSpace, Location> resolve(Set<Location> locations, SpecifierContext ctxt);
 }

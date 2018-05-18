@@ -83,6 +83,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.ITracerouteEngine;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSession;
@@ -313,6 +314,28 @@ public class CommonUtil {
   }
 
   /**
+   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) and
+   * convert the set of owned Ips into an IpSpace.
+   */
+  public static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
+    return toImmutableMap(
+        computeInterfaceOwnedIps(ipInterfaceOwners),
+        Entry::getKey, /* host */
+        hostEntry ->
+            toImmutableMap(
+                hostEntry.getValue(),
+                Entry::getKey, /* interface */
+                ifaceEntry ->
+                    AclIpSpace.union(
+                        ifaceEntry
+                            .getValue()
+                            .stream()
+                            .map(Ip::toIpSpace)
+                            .collect(Collectors.toList()))));
+  }
+
+  /**
    * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
    * interface address)
    *
@@ -446,6 +469,59 @@ public class CommonUtil {
                         .stream()
                         .map(interfaceVrfs.get(ipNodeInterfaceOwnersEntry.getKey())::get)
                         .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  /** Aggregate a mapping (Ip -> host name -> interface name) to (Ip -> host name -> vrf name) */
+  public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners, Map<String, Configuration> configs) {
+    return toImmutableMap(
+        ipInterfaceOwners,
+        Entry::getKey, /* ip */
+        ipEntry ->
+            toImmutableMap(
+                ipEntry.getValue(),
+                Entry::getKey, /* node */
+                nodeEntry ->
+                    ImmutableSet.copyOf(
+                        nodeEntry
+                            .getValue()
+                            .stream()
+                            .map(
+                                iface ->
+                                    configs
+                                        .get(nodeEntry.getKey())
+                                        .getInterfaces()
+                                        .get(iface)
+                                        .getVrfName())
+                            .collect(Collectors.toList()))));
+  }
+
+  /**
+   * Invert a mapping from Ip to VRF owners (Ip -> host name -> VRF name) and combine all IPs owned
+   * by each VRF into an IpSpace.
+   */
+  public static Map<String, Map<String, IpSpace>> computeVrfOwnedIpSpaces(
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    Map<String, Map<String, AclIpSpace.Builder>> builders = new HashMap<>();
+    ipVrfOwners.forEach(
+        (ip, ipNodeVrfs) ->
+            ipNodeVrfs.forEach(
+                (node, vrfs) ->
+                    vrfs.forEach(
+                        vrf ->
+                            builders
+                                .computeIfAbsent(node, k -> new HashMap<>())
+                                .computeIfAbsent(vrf, k -> AclIpSpace.builder())
+                                .thenPermitting(ip.toIpSpace()))));
+
+    return toImmutableMap(
+        builders,
+        Entry::getKey, /* node */
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, /* vrf */
+                vrfEntry -> vrfEntry.getValue().build()));
   }
 
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {

@@ -1,7 +1,7 @@
 package org.batfish.specifier;
 
-import com.google.common.collect.ImmutableMap;
-import java.util.Map;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import java.util.Set;
 import org.batfish.datamodel.IpSpace;
 
@@ -13,7 +13,7 @@ public class ConstantIpSpaceSpecifier implements IpSpaceSpecifier {
   }
 
   @Override
-  public Map<Set<Location>, IpSpace> resolve(Set<Location> locations, SpecifierContext ctxt) {
-    return ImmutableMap.of(locations, _ipSpace);
+  public Multimap<IpSpace, Location> resolve(Set<Location> locations, SpecifierContext ctxt) {
+    return ImmutableMultimap.<IpSpace, Location>builder().putAll(_ipSpace, locations).build();
   }
 }

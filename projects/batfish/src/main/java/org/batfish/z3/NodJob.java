@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.Multimap;
 import com.microsoft.z3.BitVecExpr;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
@@ -9,9 +10,10 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Map;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.config.Settings;
+import org.batfish.specifier.Location;
+import org.batfish.z3.expr.BooleanExpr;
 
 public final class NodJob extends AbstractNodJob {
 
@@ -25,10 +27,10 @@ public final class NodJob extends AbstractNodJob {
       Settings settings,
       Synthesizer dataPlaneSynthesizer,
       QuerySynthesizer querySynthesizer,
-      SortedSet<IngressPoint> ingressPoints,
+      Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint,
       String tag,
       boolean optimize) {
-    super(settings, ingressPoints, tag);
+    super(settings, ingressLocationsBySrcIpConstraint, tag);
     _dataPlaneSynthesizer = dataPlaneSynthesizer;
     _querySynthesizer = querySynthesizer;
     _optimize = optimize;

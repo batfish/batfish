@@ -7,7 +7,6 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.ReachabilitySettings;
-import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DescriptionRegexInterfaceLocationSpecifier;
@@ -17,6 +16,8 @@ import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NameRegexInterfaceLocationSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
+import org.batfish.specifier.NameRegexVrfLocationSpecifier;
+import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
 import org.batfish.specifier.NodeRoleRegexInterfaceLocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -36,13 +37,14 @@ public class ReachabilitySettingsToReachabilityParameters {
     return ReachabilityParameters.builder()
         .setActions(settings.getActions())
         .setFinalNodesSpecifier(finalNodesSpecifier(settings))
+        .setForbiddenTransitNodesSpecifier(nodesSpecifier(settings.getNotFinalNodes()))
         .setHeaderSpace(headerSpace(settings))
         .setMaxChunkSize(settings.getMaxChunkSize())
+        .setRequiredTransitNodesSpecifier(nodesSpecifier(settings.getTransitNodes()))
         .setSourceIpSpaceSpecifier(sourceIpSpaceSpecifier(settings))
         .setSourceSpecifier(sourceSpecifier(settings))
-        .setSourceNatted(settings.getSrcNatted())
+        .setSrcNatted(SrcNattedConstraint.fromBoolean(settings.getSrcNatted()))
         .setSpecialize(settings.getSpecialize())
-        .setTransitNodesSpecifier(transitNodesSpecifier(settings))
         .setUseCompression(settings.getUseCompression())
         .build();
   }
@@ -112,7 +114,7 @@ public class ReachabilitySettingsToReachabilityParameters {
   private static NodeSpecifier nodesSpecifier(
       org.batfish.datamodel.questions.NodesSpecifier nodesSpecifier) {
     if (nodesSpecifier == null) {
-      return null;
+      return NoNodesNodeSpecifier.INSTANCE;
     }
 
     switch (nodesSpecifier.getType()) {
@@ -124,11 +126,6 @@ public class ReachabilitySettingsToReachabilityParameters {
       default:
         throw new BatfishException("Unexpected NodesSpecifier type: " + nodesSpecifier.getType());
     }
-  }
-
-  private static NodeSpecifier transitNodesSpecifier(ReachabilitySettings settings) {
-    return differenceNodesSpecifier(
-        nodesSpecifier(settings.getTransitNodes()), nodesSpecifier(settings.getNonTransitNodes()));
   }
 
   private static IpSpaceSpecifier sourceIpSpaceSpecifier(ReachabilitySettings settings) {
@@ -161,6 +158,6 @@ public class ReachabilitySettingsToReachabilityParameters {
       return ingressNodes;
     }
 
-    return AllInterfacesLocationSpecifier.INSTANCE;
+    return NameRegexVrfLocationSpecifier.ALL_VRFS;
   }
 }

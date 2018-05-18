@@ -2,34 +2,42 @@ package org.batfish.main;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
+import org.batfish.specifier.NameRegexVrfLocationSpecifier;
+import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 
 public class ReachabilityParameters {
 
   public static class Builder {
-    private SortedSet<ForwardingAction> _actions;
+    private @Nonnull SortedSet<ForwardingAction> _actions = ImmutableSortedSet.of();
 
-    private NodeSpecifier _finalNodeSpecifier;
+    private @Nonnull NodeSpecifier _finalNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
+
+    private @Nonnull NodeSpecifier _forbiddenTransitNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
 
     private HeaderSpace _headerSpace;
 
     private int _maxChunkSize;
 
-    private LocationSpecifier _sourceLocationSpecifier;
+    private @Nonnull NodeSpecifier _requiredTransitNodesSpecifier = NoNodesNodeSpecifier.INSTANCE;
 
-    private IpSpaceSpecifier _sourceIpSpaceSpecifier;
+    private @Nonnull LocationSpecifier _sourceLocationSpecifier =
+        NameRegexVrfLocationSpecifier.ALL_VRFS;
 
-    private Boolean _sourceNatted;
+    private @Nonnull IpSpaceSpecifier _sourceIpSpaceSpecifier =
+        InferFromLocationIpSpaceSpecifier.INSTANCE;
 
-    private boolean _specialize;
+    private @Nonnull SrcNattedConstraint _srcNatted = SrcNattedConstraint.UNCONSTRAINED;
 
-    private NodeSpecifier _transitNodesSpecifier;
+    private boolean _specialize = false;
 
-    private boolean _useCompression;
+    private boolean _useCompression = false;
 
     public ReachabilityParameters build() {
       return new ReachabilityParameters(this);
@@ -46,7 +54,13 @@ public class ReachabilityParameters {
     }
 
     public Builder setFinalNodesSpecifier(NodeSpecifier finalNodeSpecifier) {
-      _finalNodeSpecifier = finalNodeSpecifier;
+      _finalNodesSpecifier = finalNodeSpecifier;
+      return this;
+    }
+
+    public Builder setForbiddenTransitNodesSpecifier(
+        @Nonnull NodeSpecifier forbiddenTransitNodesSpecifier) {
+      _forbiddenTransitNodesSpecifier = forbiddenTransitNodesSpecifier;
       return this;
     }
 
@@ -57,7 +71,7 @@ public class ReachabilityParameters {
 
     public Builder setHeaderSpace(HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
-      return null;
+      return this;
     }
 
     public Builder setMaxChunkSize(int maxChunkSize) {
@@ -65,13 +79,13 @@ public class ReachabilityParameters {
       return this;
     }
 
-    public Builder setSourceNatted(Boolean sourceNatted) {
-      _sourceNatted = sourceNatted;
+    public Builder setSrcNatted(SrcNattedConstraint srcNatted) {
+      _srcNatted = srcNatted;
       return this;
     }
 
-    public Builder setTransitNodesSpecifier(NodeSpecifier transitNodesSpecifier) {
-      _transitNodesSpecifier = transitNodesSpecifier;
+    public Builder setRequiredTransitNodesSpecifier(NodeSpecifier transitNodesSpecifier) {
+      _requiredTransitNodesSpecifier = transitNodesSpecifier;
       return this;
     }
 
@@ -88,7 +102,9 @@ public class ReachabilityParameters {
 
   private final SortedSet<ForwardingAction> _actions;
 
-  private final NodeSpecifier _finalNodeSpecifier;
+  private final NodeSpecifier _finalNodesSpecifier;
+
+  private final @Nonnull NodeSpecifier _forbiddenTransitNodesSpecifier;
 
   private final HeaderSpace _headerSpace;
 
@@ -98,24 +114,25 @@ public class ReachabilityParameters {
 
   private final IpSpaceSpecifier _sourceIpSpaceSpecifier;
 
-  private final Boolean _sourceNatted;
+  private final SrcNattedConstraint _sourceNatted;
 
   private final boolean _specialize;
 
-  private final NodeSpecifier _transitNodes;
+  private final NodeSpecifier _requiredTransitNodesSpecifier;
 
   private final boolean _useCompression;
 
   private ReachabilityParameters(Builder builder) {
     _actions = builder._actions;
-    _finalNodeSpecifier = builder._finalNodeSpecifier;
+    _finalNodesSpecifier = builder._finalNodesSpecifier;
+    _forbiddenTransitNodesSpecifier = builder._forbiddenTransitNodesSpecifier;
     _headerSpace = builder._headerSpace;
     _maxChunkSize = builder._maxChunkSize;
     _sourceLocationSpecifier = builder._sourceLocationSpecifier;
     _sourceIpSpaceSpecifier = builder._sourceIpSpaceSpecifier;
-    _sourceNatted = builder._sourceNatted;
+    _sourceNatted = builder._srcNatted;
     _specialize = builder._specialize;
-    _transitNodes = builder._transitNodesSpecifier;
+    _requiredTransitNodesSpecifier = builder._requiredTransitNodesSpecifier;
     _useCompression = builder._useCompression;
   }
 
@@ -128,7 +145,11 @@ public class ReachabilityParameters {
   }
 
   public NodeSpecifier getFinalNodesSpecifier() {
-    return _finalNodeSpecifier;
+    return _finalNodesSpecifier;
+  }
+
+  public NodeSpecifier getForbiddenTransitNodesSpecifier() {
+    return _forbiddenTransitNodesSpecifier;
   }
 
   public HeaderSpace getHeaderSpace() {
@@ -147,7 +168,7 @@ public class ReachabilityParameters {
     return _sourceIpSpaceSpecifier;
   }
 
-  public Boolean getSourceNatted() {
+  public SrcNattedConstraint getSrcNatted() {
     return _sourceNatted;
   }
 
@@ -155,8 +176,8 @@ public class ReachabilityParameters {
     return _specialize;
   }
 
-  public NodeSpecifier getTransitNodesSpecifier() {
-    return _transitNodes;
+  public NodeSpecifier getRequiredTransitNodesSpecifier() {
+    return _requiredTransitNodesSpecifier;
   }
 
   public boolean getUseCompression() {
