@@ -1523,12 +1523,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentIsakmpPolicy != null) {
       throw new BatfishException("IsakmpPolicy should be null!");
     }
-    _currentIsakmpPolicy = new IsakmpPolicy(ctx.name.getText(), ctx.getStart().getLine());
+    /* Pad priority number with zeros, so string sorting sorts in numerical order too */
+    String priority = String.format("%3s", ctx.priority.getText()).replace(' ', '0');
+    _currentIsakmpPolicy = new IsakmpPolicy(priority, ctx.getStart().getLine());
     _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
-    defineStructure(ISAKMP_POLICY, ctx.name.getText(), ctx);
-    // Isakmp policies are not explicitly referenced, so add a self-reference here
+    defineStructure(ISAKMP_POLICY, priority, ctx);
+    /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
+    here */
     _configuration.referenceStructure(
-        ISAKMP_POLICY, ctx.name.getText(), ISAKMP_POLICY_SELF_REF, ctx.name.start.getLine());
+        ISAKMP_POLICY, priority, ISAKMP_POLICY_SELF_REF, ctx.priority.start.getLine());
   }
 
   @Override
@@ -1538,7 +1541,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentIsakmpProfile = new IsakmpProfile(ctx.name.getText(), ctx.getStart().getLine());
     defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx);
-    // Isakmp profiles are not explicitly referenced, so add a self-reference here
+    /* Isakmp profiles are checked against for matches not explicitly referenced, so add a
+    self-reference here */
     _configuration.referenceStructure(
         ISAKMP_PROFILE, ctx.name.getText(), ISAKMP_PROFILE_SELF_REF, ctx.name.start.getLine());
   }

@@ -1209,8 +1209,8 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "ikeProposals" : {
-          "1" : {
-            "name" : "1",
+          "001" : {
+            "name" : "001",
             "authenticationAlgorithm" : "SHA_256",
             "authenticationMethod" : "RSA_SIGNATURES",
             "diffieHellmanGroup" : "GROUP20",
@@ -5671,8 +5671,8 @@
           }
         },
         "ikeProposals" : {
-          "1" : {
-            "name" : "1",
+          "001" : {
+            "name" : "001",
             "authenticationAlgorithm" : "MD5",
             "authenticationMethod" : "PRE_SHARED_KEYS",
             "diffieHellmanGroup" : "GROUP2",

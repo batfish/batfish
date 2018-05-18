@@ -317,7 +317,7 @@ cis_null
 
 cis_policy
 :
-   POLICY name = variable NEWLINE
+   POLICY priority = variable NEWLINE
    (
       cispol_authentication
       | cispol_encr        //cisco
