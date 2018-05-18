@@ -28,7 +28,6 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
@@ -73,6 +72,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
@@ -88,6 +88,8 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -212,7 +214,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             ACL_NAME_GLOBAL_POLICY,
-            hasLines(
+            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.acceptingHeaderSpace(
@@ -354,7 +356,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             ACL_NAME_GLOBAL_POLICY,
-            hasLines(
+            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.acceptingHeaderSpace(
@@ -1187,7 +1189,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             filterNameV4,
-            hasLines(
+            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
@@ -1222,7 +1224,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             filterNameV4,
-            hasLines(
+            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
@@ -1546,6 +1548,28 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRouteFilters() throws IOException {
+    Configuration c = parseConfig("route-filter");
+    RouteFilterList rfl = c.getRouteFilterLists().get("route-filter-test:t1");
+    assertThat(
+        rfl,
+        org.batfish.datamodel.matchers.RouteFilterListMatchers.hasLines(
+            containsInAnyOrder(
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.2.0.0/16"), new SubRange(16, 16)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.2.0.0/16"), new SubRange(17, 32)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.7.0.0/16"), new SubRange(16, 16)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.7.0.0/17"), new SubRange(17, 17)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT,
+                    new IpWildcard("1.0.0.0:0.255.0.255"),
+                    new SubRange(16, 16)))));
+  }
+
+  @Test
   public void testRoutingInstanceType() throws IOException {
     Configuration c = parseConfig("routing-instance-type");
 
@@ -1556,6 +1580,104 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasVrfs(hasKey("ri-virtual-router")));
     assertThat(c, hasVrfs(hasKey("ri-virtual-switch")));
     assertThat(c, hasVrfs(hasKey("ri-vrf")));
+  }
+
+  @Test
+  public void testRoutingPolicy() throws IOException {
+    Configuration c = parseConfig("routing-policy");
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+
+    RoutingPolicy policyExact = c.getRoutingPolicies().get("route-filter-exact");
+    RoutingPolicy policyLonger = c.getRoutingPolicies().get("route-filter-longer");
+    RoutingPolicy policyPrange = c.getRoutingPolicies().get("route-filter-prange");
+    RoutingPolicy policyThrough = c.getRoutingPolicies().get("route-filter-through");
+    RoutingPolicy policyAddressmask = c.getRoutingPolicies().get("route-filter-addressmask");
+
+    ConnectedRoute connectedRouteExact =
+        new ConnectedRoute(Prefix.parse("1.2.3.4/16"), "nhinttest");
+    ConnectedRoute connectedRouteLonger =
+        new ConnectedRoute(Prefix.parse("1.2.3.4/19"), "nhinttest");
+    ConnectedRoute connectedRouteInRange =
+        new ConnectedRoute(Prefix.parse("1.2.3.4/17"), "nhinttest");
+    ConnectedRoute connectedRouteInvalidPrefix =
+        new ConnectedRoute(Prefix.parse("2.3.3.4/17"), "nhinttest");
+    ConnectedRoute connectedRouteInvalidLength =
+        new ConnectedRoute(Prefix.parse("2.3.3.4/29"), "nhinttest");
+
+    ConnectedRoute connectedRouteMaskInvalidPrefix =
+        new ConnectedRoute(Prefix.parse("9.2.9.4/16"), "nhinttest");
+    ConnectedRoute connectedRouteMaskValid =
+        new ConnectedRoute(Prefix.parse("1.9.3.9/16"), "nhinttest");
+    ConnectedRoute connectedRouteMaskInvalidLength =
+        new ConnectedRoute(Prefix.parse("1.9.3.9/17"), "nhinttest");
+
+    eb.setVrf("vrf1");
+
+    assertThat(
+        policyExact.call(eb.setOriginalRoute(connectedRouteExact).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyExact.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyExact
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyLonger.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyLonger
+            .call(eb.setOriginalRoute(connectedRouteInvalidLength).build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyLonger
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyPrange.call(eb.setOriginalRoute(connectedRouteInRange).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyPrange.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyPrange
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyThrough.call(eb.setOriginalRoute(connectedRouteInRange).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyThrough.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyThrough
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyAddressmask
+            .call(eb.setOriginalRoute(connectedRouteMaskValid).build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyAddressmask
+            .call(eb.setOriginalRoute(connectedRouteMaskInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyAddressmask
+            .call(eb.setOriginalRoute(connectedRouteMaskInvalidLength).build())
+            .getBooleanValue(),
+        equalTo(false));
   }
 
   @Test

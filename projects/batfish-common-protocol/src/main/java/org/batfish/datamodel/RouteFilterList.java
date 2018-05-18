@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.IOException;
@@ -58,6 +59,13 @@ public class RouteFilterList extends ComparableStructure<String> {
   @JsonPropertyDescription("The lines against which to check an IPV4 route")
   public List<RouteFilterLine> getLines() {
     return _lines;
+  }
+
+
+  @VisibleForTesting
+  void initCaches() {
+    _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
   }
 
   private boolean newPermits(Prefix prefix) {

@@ -1,0 +1,23 @@
+#
+set system host-name routing-policy
+#
+set interfaces xe-0/0/1 unit 0 family inet address 1.0.0.0/31
+
+set routing-instances vrf1 instance-type virtual-router
+set routing-instances vrf1 interface xe-0/0/1.0
+
+set policy-options policy-statement route-filter-exact term t1 from route-filter 1.2.0.0/16 exact
+set policy-options policy-statement route-filter-exact term t1 then accept
+
+set policy-options policy-statement route-filter-longer term t1 from route-filter 1.2.0.0/16 longer
+set policy-options policy-statement route-filter-longer term t1 then accept
+
+set policy-options policy-statement route-filter-prange term t1 from route-filter 1.2.0.0/16 prefix-length-range /16-/18
+set policy-options policy-statement route-filter-prange term t1 then accept
+
+set policy-options policy-statement route-filter-through term t1 from route-filter 1.2.0.0/16 through 1.2.0.0/18
+set policy-options policy-statement route-filter-through term t1 then accept
+
+set policy-options policy-statement route-filter-addressmask term t1 from route-filter 1.2.3.4/16 address-mask 255.0.255.0
+set policy-options policy-statement route-filter-addressmask term t1 then accept
+#

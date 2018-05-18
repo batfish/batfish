@@ -1,0 +1,80 @@
+package org.batfish.datamodel;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.google.common.collect.ImmutableList;
+import org.junit.Before;
+import org.junit.Test;
+
+/** Test for {@link RouteFilterList} */
+public class RouteFilterListTest {
+
+  private RouteFilterList _rfAddressMask;
+  private RouteFilterList _rfPrefixMoreSpecific;
+  private RouteFilterList _rfPrefixExact;
+
+  @Before
+  public void setup() {
+    _rfAddressMask =
+        new RouteFilterList(
+            "test-route-filter-mask",
+            ImmutableList.of(
+                new RouteFilterLine(
+                    LineAction.ACCEPT,
+                    new IpWildcard("1.2.3.4:0.255.0.255"),
+                    new SubRange(24, 24))));
+    _rfAddressMask.initCaches();
+    _rfPrefixMoreSpecific =
+        new RouteFilterList(
+            "test-route-filter-prefix",
+            ImmutableList.of(
+                new RouteFilterLine(
+                    LineAction.ACCEPT,
+                    new IpWildcard("1.2.3.4:0.0.255.255"),
+                    new SubRange(26, 32))));
+    _rfPrefixMoreSpecific.initCaches();
+    _rfPrefixExact =
+        new RouteFilterList(
+            "test-route-filter-prefix",
+            ImmutableList.of(
+                new RouteFilterLine(
+                    LineAction.ACCEPT,
+                    new IpWildcard("1.2.3.4:0.0.255.255"),
+                    new SubRange(26, 26))));
+    _rfPrefixExact.initCaches();
+  }
+
+  @Test
+  public void testRfAddressMask() {
+    Prefix acceptedPrefix1 = Prefix.parse("1.5.3.127/24");
+    Prefix deniedPrefix1 = Prefix.parse("2.5.6.127/24");
+    Prefix deniedPrefix2 = Prefix.parse("1.5.3.127/26");
+
+    assertThat(_rfAddressMask.permits(acceptedPrefix1), equalTo(true));
+    assertThat(_rfAddressMask.permits(deniedPrefix1), equalTo(false));
+    assertThat(_rfAddressMask.permits(deniedPrefix2), equalTo(false));
+  }
+
+  @Test
+  public void testRfPrefixMoreSpecific() {
+    Prefix acceptedPrefix1 = Prefix.parse("1.2.16.0/27");
+    Prefix deniedPrefix1 = Prefix.parse("1.3.5.6/27");
+    // matching prefix but is less specific
+    Prefix deniedPrefix2 = Prefix.parse("1.2.16.0/25");
+
+    assertThat(_rfPrefixMoreSpecific.permits(acceptedPrefix1), equalTo(true));
+    assertThat(_rfPrefixMoreSpecific.permits(deniedPrefix1), equalTo(false));
+    assertThat(_rfPrefixMoreSpecific.permits(deniedPrefix2), equalTo(false));
+  }
+
+  @Test
+  public void testRfPrefixExact() {
+    Prefix acceptedPrefix1 = Prefix.parse("1.2.16.0/26");
+    // matching prefix with non-equal prefix length
+    Prefix deniedPrefix1 = Prefix.parse("1.2.16.0/27");
+
+    assertThat(_rfPrefixExact.permits(acceptedPrefix1), equalTo(true));
+    assertThat(_rfPrefixExact.permits(deniedPrefix1), equalTo(false));
+  }
+}

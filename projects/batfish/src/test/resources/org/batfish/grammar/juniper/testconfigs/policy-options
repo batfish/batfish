@@ -1,1 +1,0 @@
-set policy-options policy-statement COR-IMPORT-SPN term LOOPBACKS from route-filter 10.0.253.0/32 address-mask 255.0.255.248
