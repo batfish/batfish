@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.bdd.BDDAcl;
-import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 import org.batfish.symbolic.utils.PrefixUtils;
 
 public class InterfacePolicy {

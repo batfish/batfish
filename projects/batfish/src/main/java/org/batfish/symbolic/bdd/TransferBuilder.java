@@ -72,21 +72,21 @@ import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferParam;
 import org.batfish.symbolic.TransferResult;
-import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.utils.PrefixUtils;
 
 /** @author Ryan Beckett */
 class TransferBuilder {
 
-  private static BDDFactory factory = BDDRouteFactory.factory;
+  private static BDDFactory factory = BDDNetFactory.factory;
 
   private static Table2<String, String, TransferResult<BDDTransferFunction, BDD>> CACHE =
       new Table2<>();
 
   private SortedMap<CommunityVar, List<CommunityVar>> _commDeps;
 
-  private BDDRouteFactory _routeFactory;
+  private BDDNetFactory _routeFactory;
 
   private Set<CommunityVar> _comms;
 
@@ -298,7 +298,7 @@ class TransferBuilder {
         return fromExpr(ret);
       }
       BDD protoMatch = factory.one();
-      if (_routeFactory.getConfig().getKeepHistory()) {
+      if (_routeFactory.getConfig().getKeepProtocol()) {
         protoMatch = p.getData().getProtocolHistory().value(proto);
       }
       p.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): " + protoMatch);
@@ -943,7 +943,7 @@ class TransferBuilder {
         rec.getCommunities().put(comm, factory.zero());
       }
     }
-    if (_routeFactory.getConfig().getKeepHistory()) {
+    if (_routeFactory.getConfig().getKeepProtocol()) {
       rec.getProtocolHistory().getInteger().setValue(0);
     }
     rec.getPrefixLength().setValue(0);
@@ -967,7 +967,7 @@ class TransferBuilder {
    * the RoutingPolicy given the input variables.
    */
   public TransferResult<BDDTransferFunction, BDD> compute(
-      BDDRouteFactory routeFactory, Set<Prefix> ignoredNetworks) {
+      BDDNetFactory routeFactory, Set<Prefix> ignoredNetworks) {
     _routeFactory = routeFactory;
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();

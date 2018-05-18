@@ -15,7 +15,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDNetwork;
-import org.batfish.symbolic.bdd.BDDRouteFactory;
+import org.batfish.symbolic.bdd.BDDNetFactory;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.smt.EdgeType; */
 
@@ -23,7 +23,7 @@ public class ReachabilityDomainAP {
 
   /*
 
-  private static BDDFactory factory = BDDRouteFactory.factory;
+  private static BDDFactory factory = BDDNetFactory.factory;
 
   private ReachabilityDomain _domain;
 

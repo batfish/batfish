@@ -17,6 +17,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDPacket;
 
 public class BDDAcl {
 
@@ -28,11 +29,11 @@ public class BDDAcl {
 
   private BDDPacket _pkt;
 
-  private BDDAcl(IpAccessList acl) {
+  private BDDAcl(BDDNetFactory netFactory, IpAccessList acl) {
     _bdd = null;
     _acl = acl;
-    _factory = BDDPacket.factory;
-    _pkt = new BDDPacket();
+    _factory = BDDNetFactory.factory;
+    _pkt = netFactory.createPacket();
   }
 
   private BDDAcl(BDDAcl other) {
@@ -42,8 +43,8 @@ public class BDDAcl {
     _pkt = other._pkt;
   }
 
-  public static BDDAcl create(IpAccessList acl) {
-    BDDAcl abdd = new BDDAcl(acl);
+  public static BDDAcl create(BDDNetFactory netFactory, IpAccessList acl) {
+    BDDAcl abdd = new BDDAcl(netFactory, acl);
     abdd.computeACL();
     return abdd;
   }

@@ -19,7 +19,7 @@ public class BDDFiniteDomain<T> {
   private BDDInteger _integer;
 
   public BDDFiniteDomain(BDDFactory factory, List<T> values, int index) {
-    int bits = numBits(values);
+    int bits = BDDUtils.numBits(values.size());
     _factory = factory;
     _values = values;
     _integer = BDDInteger.makeFromIndex(_factory, bits, index, false);
@@ -29,17 +29,6 @@ public class BDDFiniteDomain<T> {
     _factory = other._factory;
     _values = other._values;
     _integer = new BDDInteger(other._integer);
-  }
-
-  private int numBits(List<T> values) {
-    int size = values.size();
-    double log = Math.log((double) size);
-    double base = Math.log((double) 2);
-    if (size == 0) {
-      return 0;
-    } else {
-      return (int) Math.ceil(log / base);
-    }
   }
 
   public BDD value(T value) {

@@ -2,7 +2,7 @@ package org.batfish.symbolic.bdd;
 
 import java.util.Objects;
 import net.sf.javabdd.BDD;
-import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 
 public class BDDTransferFunction {
 

@@ -1,14 +1,50 @@
 package org.batfish.symbolic.bdd;
 
+import java.util.HashSet;
+import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.SubRange;
-import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
+import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.symbolic.AstVisitor;
+import org.batfish.symbolic.Graph;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 
 public class BDDUtils {
+
+  public static Set<Integer> findAllLocalPrefs(Graph g) {
+    Set<Integer> prefs = new HashSet<>();
+    AstVisitor v = new AstVisitor();
+    v.visit(
+        g.getConfigurations().values(),
+        stmt -> {
+          if (stmt instanceof SetLocalPreference) {
+            SetLocalPreference slp = (SetLocalPreference) stmt;
+            IntExpr ie = slp.getLocalPreference();
+            if (ie instanceof LiteralInt) {
+              LiteralInt l = (LiteralInt) ie;
+              prefs.add(l.getValue());
+            }
+          }
+        },
+        expr -> {});
+    return prefs;
+  }
+
+  public static int numBits(int size) {
+    double log = Math.log((double) size);
+    double base = Math.log((double) 2);
+    if (size == 0) {
+      return 0;
+    } else {
+      return (int) Math.ceil(log / base);
+    }
+  }
 
   public static BDD firstBitsEqual(BDDFactory factory, BDD[] bits, Ip ip, int length) {
     long b = ip.asLong();

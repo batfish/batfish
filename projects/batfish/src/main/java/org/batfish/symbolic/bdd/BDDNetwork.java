@@ -22,13 +22,13 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferResult;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
-import org.batfish.symbolic.bdd.BDDRouteFactory.BDDRoute;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 
 public class BDDNetwork {
 
   private Graph _graph;
 
-  private BDDRouteFactory _routeFactory;
+  private BDDNetFactory _netFactory;
 
   private NodesSpecifier _nodeSpecifier;
 
@@ -51,13 +51,13 @@ public class BDDNetwork {
   private BDDNetwork(
       Graph graph,
       NodesSpecifier nodesSpecifier,
-      BDDRouteConfig config,
+      BDDNetConfig config,
       PolicyQuotient pq,
       boolean ignoreNetworks) {
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
     _ignoreNetworks = ignoreNetworks;
-    _routeFactory = new BDDRouteFactory(graph, config);
+    _netFactory = new BDDNetFactory(graph, config);
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
@@ -67,12 +67,12 @@ public class BDDNetwork {
     _outAcls = new HashMap<>();
   }
 
-  public static BDDNetwork create(Graph g, BDDRouteConfig config, boolean ignoreNetworks) {
+  public static BDDNetwork create(Graph g, BDDNetConfig config, boolean ignoreNetworks) {
     return create(g, NodesSpecifier.ALL, config, ignoreNetworks);
   }
 
   public static BDDNetwork create(
-      Graph g, NodesSpecifier nodesSpecifier, BDDRouteConfig config, boolean ignoreNetworks) {
+      Graph g, NodesSpecifier nodesSpecifier, BDDNetConfig config, boolean ignoreNetworks) {
     PolicyQuotient pq = new PolicyQuotient(g);
     BDDNetwork network = new BDDNetwork(g, nodesSpecifier, config, pq, ignoreNetworks);
     network.computeInterfacePolicies();
@@ -88,7 +88,7 @@ public class BDDNetwork {
       networks = Graph.getOriginatedNetworks(conf);
     }
     TransferBuilder t = new TransferBuilder(g, conf, pol.getStatements(), _policyQuotient);
-    TransferResult<BDDTransferFunction, BDD> result = t.compute(_routeFactory, networks);
+    TransferResult<BDDTransferFunction, BDD> result = t.compute(_netFactory, networks);
     return result.getReturnValue();
   }
 
@@ -125,12 +125,12 @@ public class BDDNetwork {
 
         // Incoming ACL
         if (in != null) {
-          BDDAcl x = BDDAcl.create(in);
+          BDDAcl x = BDDAcl.create(_netFactory, in);
           _inAcls.put(ge, x);
         }
         // Outgoing ACL
         if (out != null) {
-          BDDAcl x = BDDAcl.create(out);
+          BDDAcl x = BDDAcl.create(_netFactory, out);
           _outAcls.put(ge, x);
         }
       }

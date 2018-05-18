@@ -1,6 +1,6 @@
 package org.batfish.symbolic.bdd;
 
-public class BDDRouteConfig {
+public class BDDNetConfig {
 
   private boolean _keepLp;
 
@@ -12,26 +12,26 @@ public class BDDRouteConfig {
 
   private boolean _keepOspfMetric;
 
-  private boolean _keepHistory;
+  private boolean _keepProtocol;
 
   private boolean _keepCommunities;
 
   private boolean _keepRouters;
 
-  public BDDRouteConfig(boolean abstraction) {
+  public BDDNetConfig(boolean abstraction) {
     if (abstraction) {
       _keepAd = false;
       _keepOspfMetric = false;
       _keepMed = false;
       _keepLp = false;
-      _keepHistory = true;
+      _keepProtocol = true;
       _keepCommunities = true;
       _keepMetric = false;
       _keepRouters = true;
     } else {
       _keepAd = true;
       _keepCommunities = true;
-      _keepHistory = true;
+      _keepProtocol = true;
       _keepLp = true;
       _keepMed = true;
       _keepMetric = true;
@@ -60,8 +60,8 @@ public class BDDRouteConfig {
     return _keepOspfMetric;
   }
 
-  public boolean getKeepHistory() {
-    return _keepHistory;
+  public boolean getKeepProtocol() {
+    return _keepProtocol;
   }
 
   public boolean getKeepCommunities() {
