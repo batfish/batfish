@@ -27,7 +27,6 @@ public class AIRoutesAnswerElement extends AnswerElement {
     this._routes = x;
   }
 
-
   @JsonProperty(PROP_ROUTES_BY_HOSTNAME)
   public SortedMap<String, SortedSet<RibEntry>> getRoutesByHostname() {
     return _routesByHostname;
@@ -38,7 +37,8 @@ public class AIRoutesAnswerElement extends AnswerElement {
     this._routesByHostname = x;
   }
 
-  @Override public String prettyPrint() {
+  @Override
+  public String prettyPrint() {
     StringBuilder sb = new StringBuilder();
     for (Entry<String, SortedSet<RibEntry>> e : _routesByHostname.entrySet()) {
       String router = e.getKey();

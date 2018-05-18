@@ -287,14 +287,14 @@ public class AbstractInterpreter {
           T newNeighborBgp = neighborBgp;
 
           // Update static
-          List<StaticRoute> srs = _graph.getStaticRoutes().get(neighbor, rev.getStart().getName());
+          /* List<StaticRoute> srs = _graph.getStaticRoutes().get(neighbor, rev.getStart().getName());
           if (srs != null) {
             Set<Prefix> pfxs = new HashSet<>();
             for (StaticRoute sr : srs) {
               pfxs.add(sr.getNetwork());
             }
             T stat = domain.value(neighbor, Protocol.STATIC, pfxs);
-          }
+          } */
 
           // Update OSPF
           if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)) {
