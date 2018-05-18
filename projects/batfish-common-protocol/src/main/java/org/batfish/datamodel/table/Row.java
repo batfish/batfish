@@ -9,11 +9,12 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
@@ -73,6 +74,19 @@ public class Row implements Comparable<Row> {
       return false;
     }
     return _data.equals(((Row) o)._data);
+  }
+
+  /**
+   * Gets the (raw) Json representation of the object stored in the row
+   *
+   * @param columnName The column to fetch
+   * @return The {@link JsonNode} object that represents the stored object
+   */
+  public JsonNode get(String columnName) {
+    if (!_data.has(columnName)) {
+      throw new NoSuchElementException("Column '" + columnName + "' does not exist");
+    }
+    return _data.get(columnName);
   }
 
   /**
@@ -143,10 +157,12 @@ public class Row implements Comparable<Row> {
   /**
    * Fetch the names of the columns in this Row
    *
-   * @return An Iterator over the column names
+   * @return The {@link Set} of names
    */
-  public Iterator<String> getColumnNames() {
-    return _data.fieldNames();
+  public Set<String> getColumnNames() {
+    HashSet<String> columns = new HashSet<>();
+    _data.fieldNames().forEachRemaining(column -> columns.add(column));
+    return columns;
   }
 
   @JsonValue
@@ -211,6 +227,17 @@ public class Row implements Comparable<Row> {
    */
   public Row put(String columnName, Object value) {
     _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
+    return this;
+  }
+
+  /**
+   * Removes the specified column from this row
+   *
+   * @param columnName The column to remove
+   * @return The Row object itself (to aid chaining)
+   */
+  public Row remove(String columnName) {
+    _data.remove(columnName);
     return this;
   }
 }
