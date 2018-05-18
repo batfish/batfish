@@ -197,5 +197,4 @@ public class BDDNetwork {
   public BDDNetFactory getNetFactory() {
     return _netFactory;
   }
-
 }
