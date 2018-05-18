@@ -44,6 +44,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_G
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -89,6 +90,7 @@ import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.State;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -101,6 +103,8 @@ import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -109,6 +113,7 @@ import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -1095,6 +1100,57 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasVrf("vrf2", hasOspfProcess(hasReferenceBandwidth(equalTo(3E9D)))));
     assertThat(c, hasVrf("vrf3", hasOspfProcess(hasReferenceBandwidth(equalTo(4E9D)))));
     assertThat(c, hasVrf("vrf4", hasOspfProcess(hasReferenceBandwidth(equalTo(5E9D)))));
+  }
+
+  @Test
+  public void testPsPreferencesBehavior() throws IOException {
+    Configuration c = parseConfig("policy-statement-preference");
+
+    RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
+
+    StaticRoute staticRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("10.0.1.0/24"))
+            .setNextHopInterface("nextint")
+            .setNextHopIp(new Ip("10.0.0.1"))
+            .build();
+
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    eb.setVrf("vrf1");
+    policyPreference.call(
+        eb.setOriginalRoute(staticRoute)
+            .setOutputRoute(new OspfExternalType2Route.Builder())
+            .build());
+
+    // Checking admin cost set on the output route
+    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123));
+  }
+
+  @Test
+  public void testPsPreferenceStructure() throws IOException {
+    Configuration c = parseConfig("policy-statement-preference");
+
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    eb.setVrf("vrf1");
+
+    RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
+
+    assertThat(policyPreference.getStatements(), hasSize(2));
+
+    // Extracting the If statement
+    MatcherAssert.assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
+
+    If i = (If) policyPreference.getStatements().get(0);
+
+    MatcherAssert.assertThat(i.getTrueStatements(), hasSize(1));
+    MatcherAssert.assertThat(
+        Iterables.getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
+
+    // Extracting the SetAdmininstrativeCost trueStatement
+    SetAdministrativeCost setAdminCost =
+        (SetAdministrativeCost) Iterables.getOnlyElement(i.getTrueStatements());
+
+    assertThat(setAdminCost.getAdmin().evaluate(eb.build()), equalTo(123));
   }
 
   @Test
