@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import static org.batfish.main.SrcNattedConstraint.REQUIRE_NOT_SRC_NATTED;
 import static org.batfish.main.SrcNattedConstraint.REQUIRE_SRC_NATTED;
+import static org.batfish.main.SrcNattedConstraint.UNCONSTRAINED;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -77,7 +78,7 @@ public class NodJobTest {
   }
 
   private NodJob getNodJob(HeaderSpace headerSpace) {
-    return getNodJob(headerSpace, null);
+    return getNodJob(headerSpace, UNCONSTRAINED);
   }
 
   private NodJob getNodJob(HeaderSpace headerSpace, SrcNattedConstraint srcNatted) {

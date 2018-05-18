@@ -77,20 +77,20 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
     }
   }
 
-  protected final HeaderSpace _headerSpace;
+  protected final @Nonnull HeaderSpace _headerSpace;
 
-  protected final List<IngressLocation> _ingressLocations;
+  protected final @Nonnull List<IngressLocation> _ingressLocations;
 
-  protected final Set<String> _nonTransitNodes;
+  protected final @Nonnull Set<String> _nonTransitNodes;
 
-  protected final SrcNattedConstraint _srcNatted;
+  protected final @Nonnull SrcNattedConstraint _srcNatted;
 
-  protected final Set<String> _transitNodes;
+  protected final @Nonnull Set<String> _transitNodes;
 
   public ReachabilityQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
       @Nonnull ImmutableList<IngressLocation> ingressLocations,
-      SrcNattedConstraint srcNatted,
+      @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
     _headerSpace = headerSpace;

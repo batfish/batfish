@@ -99,7 +99,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Set<String> finalNodes,
       @Nonnull ImmutableList<IngressLocation> ingressLocations,
-      SrcNattedConstraint srcNatted,
+      @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
     super(headerSpace, ingressLocations, srcNatted, transitNodes, nonTransitNodes);
