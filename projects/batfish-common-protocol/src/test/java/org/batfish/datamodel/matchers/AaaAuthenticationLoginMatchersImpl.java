@@ -31,7 +31,7 @@ public class AaaAuthenticationLoginMatchersImpl {
       super(
           subMatcher,
           String.format("a AaaAuthenticationLogin with list for key '%s'", key),
-          "list for key");
+          String.format("list for key '%s'", key));
       _key = key;
     }
 
