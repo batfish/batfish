@@ -52450,7 +52450,7 @@
                 19,
                 20
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           }
         },
@@ -52966,7 +52966,7 @@
                 161,
                 162
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "crypto isakmp profile" : {
@@ -52978,7 +52978,7 @@
                 167,
                 168
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "crypto keyring" : {
@@ -54255,17 +54255,11 @@
           },
           "route-map" : {
             "as1_to_as2" : {
-              "bgp inbound route-map" : [
-                26
-              ],
               "bgp outbound route-map" : [
                 26
               ]
             },
             "as1_to_as3" : {
-              "bgp inbound route-map" : [
-                28
-              ],
               "bgp outbound route-map" : [
                 28
               ]
@@ -54308,12 +54302,12 @@
         "cadant_bgp" : {
           "route-map" : {
             "blarp" : {
-              "bgp inbound route-map" : [
+              "bgp outbound route-map" : [
                 28
               ]
             },
             "blerp" : {
-              "bgp inbound route-map" : [
+              "bgp outbound route-map" : [
                 35
               ]
             }
@@ -54927,9 +54921,6 @@
               ]
             },
             "EG_CCC" : {
-              "bgp inbound route-map" : [
-                29
-              ],
               "bgp outbound route-map" : [
                 29
               ]

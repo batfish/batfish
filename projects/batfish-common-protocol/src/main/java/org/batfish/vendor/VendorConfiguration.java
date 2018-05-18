@@ -234,23 +234,12 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
-  public void defineStructure(StructureType structureType, String name, int line) {
-    defineStructure(structureType, name, line, false);
-  }
-
   /**
    * Updates structure definitions to include the specified structure {@code name} and {@code
-   * structureType} and initializes the number of referrers. If {@code unknownReferrers} is set,
-   * then reference counting will not occur for this structure when {@code #markAbstractStructure}
-   * or {@code #markConcreteStructure} is called.
+   * structureType} and initializes the number of referrers.
    */
-  public void defineStructure(
-      StructureType structureType, String name, int line, boolean unknownReferrers) {
-    recordStructure(
-        structureType,
-        name,
-        unknownReferrers ? DefinedStructureInfo.UNKNOWN_NUM_REFERRERS : 0,
-        line);
+  public void defineStructure(StructureType structureType, String name, int line) {
+    recordStructure(structureType, name, 0, line);
   }
 
   public void recordStructure(

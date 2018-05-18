@@ -839,14 +839,6 @@
           ]
         }
       },
-      "undefined:route-map:usage:bgp inbound route-map:EG_CCC" : {
-        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'EG_CCC'",
-        "files" : {
-          "nexus_bgp" : [
-            29
-          ]
-        }
-      },
       "undefined:route-map:usage:bgp inbound route-map:IN_BBB" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'IN_BBB'",
         "files" : {
@@ -863,22 +855,6 @@
           ]
         }
       },
-      "undefined:route-map:usage:bgp inbound route-map:as1_to_as2" : {
-        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'as1_to_as2'",
-        "files" : {
-          "bgp_address_family" : [
-            26
-          ]
-        }
-      },
-      "undefined:route-map:usage:bgp inbound route-map:as1_to_as3" : {
-        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'as1_to_as3'",
-        "files" : {
-          "bgp_address_family" : [
-            28
-          ]
-        }
-      },
       "undefined:route-map:usage:bgp inbound route-map:as2_to_as1" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'as2_to_as1'",
         "files" : {
@@ -892,22 +868,6 @@
         "files" : {
           "bgp_address_family" : [
             29
-          ]
-        }
-      },
-      "undefined:route-map:usage:bgp inbound route-map:blarp" : {
-        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'blarp'",
-        "files" : {
-          "cadant_bgp" : [
-            28
-          ]
-        }
-      },
-      "undefined:route-map:usage:bgp inbound route-map:blerp" : {
-        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'blerp'",
-        "files" : {
-          "cadant_bgp" : [
-            35
           ]
         }
       },
@@ -964,6 +924,22 @@
         "files" : {
           "bgp_address_family" : [
             28
+          ]
+        }
+      },
+      "undefined:route-map:usage:bgp outbound route-map:blarp" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp outbound route-map' named 'blarp'",
+        "files" : {
+          "cadant_bgp" : [
+            28
+          ]
+        }
+      },
+      "undefined:route-map:usage:bgp outbound route-map:blerp" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp outbound route-map' named 'blerp'",
+        "files" : {
+          "cadant_bgp" : [
+            35
           ]
         }
       },
@@ -1111,17 +1087,11 @@
         },
         "route-map" : {
           "as1_to_as2" : {
-            "bgp inbound route-map" : [
-              26
-            ],
             "bgp outbound route-map" : [
               26
             ]
           },
           "as1_to_as3" : {
-            "bgp inbound route-map" : [
-              28
-            ],
             "bgp outbound route-map" : [
               28
             ]
@@ -1164,12 +1134,12 @@
       "cadant_bgp" : {
         "route-map" : {
           "blarp" : {
-            "bgp inbound route-map" : [
+            "bgp outbound route-map" : [
               28
             ]
           },
           "blerp" : {
-            "bgp inbound route-map" : [
+            "bgp outbound route-map" : [
               35
             ]
           }
@@ -1783,9 +1753,6 @@
             ]
           },
           "EG_CCC" : {
-            "bgp inbound route-map" : [
-              29
-            ],
             "bgp outbound route-map" : [
               29
             ]

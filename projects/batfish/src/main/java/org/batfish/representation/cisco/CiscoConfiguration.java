@@ -3680,6 +3680,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
+    // ISAKMP mark self-references
+    markConcreteStructure(
+        CiscoStructureType.ISAKMP_POLICY, CiscoStructureUsage.ISAKMP_POLICY_SELF_REF);
+    markConcreteStructure(
+        CiscoStructureType.ISAKMP_PROFILE, CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF);
+
     // class-map
     markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
 

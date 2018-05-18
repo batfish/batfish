@@ -61,6 +61,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_FILTER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE6_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_OUTBOUND_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_CONNECTED_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;
@@ -102,7 +103,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_POOL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_POLICY_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_KEYRING;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
@@ -1043,13 +1046,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    defineStructure(type, name, ctx, false);
-  }
-
-  private void defineStructure(
-      StructureType type, String name, ParserRuleContext ctx, boolean unknownReferrers) {
     for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
-      _configuration.defineStructure(type, name, i, unknownReferrers);
+      _configuration.defineStructure(type, name, i);
     }
   }
 
@@ -1527,8 +1525,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     _currentIsakmpPolicy = new IsakmpPolicy(ctx.name.getText(), ctx.getStart().getLine());
     _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
-    // Isakmp policies are not explicitly referenced, so set to have unknownReferrers
-    defineStructure(ISAKMP_POLICY, ctx.name.getText(), ctx, true);
+    defineStructure(ISAKMP_POLICY, ctx.name.getText(), ctx);
+    // Isakmp policies are not explicitly referenced, so add a self-reference here
+    _configuration.referenceStructure(
+        ISAKMP_POLICY, ctx.name.getText(), ISAKMP_POLICY_SELF_REF, ctx.name.start.getLine());
   }
 
   @Override
@@ -1537,8 +1537,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("IsakmpProfile should be null!");
     }
     _currentIsakmpProfile = new IsakmpProfile(ctx.name.getText(), ctx.getStart().getLine());
-    // Isakmp profiles are not explicitly referenced, so set to have unknownReferrers
-    defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx, true);
+    defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx);
+    // Isakmp profiles are not explicitly referenced, so add a self-reference here
+    _configuration.referenceStructure(
+        ISAKMP_PROFILE, ctx.name.getText(), ISAKMP_PROFILE_SELF_REF, ctx.name.start.getLine());
   }
 
   @Override
@@ -6575,11 +6577,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ipv6) {
         _currentPeerGroup.setOutboundRoute6Map(mapName);
         _currentPeerGroup.setOutboundRoute6MapLine(line);
-        usage = BGP_INBOUND_ROUTE6_MAP;
+        usage = BGP_OUTBOUND_ROUTE6_MAP;
       } else {
         _currentPeerGroup.setOutboundRouteMap(mapName);
         _currentPeerGroup.setOutboundRouteMapLine(line);
-        usage = BGP_INBOUND_ROUTE_MAP;
+        usage = BGP_OUTBOUND_ROUTE_MAP;
       }
     } else {
       throw new BatfishException("bad direction");
