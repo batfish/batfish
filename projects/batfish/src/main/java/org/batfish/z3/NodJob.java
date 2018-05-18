@@ -12,7 +12,6 @@ import java.time.Instant;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.config.Settings;
-import org.batfish.specifier.Location;
 import org.batfish.z3.expr.BooleanExpr;
 
 public final class NodJob extends AbstractNodJob {
@@ -27,7 +26,7 @@ public final class NodJob extends AbstractNodJob {
       Settings settings,
       Synthesizer dataPlaneSynthesizer,
       QuerySynthesizer querySynthesizer,
-      Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint,
+      Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint,
       String tag,
       boolean optimize) {
     super(settings, ingressLocationsBySrcIpConstraint, tag);

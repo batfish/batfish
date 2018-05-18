@@ -35,9 +35,6 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.Location;
-import org.batfish.specifier.VrfLocation;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.junit.Before;
@@ -58,9 +55,9 @@ public class NodJobChunkingTest {
   private Vrf _srcVrf1;
   private Vrf _srcVrf2;
   private Synthesizer _synthesizer;
-  private Location _ingressLocation1;
-  private Location _ingressLocation2;
-  private Location _ingressLocation3;
+  private IngressLocation _ingressLocation1;
+  private IngressLocation _ingressLocation2;
+  private IngressLocation _ingressLocation3;
   private String _ifaceName;
 
   @Before
@@ -93,8 +90,8 @@ public class NodJobChunkingTest {
     _srcNode2 = cb.build();
     _srcVrf1 = vb.setOwner(_srcNode1).build();
     _srcVrf2 = vb.setOwner(_srcNode2).build();
-    _ingressLocation1 = new VrfLocation(_srcNode1.getHostname(), _srcVrf1.getName());
-    _ingressLocation2 = new VrfLocation(_srcNode2.getHostname(), _srcVrf2.getName());
+    _ingressLocation1 = IngressLocation.vrf(_srcNode1.getHostname(), _srcVrf1.getName());
+    _ingressLocation2 = IngressLocation.vrf(_srcNode2.getHostname(), _srcVrf2.getName());
     _dstNode = cb.build();
     Vrf dstVrf = vb.setOwner(_dstNode).build();
 
@@ -108,7 +105,7 @@ public class NodJobChunkingTest {
             .build();
 
     _ifaceName = iface.getName();
-    _ingressLocation3 = new InterfaceLinkLocation(_srcNode1.getHostname(), _ifaceName);
+    _ingressLocation3 = IngressLocation.interfaceLink(_srcNode1.getHostname(), _ifaceName);
 
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
@@ -181,20 +178,20 @@ public class NodJobChunkingTest {
             .setHeaderSpace(new HeaderSpace())
             .setIngressLocations(
                 ImmutableList.of(
-                    new InterfaceLinkLocation(_srcNode1.getHostname(), _ifaceName),
-                    new VrfLocation(_srcNode1.getHostname(), _srcVrf1.getName()),
-                    new VrfLocation(_srcNode2.getHostname(), _srcVrf2.getName())))
+                    IngressLocation.interfaceLink(_srcNode1.getHostname(), _ifaceName),
+                    IngressLocation.vrf(_srcNode1.getHostname(), _srcVrf1.getName()),
+                    IngressLocation.vrf(_srcNode2.getHostname(), _srcVrf2.getName())))
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
             .build();
 
-    Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint =
-        ImmutableMultimap.<BooleanExpr, Location>builder()
+    Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
+        ImmutableMultimap.<BooleanExpr, IngressLocation>builder()
             .putAll(
                 TrueExpr.INSTANCE,
                 ImmutableSet.of(
-                    new InterfaceLinkLocation(_srcNode1.getHostname(), _ifaceName),
-                    new VrfLocation(_srcNode1.getHostname(), _srcVrf1.getName()),
-                    new VrfLocation(_srcNode2.getHostname(), _srcVrf2.getName())))
+                    IngressLocation.interfaceLink(_srcNode1.getHostname(), _ifaceName),
+                    IngressLocation.vrf(_srcNode1.getHostname(), _srcVrf1.getName()),
+                    IngressLocation.vrf(_srcNode2.getHostname(), _srcVrf2.getName())))
             .build();
 
     return new NodJob(
@@ -213,8 +210,8 @@ public class NodJobChunkingTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<Location, Map<String, Long>> fieldConstraintsByIngressPoint =
-        nodJob.getIngressLocationConstraints(z3Context, smtInput);
+    Map<IngressLocation, Map<String, Long>> fieldConstraintsByIngressPoint =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
     assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(3));
     assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation1));
     assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation2));

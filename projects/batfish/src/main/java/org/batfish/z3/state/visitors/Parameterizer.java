@@ -202,7 +202,7 @@ public class Parameterizer implements GenericStateExprVisitor<List<StateParamete
   }
 
   @Override
-  public List<StateParameter> visitOriginateInterface(
+  public List<StateParameter> visitOriginateInterfaceLink(
       OriginateInterfaceLink originateInterfaceLink) {
     return ImmutableList.of(
         new StateParameter(originateInterfaceLink.getHostname(), NODE),

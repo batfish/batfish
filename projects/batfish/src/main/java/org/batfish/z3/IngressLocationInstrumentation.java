@@ -10,9 +10,6 @@ import java.math.RoundingMode;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.Location;
-import org.batfish.specifier.VrfLocation;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
@@ -39,14 +36,14 @@ public class IngressLocationInstrumentation implements GenericStatementVisitor<S
 
   private final Field _ingressLocationField;
 
-  private final List<Location> _ingressLocations;
+  private final ImmutableList<IngressLocation> _ingressLocations;
 
-  private final ImmutableMultimap<BooleanExpr, Location> _ingressLocationsBySrcIpConstraint;
+  private final ImmutableMultimap<BooleanExpr, IngressLocation> _ingressLocationsBySrcIpConstraint;
 
   public static final String INGRESS_LOCATION_FIELD_NAME = "INGRESS_LOCATION";
 
   public IngressLocationInstrumentation(
-      Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint) {
+      Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint) {
     _ingressLocations = ImmutableList.copyOf(ingressLocationsBySrcIpConstraint.values());
     _ingressLocationsBySrcIpConstraint =
         ImmutableMultimap.copyOf(ingressLocationsBySrcIpConstraint);
@@ -59,7 +56,7 @@ public class IngressLocationInstrumentation implements GenericStatementVisitor<S
     return _fieldBits;
   }
 
-  public List<Location> getIngressLocations() {
+  public List<IngressLocation> getIngressLocations() {
     return _ingressLocations;
   }
 
@@ -72,7 +69,7 @@ public class IngressLocationInstrumentation implements GenericStatementVisitor<S
             .map(
                 entry -> {
                   BooleanExpr srcIpConstraint = entry.getKey();
-                  Collection<Location> locations = entry.getValue();
+                  Collection<IngressLocation> locations = entry.getValue();
                   return new AndExpr(
                       ImmutableList.of(
                           srcIpConstraint,
@@ -85,7 +82,7 @@ public class IngressLocationInstrumentation implements GenericStatementVisitor<S
             .collect(Collectors.toList()));
   }
 
-  private BooleanExpr getLocationConstraint(Location location) {
+  private BooleanExpr getLocationConstraint(IngressLocation location) {
     int index = _ingressLocations.indexOf(location);
     if (index < 0) {
       return FalseExpr.INSTANCE;
@@ -102,7 +99,8 @@ public class IngressLocationInstrumentation implements GenericStatementVisitor<S
     StateExpr postState = basicRuleStatement.getPostconditionState();
     if (postState instanceof OriginateVrf) {
       OriginateVrf originateVrf = (OriginateVrf) postState;
-      Location location = new VrfLocation(originateVrf.getHostname(), originateVrf.getVrf());
+      IngressLocation location =
+          IngressLocation.vrf(originateVrf.getHostname(), originateVrf.getVrf());
 
       return new BasicRuleStatement(
           new AndExpr(
@@ -113,8 +111,8 @@ public class IngressLocationInstrumentation implements GenericStatementVisitor<S
           postState);
     } else if (postState instanceof OriginateInterfaceLink) {
       OriginateInterfaceLink originateInterfaceLink = (OriginateInterfaceLink) postState;
-      Location location =
-          new InterfaceLinkLocation(
+      IngressLocation location =
+          IngressLocation.interfaceLink(
               originateInterfaceLink.getHostname(), originateInterfaceLink.getIface());
       return new BasicRuleStatement(
           new AndExpr(

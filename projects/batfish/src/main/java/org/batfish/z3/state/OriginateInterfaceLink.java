@@ -14,7 +14,7 @@ public class OriginateInterfaceLink extends StateExpr {
 
     @Override
     public void accept(StateVisitor visitor) {
-      visitor.visitOriginateInterface(this);
+      visitor.visitOriginateInterfaceLink(this);
     }
   }
 
@@ -29,7 +29,7 @@ public class OriginateInterfaceLink extends StateExpr {
 
   @Override
   public <R> R accept(GenericStateExprVisitor<R> visitor) {
-    return visitor.visitOriginateInterface(this);
+    return visitor.visitOriginateInterfaceLink(this);
   }
 
   @Nonnull

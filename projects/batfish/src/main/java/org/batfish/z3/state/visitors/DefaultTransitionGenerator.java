@@ -617,7 +617,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNumberedQuery(NumberedQuery.State numberedQuery) {}
 
   @Override
-  public void visitOriginateInterface(OriginateInterfaceLink.State originateInterface) {}
+  public void visitOriginateInterfaceLink(OriginateInterfaceLink.State originateInterface) {}
 
   @Override
   public void visitOriginateVrf(OriginateVrf.State originateVrf) {}

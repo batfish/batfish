@@ -22,7 +22,7 @@ public class CompositeNodJob extends AbstractNodJob {
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
-      SortedSet<IngressPoint> ingressPoints,
+      SortedSet<IngressLocation> ingressPoints,
       String tag) {
     super(settings, null, tag);
     _numPrograms = dataPlaneSynthesizer.size();

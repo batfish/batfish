@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Flow;
-import org.batfish.specifier.Location;
+import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.RuleStatement;
 
@@ -31,7 +31,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
 
   public AbstractNodJob(
       Settings settings,
-      Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint,
+      Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint,
       String tag) {
     super(settings);
     _tag = tag;
@@ -43,7 +43,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
    * Try to find a model for each OriginateVrf. If an OriginateVrf does not have an entry in the
    * Map, then the query is unsat when originating from there.
    */
-  protected Map<Location, Map<String, Long>> getIngressLocationConstraints(
+  protected Map<IngressLocation, Map<String, Long>> getSolutionPerIngressLocation(
       Context ctx, SmtInput smtInput) {
     Solver solver = ctx.mkSolver();
     solver.add(smtInput._expr);
@@ -53,7 +53,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         ctx.mkBVConst(
             IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, originateVrfBvSize);
 
-    ImmutableMap.Builder<Location, Map<String, Long>> models = ImmutableMap.builder();
+    ImmutableMap.Builder<IngressLocation, Map<String, Long>> models = ImmutableMap.builder();
     // keep refining until no new models
     while (true) {
       try {
@@ -61,7 +61,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         int ingressLocationId =
             Math.toIntExact(
                 constraints.get(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME));
-        Location ingressLocation =
+        IngressLocation ingressLocation =
             _ingressLocationInstrumentation.getIngressLocations().get(ingressLocationId);
         models.put(ingressLocation, constraints);
 
@@ -99,8 +99,8 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     long startTime = System.currentTimeMillis();
     try (Context ctx = new Context()) {
       SmtInput smtInput = computeSmtInput(startTime, ctx);
-      Map<Location, Map<String, Long>> ingressLocationConstraints =
-          getIngressLocationConstraints(ctx, smtInput);
+      Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+          getSolutionPerIngressLocation(ctx, smtInput);
       Set<Flow> flows = getFlows(ingressLocationConstraints);
       return new NodJobResult(startTime, _logger.getHistory(), flows);
     } catch (Z3Exception e) {
@@ -126,11 +126,15 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         .setInput(program.getInput())
         .setQueries(program.getQueries())
         .setRules(rules)
-        .setSmtConstraint(program.getSmtConstraint())
+        .setSmtConstraint(
+            new AndExpr(
+                ImmutableList.of(
+                    program.getSmtConstraint(),
+                    _ingressLocationInstrumentation.getSrcIpConstraint())))
         .build();
   }
 
-  protected Set<Flow> getFlows(Map<Location, Map<String, Long>> ingressLocationConstraints) {
+  protected Set<Flow> getFlows(Map<IngressLocation, Map<String, Long>> ingressLocationConstraints) {
     return ingressLocationConstraints
         .entrySet()
         .stream()

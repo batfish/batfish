@@ -87,7 +87,7 @@ public interface GenericStateExprVisitor<R> {
 
   R visitNumberedQuery(NumberedQuery numberedQuery);
 
-  R visitOriginateInterface(OriginateInterfaceLink originateInterfaceLink);
+  R visitOriginateInterfaceLink(OriginateInterfaceLink originateInterfaceLink);
 
   R visitOriginateVrf(OriginateVrf originateVrf);
 

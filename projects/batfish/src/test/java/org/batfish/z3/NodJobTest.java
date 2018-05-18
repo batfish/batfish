@@ -51,8 +51,6 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.SrcNattedConstraint;
-import org.batfish.specifier.Location;
-import org.batfish.specifier.VrfLocation;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.junit.Before;
@@ -65,7 +63,7 @@ public class NodJobTest {
   private SortedMap<String, Configuration> _configs;
   private DataPlane _dataPlane;
   private Configuration _dstNode;
-  private Location _ingressLocation;
+  private IngressLocation _ingressLocation;
   private Configuration _srcNode;
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
@@ -83,7 +81,7 @@ public class NodJobTest {
   }
 
   private NodJob getNodJob(HeaderSpace headerSpace, SrcNattedConstraint srcNatted) {
-    Location ingressLocation = new VrfLocation(_srcNode.getName(), _srcVrf.getName());
+    IngressLocation ingressLocation = IngressLocation.vrf(_srcNode.getName(), _srcVrf.getName());
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
@@ -94,8 +92,8 @@ public class NodJobTest {
             .setRequiredTransitNodes(ImmutableSet.of())
             .setForbiddenTransitNodes(ImmutableSet.of())
             .build();
-    Multimap<BooleanExpr, Location> ingressLocations =
-        ImmutableMultimap.<BooleanExpr, Location>builder()
+    Multimap<BooleanExpr, IngressLocation> ingressLocations =
+        ImmutableMultimap.<BooleanExpr, IngressLocation>builder()
             .putAll(TrueExpr.INSTANCE, ImmutableSet.of(ingressLocation))
             .build();
     return new NodJob(
@@ -121,7 +119,7 @@ public class NodJobTest {
     _srcNode = cb.build();
     _dstNode = cb.build();
     _srcVrf = vb.setOwner(_srcNode).build();
-    _ingressLocation = new VrfLocation(_srcNode.getHostname(), _srcVrf.getName());
+    _ingressLocation = IngressLocation.vrf(_srcNode.getHostname(), _srcVrf.getName());
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
     Ip poolIp1 = new Ip("1.0.0.10");
@@ -203,8 +201,8 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<Location, Map<String, Long>> ingressLocationConstraints =
-        nodJob.getIngressLocationConstraints(z3Context, smtInput);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
     assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
     assertThat(ingressLocationConstraints, hasKey(_ingressLocation));
     Map<String, Long> fieldConstraints = ingressLocationConstraints.get(_ingressLocation);
@@ -268,8 +266,8 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<Location, Map<String, Long>> ingressLocationConstraints =
-        nodJob.getIngressLocationConstraints(z3Context, smtInput);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
     assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
     assertThat(ingressLocationConstraints, hasKey(_ingressLocation));
     Map<String, Long> fieldConstraints = ingressLocationConstraints.get(_ingressLocation);

@@ -11,11 +11,6 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.main.SrcNattedConstraint;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.InterfaceLocation;
-import org.batfish.specifier.Location;
-import org.batfish.specifier.LocationVisitor;
-import org.batfish.specifier.VrfLocation;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
@@ -34,7 +29,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
     protected HeaderSpace _headerSpace;
 
-    protected List<Location> _ingressLocations;
+    protected ImmutableList<IngressLocation> _ingressLocations;
 
     protected Set<String> _requiredTransitNodes;
 
@@ -66,7 +61,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
       return getThis();
     }
 
-    public T setIngressLocations(List<Location> ingressLocations) {
+    public T setIngressLocations(List<IngressLocation> ingressLocations) {
       _ingressLocations = ImmutableList.copyOf(ingressLocations);
       return getThis();
     }
@@ -84,7 +79,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
   protected final HeaderSpace _headerSpace;
 
-  protected final List<Location> _ingressLocations;
+  protected final List<IngressLocation> _ingressLocations;
 
   protected final Set<String> _nonTransitNodes;
 
@@ -94,7 +89,7 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
   public ReachabilityQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
-      @Nonnull List<Location> ingressLocations,
+      @Nonnull ImmutableList<IngressLocation> ingressLocations,
       SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
@@ -111,33 +106,27 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
         new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP));
 
     _ingressLocations.forEach(
-        new LocationVisitor<Void>() {
-              @Override
-              public Void visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
-                rules.add(
-                    new BasicRuleStatement(
-                        initialConstraint,
-                        new OriginateInterfaceLink(
-                            interfaceLinkLocation.getNodeName(),
-                            interfaceLinkLocation.getInterfaceName())));
-                return null;
-              }
+        ingressLocation -> {
+          switch (ingressLocation.getType()) {
+            case INTERFACE_LINK:
+              rules.add(
+                  new BasicRuleStatement(
+                      initialConstraint,
+                      new OriginateInterfaceLink(
+                          ingressLocation.getNode(), ingressLocation.getInterface())));
+              break;
+            case VRF:
+              rules.add(
+                  new BasicRuleStatement(
+                      initialConstraint,
+                      new OriginateVrf(ingressLocation.getNode(), ingressLocation.getVrf())));
 
-              @Override
-              public Void visitInterfaceLocation(InterfaceLocation interfaceLocation) {
-                throw new BatfishException("TODO: InterfaceLocation");
-              }
-
-              @Override
-              public Void visitVrfLocation(VrfLocation vrfLocation) {
-                rules.add(
-                    new BasicRuleStatement(
-                        initialConstraint,
-                        new OriginateVrf(vrfLocation.getHostname(), vrfLocation.getVrf())));
-                return null;
-              }
-            }
-            ::visit);
+              break;
+            default:
+              throw new BatfishException(
+                  "Unexpected IngressLocation Type: " + ingressLocation.getType());
+          }
+        });
   }
 
   protected final BooleanExpr getSrcNattedConstraint() {

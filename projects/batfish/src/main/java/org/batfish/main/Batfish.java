@@ -178,7 +178,10 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationVisitor;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.specifier.VrfLocation;
@@ -192,7 +195,7 @@ import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
-import org.batfish.z3.IngressPoint;
+import org.batfish.z3.IngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodFirstUnsatJob;
 import org.batfish.z3.NodJob;
@@ -3073,8 +3076,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
-      SortedSet<IngressPoint> ingressPoints =
-          ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
+      SortedSet<IngressLocation> ingressPoints =
+          ImmutableSortedSet.of(IngressLocation.vrf(ingressNode, vrf));
       CompositeNodJob job =
           new CompositeNodJob(settings, commonEdgeSynthesizers, queries, ingressPoints, tag);
       jobs.add(job);
@@ -3102,8 +3105,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new ReachEdgeQuerySynthesizer(
                 ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
-        SortedSet<IngressPoint> ingressPoints =
-            ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
+        SortedSet<IngressLocation> ingressPoints =
+            ImmutableSortedSet.of(IngressLocation.vrf(ingressNode, vrf));
         CompositeNodJob job =
             new CompositeNodJob(settings, missingEdgeSynthesizers, queries, ingressPoints, tag);
         jobs.add(job);
@@ -3531,7 +3534,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                                   .NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
                                       .setHeaderSpace(reachabilitySettings.getHeaderSpace())
                                       .setIngressLocations(
-                                          ImmutableList.of(new VrfLocation(node, vrf)))
+                                          ImmutableList.of(IngressLocation.vrf(node, vrf)))
                                       .setFinalNodes(ImmutableSet.of())
                                       .setRequiredTransitNodes(ImmutableSet.of())
                                       .setForbiddenTransitNodes(ImmutableSet.of())
@@ -3554,8 +3557,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                       .setForbiddenTransitNodes(ImmutableSet.of())
                                       .build();
                               notAcceptQuery.setNegate(true);
-                              SortedSet<IngressPoint> ingressPoints =
-                                  ImmutableSortedSet.of(IngressPoint.ingressVrf(node, vrf));
+                              SortedSet<IngressLocation> ingressPoints =
+                                  ImmutableSortedSet.of(IngressLocation.vrf(node, vrf));
                               List<QuerySynthesizer> queries =
                                   ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
                               return new CompositeNodJob(
@@ -4278,10 +4281,52 @@ public class Batfish extends PluginConsumer implements IBatfish {
             parameters.getSourceLocationsByIpSpace(),
             reachabilitySettings.getSpecialize());
 
-    // chunk ingress locations
-    Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint =
-        dataPlaneSynthesizer.getInput().getIngressLocationsBySrcIpConstraint();
+    /*
+     * get ingress locations, and convert Locations to IngressLocation reachability
+     * analysis and traceroute.
+     */
 
+    Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
+        CommonUtil.toImmutableMultimap(
+            dataPlaneSynthesizer.getInput().getIngressLocationsBySrcIpConstraint(),
+            locations ->
+                locations
+                    .stream()
+                    .map(
+                        new LocationVisitor<IngressLocation>() {
+
+                              @Override
+                              public IngressLocation visitInterfaceLinkLocation(
+                                  InterfaceLinkLocation interfaceLinkLocation) {
+                                return IngressLocation.interfaceLink(
+                                    interfaceLinkLocation.getNodeName(),
+                                    interfaceLinkLocation.getInterfaceName());
+                              }
+
+                              @Override
+                              public IngressLocation visitInterfaceLocation(
+                                  InterfaceLocation interfaceLocation) {
+                                String node = interfaceLocation.getNodeName();
+                                String iface = interfaceLocation.getInterfaceName();
+                                return IngressLocation.vrf(
+                                    node,
+                                    configurations
+                                        .get(node)
+                                        .getInterfaces()
+                                        .get(iface)
+                                        .getVrfName());
+                              }
+
+                              @Override
+                              public IngressLocation visitVrfLocation(VrfLocation vrfLocation) {
+                                return IngressLocation.vrf(
+                                    vrfLocation.getHostname(), vrfLocation.getVrf());
+                              }
+                            }
+                            ::visit)
+                    .collect(ImmutableSet.toImmutableSet()));
+
+    // chunk ingress locations
     int chunkSize =
         Math.max(
             1,
@@ -4290,16 +4335,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 parameters.getSourceLocationsByIpSpace().size() / _settings.getAvailableThreads()));
 
     // partition ingress locations into chunks.
-    List<Entry<BooleanExpr, Location>> ingressLocations =
+    List<Entry<BooleanExpr, IngressLocation>> ingressLocations =
         ingressLocationsBySrcIpConstraint
             .entries()
             .stream()
             .collect(ImmutableList.toImmutableList());
 
-    List<List<Entry<BooleanExpr, Location>>> partitionedIngressLocations =
+    List<List<Entry<BooleanExpr, IngressLocation>>> partitionedIngressLocations =
         Lists.partition(ingressLocations, chunkSize);
 
-    List<Multimap<BooleanExpr, Location>> chunkedIngressLocationsBySrcIpSpace =
+    List<Multimap<BooleanExpr, IngressLocation>> chunkedIngressLocationsBySrcIpSpace =
         partitionedIngressLocations
             .stream()
             .map(ImmutableMultimap::copyOf)

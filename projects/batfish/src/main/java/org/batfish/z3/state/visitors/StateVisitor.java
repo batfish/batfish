@@ -85,7 +85,7 @@ public interface StateVisitor {
 
   void visitNumberedQuery(NumberedQuery.State numberedQuery);
 
-  void visitOriginateInterface(OriginateInterfaceLink.State state);
+  void visitOriginateInterfaceLink(OriginateInterfaceLink.State state);
 
   void visitOriginateVrf(OriginateVrf.State originateVrf);
 

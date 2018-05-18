@@ -3,13 +3,11 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.main.SrcNattedConstraint;
-import org.batfish.specifier.Location;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
@@ -59,7 +57,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
 
   private MultipathInconsistencyQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
-      @Nonnull List<Location> ingressLocations,
+      @Nonnull ImmutableList<IngressLocation> ingressLocations,
       @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {

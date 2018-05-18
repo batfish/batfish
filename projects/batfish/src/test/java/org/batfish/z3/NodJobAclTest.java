@@ -53,9 +53,6 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.specifier.InterfaceLinkLocation;
-import org.batfish.specifier.Location;
-import org.batfish.specifier.VrfLocation;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.junit.Test;
@@ -159,7 +156,7 @@ public class NodJobAclTest {
             .setSrcIps(ImmutableList.of(new IpWildcard("1.1.1.1/32")))
             .setDstIps(ImmutableList.of(new IpWildcard("3.0.0.1/32")))
             .build();
-    Location ingressLocation = new VrfLocation(srcNode.getHostname(), srcVrf.getName());
+    IngressLocation ingressLocation = IngressLocation.vrf(srcNode.getHostname(), srcVrf.getName());
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
@@ -167,7 +164,7 @@ public class NodJobAclTest {
             .setHeaderSpace(headerSpace)
             .setIngressLocations(ImmutableList.of(ingressLocation))
             .build();
-    Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint =
+    Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
         ImmutableMultimap.of(TrueExpr.INSTANCE, ingressLocation);
     NodJob nodJob =
         new NodJob(
@@ -182,8 +179,8 @@ public class NodJobAclTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<Location, Map<String, Long>> ingressLocationConstraints =
-        nodJob.getIngressLocationConstraints(z3Context, smtInput);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
     assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
     assertThat(ingressLocationConstraints, hasKey(ingressLocation));
     Map<String, Long> fieldConstraints = ingressLocationConstraints.get(ingressLocation);
@@ -309,17 +306,17 @@ public class NodJobAclTest {
             .setHeaderSpace(headerSpace)
             .setIngressLocations(
                 ImmutableList.of(
-                    new InterfaceLinkLocation(node.getName(), iface1),
-                    new InterfaceLinkLocation(node.getName(), iface2)))
+                    IngressLocation.interfaceLink(node.getName(), iface1),
+                    IngressLocation.interfaceLink(node.getName(), iface2)))
             .build();
 
-    ImmutableMultimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint =
-        ImmutableMultimap.<BooleanExpr, Location>builder()
+    ImmutableMultimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
+        ImmutableMultimap.<BooleanExpr, IngressLocation>builder()
             .putAll(
                 TrueExpr.INSTANCE,
                 ImmutableList.of(
-                    new InterfaceLinkLocation(node.getName(), iface1),
-                    new InterfaceLinkLocation(node.getName(), iface2)))
+                    IngressLocation.interfaceLink(node.getName(), iface1),
+                    IngressLocation.interfaceLink(node.getName(), iface2)))
             .build();
     NodJob nodJob =
         new NodJob(
@@ -334,10 +331,10 @@ public class NodJobAclTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<Location, Map<String, Long>> ingressLocationConstraints =
-        nodJob.getIngressLocationConstraints(z3Context, smtInput);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
     assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
-    Location ingressLocation = new InterfaceLinkLocation(node.getHostname(), iface1);
+    IngressLocation ingressLocation = IngressLocation.interfaceLink(node.getHostname(), iface1);
     assertThat(ingressLocationConstraints, hasKey(ingressLocation));
     Map<String, Long> fieldConstraints = ingressLocationConstraints.get(ingressLocation);
 
@@ -376,7 +373,7 @@ public class NodJobAclTest {
     testPermittedByAcl_helper(LineAction.REJECT);
   }
 
-  private void testPermittedByAcl_helper(LineAction action) throws IOException {
+  private static void testPermittedByAcl_helper(LineAction action) throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -448,14 +445,14 @@ public class NodJobAclTest {
     Synthesizer synthesizer = new Synthesizer(input);
 
     /* Construct NodJob */
-    Location ingressLocation = new VrfLocation(node.getHostname(), vrf.getName());
+    IngressLocation ingressLocation = IngressLocation.vrf(node.getHostname(), vrf.getName());
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .setHeaderSpace(headerSpace)
             .setIngressLocations(ImmutableList.of(ingressLocation))
             .build();
-    Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint =
+    Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
         ImmutableMultimap.of(TrueExpr.INSTANCE, ingressLocation);
 
     NodJob nodJob =
