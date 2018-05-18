@@ -87,7 +87,8 @@ public class BDDNetwork {
     if (_ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);
     }
-    TransferBuilder t = new TransferBuilder(g, conf, pol.getStatements(), _policyQuotient);
+    TransferBuilder t =
+        new TransferBuilder(_netFactory, g, conf, pol.getStatements(), _policyQuotient);
     TransferResult<BDDTransferFunction, BDD> result = t.compute(_netFactory, networks);
     return result.getReturnValue();
   }
@@ -192,4 +193,9 @@ public class BDDNetwork {
   public Map<GraphEdge, BDDAcl> getOutAcls() {
     return _outAcls;
   }
+
+  public BDDNetFactory getNetFactory() {
+    return _netFactory;
+  }
+
 }

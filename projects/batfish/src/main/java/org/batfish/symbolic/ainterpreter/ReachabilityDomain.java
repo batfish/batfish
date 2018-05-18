@@ -3,7 +3,6 @@ package org.batfish.symbolic.ainterpreter;
 import java.util.Map.Entry;
 import java.util.Set;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Prefix;
 import org.batfish.symbolic.CommunityVar;
@@ -16,30 +15,32 @@ import org.batfish.symbolic.bdd.BDDUtils;
 
 public class ReachabilityDomain implements IAbstractDomain<BDD> {
 
-  private static BDDFactory factory = BDDNetFactory.factory;
+  private BDDNetFactory _netFactory;
 
-  private static BDDPairing pairing = factory.makePair();
+  private BDDPairing _pairing;
 
   private BDDRoute _variables;
 
   private BDD _projectVariables;
 
-  ReachabilityDomain(BDDRoute variables, BDD projectVariables) {
+  ReachabilityDomain(BDDNetFactory netFactory, BDDRoute variables, BDD projectVariables) {
+    _netFactory = netFactory;
     _variables = variables;
     _projectVariables = projectVariables;
+    _pairing = _netFactory.factory.makePair();
   }
 
   @Override
   public BDD bot() {
-    return factory.zero();
+    return _netFactory.factory.zero();
   }
 
   @Override
   public BDD value(String router, Protocol proto, Set<Prefix> prefixes) {
-    BDD acc = factory.zero();
+    BDD acc = _netFactory.factory.zero();
     if (prefixes != null) {
       for (Prefix prefix : prefixes) {
-        BDD pfx = BDDUtils.prefixToBdd(factory, _variables, prefix);
+        BDD pfx = BDDUtils.prefixToBdd(_netFactory.factory, _variables, prefix);
         acc.orWith(pfx);
       }
     }
@@ -64,7 +65,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
 
     // Modify the result
     BDDRoute mods = f.getRoute();
-    pairing.reset();
+    _pairing.reset();
     if (mods.getConfig().getKeepCommunities()) {
       for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
         CommunityVar cvar = e.getKey();
@@ -73,7 +74,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
         BDD expr = mods.getCommunities().get(cvar);
         BDD equal = temp.biimp(expr);
         input.andWith(equal);
-        pairing.set(temp.var(), x.var());
+        _pairing.set(temp.var(), x.var());
       }
     }
 
@@ -88,12 +89,12 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
         BDD expr = prot.getInteger().getBitvec()[i];
         BDD equal = temp.biimp(expr);
         input.andWith(equal);
-        pairing.set(temp.var(), x.var());
+        _pairing.set(temp.var(), x.var());
       }
     }
 
     input = input.exist(_projectVariables);
-    input.replaceWith(pairing);
+    input.replaceWith(_pairing);
     return input;
   }
 

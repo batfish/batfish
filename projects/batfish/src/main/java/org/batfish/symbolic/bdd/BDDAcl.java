@@ -32,7 +32,7 @@ public class BDDAcl {
   private BDDAcl(BDDNetFactory netFactory, IpAccessList acl) {
     _bdd = null;
     _acl = acl;
-    _factory = BDDNetFactory.factory;
+    _factory = netFactory.factory;
     _pkt = netFactory.createPacket();
   }
 

@@ -31,10 +31,10 @@ import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.answers.AIRoutesAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDInteger;
-import org.batfish.symbolic.bdd.BDDNetFactory;
-import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDNetConfig;
+import org.batfish.symbolic.bdd.BDDNetFactory;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
+import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.smt.EdgeType;
 
@@ -54,7 +54,7 @@ public class AbstractInterpreter {
   private BDDNetwork _network;
 
   // BDD Route factory
-  private BDDNetFactory _routeFactory;
+  private BDDNetFactory _netFactory;
 
   // Convert acls to a unique identifier
   private FiniteIndexMap<BDDAcl> _aclIndexes;
@@ -96,12 +96,15 @@ public class AbstractInterpreter {
     _question = q;
     _lengthCache = new HashMap<>();
     _dstBitsCache = new HashMap<>();
-    _lenBits = BDDNetFactory.factory.one();
     NodesSpecifier ns = new NodesSpecifier(_question.getIngressNodeRegex());
     BDDNetConfig config = new BDDNetConfig(true);
-    _routeFactory = new BDDNetFactory(_graph, config);
-    _variables = _routeFactory.variables();
+
     _network = BDDNetwork.create(_graph, ns, config, false);
+
+    _netFactory = _network.getNetFactory();
+    _lenBits = _netFactory.factory.one();
+    _variables = _netFactory.variables();
+
     Set<BDDAcl> acls = new HashSet<>();
     acls.addAll(_network.getInAcls().values());
     acls.addAll(_network.getOutAcls().values());
@@ -111,10 +114,10 @@ public class AbstractInterpreter {
     BDD[] tempRouterBits = _variables.getRouterTemp().getInteger().getBitvec();
     BDD[] dstRouterBits = _variables.getDstRouter().getInteger().getBitvec();
 
-    _dstToTempRouterSubstitution = BDDNetFactory.factory.makePair();
-    _srcToTempRouterSubstitution = BDDNetFactory.factory.makePair();
+    _dstToTempRouterSubstitution = _netFactory.factory.makePair();
+    _srcToTempRouterSubstitution = _netFactory.factory.makePair();
 
-    _tempRouterBits = BDDNetFactory.factory.one();
+    _tempRouterBits = _netFactory.factory.one();
     for (int i = 0; i < srcRouterBits.length; i++) {
       _tempRouterBits = _tempRouterBits.and(tempRouterBits[i]);
       _dstToTempRouterSubstitution.set(dstRouterBits[i].var(), tempRouterBits[i].var());
@@ -163,7 +166,7 @@ public class AbstractInterpreter {
       BDDInteger pfxLen = _variables.getPrefixLength();
       BDDInteger newVal = new BDDInteger(pfxLen);
       newVal.setValue(i);
-      len = BDDNetFactory.factory.one();
+      len = _netFactory.factory.one();
       for (int j = 0; j < pfxLen.getBitvec().length; j++) {
         BDD var = pfxLen.getBitvec()[j];
         BDD val = newVal.getBitvec()[j];
@@ -186,7 +189,7 @@ public class AbstractInterpreter {
   private BDD removeBits(int len) {
     BDD removeBits = _dstBitsCache.get(len);
     if (removeBits == null) {
-      removeBits = BDDNetFactory.factory.one();
+      removeBits = _netFactory.factory.one();
       for (int i = len; i < 32; i++) {
         BDD x = _variables.getPrefix().getBitvec()[i];
         removeBits = removeBits.and(x);
@@ -398,7 +401,7 @@ public class AbstractInterpreter {
     if (pfxOnly.isZero()) {
       return pfxOnly;
     }
-    BDD acc = BDDNetFactory.factory.zero();
+    BDD acc = _netFactory.factory.zero();
     for (int i = 32; i >= 0; i--) {
       // pick out the routes with prefix length i
       BDD len = makeLength(i);
@@ -472,7 +475,7 @@ public class AbstractInterpreter {
   }
 
   private <T> BDD transitiveClosure(Map<String, AbstractFib<T>> fibs) {
-    BDD allFibs = BDDNetFactory.factory.zero();
+    BDD allFibs = _netFactory.factory.zero();
     for (Entry<String, AbstractFib<T>> e : fibs.entrySet()) {
       String router = e.getKey();
       AbstractFib<T> fib = e.getValue();
@@ -521,8 +524,8 @@ public class AbstractInterpreter {
         }
       }
 
-      String r = _routeFactory.getRouter(router);
-      Protocol prot = BDDNetFactory.allProtos.get(proto);
+      String r = _netFactory.getRouter(router);
+      Protocol prot = _netFactory.allProtos.get(proto);
       Ip ip = new Ip(pfx);
       Prefix p = new Prefix(ip, len);
       RibEntry entry = new RibEntry(hostname, p, Protocol.toRoutingProtocol(prot), r);
@@ -536,7 +539,7 @@ public class AbstractInterpreter {
    * Variables that will be existentially quantified away
    */
   private void initializeQuantificationVariables() {
-    _communityAndProtocolBits = BDDNetFactory.factory.one();
+    _communityAndProtocolBits = _netFactory.factory.one();
     BDD[] protoHistory = _variables.getProtocolHistory().getInteger().getBitvec();
     for (BDD x : protoHistory) {
       _communityAndProtocolBits = _communityAndProtocolBits.and(x);
@@ -552,7 +555,8 @@ public class AbstractInterpreter {
    */
   public AnswerElement routes() {
     initializeQuantificationVariables();
-    ReachabilityDomain domain = new ReachabilityDomain(_variables, _communityAndProtocolBits);
+    ReachabilityDomain domain =
+        new ReachabilityDomain(_netFactory, _variables, _communityAndProtocolBits);
     Map<String, AbstractFib<BDD>> reachable = computeFixedPoint(domain);
 
     // long t = System.currentTimeMillis();

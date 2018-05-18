@@ -25,44 +25,13 @@ import org.batfish.symbolic.Protocol;
 
 public class BDDNetFactory {
 
-  public static BDDFactory factory;
+  public BDDFactory factory;
 
-  public static List<Protocol> allProtos;
+  public List<Protocol> allProtos;
 
-  private static List<OspfType> allMetricTypes;
+  private List<OspfType> allMetricTypes;
 
-  private static BDDPairing pairing;
-
-  static {
-    allMetricTypes = new ArrayList<>();
-    allMetricTypes.add(OspfType.O);
-    allMetricTypes.add(OspfType.OIA);
-    allMetricTypes.add(OspfType.E1);
-    allMetricTypes.add(OspfType.E2);
-
-    allProtos = new ArrayList<>();
-    allProtos.add(Protocol.CONNECTED);
-    allProtos.add(Protocol.STATIC);
-    allProtos.add(Protocol.OSPF);
-    allProtos.add(Protocol.BGP);
-
-    factory = JFactory.init(100000, 10000);
-    // factory.disableReorder();
-    factory.setCacheRatio(64);
-    /*
-    try {
-      // Disables printing
-      CallbackHandler handler = new CallbackHandler();
-      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
-      factory.registerGCCallback(handler, m);
-      factory.registerResizeCallback(handler, m);
-      factory.registerReorderCallback(handler, m);
-    } catch (NoSuchMethodException e) {
-      e.printStackTrace();
-    }
-    */
-    pairing = factory.makePair();
-  }
+  private BDDPairing pairing;
 
   private BDDNetConfig _config;
 
@@ -129,6 +98,35 @@ public class BDDNetFactory {
   private int _hcode = 0;
 
   public BDDNetFactory(Graph g, BDDNetConfig config) {
+    allMetricTypes = new ArrayList<>();
+    allMetricTypes.add(OspfType.O);
+    allMetricTypes.add(OspfType.OIA);
+    allMetricTypes.add(OspfType.E1);
+    allMetricTypes.add(OspfType.E2);
+
+    allProtos = new ArrayList<>();
+    allProtos.add(Protocol.CONNECTED);
+    allProtos.add(Protocol.STATIC);
+    allProtos.add(Protocol.OSPF);
+    allProtos.add(Protocol.BGP);
+
+    factory = JFactory.init(100000, 10000);
+    // factory.disableReorder();
+    factory.setCacheRatio(64);
+    /*
+    try {
+      // Disables printing
+      CallbackHandler handler = new CallbackHandler();
+      Method m = handler.getClass().getDeclaredMethod("handle", (Class<?>[]) null);
+      factory.registerGCCallback(handler, m);
+      factory.registerResizeCallback(handler, m);
+      factory.registerReorderCallback(handler, m);
+    } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+    }
+    */
+    pairing = factory.makePair();
+
     _config = config;
     _allCommunities = g.getAllCommunities();
     _allRouters = new ArrayList<>(g.getRouters());
