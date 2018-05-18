@@ -97,7 +97,6 @@ public class ResolvedReachabilityParameters {
       return this;
     }
 
-
     public Builder setSpecialize(boolean specialize) {
       _specialize = specialize;
       return this;
