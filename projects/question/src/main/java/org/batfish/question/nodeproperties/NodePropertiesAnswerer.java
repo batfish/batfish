@@ -11,10 +11,11 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.NodePropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.nodeproperties.NodePropertySpecifier.PropertyDescriptor;
 
 public class NodePropertiesAnswerer extends Answerer {
 
