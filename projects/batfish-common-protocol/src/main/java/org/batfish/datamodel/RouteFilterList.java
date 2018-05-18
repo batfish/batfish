@@ -61,7 +61,6 @@ public class RouteFilterList extends ComparableStructure<String> {
     return _lines;
   }
 
-
   @VisibleForTesting
   void initCaches() {
     _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
