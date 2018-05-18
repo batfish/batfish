@@ -372,6 +372,7 @@ ogn_network_object
          OBJECT name = variable
       )
       | host = variable
+      | wildcard_address = IP_ADDRESS wildcard_mask = IP_ADDRESS
    ) NEWLINE
 ;
 
