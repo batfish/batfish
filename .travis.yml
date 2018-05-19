@@ -5,10 +5,10 @@ jdk:
   - oraclejdk8
 
 env:
+  - BF_BUILDER="mvn"
+  - BF_BUILDER="bazel" V="0.13.0"
 matrix:
   fast_finish: true
-  include:
-  - env: BF_BUILDER="mvn"
   allow_failures:
   - env: BF_BUILDER="bazel" V="0.13.0"
 
