@@ -4,10 +4,12 @@ sudo: true
 jdk:
   - oraclejdk8
 
-env:
-  matrix:
-    - BF_BUILDER="mvn"
-    - BF_BUILDER="bazel" V="0.13.0"
+matrix:
+  env:
+  include:
+    env: BF_BUILDER="mvn"
+  allow_failures:
+    env: BF_BUILDER="bazel" V="0.13.0"
 
 before_install:
   - .travis/fix_java_format.sh
@@ -18,22 +20,7 @@ before_install:
       sysctl kernel.unprivileged_userns_clone=1
       OS=linux
     fi
-    if [[ "${V}" == "HEAD" ]]; then
-      # Determine last successful build number. This may change while we are
-      # downloading, so it's important to determine ahead of time, in case
-      # we need to resume the download.
-      CI_BASE="https://ci.bazel.io/view/Bazel%20bootstrap%20and%20maintenance/job/Bazel/PLATFORM_NAME=${OS}-x86_64/"
-      CI_INDEX_URL="${CI_BASE}/lastSuccessfulBuild/"
-      wget -q -O build-index.html "${CI_INDEX_URL}"
-      CI_BUILD=$(grep '<title>' build-index.html | sed -e 's/^.*#\([0-9]*\).*$/\1/')
-      # Determine the artifact name. This is normally, bazel--installer.sh,
-      # but it may be, for example, bazel-0.5rc2-installer.sh before a release.
-      CI_ARTIFACT=$(grep -o 'bazel-[^\"-]*-installer.sh' build-index.html | head -n 1)
-      URL="${CI_BASE}/${CI_BUILD}/artifact/output/ci/${CI_ARTIFACT}"
-      rm build-index.html
-    else
-      URL="https://github.com/bazelbuild/bazel/releases/download/${V}/bazel-${V}-installer-${OS}-x86_64.sh"
-    fi
+    URL="https://github.com/bazelbuild/bazel/releases/download/${V}/bazel-${V}-installer-${OS}-x86_64.sh"
     wget -O install.sh "${URL}"
     chmod +x install.sh
     ./install.sh --user
