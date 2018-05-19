@@ -1524,7 +1524,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("IsakmpPolicy should be null!");
     }
     /* Pad priority number with zeros, so string sorting sorts in numerical order too */
-    String priority = String.format("%03d", Integer.parseInt(ctx.priority.getText()));
+    String priority = String.format("%03d", toInteger(ctx.priority));
     _currentIsakmpPolicy = new IsakmpPolicy(priority, ctx.getStart().getLine());
     _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
     defineStructure(ISAKMP_POLICY, priority, ctx);
