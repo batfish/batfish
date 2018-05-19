@@ -22,7 +22,7 @@ java_library(
         "@grizzly_server//:compile",
         "@guava//:compile",
         "//projects/lib/jsonpath",
-        "//third_party/com/kjetland/mbknor-jackson-jsonschema_2.12:jackson_jsonschema",
+        "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "//projects/lib/z3",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",

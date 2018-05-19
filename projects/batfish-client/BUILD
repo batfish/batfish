@@ -25,7 +25,7 @@ java_library(
         "@commons_io//:compile",
         "@commons_lang3//:compile",
         "@guava//:compile",
-        "//third_party/com/kjetland/mbknor-jackson-jsonschema_2.12:jackson_jsonschema",
+        "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
