@@ -74,14 +74,6 @@
           ]
         }
       },
-      "undefined:bgp group:usage:inherited BGP group:KLMN" : {
-        "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'KLMN'",
-        "files" : {
-          "neighbor_nxos" : [
-            0
-          ]
-        }
-      },
       "undefined:bgp group:usage:inherited BGP group:p3" : {
         "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'p3'",
         "files" : {
@@ -103,6 +95,14 @@
         "files" : {
           "ios_xr_bgp_neighbor_group" : [
             88
+          ]
+        }
+      },
+      "undefined:bgp template peer:usage:inherited BGP peer:KLMN" : {
+        "description" : "Undefined reference to structure of type: 'bgp template peer' with usage: 'inherited BGP peer' named 'KLMN'",
+        "files" : {
+          "neighbor_nxos" : [
+            8
           ]
         }
       },
@@ -193,9 +193,6 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback1'",
         "files" : {
           "foundry_bgp" : [
-            0
-          ],
-          "peer_template" : [
             0
           ]
         }
@@ -839,6 +836,14 @@
           ]
         }
       },
+      "undefined:route-map:usage:bgp address-family aggregate-address advertise-map:AGG6_MAP" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp address-family aggregate-address advertise-map' named 'AGG6_MAP'",
+        "files" : {
+          "cisco_nxos_bgp" : [
+            21
+          ]
+        }
+      },
       "undefined:route-map:usage:bgp inbound route-map:IN_BBB" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp inbound route-map' named 'IN_BBB'",
         "files" : {
@@ -1388,6 +1393,15 @@
           }
         }
       },
+      "cisco_nxos_bgp" : {
+        "route-map" : {
+          "AGG6_MAP" : {
+            "bgp address-family aggregate-address advertise-map" : [
+              21
+            ]
+          }
+        }
+      },
       "cisco_ospf" : {
         "route-map" : {
           "DIRECT_OSPF" : {
@@ -1727,10 +1741,10 @@
         }
       },
       "neighbor_nxos" : {
-        "bgp group" : {
+        "bgp template peer" : {
           "KLMN" : {
-            "inherited BGP group" : [
-              0
+            "inherited BGP peer" : [
+              8
             ]
           }
         }
@@ -1779,13 +1793,6 @@
         }
       },
       "peer_template" : {
-        "interface" : {
-          "Loopback1" : {
-            "update-source interface" : [
-              0
-            ]
-          }
-        },
         "route-map" : {
           "PROTECT-LEAF" : {
             "bgp inbound route-map" : [
