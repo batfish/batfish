@@ -245,4 +245,9 @@ public class Row implements Comparable<Row> {
     _data.remove(columnName);
     return this;
   }
+
+  @Override
+  public String toString() {
+    return _data.toString();
+  }
 }
