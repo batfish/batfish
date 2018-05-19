@@ -132,7 +132,8 @@ class TransferBDD {
   /*
    * Apply the effect of modifying an integer value (e.g., to set the local pref)
    */
-  private BDDInteger applyIntExprModification(TransferParam<BDDRoute> p, BDDInteger x, IntExpr e) {
+  private static BDDInteger applyIntExprModification(
+      TransferParam<BDDRoute> p, BDDInteger x, IntExpr e) {
     if (e instanceof LiteralInt) {
       LiteralInt z = (LiteralInt) e;
       p.debug("LiteralInt: " + z.getValue());
@@ -154,7 +155,7 @@ class TransferBDD {
   /*
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
-  private BDDInteger applyLongExprModification(
+  private static BDDInteger applyLongExprModification(
       TransferParam<BDDRoute> p, BDDInteger x, LongExpr e) {
     if (e instanceof LiteralLong) {
       LiteralLong z = (LiteralLong) e;
@@ -574,7 +575,7 @@ class TransferBDD {
       } else if (stmt instanceof AddCommunity) {
         p.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = Graph.findAllCommunities(_conf, ac.getExpr());
         for (CommunityVar cvar : comms) {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             p.indent().debug("Value: " + cvar);
@@ -588,7 +589,7 @@ class TransferBDD {
       } else if (stmt instanceof SetCommunity) {
         p.debug("SetCommunity");
         SetCommunity sc = (SetCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, sc.getExpr());
+        Set<CommunityVar> comms = Graph.findAllCommunities(_conf, sc.getExpr());
         for (CommunityVar cvar : comms) {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
             p.indent().debug("Value: " + cvar);
@@ -602,7 +603,7 @@ class TransferBDD {
       } else if (stmt instanceof DeleteCommunity) {
         p.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
-        Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = Graph.findAllCommunities(_conf, ac.getExpr());
         Set<CommunityVar> toDelete = new HashSet<>();
         // Find comms to delete
         for (CommunityVar cvar : comms) {
@@ -673,7 +674,8 @@ class TransferBDD {
     return result;
   }
 
-  private TransferResult<TransferReturn, BDD> fallthrough(TransferResult<TransferReturn, BDD> r) {
+  private static TransferResult<TransferReturn, BDD> fallthrough(
+      TransferResult<TransferReturn, BDD> r) {
     BDD b = ite(r.getReturnAssignedValue(), r.getFallthroughValue(), factory.one());
     return r.setFallthroughValue(b).setReturnAssignedValue(factory.one());
   }
@@ -681,7 +683,7 @@ class TransferBDD {
   /*
    * Wrap a simple boolean expression return value in a transfer function result
    */
-  private TransferResult<TransferReturn, BDD> fromExpr(TransferReturn b) {
+  private static TransferResult<TransferReturn, BDD> fromExpr(TransferReturn b) {
     return new TransferResult<TransferReturn, BDD>()
         .setReturnAssignedValue(factory.one())
         .setReturnValue(b);
@@ -695,7 +697,7 @@ class TransferBDD {
    * is not modified, and thus will contain only the underlying variables:
    * [var(0), ..., var(n)]
    */
-  private BDD isRelevantFor(BDDRoute record, PrefixRange range) {
+  private static BDD isRelevantFor(BDDRoute record, PrefixRange range) {
     Prefix p = range.getPrefix();
     SubRange r = range.getLengthRange();
     int len = p.getPrefixLength();
@@ -718,21 +720,21 @@ class TransferBDD {
   /*
    * If-then-else statement
    */
-  private BDD ite(BDD b, BDD x, BDD y) {
+  private static BDD ite(BDD b, BDD x, BDD y) {
     return b.ite(x, y);
   }
 
   /*
    * Map ite over BDDInteger type
    */
-  private BDDInteger ite(BDD b, BDDInteger x, BDDInteger y) {
+  private static BDDInteger ite(BDD b, BDDInteger x, BDDInteger y) {
     return x.ite(b, y);
   }
 
   /*
    * Map ite over BDDDomain type
    */
-  private <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
+  private static <T> BDDDomain<T> ite(BDD b, BDDDomain<T> x, BDDDomain<T> y) {
     BDDDomain<T> result = new BDDDomain<>(x);
     BDDInteger i = ite(b, x.getInteger(), y.getInteger());
     result.setInteger(i);
@@ -816,7 +818,7 @@ class TransferBDD {
   private BDD matchCommunitySet(
       TransferParam<BDDRoute> p, Configuration conf, CommunitySetExpr e, BDDRoute other) {
     if (e instanceof InlineCommunitySet) {
-      Set<CommunityVar> comms = _graph.findAllCommunities(conf, e);
+      Set<CommunityVar> comms = Graph.findAllCommunities(conf, e);
       BDD acc = factory.one();
       for (CommunityVar comm : comms) {
         p.debug("Inline Community Set: " + comm);
@@ -900,14 +902,14 @@ class TransferBDD {
   /*
    * Return a BDD from a boolean
    */
-  private BDD mkBDD(boolean b) {
+  private static BDD mkBDD(boolean b) {
     return b ? factory.one() : factory.zero();
   }
 
   /*
    * Compute how many times to prepend to a path from the AST
    */
-  private int prependLength(AsPathListExpr expr) {
+  private static int prependLength(AsPathListExpr expr) {
     if (expr instanceof MultipliedAs) {
       MultipliedAs x = (MultipliedAs) expr;
       IntExpr e = x.getNumber();
@@ -924,7 +926,7 @@ class TransferBDD {
   /*
    * Create a new variable reflecting the final return value of the function
    */
-  private TransferResult<TransferReturn, BDD> returnValue(
+  private static TransferResult<TransferReturn, BDD> returnValue(
       TransferResult<TransferReturn, BDD> r, boolean val) {
     BDD b = ite(r.getReturnAssignedValue(), r.getReturnValue().getSecond(), mkBDD(val));
     TransferReturn ret = new TransferReturn(r.getReturnValue().getFirst(), b);

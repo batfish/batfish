@@ -11,6 +11,7 @@ import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.coordinator.Main;
+import org.batfish.coordinator.WorkMgr;
 
 /**
  * The {@link ContainerResource} is a resource for servicing client API calls at container level.
@@ -47,7 +48,7 @@ public class ContainerResource {
   public Response deleteContainer() {
     _logger.infof("WMS2: delContainer '%s'\n", _name);
     checkAccessToContainer();
-    if (Main.getWorkMgr().delContainer(_name)) {
+    if (WorkMgr.delContainer(_name)) {
       return Response.noContent().build();
     } else {
       return Response.serverError().build();
@@ -56,7 +57,7 @@ public class ContainerResource {
 
   /** Check the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
   private void checkAccessToContainer() {
-    if (!Main.getWorkMgr().checkContainerExists(_name)) {
+    if (!WorkMgr.checkContainerExists(_name)) {
       throw new NotFoundException(String.format("Container '%s' does not exist", _name));
     }
 

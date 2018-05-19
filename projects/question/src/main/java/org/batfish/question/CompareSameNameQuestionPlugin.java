@@ -62,7 +62,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _equivalenceSets.put(className, sets);
     }
 
-    private String equivalenceSetToString(
+    private static String equivalenceSetToString(
         String indent, String name, NamedStructureEquivalenceSets<?> nseSets) {
       StringBuilder sb = new StringBuilder(indent + name + "\n");
       sb.append(nseSets.prettyPrint(indent + indent));

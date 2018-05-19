@@ -172,7 +172,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
     }
 
     // produce a new vector whose ith element is the mode of the ith elements of the given vectors
-    private String elementwiseMode(Set<String> vectors, int strLen) {
+    private static String elementwiseMode(Set<String> vectors, int strLen) {
       StringBuilder sb = new StringBuilder();
       for (int i = 0; i < strLen; i++) {
         char mode = 'a';
@@ -195,7 +195,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
       return sb.toString();
     }
 
-    private int hammingDistance(String s1, String s2) {
+    private static int hammingDistance(String s1, String s2) {
       // we assume the strings have the same length
       int dist = 0;
       for (int i = 0; i < s1.length(); i++) {
@@ -210,7 +210,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
      *  standard k-modes clustering, with a variant of the seeding technique from the k-means++
      *  algorithm
      */
-    private List<Set<String>> kModes(int k, Set<String> vectors) {
+    private static List<Set<String>> kModes(int k, Set<String> vectors) {
 
       int vecLen = 0;
       if (!vectors.isEmpty()) {
@@ -278,7 +278,7 @@ public class ClusterNodesQuestionPlugin extends QuestionPlugin {
 
     // find the element in choice[0..(i-1)] with the minimum hamming distance to s
     // return a pair of the index and hamming distance
-    private Pair<Integer, Integer> minHammingDistance(String s, String[] choices, int len) {
+    private static Pair<Integer, Integer> minHammingDistance(String s, String[] choices, int len) {
       int min = Integer.MAX_VALUE;
       int minIndex = -1;
       for (int i = 0; i < len; i++) {

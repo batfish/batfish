@@ -80,13 +80,13 @@ public class PropertyChecker {
     this._lock = new Object();
   }
 
-  private Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
+  private static Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
     Set<GraphEdge> edges = new HashSet<>();
     edges.addAll(PatternUtils.findMatchingEdges(g, p));
     return edges;
   }
 
-  private void inferDestinationHeaderSpace(
+  private static void inferDestinationHeaderSpace(
       Graph g, Collection<GraphEdge> destPorts, HeaderLocationQuestion q) {
     // Skip inference if the destination IP headerspace does not need to be inferred.
     if (q.getHeaderSpace().getDstIps() != null
@@ -128,14 +128,14 @@ public class PropertyChecker {
     }
   }
 
-  private BoolExpr equal(Encoder e, Configuration conf, SymbolicRoute r1, SymbolicRoute r2) {
+  private static BoolExpr equal(Encoder e, Configuration conf, SymbolicRoute r1, SymbolicRoute r2) {
     EncoderSlice main = e.getMainSlice();
     BoolExpr eq = main.equal(conf, Protocol.CONNECTED, r1, r2, null, true);
     BoolExpr samePermitted = e.mkEq(r1.getPermitted(), r2.getPermitted());
     return e.mkAnd(eq, samePermitted);
   }
 
-  private Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
+  private static Set<GraphEdge> failLinkSet(Graph g, HeaderLocationQuestion q) {
     Pattern p1 = Pattern.compile(q.getFailNode1Regex());
     Pattern p2 = Pattern.compile(q.getFailNode2Regex());
     Pattern p3 = Pattern.compile(q.getNotFailNode1Regex());
@@ -150,7 +150,7 @@ public class PropertyChecker {
     return failChoices;
   }
 
-  private BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
+  private static BoolExpr relateEnvironments(Encoder enc1, Encoder enc2) {
     // create a map for enc2 to lookup a related environment variable from enc
     Table2<GraphEdge, EdgeType, SymbolicRoute> relatedEnv = new Table2<>();
     for (Entry<LogicalEdge, SymbolicRoute> entry :
@@ -178,7 +178,7 @@ public class PropertyChecker {
     return related;
   }
 
-  private BoolExpr relateFailures(Encoder enc1, Encoder enc2) {
+  private static BoolExpr relateFailures(Encoder enc1, Encoder enc2) {
     BoolExpr related = enc1.mkTrue();
     for (GraphEdge ge : enc1.getMainSlice().getGraph().getAllRealEdges()) {
       ArithExpr a1 = enc1.getSymbolicFailures().getFailedVariable(ge);
@@ -190,13 +190,14 @@ public class PropertyChecker {
     return related;
   }
 
-  private BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
+  private static BoolExpr relatePackets(Encoder enc1, Encoder enc2) {
     SymbolicPacket p1 = enc1.getMainSlice().getSymbolicPacket();
     SymbolicPacket p2 = enc2.getMainSlice().getSymbolicPacket();
     return p1.mkEqual(p2);
   }
 
-  private void addFailureConstraints(Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
+  private static void addFailureConstraints(
+      Encoder enc, Set<GraphEdge> dstPorts, Set<GraphEdge> failSet) {
     Graph graph = enc.getMainSlice().getGraph();
     for (List<GraphEdge> edges : graph.getEdgeMap().values()) {
       for (GraphEdge ge : edges) {
@@ -217,7 +218,7 @@ public class PropertyChecker {
     }
   }
 
-  private void addEnvironmentConstraints(Encoder enc, EnvironmentType t) {
+  private static void addEnvironmentConstraints(Encoder enc, EnvironmentType t) {
     LogicalGraph lg = enc.getMainSlice().getLogicalGraph();
     Context ctx = enc.getCtx();
     switch (t) {
@@ -268,7 +269,7 @@ public class PropertyChecker {
   /*
    * Apply mapping from concrete to abstract nodes
    */
-  private Set<String> mapConcreteToAbstract(NetworkSlice slice, List<String> concreteNodes) {
+  private static Set<String> mapConcreteToAbstract(NetworkSlice slice, List<String> concreteNodes) {
     if (slice.getAbstraction().getAbstractionMap() == null) {
       return new HashSet<>(concreteNodes);
     }
@@ -1113,7 +1114,7 @@ public class PropertyChecker {
   /*
    * Get the interface names for a collection of edges
    */
-  private Set<String> interfaces(List<GraphEdge> edges) {
+  private static Set<String> interfaces(List<GraphEdge> edges) {
     Set<String> ifaces = new TreeSet<>();
     for (GraphEdge edge : edges) {
       ifaces.add(edge.getStart().getName());
@@ -1124,8 +1125,8 @@ public class PropertyChecker {
   /*
    * Build the inverse map for each logical edge
    */
-  private Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>> logicalEdgeMap(
-      EncoderSlice enc) {
+  private static Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>>
+      logicalEdgeMap(EncoderSlice enc) {
 
     Map<String, Map<Protocol, Map<String, EnumMap<EdgeType, LogicalEdge>>>> acc = new HashMap<>();
     enc.getLogicalGraph()
@@ -1161,7 +1162,7 @@ public class PropertyChecker {
    * Creates a boolean variable representing destinations we don't want
    * to consider due to local differences.
    */
-  private BoolExpr ignoredDestinations(
+  private static BoolExpr ignoredDestinations(
       Context ctx, EncoderSlice e1, String r1, Configuration conf1) {
     BoolExpr validDest = ctx.mkBool(true);
     for (Protocol proto1 : e1.getProtocols().get(r1)) {
@@ -1175,7 +1176,7 @@ public class PropertyChecker {
   /*
    * Create a map from interface name to graph edge.
    */
-  private Map<String, GraphEdge> interfaceMap(List<GraphEdge> edges) {
+  private static Map<String, GraphEdge> interfaceMap(List<GraphEdge> edges) {
     Map<String, GraphEdge> ifaceMap = new HashMap<>();
     for (GraphEdge edge : edges) {
       ifaceMap.put(edge.getStart().getName(), edge);

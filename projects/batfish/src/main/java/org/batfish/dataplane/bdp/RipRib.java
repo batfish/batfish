@@ -20,7 +20,7 @@ public class RipRib extends AbstractRib<RipRoute> {
     return Integer.compare(rhsTypeCost, lhsTypeCost);
   }
 
-  private int getTypeCost(RoutingProtocol protocol) {
+  private static int getTypeCost(RoutingProtocol protocol) {
     switch (protocol) {
       case RIP:
         return 0;

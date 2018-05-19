@@ -246,7 +246,7 @@ public enum JunosApplication implements Application {
     return _baseApplication.get().getIpv6();
   }
 
-  private void setHeaderSpaceInfo(
+  private static void setHeaderSpaceInfo(
       HeaderSpace.Builder hb,
       @Nullable IpProtocol ipProtocol,
       @Nullable Integer portRangeStart,

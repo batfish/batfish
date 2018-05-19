@@ -190,7 +190,7 @@ public class PoolMgr {
     }
   }
 
-  public void startPoolManager() {
+  public static void startPoolManager() {
     Runnable workerStatusRefreshTask = new WorkerStatusRefreshTask();
     Executors.newScheduledThreadPool(1)
         .scheduleWithFixedDelay(

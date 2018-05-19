@@ -105,7 +105,7 @@ public class BatfishCompressionTest {
             _compressedNode3));
   }
 
-  private SortedMap<String, Configuration> compressNetwork(
+  private static SortedMap<String, Configuration> compressNetwork(
       Map<String, Configuration> configs, HeaderSpace headerSpace) throws IOException {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
@@ -119,7 +119,7 @@ public class BatfishCompressionTest {
    *
    * @return Configurations for the original (uncompressed) network.
    */
-  private SortedMap<String, Configuration> diamondNetwork() {
+  private static SortedMap<String, Configuration> diamondNetwork() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -202,7 +202,8 @@ public class BatfishCompressionTest {
             cD.getName(), cD));
   }
 
-  private DataPlane getDataPlane(SortedMap<String, Configuration> configs) throws IOException {
+  private static DataPlane getDataPlane(SortedMap<String, Configuration> configs)
+      throws IOException {
     // make sure to reconstruct the network, since compression mutates it
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
@@ -211,7 +212,7 @@ public class BatfishCompressionTest {
     return batfish.loadDataPlane();
   }
 
-  private SortedMap<String, Configuration> simpleNetwork() {
+  private static SortedMap<String, Configuration> simpleNetwork() {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);

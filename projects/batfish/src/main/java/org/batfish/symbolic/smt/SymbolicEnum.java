@@ -97,7 +97,7 @@ class SymbolicEnum<T> {
     }
   }
 
-  private boolean isPowerOfTwo(int x) {
+  private static boolean isPowerOfTwo(int x) {
     return (x & -x) == x;
   }
 

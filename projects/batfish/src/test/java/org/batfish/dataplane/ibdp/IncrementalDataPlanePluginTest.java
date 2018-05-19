@@ -184,7 +184,7 @@ public class IncrementalDataPlanePluginTest {
     return ImmutableSortedMap.of(CORE_NAME, core, "n1", n1, "n2", n2);
   }
 
-  private void testBgpAsPathMultipathHelper(
+  private static void testBgpAsPathMultipathHelper(
       MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
       boolean primeBestPathInMultipathBgpRib,
       boolean expectRoute2,

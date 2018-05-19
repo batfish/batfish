@@ -68,7 +68,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       _mismatchLinkCost = new TreeMap<>();
     }
 
-    public void add(
+    public static void add(
         SortedMap<String, SortedMap<String, SortedSet<IpPair>>> neighborsByHostname,
         String hostname,
         String vrf,
@@ -80,7 +80,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
       neighbors.add(ipPair);
     }
 
-    public void addToAll(
+    public static void addToAll(
         SortedMap<String, SortedMap<String, SortedMap<IpPair, OspfNeighborSummary>>>
             neighborsByHostname,
         String hostname,
@@ -235,11 +235,11 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
           if (proc != null) {
             for (OspfNeighbor ospfNeighbor : proc.getOspfNeighbors().values()) {
               OspfNeighborSummary ospfNeighborSummary = new OspfNeighborSummary(ospfNeighbor);
-              answerElement.addToAll(
+              OspfSessionCheckAnswerElement.addToAll(
                   answerElement.getAllOspfNeighbors(), hostname, vrfName, ospfNeighborSummary);
               boolean foreign = foreignPrefixTrie.containsIp(ospfNeighbor.getRemoteIp());
               if (foreign) {
-                answerElement.add(
+                OspfSessionCheckAnswerElement.add(
                     answerElement.getIgnoredForeignEndpoints(),
                     hostname,
                     vrfName,
@@ -247,9 +247,9 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
               } else if (ospfNeighbor.getRemoteOspfNeighbor() == null) {
                 if (!ospfNeighbor.getIface().getOspfPassive()) {
                   // half-open
-                  answerElement.add(
+                  OspfSessionCheckAnswerElement.add(
                       answerElement.getBroken(), hostname, vrfName, ospfNeighborSummary);
-                  answerElement.add(
+                  OspfSessionCheckAnswerElement.add(
                       answerElement.getHalfOpen(), hostname, vrfName, ospfNeighborSummary);
                 }
               } else {
@@ -264,7 +264,7 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
                 int linkCost = ospfNeighbor.getIface().getOspfCost();
                 int remoteLinkCost = remoteOspfNeighbor.getIface().getOspfCost();
                 if (linkCost != remoteLinkCost) {
-                  answerElement.add(
+                  OspfSessionCheckAnswerElement.add(
                       answerElement.getMismatchLinkCost(), hostname, vrfName, ospfNeighborSummary);
                 }
               }

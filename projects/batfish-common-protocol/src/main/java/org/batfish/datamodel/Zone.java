@@ -279,7 +279,7 @@ public final class Zone extends ComparableStructure<String> {
     return true;
   }
 
-  private boolean unorderedEqualSortedMap(
+  private static boolean unorderedEqualSortedMap(
       SortedMap<String, IpAccessList> a, SortedMap<String, IpAccessList> b) {
     if (!a.keySet().equals(b.keySet())) {
       return false;

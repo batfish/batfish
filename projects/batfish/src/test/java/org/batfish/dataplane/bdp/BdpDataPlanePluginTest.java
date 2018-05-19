@@ -202,7 +202,7 @@ public class BdpDataPlanePluginTest {
     dataPlanePlugin.computeDataPlane(false);
   }
 
-  private void testBgpAsPathMultipathHelper(
+  private static void testBgpAsPathMultipathHelper(
       MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
       boolean primeBestPathInMultipathBgpRib,
       boolean expectRoute2,

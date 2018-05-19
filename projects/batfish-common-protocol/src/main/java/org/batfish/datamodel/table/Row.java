@@ -57,7 +57,7 @@ public class Row implements Comparable<Row> {
     }
   }
 
-  private <T> T convertType(JsonNode jsonNode, Class<T> valueType) {
+  private static <T> T convertType(JsonNode jsonNode, Class<T> valueType) {
     try {
       return BatfishObjectMapper.mapper().treeToValue(jsonNode, valueType);
     } catch (JsonProcessingException e) {

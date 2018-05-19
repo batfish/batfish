@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisRoute;
+import org.batfish.datamodel.IsisRoute.Builder;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IsisLevelExpr;
@@ -48,7 +49,7 @@ public class SetIsisLevel extends Statement {
     Result result = new Result();
     IsisLevel level = _level.evaluate(environment);
     IsisRoute.Builder isisRouteBuilder = (IsisRoute.Builder) environment.getOutputRoute();
-    isisRouteBuilder.setLevel(level);
+    Builder.setLevel(level);
     return result;
   }
 

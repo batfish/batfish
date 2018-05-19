@@ -130,7 +130,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     super(settings);
   }
 
-  protected Expr answerFixedPoint(Fixedpoint fix, NodProgram program) {
+  protected static Expr answerFixedPoint(Fixedpoint fix, NodProgram program) {
     for (BoolExpr query : program.getQueries()) {
       Status status = fix.query(query);
       switch (status) {
@@ -176,7 +176,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     }
   }
 
-  protected BoolExpr getSolverInput(Expr answer, NodProgram program, boolean negate) {
+  protected static BoolExpr getSolverInput(Expr answer, NodProgram program, boolean negate) {
     Map<String, BitVecExpr> variablesAsConsts = program.getNodContext().getVariablesAsConsts();
     List<BitVecExpr> vars =
         program
@@ -225,7 +225,7 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
     return fix;
   }
 
-  protected NodProgram optimizedProgram(
+  protected static NodProgram optimizedProgram(
       Context ctx, ReachabilityProgram baseProgram, ReachabilityProgram queryProgram) {
     List<RuleStatement> allRules = new ArrayList<>(baseProgram.getRules());
     allRules.addAll(queryProgram.getRules());

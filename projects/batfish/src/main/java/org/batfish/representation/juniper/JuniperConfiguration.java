@@ -255,7 +255,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _zones = new TreeMap<>();
   }
 
-  private NavigableMap<String, AuthenticationKeyChain> convertAuthenticationKeyChains(
+  private static NavigableMap<String, AuthenticationKeyChain> convertAuthenticationKeyChains(
       Map<String, JuniperAuthenticationKeyChain> juniperAuthenticationKeyChains) {
     NavigableMap<String, AuthenticationKeyChain> authenticationKeyChains = new TreeMap<>();
     for (Entry<String, JuniperAuthenticationKeyChain> keyChainEntry :
@@ -597,7 +597,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return "~PEER_EXPORT_POLICY:" + remoteAddress + "~";
   }
 
-  private void applyLocalRoutePolicy(RoutingInstance routingInstance, RoutingPolicy targetPolicy) {
+  private static void applyLocalRoutePolicy(
+      RoutingInstance routingInstance, RoutingPolicy targetPolicy) {
     boolean lan = routingInstance.getExportLocalRoutesLan();
     boolean ptp = routingInstance.getExportLocalRoutesPointToPoint();
     if (lan && ptp) {
@@ -624,7 +625,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .add(new If(match, ImmutableList.of(Statements.ExitReject.toStaticStatement())));
   }
 
-  private IsisProcess createIsisProcess(RoutingInstance routingInstance, IsoAddress netAddress) {
+  private static IsisProcess createIsisProcess(
+      RoutingInstance routingInstance, IsoAddress netAddress) {
     IsisProcess newProc = new IsisProcess();
     // newProc.setNetAddress(netAddress);
     // IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
@@ -1057,7 +1059,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newRoute.build();
   }
 
-  private org.batfish.datamodel.CommunityList toCommunityList(CommunityList cl) {
+  private static org.batfish.datamodel.CommunityList toCommunityList(CommunityList cl) {
     String name = cl.getName();
     List<org.batfish.datamodel.CommunityListLine> newLines = new ArrayList<>();
     for (CommunityListLine line : cl.getLines()) {
@@ -1865,7 +1867,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return thenStatements;
   }
 
-  private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
+  private static org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
     Prefix prefix = route.getPrefix();
     Ip nextHopIp = route.getNextHopIp();
     if (nextHopIp == null) {

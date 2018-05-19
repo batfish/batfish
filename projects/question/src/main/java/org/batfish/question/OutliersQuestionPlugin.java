@@ -144,7 +144,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       super(question, batfish);
     }
 
-    private <T> void addNamedStructureOutliers(
+    private static <T> void addNamedStructureOutliers(
         OutliersHypothesis hypothesis,
         NamedStructureEquivalenceSets<T> equivSet,
         SortedSet<NamedStructureOutlierSet<?>> rankedOutliers) {
@@ -332,7 +332,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
      * given name and those lacking such a structure. This information will later be used to test
      * the sameName hypothesis.
      */
-    private <T> void toNameOnlyEquivalenceSets(
+    private static <T> void toNameOnlyEquivalenceSets(
         NamedStructureEquivalenceSets<T> eSets, Set<String> nodes) {
       ImmutableSortedMap.Builder<String, SortedSet<NamedStructureEquivalenceSet<T>>> newESetsMap =
           new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
@@ -372,7 +372,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
      * with the largest number of elements is correct and the property equivalence classes
      * represent bugs
      */
-    private SortedSet<NamedStructureOutlierSet<?>> rankNamedStructureOutliers(
+    private static SortedSet<NamedStructureOutlierSet<?>> rankNamedStructureOutliers(
         OutliersHypothesis hypothesis,
         SortedMap<String, NamedStructureEquivalenceSets<?>> equivSets) {
       SortedSet<NamedStructureOutlierSet<?>> rankedOutliers = new TreeSet<>();
@@ -462,6 +462,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _namedStructTypes;
     }
 
+    @Override
     @JsonProperty(PROP_NODE_REGEX)
     public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
@@ -487,6 +488,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       _namedStructTypes = namedStructTypes;
     }
 
+    @Override
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;

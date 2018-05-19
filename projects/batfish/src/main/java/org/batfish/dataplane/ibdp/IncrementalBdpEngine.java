@@ -503,7 +503,7 @@ public class IncrementalBdpEngine {
     return false; // No oscillations
   }
 
-  private void compareToPreviousIteration(
+  private static void compareToPreviousIteration(
       Map<String, Node> nodes,
       AtomicBoolean dependentRoutesChanged,
       AtomicInteger checkFixedPointCompleted) {
@@ -565,7 +565,7 @@ public class IncrementalBdpEngine {
         .sum();
   }
 
-  private void computeIterationStatistics(
+  private static void computeIterationStatistics(
       Map<String, Node> nodes, BdpAnswerElement ae, int dependentRoutesIterations) {
     int numBgpBestPathRibRoutes =
         nodes
@@ -597,7 +597,7 @@ public class IncrementalBdpEngine {
   /**
    * Return the main RIB routes for each node. Map structure: Hostname -> VRF name -> Set of routes
    */
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
+  static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return dp.getNodes()

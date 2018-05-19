@@ -28,7 +28,7 @@ public class NamedCommunitySet extends CommunitySetExpr {
     ImmutableSortedSet.Builder<Long> out = ImmutableSortedSet.naturalOrder();
     CommunityList cl = environment.getConfiguration().getCommunityLists().get(_name);
     for (CommunityListLine line : cl.getLines()) {
-      Long community = line.toLiteralCommunity();
+      Long community = CommunityListLine.toLiteralCommunity();
       out.add(community);
     }
     return out.build();

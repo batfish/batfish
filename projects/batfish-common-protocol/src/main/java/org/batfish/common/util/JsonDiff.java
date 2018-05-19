@@ -203,7 +203,7 @@ public class JsonDiff {
     return _data;
   }
 
-  private Object getValue(Object object) throws JSONException {
+  private static Object getValue(Object object) throws JSONException {
     if (object instanceof JSONObject) {
       JSONObject j = (JSONObject) object;
       Map<String, Object> map = new TreeMap<>();

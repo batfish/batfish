@@ -19,7 +19,7 @@ public class GNS3TopologyExtractor extends GNS3TopologyParserBaseListener
     _edges = new TreeSet<>();
   }
 
-  private String convertInterfaceName(String shortName) {
+  private static String convertInterfaceName(String shortName) {
     return shortName.replace("f", "FastEthernet");
   }
 

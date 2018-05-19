@@ -321,7 +321,7 @@ class TransferSSA {
    */
   private BoolExpr matchCommunitySet(Configuration conf, CommunitySetExpr e, SymbolicRoute other) {
     if (e instanceof InlineCommunitySet) {
-      Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(conf, e);
+      Set<CommunityVar> comms = Graph.findAllCommunities(conf, e);
       BoolExpr acc = _enc.mkTrue();
       for (CommunityVar comm : comms) {
         BoolExpr c = other.getCommunities().get(comm);
@@ -554,7 +554,7 @@ class TransferSSA {
   /*
    * Deal with the possibility of null variables due to optimizations
    */
-  private ArithExpr getOrDefault(ArithExpr x, ArithExpr d) {
+  private static ArithExpr getOrDefault(ArithExpr x, ArithExpr d) {
     if (x != null) {
       return x;
     }
@@ -625,7 +625,7 @@ class TransferSSA {
   /*
    * Compute how many times to prepend to a path from the AST
    */
-  private int prependLength(AsPathListExpr expr) {
+  private static int prependLength(AsPathListExpr expr) {
     if (expr instanceof MultipliedAs) {
       MultipliedAs x = (MultipliedAs) expr;
       IntExpr e = x.getNumber();
@@ -674,12 +674,12 @@ class TransferSSA {
   private BoolExpr relateVariables(
       TransferParam<SymbolicRoute> p, TransferResult<BoolExpr, BoolExpr> result) {
 
-    ArithExpr defaultLen = _enc.mkInt(_enc.defaultLength());
+    ArithExpr defaultLen = _enc.mkInt(EncoderSlice.defaultLength());
     ArithExpr defaultAd = _enc.defaultAdminDistance(_conf, _proto, p.getData());
-    ArithExpr defaultMed = _enc.mkInt(_enc.defaultMed(_proto));
-    ArithExpr defaultLp = _enc.mkInt(_enc.defaultLocalPref());
-    ArithExpr defaultId = _enc.mkInt(_enc.defaultId());
-    ArithExpr defaultMet = _enc.mkInt(_enc.defaultMetric());
+    ArithExpr defaultMed = _enc.mkInt(EncoderSlice.defaultMed(_proto));
+    ArithExpr defaultLp = _enc.mkInt(EncoderSlice.defaultLocalPref());
+    ArithExpr defaultId = _enc.mkInt(EncoderSlice.defaultId());
+    ArithExpr defaultMet = _enc.mkInt(EncoderSlice.defaultMetric());
 
     // TODO: remove all isChanged calls with actual symbolic values that test for a change
 
@@ -847,7 +847,8 @@ class TransferSSA {
         .addChangedVariable("FALLTHROUGH", newFallthrough);
   }
 
-  private void updateSingleValue(TransferParam<SymbolicRoute> p, String variableName, Expr expr) {
+  private static void updateSingleValue(
+      TransferParam<SymbolicRoute> p, String variableName, Expr expr) {
     switch (variableName) {
       case "METRIC":
         p.getData().setMetric((ArithExpr) expr);
@@ -1182,7 +1183,7 @@ class TransferSSA {
       } else if (stmt instanceof AddCommunity) {
         p.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
-        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = Graph.findAllCommunities(_conf, ac.getExpr());
         for (CommunityVar cvar : comms) {
           BoolExpr newValue =
               _enc.mkIf(
@@ -1197,7 +1198,7 @@ class TransferSSA {
       } else if (stmt instanceof SetCommunity) {
         p.debug("SetCommunity");
         SetCommunity sc = (SetCommunity) stmt;
-        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, sc.getExpr());
+        Set<CommunityVar> comms = Graph.findAllCommunities(_conf, sc.getExpr());
         for (CommunityVar cvar : comms) {
           BoolExpr newValue =
               _enc.mkIf(
@@ -1212,7 +1213,7 @@ class TransferSSA {
       } else if (stmt instanceof DeleteCommunity) {
         p.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
-        Set<CommunityVar> comms = _enc.getGraph().findAllCommunities(_conf, ac.getExpr());
+        Set<CommunityVar> comms = Graph.findAllCommunities(_conf, ac.getExpr());
         Set<CommunityVar> toDelete = new HashSet<>();
         // Find comms to delete
         for (CommunityVar cvar : comms) {
@@ -1295,7 +1296,7 @@ class TransferSSA {
    * check for True and False values because z3 seems to have some issue with
    * identifying the AST expression kind (e.g., e.isTrue() throws an exception).
    */
-  private boolean canInline(Expr e) {
+  private static boolean canInline(Expr e) {
     // TODO: such a huge hack
     String s = e.toString();
     // p.debug("[STRING]: " + s);

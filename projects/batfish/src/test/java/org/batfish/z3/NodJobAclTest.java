@@ -354,7 +354,7 @@ public class NodJobAclTest {
     testPermittedByAcl_helper(LineAction.REJECT);
   }
 
-  private void testPermittedByAcl_helper(LineAction action) throws IOException {
+  private static void testPermittedByAcl_helper(LineAction action) throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);

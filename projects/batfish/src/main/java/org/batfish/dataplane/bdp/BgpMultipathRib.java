@@ -151,7 +151,7 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
     return res;
   }
 
-  private int getAggregatePreference(RoutingProtocol protocol) {
+  private static int getAggregatePreference(RoutingProtocol protocol) {
     if (protocol == RoutingProtocol.AGGREGATE) {
       return 1;
     } else {
@@ -159,7 +159,7 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
     }
   }
 
-  private int getTypeCost(RoutingProtocol protocol) {
+  private static int getTypeCost(RoutingProtocol protocol) {
     switch (protocol) {
       case AGGREGATE:
         return 0;

@@ -365,7 +365,7 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @return Whether or not a given remote neighbor is allowed to advertise to this neighbor this
    *     iteration.
    */
-  private boolean hasAdvertisementPriorityDuringRecovery(
+  private static boolean hasAdvertisementPriorityDuringRecovery(
       AbstractRoute route,
       int currentIteration,
       SortedSet<Prefix> oscillatingPrefixes,
@@ -387,7 +387,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
-  <U extends AbstractRoute, T extends U> void importRib(
+  static <U extends AbstractRoute, T extends U> void importRib(
       AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
     for (T route : exportingRib.getRoutes()) {
       importingRib.mergeRoute(route);

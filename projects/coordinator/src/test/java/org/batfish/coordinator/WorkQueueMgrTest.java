@@ -131,12 +131,12 @@ public class WorkQueueMgrTest {
     _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger());
   }
 
-  private void initTestrigMetadata(String testrig, String environment, ProcessingStatus status)
-      throws JsonProcessingException {
+  private static void initTestrigMetadata(
+      String testrig, String environment, ProcessingStatus status) throws JsonProcessingException {
     initTestrigMetadata(CONTAINER, testrig, environment, status);
   }
 
-  private void initTestrigMetadata(
+  private static void initTestrigMetadata(
       String container, String testrig, String environment, ProcessingStatus status)
       throws JsonProcessingException {
     Path metadataPath = WorkMgr.getpathTestrigMetadata(container, testrig);

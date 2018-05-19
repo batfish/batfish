@@ -10,7 +10,7 @@ import org.batfish.datamodel.Flow;
 import org.junit.Test;
 
 public class OrExprTest {
-  private Flow createFlow() {
+  private static Flow createFlow() {
     Flow.Builder b = new Flow.Builder();
     b.setIngressNode("ingressNode");
     b.setTag("empty");

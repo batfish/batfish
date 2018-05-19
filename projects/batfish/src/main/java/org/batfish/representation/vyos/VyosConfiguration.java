@@ -304,7 +304,7 @@ public class VyosConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  private RouteFilterList toRouteFilterList(PrefixList prefixList) {
+  private static RouteFilterList toRouteFilterList(PrefixList prefixList) {
     String name = prefixList.getName();
     RouteFilterList newList = new RouteFilterList(name);
     List<RouteFilterLine> newLines =

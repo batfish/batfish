@@ -136,7 +136,7 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane) {
     BdpDataPlane dp = (BdpDataPlane) dataPlane;
-    return _engine.getRoutes(dp);
+    return BdpEngine.getRoutes(dp);
   }
 
   private BdpDataPlane loadDataPlane() {

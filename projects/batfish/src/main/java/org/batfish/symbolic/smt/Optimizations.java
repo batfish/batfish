@@ -186,7 +186,7 @@ class Optimizations {
   /*
    * Check if we need to keep around the BGP Med attribute.
    */
-  private boolean computeKeepMed() {
+  private static boolean computeKeepMed() {
     return !Optimizations.ENABLE_SLICING_OPTIMIZATION;
     /* if (!PolicyQuotient.ENABLE_SLICING_OPTIMIZATION) {
         return true;
@@ -388,7 +388,7 @@ class Optimizations {
                   for (GraphEdge edge : g.getEdgeMap().get(router)) {
                     if (g.isEdgeUsed(conf, proto, edge)) {
                       Interface iface = edge.getStart();
-                      allIfacesActive = allIfacesActive && g.isInterfaceActive(proto, iface);
+                      allIfacesActive = allIfacesActive && Graph.isInterfaceActive(proto, iface);
                     }
                   }
 
@@ -534,7 +534,7 @@ class Optimizations {
   /*
    * Determine if a BGP neighbor uses the default export policy
    */
-  private boolean isDefaultBgpExport(Configuration conf, BgpNeighbor n) {
+  private static boolean isDefaultBgpExport(Configuration conf, BgpNeighbor n) {
 
     // Check if valid neighbor
     if (n == null || n.getExportPolicy() == null) {

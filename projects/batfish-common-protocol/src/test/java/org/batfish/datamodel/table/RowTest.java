@@ -11,11 +11,11 @@ import org.junit.Test;
 
 public class RowTest {
 
-  Row initRowThree() {
+  static Row initRowThree() {
     return new Row().put("col1", "value1").put("col2", "value2").put("col3", "value3");
   }
 
-  TableMetadata initMetadataThree(
+  static TableMetadata initMetadataThree(
       boolean keyCol1,
       boolean keyCol2,
       boolean keyCol3,

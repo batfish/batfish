@@ -172,11 +172,11 @@ public class VerificationStats {
     return newStats;
   }
 
-  private String fmt(double d) {
+  private static String fmt(double d) {
     return String.format("%.2f", d);
   }
 
-  private String fmtSec(double d) {
+  private static String fmtSec(double d) {
     return String.format("%.2f sec", d / 1000);
   }
 

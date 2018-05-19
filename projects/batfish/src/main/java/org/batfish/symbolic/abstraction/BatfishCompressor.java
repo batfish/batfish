@@ -70,7 +70,7 @@ public class BatfishCompressor {
    * Merge two maps of filters. When there's collision take the union (to allow traffic matching
    * either filter).
    */
-  private void addAll(
+  private static void addAll(
       Map<GraphEdge, EquivalenceClassFilter> to, Map<GraphEdge, EquivalenceClassFilter> from) {
     for (Entry<GraphEdge, EquivalenceClassFilter> entry : from.entrySet()) {
       GraphEdge graphEdge = entry.getKey();
@@ -93,7 +93,7 @@ public class BatfishCompressor {
     }
   }
 
-  private Map<GraphEdge, EquivalenceClassFilter> mergeFilters(
+  private static Map<GraphEdge, EquivalenceClassFilter> mergeFilters(
       Map<GraphEdge, EquivalenceClassFilter> x, Map<GraphEdge, EquivalenceClassFilter> y) {
     Map<GraphEdge, EquivalenceClassFilter> newMap = new HashMap<>(x);
     addAll(newMap, y);
@@ -265,7 +265,10 @@ public class BatfishCompressor {
     DestinationClasses dcs = DestinationClasses.create(_batfish, _graph, h, true);
     ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, 0);
     Optional<Map<GraphEdge, EquivalenceClassFilter>> opt =
-        ecs.stream().map(Supplier::get).map(this::processSlice).reduce(this::mergeFilters);
+        ecs.stream()
+            .map(Supplier::get)
+            .map(this::processSlice)
+            .reduce(BatfishCompressor::mergeFilters);
     if (!opt.isPresent()) {
       return new HashMap<>();
     }

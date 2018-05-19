@@ -358,7 +358,7 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       return answers;
     }
 
-    private <T extends RoleBasedOutlierSet> Multimap<String, T> outliersByProperty(
+    private static <T extends RoleBasedOutlierSet> Multimap<String, T> outliersByProperty(
         Collection<AnswerElement> answers,
         Function<OutliersAnswerElement, Collection<T>> outliersFun,
         Function<T, String> propertyNameFun) {
@@ -407,7 +407,8 @@ public class InferPoliciesQuestionPlugin extends QuestionPlugin {
       return policies;
     }
 
-    private void setRoleAll(Collection<? extends RoleBasedOutlierSet> outlierSets, String role) {
+    private static void setRoleAll(
+        Collection<? extends RoleBasedOutlierSet> outlierSets, String role) {
       for (RoleBasedOutlierSet os : outlierSets) {
         os.setRole(role);
       }

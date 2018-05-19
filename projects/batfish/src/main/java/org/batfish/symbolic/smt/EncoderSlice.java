@@ -333,7 +333,7 @@ class EncoderSlice {
         _logicalGraph.getRedistributedProtocols().put(router, proto, redistributed);
         RoutingPolicy pol = Graph.findCommonRoutingPolicy(conf, proto);
         if (pol != null) {
-          Set<Protocol> ps = getGraph().findRedistributedProtocols(conf, pol, proto);
+          Set<Protocol> ps = Graph.findRedistributedProtocols(conf, pol, proto);
           for (Protocol p : ps) {
             // Make sure there is actually a routing process for the other protocol
             // For example, it might get sliced away if not relevant
@@ -380,7 +380,7 @@ class EncoderSlice {
   /*
    * Get the added cost out an interface for a given routing protocol.
    */
-  private Integer addedCost(Protocol proto, GraphEdge ge) {
+  private static Integer addedCost(Protocol proto, GraphEdge ge) {
     if (proto.isOspf()) {
       return ge.getStart().getOspfCost();
     }
@@ -989,35 +989,35 @@ class EncoderSlice {
     return mkIf(r.getBgpInternal(), mkInt(200), def);
   }
 
-  private int defaultAdminDistance(Configuration conf, Protocol proto) {
+  private static int defaultAdminDistance(Configuration conf, Protocol proto) {
     RoutingProtocol rp = Protocol.toRoutingProtocol(proto);
     return rp.getDefaultAdministrativeCost(conf.getConfigurationFormat());
   }
 
-  int defaultId() {
+  static int defaultId() {
     return 0;
   }
 
-  int defaultMetric() {
+  static int defaultMetric() {
     return 0;
   }
 
-  int defaultMed(Protocol proto) {
+  static int defaultMed(Protocol proto) {
     if (proto.isBgp()) {
       return 100;
     }
     return 0;
   }
 
-  int defaultLocalPref() {
+  static int defaultLocalPref() {
     return 100;
   }
 
-  int defaultLength() {
+  static int defaultLength() {
     return 0;
   }
 
-  private int defaultIgpMetric() {
+  private static int defaultIgpMetric() {
     return 0;
   }
 
@@ -1647,7 +1647,7 @@ class EncoderSlice {
     return new IpAccessListToBoolExpr(_encoder.getCtx(), _symbolicPacket).toBoolExpr(acl);
   }
 
-  private boolean otherSliceHasEdge(EncoderSlice slice, String r, GraphEdge ge) {
+  private static boolean otherSliceHasEdge(EncoderSlice slice, String r, GraphEdge ge) {
     Map<String, List<GraphEdge>> edgeMap = slice.getGraph().getEdgeMap();
     List<GraphEdge> edges = edgeMap.get(r);
     return edges != null && edges.contains(ge);

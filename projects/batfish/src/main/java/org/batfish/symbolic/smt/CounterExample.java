@@ -114,7 +114,7 @@ class CounterExample {
     return b.build();
   }
 
-  private Edge fromGraphEdge(GraphEdge ge) {
+  private static Edge fromGraphEdge(GraphEdge ge) {
     String w = ge.getRouter();
     String x = ge.getStart() == null ? "none" : ge.getStart().getName();
     String y = ge.getPeer();
@@ -227,7 +227,7 @@ class CounterExample {
   /*
    * Build an individual flow hop along a path
    */
-  private FlowTraceHop buildFlowTraceHop(GraphEdge ge, String route) {
+  private static FlowTraceHop buildFlowTraceHop(GraphEdge ge, String route) {
     String node1 = ge.getRouter();
     String int1 = ge.getStart().getName();
     String node2 = ge.getPeer() == null ? "(none)" : ge.getPeer();
@@ -241,7 +241,7 @@ class CounterExample {
   /*
    * Reconstruct the actual route used to forward the packet.
    */
-  String buildRoute(Prefix pfx, Protocol proto, GraphEdge ge) {
+  static String buildRoute(Prefix pfx, Protocol proto, GraphEdge ge) {
     String type;
     String nhip;
     String nhint;

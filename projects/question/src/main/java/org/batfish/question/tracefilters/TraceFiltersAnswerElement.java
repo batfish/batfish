@@ -63,7 +63,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
     super(tableMetadata);
   }
 
-  public Row getRow(
+  public static Row getRow(
       String nodeName,
       String filterName,
       Flow flow,

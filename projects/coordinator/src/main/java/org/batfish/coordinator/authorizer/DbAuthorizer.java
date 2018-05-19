@@ -182,7 +182,7 @@ public class DbAuthorizer implements Authorizer {
     return 0;
   }
 
-  private String getPermsCacheKey(String apiKey, String containerName) {
+  private static String getPermsCacheKey(String apiKey, String containerName) {
     return apiKey + "::" + containerName;
   }
 

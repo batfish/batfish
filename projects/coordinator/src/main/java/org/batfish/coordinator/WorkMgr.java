@@ -505,7 +505,7 @@ public class WorkMgr extends AbstractCoordinator {
     Path containerDir = getdirContainer(containerName);
     Path aDir = containerDir.resolve(Paths.get(BfConsts.RELPATH_ANALYSES_DIR, aName));
 
-    this.configureAnalysisValidityCheck(
+    WorkMgr.configureAnalysisValidityCheck(
         containerName, newAnalysis, aName, questionsToAdd, questionsToDelete, aDir);
 
     if (newAnalysis) {
@@ -549,7 +549,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  private void configureAnalysisValidityCheck(
+  private static void configureAnalysisValidityCheck(
       String containerName,
       boolean newAnalysis,
       String aName,
@@ -599,7 +599,7 @@ public class WorkMgr extends AbstractCoordinator {
     CommonUtil.deleteDirectory(aDir);
   }
 
-  public boolean delContainer(String containerName) {
+  public static boolean delContainer(String containerName) {
     Path containerDir = getdirContainer(containerName, false);
     if (Files.exists(containerDir)) {
       CommonUtil.deleteDirectory(containerDir);
@@ -780,7 +780,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Return a {@link Container container} contains all testrigs directories inside it */
-  public Container getContainer(Path containerDir) {
+  public static Container getContainer(Path containerDir) {
     SortedSet<String> testrigs =
         new TreeSet<>(
             CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
@@ -969,7 +969,7 @@ public class WorkMgr extends AbstractCoordinator {
     return retStringBuilder.toString();
   }
 
-  public TestrigMetadata getTestrigMetadata(String containerName, String testrigName)
+  public static TestrigMetadata getTestrigMetadata(String containerName, String testrigName)
       throws IOException {
     return TestrigMetadataMgr.readMetadata(getpathTestrigMetadata(containerName, testrigName));
   }
@@ -1002,7 +1002,7 @@ public class WorkMgr extends AbstractCoordinator {
     return null;
   }
 
-  public String getQuestion(String containerName, String questionName) {
+  public static String getQuestion(String containerName, String questionName) {
     Path containerDir = getdirContainer(containerName, true);
     Path questionDir =
         containerDir.resolve(Paths.get(BfConsts.RELPATH_QUESTIONS_DIR, questionName));
@@ -1021,7 +1021,8 @@ public class WorkMgr extends AbstractCoordinator {
     return _workQueueMgr.getWork(workItemId);
   }
 
-  public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
+  public static String initContainer(
+      @Nullable String containerName, @Nullable String containerPrefix) {
     if (containerName == null || containerName.equals("")) {
       containerName = containerPrefix + "_" + UUID.randomUUID();
     }
@@ -1168,12 +1169,12 @@ public class WorkMgr extends AbstractCoordinator {
     return autoWorkQueue;
   }
 
-  private boolean isContainerFile(Path path) {
+  private static boolean isContainerFile(Path path) {
     String name = path.getFileName().toString();
     return CONTAINER_FILENAMES.contains(name);
   }
 
-  private boolean isEnvFile(Path path) {
+  private static boolean isEnvFile(Path path) {
     String name = path.getFileName().toString();
     return ENV_FILENAMES.contains(name);
   }
@@ -1288,7 +1289,8 @@ public class WorkMgr extends AbstractCoordinator {
     return analyses;
   }
 
-  private boolean selectAnalysis(String aName, AnalysisType analysisType, String containerName) {
+  private static boolean selectAnalysis(
+      String aName, AnalysisType analysisType, String containerName) {
     if (analysisType == AnalysisType.ALL) {
       return true;
     }
@@ -1317,7 +1319,7 @@ public class WorkMgr extends AbstractCoordinator {
     return subdirectoryNames;
   }
 
-  public SortedSet<String> listContainers(String apiKey) {
+  public static SortedSet<String> listContainers(String apiKey) {
     Path containersDir = Main.getSettings().getContainersLocation();
     if (!Files.exists(containersDir)) {
       containersDir.toFile().mkdirs();
@@ -1460,7 +1462,7 @@ public class WorkMgr extends AbstractCoordinator {
     return success;
   }
 
-  public void startWorkManager() {
+  public static void startWorkManager() {
     // for some bizarre reason, this ordering of scheduling checktask before
     // assignwork, is important
     // in the other order, assignwork never fires
@@ -1652,7 +1654,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Returns true if the container {@code containerName} exists, false otherwise. */
-  public boolean checkContainerExists(String containerName) {
+  public static boolean checkContainerExists(String containerName) {
     Path containerDir = getdirContainer(containerName, false);
     return Files.exists(containerDir);
   }

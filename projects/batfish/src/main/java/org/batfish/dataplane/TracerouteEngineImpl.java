@@ -530,7 +530,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
     }
   }
 
-  private boolean flowTraceFilterHelper(
+  private static boolean flowTraceFilterHelper(
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
@@ -589,7 +589,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
   }
 
   @Nullable
-  private Flow hopFlow(Flow originalFlow, Flow transformedFlow) {
+  private static Flow hopFlow(Flow originalFlow, Flow transformedFlow) {
     if (originalFlow == transformedFlow) {
       return null;
     } else {
@@ -597,7 +597,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
     }
   }
 
-  private FlowTrace neighborUnreachableTrace(
+  private static FlowTrace neighborUnreachableTrace(
       List<FlowTraceHop> completedHops,
       NodeInterfacePair srcInterface,
       SortedSet<String> routes,

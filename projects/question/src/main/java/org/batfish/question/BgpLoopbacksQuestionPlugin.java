@@ -42,7 +42,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
       _missing = new TreeMap<>();
     }
 
-    public void add(
+    public static void add(
         SortedMap<String, SortedSet<String>> map, String hostname, String interfaceName) {
       SortedSet<String> interfacesByHostname = map.computeIfAbsent(hostname, k -> new TreeSet<>());
       interfacesByHostname.add(interfaceName);
@@ -57,7 +57,7 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
       return _missing;
     }
 
-    private Object interfacesToString(
+    private static Object interfacesToString(
         String indent, String header, SortedMap<String, SortedSet<String>> interfaces) {
       StringBuilder sb = new StringBuilder(indent + header + "\n");
       for (String node : interfaces.keySet()) {
@@ -150,9 +150,9 @@ public class BgpLoopbacksQuestionPlugin extends QuestionPlugin {
                 }
               }
               if (exported) {
-                answerElement.add(answerElement.getExported(), hostname, interfaceName);
+                BgpLoopbacksAnswerElement.add(answerElement.getExported(), hostname, interfaceName);
               } else {
-                answerElement.add(answerElement.getMissing(), hostname, interfaceName);
+                BgpLoopbacksAnswerElement.add(answerElement.getMissing(), hostname, interfaceName);
               }
             }
           }

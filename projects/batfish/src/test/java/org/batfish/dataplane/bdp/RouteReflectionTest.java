@@ -252,7 +252,7 @@ public class RouteReflectionTest {
                     .setSrcNode("as3Edge")
                     .build()),
             new BdpAnswerElement());
-    return engine.getRoutes(dp);
+    return BdpEngine.getRoutes(dp);
   }
 
   private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
@@ -376,7 +376,7 @@ public class RouteReflectionTest {
                     .setSrcNode("as1Edge")
                     .build()),
             new BdpAnswerElement());
-    return engine.getRoutes(dp);
+    return BdpEngine.getRoutes(dp);
   }
 
   /** Initialize builders with values common to all tests */

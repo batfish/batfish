@@ -23,7 +23,7 @@ import org.junit.Test;
 
 public class NodesSpecifierTest {
 
-  private NodeRolesData initNodeRoleData() {
+  private static NodeRolesData initNodeRoleData() {
     NodeRoleDimension dim1 =
         new NodeRoleDimension(
             "dim10",

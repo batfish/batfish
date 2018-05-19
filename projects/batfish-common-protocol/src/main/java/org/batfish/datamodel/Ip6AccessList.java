@@ -73,7 +73,7 @@ public class Ip6AccessList extends ComparableStructure<String> {
     return _lines;
   }
 
-  private boolean noDenyOrLastDeny(Ip6AccessList acl) {
+  private static boolean noDenyOrLastDeny(Ip6AccessList acl) {
     int count = 0;
     for (Ip6AccessListLine line : acl.getLines()) {
       if (line.getAction() == LineAction.REJECT && count < acl.getLines().size() - 1) {

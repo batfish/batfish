@@ -3734,7 +3734,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return c;
   }
 
-  private IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
+  private static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(

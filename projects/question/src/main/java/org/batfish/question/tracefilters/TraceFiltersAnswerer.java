@@ -49,7 +49,7 @@ public class TraceFiltersAnswerer extends Answerer {
           }
         }
         Row row =
-            answer.getRow(
+            TraceFiltersAnswerElement.getRow(
                 c.getHostname(), filter.getName(), flow, result.getAction(), matchLine, lineDesc);
 
         // exclude or not?
