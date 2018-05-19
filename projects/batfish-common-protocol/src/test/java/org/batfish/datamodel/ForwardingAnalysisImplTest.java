@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.ForwardingAnalysisImpl.computeNullRoutedIps;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.hasLines;
 import static org.batfish.datamodel.matchers.AclIpSpaceMatchers.isAclIpSpaceThat;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
@@ -709,9 +710,7 @@ public class ForwardingAnalysisImplTest {
                                 ImmutableMap.of(
                                     Route.UNSET_ROUTE_NEXT_HOP_IP, ImmutableSet.of(otherRoute)))))
                     .build()));
-    ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    Map<String, Map<String, IpSpace>> result =
-        forwardingAnalysisImpl.computeNullRoutedIps(ribs, fibs);
+    Map<String, Map<String, IpSpace>> result = computeNullRoutedIps(ribs, fibs);
 
     /* IPs for the null route should appear */
     assertThat(result, hasEntry(equalTo(c1), hasEntry(equalTo(v1), containsIp(P1.getStartIp()))));
