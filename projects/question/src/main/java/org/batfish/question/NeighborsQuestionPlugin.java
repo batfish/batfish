@@ -7,6 +7,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.Network;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -445,12 +446,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (question.getStyle() == EdgeStyle.ROLE) {
         NodeRoleDimension roleDimension =
             _batfish.getNodeRoleDimension(question.getRoleDimension());
-        if (roleDimension != null) {
-          _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
-        } else {
-          throw new IllegalArgumentException(
-              "Role dimension not found: " + question.getRoleDimension());
-        }
+        _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
       }
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
