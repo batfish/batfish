@@ -31,8 +31,9 @@ install:
   - .travis/install.sh
 
 script:
-  - if [ ${BF_BUILDER} == "mvn" ]; then .travis/build.sh ; fi
-  - if [ ${BF_BUILDER} == "bazel" ]; then
+  - if [ ${BF_BUILDER} == "mvn" ]; then true ; fi
+  - |
+    if [ ${BF_BUILDER} == "bazel" ]; then
       bazel \
       --output_base=$HOME/.cache/bazel \
       --batch \
