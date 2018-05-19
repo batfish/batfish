@@ -9,7 +9,7 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.collections.Table2;
 
 /**
- * A collection of symbolic variables representing the possible link failures in the network.
+ * A collection of symbolic routeVariables representing the possible link failures in the network.
  *
  * @author Ryan Beckett
  */

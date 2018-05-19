@@ -29,7 +29,7 @@ public class BDDInteger {
 
   /*
    * Create an integer, and initialize its values as "don't care"
-   * This requires knowing the start index variables the bitvector
+   * This requires knowing the start index routeVariables the bitvector
    * will use.
    */
   public static BDDInteger makeFromIndex(

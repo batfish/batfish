@@ -10,8 +10,8 @@ import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.collections.Table3;
 
 /**
- * Class for the symbolic variables used to represent the final forwarding decision in the network.
- * This includes both the control plane and data plane forwading decisions, as well as the
+ * Class for the symbolic routeVariables used to represent the final forwarding decision in the
+ * network. This includes both the control plane and data plane forwading decisions, as well as the
  * per-protocol and overall best choices.
  *
  * @author Ryan Beckett

@@ -25,7 +25,7 @@ import org.batfish.symbolic.Protocol;
 
 /*
  * Class to manage the various BDD indexes and operations. This is useful
- * because, which variables are used or needed depends on a number of
+ * because, which routeVariables are used or needed depends on a number of
  * factors such as what we want to model, if we are doing abstraction etc.
  *
  * It is also made more complicated by the fact that the number of BDD bits
@@ -55,7 +55,9 @@ public class BDDNetFactory {
 
   private List<Integer> _allLocalPrefs;
 
-  private BDDRoute _variables;
+  private BDDRoute _routeVariables;
+
+  private BDDPacket _packetVariables;
 
   private int _indexIpProto;
 
@@ -165,7 +167,7 @@ public class BDDNetFactory {
     _allRouters = new ArrayList<>(g.getRouters());
     _allLocalPrefs = new ArrayList<>(BDDUtils.findAllLocalPrefs(g));
 
-    // BDD Packet variables
+    // BDD Packet routeVariables
     int numIpProto = 8;
     int numDstIp = 32;
     int numSrcIp = 32;
@@ -175,7 +177,7 @@ public class BDDNetFactory {
     int numIcmpType = 8;
     int numTcpFlags = 8;
 
-    // BDD Route variables
+    // BDD Route routeVariables
     int numPrefixLen = 6;
     int numAd = (config.getKeepAd() ? 2 * 32 : 0);
     int numCommunities = (config.getKeepCommunities() ? 2 * _allCommunities.size() : 0);
@@ -233,7 +235,8 @@ public class BDDNetFactory {
     _indexSrcRouter = _indexDstRouter + (numRouter / 3);
     _indexRouterTemp = _indexSrcRouter + (numRouter / 3);
 
-    _variables = createRoute();
+    _routeVariables = createRoute();
+    _packetVariables = createPacket();
   }
 
   public BDD one() {
@@ -264,8 +267,12 @@ public class BDDNetFactory {
     return new BDDPacket(pkt);
   }
 
-  public BDDRoute variables() {
-    return _variables;
+  public BDDRoute routeVariables() {
+    return _routeVariables;
+  }
+
+  public BDDPacket packetVariables() {
+    return _packetVariables;
   }
 
   public BDDNetConfig getConfig() {
@@ -294,7 +301,7 @@ public class BDDNetFactory {
    * this is useful to track where messages came from etc. What features
    * are modeled and which are not is controlled by the BDDNetConfig object
    *
-   * There are also several temporary variables named with *Temp. These
+   * There are also several temporary routeVariables named with *Temp. These
    * are here to allow for certain operations such as next state computation
    * in classic symbolic model checking where they represent the next state.
    *
@@ -342,7 +349,7 @@ public class BDDNetFactory {
     private final BDDInteger _prefixLength;
 
     /*
-     * Creates a collection of BDD variables representing the
+     * Creates a collection of BDD routeVariables representing the
      * various attributes of a control plane advertisement.
      */
     private BDDRoute() {
@@ -840,7 +847,7 @@ public class BDDNetFactory {
     private BDD _tcpUrg;
 
     /*
-     * Creates a collection of BDD variables representing the
+     * Creates a collection of BDD routeVariables representing the
      * various attributes of a control plane advertisement.
      */
     private BDDPacket() {
@@ -863,8 +870,8 @@ public class BDDNetFactory {
       _tcpSyn = _factory.ithVar(_indexTcpFlags + 6);
       _tcpUrg = _factory.ithVar(_indexTcpFlags + 7);
       addBitNames("ipProtocol", 8, _indexIpProto, false);
-      addBitNames("dstIp", 32, _indexDstIp, true);
-      addBitNames("srcIp", 32, _indexSrcIp, true);
+      addBitNames("dstIp", 32, _indexDstIp, false);
+      addBitNames("srcIp", 32, _indexSrcIp, false);
       addBitNames("dstPort", 16, _indexDstPort, false);
       addBitNames("srcPort", 16, _indexSrcPort, false);
       addBitNames("icmpCode", 8, _indexIcmpCode, false);

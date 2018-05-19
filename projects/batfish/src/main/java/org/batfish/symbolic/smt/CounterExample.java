@@ -308,7 +308,7 @@ class CounterExample {
     String current = router;
     while (true) {
       visited.add(current);
-      // Get the forwarding variables
+      // Get the forwarding routeVariables
       Map<GraphEdge, BoolExpr> dfwd = decisions.getDataForwarding().get(current);
       Map<GraphEdge, BoolExpr> cfwd = decisions.getControlForwarding().get(current);
       Map<GraphEdge, BoolExpr> across = enc.getMainSlice().getForwardsAcross().get(current);

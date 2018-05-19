@@ -4,15 +4,18 @@ import java.util.HashSet;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.symbolic.AstVisitor;
 import org.batfish.symbolic.Graph;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDPacket;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 
 public class BDDUtils {
@@ -49,7 +52,7 @@ public class BDDUtils {
   public static BDD firstBitsEqual(BDDFactory factory, BDD[] bits, Ip ip, int length) {
     long b = ip.asLong();
     BDD acc = factory.one();
-    for (int i = 0; i < length; i++) {
+    for (int i = length - 1; i >= 0; i--) {
       boolean res = Ip.getBitAtPosition(b, i);
       if (res) {
         acc = acc.and(bits[i]);
@@ -70,7 +73,6 @@ public class BDDUtils {
     int len = p.getPrefixLength();
     int lower = r.getStart();
     int upper = r.getEnd();
-
     BDD lowerBitsMatch = firstBitsEqual(factory, record.getPrefix().getBitvec(), p, len);
     BDD acc = factory.zero();
     if (lower == 0 && upper == 32) {
@@ -88,5 +90,12 @@ public class BDDUtils {
     BDD bitsMatch = firstBitsEqual(factory, record.getPrefix().getBitvec(), p, 32);
     BDD correctLen = record.getPrefixLength().value(p.getPrefixLength());
     return bitsMatch.andWith(correctLen);
+  }
+
+  public static BDD headerspaceToBdd(BDDNetFactory factory, HeaderSpace hs) {
+    BDDPacket pkt = factory.packetVariables();
+    MatchHeaderSpace mhs = new MatchHeaderSpace(hs);
+    AclLineMatchExprToBDD converter = new AclLineMatchExprToBDD(factory.getFactory(), pkt);
+    return converter.toBDD(mhs);
   }
 }

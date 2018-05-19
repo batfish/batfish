@@ -24,6 +24,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
@@ -36,6 +37,7 @@ import org.batfish.symbolic.bdd.BDDNetFactory;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
+import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.smt.EdgeType;
 
 // TODO: Take ACLs into account. Will likely require using a single Factory object
@@ -61,10 +63,10 @@ public class AbstractInterpreter {
   // Convert acls to a unique identifier
   private FiniteIndexMap<BDDAcl> _aclIndexes;
 
-  // A collection of single node BDDs representing the individual variables
+  // A collection of single node BDDs representing the individual routeVariables
   private BDDRoute _variables;
 
-  // The set of community and protocol BDD variables that we will quantify away
+  // The set of community and protocol BDD routeVariables that we will quantify away
   private BDD _communityAndProtocolBits;
 
   // A cache of BDDs representing a prefix length exact match
@@ -105,7 +107,7 @@ public class AbstractInterpreter {
 
     _netFactory = _network.getNetFactory();
     _lenBits = _netFactory.one();
-    _variables = _netFactory.variables();
+    _variables = _netFactory.routeVariables();
 
     Set<BDDAcl> acls = new HashSet<>();
     acls.addAll(_network.getInAcls().values());
@@ -194,7 +196,7 @@ public class AbstractInterpreter {
   }
 
   /*
-   * Compute the set of BDD variables to quantify away for a given prefix length.
+   * Compute the set of BDD routeVariables to quantify away for a given prefix length.
    * The boolean indicates whether the router bits should be removed
    * For efficiency, these values are cached.
    */
@@ -505,17 +507,17 @@ public class AbstractInterpreter {
    */
   private SortedSet<RibEntry> toRoutes(String hostname, BDD rib) {
     SortedSet<RibEntry> routes = new TreeSet<>();
-    List assignments = rib.allsat();
-    for (Object o : assignments) {
+    @SuppressWarnings("unchecked")
+    List<byte[]> assignments = (List<byte[]>) rib.allsat();
+    for (byte[] variables : assignments) {
       long pfx = 0;
       int proto = 0;
       int len = 0;
       int router = 0;
-      byte[] variables = (byte[]) o;
       for (int i = 0; i < variables.length; i++) {
         byte var = variables[i];
         String name = _variables.name(i);
-        // avoid temporary variables
+        // avoid temporary routeVariables
         if (name != null) {
           boolean isTrue = (var == 1);
           if (isTrue) {
@@ -570,12 +572,37 @@ public class AbstractInterpreter {
     return answer;
   }
 
-  public AnswerElement reachability() {
+  private BDD query(HeaderLocationQuestion question) {
+    NodesSpecifier ingress = new NodesSpecifier(question.getIngressNodeRegex());
+    NodesSpecifier egress = new NodesSpecifier(question.getFinalNodeRegex());
+    BDD headerspace = BDDUtils.headerspaceToBdd(_netFactory, question.getHeaderSpace());
+    BDD startRouter = _netFactory.zero();
+    BDD finalRouter = _netFactory.zero();
+    for (String router : ingress.getMatchingNodesByName(_graph.getRouters())) {
+      BDD r = _variables.getSrcRouter().value(router);
+      startRouter.orWith(r);
+    }
+    for (String router : egress.getMatchingNodesByName(_graph.getRouters())) {
+      BDD r = _variables.getDstRouter().value(router);
+      finalRouter.orWith(r);
+    }
+    return startRouter.and(finalRouter).and(headerspace);
+  }
+
+  // TODO: ensure unique reachability (i.e., no other destinations)
+  // TODO: better counter examples
+  public AnswerElement reachability(HeaderLocationQuestion question) {
     ReachabilityDomain domain = new ReachabilityDomain(_netFactory, _communityAndProtocolBits);
     Map<String, AbstractFib<BDD>> reachable = computeFixedPoint(domain);
     long t = System.currentTimeMillis();
     BDD fibs = transitiveClosure(reachable);
     System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
-    return new StringAnswerElement("Done");
+    BDD query = query(question);
+    BDD missingReachable = query.and(fibs.not());
+    if (missingReachable.isZero()) {
+      return new StringAnswerElement("Verified");
+    } else {
+      return new StringAnswerElement("Counterexample found");
+    }
   }
 }

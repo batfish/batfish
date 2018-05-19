@@ -25,7 +25,7 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
 
   ReachabilityDomain(BDDNetFactory netFactory, BDD projectVariables) {
     _netFactory = netFactory;
-    _variables = _netFactory.variables();
+    _variables = _netFactory.routeVariables();
     _projectVariables = projectVariables;
     _pairing = _netFactory.makePair();
   }

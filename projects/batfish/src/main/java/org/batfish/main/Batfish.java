@@ -653,7 +653,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement aiReachability(HeaderLocationQuestion q) {
     AbstractInterpreter i = new AbstractInterpreter(this);
-    return i.reachability();
+    return i.reachability(q);
   }
 
   @Override

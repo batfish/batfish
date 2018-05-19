@@ -25,7 +25,7 @@ public class IpSpaceToBDDTest {
     _factory = JFactory.init(10000, 1000);
     _factory.disableReorder();
     _factory.setCacheRatio(64);
-    _factory.setVarNum(32); // reserve 32 1-bit variables
+    _factory.setVarNum(32); // reserve 32 1-bit routeVariables
     _bddOps = new BDDOps(_factory);
     _ipAddrBdd = BDDInteger.makeFromIndex(_factory, 32, 0, true);
     _ipSpaceToBdd = new IpSpaceToBDD(_factory, _ipAddrBdd);

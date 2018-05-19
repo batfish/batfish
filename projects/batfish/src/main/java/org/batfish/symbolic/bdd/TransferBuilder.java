@@ -668,7 +668,7 @@ class TransferBuilder {
       }
     }
 
-    // If this is the outermost call, then we relate the variables
+    // If this is the outermost call, then we relate the routeVariables
     if (p.getInitialCall()) {
       p.debug("InitialCall finalizing");
       // Apply the default action
@@ -965,7 +965,7 @@ class TransferBuilder {
 
   /*
    * Create a BDDRecord representing the symbolic output of
-   * the RoutingPolicy given the input variables.
+   * the RoutingPolicy given the input routeVariables.
    */
   public TransferResult<BDDTransferFunction, BDD> compute(Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;

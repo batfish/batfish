@@ -77,7 +77,15 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   @Override
   public BDD visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    throw new BatfishException("IpWildcardSetIpSpace is unsupported");
+    BDD allow = _factory.zero();
+    for (IpWildcard wc : ipWildcardSetIpSpace.getWhitelist()) {
+      allow = allow.or(toBDD(wc));
+    }
+    BDD deny = _factory.zero();
+    for (IpWildcard wc : ipWildcardSetIpSpace.getBlacklist()) {
+      deny = deny.or(toBDD(wc));
+    }
+    return allow.and(deny.not());
   }
 
   @Override
