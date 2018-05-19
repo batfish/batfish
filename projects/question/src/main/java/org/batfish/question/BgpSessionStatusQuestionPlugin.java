@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -42,7 +41,8 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
   public enum SessionType {
     IBGP,
     EBGP_SINGLEHOP,
-    EBGP_MULTIHOP
+    EBGP_MULTIHOP,
+    UNKNOWN
   }
 
   public enum SessionStatus {
@@ -238,18 +238,22 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
           continue;
         }
 
+        boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
+        Prefix remotePrefix = bgpNeighbor.getPrefix();
+        BgpSessionInfo bgpSessionInfo = new BgpSessionInfo(hostname, vrfName, remotePrefix);
         // Setup session info
         // TODO(https://github.com/batfish/batfish/issues/1331): Handle list of remote ASes. Until
         // then, we can't assume remote AS will always be a single integer that is present and
         // non-null.
-        boolean ebgp = !Objects.equals(bgpNeighbor.getRemoteAs(), bgpNeighbor.getLocalAs());
-        boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
-        Prefix remotePrefix = bgpNeighbor.getPrefix();
-        BgpSessionInfo bgpSessionInfo = new BgpSessionInfo(hostname, vrfName, remotePrefix);
-        bgpSessionInfo._sessionType =
-            ebgp
-                ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
-                : SessionType.IBGP;
+        bgpSessionInfo._sessionType = SessionType.UNKNOWN;
+        Integer remoteAs = bgpNeighbor.getRemoteAs();
+        if (remoteAs != null && !remoteAs.equals(bgpNeighbor.getLocalAs())) {
+          bgpSessionInfo._sessionType =
+              ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
+        } else if (remoteAs != null) {
+          bgpSessionInfo._sessionType = SessionType.IBGP;
+        }
+
         // Skip session types we don't care about
         if (!question.matchesType(bgpSessionInfo._sessionType)) {
           continue;
