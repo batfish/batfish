@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.SortedMultiset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +19,6 @@ import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -908,12 +908,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void markAuthenticationKeyChains(JuniperStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
         _structureReferences.get(JuniperStructureType.AUTHENTICATION_KEY_CHAIN);
     if (byName != null) {
       byName.forEach(
           (keyChainName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
+            SortedMultiset<Integer> lines = byUsage.get(usage);
             if (lines != null) {
               JuniperAuthenticationKeyChain keyChain = _authenticationKeyChains.get(keyChainName);
               if (keyChain != null) {

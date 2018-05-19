@@ -4,6 +4,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Multiset;
+import com.google.common.collect.SortedMultiset;
+import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,7 +44,7 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   protected final SortedMap<String, SortedMap<String, DefinedStructureInfo>> _structureDefinitions;
 
   protected final SortedMap<
-          StructureType, SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>>>
+          StructureType, SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>>>
       _structureReferences;
 
   private transient boolean _unrecognized;
@@ -99,12 +102,12 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     if (maps.isEmpty()) {
       throw new BatfishException("List of maps must contain at least one element");
     }
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
         _structureReferences.get(type);
     if (byName != null) {
       byName.forEach(
           (name, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
+            SortedMultiset<Integer> lines = byUsage.get(usage);
             if (lines != null) {
               List<Map<String, ? extends ReferenceCountedStructure>> matchingMaps =
                   maps.stream()
@@ -135,11 +138,11 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    */
   protected void markAbstractStructure(
       StructureType type, StructureUsage usage, Collection<StructureType> structureTypesToCheck) {
-    Map<String, SortedMap<StructureUsage, SortedSet<Integer>>> references =
+    Map<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> references =
         firstNonNull(_structureReferences.get(type), Collections.emptyMap());
     references.forEach(
         (name, byUsage) -> {
-          Set<Integer> lines = firstNonNull(byUsage.get(usage), Collections.emptySet());
+          Multiset<Integer> lines = firstNonNull(byUsage.get(usage), TreeMultiset.create());
           List<DefinedStructureInfo> matchingStructures =
               structureTypesToCheck
                   .stream()
@@ -168,8 +171,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
    * {@link StructureType}. Compared to {@link #markAbstractStructure}, this function is used when
    * the reference type and the structure type are guaranteed to match.
    */
-  protected void markConcreteStructure(StructureType type, StructureUsage usage) {
-    markAbstractStructure(type, usage, ImmutableList.of(type));
+  protected void markConcreteStructure(StructureType type, StructureUsage... usages) {
+    for (StructureUsage usage : usages) {
+      markAbstractStructure(type, usage, ImmutableList.of(type));
+    }
   }
 
   protected void markStructure(
@@ -180,11 +185,11 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   public void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
         _structureReferences.computeIfAbsent(type, k -> new TreeMap<>());
-    SortedMap<StructureUsage, SortedSet<Integer>> byUsage =
+    SortedMap<StructureUsage, SortedMultiset<Integer>> byUsage =
         byName.computeIfAbsent(name, k -> new TreeMap<>());
-    SortedSet<Integer> lines = byUsage.computeIfAbsent(usage, k -> new TreeSet<>());
+    SortedMultiset<Integer> lines = byUsage.computeIfAbsent(usage, k -> TreeMultiset.create());
     lines.add(line);
   }
 
@@ -229,6 +234,10 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     lines.add(line);
   }
 
+  /**
+   * Updates structure definitions to include the specified structure {@code name} and {@code
+   * structureType} and initializes the number of referrers.
+   */
   public void defineStructure(StructureType structureType, String name, int line) {
     recordStructure(structureType, name, 0, line);
   }

@@ -927,6 +927,22 @@
           ]
         }
       },
+      "undefined:route-map:usage:bgp outbound route-map:blarp" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp outbound route-map' named 'blarp'",
+        "files" : {
+          "cadant_bgp" : [
+            28
+          ]
+        }
+      },
+      "undefined:route-map:usage:bgp outbound route-map:blerp" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp outbound route-map' named 'blerp'",
+        "files" : {
+          "cadant_bgp" : [
+            35
+          ]
+        }
+      },
       "undefined:route-map:usage:bgp redistribute connected route-map:BLOBB" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute connected route-map' named 'BLOBB'",
         "files" : {
@@ -1019,7 +1035,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 126
+      "numResults" : 128
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1111,6 +1127,20 @@
           "EBGP-PEER-SVL-PNI" : {
             "inherited BGP group" : [
               0
+            ]
+          }
+        }
+      },
+      "cadant_bgp" : {
+        "route-map" : {
+          "blarp" : {
+            "bgp outbound route-map" : [
+              28
+            ]
+          },
+          "blerp" : {
+            "bgp outbound route-map" : [
+              35
             ]
           }
         }

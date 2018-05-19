@@ -280,42 +280,6 @@
           ]
         }
       },
-      "unused:crypto isakmp policy:1" : {
-        "description" : "Unused structure of type: 'crypto isakmp policy' with name: '1'",
-        "files" : {
-          "aruba_crypto" : [
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20
-          ],
-          "cisco_crypto" : [
-            157,
-            158,
-            159,
-            160,
-            161,
-            162
-          ]
-        }
-      },
-      "unused:crypto isakmp profile:myprofile" : {
-        "description" : "Unused structure of type: 'crypto isakmp profile' with name: 'myprofile'",
-        "files" : {
-          "cisco_crypto" : [
-            164,
-            165,
-            166,
-            167,
-            168
-          ]
-        }
-      },
       "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
@@ -1296,7 +1260,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 129
+      "numResults" : 126
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1325,21 +1289,6 @@
         "bgp group" : {
           "UNDEFINED_PEER_GROUP" : [
             11
-          ]
-        }
-      },
-      "aruba_crypto" : {
-        "crypto isakmp policy" : {
-          "1" : [
-            12,
-            13,
-            14,
-            15,
-            16,
-            17,
-            18,
-            19,
-            20
           ]
         }
       },
@@ -1588,25 +1537,6 @@
           ],
           "cipts2" : [
             150
-          ]
-        },
-        "crypto isakmp policy" : {
-          "1" : [
-            157,
-            158,
-            159,
-            160,
-            161,
-            162
-          ]
-        },
-        "crypto isakmp profile" : {
-          "myprofile" : [
-            164,
-            165,
-            166,
-            167,
-            168
           ]
         },
         "crypto keyring" : {
