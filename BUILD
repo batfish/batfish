@@ -12,93 +12,6 @@ java_plugin(
 )
 
 java_library(
-    name = "common",
-    srcs = glob([
-        "projects/batfish-common-protocol/src/main/**/*.java",
-    ]),
-    resources = glob(["projects/batfish-common-protocol/src/main/resources/**"]),
-    runtime_deps = [
-        "@commons_beanutils//:runtime",
-    ],
-    deps = [
-        "@antlr4//:compile",
-        "@commons_cli//:compile",
-        "@commons_configuration2//:compile",
-        "@commons_io//:compile",
-        "@commons_lang3//:compile",
-        "@errorprone_annotations//:compile",
-        "@grizzly_framework//:compile",
-        "@grizzly_server//:compile",
-        "@guava//:compile",
-        "//third_party/com/jayway/jsonpath",
-        "//third_party/com/kjetland/mbknor-jackson-jsonschema_2.12:jackson_jsonschema",
-        "//third_party/com/microsoft/z3",
-        "@jackson_annotations//:compile",
-        "@jackson_core//:compile",
-        "@jackson_databind//:compile",
-        "@jackson_guava//:compile",
-        "@jackson_jdk8//:compile",
-        "@jackson_jsr310//:compile",
-        "@jaxrs_api//:compile",
-        "@jersey_container_grizzly2//:compile",
-        "@jersey_server//:compile",
-        "@jettison//:compile",
-        "@jsonassert//:compile",
-        "@jsr305//:compile",
-        "@lz4//:compile",
-        "@maven_artifact//:compile",
-        "@opentracing_api//:compile",
-        "@opentracing_contrib_jaxrs//:compile",
-        "@opentracing_util//:compile",
-        "@xstream//:compile",
-    ],
-)
-
-java_library(
-    name = "common_testlib",
-    testonly = True,
-    srcs = glob(
-        [
-            "projects/batfish-common-protocol/src/test/java/**/*.java",
-            "projects/batfish-common-protocol/target/generated-test-sources/**/*.java",
-        ],
-        exclude = ["projects/batfish-common-protocol/src/test/java/**/*Test.java"],
-    ),
-    deps = [
-        ":common",
-        "@antlr4_runtime//:compile",
-        "@guava//:compile",
-        "@hamcrest//:compile",
-        "@jsr305//:compile",
-        "@junit//:compile",
-    ],
-)
-
-junit_tests(
-    name = "common_tests",
-    srcs = glob([
-        "projects/batfish-common-protocol/src/test/java/**/*Test.java",
-    ]),
-    resources = glob([
-        "projects/batfish-common-protocol/src/test/resources/**",
-    ]),
-    deps = [
-        ":common",
-        ":common_testlib",
-        "@antlr4_runtime//:compile",
-        "@guava//:compile",
-        "@guava_testlib//:compile",
-        "@hamcrest//:compile",
-        "@jackson_annotations//:compile",
-        "@jackson_core//:compile",
-        "@jackson_databind//:compile",
-        "@opentracing_api//:compile",
-        "@opentracing_mock//:compile",
-        "@opentracing_util//:compile",
-    ],
-)
-
-java_library(
     name = "batfish_grammars",
     srcs = glob(
         [
@@ -114,7 +27,7 @@ java_library(
         ":CiscoParserListener.java",
     ],
     deps = [
-        ":common",
+        "//projects/batfish-common-protocol:common",
         "@antlr4//:compile",
     ],
 )
@@ -140,7 +53,7 @@ java_library(
     ],
     deps = [
         ":batfish_grammars",
-        ":common",
+        "//projects/batfish-common-protocol:common",
         ":question",
         "@antlr4//:compile",
         "@auto_service//:compile",
@@ -182,7 +95,7 @@ java_library(
     deps = [
         ":batfish",
         ":batfish_grammars",
-        ":common",
+        "//projects/batfish-common-protocol:common",
         "@antlr4_runtime//:compile",
         "@commons_collections4//:compile",
         "@guava//:compile",
@@ -205,8 +118,8 @@ junit_tests(
         ":batfish",
         ":batfish_grammars",
         ":batfish_testlib",
-        ":common",
-        ":common_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "@antlr4_runtime//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
@@ -237,7 +150,7 @@ java_library(
         ":question",
     ],
     deps = [
-        ":common",
+        "//projects/batfish-common-protocol:common",
         ":question",
         "@azure_storage//:compile",
         "@commons_io//:compile",
@@ -288,7 +201,7 @@ junit_tests(
         "@sqlite_jdbc//:compile",
     ],
     deps = [
-        ":common",
+        "//projects/batfish-common-protocol:common",
         ":coordinator",
         ":coordinator_testlib",
         ":question",
@@ -325,7 +238,7 @@ java_library(
         ":question",
     ],
     deps = [
-        ":common",
+        "//projects/batfish-common-protocol:common",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
         "@guava//:compile",
@@ -354,7 +267,7 @@ junit_tests(
     ],
     deps = [
         ":client",
-        ":common",
+        "//projects/batfish-common-protocol:common",
         "@commons_lang3//:compile",
         "@guava//:compile",
         "@jackson_databind//:compile",
@@ -374,7 +287,7 @@ java_library(
     runtime_deps = [
     ],
     deps = [
-        ":common",
+        "//projects/batfish-common-protocol:common",
         "@auto_service//:compile",
         "//third_party/com/jayway/jsonpath",
         "@jackson_annotations//:compile",
@@ -395,7 +308,7 @@ junit_tests(
         "@slf4j_jdk14//:runtime",
     ],
     deps = [
-        ":common",
+        "//projects/batfish-common-protocol:common",
         ":question",
         "@guava//:compile",
         "@hamcrest//:compile",
@@ -424,7 +337,7 @@ java_library(
     deps = [
         ":batfish",
         ":client",
-        ":common",
+        "//projects/batfish-common-protocol:common",
         ":coordinator",
         "@commons_lang3//:compile",
         "@guava//:compile",
