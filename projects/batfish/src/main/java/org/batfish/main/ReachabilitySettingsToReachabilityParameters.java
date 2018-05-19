@@ -10,6 +10,7 @@ import org.batfish.datamodel.questions.ReachabilitySettings;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DescriptionRegexInterfaceLocationSpecifier;
+import org.batfish.specifier.DifferenceLocationSpecifier;
 import org.batfish.specifier.DifferenceNodeSpecifier;
 import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
@@ -18,8 +19,8 @@ import org.batfish.specifier.NameRegexInterfaceLocationSpecifier;
 import org.batfish.specifier.NameRegexNodeSpecifier;
 import org.batfish.specifier.NameRegexVrfLocationSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
-import org.batfish.specifier.NodeNameRegexInterfaceLocationSpecifier;
-import org.batfish.specifier.NodeRoleRegexInterfaceLocationSpecifier;
+import org.batfish.specifier.NodeNameRegexVrfLocationSpecifier;
+import org.batfish.specifier.NodeRoleRegexVrfLocationSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 import org.batfish.specifier.RoleRegexNodeSpecifier;
 import org.batfish.specifier.UnionLocationSpecifier;
@@ -102,9 +103,9 @@ public class ReachabilitySettingsToReachabilityParameters {
     }
     switch (ingressNodes.getType()) {
       case NAME:
-        return new NodeNameRegexInterfaceLocationSpecifier(ingressNodes.getRegex());
+        return new NodeNameRegexVrfLocationSpecifier(ingressNodes.getRegex());
       case ROLE:
-        return new NodeRoleRegexInterfaceLocationSpecifier(
+        return new NodeRoleRegexVrfLocationSpecifier(
             ingressNodes.getRoleDimension(), ingressNodes.getRegex());
       default:
         throw new BatfishException("Unexpected NodesSpecifier type: " + ingressNodes.getType());
@@ -149,6 +150,15 @@ public class ReachabilitySettingsToReachabilityParameters {
   private static LocationSpecifier sourceSpecifier(ReachabilitySettings settings) {
     LocationSpecifier ingressInterfaces = locationSpecifier(settings.getIngressInterfaces());
     LocationSpecifier ingressNodes = locationSpecifier(settings.getIngressNodes());
+    LocationSpecifier notIngressNodes = locationSpecifier(settings.getNotIngressNodes());
+
+    /* combine ingressNodes and notIngressNodes into ingressNodes */
+    if (ingressNodes != null && notIngressNodes != null) {
+      ingressNodes = new DifferenceLocationSpecifier(ingressNodes, notIngressNodes);
+    } else if (ingressNodes == null && notIngressNodes != null) {
+      ingressNodes =
+          new DifferenceLocationSpecifier(NameRegexVrfLocationSpecifier.ALL_VRFS, notIngressNodes);
+    }
 
     if (ingressInterfaces != null && ingressNodes != null) {
       return new UnionLocationSpecifier(ingressInterfaces, ingressNodes);

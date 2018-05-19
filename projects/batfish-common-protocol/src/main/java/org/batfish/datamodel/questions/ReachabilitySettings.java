@@ -297,6 +297,10 @@ public class ReachabilitySettings {
     return _notFinalNodes;
   }
 
+  public NodesSpecifier getNotIngressNodes() {
+    return _notIngressNodes;
+  }
+
   public Boolean getSrcNatted() {
     return _srcNatted;
   }
