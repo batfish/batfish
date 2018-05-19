@@ -182,6 +182,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProposal;
@@ -537,6 +539,7 @@ import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
@@ -2153,14 +2156,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
-    _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)));
+    _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)).toIpSpace());
   }
 
   @Override
   public void exitOgn_ip_with_mask(Ogn_ip_with_maskContext ctx) {
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
-    _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)));
+    _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)).toIpSpace());
+  }
+
+  @Override
+  public void enterOgn_network_object(Ogn_network_objectContext ctx) {
+    IpSpace ipSpace = null;
+    if (ctx.prefix != null) {
+      ipSpace = new IpWildcard(ctx.prefix.getText()).toIpSpace();
+    } else if (ctx.wildcard_address != null && ctx.wildcard_mask != null) {
+      ipSpace = new IpWildcard(toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask)).toIpSpace();
+    } else if (ctx.address != null) {
+      ipSpace = new IpWildcard(ctx.address.getText()).toIpSpace();
+    } else if (ctx.host != null) {
+      ipSpace = new IpSpaceReference(ctx.host.getText());
+      // TODO add reference
+    } else if (ctx.name != null) {
+      ipSpace = new IpSpaceReference(ctx.name.getText());
+      // TODO add reference
+    }
+    if (ipSpace == null) {
+      _w.redFlag("Network object-group not supported " + getFullText(ctx));
+    } else {
+      _currentNetworkObjectGroup.getLines().add(ipSpace);
+    }
   }
 
   @Override
