@@ -23,7 +23,7 @@ java_library(
         "@guava//:compile",
         "//projects/lib/jsonpath",
         "//third_party/com/kjetland/mbknor-jackson-jsonschema_2.12:jackson_jsonschema",
-        "//third_party/com/microsoft/z3",
+        "//projects/lib/z3",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
