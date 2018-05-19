@@ -37,6 +37,18 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
+  public void recognizeIosXr() {
+    String xr = "!! IOS XR Configuration 5.2.4\n";
+    String xrRancid = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
+
+    for (String fileText : ImmutableList.of(xr, xrRancid)) {
+      assertThat(
+          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
+          equalTo(ConfigurationFormat.CISCO_IOS_XR));
+    }
+  }
+
+  @Test
   public void recognizeNxos() {
     String n7000 = "boot system bootflash:n7000-s2-dk9.7.2.1.D1.1.bin sup-2 \n";
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";
