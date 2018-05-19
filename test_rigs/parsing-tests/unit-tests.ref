@@ -3621,8 +3621,7 @@
             "        ISAKMP:'isakmp'  <== mode:DEFAULT_MODE",
             "        (cis_policy",
             "          POLICY:'policy'  <== mode:DEFAULT_MODE",
-            "          (variable",
-            "            DEC:'1'  <== mode:DEFAULT_MODE)",
+            "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (cispol_authentication",
             "            AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
@@ -17917,8 +17916,7 @@
             "        ISAKMP:'isakmp'  <== mode:DEFAULT_MODE",
             "        (cis_policy",
             "          POLICY:'policy'  <== mode:DEFAULT_MODE",
-            "          (variable",
-            "            DEC:'1'  <== mode:DEFAULT_MODE)",
+            "          DEC:'1'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "          (cispol_authentication",
             "            AUTHENTICATION:'authentication'  <== mode:DEFAULT_MODE",
@@ -52443,7 +52441,7 @@
         "aruba_airgroup" : { },
         "aruba_crypto" : {
           "crypto isakmp policy" : {
-            "1" : {
+            "001" : {
               "definitionLines" : [
                 12,
                 13,
@@ -52455,7 +52453,7 @@
                 19,
                 20
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -52962,7 +52960,7 @@
             }
           },
           "crypto isakmp policy" : {
-            "1" : {
+            "001" : {
               "definitionLines" : [
                 157,
                 158,
@@ -52971,7 +52969,7 @@
                 161,
                 162
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "crypto isakmp profile" : {
@@ -52983,7 +52981,7 @@
                 167,
                 168
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "crypto keyring" : {
@@ -54300,6 +54298,20 @@
             "EBGP-PEER-SVL-PNI" : {
               "inherited BGP group" : [
                 0
+              ]
+            }
+          }
+        },
+        "cadant_bgp" : {
+          "route-map" : {
+            "blarp" : {
+              "bgp outbound route-map" : [
+                28
+              ]
+            },
+            "blerp" : {
+              "bgp outbound route-map" : [
+                35
               ]
             }
           }
