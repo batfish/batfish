@@ -9,11 +9,11 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 
 @AutoService(Plugin.class)
-public class AIReachabilityQuestionPlugin extends QuestionPlugin {
+public class AiReachabilityQuestionPlugin extends QuestionPlugin {
 
-  public static class AIReachabilityAnswerer extends Answerer {
+  public static class AiReachabilityAnswerer extends Answerer {
 
-    public AIReachabilityAnswerer(Question question, IBatfish batfish) {
+    public AiReachabilityAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
@@ -24,7 +24,7 @@ public class AIReachabilityQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  public static class AIReachabililtyQuestion extends HeaderLocationQuestion {
+  public static class AiReachabililtyQuestion extends HeaderLocationQuestion {
 
     @Override
     public boolean getDataPlane() {
@@ -39,11 +39,11 @@ public class AIReachabilityQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new AIReachabilityAnswerer(question, batfish);
+    return new AiReachabilityAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new AIReachabililtyQuestion();
+    return new AiReachabililtyQuestion();
   }
 }

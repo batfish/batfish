@@ -7,7 +7,7 @@ import java.util.SortedSet;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.symbolic.ainterpreter.RibEntry;
 
-public class AIRoutesAnswerElement extends AnswerElement {
+public class AiRoutesAnswerElement extends AnswerElement {
 
   private static final String PROP_ROUTES = "routes";
 

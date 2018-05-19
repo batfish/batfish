@@ -29,7 +29,7 @@ import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.answers.AIRoutesAnswerElement;
+import org.batfish.symbolic.answers.AiRoutesAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetConfig;
@@ -566,7 +566,7 @@ public class AbstractInterpreter {
       routesByHostname.put(router, entries);
       routes.addAll(entries);
     }
-    AIRoutesAnswerElement answer = new AIRoutesAnswerElement();
+    AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
     answer.setRoutesByHostname(routesByHostname);
     return answer;

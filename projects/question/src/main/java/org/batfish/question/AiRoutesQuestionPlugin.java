@@ -10,23 +10,23 @@ import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 
 @AutoService(Plugin.class)
-public class AIRoutesQuestionPlugin extends QuestionPlugin {
+public class AiRoutesQuestionPlugin extends QuestionPlugin {
 
-  public static class AIRoutesAnswerer extends Answerer {
+  public static class AiRoutesAnswerer extends Answerer {
 
-    public AIRoutesAnswerer(Question question, IBatfish batfish) {
+    public AiRoutesAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
     }
 
     @Override
     public AnswerElement answer() {
-      AIRoutesQuestion q = (AIRoutesQuestion) _question;
+      AiRoutesQuestion q = (AiRoutesQuestion) _question;
       NodesSpecifier ns = new NodesSpecifier(q.getNodeRegex());
       return _batfish.aiRoutes(ns);
     }
   }
 
-  public static class AIRoutesQuestion extends Question {
+  public static class AiRoutesQuestion extends Question {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
@@ -55,11 +55,11 @@ public class AIRoutesQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected Answerer createAnswerer(Question question, IBatfish batfish) {
-    return new AIRoutesAnswerer(question, batfish);
+    return new AiRoutesAnswerer(question, batfish);
   }
 
   @Override
   protected Question createQuestion() {
-    return new AIRoutesQuestion();
+    return new AiRoutesQuestion();
   }
 }
