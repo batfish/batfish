@@ -223,6 +223,18 @@ public class Row implements Comparable<Row> {
   }
 
   /**
+   * Returns a new Row that has the specified columns from this row (which is not modified).
+   *
+   * @param columns The columns to keep.
+   * @return The row with the specified columns
+   */
+  public Row project(Set<String> columns) {
+    Row retRow = new Row();
+    columns.forEach(col -> retRow.put(col, get(col)));
+    return retRow;
+  }
+
+  /**
    * Sets the value for the specified column to the specified value. Any existing values for the
    * column are overwritten
    *
@@ -235,14 +247,8 @@ public class Row implements Comparable<Row> {
     return this;
   }
 
-  /**
-   * Removes the specified column from this row
-   *
-   * @param columnName The column to remove
-   * @return The Row object itself (to aid chaining)
-   */
-  public Row remove(String columnName) {
-    _data.remove(columnName);
-    return this;
+  @Override
+  public String toString() {
+    return _data.toString();
   }
 }

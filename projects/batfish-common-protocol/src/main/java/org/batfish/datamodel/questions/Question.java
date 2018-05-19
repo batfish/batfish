@@ -333,6 +333,36 @@ public abstract class Question implements IQuestion {
   @JsonIgnore
   public abstract String getName();
 
+  /**
+   * Does this class name belong to a question?
+   *
+   * @param className Full name of the class
+   * @return The result
+   */
+  public static boolean isQuestionClass(String className) {
+    try {
+      Class<?> clazz = Class.forName(className);
+      if (clazz.isInstance(
+          new Question() {
+            @Override
+            public boolean getDataPlane() {
+              return false;
+            }
+
+            @Override
+            public String getName() {
+              return null;
+            }
+          })) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (ClassNotFoundException e) {
+      throw new BatfishException("'" + className + "' is not a valid Question class");
+    }
+  }
+
   // by default, pretty printing is Json
   // override this function in derived classes to do something more meaningful
   public String prettyPrint() {
@@ -387,8 +417,8 @@ public abstract class Question implements IQuestion {
               /*
                * Recursively look for all key, value pairs and remove keys
                * whose value is "${varName}." Is this fragile?
-               * To be doubly sure, we do only for keys whole parent object is a questions, which
-               * we judge by it having a key "class" whose value starts with "org.batfish.question"
+               * To be doubly sure, we do this only for keys with a sibling key "class" that is a
+               * Question class
                */
               recursivelyRemoveOptionalVar(jobj, varName);
             } else {
@@ -463,8 +493,7 @@ public abstract class Question implements IQuestion {
         JSONObject childObject = (JSONObject) value;
         if (childObject.has("class")) {
           Object classValue = childObject.get("class");
-          if (classValue instanceof String
-              && ((String) classValue).startsWith("org.batfish.question")) {
+          if (classValue instanceof String && isQuestionClass((String) classValue)) {
             recursivelyRemoveOptionalVar(childObject, varName);
           }
         }

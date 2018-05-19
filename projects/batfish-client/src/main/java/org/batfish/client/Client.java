@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -139,6 +140,31 @@ public class Client extends AbstractClient implements IClient {
 
   private static final String STARTUP_FILE = ".batfishclientrc";
 
+  /**
+   * Verify that every non-optional variable has value assigned to it.
+   *
+   * @throws BatfishException when there exists a missing parameter: it is not optional in {@code
+   *     variable}, but the user failed to provide it.
+   */
+  static void checkVariableState(Map<String, Variable> variables) throws BatfishException {
+    for (Entry<String, Variable> e : variables.entrySet()) {
+      String variableName = e.getKey();
+      Variable variable = e.getValue();
+      if (!variable.getOptional() && variable.getValue() == null) {
+        throw new BatfishException(String.format("Missing parameter: %s", variableName));
+      }
+    }
+  }
+
+  /**
+   * Given the JSON representation of a question template and desired values of some parameters in
+   * the template, this functions fills out the template with those values. It also fills the
+   * template with the provided name. The template JSON is modified in place.
+   *
+   * @param questionJson The question template to modify
+   * @param parameters The parameters and values to fill
+   * @param questionName The name to embed in the template
+   */
   public static void fillTemplate(
       JSONObject questionJson, Map<String, JsonNode> parameters, String questionName) {
     JSONObject instanceJson;
@@ -168,22 +194,6 @@ public class Client extends AbstractClient implements IClient {
       questionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
     } catch (JSONException | JsonProcessingException e) {
       throw new BatfishException("Could not process modified instance data", e);
-    }
-  }
-
-  /**
-   * Verify that every non-optional variable has value assigned to it.
-   *
-   * @throws BatfishException when there exists a missing parameter: it is not optional in {@code
-   *     variable}, but the user failed to provide it.
-   */
-  static void checkVariableState(Map<String, Variable> variables) throws BatfishException {
-    for (Entry<String, Variable> e : variables.entrySet()) {
-      String variableName = e.getKey();
-      Variable variable = e.getValue();
-      if (!variable.getOptional() && variable.getValue() == null) {
-        throw new BatfishException(String.format("Missing parameter: %s", variableName));
-      }
     }
   }
 
@@ -3375,7 +3385,22 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean validateTemplate(
+  /**
+   * Template validation works by 1) filling in the variable values; and 2) then checking if the
+   * resulting template can be properly parsed as a question. These two steps alone do not guard
+   * against extraneous parameters being specified in the question template and then not having
+   * values specified for the instance variables that map to those parameters (because such
+   * parameters are wiped out by template pre-processing). That is why we also required that each
+   * instance variable be specified an value in this valudation
+   *
+   * @param words The array of command words that led to this function being called
+   * @param outWriter The parsed question is written to this FileWriter
+   * @param options The list of options in the command. Should be empty.
+   * @param parameters The list of parameters in the command.
+   * @return True if the command was valid and the template was valid; false otherwise.
+   */
+  @VisibleForTesting
+  boolean validateTemplate(
       String[] words,
       @Nullable FileWriter outWriter,
       List<String> options,
