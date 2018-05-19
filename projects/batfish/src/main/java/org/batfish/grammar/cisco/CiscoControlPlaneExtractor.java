@@ -3747,7 +3747,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCm_iosi_match(Cm_iosi_matchContext ctx) {
-    _currentInspectClassMap.getMatches().add(toInspectClassMapMatch(ctx));
+    InspectClassMapMatch match = toInspectClassMapMatch(ctx);
+    if (match != null) {
+      _currentInspectClassMap.getMatches().add(match);
+    }
   }
 
   private InspectClassMapMatch toInspectClassMapMatch(Cm_iosi_matchContext ctx) {
@@ -3761,7 +3764,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new InspectClassMapMatchProtocol(
           toInspectClassMapProtocol(ctx.cm_iosim_protocol().inspect_protocol()));
     } else {
-      throw convError(InspectClassMapMatch.class, ctx);
+      _w.redFlag("Class-map match unsupported " + getFullText(ctx));
+      return null;
     }
   }
 

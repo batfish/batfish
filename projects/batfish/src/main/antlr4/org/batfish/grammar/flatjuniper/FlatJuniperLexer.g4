@@ -2762,6 +2762,11 @@ JUNOS_YMSG
    'junos-ymsg'
 ;
 
+K
+:
+  'k'
+;
+
 KEEP
 :
    'keep'
@@ -4094,7 +4099,7 @@ REDUNDANT_PARENT
 
 REFERENCE_BANDWIDTH
 :
-   'reference-bandwidth'
+   'reference-bandwidth' -> pushMode ( M_ReferenceBandwidth )
 ;
 
 REJECT
@@ -5965,6 +5970,38 @@ M_PrefixLsitName_VARIABLE
 ;
 
 M_PrefixListName_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_ReferenceBandwidth;
+
+M_ReferenceBandwidth_DEC
+:
+  F_Digit+ -> type ( DEC )
+;
+
+M_ReferenceBandwidth_G
+:
+  'g' -> type ( G )
+;
+
+M_ReferenceBandwidth_K
+:
+  'k' -> type ( K )
+;
+
+M_ReferenceBandwidth_M
+:
+  'm' -> type ( M )
+;
+
+M_ReferenceBandwidth_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_ReferenceBandwidth_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;

@@ -13,23 +13,44 @@ cm_end_class_map
 
 cm_ios_inspect
 :
-   INSPECT match_semantics? name = variable_permissive NEWLINE cm_iosi_match*
+   INSPECT HTTP? match_semantics? name = variable_permissive NEWLINE cm_iosi_match*
 ;
 
 cm_iosi_match
 :
-   cm_iosim_access_group
-   | cm_iosim_protocol
+   MATCH
+   (
+      cm_iosim_access_group
+      | cm_iosim_protocol
+      | cm_iosim_req_resp
+      | cm_iosim_request
+      | cm_iosim_response
+   )
 ;
 
 cm_iosim_access_group
 :
-   MATCH ACCESS_GROUP NAME name = variable_permissive NEWLINE
+   ACCESS_GROUP NAME name = variable_permissive NEWLINE
 ;
 
 cm_iosim_protocol
 :
-   MATCH PROTOCOL inspect_protocol NEWLINE
+   PROTOCOL inspect_protocol NEWLINE
+;
+
+cm_iosim_req_resp
+:
+   NOT? REQ_RESP CONTENT_TYPE MISMATCH
+;
+
+cm_iosim_request
+:
+   NOT? REQUEST null_rest_of_line
+;
+
+cm_iosim_response
+:
+   NOT? RESPONSE null_rest_of_line
 ;
 
 cm_match

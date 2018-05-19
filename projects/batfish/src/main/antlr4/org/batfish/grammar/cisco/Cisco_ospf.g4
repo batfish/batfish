@@ -256,6 +256,7 @@ ro_null
             )
          )
       )
+      | ISPF
       | LOG
       | LOG_ADJ_CHANGES
       | LOG_ADJACENCY_CHANGES

@@ -1,6 +1,7 @@
 package org.batfish.z3;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Collections.emptySet;
 import static org.batfish.common.util.CommonUtil.computeIpInterfaceOwners;
 import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
@@ -21,7 +22,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
@@ -263,10 +263,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _disabledInterfaces = ImmutableMap.copyOf(builder._disabledInterfaces);
     _disabledNodes = ImmutableSet.copyOf(builder._disabledNodes);
     _disabledVrfs = ImmutableMap.copyOf(builder._disabledVrfs);
-    _enabledAcls =
-        builder._enabledAclNames != null
-            ? computeEnabledAcls(builder._enabledAclNames)
-            : computeDefaultEnabledAcls();
+    _enabledAcls = computeEnabledAcls(builder._enabledAclNames);
     _enabledNodes = computeEnabledNodes();
     _enabledVrfs = computeEnabledVrfs();
     _enabledInterfacesByNodeVrf = computeEnabledInterfacesByNodeVrf();
@@ -467,36 +464,27 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
                                         Entry::getValue)))));
   }
 
-  private Map<String, Map<String, IpAccessList>> computeDefaultEnabledAcls() {
-    return _configurations
-        .entrySet()
-        .stream()
-        .filter(e -> !_disabledNodes.contains(e.getKey()))
-        .collect(
-            Collectors.toMap(
-                Entry::getKey, e -> ImmutableMap.copyOf(e.getValue().getIpAccessLists())));
-  }
-
   private Map<String, Map<String, IpAccessList>> computeEnabledAcls(
-      Map<String, Set<String>> enabledAclNames) {
+      @Nullable Map<String, Set<String>> enabledAcls) {
     return _configurations
         .entrySet()
         .stream()
         .filter(e -> !_disabledNodes.contains(e.getKey()))
-        .filter(e -> enabledAclNames.containsKey(e.getKey()))
         .collect(
             ImmutableMap.toImmutableMap(
                 Entry::getKey,
                 e -> {
-                  String hostname = e.getKey();
+                  String h = e.getKey();
                   IpAccessListSpecializer ipAccessListSpecializer =
-                      _ipAccessListSpecializers.get(hostname);
-                  Set<String> acls = enabledAclNames.getOrDefault(hostname, ImmutableSet.of());
+                      _ipAccessListSpecializers.get(h);
                   return e.getValue()
                       .getIpAccessLists()
                       .entrySet()
                       .stream()
-                      .filter(e2 -> acls.contains(e2.getKey()))
+                      .filter(
+                          e2 ->
+                              enabledAcls == null
+                                  || enabledAcls.getOrDefault(h, emptySet()).contains(e2.getKey()))
                       .collect(
                           ImmutableMap.toImmutableMap(
                               Entry::getKey,
