@@ -12,3 +12,7 @@ object-group network ogn2
 object-group network ogn3
 !
 !
+ip access-list extended ACL
+  permit ip object-group ogn1 object-group ogn2
+  permit ip object-group ogn_undef object-group ogn1
+!
