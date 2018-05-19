@@ -21,7 +21,7 @@ java_library(
         "@grizzly_framework//:compile",
         "@grizzly_server//:compile",
         "@guava//:compile",
-        "//third_party/com/jayway/jsonpath",
+        "//projects/lib/jsonpath",
         "//third_party/com/kjetland/mbknor-jackson-jsonschema_2.12:jackson_jsonschema",
         "//third_party/com/microsoft/z3",
         "@jackson_annotations//:compile",
