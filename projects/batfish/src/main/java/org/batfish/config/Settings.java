@@ -14,6 +14,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.PedanticBatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.UnimplementedBatfishException;
+import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.dataplane.bdp.BdpSettings;
@@ -490,6 +491,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   private static final String ARG_THROW_ON_PARSER_ERROR = "throwparser";
 
   private static final String ARG_TIMESTAMP = "timestamp";
+
+  private static final String ARG_VERSION = "version";
 
   private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
@@ -1080,6 +1083,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
+    setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
     setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
@@ -1380,6 +1384,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addBooleanOption(
         BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
 
+    addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
+
     addOption(ARG_Z3_TIMEOUT, "set a timeout (in milliseconds) for Z3 queries", "z3timeout");
 
     addOption(
@@ -1398,6 +1404,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     if (getBooleanOptionValue(ARG_HELP)) {
       _config.setProperty(CAN_EXECUTE, false);
       printHelp(EXECUTABLE_NAME);
+      return;
+    }
+
+    if (getBooleanOptionValue(ARG_VERSION)) {
+      _config.setProperty(CAN_EXECUTE, false);
+      System.out.printf(Version.getCompleteVersionString());
       return;
     }
 
