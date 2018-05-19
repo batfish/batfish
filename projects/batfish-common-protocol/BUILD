@@ -51,12 +51,12 @@ java_library(
     srcs = glob(
         [
             "src/test/java/**/*.java",
-            "target/generated-test-sources/**/*.java",
         ],
         exclude = ["src/test/java/**/*Test.java"],
     ),
     deps = [
         ":common",
+        ":recovery_grammar",
         "@antlr4_runtime//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
@@ -76,6 +76,7 @@ junit_tests(
     deps = [
         ":common",
         ":common_testlib",
+        ":recovery_grammar",
         "@antlr4_runtime//:compile",
         "@guava//:compile",
         "@guava_testlib//:compile",
@@ -87,4 +88,41 @@ junit_tests(
         "@opentracing_mock//:compile",
         "@opentracing_util//:compile",
     ],
+)
+
+java_library(
+    name = "recovery_grammar",
+    srcs = [
+        ":RecoveryLexer.java",
+        ":RecoveryParser.java",
+        ":RecoveryParserBaseListener.java",
+        ":RecoveryParserListener.java",
+    ],
+    deps = [
+        ":common",
+        "@antlr4//:compile",
+    ],
+)
+
+genrule(
+    name = "recovery_grammar_src",
+    srcs = glob([
+        "src/test/antlr4/org/batfish/grammar/recovery/*.g4",
+    ]),
+    outs = [
+        "RecoveryLexer.java",
+        "RecoveryParser.java",
+        "RecoveryParserBaseListener.java",
+        "RecoveryParserListener.java",
+    ],
+    cmd = """
+java -cp $(location //third_party/org/antlr4/antlr4-complete) \
+    org.antlr.v4.Tool \
+    -Xexact-output-dir \
+       $(location src/test/antlr4/org/batfish/grammar/recovery/RecoveryLexer.g4) \
+       $(location src/test/antlr4/org/batfish/grammar/recovery/RecoveryParser.g4) \
+    -package org.batfish.grammar.recovery \
+    -encoding UTF-8 \
+    -o $(@D)""",
+    tools = ["//third_party/org/antlr4/antlr4-complete"],
 )
