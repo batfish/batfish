@@ -49,12 +49,12 @@ java_library(
         ":auto_service_plugin",
     ],
     runtime_deps = [
-        ":question",
+        "//projects/question:question",
     ],
     deps = [
         ":batfish_grammars",
         "//projects/batfish-common-protocol:common",
-        ":question",
+        "//projects/question:question",
         "@antlr4//:compile",
         "@auto_service//:compile",
         "@commons_collections4//:compile",
@@ -147,11 +147,11 @@ java_library(
     ]),
     resources = glob(["projects/coordinator/src/main/resources/**"]),
     runtime_deps = [
-        ":question",
+        "//projects/question:question",
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        ":question",
+        "//projects/question:question",
         "@azure_storage//:compile",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
@@ -204,7 +204,7 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         ":coordinator",
         ":coordinator_testlib",
-        ":question",
+        "//projects/question:question",
         "@commons_io//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
@@ -235,7 +235,7 @@ java_library(
     ]),
     resources = glob(["projects/batfish-client/src/main/resources/**"]),
     runtime_deps = [
-        ":question",
+        "//projects/question:question",
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
@@ -272,49 +272,6 @@ junit_tests(
         "@guava//:compile",
         "@jackson_databind//:compile",
         "@jettison//:compile",
-    ],
-)
-
-java_library(
-    name = "question",
-    srcs = glob([
-        "projects/question/src/main/**/*.java",
-    ]),
-    plugins = [
-        "//:auto_service_plugin",
-    ],
-    resources = glob(["projects/question/src/main/resources/**"]),
-    runtime_deps = [
-    ],
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "@auto_service//:compile",
-        "//third_party/com/jayway/jsonpath",
-        "@jackson_annotations//:compile",
-        "@jackson_core//:compile",
-        "@jackson_databind//:compile",
-    ],
-)
-
-junit_tests(
-    name = "question_tests",
-    srcs = glob([
-        "projects/question/src/test/java/**/*Test.java",
-    ]),
-    resources = glob([
-        "projects/question/src/test/resources/**",
-    ]),
-    runtime_deps = [
-        "@slf4j_jdk14//:runtime",
-    ],
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        ":question",
-        "@guava//:compile",
-        "@hamcrest//:compile",
-        "//third_party/com/jayway/jsonpath",
-        "@jackson_databind//:compile",
-        "@junit//:compile",
     ],
 )
 
