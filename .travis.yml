@@ -4,12 +4,13 @@ sudo: true
 jdk:
   - oraclejdk8
 
+env:
 matrix:
-  env:
+  fast_finish: true
   include:
-    env: BF_BUILDER="mvn"
+  - env: BF_BUILDER="mvn"
   allow_failures:
-    env: BF_BUILDER="bazel" V="0.13.0"
+  - env: BF_BUILDER="bazel" V="0.13.0"
 
 before_install:
   - .travis/fix_java_format.sh
