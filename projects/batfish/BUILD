@@ -2,27 +2,6 @@ package(default_visibility = ["//visibility:public"])
 
 load("//skylark:junit.bzl", "junit_tests")
 
-java_library(
-    name = "batfish_grammars",
-    srcs = glob(
-        [
-            "target/generated-sources/**/*.java",
-        ],
-        exclude = [
-            "target/generated-sources/**/Cisco*.java",
-        ],
-    ) + [
-        ":CiscoLexer.java",
-        ":CiscoParser.java",
-        ":CiscoParserBaseListener.java",
-        ":CiscoParserListener.java",
-    ],
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "@antlr4//:compile",
-    ],
-)
-
 java_binary(
     name = "batfish_main",
     main_class = "org.batfish.main.Driver",
@@ -43,8 +22,19 @@ java_library(
         "//projects/question",
     ],
     deps = [
-        ":batfish_grammars",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/assertion",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/cisco",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/iptables",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/juniper",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/mrv",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/eos",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/nxos",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/topology",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/vyos",
         "//projects/lib/bdd",
         "//projects/lib/z3",
         "//projects/question",
@@ -85,8 +75,8 @@ java_library(
     ),
     deps = [
         ":batfish",
-        ":batfish_grammars",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
         "@commons_collections4//:compile",
@@ -107,10 +97,10 @@ junit_tests(
     ]),
     deps = [
         ":batfish",
-        ":batfish_grammars",
         ":batfish_testlib",
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol:common_testlib",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
         "//projects/lib/bdd",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
@@ -120,27 +110,4 @@ junit_tests(
         "@jettison//:compile",
         "@junit//:compile",
     ],
-)
-
-genrule(
-    name = "cisco_grammar",
-    srcs = glob([
-        "src/main/antlr4/org/batfish/grammar/cisco/*.g4",
-    ]),
-    outs = [
-        "CiscoLexer.java",
-        "CiscoParser.java",
-        "CiscoParserBaseListener.java",
-        "CiscoParserListener.java",
-    ],
-    cmd = """
-java -cp $(location //third_party/org/antlr4/antlr4-complete) \
-    org.antlr.v4.Tool \
-    -Xexact-output-dir \
-       $(location src/main/antlr4/org/batfish/grammar/cisco/CiscoLexer.g4) \
-       $(location src/main/antlr4/org/batfish/grammar/cisco/CiscoParser.g4) \
-    -package org.batfish.grammar.cisco \
-    -encoding UTF-8 \
-    -o $(@D)""",
-    tools = ["//third_party/org/antlr4/antlr4-complete"],
 )
