@@ -440,24 +440,24 @@ public final class HeaderSpaceMatchExpr extends BooleanExpr {
     return Objects.hash(_expr);
   }
 
-  private void requireMatch(
+  private static void requireMatch(
       Builder<BooleanExpr> match, IpSpace ipSpace, Function<IpSpace, BooleanExpr> generator) {
     match.add(generator.apply(ipSpace));
   }
 
-  private void requireNoMatch(
+  private static void requireNoMatch(
       Builder<BooleanExpr> match, IpSpace ipSpace, Function<IpSpace, BooleanExpr> generator) {
     match.add(new NotExpr(generator.apply(ipSpace)));
   }
 
-  private <T, C extends Collection<T>> void requireMatch(
+  private static <T, C extends Collection<T>> void requireMatch(
       Builder<BooleanExpr> match, C collection, Function<C, BooleanExpr> generator) {
     if (!collection.isEmpty()) {
       match.add(generator.apply(collection));
     }
   }
 
-  private <T, C extends Collection<T>> void requireNoMatch(
+  private static <T, C extends Collection<T>> void requireNoMatch(
       Builder<BooleanExpr> match, C collection, Function<C, BooleanExpr> generator) {
     if (!collection.isEmpty()) {
       match.add(new NotExpr(generator.apply(collection)));

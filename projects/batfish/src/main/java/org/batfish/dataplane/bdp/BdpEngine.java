@@ -63,7 +63,7 @@ public class BdpEngine {
     _newBatch = newBatch;
   }
 
-  private boolean checkDependentRoutesChanged(
+  private static boolean checkDependentRoutesChanged(
       AtomicBoolean dependentRoutesChanged,
       AtomicBoolean evenDependentRoutesChanged,
       AtomicBoolean oddDependentRoutesChanged,
@@ -171,7 +171,7 @@ public class BdpEngine {
     return oscillatingPrefixes;
   }
 
-  private void compareToPreviousIteration(
+  private static void compareToPreviousIteration(
       Map<String, Node> nodes,
       AtomicBoolean dependentRoutesChanged,
       AtomicInteger checkFixedPointCompleted) {
@@ -318,7 +318,7 @@ public class BdpEngine {
                   for (VirtualRouter vr : n._virtualRouters.values()) {
                     vr._generatedRib = new Rib(vr);
                     while (vr.activateGeneratedRoutes()) {}
-                    vr.importRib(vr._mainRib, vr._generatedRib);
+                    VirtualRouter.importRib(vr._mainRib, vr._generatedRib);
                   }
                   recomputeAggregateCompleted.incrementAndGet();
                 });
@@ -401,9 +401,9 @@ public class BdpEngine {
             .forEach(
                 n -> {
                   for (VirtualRouter vr : n._virtualRouters.values()) {
-                    vr.importRib(vr._ospfRib, vr._ospfExternalType1Rib);
-                    vr.importRib(vr._ospfRib, vr._ospfExternalType2Rib);
-                    vr.importRib(vr._mainRib, vr._ospfRib);
+                    VirtualRouter.importRib(vr._ospfRib, vr._ospfExternalType1Rib);
+                    VirtualRouter.importRib(vr._ospfRib, vr._ospfExternalType2Rib);
+                    VirtualRouter.importRib(vr._mainRib, vr._ospfRib);
                   }
                   importOspfExternalCompleted.incrementAndGet();
                 });
@@ -566,7 +566,7 @@ public class BdpEngine {
                       .values()
                       .forEach(
                           vr -> {
-                            vr.importRib(vr._mainRib, vr._independentRib);
+                            VirtualRouter.importRib(vr._mainRib, vr._independentRib);
                             // Needed for activateStaticRoutes
                             vr._prevMainRib = vr._mainRib;
                             vr.activateStaticRoutes();
@@ -719,7 +719,7 @@ public class BdpEngine {
     }
   }
 
-  private int computeIterationHashCode(Map<String, Node> nodes) {
+  private static int computeIterationHashCode(Map<String, Node> nodes) {
     int mainHash =
         nodes
             .values()
@@ -760,7 +760,7 @@ public class BdpEngine {
     return hash;
   }
 
-  private void computeIterationStatistics(
+  private static void computeIterationStatistics(
       Map<String, Node> nodes, BdpAnswerElement ae, int dependentRoutesIterations) {
     int numBgpBestPathRibRoutes =
         nodes
@@ -789,7 +789,7 @@ public class BdpEngine {
     ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
   }
 
-  private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
+  private static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
       computeOutputAbstractRoutes(Map<String, Node> nodes, Map<Ip, String> ipOwners) {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> outputRoutes = new TreeMap<>();
     nodes.forEach(
@@ -823,7 +823,8 @@ public class BdpEngine {
     return outputRoutes;
   }
 
-  private SortedSet<Route> computeOutputRoutes(Map<String, Node> nodes, Map<Ip, String> ipOwners) {
+  private static SortedSet<Route> computeOutputRoutes(
+      Map<String, Node> nodes, Map<Ip, String> ipOwners) {
     SortedSet<Route> outputRoutes = new TreeSet<>();
     nodes.forEach(
         (hostname, node) -> {
@@ -861,7 +862,7 @@ public class BdpEngine {
     return outputRoutes;
   }
 
-  private String debugAbstractRoutesIterations(
+  private static String debugAbstractRoutesIterations(
       String msg,
       Map<Integer, SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>>
           iterationAbsRoutes,
@@ -958,7 +959,7 @@ public class BdpEngine {
     return sb.toString();
   }
 
-  private String debugIterations(
+  private static String debugIterations(
       String msg, Map<Integer, SortedSet<Route>> iterationRoutes, int first, int last) {
     StringBuilder sb = new StringBuilder();
     sb.append(msg);
@@ -990,7 +991,7 @@ public class BdpEngine {
   /**
    * Return the main RIB routes for each node. Map structure: Hostname -> VRF name -> Set of routes
    */
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(BdpDataPlane dp) {
+  static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(BdpDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
     return dp._nodes
         .entrySet()
@@ -1212,8 +1213,8 @@ public class BdpEngine {
         .forEach(
             n -> {
               for (VirtualRouter vr : n._virtualRouters.values()) {
-                vr.importRib(vr._ripRib, vr._ripInternalRib);
-                vr.importRib(vr._independentRib, vr._ripRib);
+                VirtualRouter.importRib(vr._ripRib, vr._ripInternalRib);
+                VirtualRouter.importRib(vr._independentRib, vr._ripRib);
               }
               ripInternalImportCompleted.incrementAndGet();
             });

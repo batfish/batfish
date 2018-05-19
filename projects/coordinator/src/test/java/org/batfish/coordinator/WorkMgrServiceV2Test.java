@@ -66,7 +66,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
-    Main.getWorkMgr().initContainer("someContainer", null);
+    WorkMgr.initContainer("someContainer", null);
     response = getContainersTarget().request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
@@ -87,7 +87,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void testGetContainer() {
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
     Response response = getContainersTarget().path(containerName).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
@@ -97,7 +97,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   @Test
   public void testDeleteContainer() {
     String containerName = "someContainer";
-    Main.getWorkMgr().initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
     Response response = getContainersTarget().path(containerName).request().delete();
     assertThat(response.getStatus(), equalTo(NO_CONTENT.getStatusCode()));
   }
@@ -117,7 +117,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     Authorizer auth = new MapAuthorizer();
     Main.setAuthorizer(auth);
     auth.authorizeContainer(myKey, containerName);
-    Main.getWorkMgr().initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
 
     // Test that subsequent calls return 200 with correct API key
     Response resp =

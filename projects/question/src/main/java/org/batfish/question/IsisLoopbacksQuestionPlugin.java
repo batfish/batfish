@@ -50,7 +50,7 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
       _running = new TreeMap<>();
     }
 
-    public void add(
+    public static void add(
         SortedMap<String, SortedSet<String>> map, String hostname, String interfaceName) {
       SortedSet<String> interfacesByHostname = map.computeIfAbsent(hostname, k -> new TreeSet<>());
       interfacesByHostname.add(interfaceName);
@@ -153,31 +153,39 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
                     if (l1Mode == IsisInterfaceMode.ACTIVE) {
                       l1 = true;
                       isis = true;
-                      answerElement.add(answerElement.getL1Active(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getL1Active(), hostname, interfaceName);
                     } else if (l1Mode == IsisInterfaceMode.PASSIVE) {
                       l1 = true;
                       isis = true;
-                      answerElement.add(answerElement.getL1Passive(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getL1Passive(), hostname, interfaceName);
                     }
                     if (l2Mode == IsisInterfaceMode.ACTIVE) {
                       l2 = true;
                       isis = true;
-                      answerElement.add(answerElement.getL2Active(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getL2Active(), hostname, interfaceName);
                     } else if (l2Mode == IsisInterfaceMode.PASSIVE) {
                       l2 = true;
                       isis = true;
-                      answerElement.add(answerElement.getL2Passive(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getL2Passive(), hostname, interfaceName);
                     }
                     if (l1) {
-                      answerElement.add(answerElement.getL1(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getL1(), hostname, interfaceName);
                     }
                     if (l2) {
-                      answerElement.add(answerElement.getL2(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getL2(), hostname, interfaceName);
                     }
                     if (isis) {
-                      answerElement.add(answerElement.getRunning(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getRunning(), hostname, interfaceName);
                     } else {
-                      answerElement.add(answerElement.getInactive(), hostname, interfaceName);
+                      IsisLoopbacksAnswerElement.add(
+                          answerElement.getInactive(), hostname, interfaceName);
                     }
                   }
                 });

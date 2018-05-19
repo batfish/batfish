@@ -58,34 +58,34 @@ public class WorkMgrTest {
 
   @Test
   public void initContainerWithContainerName() {
-    String initResult = _manager.initContainer("container", null);
+    String initResult = WorkMgr.initContainer("container", null);
     assertThat(initResult, equalTo("container"));
   }
 
   @Test
   public void initContainerWithContainerPrefix() {
-    String initResult = _manager.initContainer(null, "containerPrefix");
+    String initResult = WorkMgr.initContainer(null, "containerPrefix");
     assertThat(initResult, startsWith("containerPrefix"));
   }
 
   @Test
   public void initContainerWithNullInput() {
-    String initResult = _manager.initContainer(null, null);
+    String initResult = WorkMgr.initContainer(null, null);
     assertThat(initResult, startsWith("null_"));
   }
 
   @Test
   public void initExistingContainer() {
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     String expectedMessage = "Container 'container' already exists!";
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage(equalTo(expectedMessage));
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
   }
 
   @Test
   public void listEmptyQuestion() {
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     SortedSet<String> questions = _manager.listQuestions("container", false);
     assertThat(questions.isEmpty(), is(true));
   }
@@ -96,7 +96,7 @@ public class WorkMgrTest {
     // Leading __ means this question is an internal question
     // And should be hidden from listQuestions when verbose is false
     String internalQuestionName = "__internalquestion";
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
@@ -123,7 +123,7 @@ public class WorkMgrTest {
 
   @Test
   public void listSortedQuestionNames() {
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path questionsDir = containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR);
@@ -136,14 +136,14 @@ public class WorkMgrTest {
 
   @Test
   public void getEmptyContainer() {
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     Container container = _manager.getContainer("container");
     assertThat(container, equalTo(Container.of("container", new TreeSet<>())));
   }
 
   @Test
   public void getNonEmptyContainer() {
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path testrigPath = containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig");
@@ -170,7 +170,7 @@ public class WorkMgrTest {
 
   @Test
   public void getNonExistConfig() {
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path testrigPath =
@@ -187,7 +187,7 @@ public class WorkMgrTest {
 
   @Test
   public void getConfigContent() {
-    _manager.initContainer("container", null);
+    WorkMgr.initContainer("container", null);
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve("container").toAbsolutePath();
     Path configPath =
@@ -206,7 +206,7 @@ public class WorkMgrTest {
   @Test
   public void testListAnalysesSuggested() {
     String containerName = "myContainer";
-    _manager.initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
 
     // Create analysis1 (user analysis) and analysis2 (suggested analysis)
     _manager.configureAnalysis(
@@ -229,7 +229,7 @@ public class WorkMgrTest {
   @Test
   public void testConfigureAnalysis() {
     String containerName = "myContainer";
-    _manager.initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
     // test init and add questions to analysis
     Map<String, String> questionsToAdd =
         Maps.newHashMap(Collections.singletonMap("question1", "question1Content"));
@@ -284,7 +284,7 @@ public class WorkMgrTest {
   @Test
   public void testConfigureAnalysisSuggested() {
     String containerName = "myContainer";
-    _manager.initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
 
     // Analysis initialized with suggested = null should not be marked as suggested
     _manager.configureAnalysis(
@@ -322,7 +322,7 @@ public class WorkMgrTest {
   public void testGetAutoWorkQueueUserAnalysis() {
     String containerName = "myContainer";
     String testrigName = "myTestrig";
-    _manager.initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
 
     // user policy
     _manager.configureAnalysis(
@@ -359,7 +359,7 @@ public class WorkMgrTest {
   public void testGetAutoWorkQueueSuggestedAnalysis() {
     String containerName = "myContainer";
     String testrigName = "myTestrig";
-    _manager.initContainer(containerName, null);
+    WorkMgr.initContainer(containerName, null);
 
     // user policy
     _manager.configureAnalysis(
@@ -392,7 +392,7 @@ public class WorkMgrTest {
         equalTo(true));
   }
 
-  private boolean getMetadataSuggested(String containerName, String analysisName) {
+  private static boolean getMetadataSuggested(String containerName, String analysisName) {
     try {
       return AnalysisMetadataMgr.readMetadata(containerName, analysisName).getSuggested();
     } catch (IOException e) {

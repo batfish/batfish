@@ -65,7 +65,7 @@ public class IpSpacePrefixCollector implements GenericIpSpaceVisitor<Void> {
     throw new BatfishException("IpSpaceReference is unsupported.");
   }
 
-  private void assertIpWildcardIsPrefix(IpWildcard ipWildcard) {
+  private static void assertIpWildcardIsPrefix(IpWildcard ipWildcard) {
     if (!ipWildcard.isPrefix()) {
       throw new BatfishException("non-prefix IpWildcards are unsupported");
     }
@@ -81,8 +81,8 @@ public class IpSpacePrefixCollector implements GenericIpSpaceVisitor<Void> {
 
   @Override
   public Void visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    ipWildcardSetIpSpace.getWhitelist().forEach(this::assertIpWildcardIsPrefix);
-    ipWildcardSetIpSpace.getBlacklist().forEach(this::assertIpWildcardIsPrefix);
+    ipWildcardSetIpSpace.getWhitelist().forEach(IpSpacePrefixCollector::assertIpWildcardIsPrefix);
+    ipWildcardSetIpSpace.getBlacklist().forEach(IpSpacePrefixCollector::assertIpWildcardIsPrefix);
     ipWildcardSetIpSpace.getWhitelist().stream().map(IpWildcard::toPrefix).forEach(_prefixes::add);
     ipWildcardSetIpSpace
         .getBlacklist()

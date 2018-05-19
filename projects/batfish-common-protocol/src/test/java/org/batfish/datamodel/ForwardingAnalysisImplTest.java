@@ -782,7 +782,7 @@ public class ForwardingAnalysisImplTest {
         ImmutableSortedMap.of(
             c1, ImmutableSortedMap.of(v1, MockRib.builder().setRoutableIps(IPSPACE1).build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
-    Map<String, Map<String, IpSpace>> result = forwardingAnalysisImpl.computeRoutableIps(ribs);
+    Map<String, Map<String, IpSpace>> result = ForwardingAnalysisImpl.computeRoutableIps(ribs);
 
     assertThat(result, equalTo(ImmutableMap.of(c1, ImmutableMap.of(v1, IPSPACE1))));
   }
@@ -797,7 +797,7 @@ public class ForwardingAnalysisImplTest {
 
     /* Resulting IP space should permit matching IPs */
     assertThat(
-        forwardingAnalysisImpl.computeRouteMatchConditions(routes, rib),
+        ForwardingAnalysisImpl.computeRouteMatchConditions(routes, rib),
         isAclIpSpaceThat(
             hasLines(
                 containsInAnyOrder(
@@ -892,7 +892,7 @@ public class ForwardingAnalysisImplTest {
                     .build()));
     ForwardingAnalysisImpl forwardingAnalysisImpl = initForwardingAnalysisImpl();
     Map<String, Map<String, Map<String, Set<AbstractRoute>>>> result =
-        forwardingAnalysisImpl.computeRoutesWithNextHop(fibs);
+        ForwardingAnalysisImpl.computeRoutesWithNextHop(fibs);
 
     assertThat(
         result,

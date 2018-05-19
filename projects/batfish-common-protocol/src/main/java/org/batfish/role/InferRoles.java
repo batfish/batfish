@@ -217,7 +217,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
 
   // If delimiters (non-alphanumeric characters) are being used in the node names, we use them
   // to separate the different tokens.
-  private List<Pair<String, Token>> preTokensToDelimitedTokens(
+  private static List<Pair<String, Token>> preTokensToDelimitedTokens(
       List<Pair<String, PreToken>> pretokens) {
     List<Pair<String, Token>> tokens = new ArrayList<>();
     int size = pretokens.size();
@@ -250,7 +250,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
 
   // If delimiters (non-alphanumeric characters) are not being used in the node names, we treat
   // each consecutive string matching alpha+digit+ as a distinct token.
-  private List<Pair<String, Token>> preTokensToUndelimitedTokens(
+  private static List<Pair<String, Token>> preTokensToUndelimitedTokens(
       List<Pair<String, PreToken>> pretokens) {
     List<Pair<String, Token>> tokens = new ArrayList<>();
     int size = pretokens.size();
@@ -288,7 +288,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     return tokens;
   }
 
-  private List<Pair<String, Token>> tokenizeName(String name) {
+  private static List<Pair<String, Token>> tokenizeName(String name) {
     List<Pair<String, PreToken>> pretokens = pretokenizeName(name);
     if (pretokens.stream().anyMatch((p) -> p.getSecond() == PreToken.DELIMITER)) {
       return preTokensToDelimitedTokens(pretokens);
@@ -298,7 +298,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   }
 
   // tokenizes a name into a sequence of pretokens defined by the PreToken enum above
-  private List<Pair<String, PreToken>> pretokenizeName(String name) {
+  private static List<Pair<String, PreToken>> pretokenizeName(String name) {
     List<Pair<String, PreToken>> pattern = new ArrayList<>();
     char c = name.charAt(0);
     PreToken currPT = PreToken.charToPreToken(c);
@@ -371,7 +371,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     return result;
   }
 
-  private List<List<String>> possibleSecondRoleGroups(List<String> tokens) {
+  private static List<List<String>> possibleSecondRoleGroups(List<String> tokens) {
     List<List<String>> candidateRegexes = new ArrayList<>();
     for (int i = 0; i < tokens.size(); i++) {
       String token = tokens.get(i);
@@ -434,7 +434,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
     return supportSum / numEdges;
   }
 
-  private SortedMap<String, SortedSet<String>> regexToRoleNodesMap(
+  private static SortedMap<String, SortedSet<String>> regexToRoleNodesMap(
       String regex, Collection<String> nodes) {
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
     Pattern pattern;
@@ -471,7 +471,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   }
 
   // return a map from each node name to the set of roles that it plays
-  public SortedMap<String, SortedSet<String>> regexToNodeRolesMap(
+  public static SortedMap<String, SortedSet<String>> regexToNodeRolesMap(
       String regex, Collection<String> allNodes) {
 
     SortedMap<String, SortedSet<String>> roleNodesMap = regexToRoleNodesMap(regex, allNodes);
@@ -536,7 +536,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   // regex is a regular expression that uses one or more groups to indicate the role
   // role is a particular choice of values for those groups, delimited by -
   // the result is a version of regex specialized to these particular values
-  String specializeRegexForRole(String role, String regex) {
+  static String specializeRegexForRole(String role, String regex) {
     String[] roleParts = role.split("-");
     String result = regex;
     for (String rolePart : roleParts) {

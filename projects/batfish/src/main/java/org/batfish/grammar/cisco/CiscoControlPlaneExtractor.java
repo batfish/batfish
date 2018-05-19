@@ -7536,7 +7536,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Nullable
-  private String getAddressGroup(Access_list_ip_rangeContext ctx) {
+  private static String getAddressGroup(Access_list_ip_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
     } else {
@@ -7545,7 +7545,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Nullable
-  private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
+  private static String getAddressGroup(Access_list_ip6_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
     } else {
@@ -7568,7 +7568,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return text;
   }
 
-  private String getLocation(ParserRuleContext ctx) {
+  private static String getLocation(ParserRuleContext ctx) {
     return ctx.getStart().getLine() + ":" + ctx.getStart().getCharPositionInLine() + ": ";
   }
 
@@ -7612,7 +7612,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private void initInterface(Interface iface, ConfigurationFormat format) {
+  private static void initInterface(Interface iface, ConfigurationFormat format) {
     switch (format) {
       case CISCO_ASA:
       case CISCO_IOS:
@@ -8032,7 +8032,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private String toJavaRegex(String rawRegex) {
+  private static String toJavaRegex(String rawRegex) {
     // TODO: fix so it actually works
     return rawRegex;
   }
@@ -8068,7 +8068,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private String toLoggingSeverity(int severityNum) {
+  private static String toLoggingSeverity(int severityNum) {
     switch (severityNum) {
       case 0:
         return Logging.SEVERITY_EMERGENCIES;
@@ -8091,7 +8091,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private String toLoggingSeverity(Logging_severityContext ctx) {
+  private static String toLoggingSeverity(Logging_severityContext ctx) {
     if (ctx.DEC() != null) {
       int severityNum = toInteger(ctx.DEC());
       return toLoggingSeverity(severityNum);
@@ -8100,7 +8100,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private Integer toLoggingSeverityNum(Logging_severityContext ctx) {
+  private static Integer toLoggingSeverityNum(Logging_severityContext ctx) {
     if (ctx.EMERGENCIES() != null) {
       return 0;
     } else if (ctx.ALERTS() != null) {
@@ -8406,7 +8406,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_apply_rp_stanzaContext ctx) {
+  private static RoutePolicyBoolean toRoutePolicyBoolean(Boolean_apply_rp_stanzaContext ctx) {
     return new RoutePolicyBooleanApply(ctx.name.getText());
   }
 
@@ -8416,7 +8416,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new RoutePolicyBooleanAsPathIn(asPathSetExpr, expressionLine);
   }
 
-  private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_path_is_local_rp_stanzaContext ctx) {
+  private static RoutePolicyBoolean toRoutePolicyBoolean(
+      Boolean_as_path_is_local_rp_stanzaContext ctx) {
     return new RoutePolicyBooleanAsPathIsLocal();
   }
 
@@ -8698,7 +8699,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private RoutePolicyApplyStatement toRoutePolicyStatement(Apply_rp_stanzaContext ctx) {
+  private static RoutePolicyApplyStatement toRoutePolicyStatement(Apply_rp_stanzaContext ctx) {
     return new RoutePolicyApplyStatement(ctx.name.getText());
   }
 
@@ -8712,7 +8713,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private RoutePolicyDispositionStatement toRoutePolicyStatement(Disposition_rp_stanzaContext ctx) {
+  private static RoutePolicyDispositionStatement toRoutePolicyStatement(
+      Disposition_rp_stanzaContext ctx) {
     RoutePolicyDispositionType t = null;
     if (ctx.DONE() != null) {
       t = RoutePolicyDispositionType.DONE;
@@ -8724,7 +8726,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return new RoutePolicyDispositionStatement(t);
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Hash_commentContext ctx) {
+  private static RoutePolicyStatement toRoutePolicyStatement(Hash_commentContext ctx) {
     String text = ctx.RAW_TEXT().getText();
     return new RoutePolicyComment(text);
   }
@@ -8823,7 +8825,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private RoutePolicyStatement toRoutePolicyStatement(Set_next_hop_rp_stanzaContext ctx) {
+  private static RoutePolicyStatement toRoutePolicyStatement(Set_next_hop_rp_stanzaContext ctx) {
     RoutePolicyNextHop hop = null;
     if (ctx.IP_ADDRESS() != null) {
       hop = new RoutePolicyNextHopIp(toIp(ctx.IP_ADDRESS()));

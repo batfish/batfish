@@ -1029,7 +1029,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkDataPlane(_testrigSettings);
   }
 
-  public void checkDataPlane(TestrigSettings testrigSettings) {
+  public static void checkDataPlane(TestrigSettings testrigSettings) {
     EnvironmentSettings envSettings = testrigSettings.getEnvironmentSettings();
     if (!Files.exists(envSettings.getDataPlanePath())) {
       throw new CleanBatfishException(
@@ -1285,12 +1285,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return configurations;
   }
 
-  private boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
+  private static boolean dataPlaneDependenciesExist(TestrigSettings testrigSettings) {
     Path dpPath = testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
     return Files.exists(dpPath);
   }
 
-  private boolean compressedDataPlaneDependenciesExist(TestrigSettings testrigSettings) {
+  private static boolean compressedDataPlaneDependenciesExist(TestrigSettings testrigSettings) {
     Path path = testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath();
     return Files.exists(path);
   }
@@ -1493,7 +1493,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private boolean environmentBgpTablesExist(EnvironmentSettings envSettings) {
+  private static boolean environmentBgpTablesExist(EnvironmentSettings envSettings) {
     Path answerPath = envSettings.getParseEnvironmentBgpTablesAnswerPath();
     return Files.exists(answerPath);
   }
@@ -1508,7 +1508,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Files.exists(envPath);
   }
 
-  private boolean environmentRoutingTablesExist(EnvironmentSettings envSettings) {
+  private static boolean environmentRoutingTablesExist(EnvironmentSettings envSettings) {
     Path answerPath = envSettings.getParseEnvironmentRoutingTablesAnswerPath();
     return Files.exists(answerPath);
   }
@@ -2019,7 +2019,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName());
   }
 
-  private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
+  private static Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
     Set<Edge> consumedEdges = new LinkedHashSet<>();
     for (Edge edge : edges) {
       if (consumedEdges.contains(edge)) {
@@ -2848,7 +2848,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
-  private SortedSet<Edge> parseEdgeBlacklist(Path edgeBlacklistPath) {
+  private static SortedSet<Edge> parseEdgeBlacklist(Path edgeBlacklistPath) {
     String edgeBlacklistText = CommonUtil.readFile(edgeBlacklistPath);
     SortedSet<Edge> edges;
     try {
@@ -2931,7 +2931,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return routingTables;
   }
 
-  private SortedSet<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
+  private static SortedSet<NodeInterfacePair> parseInterfaceBlacklist(Path interfaceBlacklistPath) {
     String interfaceBlacklistText = CommonUtil.readFile(interfaceBlacklistPath);
     SortedSet<NodeInterfacePair> ifaces;
     try {
@@ -2945,7 +2945,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return ifaces;
   }
 
-  private SortedSet<String> parseNodeBlacklist(Path nodeBlacklistPath) {
+  private static SortedSet<String> parseNodeBlacklist(Path nodeBlacklistPath) {
     String nodeBlacklistText = CommonUtil.readFile(nodeBlacklistPath);
     SortedSet<String> nodes;
     try {
@@ -3140,7 +3140,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private void postProcessConfigurations(Collection<Configuration> configurations) {
+  private static void postProcessConfigurations(Collection<Configuration> configurations) {
     for (Configuration c : configurations) {
       // Set device type to host iff the configuration format is HOST
       if (c.getConfigurationFormat() == ConfigurationFormat.HOST) {

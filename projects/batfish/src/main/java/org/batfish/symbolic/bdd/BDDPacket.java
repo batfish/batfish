@@ -199,7 +199,7 @@ public class BDDPacket {
    * Creates a unique id for a bdd node when generating
    * a DOT file for graphviz
    */
-  private Integer dotId(BDD bdd) {
+  private static Integer dotId(BDD bdd) {
     if (bdd.isZero()) {
       return 0;
     }

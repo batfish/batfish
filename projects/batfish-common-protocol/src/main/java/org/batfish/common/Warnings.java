@@ -48,7 +48,7 @@ public class Warnings implements Serializable {
       return warnings;
     }
 
-    private void fillWarningList(List<Warning> warnings, JsonNode node) {
+    private static void fillWarningList(List<Warning> warnings, JsonNode node) {
       for (Iterator<Entry<String, JsonNode>> iter = node.fields(); iter.hasNext(); ) {
         Entry<String, JsonNode> e = iter.next();
         String msg = e.getValue().asText();

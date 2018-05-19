@@ -102,7 +102,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       _bgpAdvertisements = makeImmutable(bgpAdvertisements);
     }
 
-    private void fill(
+    private static void fill(
         SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements,
         String hostname,
         Set<BgpAdvertisement> advertisements,
@@ -121,7 +121,7 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
       return _bgpAdvertisements;
     }
 
-    private SortedMap<String, SortedSet<BgpAdvertisement>> makeImmutable(
+    private static SortedMap<String, SortedSet<BgpAdvertisement>> makeImmutable(
         SortedMap<String, SortedSet<BgpAdvertisement>> bgpAdvertisements) {
       return bgpAdvertisements
           .entrySet()

@@ -430,7 +430,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  void computeNeighborUnreachableHelper(
+  static void computeNeighborUnreachableHelper(
       Map<String, Map<String, Map<String, ImmutableList.Builder<IpSpace>>>> neighborUnreachable,
       Map<String, Map<String, Map<String, IpSpace>>> part) {
     part.forEach(
@@ -451,7 +451,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, IpSpace>> computeNullRoutedIps(
+  static Map<String, Map<String, IpSpace>> computeNullRoutedIps(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs,
       Map<String, Map<String, Fib>> fibs) {
     return fibs.entrySet()
@@ -490,7 +490,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, IpSpace>> computeRoutableIps(
+  static Map<String, Map<String, IpSpace>> computeRoutableIps(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return ribs.entrySet()
         .stream()
@@ -510,7 +510,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   /** Compute for each VRF of each node the IPs that are routable. */
   @VisibleForTesting
-  Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
+  static Map<String, Map<String, IpSpace>> computeRoutableIpsByNodeVrf(
       SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
     return ribs.entrySet()
         .stream()
@@ -529,7 +529,8 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  IpSpace computeRouteMatchConditions(Set<AbstractRoute> routes, GenericRib<AbstractRoute> rib) {
+  static IpSpace computeRouteMatchConditions(
+      Set<AbstractRoute> routes, GenericRib<AbstractRoute> rib) {
     Map<Prefix, IpSpace> matchingIps = rib.getMatchingIps();
     return AclIpSpace.permitting(
             routes
@@ -608,7 +609,7 @@ public class ForwardingAnalysisImpl implements ForwardingAnalysis {
   }
 
   @VisibleForTesting
-  Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
+  static Map<String, Map<String, Map<String, Set<AbstractRoute>>>> computeRoutesWithNextHop(
       Map<String, Map<String, Fib>> fibs) {
     return fibs.entrySet()
         .stream()

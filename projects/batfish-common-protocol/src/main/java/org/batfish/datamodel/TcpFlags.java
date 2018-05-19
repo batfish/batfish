@@ -461,7 +461,7 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
     return sb.toString();
   }
 
-  private String toString(boolean bit, boolean useBit) {
+  private static String toString(boolean bit, boolean useBit) {
     if (useBit) {
       if (bit) {
         return "1";

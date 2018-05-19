@@ -140,23 +140,23 @@ public class WorkMgrService {
     }
   }
 
-  private void checkApiKeyValidity(String apiKey) {
+  private static void checkApiKeyValidity(String apiKey) {
     if (!Main.getAuthorizer().isValidWorkApiKey(apiKey)) {
       throw new AccessControlException("Invalid API key: " + apiKey);
     }
   }
 
-  private void checkClientVersion(String clientVersion) {
+  private static void checkClientVersion(String clientVersion) {
     Version.checkCompatibleVersion("Service", "Client", clientVersion);
   }
 
-  private void checkContainerAccessibility(String apiKey, String containerName) {
+  private static void checkContainerAccessibility(String apiKey, String containerName) {
     if (!Main.getAuthorizer().isAccessibleContainer(apiKey, containerName, true)) {
       throw new AccessControlException("container is not accessible by the api key");
     }
   }
 
-  private void checkStringParam(String paramStr, String parameterName) {
+  private static void checkStringParam(String paramStr, String parameterName) {
     if (Strings.isNullOrEmpty(paramStr)) {
       throw new IllegalArgumentException(parameterName + " is missing or empty");
     }
@@ -369,7 +369,7 @@ public class WorkMgrService {
       checkClientVersion(clientVersion);
       checkContainerAccessibility(apiKey, containerName);
 
-      boolean status = Main.getWorkMgr().delContainer(containerName);
+      boolean status = WorkMgr.delContainer(containerName);
 
       return successResponse(new JSONObject().put("result", status));
 
@@ -786,7 +786,7 @@ public class WorkMgrService {
 
       checkContainerAccessibility(apiKey, containerName);
 
-      Container container = Main.getWorkMgr().getContainer(containerDir);
+      Container container = WorkMgr.getContainer(containerDir);
       String containerString = BatfishObjectMapper.writeString(container);
 
       return Response.ok(containerString).build();
@@ -1045,7 +1045,7 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      String outputContainerName = Main.getWorkMgr().initContainer(containerName, containerPrefix);
+      String outputContainerName = WorkMgr.initContainer(containerName, containerPrefix);
       _logger.infof("Initialized container:%s using api-key:%s\n", outputContainerName, apiKey);
 
       Main.getAuthorizer().authorizeContainer(apiKey, outputContainerName);
@@ -1192,7 +1192,7 @@ public class WorkMgrService {
       checkApiKeyValidity(apiKey);
       checkClientVersion(clientVersion);
 
-      SortedSet<String> containerList = Main.getWorkMgr().listContainers(apiKey);
+      SortedSet<String> containerList = WorkMgr.listContainers(apiKey);
 
       return successResponse(
           new JSONObject().put(CoordConsts.SVC_KEY_CONTAINER_LIST, new JSONArray(containerList)));
@@ -1337,7 +1337,7 @@ public class WorkMgrService {
       JSONObject retObject = new JSONObject();
 
       for (String questionName : Main.getWorkMgr().listQuestions(containerName, verbose)) {
-        String questionText = Main.getWorkMgr().getQuestion(containerName, questionName);
+        String questionText = WorkMgr.getQuestion(containerName, questionName);
 
         retObject.put(questionName, new JSONObject(questionText));
       }
@@ -1388,7 +1388,7 @@ public class WorkMgrService {
       for (String testrig : testrigList) {
         try {
           String testrigInfo = Main.getWorkMgr().getTestrigInfo(containerName, testrig);
-          TestrigMetadata trMetadata = Main.getWorkMgr().getTestrigMetadata(containerName, testrig);
+          TestrigMetadata trMetadata = WorkMgr.getTestrigMetadata(containerName, testrig);
 
           JSONObject jObject =
               new JSONObject()

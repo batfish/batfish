@@ -70,8 +70,8 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     return models.build();
   }
 
-  protected Map<String, Long> getSolution(Solver solver, Map<String, BitVecExpr> variablesAsConsts)
-      throws QueryUnsatException {
+  protected static Map<String, Long> getSolution(
+      Solver solver, Map<String, BitVecExpr> variablesAsConsts) throws QueryUnsatException {
     Status solverStatus = solver.check();
     switch (solverStatus) {
       case SATISFIABLE:
@@ -138,7 +138,8 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         .collect(Collectors.toSet());
   }
 
-  Map<String, Long> getFieldConstraints(Model model, Map<String, BitVecExpr> variablesAsConsts) {
+  static Map<String, Long> getFieldConstraints(
+      Model model, Map<String, BitVecExpr> variablesAsConsts) {
     return Arrays.stream(model.getConstDecls())
         .map(FuncDecl::getName)
         .map(Object::toString)

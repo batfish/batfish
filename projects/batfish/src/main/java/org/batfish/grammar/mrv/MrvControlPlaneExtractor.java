@@ -44,7 +44,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
     _configuration.setHostname(hostname);
   }
 
-  private String getText(Quoted_stringContext ctx) {
+  private static String getText(Quoted_stringContext ctx) {
     if (ctx.text != null) {
       return ctx.text.getText();
     } else {
@@ -74,7 +74,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
     _unimplementedFeatures.add("Cisco: " + feature);
   }
 
-  private String toString(NsdeclContext ctx) {
+  private static String toString(NsdeclContext ctx) {
     String text = getText(ctx.quoted_string());
     return text;
   }

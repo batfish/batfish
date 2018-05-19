@@ -17,7 +17,7 @@ public class IsisRoute extends AbstractRoute {
       return this;
     }
 
-    public void setLevel(IsisLevel level) {
+    public static void setLevel(IsisLevel level) {
       throw new UnsupportedOperationException("no implementation for generated method");
       // TODO Auto-generated method stub
     }

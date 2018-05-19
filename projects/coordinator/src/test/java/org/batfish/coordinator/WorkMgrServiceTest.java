@@ -60,7 +60,7 @@ public class WorkMgrServiceTest {
     Main.initAuthorizer();
     WorkMgr manager = new WorkMgr(settings, logger);
     Main.setWorkMgr(manager);
-    manager.initContainer(_containerName, null);
+    WorkMgr.initContainer(_containerName, null);
     _service = new WorkMgrService();
   }
 

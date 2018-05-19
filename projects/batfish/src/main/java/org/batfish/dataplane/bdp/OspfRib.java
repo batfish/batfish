@@ -20,7 +20,7 @@ public class OspfRib extends AbstractRib<OspfRoute> {
     return Integer.compare(rhsTypeCost, lhsTypeCost);
   }
 
-  private int getTypeCost(RoutingProtocol protocol) {
+  private static int getTypeCost(RoutingProtocol protocol) {
     switch (protocol) {
       case OSPF:
         return 0;

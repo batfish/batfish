@@ -63,12 +63,12 @@ public class BfCoordWorkHelper {
     }
   }
 
-  private void addFileMultiPart(MultiPart multiPart, String key, String filename) {
+  private static void addFileMultiPart(MultiPart multiPart, String key, String filename) {
     multiPart.bodyPart(
         new FormDataBodyPart(key, new File(filename), MediaType.APPLICATION_OCTET_STREAM_TYPE));
   }
 
-  private void addTextMultiPart(MultiPart multiPart, String key, String value) {
+  private static void addTextMultiPart(MultiPart multiPart, String key, String value) {
     multiPart.bodyPart(new FormDataBodyPart(key, value, MediaType.TEXT_PLAIN_TYPE));
   }
 

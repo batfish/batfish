@@ -32,7 +32,7 @@ public class TransferResult<U, T> {
   }
 
   @Nullable
-  private Expr find(PList<Pair<String, Expr>> vals, String s) {
+  private static Expr find(PList<Pair<String, Expr>> vals, String s) {
     for (Pair<String, Expr> pair : vals) {
       if (pair.getFirst().equals(s)) {
         return pair.getSecond();

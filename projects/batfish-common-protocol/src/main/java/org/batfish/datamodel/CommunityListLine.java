@@ -96,7 +96,7 @@ public class CommunityListLine implements Serializable {
     return result;
   }
 
-  public Long toLiteralCommunity() {
+  public static Long toLiteralCommunity() {
     throw new UnsupportedOperationException("no implementation for generated method");
     // TODO Auto-generated method stub
   }

@@ -326,7 +326,7 @@ class AbstractionBuilder {
   }
 
   // TODO: lookup based on local preference
-  private boolean needUniversalAbstraction() {
+  private static boolean needUniversalAbstraction() {
     return false;
   }
 

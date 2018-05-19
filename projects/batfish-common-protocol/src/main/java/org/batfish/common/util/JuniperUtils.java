@@ -93,7 +93,7 @@ public final class JuniperUtils {
     return ret;
   }
 
-  private char gapDecode(List<Integer> gaps, List<Integer> codeRow) {
+  private static char gapDecode(List<Integer> gaps, List<Integer> codeRow) {
     int num = 0;
     if (gaps.size() != codeRow.size()) {
       throw new BatfishException("Gaps size does not match codeRow size");
@@ -136,7 +136,7 @@ public final class JuniperUtils {
     return extra;
   }
 
-  private List<List<Integer>> initCodeMatrix() {
+  private static List<List<Integer>> initCodeMatrix() {
     List<List<Integer>> codeMatrix = new ArrayList<>();
     codeMatrix.add(Arrays.asList(new Integer[] {1, 4, 32}));
     codeMatrix.add(Arrays.asList(new Integer[] {1, 16, 32}));
@@ -155,7 +155,7 @@ public final class JuniperUtils {
     return Pattern.compile(regexText);
   }
 
-  private String nibble(String[] chars, int length) {
+  private static String nibble(String[] chars, int length) {
     String nib = chars[0].substring(0, length);
     chars[0] = chars[0].substring(length);
     return nib;

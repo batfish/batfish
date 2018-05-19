@@ -1289,7 +1289,7 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private List<String> getCommandOptions(String[] words) {
+  private static List<String> getCommandOptions(String[] words) {
     List<String> options = new LinkedList<>();
 
     int currIndex = 1;
@@ -1302,7 +1302,7 @@ public class Client extends AbstractClient implements IClient {
     return options;
   }
 
-  private List<String> getCommandParameters(String[] words, int numOptions) {
+  private static List<String> getCommandParameters(String[] words, int numOptions) {
     return Arrays.asList(words).subList(numOptions + 1, words.length);
   }
 
@@ -1475,7 +1475,7 @@ public class Client extends AbstractClient implements IClient {
     return _settings;
   }
 
-  private String getTestComparisonString(Answer answer, TestComparisonMode comparisonMode)
+  private static String getTestComparisonString(Answer answer, TestComparisonMode comparisonMode)
       throws JsonProcessingException {
     switch (comparisonMode) {
       case COMPAREANSWER:
@@ -2306,7 +2306,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private Map<String, JsonNode> parseParams(String paramsLine) {
+  private static Map<String, JsonNode> parseParams(String paramsLine) {
     String jsonParamsStr = "{ " + paramsLine + " }";
     Map<String, JsonNode> parameters;
     try {
@@ -3368,7 +3368,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  private boolean validCommandUsage(String[] words) {
+  private static boolean validCommandUsage(String[] words) {
     return true;
   }
 }

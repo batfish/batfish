@@ -250,7 +250,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     _unimplementedFeatures.add("Iptables: " + feature);
   }
 
-  private IpProtocol toProtocol(ProtocolContext protocol) {
+  private static IpProtocol toProtocol(ProtocolContext protocol) {
     return IpProtocol.fromString(protocol.getText());
   }
 }

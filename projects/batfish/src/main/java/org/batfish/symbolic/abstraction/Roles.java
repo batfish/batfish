@@ -197,7 +197,7 @@ public class Roles {
     _nodeEcs.sort(c);
   }
 
-  private Comparator<SortedSet<String>> comparator() {
+  private static Comparator<SortedSet<String>> comparator() {
     return (o1, o2) -> {
       String min1 = min(o1);
       String min2 = min(o2);
@@ -208,7 +208,7 @@ public class Roles {
   /*
    * Helper functions to sort the sets by minimum element
    */
-  private @Nullable String min(SortedSet<String> set) {
+  private @Nullable static String min(SortedSet<String> set) {
     String x = null;
     for (String s : set) {
       if (x == null || s.compareTo(x) < 0) {

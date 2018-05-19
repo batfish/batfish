@@ -258,7 +258,7 @@ public class Region implements Serializable {
     return _vpnGateways;
   }
 
-  private boolean ignoreElement(String key) {
+  private static boolean ignoreElement(String key) {
     switch (key) {
       case AwsVpcEntity.JSON_KEY_AVAILABILITY_ZONES:
       case AwsVpcEntity.JSON_KEY_DHCP_OPTIONS:

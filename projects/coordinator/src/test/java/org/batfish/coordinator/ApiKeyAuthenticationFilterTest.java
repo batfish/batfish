@@ -24,7 +24,7 @@ public class ApiKeyAuthenticationFilterTest extends JerseyTest {
   @Path("/test")
   public static class TestService {
     @GET
-    public Response get() {
+    public static Response get() {
       return Response.ok().build();
     }
   }

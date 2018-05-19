@@ -86,7 +86,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
     return false;
   }
 
-  private List<SortedSet<Integer>> copyAsSets(List<SortedSet<Integer>> asSets) {
+  private static List<SortedSet<Integer>> copyAsSets(List<SortedSet<Integer>> asSets) {
     List<SortedSet<Integer>> newAsSets = new ArrayList<>(asSets.size());
     for (SortedSet<Integer> asSet : asSets) {
       SortedSet<Integer> newAsSet = ImmutableSortedSet.copyOf(asSet);

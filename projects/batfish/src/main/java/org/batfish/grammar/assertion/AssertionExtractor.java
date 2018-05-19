@@ -83,7 +83,7 @@ public class AssertionExtractor extends AssertionParserBaseListener {
     return text;
   }
 
-  private String getText(Quoted_stringContext ctx) {
+  private static String getText(Quoted_stringContext ctx) {
     if (ctx.text != null) {
       return ctx.text.getText();
     } else {
@@ -245,7 +245,7 @@ public class AssertionExtractor extends AssertionParserBaseListener {
     return new PathSize(pathExpr);
   }
 
-  private StringExpr toStringExpr(Quoted_stringContext ctx) {
+  private static StringExpr toStringExpr(Quoted_stringContext ctx) {
     String text = getText(ctx);
     return new StringLiteral(text);
   }

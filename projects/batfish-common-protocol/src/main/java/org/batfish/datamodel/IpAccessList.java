@@ -125,7 +125,7 @@ public class IpAccessList extends ComparableStructure<String> {
     return _lines;
   }
 
-  private boolean noDenyOrLastDeny(IpAccessList acl) {
+  private static boolean noDenyOrLastDeny(IpAccessList acl) {
     int count = 0;
     for (IpAccessListLine line : acl.getLines()) {
       if (line.getAction() == LineAction.REJECT && count < acl.getLines().size() - 1) {

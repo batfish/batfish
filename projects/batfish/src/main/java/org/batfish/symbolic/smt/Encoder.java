@@ -437,7 +437,7 @@ public class Encoder {
   /*
    * Check if a community value should be displayed to the human
    */
-  private boolean displayCommunity(CommunityVar cvar) {
+  private static boolean displayCommunity(CommunityVar cvar) {
     if (cvar.getType() == CommunityVar.Type.OTHER) {
       return false;
     }

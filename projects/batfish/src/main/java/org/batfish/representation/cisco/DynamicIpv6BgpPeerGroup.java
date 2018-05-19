@@ -32,7 +32,7 @@ public class DynamicIpv6BgpPeerGroup extends LeafBgpPeerGroup {
   }
 
   @Nullable
-  public Prefix getPrefix() {
+  public static Prefix getPrefix() {
     return null;
   }
 }

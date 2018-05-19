@@ -243,7 +243,7 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     return acl;
   }
 
-  private String toIpAccessListName(String tableName, String chainName) {
+  private static String toIpAccessListName(String tableName, String chainName) {
     return tableName + "::" + chainName;
   }
 

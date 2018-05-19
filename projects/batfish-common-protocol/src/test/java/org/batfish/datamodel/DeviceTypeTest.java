@@ -91,7 +91,7 @@ public class DeviceTypeTest {
   }
 
   // Exact copy of the code executed for each configuration in Batfish.postProcessConfigurations()
-  private void postProcessConfiguration(Configuration c) {
+  private static void postProcessConfiguration(Configuration c) {
     // Set device type to host iff the configuration format is HOST
     if (c.getConfigurationFormat() == ConfigurationFormat.HOST) {
       c.setDeviceType(DeviceType.HOST);

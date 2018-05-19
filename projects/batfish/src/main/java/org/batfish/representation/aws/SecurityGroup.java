@@ -49,7 +49,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     initIpPerms(_ipPermsIngress, permsIngress, logger);
   }
 
-  private void addEgressAccessLines(
+  private static void addEgressAccessLines(
       List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
       HeaderSpace headerSpace = ipPerms.toEgressIpAccessListLine(region);
@@ -61,7 +61,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     }
   }
 
-  private void addIngressAccessLines(
+  private static void addIngressAccessLines(
       List<IpPermissions> permsList, List<IpAccessListLine> accessList, Region region) {
     for (IpPermissions ipPerms : permsList) {
       HeaderSpace headerSpace = ipPerms.toIngressIpAccessListLine(region);
@@ -73,7 +73,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     }
   }
 
-  private void addReverseAcls(
+  private static void addReverseAcls(
       List<IpAccessListLine> inboundRules, List<IpAccessListLine> outboundRules) {
 
     List<IpAccessListLine> reverseInboundRules =
@@ -171,7 +171,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
         .forEach(ipWildcard -> getUsersIpSpace().add(ipWildcard));
   }
 
-  private void initIpPerms(
+  private static void initIpPerms(
       List<IpPermissions> ipPermsList, JSONArray ipPermsJson, BatfishLogger logger)
       throws JSONException {
 

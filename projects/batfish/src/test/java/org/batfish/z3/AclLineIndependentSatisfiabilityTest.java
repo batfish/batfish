@@ -96,7 +96,7 @@ public class AclLineIndependentSatisfiabilityTest {
         hasEntry(equalTo(c.getName()), not(hasKey(matchableWithCovered.getName()))));
   }
 
-  private Set<Integer> rangeSet(int max) {
+  private static Set<Integer> rangeSet(int max) {
     return IntStream.range(0, max).mapToObj(i -> new Integer(i)).collect(Collectors.toSet());
   }
 }

@@ -559,7 +559,7 @@ public class Graph {
    * Create a new "fake" interface to correspond to an abstract
    * iBGP control plane edge in the network.
    */
-  private Interface createIbgpInterface(BgpNeighbor n, String peer) {
+  private static Interface createIbgpInterface(BgpNeighbor n, String peer) {
     Interface iface = new Interface("iBGP-" + peer);
     iface.setActive(true);
     // TODO is this valid.
@@ -892,7 +892,7 @@ public class Graph {
    * Final all uniquely mentioned community values for a particular
    * router configuration and community set expression.
    */
-  public Set<CommunityVar> findAllCommunities(Configuration conf, CommunitySetExpr ce) {
+  public static Set<CommunityVar> findAllCommunities(Configuration conf, CommunitySetExpr ce) {
     Set<CommunityVar> comms = new HashSet<>();
     if (ce instanceof InlineCommunitySet) {
       InlineCommunitySet c = (InlineCommunitySet) ce;
@@ -951,7 +951,7 @@ public class Graph {
    * protocol p given the current configuration and routing policy.
    * This is based on structure of the AST.
    */
-  public Set<Protocol> findRedistributedProtocols(
+  public static Set<Protocol> findRedistributedProtocols(
       Configuration conf, RoutingPolicy pol, Protocol p) {
     Set<Protocol> protos = new HashSet<>();
     AstVisitor v = new AstVisitor();
@@ -1015,7 +1015,7 @@ public class Graph {
   /*
    * Find the router Id for a router and a protocol.
    */
-  private long routerId(Configuration conf, Protocol proto) {
+  private static long routerId(Configuration conf, Protocol proto) {
     if (proto.isBgp()) {
       return conf.getDefaultVrf().getBgpProcess().getRouterId().asLong();
     }
@@ -1029,7 +1029,7 @@ public class Graph {
   /*
    * Check if an interface is active for a particular protocol.
    */
-  public boolean isInterfaceActive(Protocol proto, Interface iface) {
+  public static boolean isInterfaceActive(Protocol proto, Interface iface) {
     if (proto.isOspf()) {
       return iface.getActive() && iface.getOspfEnabled();
     }

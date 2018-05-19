@@ -351,7 +351,7 @@ public class Hierarchy {
       return lines;
     }
 
-    private void applyWildcardPath(
+    private static void applyWildcardPath(
         HierarchyPath path,
         Flat_juniper_configurationContext configurationContext,
         String sourceGroup,
@@ -452,7 +452,7 @@ public class Hierarchy {
       return matchNode;
     }
 
-    private Set_lineContext generateSetLine(
+    private static Set_lineContext generateSetLine(
         HierarchyPath path, Flat_juniper_configurationContext configurationContext) {
       Set_lineContext setLine = new Set_lineContext(configurationContext, -1);
       StringBuilder sb = new StringBuilder();
@@ -571,7 +571,7 @@ public class Hierarchy {
       return prefixes;
     }
 
-    private void getApplyPathPrefixes(
+    private static void getApplyPathPrefixes(
         HierarchyPath path, HierarchyNode currentNode, int currentDepth, List<String> prefixes) {
       if (currentDepth == path._nodes.size() - 1) {
         for (HierarchyChildNode currentChild : currentNode.getChildren().values()) {

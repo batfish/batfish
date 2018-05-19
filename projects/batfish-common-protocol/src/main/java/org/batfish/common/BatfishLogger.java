@@ -249,7 +249,7 @@ public class BatfishLogger {
     write(LEVEL_FATAL, msg);
   }
 
-  private double getElapsedTime(long beforeTime) {
+  private static double getElapsedTime(long beforeTime) {
     long difference = System.currentTimeMillis() - beforeTime;
     double seconds = difference / 1000d;
     return seconds;

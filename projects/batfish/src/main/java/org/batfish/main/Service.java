@@ -25,7 +25,7 @@ public class Service {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getInfo() {
+  public static JSONArray getInfo() {
     return new JSONArray(
         Arrays.asList(
             BfConsts.SVC_SUCCESS_KEY,
@@ -36,7 +36,7 @@ public class Service {
   @GET
   @Path(BfConsts.SVC_GET_STATUS_RSC)
   @Produces(MediaType.APPLICATION_JSON)
-  public JSONArray getStatus() {
+  public static JSONArray getStatus() {
     try {
       return new JSONArray(
           Arrays.asList(

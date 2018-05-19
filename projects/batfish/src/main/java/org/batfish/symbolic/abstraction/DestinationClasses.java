@@ -183,7 +183,7 @@ public class DestinationClasses {
     }
   }
 
-  private void copyAllButDestinationIp(HeaderSpace h1, HeaderSpace h2) {
+  private static void copyAllButDestinationIp(HeaderSpace h1, HeaderSpace h2) {
     h1.setDscps(h2.getDscps());
     h1.setDstPorts(h2.getDstPorts());
     h1.setNotDstPorts(h2.getNotDstPorts());
@@ -243,7 +243,7 @@ public class DestinationClasses {
   /*
    * Convert a collection of prefixes over destination IP in to a headerspace
    */
-  private HeaderSpace createHeaderSpace(List<Prefix> prefixes) {
+  private static HeaderSpace createHeaderSpace(List<Prefix> prefixes) {
     HeaderSpace h = new HeaderSpace();
     h.setDstIps(prefixes.stream().map(IpWildcard::new).collect(Collectors.toSet()));
     return h;

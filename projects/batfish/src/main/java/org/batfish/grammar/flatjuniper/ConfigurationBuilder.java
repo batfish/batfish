@@ -4337,7 +4337,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Nullable
-  private IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
+  private static IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
     IpWildcard ipWildcard = null;
     if (ctx == null) {
       return null;
@@ -4365,7 +4365,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return text;
   }
 
-  private String getInterfaceName(Interface_idContext ctx) {
+  private static String getInterfaceName(Interface_idContext ctx) {
     String name = ctx.name.getText();
     if (ctx.suffix != null) {
       name += ":" + ctx.suffix.getText();
@@ -4455,7 +4455,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return proposals;
   }
 
-  private AsPath toAsPath(As_path_exprContext path) {
+  private static AsPath toAsPath(As_path_exprContext path) {
     List<SortedSet<Integer>> asPath = new ArrayList<>();
     for (As_unitContext ctx : path.items) {
       SortedSet<Integer> asSet = new TreeSet<>();
@@ -4471,7 +4471,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return new AsPath(asPath);
   }
 
-  private long toCommunityLong(Ec_literalContext ctx) {
+  private static long toCommunityLong(Ec_literalContext ctx) {
     String[] parts = ctx.getText().split(":");
     int part1 = Integer.parseInt(parts[0]);
     long part2 = Long.parseLong(parts[1]);
@@ -4480,12 +4480,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return c.asLong();
   }
 
-  private long toCommunityLong(Ec_namedContext ctx) {
+  private static long toCommunityLong(Ec_namedContext ctx) {
     ExtendedCommunity ec = new ExtendedCommunity(ctx.getText());
     return ec.asLong();
   }
 
-  private long toCommunityLong(Extended_communityContext ctx) {
+  private static long toCommunityLong(Extended_communityContext ctx) {
     if (ctx.ec_literal() != null) {
       return toCommunityLong(ctx.ec_literal());
     } else if (ctx.ec_named() != null) {
@@ -4538,7 +4538,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {
+  private static DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {
     if (ctx.GROUP1() != null) {
       return DiffieHellmanGroup.GROUP1;
     } else if (ctx.GROUP14() != null) {
