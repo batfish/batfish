@@ -18,11 +18,11 @@ java_library(
     ]),
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
-        "//projects/question:question",
+        "//projects/question",
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "//projects/question:question",
+        "//projects/question",
         "@azure_storage//:compile",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
@@ -72,10 +72,10 @@ junit_tests(
         "@sqlite_jdbc//:compile",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
         ":coordinator",
         ":coordinator_testlib",
-        "//projects/question:question",
+        "//projects/batfish-common-protocol:common",
+        "//projects/question",
         "@commons_io//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",

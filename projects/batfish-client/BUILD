@@ -18,14 +18,14 @@ java_library(
     ]),
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
-        "//projects/question:question",
+        "//projects/question",
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "@commons_io//:compile",
         "@commons_lang3//:compile",
         "@guava//:compile",
-        "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",

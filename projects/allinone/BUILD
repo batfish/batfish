@@ -19,10 +19,10 @@ java_library(
     runtime_deps = [
     ],
     deps = [
-        "//projects/batfish:batfish",
+        "//projects/batfish",
         "//projects/batfish-client:client",
         "//projects/batfish-common-protocol:common",
-        "//projects/coordinator:coordinator",
+        "//projects/coordinator",
         "@commons_lang3//:compile",
         "@guava//:compile",
         "@jaeger_core//:compile",

@@ -16,8 +16,8 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "@auto_service//:compile",
         "//projects/lib/jsonpath",
+        "@auto_service//:compile",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
@@ -36,11 +36,11 @@ junit_tests(
         "@slf4j_jdk14//:runtime",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
         ":question",
+        "//projects/batfish-common-protocol:common",
+        "//projects/lib/jsonpath",
         "@guava//:compile",
         "@hamcrest//:compile",
-        "//projects/lib/jsonpath",
         "@jackson_databind//:compile",
         "@junit//:compile",
     ],
