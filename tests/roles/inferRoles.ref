@@ -10,24 +10,24 @@
         {
           "name" : "auto0",
           "roleRegexes" : [
-            "\\p{Alpha}\\p{Alnum}+\\Q-\\E(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Digit}+"
+            "\\p{Alpha}\\p{Alnum}*\\Q-\\E(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Digit}+"
           ],
           "roles" : [
             {
               "name" : "border",
-              "regex" : "\\p{Alpha}\\p{Alnum}+\\Q-\\Eborder\\p{Alnum}*\\Q-\\E\\p{Digit}+"
+              "regex" : "\\p{Alpha}\\p{Alnum}*\\Q-\\Eborder\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             },
             {
               "name" : "core",
-              "regex" : "\\p{Alpha}\\p{Alnum}+\\Q-\\Ecore\\p{Alnum}*\\Q-\\E\\p{Digit}+"
+              "regex" : "\\p{Alpha}\\p{Alnum}*\\Q-\\Ecore\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             },
             {
               "name" : "leaf",
-              "regex" : "\\p{Alpha}\\p{Alnum}+\\Q-\\Eleaf\\p{Alnum}*\\Q-\\E\\p{Digit}+"
+              "regex" : "\\p{Alpha}\\p{Alnum}*\\Q-\\Eleaf\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             },
             {
               "name" : "spine",
-              "regex" : "\\p{Alpha}\\p{Alnum}+\\Q-\\Espine\\p{Alnum}*\\Q-\\E\\p{Digit}+"
+              "regex" : "\\p{Alpha}\\p{Alnum}*\\Q-\\Espine\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             }
           ],
           "type" : "AUTO"
@@ -35,16 +35,16 @@
         {
           "name" : "auto1",
           "roleRegexes" : [
-            "(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alpha}\\p{Alnum}+\\Q-\\E\\p{Digit}+"
+            "(\\p{Alpha}+)\\p{Alnum}*\\Q-\\E\\p{Alpha}\\p{Alnum}*\\Q-\\E\\p{Digit}+"
           ],
           "roles" : [
             {
               "name" : "bb",
-              "regex" : "bb\\p{Alnum}*\\Q-\\E\\p{Alpha}\\p{Alnum}+\\Q-\\E\\p{Digit}+"
+              "regex" : "bb\\p{Alnum}*\\Q-\\E\\p{Alpha}\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             },
             {
               "name" : "dc",
-              "regex" : "dc\\p{Alnum}*\\Q-\\E\\p{Alpha}\\p{Alnum}+\\Q-\\E\\p{Digit}+"
+              "regex" : "dc\\p{Alnum}*\\Q-\\E\\p{Alpha}\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             }
           ],
           "type" : "AUTO"
