@@ -367,11 +367,6 @@ public class ClientTest {
   }
 
   @Test
-  public void testFillTemplate() {
-    // TODO : XXX
-  }
-
-  @Test
   public void testGenerateDataplaneDeltaInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(GEN_DELTA_DP, new String[] {}, parameters);
