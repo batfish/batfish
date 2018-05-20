@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -18,7 +19,11 @@ public class RowTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
   Row initRowThree() {
-    return new Row().put("col1", "value1").put("col2", "value2").put("col3", "value3");
+    return new RowBuilder()
+        .put("col1", "value1")
+        .put("col2", "value2")
+        .put("col3", "value3")
+        .build();
   }
 
   TableMetadata initMetadataThree(
@@ -39,17 +44,22 @@ public class RowTest {
   @Test
   public void get() {
     // check that non-list values are same after put and get
-    assertThat(new Row().put("col", 42).get("col", Schema.INTEGER), equalTo(42));
+    assertThat(new RowBuilder().put("col", 42).build().get("col", Schema.INTEGER), equalTo(42));
     assertThat(
-        new Row().put("col", new Node("node")).get("col", Schema.NODE), equalTo(new Node("node")));
+        new RowBuilder().put("col", new Node("node")).build().get("col", Schema.NODE),
+        equalTo(new Node("node")));
 
     // check the same for lists
     assertThat(
-        new Row().put("col", ImmutableList.of(4, 2)).get("col", Schema.list(Schema.INTEGER)),
+        new RowBuilder()
+            .put("col", ImmutableList.of(4, 2))
+            .build()
+            .get("col", Schema.list(Schema.INTEGER)),
         equalTo(ImmutableList.of(4, 2)));
     assertThat(
-        new Row()
+        new RowBuilder()
             .put("col", ImmutableList.of(new Node("n1"), new Node("n2")))
+            .build()
             .get("col", Schema.list(Schema.NODE)),
         equalTo(ImmutableList.of(new Node("n1"), new Node("n2"))));
   }
@@ -80,15 +90,15 @@ public class RowTest {
 
   @Test
   public void selectColumns() {
-    Row row = new Row().put("col1", 20).put("col2", 21).put("col3", 24);
+    Row row = new RowBuilder().put("col1", 20).put("col2", 21).put("col3", 24).build();
 
     // check expected results after selecting two columns
-    Row newRow = row.selectColumns(ImmutableSet.of("col1", "col3"));
-    assertThat(newRow, equalTo(new Row().put("col1", 20).put("col3", 24)));
+    Row newRow = Row.selectColumns(row, ImmutableSet.of("col1", "col3"));
+    assertThat(newRow, equalTo(new RowBuilder().put("col1", 20).put("col3", 24).build()));
 
     // selecting a non-existent column throws an exception
     _thrown.expect(NoSuchElementException.class);
     _thrown.expectMessage("is not present");
-    newRow.selectColumns(ImmutableSet.of("col2"));
+    Row.selectColumns(newRow, ImmutableSet.of("col2"));
   }
 }

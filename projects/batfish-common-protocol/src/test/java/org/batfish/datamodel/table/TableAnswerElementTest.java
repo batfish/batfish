@@ -10,6 +10,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Assertion.AssertionType;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -31,8 +32,8 @@ public class TableAnswerElementTest {
   public void testComputeSummary() {
     // generate an answer with two rows
     TableAnswerElement answer = new TableAnswerElementChild(new TableMetadata());
-    answer.addRow(new Row());
-    answer.addRow(new Row());
+    answer.addRow(new RowBuilder().build());
+    answer.addRow(new RowBuilder().build());
 
     Assertion assertion = new Assertion(AssertionType.countequals, new IntNode(1)); // wrong count
     AnswerSummary summary = answer.computeSummary(assertion);
@@ -48,11 +49,11 @@ public class TableAnswerElementTest {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
     TableAnswerElement oneRow = new TableAnswerElementChild(new TableMetadata());
-    oneRow.addRow(new Row());
+    oneRow.addRow(new RowBuilder().build());
 
     TableAnswerElement twoRows = new TableAnswerElementChild(new TableMetadata());
-    twoRows.addRow(new Row());
-    twoRows.addRow(new Row());
+    twoRows.addRow(new RowBuilder().build());
+    twoRows.addRow(new RowBuilder().build());
 
     assertThat(oneRow.evaluateAssertion(twoCount), equalTo(false));
     assertThat(twoRows.evaluateAssertion(twoCount), equalTo(true));
@@ -69,13 +70,13 @@ public class TableAnswerElementTest {
 
     // adding rows in different order shouldn't matter
     TableAnswerElement otherRows = new TableAnswerElementChild(new TableMetadata());
-    otherRows.addRow(new Row().put("key2", "value2"));
-    otherRows.addRow(new Row().put("key1", "value1"));
+    otherRows.addRow(new RowBuilder().put("key2", "value2").build());
+    otherRows.addRow(new RowBuilder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(true));
 
     // adding another duplicate row should matter
-    otherRows.addRow(new Row().put("key1", "value1"));
+    otherRows.addRow(new RowBuilder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
   }

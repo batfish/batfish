@@ -27,9 +27,40 @@ import org.batfish.datamodel.questions.Exclusion;
  */
 public class Row implements Comparable<Row> {
 
+  public static class RowBuilder {
+
+    private final ObjectNode _data;
+
+    public RowBuilder() {
+      _data = BatfishObjectMapper.mapper().createObjectNode();
+    }
+
+    public RowBuilder(Row row) {
+      this();
+      row.getColumnNames().forEach(col -> _data.set(col, row.get(col)));
+    }
+
+    public Row build() {
+      return new Row(_data);
+    }
+
+    /**
+     * Sets the value for the specified column to the specified value. Any existing values for the
+     * column are overwritten
+     *
+     * @param columnName The column to set
+     * @param value The value to set
+     * @return The RowBuilder object itself (to aid chaining)
+     */
+    public RowBuilder put(String columnName, Object value) {
+      _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
+      return this;
+    }
+  }
+
   private final ObjectNode _data;
 
-  public Row() {
+  private Row() {
     this(null);
   }
 
@@ -227,29 +258,16 @@ public class Row implements Comparable<Row> {
   }
 
   /**
-   * Sets the value for the specified column to the specified value. Any existing values for the
-   * column are overwritten
-   *
-   * @param columnName The column to set
-   * @param value The value to set
-   * @return The Row object itself (to aid chaining)
-   */
-  public Row put(String columnName, Object value) {
-    _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
-    return this;
-  }
-
-  /**
    * Returns a new {@link Row} that has only the specified columns from this row.
    *
    * @param columns The columns to keep.
    * @return A new {@link Row} object
    * @throws {@link NoSuchElementException} if one of the specified columns are not present
    */
-  public Row selectColumns(Set<String> columns) {
-    Row retRow = new Row();
-    columns.forEach(col -> retRow.put(col, get(col)));
-    return retRow;
+  public static Row selectColumns(Row inputRow, Set<String> columns) {
+    RowBuilder retRow = new RowBuilder();
+    columns.forEach(col -> retRow.put(col, inputRow.get(col)));
+    return retRow.build();
   }
 
   @Override
