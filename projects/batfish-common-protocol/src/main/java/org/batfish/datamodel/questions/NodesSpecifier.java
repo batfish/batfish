@@ -241,6 +241,7 @@ public class NodesSpecifier {
           NodeRoleDimension roleDimension = batfish.getNodeRoleDimension(_roleDimension);
           return getMatchingNodesByRole(roleDimension, nodes);
         } catch(NoSuchElementException e) {
+          batfish.getLogger().error("Role dimension " + _roleDimension + " not found");
           return Collections.emptySet();
         }
       default:
