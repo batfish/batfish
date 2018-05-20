@@ -2223,7 +2223,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitOgn_network_object(Ogn_network_objectContext ctx) {
-    _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
+    if (ctx.prefix != null) {
+      Prefix prefix = Prefix.parse(ctx.prefix.getText());
+      _currentNetworkObjectGroup.getLines().add(new IpWildcard(prefix));
+    } else if (ctx.prefix_ip != null && ctx.prefix_mask != null) {
+      Ip ip = toIp(ctx.prefix_ip);
+      Ip mask = toIp(ctx.prefix_mask);
+      _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)));
+    } else if (ctx.HOST() != null && ctx.address != null) {
+      Ip ip = toIp(ctx.address);
+      _currentNetworkObjectGroup.getLines().add(new IpWildcard(ip));
+    } else {
+      _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
+    }
   }
 
   @Override

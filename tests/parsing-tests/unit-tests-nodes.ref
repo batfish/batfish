@@ -8836,10 +8836,16 @@
         },
         "ipSpaces" : {
           "dns_servers" : {
-            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+            "whitelist" : [
+              "1.2.2.1"
+            ]
           },
           "ntp_servers" : {
-            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+            "whitelist" : [
+              "1.1.1.1"
+            ]
           }
         },
         "vendorFamily" : {
