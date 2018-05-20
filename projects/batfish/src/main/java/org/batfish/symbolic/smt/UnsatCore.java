@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * A wrapper class that simplifies adding variables to the network model. mkIf debugging is enabled,
+ * A wrapper class that simplifies adding variables to the network model. If debugging is enabled,
  * then it creates new variables to track the state of the other variables in the model. This allows
  * the solver to create a minimal unsat core, which is useful for debugging.
  *
