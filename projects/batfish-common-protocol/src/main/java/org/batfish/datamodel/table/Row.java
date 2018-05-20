@@ -251,9 +251,4 @@ public class Row implements Comparable<Row> {
   public String toString() {
     return _data.toString();
   }
-
-  @Override
-  public String toString() {
-    return _data.toString();
-  }
 }

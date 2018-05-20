@@ -157,47 +157,6 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
-   * Given the JSON representation of a question template and desired values of some parameters in
-   * the template, this functions fills out the template with those values. It also fills the
-   * template with the provided name. The template JSON is modified in place.
-   *
-   * @param questionJson The question template to modify
-   * @param parameters The parameters and values to fill
-   * @param questionName The name to embed in the template
-   */
-  public static void fillTemplate(
-      JSONObject questionJson, Map<String, JsonNode> parameters, String questionName) {
-    JSONObject instanceJson;
-    try {
-      instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
-      instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
-    } catch (JSONException e) {
-      throw new BatfishException("Question is missing instance data", e);
-    }
-    String instanceDataStr = instanceJson.toString();
-    InstanceData instanceData;
-    try {
-      instanceData =
-          BatfishObjectMapper.mapper()
-              .readValue(instanceDataStr, new TypeReference<InstanceData>() {});
-    } catch (IOException e) {
-      throw new BatfishException("Invalid instance data (JSON)", e);
-    }
-    Map<String, Variable> variables = instanceData.getVariables();
-    validateAndSet(parameters, variables);
-    checkVariableState(variables);
-
-    String modifiedInstanceDataStr;
-    try {
-      modifiedInstanceDataStr = BatfishObjectMapper.writePrettyString(instanceData);
-      JSONObject modifiedInstanceData = new JSONObject(modifiedInstanceDataStr);
-      questionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
-    } catch (JSONException | JsonProcessingException e) {
-      throw new BatfishException("Could not process modified instance data", e);
-    }
-  }
-
-  /**
    * For each key in {@code parameters}, validate that its value satisfies the requirements
    * specified by {@code variables} for that specific key. Set value to {@code variables} if
    * validation passed.
@@ -611,7 +570,11 @@ public class Client extends AbstractClient implements IClient {
       questionName = parameters.get("questionName").asText();
       parameters.remove("questionName");
     }
-    Client.fillTemplate(questionJson, parameters, questionName);
+    try {
+      questionJson = QuestionHelper.fillTemplate(questionJson, parameters, questionName);
+    } catch (IOException | JSONException e) {
+      throw new BatfishException("Could not fill template: ", e);
+    }
     String modifiedQuestionStr = questionJson.toString();
 
     boolean questionJsonDifferential;
@@ -3386,12 +3349,8 @@ public class Client extends AbstractClient implements IClient {
   }
 
   /**
-   * Template validation works by 1) filling in the variable values; and 2) then checking if the
-   * resulting template can be properly parsed as a question. These two steps alone do not guard
-   * against extraneous parameters being specified in the question template and then not having
-   * values specified for the instance variables that map to those parameters (because such
-   * parameters are wiped out by template pre-processing). That is why we also required that each
-   * instance variable be specified an value in this valudation
+   * Template validation extracts the question template text and parameters, and then relies on
+   * {@link QuestionHelper#validateTemplate(JSONObject, Map)}
    *
    * @param words The array of command words that led to this function being called
    * @param outWriter The parsed question is written to this FileWriter
@@ -3410,28 +3369,21 @@ public class Client extends AbstractClient implements IClient {
     }
 
     String questionTemplateName = parameters.get(0);
-    String paramsLine =
-        String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length));
-    Map<String, JsonNode> parsedParametes = parseParams(paramsLine);
-
     String questionContentUnmodified = _bfq.get(questionTemplateName.toLowerCase());
     if (questionContentUnmodified == null) {
       throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
     }
-    JSONObject questionJson;
-    try {
-      questionJson = new JSONObject(questionContentUnmodified);
-    } catch (JSONException e) {
-      throw new BatfishException("Question content is not valid JSON", e);
-    }
 
-    Client.fillTemplate(questionJson, parsedParametes, "qname");
-    Question parsedQuestion = Question.parseQuestion(questionJson.toString());
+    Map<String, JsonNode> parsedParameters =
+        parseParams(String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length)));
 
     try {
-      logOutput(outWriter, BatfishObjectMapper.writePrettyString(parsedQuestion));
-    } catch (JsonProcessingException e) {
-      throw new BatfishException("Could not write filled template", e);
+      Question question =
+          QuestionHelper.validateTemplate(
+              new JSONObject(questionContentUnmodified), parsedParameters);
+      logOutput(outWriter, BatfishObjectMapper.writePrettyString(question));
+    } catch (IOException | JSONException e) {
+      throw new BatfishException("Could not create or write question template", e);
     }
 
     return true;

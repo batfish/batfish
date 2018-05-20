@@ -342,18 +342,7 @@ public abstract class Question implements IQuestion {
   public static boolean isQuestionClass(String className) {
     try {
       Class<?> clazz = Class.forName(className);
-      if (clazz.isInstance(
-          new Question() {
-            @Override
-            public boolean getDataPlane() {
-              return false;
-            }
-
-            @Override
-            public String getName() {
-              return null;
-            }
-          })) {
+      if (Question.class.isAssignableFrom(clazz)) {
         return true;
       } else {
         return false;
@@ -414,11 +403,10 @@ public abstract class Question implements IQuestion {
           JsonNode value = variable.getValue();
           if (value == null) {
             if (variable.getOptional()) {
-              /*
-               * Recursively look for all key, value pairs and remove keys
-               * whose value is "${varName}." Is this fragile?
-               * To be doubly sure, we do this only for keys with a sibling key "class" that is a
-               * Question class
+              /**
+               * Recursively look for all key, value pairs and remove keys whose value is
+               * "${varName}." Is this fragile? To be doubly sure, we do this only for keys with a
+               * sibling key "class" that is a Question class
                */
               recursivelyRemoveOptionalVar(jobj, varName);
             } else {
