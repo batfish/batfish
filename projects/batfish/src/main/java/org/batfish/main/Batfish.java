@@ -157,9 +157,6 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
-import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
-import org.batfish.grammar.topology.GNS3TopologyExtractor;
-import org.batfish.grammar.topology.TopologyExtractor;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.job.BatfishJobExecutor;
@@ -2945,31 +2942,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Topology parseTopology(Path topologyFilePath) {
     _logger.info("*** PARSING TOPOLOGY ***\n");
-    _logger.resetTimer();
     String topologyFileText = CommonUtil.readFile(topologyFilePath);
-    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
-    Topology topology = null;
-    if (topologyFileText.equals("")) {
+    if (topologyFileText.trim().isEmpty()) {
       throw new BatfishException("ERROR: empty topology\n");
-    } else if (topologyFileText.startsWith("autostart")) {
-      BatfishCombinedParser<?, ?> parser = null;
-      TopologyExtractor extractor = null;
-      parser = new GNS3TopologyCombinedParser(topologyFileText, _settings);
-      extractor = new GNS3TopologyExtractor();
-      ParserRuleContext tree = parse(parser);
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(extractor, tree);
-      topology = extractor.getTopology();
-    } else {
-      try {
-        topology = BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
-      } catch (IOException e) {
-        _logger.fatal("...ERROR\n");
-        throw new BatfishException("Topology format error", e);
-      }
     }
-    _logger.printElapsedTime();
-    return topology;
+    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
+    try {
+      return BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
+    } catch (IOException e) {
+      _logger.fatal("...ERROR\n");
+      throw new BatfishException("Topology format error " + e.getMessage(), e);
+    }
   }
 
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(
