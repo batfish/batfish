@@ -48,9 +48,10 @@ script:
 # Cache the Maven dependencies installed.
 cache:
   directories:
-  - $HOME/.m2
   - $HOME/.batfish_z3_cache
   - $HOME/.bazel_repository_cache
+  - $HOME/.cache/bazel
+  - $HOME/.m2
 
 # Delete the batfish jars, which change every build, from the cache.
 # Also delete the locally-built jars, which are installed every build.
