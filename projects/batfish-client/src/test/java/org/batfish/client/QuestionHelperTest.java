@@ -35,7 +35,7 @@ public class QuestionHelperTest {
   }
 
   @Test
-  public void fillTemplateExtraParameter() throws JSONException, IOException {
+  public void validateTemplateExtraParameter() throws JSONException, IOException {
     JSONObject template =
         new JSONObject(CommonUtil.readResource("org/batfish/client/extraParameter.json"));
 
@@ -44,7 +44,9 @@ public class QuestionHelperTest {
 
     JSONObject filledTempate =
         QuestionHelper.fillTemplate(
-            template, ImmutableSortedMap.of("parameter1", new IntNode(2)), "qname");
+            template,
+            ImmutableSortedMap.of("parameter1", new IntNode(2), "parameter2", new IntNode(2)),
+            "qname");
     QuestionHelperTestQuestion question =
         (QuestionHelperTestQuestion) Question.parseQuestion(filledTempate.toString());
   }
