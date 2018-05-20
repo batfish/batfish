@@ -47,4 +47,17 @@ public class VendorConfigurationFormatDetectorTest {
           equalTo(ConfigurationFormat.CISCO_NX));
     }
   }
+
+  @Test
+  public void recognizePaloAlto() {
+    String rancid = "!RANCID-CONTENT-TYPE: paloalto\n!\n";
+    String panorama = "deviceconfig {\n  system {\n    panorama-server 1.2.3.4;\n  }\n}";
+    String sendPanorama = "alarm {\n  informational {\n    send-to-panorama yes;\n  }\n}";
+
+    for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama)) {
+      assertThat(
+          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
+          equalTo(ConfigurationFormat.PALO_ALTO));
+    }
+  }
 }
