@@ -32,7 +32,6 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/eos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/nxos",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/topology",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/vyos",
         "//projects/lib/bdd",
         "//projects/lib/z3",
