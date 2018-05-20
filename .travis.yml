@@ -13,6 +13,7 @@ matrix:
   - env: BF_BUILDER="bazel" V="0.13.0"
 
 before_install:
+  - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
   - .travis/fix_java_format.sh
   - |
     if [[ "${TRAVIS_OS_NAME}" == "osx" ]]; then
@@ -63,3 +64,4 @@ before_cache:
   - rm -rf $HOME/.m2/repository/com/microsoft/z3/z3/
   - rm -rf $HOME/.m2/repository/net/sf/javabdd/bdd/
   - rm -rf $HOME/.m2/repository/org/batfish
+  - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
