@@ -39,7 +39,7 @@ script:
       --batch \
       --host_jvm_args=-Xmx500m \
       --host_jvm_args=-Xms500m \
-      build \
+      test \
       --experimental_repository_cache="$HOME/.bazel_repository_cache" \
       //...
     fi
