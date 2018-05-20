@@ -81,13 +81,13 @@ maven_repository(
     ],
 	  force = [
         'com.fasterxml.jackson.core:jackson-core:2.9.0',
-        'org.apache.commons:commons-lang3:3.6',
+        'org.apache.commons:commons-lang3:3.7',
         'org.slf4j:slf4j-api:1.7.25',
     ],
     transitive_deps = [
         '88e7c6220be3b3497b3074d3fc7754213289b987:com.fasterxml.jackson.core:jackson-core:2.9.0',
         'b970c65a38da0569013e0c76de7c404f842496c2:com.microsoft.azure:azure-storage:2.0.0',
-        '9d28a6b23650e8a7e9063c04588ace6cf7012c17:org.apache.commons:commons-lang3:3.6',
+        '557edd918fd41f9260963583ebf5a61a43a6b423:org.apache.commons:commons-lang3:3.7',
         'da76ca59f6a57ee3102f8f9bd9cee742973efa8a:org.slf4j:slf4j-api:1.7.25',
     ],
 )
@@ -139,12 +139,12 @@ maven_repository(
         'org.apache.commons:commons-configuration2:2.2',
     ],
     force = [
-        'org.apache.commons:commons-lang3:3.6',
+        'org.apache.commons:commons-lang3:3.7',
     ],
     transitive_deps = [
         '4bfc12adfe4842bf07b657f0369c4cb522955686:commons-logging:commons-logging:1.2',
         '5ee9a0c14ac47e8c78d7f573bea1867f0d3b2894:org.apache.commons:commons-configuration2:2.2',
-        '9d28a6b23650e8a7e9063c04588ace6cf7012c17:org.apache.commons:commons-lang3:3.6',
+        '557edd918fd41f9260963583ebf5a61a43a6b423:org.apache.commons:commons-lang3:3.7',
     ],
 )
 load('@commons_configuration2//:rules.bzl', 'commons_configuration2_compile')
@@ -153,10 +153,10 @@ commons_configuration2_compile()
 maven_repository(
     name = 'commons_lang3',
     deps = [
-        'org.apache.commons:commons-lang3:3.6',
+        'org.apache.commons:commons-lang3:3.7',
     ],
     transitive_deps = [
-        '9d28a6b23650e8a7e9063c04588ace6cf7012c17:org.apache.commons:commons-lang3:3.6',
+        '557edd918fd41f9260963583ebf5a61a43a6b423:org.apache.commons:commons-lang3:3.7',
     ],
 )
 load('@commons_lang3//:rules.bzl', 'commons_lang3_compile')
@@ -857,10 +857,10 @@ maven_repository(
         'org.apache.maven:maven-artifact:3.5.0',
     ],
     force = [
-        'org.apache.commons:commons-lang3:3.6',
+        'org.apache.commons:commons-lang3:3.7',
     ],
     transitive_deps = [
-        '9d28a6b23650e8a7e9063c04588ace6cf7012c17:org.apache.commons:commons-lang3:3.6',
+        '557edd918fd41f9260963583ebf5a61a43a6b423:org.apache.commons:commons-lang3:3.7',
         '452acdffbb7fcb272db66685dd54983ce2e07f93:org.apache.maven:maven-artifact:3.5.0',
         'b4ac9780b37cb1b736eae9fbcef27609b7c911ef:org.codehaus.plexus:plexus-utils:3.0.24',
     ],
