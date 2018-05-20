@@ -7,7 +7,10 @@ java_library(
     srcs = glob([
         "src/main/**/*.java",
     ]),
-    resources = glob(["src/main/resources/**"]),
+    resources = [
+        "src/main/resources/org/batfish/common/util/salt",
+        "src/generated/resources/org/batfish/common/common.properties",
+    ],
     runtime_deps = [
         "@commons_beanutils//:runtime",
     ],
@@ -125,4 +128,19 @@ java -cp $(location //third_party/org/antlr4/antlr4-complete) \
     -encoding UTF-8 \
     -o $(@D)""",
     tools = ["//third_party/org/antlr4/antlr4-complete"],
+)
+
+genrule(
+    name = "common_properties",
+    srcs = [
+        "src/main/resources/org/batfish/common/common.properties",
+        "//projects:pom.xml",
+    ],
+    outs = [
+        "src/generated/resources/org/batfish/common/common.properties",
+    ],
+    cmd = """
+BATFISH_VERSION="$$(grep -1 batfish-parent $(location //projects:pom.xml) | grep version | sed 's/[<>]/|/g' | cut -f3 -d\|)"
+sed s/\$${project.version}/$${BATFISH_VERSION}/ $(location src/main/resources/org/batfish/common/common.properties) > "$@"
+""",
 )
