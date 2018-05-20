@@ -28,3 +28,22 @@ java_library(
         "@jaeger_core//:compile",
     ],
 )
+
+junit_tests(
+    name = "allinone_tests",
+    size = "small",
+    srcs = glob([
+        "src/test/**/*Test.java",
+    ]),
+    deps = [
+        ":allinone",
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
+        "//projects/question",
+        "@guava//:compile",
+        "@hamcrest//:compile",
+        "@junit//:compile",
+    ],
+)
