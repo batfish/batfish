@@ -31,11 +31,15 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
+import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
+import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
+import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -1103,7 +1107,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsPreferencesBehavior() throws IOException {
+  public void testPsPreferenceBehavior() throws IOException {
     Configuration c = parseConfig("policy-statement-preference");
 
     RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
@@ -1146,11 +1150,9 @@ public class FlatJuniperGrammarTest {
     MatcherAssert.assertThat(
         Iterables.getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
 
-    // Extracting the SetAdmininstrativeCost trueStatement
-    SetAdministrativeCost setAdminCost =
-        (SetAdministrativeCost) Iterables.getOnlyElement(i.getTrueStatements());
-
-    assertThat(setAdminCost.getAdmin().evaluate(eb.build()), equalTo(123));
+    assertThat(
+        Iterables.getOnlyElement(i.getTrueStatements()),
+        isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
   }
 
   @Test

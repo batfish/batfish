@@ -5,6 +5,10 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
 
+/**
+ * Type of {@link Statement} to set the administrative cost of output route present in the {@link
+ * Environment}
+ */
 public class SetAdministrativeCost extends Statement {
 
   /** */

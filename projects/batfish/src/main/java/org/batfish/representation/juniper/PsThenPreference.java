@@ -7,6 +7,10 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 
+/**
+ * Represents the action in Juniper's routing policy(policy statement) which sets the preference for
+ * a matched route
+ */
 public final class PsThenPreference extends PsThen {
 
   /** */
