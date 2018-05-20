@@ -44,4 +44,5 @@ junit_tests(
         "@jackson_databind//:compile",
         "@junit//:compile",
     ],
+    size = "small",
 )

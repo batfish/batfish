@@ -91,6 +91,7 @@ junit_tests(
         "@opentracing_mock//:compile",
         "@opentracing_util//:compile",
     ],
+    size = "small",
 )
 
 java_library(

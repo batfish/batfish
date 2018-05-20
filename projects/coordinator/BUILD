@@ -88,4 +88,5 @@ junit_tests(
         "@jettison//:compile",
         "@junit//:compile",
     ],
+    size = "small",
 )

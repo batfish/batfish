@@ -56,4 +56,5 @@ junit_tests(
         "@jackson_databind//:compile",
         "@jettison//:compile",
     ],
+    size = "small",
 )
