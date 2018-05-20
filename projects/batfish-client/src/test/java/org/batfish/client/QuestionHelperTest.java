@@ -42,13 +42,9 @@ public class QuestionHelperTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Unrecognized field");
 
-    JSONObject filledTempate =
-        QuestionHelper.fillTemplate(
-            template,
-            ImmutableSortedMap.of("parameter1", new IntNode(2), "parameter2", new IntNode(2)),
-            "qname");
-    QuestionHelperTestQuestion question =
-        (QuestionHelperTestQuestion) Question.parseQuestion(filledTempate.toString());
+    QuestionHelper.validateTemplate(
+        template,
+        ImmutableSortedMap.of("parameter1", new IntNode(2), "parameter2", new IntNode(2)));
   }
 
   @Test
@@ -59,10 +55,24 @@ public class QuestionHelperTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Unused variable");
 
-    Question question =
-        QuestionHelper.validateTemplate(
-            template,
-            ImmutableSortedMap.of("parameter1", new IntNode(1), "parameter2EXTRA", new IntNode(2)));
+    QuestionHelper.validateTemplate(
+        template,
+        ImmutableSortedMap.of("parameter1", new IntNode(1), "parameter2EXTRA", new IntNode(2)));
+  }
+
+  @Test
+  public void validateTemplateSuccess() throws JSONException, IOException {
+    JSONObject template =
+        new JSONObject(CommonUtil.readResource("org/batfish/client/goodTemplate.json"));
+
+    QuestionHelperTestQuestion question =
+        (QuestionHelperTestQuestion)
+            QuestionHelper.validateTemplate(
+                template,
+                ImmutableSortedMap.of("parameter1", new IntNode(1), "parameter2", new IntNode(3)));
+
+    assertThat(question.getParameterMandatory(), equalTo(1));
+    assertThat(question.getParameterOptional(), equalTo(3));
   }
 
   @Test
@@ -73,8 +83,6 @@ public class QuestionHelperTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Template validation should exercise all variables");
 
-    Question question =
-        QuestionHelper.validateTemplate(
-            template, ImmutableSortedMap.of("parameter1", new IntNode(1)));
+    QuestionHelper.validateTemplate(template, ImmutableSortedMap.of("parameter1", new IntNode(1)));
   }
 }

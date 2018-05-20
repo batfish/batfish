@@ -79,8 +79,9 @@ public class QuestionHelper {
    * @param questionJson The {@link JSONObject} that represents the question
    * @param parsedParameters The map of parameter name to value
    * @return The {@link Question} after parameter filling
-   * @throws JSONException
-   * @throws IOException
+   * @throws JSONException If instance data cannot be read from the template or {@link
+   *     #fillTemplate(JSONObject, Map, String)} throws an exception
+   * @throws IOException If {@link #fillTemplate(JSONObject, Map, String)} throws an exception
    */
   static Question validateTemplate(JSONObject questionJson, Map<String, JsonNode> parsedParameters)
       throws JSONException, IOException {
