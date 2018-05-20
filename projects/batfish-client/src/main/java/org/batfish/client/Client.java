@@ -3383,7 +3383,8 @@ public class Client extends AbstractClient implements IClient {
               new JSONObject(questionContentUnmodified), parsedParameters);
       logOutput(outWriter, BatfishObjectMapper.writePrettyString(question));
     } catch (IOException | JSONException e) {
-      throw new BatfishException("Could not create or write question template", e);
+      throw new BatfishException(
+          "Could not create or write question template: " + e.getMessage(), e);
     }
 
     return true;
