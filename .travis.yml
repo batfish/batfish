@@ -41,6 +41,9 @@ script:
       --host_jvm_args=-Xmx500m \
       --host_jvm_args=-Xms500m \
       test \
+      --jobs=4 \
+      --curses=no \
+      --verbose_failures \
       --experimental_repository_cache="$HOME/.bazel_repository_cache" \
       //...
     fi
