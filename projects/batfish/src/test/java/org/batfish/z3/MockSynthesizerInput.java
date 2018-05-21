@@ -41,6 +41,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, String>> _incomingAcls;
 
+    private Map<IngressLocation, BooleanExpr> _srcIpConstraints;
+
     private Map<String, Set<Ip>> _ipsByHostname;
 
     private Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
@@ -85,6 +87,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledNodes = ImmutableSet.of();
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
+      _srcIpConstraints = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
       _ipsByNodeVrf = ImmutableMap.of();
       _namedIpSpaces = ImmutableMap.of();
@@ -151,6 +154,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     public Builder setIncomingAcls(Map<String, Map<String, String>> incomingAcls) {
       _incomingAcls = incomingAcls;
+      return this;
+    }
+
+    public Builder setSrcIpConstraints(Map<IngressLocation, BooleanExpr> srcIpConstraints) {
+      _srcIpConstraints = ImmutableMap.copyOf(srcIpConstraints);
       return this;
     }
 
@@ -274,6 +282,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _incomingAcls;
 
+  private final Map<IngressLocation, BooleanExpr> _srcIpConstraints;
+
   private final Map<String, Set<Ip>> _ipsByHostname;
 
   private final Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
@@ -319,6 +329,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _enabledNodes = builder._enabledNodes;
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
+    _srcIpConstraints = builder._srcIpConstraints;
     _ipsByHostname = builder._ipsByHostname;
     _ipsByNodeVrf = builder._ipsByNodeVrf;
     _neighborUnreachable = builder._neighborUnreachable;
@@ -387,6 +398,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Map<String, String>> getIncomingAcls() {
     return _incomingAcls;
+  }
+
+  @Override
+  public Map<IngressLocation, BooleanExpr> getSrcIpConstraints() {
+    return _srcIpConstraints;
   }
 
   @Override

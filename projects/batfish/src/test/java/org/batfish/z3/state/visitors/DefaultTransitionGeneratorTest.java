@@ -59,7 +59,7 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
-import org.batfish.z3.state.OriginateInterface;
+import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
@@ -1494,7 +1494,7 @@ public class DefaultTransitionGeneratorTest {
   public void testVisitPreInInterface() {
     SynthesizerInput input =
         MockSynthesizerInput.builder()
-            // enabledInterface affects which OriginateInterface rules are generated
+            // enabledInterface affects which OriginateInterfaceLink rules are generated
             .setEnabledInterfaces(
                 ImmutableMap.of(
                     NODE1, ImmutableSet.of(INTERFACE1, INTERFACE2, INTERFACE3),
@@ -1548,7 +1548,7 @@ public class DefaultTransitionGeneratorTest {
                         new EqExpr(new VarIntExpr(SRC_INTERFACE_FIELD), i(1)),
                         // transit nodes constraint
                         TrueExpr.INSTANCE)),
-                new OriginateInterface(NODE1, INTERFACE1),
+                new OriginateInterfaceLink(NODE1, INTERFACE1),
                 new PreInInterface(NODE1, INTERFACE1))));
 
     assertThat(
@@ -1560,7 +1560,7 @@ public class DefaultTransitionGeneratorTest {
                         new EqExpr(new VarIntExpr(SRC_INTERFACE_FIELD), i(2)),
                         // transit nodes constraint
                         TrueExpr.INSTANCE)),
-                new OriginateInterface(NODE1, INTERFACE2),
+                new OriginateInterfaceLink(NODE1, INTERFACE2),
                 new PreInInterface(NODE1, INTERFACE2))));
 
     assertThat(
@@ -1572,7 +1572,7 @@ public class DefaultTransitionGeneratorTest {
                         new EqExpr(new VarIntExpr(SRC_INTERFACE_FIELD), i(3)),
                         // transit nodes constraint
                         TrueExpr.INSTANCE)),
-                new OriginateInterface(NODE1, INTERFACE3),
+                new OriginateInterfaceLink(NODE1, INTERFACE3),
                 new PreInInterface(NODE1, INTERFACE3))));
 
     assertThat(
@@ -1584,7 +1584,7 @@ public class DefaultTransitionGeneratorTest {
                         NO_SRC_INTERFACE_FIELD,
                         // transit nodes constraint
                         TrueExpr.INSTANCE)),
-                new OriginateInterface(NODE2, INTERFACE1),
+                new OriginateInterfaceLink(NODE2, INTERFACE1),
                 new PreInInterface(NODE2, INTERFACE1))));
 
     assertThat(
@@ -1596,7 +1596,7 @@ public class DefaultTransitionGeneratorTest {
                         NO_SRC_INTERFACE_FIELD,
                         // transit nodes constraint
                         TrueExpr.INSTANCE)),
-                new OriginateInterface(NODE2, INTERFACE2),
+                new OriginateInterfaceLink(NODE2, INTERFACE2),
                 new PreInInterface(NODE2, INTERFACE2))));
 
     assertThat(
@@ -1608,7 +1608,7 @@ public class DefaultTransitionGeneratorTest {
                         NO_SRC_INTERFACE_FIELD,
                         // transit nodes constraint
                         TrueExpr.INSTANCE)),
-                new OriginateInterface(NODE2, INTERFACE2),
+                new OriginateInterfaceLink(NODE2, INTERFACE2),
                 new PreInInterface(NODE2, INTERFACE2))));
 
     // PostOutNeighbor

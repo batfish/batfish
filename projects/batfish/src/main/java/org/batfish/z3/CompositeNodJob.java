@@ -6,7 +6,6 @@ import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 
@@ -22,9 +21,8 @@ public class CompositeNodJob extends AbstractNodJob {
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
-      SortedSet<IngressPoint> ingressPoints,
       String tag) {
-    super(settings, ingressPoints, tag);
+    super(settings, null, tag);
     _numPrograms = dataPlaneSynthesizer.size();
     if (_numPrograms != querySynthesizer.size()) {
       throw new BatfishException("mismatch between number of programs and number of queries");
