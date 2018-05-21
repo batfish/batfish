@@ -14,7 +14,9 @@ import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TcpFlags;
@@ -328,6 +330,7 @@ public class BDDNetFactory {
    * field in BDDRoute and/or BDDPacket.
    */
   public class SatAssigment {
+    private IpProtocol _ipProtocol;
     private Ip _dstIp;
     private Ip _srcIp;
     private int _dstPort;
@@ -343,7 +346,15 @@ public class BDDNetFactory {
     private TcpFlags _tcpFlags;
     private String _srcRouter;
     private String _dstRouter;
-    private RoutingProtocol _protocol;
+    private RoutingProtocol _routingProtocol;
+
+    public IpProtocol getIpProtocol() {
+      return _ipProtocol;
+    }
+
+    public void setIpProtocol(IpProtocol ipProtocol) {
+      this._ipProtocol = ipProtocol;
+    }
 
     public Ip getDstIp() {
       return _dstIp;
@@ -465,12 +476,34 @@ public class BDDNetFactory {
       this._dstRouter = dstRouter;
     }
 
-    public RoutingProtocol getProtocol() {
-      return _protocol;
+    public RoutingProtocol getRoutingProtocol() {
+      return _routingProtocol;
     }
 
-    public void setProtocol(RoutingProtocol protocol) {
-      this._protocol = protocol;
+    public void setRoutingProtocol(RoutingProtocol protocol) {
+      this._routingProtocol = protocol;
+    }
+
+    public Flow toFlow() {
+      Flow.Builder builder = Flow.builder();
+      builder.setTag("AI");
+      builder.setIngressNode(getSrcRouter());
+      builder.setDstIp(getDstIp());
+      builder.setSrcIp(getSrcIp());
+      builder.setDstPort(getDstPort());
+      builder.setSrcPort(getSrcPort());
+      builder.setIpProtocol(getIpProtocol());
+      builder.setIcmpCode(getIcmpCode());
+      builder.setIcmpType(getIcmpType());
+      builder.setTcpFlagsAck(getTcpFlags().getAck() ? 1 : 0);
+      builder.setTcpFlagsSyn(getTcpFlags().getSyn() ? 1 : 0);
+      builder.setTcpFlagsCwr(getTcpFlags().getCwr() ? 1 : 0);
+      builder.setTcpFlagsEce(getTcpFlags().getEce() ? 1 : 0);
+      builder.setTcpFlagsFin(getTcpFlags().getFin() ? 1 : 0);
+      builder.setTcpFlagsPsh(getTcpFlags().getPsh() ? 1 : 0);
+      builder.setTcpFlagsRst(getTcpFlags().getRst() ? 1 : 0);
+      builder.setTcpFlagsUrg(getTcpFlags().getUrg() ? 1 : 0);
+      return builder.build();
     }
   }
 
@@ -498,6 +531,7 @@ public class BDDNetFactory {
   }
 
   private SatAssigment sat(byte[] variables) {
+    int ipProtocol = 0;
     long dstIp = 0;
     long srcIp = 0;
     int prefixLen = 0;
@@ -518,7 +552,9 @@ public class BDDNetFactory {
       byte var = variables[i];
       boolean isTrue = (var == 1);
       if (isTrue) {
-        if (_config.getKeepProtocol()
+        if (i >= _indexIpProto && i < _indexIpProto + _numBitsIpProto) {
+          ipProtocol += byIndex(_indexIpProto, _numBitsIpProto, i);
+        } else if (_config.getKeepProtocol()
             && i >= _indexRoutingProtocol
             && i < _indexRoutingProtocol + _numBitsRoutingProtocol) {
           proto += (1 << i - _indexRoutingProtocol);
@@ -589,6 +625,7 @@ public class BDDNetFactory {
     }
 
     SatAssigment entry = new SatAssigment();
+    entry.setIpProtocol(IpProtocol.fromNumber(ipProtocol));
     entry.setDstIp(new Ip(dstIp));
     entry.setSrcIp(new Ip(srcIp));
     entry.setDstPort(dstPort);
@@ -598,7 +635,7 @@ public class BDDNetFactory {
     entry.setTcpFlags(tcpFlags.build());
     entry.setDstRouter(getRouter(dstRouter));
     entry.setSrcRouter(getRouter(srcRouter));
-    entry.setProtocol(Protocol.toRoutingProtocol(getAllProtos().get(proto)));
+    entry.setRoutingProtocol(Protocol.toRoutingProtocol(getAllProtos().get(proto)));
     entry.setPrefixLen(prefixLen);
     entry.setAdminDist(adminDist);
     entry.setLocalPref(localPref);
@@ -607,6 +644,8 @@ public class BDDNetFactory {
     entry.setOspfMetric(ospfMetric);
     return entry;
   }
+
+
 
   /*
    * BDD encoding of a route message. This includes things like

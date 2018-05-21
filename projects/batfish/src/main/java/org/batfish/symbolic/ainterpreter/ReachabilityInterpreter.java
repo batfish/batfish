@@ -1,6 +1,7 @@
 package org.batfish.symbolic.ainterpreter;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -17,19 +18,21 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.answers.StringAnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.answers.AiReachabilityAnswerElement;
 import org.batfish.symbolic.answers.AiRoutesAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
+import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetConfig;
 import org.batfish.symbolic.bdd.BDDNetFactory;
@@ -483,7 +486,7 @@ public class ReachabilityInterpreter {
       List<SatAssigment> entries = _netFactory.allSat(rib);
       for (SatAssigment entry : entries) {
         Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
-        RibEntry r = new RibEntry(router, p, entry.getProtocol(), entry.getDstRouter());
+        RibEntry r = new RibEntry(router, p, entry.getRoutingProtocol(), entry.getDstRouter());
         ribEntries.add(r);
       }
       routesByHostname.put(router, ribEntries);
@@ -495,20 +498,21 @@ public class ReachabilityInterpreter {
     return answer;
   }
 
+  private BDD isRouter(BDDFiniteDomain<String> fdom, NodesSpecifier ns) {
+    BDD isRouter = _netFactory.zero();
+    for (String router : ns.getMatchingNodesByName(_graph.getRouters())) {
+      BDD r = fdom.value(router);
+      isRouter.orWith(r);
+    }
+    return isRouter;
+  }
+
   private BDD query(HeaderLocationQuestion question) {
     NodesSpecifier ingress = new NodesSpecifier(question.getIngressNodeRegex());
     NodesSpecifier egress = new NodesSpecifier(question.getFinalNodeRegex());
     BDD headerspace = BDDUtils.headerspaceToBdd(_netFactory, question.getHeaderSpace());
-    BDD startRouter = _netFactory.zero();
-    BDD finalRouter = _netFactory.zero();
-    for (String router : ingress.getMatchingNodesByName(_graph.getRouters())) {
-      BDD r = _variables.getSrcRouter().value(router);
-      startRouter.orWith(r);
-    }
-    for (String router : egress.getMatchingNodesByName(_graph.getRouters())) {
-      BDD r = _variables.getDstRouter().value(router);
-      finalRouter.orWith(r);
-    }
+    BDD startRouter = isRouter(_variables.getSrcRouter(), ingress);
+    BDD finalRouter = isRouter(_variables.getDstRouter(), egress);
     return startRouter.and(finalRouter).and(headerspace);
   }
 
@@ -521,21 +525,24 @@ public class ReachabilityInterpreter {
     System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
     BDD query = query(question);
     BDD subset = query.and(fibs);
-
-    if (subset.isZero()) {
-      return new StringAnswerElement("No matching example");
-    } else {
-      List<SatAssigment> assignments = _netFactory.satOne(subset);
-      StringBuilder answer = new StringBuilder();
-      for (SatAssigment assignment : assignments) {
-        answer
-            .append("From ")
-            .append(assignment.getSrcRouter())
-            .append(" to ")
-            .append(assignment.getDstRouter());
-        answer.append(" for dstIp=").append(assignment.getDstIp());
+    List<AbstractFlowTrace> traces = new ArrayList<>();
+    NodesSpecifier ns = new NodesSpecifier(question.getIngressNodeRegex());
+    for (String srcRouter : ns.getMatchingNodesByName(_graph.getRouters())) {
+      BDD src = _variables.getSrcRouter().value(srcRouter);
+      BDD matchingFromSrc = subset.and(src);
+      if (matchingFromSrc.isZero()) {
+        continue;
       }
-      return new StringAnswerElement("Example found\n" + answer);
+      SatAssigment assignment = _netFactory.satOne(subset).get(0);
+      Flow flow = assignment.toFlow();
+      AbstractFlowTrace trace = new AbstractFlowTrace();
+      trace.setIngressRouter(srcRouter);
+      trace.setFinalRouter(assignment.getDstRouter());
+      trace.setFlow(flow);
+      traces.add(trace);
     }
+    AiReachabilityAnswerElement answer = new AiReachabilityAnswerElement();
+    answer.setAbstractFlowTraces(traces);
+    return answer;
   }
 }
