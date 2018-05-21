@@ -679,26 +679,26 @@ public class BDDNetFactory {
       }
     }
 
-    SatAssigment entry = new SatAssigment();
-    entry.setIpProtocol(IpProtocol.fromNumber(ipProtocol));
-    entry.setDstIp(new Ip(dstIp));
-    entry.setSrcIp(new Ip(srcIp));
-    entry.setDstPort(dstPort);
-    entry.setSrcPort(srcPort);
-    entry.setIcmpCode(icmpCode);
-    entry.setIcmpType(icmpType);
-    entry.setTcpFlags(tcpFlags.build());
-    entry.setDstRouter(getRouter(dstRouter));
-    entry.setSrcRouter(getRouter(srcRouter));
-    entry.setRoutingProtocol(Protocol.toRoutingProtocol(getAllProtos().get(proto)));
-    entry.setPrefixLen(prefixLen);
-    entry.setAdminDist(adminDist);
-    entry.setLocalPref(localPref);
-    entry.setMed(med);
-    entry.setMetric(metric);
-    entry.setOspfMetric(ospfMetric);
-    entry.setCommunities(cvars);
-    return entry;
+    SatAssigment assignment = new SatAssigment();
+    assignment.setIpProtocol(IpProtocol.fromNumber(ipProtocol));
+    assignment.setDstIp(new Ip(dstIp));
+    assignment.setSrcIp(new Ip(srcIp));
+    assignment.setDstPort(dstPort);
+    assignment.setSrcPort(srcPort);
+    assignment.setIcmpCode(icmpCode);
+    assignment.setIcmpType(icmpType);
+    assignment.setTcpFlags(tcpFlags.build());
+    assignment.setDstRouter(getRouter(dstRouter));
+    assignment.setSrcRouter(getRouter(srcRouter));
+    assignment.setRoutingProtocol(Protocol.toRoutingProtocol(getAllProtos().get(proto)));
+    assignment.setPrefixLen(prefixLen);
+    assignment.setAdminDist(adminDist);
+    assignment.setLocalPref(localPref);
+    assignment.setMed(med);
+    assignment.setMetric(metric);
+    assignment.setOspfMetric(ospfMetric);
+    assignment.setCommunities(cvars);
+    return assignment;
   }
 
   /*
