@@ -20,9 +20,9 @@ public class AclLinesNewAnswerElement extends TableAnswerElement implements AclL
   public static final String COL_NODES = "nodes";
   public static final String COL_ACL = "acl";
   public static final String COL_LINES = "lines";
-  public static final String COL_BLOCKED_LINE_NUM = "blockedlinenum";
-  public static final String COL_BLOCKING_LINE_NUMS = "blockinglinenums";
-  public static final String COL_DIFF_ACTION = "differentaction";
+  public static final String COL_BLOCKED_LINE_NUM = "blockedLineNum";
+  public static final String COL_BLOCKING_LINE_NUMS = "blockingLineNums";
+  public static final String COL_DIFF_ACTION = "differentAction";
   public static final String COL_MESSAGE = "message";
 
   private SortedMap<String, SortedMap<String, AclSpecs>> _equivalenceClasses = new TreeMap<>();
