@@ -548,8 +548,10 @@ import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogn_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
@@ -2203,6 +2205,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitOgn_group_object(Ogn_group_objectContext ctx) {
+    _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
+  }
+
+  @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)));
   }
@@ -2212,6 +2219,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)));
+  }
+
+  @Override
+  public void exitOgn_network_object(Ogn_network_objectContext ctx) {
+    _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
   }
 
   @Override
@@ -7954,7 +7966,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.DEC() != null) {
       int num = toInteger(ctx.DEC());
       return IpProtocol.fromNumber(num);
-    } else if (ctx.AHP() != null) {
+    } else if (ctx.AH() != null || ctx.AHP() != null) {
+      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol
       return IpProtocol.AHP;
     } else if (ctx.EIGRP() != null) {
       return IpProtocol.EIGRP;
