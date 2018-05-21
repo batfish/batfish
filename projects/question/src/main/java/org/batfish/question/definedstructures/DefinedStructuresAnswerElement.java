@@ -11,6 +11,7 @@ import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -66,12 +67,12 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   static Row toRow(DefinedStructureRow info) {
-    Row row = new Row();
+    RowBuilder row = Row.builder();
     row.put(COL_DEFINITION_LINES, info.getDefinitionLines())
         .put(COL_NODE_NAME, info.getNodeName())
         .put(COL_NUM_REFERENCES, info.getNumReferences())
         .put(COL_STRUCT_NAME, new Node(info.getStructName()))
         .put(COL_STRUCT_TYPE, info.getStructType());
-    return row;
+    return row.build();
   }
 }

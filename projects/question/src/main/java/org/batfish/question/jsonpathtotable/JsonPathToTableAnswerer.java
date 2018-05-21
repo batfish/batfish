@@ -22,6 +22,7 @@ import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 
@@ -114,7 +115,7 @@ public class JsonPathToTableAnswerer extends Answerer {
     computeExtractions(extractions, jpResult, answerValues);
     doCompositions(compositions, extractions, answerValues);
 
-    Row row = new Row();
+    RowBuilder row = Row.builder();
     Iterator<String> iterator = answerValues.fieldNames();
     while (iterator.hasNext()) {
       String columnName = iterator.next();
@@ -122,7 +123,7 @@ public class JsonPathToTableAnswerer extends Answerer {
         row.put(columnName, answerValues.get(columnName));
       }
     }
-    return row;
+    return row.build();
   }
 
   private static void computeExtractions(
