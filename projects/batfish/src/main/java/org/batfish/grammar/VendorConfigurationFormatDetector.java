@@ -119,6 +119,9 @@ public final class VendorConfigurationFormatDetector {
     if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
     }
+    if (checkCiscoXr() == ConfigurationFormat.CISCO_IOS_XR) {
+      return ConfigurationFormat.CISCO_IOS_XR;
+    }
     if (fileTextMatches(NEXUS_FEATURE_LINE_PATTERN) || fileTextMatches(NEXUS_BOOTFLASH_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
     }
