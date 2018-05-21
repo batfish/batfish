@@ -43,10 +43,6 @@ import org.batfish.role.NodeRoleDimension;
 
 public interface IBatfish extends IPluginConsumer {
 
-  AnswerElement aiReachability(HeaderLocationQuestion q);
-
-  AnswerElement aiRoutes(NodesSpecifier ns);
-
   AnswerElement answerAclReachability(
       String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets);
 
