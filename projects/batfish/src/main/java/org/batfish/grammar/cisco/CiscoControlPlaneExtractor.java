@@ -104,6 +104,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_C
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MSDP_PEER_SA_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NTP_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_FILTER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL;
@@ -537,6 +539,7 @@ import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogn_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
@@ -2155,6 +2158,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitOgn_group_object(Ogn_group_objectContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.name.start.getLine();
+    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
+    _configuration.referenceStructure(
+        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, line);
+  }
+
+  @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
     _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)).toIpSpace());
   }
@@ -2172,14 +2184,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.prefix != null) {
       ipSpace = new IpWildcard(ctx.prefix.getText()).toIpSpace();
     } else if (ctx.wildcard_address != null && ctx.wildcard_mask != null) {
-      ipSpace = new IpWildcard(toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask)).toIpSpace();
+      ipSpace =
+          new IpWildcard(toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
+              .toIpSpace();
     } else if (ctx.address != null) {
       ipSpace = new IpWildcard(ctx.address.getText()).toIpSpace();
     } else if (ctx.host != null) {
-      ipSpace = new IpSpaceReference(ctx.host.getText());
+      String name = ctx.host.getText();
+      ipSpace = new IpSpaceReference(name);
+      int line = ctx.host.start.getLine();
+      _configuration.referenceStructure(
+          NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, line);
       // TODO add reference
     } else if (ctx.name != null) {
-      ipSpace = new IpSpaceReference(ctx.name.getText());
+      String name = ctx.name.getText();
+      ipSpace = new IpSpaceReference(name);
+      int line = ctx.name.start.getLine();
+      _configuration.referenceStructure(
+          NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, line);
       // TODO add reference
     }
     if (ipSpace == null) {

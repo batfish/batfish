@@ -457,18 +457,72 @@ public class CiscoGrammarTest {
 
   @Test
   public void testIosObjectGroupNetwork() throws IOException {
-    Configuration c = parseConfig("ios-object-group-network");
-    Ip ogn1TestIp = new Ip("1.128.0.0");
-    Ip ogn2TestIp1 = new Ip("2.0.0.0");
-    Ip ogn2TestIp2 = new Ip("2.0.0.1");
+    String hostname = "ios-object-group-network";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    Ip ognWildcardIp = new Ip("1.128.0.0");
+    Ip ognHostIp1 = new Ip("2.0.0.1");
+    Ip ognHostIp2 = new Ip("2.0.0.2");
+    Ip ognUnmatchedIp = new Ip("2.0.0.0");
+
+    String ognNamePrefix = "ogn_prefix";
+    String ognNameHost1 = "ogn_host1";
+    String ognNameHost2 = "ogn_host2";
+    String ognNameIndirect = "ogn_indirect";
+    String ognNameNetworkObject = "ogn_network_object";
+    String ognNameNetworkObjectIndirect = "ogn_network_object_indirect";
+    String ognNameUndef = "ogn_undef";
+    String ognNameUnused = "ogn_unused";
 
     /* Each object group should permit an IP iff it is in its space. */
-    assertThat(c, hasIpSpace("ogn1", containsIp(ogn1TestIp)));
-    assertThat(c, hasIpSpace("ogn1", not(containsIp(ogn2TestIp1))));
-    assertThat(c, hasIpSpace("ogn2", not(containsIp(ogn1TestIp))));
-    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
-    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
-    assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
+    assertThat(c, hasIpSpace(ognNamePrefix, containsIp(ognWildcardIp)));
+    assertThat(c, hasIpSpace(ognNamePrefix, not(containsIp(ognUnmatchedIp))));
+
+    assertThat(c, hasIpSpace(ognNameHost1, containsIp(ognHostIp1)));
+    assertThat(c, hasIpSpace(ognNameHost1, not(containsIp(ognUnmatchedIp))));
+
+    assertThat(c, hasIpSpace(ognNameHost2, containsIp(ognHostIp2)));
+    assertThat(c, hasIpSpace(ognNameHost2, not(containsIp(ognUnmatchedIp))));
+
+    assertThat(c, hasIpSpace(ognNameIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
+    assertThat(c, hasIpSpace(ognNameIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
+
+    assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognHostIp1)));
+    assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognHostIp2)));
+    assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognWildcardIp)));
+    assertThat(c, hasIpSpace(ognNameNetworkObject, not(containsIp(ognUnmatchedIp))));
+
+    assertThat(
+        c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognHostIp1, c.getIpSpaces())));
+    assertThat(
+        c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognHostIp2, c.getIpSpaces())));
+    assertThat(
+        c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
+    assertThat(
+        c,
+        hasIpSpace(ognNameNetworkObjectIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
+
+    assertThat(c, hasIpSpace(ognNameUnused, not(containsIp(ognUnmatchedIp))));
+
+    /* Confirm the used object groups have referrers */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNamePrefix, 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameHost1, 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameHost2, 2));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameIndirect, 1));
+    /* Confirm the unused object group has no referrers */
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameUnused, 0));
+    /* Confirm the undefined reference shows up as such */
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameUndef));
   }
 
   @Test
