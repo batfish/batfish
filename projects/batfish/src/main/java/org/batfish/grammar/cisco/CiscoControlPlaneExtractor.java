@@ -2211,10 +2211,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOgn_group_object(Ogn_group_objectContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.start.getLine();
     _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
     _configuration.referenceStructure(
-        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, line);
+        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
   }
 
   @Override
@@ -2240,20 +2239,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
               .toIpSpace();
     } else if (ctx.address != null) {
       ipSpace = new IpWildcard(ctx.address.getText()).toIpSpace();
-    } else if (ctx.host != null) {
-      String name = ctx.host.getText();
-      ipSpace = new IpSpaceReference(name);
-      int line = ctx.host.start.getLine();
-      _configuration.referenceStructure(
-          NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, line);
-      // TODO add reference
     } else if (ctx.name != null) {
       String name = ctx.name.getText();
       ipSpace = new IpSpaceReference(name);
-      int line = ctx.name.start.getLine();
       _configuration.referenceStructure(
-          NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, line);
-      // TODO add reference
+          NETWORK_OBJECT_GROUP,
+          name,
+          NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
+          ctx.name.start.getLine());
     }
     if (ipSpace == null) {
       _w.redFlag("Network object-group not supported " + getFullText(ctx));

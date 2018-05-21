@@ -357,7 +357,6 @@ ogn_network_object
    NETWORK_OBJECT
    (
       prefix = IP_PREFIX
-      | prefix_ip = IP_ADDRESS prefix_mask = IP_ADDRESS
       | prefix6 = IPV6_PREFIX
       |
       (
