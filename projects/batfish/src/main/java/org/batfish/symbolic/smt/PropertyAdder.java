@@ -42,7 +42,7 @@ class PropertyAdder {
   }
 
   /*
-   * Initialize reachability and id routeVariables an add the constraints
+   * Initialize reachability and id variables an add the constraints
    * that all ids are at least 0 or higher, and reachable means non-zero.
    */
   private void initializeReachabilityVars(
@@ -318,7 +318,7 @@ class PropertyAdder {
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
 
-    // Initialize path length routeVariables
+    // Initialize path length variables
     Graph graph = _encoderSlice.getGraph();
     Map<String, ArithExpr> lenVars = new HashMap<>();
     for (String router : graph.getRouters()) {
@@ -467,7 +467,7 @@ class PropertyAdder {
     Solver solver = _encoderSlice.getSolver();
     String sliceName = _encoderSlice.getSliceName();
 
-    // Add on-loop routeVariables to track a loop
+    // Add on-loop variables to track a loop
     Map<String, BoolExpr> onLoop = new HashMap<>();
     Graph graph = _encoderSlice.getGraph();
 

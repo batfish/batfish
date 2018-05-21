@@ -50,8 +50,8 @@ import org.batfish.symbolic.utils.Tuple;
  * non-local next-hop ip addresses in static routes, where the forwarding behavior of one packet
  * depends on that of other packets.
  *
- * <p>Symbolic routeVariables that are common to all slices are maintained in this class. That
- * includes, for example, the collection of routeVariables representing topology failures.
+ * <p>Symbolic variables that are common to all slices are maintained in this class. That includes,
+ * for example, the collection of variables representing topology failures.
  *
  * @author Ryan Beckett
  */
@@ -195,7 +195,7 @@ public class Encoder {
   }
 
   /*
-   * Initialize symbolic routeVariables to represent link failures.
+   * Initialize symbolic variables to represent link failures.
    */
   private void initFailedLinkVariables() {
     for (List<GraphEdge> edges : _graph.getEdgeMap().values()) {
@@ -448,7 +448,7 @@ public class Encoder {
   }
 
   /*
-   * Add the relevant routeVariables in the counterexample to
+   * Add the relevant variables in the counterexample to
    * display to the user in a human-readable fashion
    */
   private void buildCounterExample(

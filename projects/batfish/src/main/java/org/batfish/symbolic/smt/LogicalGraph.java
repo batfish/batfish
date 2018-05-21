@@ -38,7 +38,7 @@ class LogicalGraph {
   }
 
   /*
-   * Find the routeVariables for the opposite edge of a
+   * Find the variables for the opposite edge of a
    * logical edge.
    */
   SymbolicRoute findOtherVars(LogicalEdge e) {

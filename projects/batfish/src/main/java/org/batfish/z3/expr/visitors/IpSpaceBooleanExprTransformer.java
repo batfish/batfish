@@ -34,7 +34,7 @@ import org.batfish.z3.expr.TrueExpr;
 
 /**
  * Transforms an {@link IpSpace} into a {@link BooleanExpr} that is true iff one of the appropriate
- * IP routeVariables is in the space.
+ * IP variables is in the space.
  */
 public class IpSpaceBooleanExprTransformer implements GenericIpSpaceVisitor<BooleanExpr> {
 

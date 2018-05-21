@@ -359,7 +359,7 @@ class Optimizations {
   }
 
   /*
-   * Determines when we can merge export routeVariables into a single copy.
+   * Determines when we can merge export variables into a single copy.
    * This will be safe when there is no peer-specific export filter.
    */
   private void computeCanMergeExportVars() {
@@ -431,7 +431,7 @@ class Optimizations {
   }
 
   /*
-   * Determine when import and export routeVariables can be merged along an edge.
+   * Determine when import and export variables can be merged along an edge.
    * This will be safe when there is no peer-specific import filter
    */
   private void computeCanMergeImportExportVars() {
@@ -598,7 +598,7 @@ class Optimizations {
   }
 
   /*
-   * Check if a graph edge will have export routeVariables for a given protocol.
+   * Check if a graph edge will have export variables for a given protocol.
    * This will happen when the edge's interface is used in the protocol
    * and the other end of the interface is internal.
    */

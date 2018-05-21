@@ -119,12 +119,12 @@ import org.batfish.symbolic.collections.PList;
  * control flow.
  *
  * <p>Naturally, this kind of encoding can grow quite large since we introduce a large number of
- * extra routeVariables. To make formula much simpler, we use a term size heuristic to inline
- * variable equalities when the inlined term will not be too large. Thus, additional routeVariables
- * are still introduced, but only to keep the encoding compact. The 'simplify' and
- * 'propagate-values' tactics for z3 will further improve the encoding by removing any unnecessary
- * routeVariables. In this example, the encoding will be simplified to [returnValue''' = not c1],
- * which removes all intermediate routeVariables
+ * extra variables. To make formula much simpler, we use a term size heuristic to inline variable
+ * equalities when the inlined term will not be too large. Thus, additional variables are still
+ * introduced, but only to keep the encoding compact. The 'simplify' and 'propagate-values' tactics
+ * for z3 will further improve the encoding by removing any unnecessary variables. In this example,
+ * the encoding will be simplified to [returnValue''' = not c1], which removes all intermediate
+ * variables
  *
  * @author Ryan Beckett
  */
@@ -180,7 +180,7 @@ class TransferSSA {
   }
 
   /*
-   * Returns and increments a unique id for adding additional SSA routeVariables
+   * Returns and increments a unique id for adding additional SSA variables
    */
   private static int generateId() {
     int result = TransferSSA.id;
@@ -494,7 +494,7 @@ class TransferSSA {
 
     } else if (expr instanceof CallExpr) {
       p.debug("CallExpr");
-      // TODO: the call can modify certain fields, need to keep track of these routeVariables
+      // TODO: the call can modify certain fields, need to keep track of these variables
       CallExpr c = (CallExpr) expr;
       String name = c.getCalledPolicyName();
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
@@ -552,7 +552,7 @@ class TransferSSA {
   }
 
   /*
-   * Deal with the possibility of null routeVariables due to optimizations
+   * Deal with the possibility of null variables due to optimizations
    */
   private ArithExpr getOrDefault(ArithExpr x, ArithExpr d) {
     if (x != null) {
@@ -669,7 +669,7 @@ class TransferSSA {
   }
 
   /*
-   * Relate the symbolic control plane route routeVariables
+   * Relate the symbolic control plane route variables
    */
   private BoolExpr relateVariables(
       TransferParam<SymbolicRoute> p, TransferResult<BoolExpr, BoolExpr> result) {
@@ -880,7 +880,7 @@ class TransferSSA {
   }
 
   /*
-   * The [phi] function from SSA that merges routeVariables that may differ across
+   * The [phi] function from SSA that merges variables that may differ across
    * different branches of an mkIf statement.
    */
   private Pair<Expr, Expr> joinPoint(
@@ -1090,7 +1090,7 @@ class TransferSSA {
             break;
           default:
             p.debug("True Branch");
-            // clear changed routeVariables before proceeding
+            // clear changed variables before proceeding
             TransferParam<SymbolicRoute> p1 = p.indent().setData(p.getData().copy());
             TransferParam<SymbolicRoute> p2 = p.indent().setData(p.getData().copy());
 
@@ -1104,7 +1104,7 @@ class TransferSSA {
                 trueBranch.mergeChangedVariables(falseBranch);
 
             // Extract and deal with the return value first so that other
-            // routeVariables have this reflected in their value
+            // variables have this reflected in their value
             int idx = pairs.find(pair -> pair.getFirst().equals("RETURN"));
             if (idx >= 0) {
               Pair<String, Pair<Expr, Expr>> ret = pairs.get(idx);
@@ -1268,7 +1268,7 @@ class TransferSSA {
       }
     }
 
-    // If this is the outermost call, then we relate the routeVariables
+    // If this is the outermost call, then we relate the variables
     if (p.getInitialCall()) {
       p.debug("InitialCall finalizing");
 
@@ -1304,7 +1304,7 @@ class TransferSSA {
   }
 
   /*
-   * A collection of functions to create new SSA routeVariables on-the-fly,
+   * A collection of functions to create new SSA variables on-the-fly,
    * while also simultaneously setting their value based on an old value.
    */
   private ArithExpr createArithVariableWith(

@@ -475,7 +475,7 @@ class EncoderSlice {
   }
 
   /*
-   * Initialize routeVariables representing if a router chooses
+   * Initialize variables representing if a router chooses
    * to use a particular interface for control-plane forwarding
    */
   private void addChoiceVariables() {
@@ -497,7 +497,7 @@ class EncoderSlice {
   }
 
   /*
-   * Initalizes routeVariables representing the control plane and
+   * Initalizes variables representing the control plane and
    * data plane final forwarding decisions
    */
   private void addForwardingVariables() {
@@ -525,7 +525,7 @@ class EncoderSlice {
   }
 
   /*
-   * Initialize routeVariables representing the best choice both for
+   * Initialize variables representing the best choice both for
    * each protocol as well as for the router as a whole
    */
   private void addBestVariables() {
@@ -578,7 +578,7 @@ class EncoderSlice {
         new HashMap<>();
     Map<String, Map<Protocol, SymbolicRoute>> singleExportMap = new HashMap<>();
 
-    // add edge EXPORT and IMPORT state routeVariables
+    // add edge EXPORT and IMPORT state variables
     for (Entry<String, List<GraphEdge>> entry : getGraph().getEdgeMap().entrySet()) {
       String router = entry.getKey();
       List<GraphEdge> edges = entry.getValue();
@@ -595,7 +595,7 @@ class EncoderSlice {
 
       for (Protocol proto : getProtocols().get(router)) {
 
-        // Add redistribution routeVariables
+        // Add redistribution variables
         Set<Protocol> r = _logicalGraph.getRedistributedProtocols().get(router, proto);
         assert r != null;
         if (proto.isOspf() && r.size() > 1) {
@@ -637,8 +637,8 @@ class EncoderSlice {
               String ifaceName = e.getStart().getName();
 
               if (!proto.isConnected() && !proto.isStatic()) {
-                // If we use a single set of export routeVariables, then make sure
-                // to reuse the existing routeVariables instead of creating new ones
+                // If we use a single set of export variables, then make sure
+                // to reuse the existing variables instead of creating new ones
                 if (useSingleExport) {
                   SymbolicRoute singleVars = singleExportMap.get(router).get(proto);
                   SymbolicRoute ev1;
@@ -861,7 +861,7 @@ class EncoderSlice {
   }
 
   /*
-   * Initialize all symbolic routeVariables for the encoding slice
+   * Initialize all symbolic variables for the encoding slice
    */
   private void initVariables() {
     buildEdgeMap();
@@ -1938,7 +1938,7 @@ class EncoderSlice {
     assert (failed != null);
     BoolExpr notFailed = mkEq(failed, mkInt(0));
 
-    // only add constraints once when using a single copy of export routeVariables
+    // only add constraints once when using a single copy of export variables
     if (!_optimizations.getSliceCanKeepSingleExportVar().get(router).get(proto) || !usedExport) {
 
       if (proto.isConnected()) {
@@ -2097,7 +2097,7 @@ class EncoderSlice {
    * Constraints that define relationships between various messages
    * in the network. The same transfer function abstraction is used
    * for both import and export constraints by relating different collections
-   * of routeVariables.
+   * of variables.
    */
   private void addTransferFunction() {
     for (Entry<String, Configuration> entry : getGraph().getConfigurations().entrySet()) {
@@ -2198,7 +2198,7 @@ class EncoderSlice {
 
   /*
    * For performance reasons, we add constraints that if a message is not
-   * valid, then the other routeVariables will use default values. This speeds
+   * valid, then the other variables will use default values. This speeds
    * up the solver significantly.
    */
   private void addUnusedDefaultValueConstraints() {

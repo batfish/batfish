@@ -255,7 +255,7 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   public void visitStateExpr(StateExpr stateExpr) {
-    /* TODO: handle vectorized state parameters as routeVariables */
+    /* TODO: handle vectorized state parameters as variables */
     /* TODO: handle arguments */
     printCollapsedComplexExpr(
         ImmutableList.<Expr>builder()

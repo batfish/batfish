@@ -67,7 +67,7 @@ public class BatfishTest {
             + "\"longDescription\": \"Such occurrences indicate configuration errors and can have"
             + "serious consequences with some vendors.\","
             + "\"tags\": [\"default\"],"
-            + "\"routeVariables\": {\"nodeRegex\": {"
+            + "\"variables\": {\"nodeRegex\": {"
             + "\"description\": \"Only check nodes whose name matches this regex\","
             + "\"type\": \"javaRegex\","
             + "\"value\": \".*\""
