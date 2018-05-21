@@ -15,7 +15,7 @@ public class NameRegexInterfaceLocationSpecifierFactory
   }
 
   @Override
-  public LocationSpecifier specifierTyped(Pattern pattern) {
+  public LocationSpecifier buildLocationSpecifierTyped(Pattern pattern) {
     return new NameRegexInterfaceLocationSpecifier(pattern);
   }
 }

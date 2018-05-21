@@ -10,7 +10,7 @@ public class NodeNameRegexInterfaceLocationSpecifierFactory
   }
 
   @Override
-  public LocationSpecifier specifierTyped(Pattern pattern) {
+  public LocationSpecifier buildLocationSpecifierTyped(Pattern pattern) {
     return new NodeNameRegexInterfaceLocationSpecifier(pattern);
   }
 

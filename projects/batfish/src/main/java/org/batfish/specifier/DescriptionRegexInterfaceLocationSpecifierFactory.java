@@ -15,7 +15,7 @@ public class DescriptionRegexInterfaceLocationSpecifierFactory
   }
 
   @Override
-  public LocationSpecifier specifierTyped(Pattern input) {
+  public LocationSpecifier buildLocationSpecifierTyped(Pattern input) {
     return new DescriptionRegexInterfaceLocationSpecifier(input);
   }
 }

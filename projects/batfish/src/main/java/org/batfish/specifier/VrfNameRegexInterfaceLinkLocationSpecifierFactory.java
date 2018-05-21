@@ -15,7 +15,7 @@ public class VrfNameRegexInterfaceLinkLocationSpecifierFactory
   }
 
   @Override
-  public LocationSpecifier specifierTyped(Pattern pattern) {
+  public LocationSpecifier buildLocationSpecifierTyped(Pattern pattern) {
     return new VrfNameRegexInterfaceLinkLocationSpecifier(pattern);
   }
 }
