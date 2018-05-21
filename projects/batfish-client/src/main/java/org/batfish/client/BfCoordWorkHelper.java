@@ -470,7 +470,8 @@ public class BfCoordWorkHelper {
             _settings.getSslKeystoreFile(),
             _settings.getSslKeystorePassword(),
             _settings.getSslTruststoreFile(),
-            _settings.getSslTruststorePassword())
+            _settings.getSslTruststorePassword(),
+            true)
         .register(MultiPartFeature.class);
   }
 
