@@ -6,17 +6,13 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
@@ -111,47 +107,24 @@ public class AclReachability2Test {
     AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
     AclLinesAnswerElement specificAnswer = (AclLinesAnswerElement) specificBaseClassAnswer;
 
-    // Tests for general ACL reachability answer
-    Multiset<Row> rows = answer.getInitialRows().getData();
-    assertThat(rows.size(), equalTo(1));
-    Row row = (Row) rows.toArray()[0];
-    assertThat(
-        row.get(AclLinesAnswerElement.COL_NODES, new TypeReference<List<String>>() {}),
-        equalTo(ImmutableList.of(_c.getName())));
-    assertThat(row.get(AclLinesAnswerElement.COL_ACL, String.class), equalTo(acl.getName()));
-    assertThat(
-        row.get(AclLinesAnswerElement.COL_LINES, new TypeReference<List<String>>() {}), hasSize(2));
-    assertThat(
-        "Line 1 is blocked",
-        row.get(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, Integer.class),
-        equalTo(1));
-    assertThat(
-        "Line 0 is blocking",
-        row.get(
-            AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}),
-        equalTo(ImmutableList.of(0)));
-    assertThat(row.get(AclLinesAnswerElement.COL_DIFF_ACTION, Boolean.class), equalTo(false));
+    // Construct the expected rows set
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            new Row()
+                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLinesAnswerElement.COL_ACL, acl.getName())
+                .put(AclLinesAnswerElement.COL_LINES, new String[2])
+                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 1)
+                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(AclLinesAnswerElement.COL_DIFF_ACTION, false)
+                .put(
+                    AclLinesAnswerElement.COL_MESSAGE,
+                    "In node(s) '~Configuration_0~', ACL 'acl2' has an unreachable line '1: IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
+                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1}}"));
 
-    // Tests for ACL reachability of main ACL specifically
-    rows = specificAnswer.getInitialRows().getData();
-    assertThat(rows.size(), equalTo(1));
-    row = (Row) rows.toArray()[0];
-    assertThat(
-        row.get(AclLinesAnswerElement.COL_NODES, new TypeReference<List<String>>() {}),
-        equalTo(ImmutableList.of(_c.getName())));
-    assertThat(row.get(AclLinesAnswerElement.COL_ACL, String.class), equalTo(acl.getName()));
-    assertThat(
-        row.get(AclLinesAnswerElement.COL_LINES, new TypeReference<List<String>>() {}), hasSize(2));
-    assertThat(
-        "Line 1 is blocked",
-        row.get(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, Integer.class),
-        equalTo(1));
-    assertThat(
-        "Line 0 is blocking",
-        row.get(
-            AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}),
-        equalTo(ImmutableList.of(0)));
-    assertThat(row.get(AclLinesAnswerElement.COL_DIFF_ACTION, Boolean.class), equalTo(false));
+    assertThat(answer.getInitialRows().getData(), equalTo(expected));
+    assertThat(specificAnswer.getInitialRows().getData(), equalTo(expected));
   }
 
   @Test
@@ -187,28 +160,23 @@ public class AclReachability2Test {
     assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
     AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
 
-    Multiset<Row> rows = answer.getInitialRows().getData();
-    assertThat(rows.size(), equalTo(1));
-    Row row = (Row) rows.toArray()[0];
-    assertThat(
-        row.get(AclLinesAnswerElement.COL_NODES, new TypeReference<List<String>>() {}),
-        equalTo(ImmutableList.of(_c.getName())));
-    assertThat(row.get(AclLinesAnswerElement.COL_ACL, String.class), equalTo(aclName));
-    assertThat(
-        row.get(AclLinesAnswerElement.COL_LINES, new TypeReference<List<String>>() {}), hasSize(3));
-    assertThat(
-        "Line 2 is blocked",
-        row.get(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, Integer.class),
-        equalTo(2));
-    assertThat(
-        row.get(
-            AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, new TypeReference<List<Integer>>() {}),
-        hasSize(0));
-    assertThat(row.get(AclLinesAnswerElement.COL_DIFF_ACTION, Boolean.class), equalTo(false));
-    assertThat(
-        row.get(AclLinesAnswerElement.COL_MESSAGE, String.class)
-            .contains("Multiple earlier lines partially block this line, making it unreachable."),
-        equalTo(true));
+    // Construct the expected rows set
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            new Row()
+                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLinesAnswerElement.COL_ACL, aclName)
+                .put(AclLinesAnswerElement.COL_LINES, new String[3])
+                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 2)
+                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(AclLinesAnswerElement.COL_DIFF_ACTION, false)
+                .put(
+                    AclLinesAnswerElement.COL_MESSAGE,
+                    "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '2: IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}'."
+                        + " Multiple earlier lines partially block this line, making it unreachable."));
+
+    assertThat(answer.getInitialRows().getData(), equalTo(expected));
   }
 
   @Test
@@ -249,50 +217,47 @@ public class AclReachability2Test {
     assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
     AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
 
-    Multiset<Row> rows = answer.getInitialRows().getData();
-    assertThat(rows.size(), equalTo(3));
+    // Construct the expected rows set
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            new Row()
+                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLinesAnswerElement.COL_ACL, aclName)
+                .put(AclLinesAnswerElement.COL_LINES, new String[5])
+                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 1)
+                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(AclLinesAnswerElement.COL_DIFF_ACTION, true)
+                .put(
+                    AclLinesAnswerElement.COL_MESSAGE,
+                    "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '1: IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
+                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"),
+            new Row()
+                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLinesAnswerElement.COL_ACL, aclName)
+                .put(AclLinesAnswerElement.COL_LINES, new String[5])
+                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 2)
+                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(AclLinesAnswerElement.COL_DIFF_ACTION, false)
+                .put(
+                    AclLinesAnswerElement.COL_MESSAGE,
+                    "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '2: IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=FalseExpr{}}'. This line will never match any packet, independent of preceding lines."),
+            new Row()
+                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLinesAnswerElement.COL_ACL, aclName)
+                .put(AclLinesAnswerElement.COL_LINES, new String[5])
+                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 3)
+                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(AclLinesAnswerElement.COL_DIFF_ACTION, true)
+                .put(
+                    AclLinesAnswerElement.COL_MESSAGE,
+                    "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '3: IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/32}}}}'. "
+                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"));
 
-    // Check that one of the rows has the right nodes, ACL name, and lines
-    Row firstRow = (Row) rows.toArray()[0];
-    assertThat(
-        firstRow.get(AclLinesAnswerElement.COL_NODES, new TypeReference<List<String>>() {}),
-        equalTo(ImmutableList.of(_c.getName())));
-    assertThat(firstRow.get(AclLinesAnswerElement.COL_ACL, String.class), equalTo(aclName));
-    assertThat(
-        firstRow.get(AclLinesAnswerElement.COL_LINES, new TypeReference<List<String>>() {}),
-        hasSize(5));
-
-    // Ensure the blocked lines are lines 1, 2, and 3
-    assertThat(
-        "Lines 1, 2, and 3 are unreachable",
-        rows.stream()
-            .map(r -> r.get(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, Integer.class))
-            .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(1, 2, 3)));
-
-    for (Row row : rows) {
-      int blockedLineNum = row.get(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, Integer.class);
-      if (blockedLineNum == 1 || blockedLineNum == 3) {
-        // Lines 1 and 3: Blocked by line 0 but not unmatchable
-        assertThat(
-            row.get(
-                AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS,
-                new TypeReference<List<Integer>>() {}),
-            equalTo(ImmutableList.of(0)));
-        assertThat(row.get(AclLinesAnswerElement.COL_DIFF_ACTION, Boolean.class), equalTo(true));
-      } else {
-        // Line 2: Unmatchable
-        assertThat(
-            row.get(
-                AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS,
-                new TypeReference<List<Integer>>() {}),
-            hasSize(0));
-        assertThat(
-            row.get(AclLinesAnswerElement.COL_MESSAGE, String.class)
-                .contains("This line will never match any packet, independent of preceding lines."),
-            equalTo(true));
-        assertThat(row.get(AclLinesAnswerElement.COL_DIFF_ACTION, Boolean.class), equalTo(false));
-      }
-    }
+    assertThat(answer.getInitialRows().getData(), equalTo(expected));
   }
 }
