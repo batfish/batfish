@@ -271,22 +271,9 @@ public class Row implements Comparable<Row> {
    * @throws {@link NoSuchElementException} if one of the specified columns are not present
    */
   public static Row selectColumns(Row inputRow, Set<String> columns) {
-    RowBuilder retRow = new RowBuilder();
+    RowBuilder retRow = Row.builder();
     columns.forEach(col -> retRow.put(col, inputRow.get(col)));
     return retRow.build();
-  }
-
-  /**
-   * Returns a new {@link Row} that has only the specified columns from this row.
-   *
-   * @param columns The columns to keep.
-   * @return A new {@link Row} object
-   * @throws {@link NoSuchElementException} if one of the specified columns are not present
-   */
-  public Row selectColumns(Set<String> columns) {
-    Row retRow = new Row();
-    columns.forEach(col -> retRow.put(col, get(col)));
-    return retRow;
   }
 
   @Override
