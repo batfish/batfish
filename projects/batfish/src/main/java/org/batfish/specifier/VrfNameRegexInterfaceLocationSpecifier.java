@@ -25,7 +25,7 @@ public class VrfNameRegexInterfaceLocationSpecifier implements LocationSpecifier
       return false;
     }
     VrfNameRegexInterfaceLocationSpecifier that = (VrfNameRegexInterfaceLocationSpecifier) o;
-    return Objects.equals(_pattern, that._pattern);
+    return Objects.equals(_pattern.pattern(), that._pattern.pattern());
   }
 
   @Override

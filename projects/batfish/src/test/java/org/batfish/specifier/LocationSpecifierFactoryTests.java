@@ -35,6 +35,11 @@ public class LocationSpecifierFactoryTests {
 
     assertThat(
         registry.getLocationSpecifierFactory(
+            new NodeRoleRegexInterfaceLinkLocationSpecifierFactory().getName()),
+        Matchers.instanceOf(NodeRoleRegexInterfaceLinkLocationSpecifierFactory.class));
+
+    assertThat(
+        registry.getLocationSpecifierFactory(
             new VrfNameRegexInterfaceLinkLocationSpecifierFactory().getName()),
         Matchers.instanceOf(VrfNameRegexInterfaceLinkLocationSpecifierFactory.class));
 
@@ -74,6 +79,26 @@ public class LocationSpecifierFactoryTests {
     assertThat(
         new NodeNameRegexInterfaceLocationSpecifierFactory().buildLocationSpecifierTyped(pat),
         equalTo(new NodeNameRegexInterfaceLocationSpecifier(pat)));
+  }
+
+  @Test
+  public void testNodeRoleRegexInterfaceLinkLocationSpecifierFactory() {
+    assertThat(
+        new NodeRoleRegexInterfaceLinkLocationSpecifierFactory()
+            .buildLocationSpecifierTyped("roleDimension:pattern"),
+        equalTo(
+            new NodeRoleRegexInterfaceLinkLocationSpecifier(
+                "roleDimension", Pattern.compile("pattern"))));
+  }
+
+  @Test
+  public void testNodeRoleRegexInterfaceLocationSpecifierFactory() {
+    assertThat(
+        new NodeRoleRegexInterfaceLocationSpecifierFactory()
+            .buildLocationSpecifierTyped("roleDimension:pattern"),
+        equalTo(
+            new NodeRoleRegexInterfaceLocationSpecifier(
+                "roleDimension", Pattern.compile("pattern"))));
   }
 
   @Test

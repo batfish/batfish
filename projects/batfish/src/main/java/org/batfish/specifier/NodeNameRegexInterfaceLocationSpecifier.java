@@ -25,7 +25,7 @@ public class NodeNameRegexInterfaceLocationSpecifier implements LocationSpecifie
       return false;
     }
     NodeNameRegexInterfaceLocationSpecifier that = (NodeNameRegexInterfaceLocationSpecifier) o;
-    return Objects.equals(_pattern, that._pattern);
+    return Objects.equals(_pattern.pattern(), that._pattern.pattern());
   }
 
   @Override

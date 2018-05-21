@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import org.batfish.role.NodeRole;
@@ -17,6 +18,24 @@ public class NodeRoleRegexInterfaceLocationSpecifier implements LocationSpecifie
   public NodeRoleRegexInterfaceLocationSpecifier(String roleDimension, Pattern rolePattern) {
     _roleDimension = roleDimension;
     _rolePattern = rolePattern;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    NodeRoleRegexInterfaceLocationSpecifier that = (NodeRoleRegexInterfaceLocationSpecifier) o;
+    return Objects.equals(_roleDimension, that._roleDimension)
+        && Objects.equals(_rolePattern.pattern(), that._rolePattern.pattern());
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_roleDimension, _rolePattern);
   }
 
   protected Location makeLocation(String node, String iface) {

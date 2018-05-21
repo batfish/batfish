@@ -25,7 +25,7 @@ public class DescriptionRegexInterfaceLocationSpecifier implements LocationSpeci
     }
     DescriptionRegexInterfaceLocationSpecifier that =
         (DescriptionRegexInterfaceLocationSpecifier) o;
-    return Objects.equals(_pattern, that._pattern);
+    return Objects.equals(_pattern.pattern(), that._pattern.pattern());
   }
 
   @Override

@@ -22,12 +22,11 @@ public class NameRegexInterfaceLocationSpecifier implements LocationSpecifier {
       return false;
     }
     NameRegexInterfaceLocationSpecifier that = (NameRegexInterfaceLocationSpecifier) o;
-    return Objects.equals(_pattern, that._pattern);
+    return Objects.equals(_pattern.pattern(), that._pattern.pattern());
   }
 
   @Override
   public int hashCode() {
-
     return Objects.hash(_pattern);
   }
 
