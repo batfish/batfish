@@ -113,7 +113,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.AclLinesAnswerElement;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -722,7 +722,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public void answerAclReachability(
       String aclNameRegexStr,
       NamedStructureEquivalenceSets<?> aclEqSets,
-      AclLinesAnswerElement answerElement) {
+      AclLinesAnswerElementInterface answerElement) {
 
     Pattern aclNameRegex;
     try {
@@ -884,7 +884,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Pattern aclNameRegex,
       NamedStructureEquivalenceSets<?> aclEqSets,
       Map<String, Configuration> configurations,
-      AclLinesAnswerElement answerElement) {
+      AclLinesAnswerElementInterface answerElement) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
 
     for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {

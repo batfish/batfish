@@ -7,7 +7,7 @@ import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.answers.AclLinesNewAnswerElement;
+import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -25,7 +25,7 @@ public class AclReachability2Answerer extends Answerer {
   }
 
   @Override
-  public AclLinesNewAnswerElement answer() {
+  public AclLinesAnswerElement answer() {
     AclReachability2Question question = (AclReachability2Question) _question;
     // get comparesamename results for acls
     CompareSameNameQuestion csnQuestion = new CompareSameNameQuestion();
@@ -39,7 +39,7 @@ public class AclReachability2Answerer extends Answerer {
     NamedStructureEquivalenceSets<?> aclEqSets =
         csnAnswer.getEquivalenceSets().get(IpAccessList.class.getSimpleName());
 
-    AclLinesNewAnswerElement answer = new AclLinesNewAnswerElement(createMetadata(question));
+    AclLinesAnswerElement answer = new AclLinesAnswerElement(createMetadata(question));
     _batfish.answerAclReachability(question.getAclNameRegex(), aclEqSets, answer);
     answer.postProcessAnswer(question, answer.getInitialRows().getData());
     return answer;
@@ -56,51 +56,51 @@ public class AclReachability2Answerer extends Answerer {
         new ImmutableList.Builder<ColumnMetadata>()
             .add(
                 new ColumnMetadata(
-                    AclLinesNewAnswerElement.COL_NODES,
+                    AclLinesAnswerElement.COL_NODES,
                     Schema.list(Schema.NODE),
                     "Nodes",
                     true,
                     false))
             .add(
                 new ColumnMetadata(
-                    AclLinesNewAnswerElement.COL_ACL, Schema.STRING, "ACL name", true, false))
+                    AclLinesAnswerElement.COL_ACL, Schema.STRING, "ACL name", true, false))
             .add(
                 new ColumnMetadata(
-                    AclLinesNewAnswerElement.COL_LINES,
+                    AclLinesAnswerElement.COL_LINES,
                     Schema.list(Schema.STRING),
                     "ACL lines",
                     false,
                     false))
             .add(
                 new ColumnMetadata(
-                    AclLinesNewAnswerElement.COL_BLOCKED_LINE_NUM,
+                    AclLinesAnswerElement.COL_BLOCKED_LINE_NUM,
                     Schema.INTEGER,
                     "Blocked line number",
                     true,
                     false))
             .add(
                 new ColumnMetadata(
-                    AclLinesNewAnswerElement.COL_BLOCKING_LINE_NUMS,
+                    AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS,
                     Schema.list(Schema.INTEGER),
                     "Blocking line numbers",
                     false,
                     true))
             .add(
                 new ColumnMetadata(
-                    AclLinesNewAnswerElement.COL_DIFF_ACTION,
+                    AclLinesAnswerElement.COL_DIFF_ACTION,
                     Schema.BOOLEAN,
                     "Different action",
                     false,
                     true))
             .add(
                 new ColumnMetadata(
-                    AclLinesNewAnswerElement.COL_MESSAGE, Schema.STRING, "Message", false, false))
+                    AclLinesAnswerElement.COL_MESSAGE, Schema.STRING, "Message", false, false))
             .build();
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();
-      dhints.setTextDesc(String.format("${%s}", AclLinesNewAnswerElement.COL_MESSAGE));
+      dhints.setTextDesc(String.format("${%s}", AclLinesAnswerElement.COL_MESSAGE));
     }
     return new TableMetadata(columnMetadata, dhints);
   }

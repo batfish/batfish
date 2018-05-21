@@ -9,7 +9,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 
-public class AclLinesOldAnswerElement extends AnswerElement implements AclLinesAnswerElement {
+public class AclLinesOldAnswerElement extends AnswerElement
+    implements AclLinesAnswerElementInterface {
   public static class AclReachabilityEntry implements Comparable<AclReachabilityEntry> {
 
     private static final String PROP_INDEX = "index";
