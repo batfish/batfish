@@ -27,7 +27,6 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
@@ -130,8 +129,6 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement multipath(ReachabilitySettings reachabilitySettings);
 
   AtomicInteger newBatch(String description, int jobs);
-
-  AssertionAst parseAssertion(String text);
 
   AnswerElement pathDiff(ReachabilitySettings reachabilitySettings);
 

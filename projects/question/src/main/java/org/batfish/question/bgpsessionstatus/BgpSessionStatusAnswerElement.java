@@ -13,6 +13,7 @@ import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
@@ -117,7 +118,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
    * @return The output row
    */
   public static Row toRow(BgpSessionInfo info) {
-    Row row = new Row();
+    RowBuilder row = Row.builder();
     row.put(COL_CONFIGURED_STATUS, info.getConfiguredStatus())
         .put(COL_ESTABLISHED_NEIGHBORS, info.getEstablishedNeighbors())
         .put(COL_LOCAL_IP, info.getLocalIp())
@@ -127,6 +128,6 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
         .put(COL_REMOTE_PREFIX, info.getRemotePrefix())
         .put(COL_SESSION_TYPE, info.getSessionType())
         .put(COL_VRF_NAME, info.getVrfName());
-    return row;
+    return row.build();
   }
 }

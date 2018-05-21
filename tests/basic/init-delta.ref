@@ -711,7 +711,7 @@
                 134,
                 135
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "dept_to_as2" : {
               "definitionLines" : [
@@ -720,7 +720,7 @@
                 130,
                 131
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           }
         },

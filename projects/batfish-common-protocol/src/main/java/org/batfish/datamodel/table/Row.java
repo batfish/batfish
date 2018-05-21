@@ -27,15 +27,52 @@ import org.batfish.datamodel.questions.Exclusion;
  */
 public class Row implements Comparable<Row> {
 
-  private final ObjectNode _data;
+  public static class RowBuilder {
 
-  public Row() {
-    this(null);
+    private final ObjectNode _data;
+
+    private RowBuilder() {
+      _data = BatfishObjectMapper.mapper().createObjectNode();
+    }
+
+    private RowBuilder(Row row) {
+      this();
+      row.getColumnNames().forEach(col -> _data.set(col, row.get(col)));
+    }
+
+    public Row build() {
+      return new Row(_data);
+    }
+
+    /**
+     * Sets the value for the specified column to the specified value. Any existing values for the
+     * column are overwritten
+     *
+     * @param columnName The column to set
+     * @param value The value to set
+     * @return The RowBuilder object itself (to aid chaining)
+     */
+    public RowBuilder put(String columnName, Object value) {
+      _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
+      return this;
+    }
   }
+
+  private final ObjectNode _data;
 
   @JsonCreator
   public Row(ObjectNode data) {
     _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
+  }
+
+  /** Returns a builder object for Row */
+  public static RowBuilder builder() {
+    return new RowBuilder();
+  }
+
+  /** Returns a builder object for Row seeded by the contents of {@code otheRow} */
+  public static RowBuilder builder(Row otherRow) {
+    return new RowBuilder(otherRow);
   }
 
   /**
@@ -81,6 +118,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The {@link JsonNode} object that represents the stored object
+   * @throws {@link NoSuchElementException} if this column does not exist
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
@@ -89,16 +127,12 @@ public class Row implements Comparable<Row> {
     return _data.get(columnName);
   }
 
-  private String getMissingColumnErrorMessage(String columnName) {
-    return String.format(
-        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
-  }
-
   /**
    * Gets the value of specified column name
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
@@ -115,6 +149,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
     if (!_data.has(columnName)) {
@@ -141,6 +176,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
@@ -191,6 +227,11 @@ public class Row implements Comparable<Row> {
     return keyList;
   }
 
+  private String getMissingColumnErrorMessage(String columnName) {
+    return String.format(
+        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
+  }
+
   /**
    * Returns the list of values in all columns declared as value in the metadata.
    *
@@ -223,26 +264,20 @@ public class Row implements Comparable<Row> {
   }
 
   /**
-   * Sets the value for the specified column to the specified value. Any existing values for the
-   * column are overwritten
+   * Returns a new {@link Row} that has only the specified columns from this row.
    *
-   * @param columnName The column to set
-   * @param value The value to set
-   * @return The Row object itself (to aid chaining)
+   * @param columns The columns to keep.
+   * @return A new {@link Row} object
+   * @throws {@link NoSuchElementException} if one of the specified columns are not present
    */
-  public Row put(String columnName, Object value) {
-    _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
-    return this;
+  public static Row selectColumns(Row inputRow, Set<String> columns) {
+    RowBuilder retRow = Row.builder();
+    columns.forEach(col -> retRow.put(col, inputRow.get(col)));
+    return retRow.build();
   }
 
-  /**
-   * Removes the specified column from this row
-   *
-   * @param columnName The column to remove
-   * @return The Row object itself (to aid chaining)
-   */
-  public Row remove(String columnName) {
-    _data.remove(columnName);
-    return this;
+  @Override
+  public String toString() {
+    return _data.toString();
   }
 }
