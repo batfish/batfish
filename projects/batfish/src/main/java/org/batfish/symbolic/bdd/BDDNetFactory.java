@@ -645,8 +645,6 @@ public class BDDNetFactory {
     return entry;
   }
 
-
-
   /*
    * BDD encoding of a route message. This includes things like
    * - local preference
