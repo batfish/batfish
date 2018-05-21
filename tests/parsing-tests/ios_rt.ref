@@ -2200,7 +2200,22 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "fra-border-01" : { },
+        "fra-border-01" : {
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "lhr-border-01" : {
           "bgp group" : {
             "FW" : {
@@ -2208,6 +2223,32 @@
                 33
               ],
               "numReferrers" : -1
+            }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -2218,6 +2259,26 @@
                 28
               ],
               "numReferrers" : -1
+            }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -2235,6 +2296,38 @@
               ],
               "numReferrers" : -1
             }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/3" : {
+              "definitionLines" : [
+                25
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "lhr-fw-02" : {
@@ -2251,6 +2344,38 @@
               ],
               "numReferrers" : -1
             }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                12
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/2" : {
+              "definitionLines" : [
+                18
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/3" : {
+              "definitionLines" : [
+                24
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                3
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "lhr-leaf-01" : {
@@ -2261,6 +2386,38 @@
               ],
               "numReferrers" : -1
             }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/6" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/7" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "lhr-leaf-02" : {
@@ -2270,6 +2427,38 @@
                 36
               ],
               "numReferrers" : -1
+            }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/6" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/7" : {
+              "definitionLines" : [
+                23
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
             }
           }
         },
@@ -2287,6 +2476,38 @@
               ],
               "numReferrers" : -1
             }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/3" : {
+              "definitionLines" : [
+                25
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "lhr-spine-02" : {
@@ -2303,9 +2524,56 @@
               ],
               "numReferrers" : -1
             }
+          },
+          "interface" : {
+            "Ethernet1/0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                13
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/2" : {
+              "definitionLines" : [
+                19
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet1/3" : {
+              "definitionLines" : [
+                25
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
           }
         },
-        "lix-peer-01" : { }
+        "lix-peer-01" : {
+          "interface" : {
+            "Ethernet1/1" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        }
       },
       "version" : "0.36.0",
       "warnings" : {

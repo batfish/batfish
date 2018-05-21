@@ -106,6 +106,231 @@
                   ]
                 }
               },
+              "unused:interface:Ethernet0/0" : {
+                "description" : "Unused structure of type: 'interface' with name: 'Ethernet0/0'",
+                "files" : {
+                  "as1border1.cfg" : [
+                    54
+                  ],
+                  "as1border2.cfg" : [
+                    57
+                  ],
+                  "as1core1.cfg" : [
+                    57
+                  ],
+                  "as2border1.cfg" : [
+                    59
+                  ],
+                  "as2border2.cfg" : [
+                    56
+                  ],
+                  "as2core1.cfg" : [
+                    57
+                  ],
+                  "as2core2.cfg" : [
+                    57
+                  ],
+                  "as2dept1.cfg" : [
+                    54
+                  ],
+                  "as2dist1.cfg" : [
+                    54
+                  ],
+                  "as2dist2.cfg" : [
+                    54
+                  ],
+                  "as3border1.cfg" : [
+                    57
+                  ],
+                  "as3border2.cfg" : [
+                    57
+                  ],
+                  "as3core1.cfg" : [
+                    57
+                  ]
+                }
+              },
+              "unused:interface:GigabitEthernet0/0" : {
+                "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet0/0'",
+                "files" : {
+                  "as1border1.cfg" : [
+                    59
+                  ],
+                  "as1border2.cfg" : [
+                    62
+                  ],
+                  "as1core1.cfg" : [
+                    62
+                  ],
+                  "as2border1.cfg" : [
+                    64
+                  ],
+                  "as2border2.cfg" : [
+                    61
+                  ],
+                  "as2core1.cfg" : [
+                    62
+                  ],
+                  "as2core2.cfg" : [
+                    62
+                  ],
+                  "as2dept1.cfg" : [
+                    59
+                  ],
+                  "as2dist1.cfg" : [
+                    59
+                  ],
+                  "as2dist2.cfg" : [
+                    59
+                  ],
+                  "as3border1.cfg" : [
+                    62
+                  ],
+                  "as3border2.cfg" : [
+                    62
+                  ],
+                  "as3core1.cfg" : [
+                    62
+                  ]
+                }
+              },
+              "unused:interface:GigabitEthernet1/0" : {
+                "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet1/0'",
+                "files" : {
+                  "as1border1.cfg" : [
+                    66
+                  ],
+                  "as1border2.cfg" : [
+                    69
+                  ],
+                  "as1core1.cfg" : [
+                    69
+                  ],
+                  "as2border1.cfg" : [
+                    73
+                  ],
+                  "as2border2.cfg" : [
+                    70
+                  ],
+                  "as2core1.cfg" : [
+                    69
+                  ],
+                  "as2core2.cfg" : [
+                    70
+                  ],
+                  "as2dept1.cfg" : [
+                    66
+                  ],
+                  "as2dist1.cfg" : [
+                    66
+                  ],
+                  "as2dist2.cfg" : [
+                    66
+                  ],
+                  "as3border1.cfg" : [
+                    69
+                  ],
+                  "as3border2.cfg" : [
+                    69
+                  ],
+                  "as3core1.cfg" : [
+                    69
+                  ]
+                }
+              },
+              "unused:interface:GigabitEthernet2/0" : {
+                "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet2/0'",
+                "files" : {
+                  "as1border2.cfg" : [
+                    73
+                  ],
+                  "as2border1.cfg" : [
+                    77
+                  ],
+                  "as2border2.cfg" : [
+                    74
+                  ],
+                  "as2core1.cfg" : [
+                    73
+                  ],
+                  "as2core2.cfg" : [
+                    75
+                  ],
+                  "as2dept1.cfg" : [
+                    70
+                  ],
+                  "as2dist1.cfg" : [
+                    70
+                  ],
+                  "as2dist2.cfg" : [
+                    70
+                  ],
+                  "as3core1.cfg" : [
+                    73
+                  ]
+                }
+              },
+              "unused:interface:GigabitEthernet3/0" : {
+                "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet3/0'",
+                "files" : {
+                  "as2core1.cfg" : [
+                    78
+                  ],
+                  "as2core2.cfg" : [
+                    80
+                  ],
+                  "as2dept1.cfg" : [
+                    75
+                  ],
+                  "as3core1.cfg" : [
+                    77
+                  ]
+                }
+              },
+              "unused:interface:Loopback0" : {
+                "description" : "Unused structure of type: 'interface' with name: 'Loopback0'",
+                "files" : {
+                  "as1border1.cfg" : [
+                    51
+                  ],
+                  "as1border2.cfg" : [
+                    54
+                  ],
+                  "as1core1.cfg" : [
+                    54
+                  ],
+                  "as2border1.cfg" : [
+                    56
+                  ],
+                  "as2border2.cfg" : [
+                    53
+                  ],
+                  "as2core1.cfg" : [
+                    54
+                  ],
+                  "as2core2.cfg" : [
+                    54
+                  ],
+                  "as2dept1.cfg" : [
+                    51
+                  ],
+                  "as2dist1.cfg" : [
+                    51
+                  ],
+                  "as2dist2.cfg" : [
+                    51
+                  ],
+                  "as3border1.cfg" : [
+                    54
+                  ],
+                  "as3border2.cfg" : [
+                    54
+                  ],
+                  "as3core1.cfg" : [
+                    54
+                  ]
+                }
+              },
               "unused:ipv4 prefix-list:inbound_route_filter" : {
                 "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'inbound_route_filter'",
                 "files" : {
@@ -139,7 +364,7 @@
             "summary" : {
               "numFailed" : 0,
               "numPassed" : 0,
-              "numResults" : 22
+              "numResults" : 87
             },
             "unusedStructures" : {
               "as1border1" : {
@@ -151,6 +376,20 @@
                 "expanded community-list" : {
                   "as1_community" : [
                     119
+                  ]
+                },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    54
+                  ],
+                  "GigabitEthernet0/0" : [
+                    59
+                  ],
+                  "GigabitEthernet1/0" : [
+                    66
+                  ],
+                  "Loopback0" : [
+                    51
                   ]
                 },
                 "ipv4 prefix-list" : {
@@ -171,10 +410,43 @@
                     123
                   ]
                 },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    57
+                  ],
+                  "GigabitEthernet0/0" : [
+                    62
+                  ],
+                  "GigabitEthernet1/0" : [
+                    69
+                  ],
+                  "GigabitEthernet2/0" : [
+                    73
+                  ],
+                  "Loopback0" : [
+                    54
+                  ]
+                },
                 "ipv4 prefix-list" : {
                   "inbound_route_filter" : [
                     134,
                     135
+                  ]
+                }
+              },
+              "as1core1" : {
+                "interface" : {
+                  "Ethernet0/0" : [
+                    57
+                  ],
+                  "GigabitEthernet0/0" : [
+                    62
+                  ],
+                  "GigabitEthernet1/0" : [
+                    69
+                  ],
+                  "Loopback0" : [
+                    54
                   ]
                 }
               },
@@ -187,6 +459,23 @@
                 "expanded community-list" : {
                   "as2_community" : [
                     124
+                  ]
+                },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    59
+                  ],
+                  "GigabitEthernet0/0" : [
+                    64
+                  ],
+                  "GigabitEthernet1/0" : [
+                    73
+                  ],
+                  "GigabitEthernet2/0" : [
+                    77
+                  ],
+                  "Loopback0" : [
+                    56
                   ]
                 },
                 "ipv4 prefix-list" : {
@@ -207,10 +496,71 @@
                     121
                   ]
                 },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    56
+                  ],
+                  "GigabitEthernet0/0" : [
+                    61
+                  ],
+                  "GigabitEthernet1/0" : [
+                    70
+                  ],
+                  "GigabitEthernet2/0" : [
+                    74
+                  ],
+                  "Loopback0" : [
+                    53
+                  ]
+                },
                 "ipv4 prefix-list" : {
                   "inbound_route_filter" : [
                     136,
                     137
+                  ]
+                }
+              },
+              "as2core1" : {
+                "interface" : {
+                  "Ethernet0/0" : [
+                    57
+                  ],
+                  "GigabitEthernet0/0" : [
+                    62
+                  ],
+                  "GigabitEthernet1/0" : [
+                    69
+                  ],
+                  "GigabitEthernet2/0" : [
+                    73
+                  ],
+                  "GigabitEthernet3/0" : [
+                    78
+                  ],
+                  "Loopback0" : [
+                    54
+                  ]
+                }
+              },
+              "as2core2" : {
+                "interface" : {
+                  "Ethernet0/0" : [
+                    57
+                  ],
+                  "GigabitEthernet0/0" : [
+                    62
+                  ],
+                  "GigabitEthernet1/0" : [
+                    70
+                  ],
+                  "GigabitEthernet2/0" : [
+                    75
+                  ],
+                  "GigabitEthernet3/0" : [
+                    80
+                  ],
+                  "Loopback0" : [
+                    54
                   ]
                 }
               },
@@ -228,6 +578,26 @@
                     116,
                     117
                   ]
+                },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    54
+                  ],
+                  "GigabitEthernet0/0" : [
+                    59
+                  ],
+                  "GigabitEthernet1/0" : [
+                    66
+                  ],
+                  "GigabitEthernet2/0" : [
+                    70
+                  ],
+                  "GigabitEthernet3/0" : [
+                    75
+                  ],
+                  "Loopback0" : [
+                    51
+                  ]
                 }
               },
               "as2dist1" : {
@@ -235,12 +605,46 @@
                   "102" : [
                     116
                   ]
+                },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    54
+                  ],
+                  "GigabitEthernet0/0" : [
+                    59
+                  ],
+                  "GigabitEthernet1/0" : [
+                    66
+                  ],
+                  "GigabitEthernet2/0" : [
+                    70
+                  ],
+                  "Loopback0" : [
+                    51
+                  ]
                 }
               },
               "as2dist2" : {
                 "extended ip access-list" : {
                   "102" : [
                     116
+                  ]
+                },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    54
+                  ],
+                  "GigabitEthernet0/0" : [
+                    59
+                  ],
+                  "GigabitEthernet1/0" : [
+                    66
+                  ],
+                  "GigabitEthernet2/0" : [
+                    70
+                  ],
+                  "Loopback0" : [
+                    51
                   ]
                 }
               },
@@ -253,6 +657,20 @@
                 "expanded community-list" : {
                   "as3_community" : [
                     115
+                  ]
+                },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    57
+                  ],
+                  "GigabitEthernet0/0" : [
+                    62
+                  ],
+                  "GigabitEthernet1/0" : [
+                    69
+                  ],
+                  "Loopback0" : [
+                    54
                   ]
                 },
                 "ipv4 prefix-list" : {
@@ -273,10 +691,46 @@
                     115
                   ]
                 },
+                "interface" : {
+                  "Ethernet0/0" : [
+                    57
+                  ],
+                  "GigabitEthernet0/0" : [
+                    62
+                  ],
+                  "GigabitEthernet1/0" : [
+                    69
+                  ],
+                  "Loopback0" : [
+                    54
+                  ]
+                },
                 "ipv4 prefix-list" : {
                   "inbound_route_filter" : [
                     121,
                     122
+                  ]
+                }
+              },
+              "as3core1" : {
+                "interface" : {
+                  "Ethernet0/0" : [
+                    57
+                  ],
+                  "GigabitEthernet0/0" : [
+                    62
+                  ],
+                  "GigabitEthernet1/0" : [
+                    69
+                  ],
+                  "GigabitEthernet2/0" : [
+                    73
+                  ],
+                  "GigabitEthernet3/0" : [
+                    77
+                  ],
+                  "Loopback0" : [
+                    54
                   ]
                 }
               }
@@ -308,7 +762,7 @@
         "summary" : {
           "numFailed" : 0,
           "numPassed" : 0,
-          "numResults" : 22
+          "numResults" : 87
         }
       }
     }

@@ -549,6 +549,603 @@
           ]
         }
       },
+      "unused:interface:Async1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Async1'",
+        "files" : {
+          "cisco_interface" : [
+            273
+          ]
+        }
+      },
+      "unused:interface:Bundle-Ethernet101" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Bundle-Ethernet101'",
+        "files" : {
+          "ios_xr_ospf" : [
+            17
+          ]
+        }
+      },
+      "unused:interface:Bundle-Ethernet103" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Bundle-Ethernet103'",
+        "files" : {
+          "ios_xr_ospf" : [
+            23
+          ]
+        }
+      },
+      "unused:interface:Bundle-Ethernet201" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Bundle-Ethernet201'",
+        "files" : {
+          "ios_xr_ospf" : [
+            27
+          ]
+        }
+      },
+      "unused:interface:Cable1/2/3" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Cable1/2/3'",
+        "files" : {
+          "cisco_cable" : [
+            143
+          ]
+        }
+      },
+      "unused:interface:Cable1/2/3:4" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Cable1/2/3:4'",
+        "files" : {
+          "cisco_interface" : [
+            275
+          ]
+        }
+      },
+      "unused:interface:Crypto-Engine1/2/3" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Crypto-Engine1/2/3'",
+        "files" : {
+          "cisco_interface" : [
+            277
+          ]
+        }
+      },
+      "unused:interface:Dot11Radio0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Dot11Radio0'",
+        "files" : {
+          "cisco_interface" : [
+            279
+          ]
+        }
+      },
+      "unused:interface:Ethernet0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet0'",
+        "files" : {
+          "arista_dhcp_relay" : [
+            9
+          ],
+          "cisco_interface" : [
+            7
+          ],
+          "cisco_vrrp" : [
+            4
+          ],
+          "host2" : [
+            4
+          ]
+        }
+      },
+      "unused:interface:Ethernet0/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet0/0'",
+        "files" : {
+          "asa_ospf" : [
+            5
+          ],
+          "cisco_ospf" : [
+            7
+          ],
+          "nxos_interface" : [
+            5
+          ]
+        }
+      },
+      "unused:interface:Ethernet1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet1'",
+        "files" : {
+          "arista_dhcp_relay" : [
+            13
+          ],
+          "host2" : [
+            7
+          ],
+          "mos_interface" : [
+            6
+          ]
+        }
+      },
+      "unused:interface:Ethernet1/11" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet1/11'",
+        "files" : {
+          "cisco_interface" : [
+            281
+          ]
+        }
+      },
+      "unused:interface:Ethernet1/12" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet1/12'",
+        "files" : {
+          "cisco_interface" : [
+            318
+          ]
+        }
+      },
+      "unused:interface:Ethernet1/15" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet1/15'",
+        "files" : {
+          "foundry_interface" : [
+            5
+          ]
+        }
+      },
+      "unused:interface:Ethernet2" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet2'",
+        "files" : {
+          "mos_interface" : [
+            9
+          ]
+        }
+      },
+      "unused:interface:Ethernet6/0.0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet6/0.0'",
+        "files" : {
+          "cadant_interface" : [
+            104
+          ]
+        }
+      },
+      "unused:interface:Ethernet6/0.48" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet6/0.48'",
+        "files" : {
+          "cadant_interface" : [
+            124
+          ]
+        }
+      },
+      "unused:interface:Ethernet6/1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Ethernet6/1'",
+        "files" : {
+          "cadant_interface" : [
+            129
+          ]
+        }
+      },
+      "unused:interface:FastEthernet0/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'FastEthernet0/0'",
+        "files" : {
+          "variables" : [
+            4
+          ],
+          "variables_dos" : [
+            4
+          ]
+        }
+      },
+      "unused:interface:FastEthernet0/1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'FastEthernet0/1'",
+        "files" : {
+          "switchport_range" : [
+            4
+          ]
+        }
+      },
+      "unused:interface:FastEthernet12/13" : {
+        "description" : "Unused structure of type: 'interface' with name: 'FastEthernet12/13'",
+        "files" : {
+          "interface_name" : [
+            3
+          ]
+        }
+      },
+      "unused:interface:GigabitEthernet0/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet0/0'",
+        "files" : {
+          "cisco_interface" : [
+            283
+          ],
+          "cisco_isis" : [
+            56
+          ]
+        }
+      },
+      "unused:interface:GigabitEthernet0/0/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet0/0/0'",
+        "files" : {
+          "aruba_interface" : [
+            4
+          ]
+        }
+      },
+      "unused:interface:GigabitEthernet0/0/1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet0/0/1'",
+        "files" : {
+          "cisco_isis" : [
+            10
+          ]
+        }
+      },
+      "unused:interface:GigabitEthernet0/1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet0/1'",
+        "files" : {
+          "cisco_flow" : [
+            52
+          ],
+          "cisco_isis" : [
+            4
+          ]
+        }
+      },
+      "unused:interface:GigabitEthernet0/2/1/6" : {
+        "description" : "Unused structure of type: 'interface' with name: 'GigabitEthernet0/2/1/6'",
+        "files" : {
+          "ios_xr_isis" : [
+            5
+          ]
+        }
+      },
+      "unused:interface:HundredGigabitEthernet0/0/0/0.2302" : {
+        "description" : "Unused structure of type: 'interface' with name: 'HundredGigabitEthernet0/0/0/0.2302'",
+        "files" : {
+          "cisco_isis" : [
+            8
+          ]
+        }
+      },
+      "unused:interface:HundredGigabitEthernet0/2/0/0.292" : {
+        "description" : "Unused structure of type: 'interface' with name: 'HundredGigabitEthernet0/2/0/0.292'",
+        "files" : {
+          "ios_xr_ospf" : [
+            41
+          ]
+        }
+      },
+      "unused:interface:HundredGigabitEthernet0/2/0/3" : {
+        "description" : "Unused structure of type: 'interface' with name: 'HundredGigabitEthernet0/2/0/3'",
+        "files" : {
+          "ios_xr_ospf" : [
+            43
+          ]
+        }
+      },
+      "unused:interface:HundredGigabitEthernet0/6/0/8" : {
+        "description" : "Unused structure of type: 'interface' with name: 'HundredGigabitEthernet0/6/0/8'",
+        "files" : {
+          "interface_name" : [
+            10
+          ]
+        }
+      },
+      "unused:interface:Loopback0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Loopback0'",
+        "files" : {
+          "cisco_interface" : [
+            289
+          ],
+          "cisco_isis" : [
+            104
+          ],
+          "cisco_ospf" : [
+            4
+          ],
+          "interface_sdr" : [
+            4
+          ],
+          "ios_xr_ospf" : [
+            32
+          ]
+        }
+      },
+      "unused:interface:Loopback1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Loopback1'",
+        "files" : {
+          "pim" : [
+            25
+          ]
+        }
+      },
+      "unused:interface:Management1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Management1'",
+        "files" : {
+          "mos_interface" : [
+            16
+          ]
+        }
+      },
+      "unused:interface:Modular-Cable1/2/3:4" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Modular-Cable1/2/3:4'",
+        "files" : {
+          "cisco_interface" : [
+            291
+          ]
+        }
+      },
+      "unused:interface:Null0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Null0'",
+        "files" : {
+          "cisco_interface" : [
+            293
+          ]
+        }
+      },
+      "unused:interface:Port-Channel1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Port-Channel1'",
+        "files" : {
+          "interface_name" : [
+            7
+          ]
+        }
+      },
+      "unused:interface:Serial4/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Serial4/0'",
+        "files" : {
+          "cisco_isis" : [
+            6
+          ]
+        }
+      },
+      "unused:interface:TenGigabitEthernet0/0/0/2" : {
+        "description" : "Unused structure of type: 'interface' with name: 'TenGigabitEthernet0/0/0/2'",
+        "files" : {
+          "ios_xr_ospf" : [
+            50
+          ]
+        }
+      },
+      "unused:interface:TenGigabitEthernet0/0/0/4" : {
+        "description" : "Unused structure of type: 'interface' with name: 'TenGigabitEthernet0/0/0/4'",
+        "files" : {
+          "ios_xr_ospf" : [
+            35
+          ]
+        }
+      },
+      "unused:interface:TenGigabitEthernet0/0/0/5" : {
+        "description" : "Unused structure of type: 'interface' with name: 'TenGigabitEthernet0/0/0/5'",
+        "files" : {
+          "ios_xr_ospf" : [
+            38
+          ]
+        }
+      },
+      "unused:interface:TenGigabitEthernet0/0/2/2" : {
+        "description" : "Unused structure of type: 'interface' with name: 'TenGigabitEthernet0/0/2/2'",
+        "files" : {
+          "cisco_hsrp" : [
+            33
+          ]
+        }
+      },
+      "unused:interface:Vlan1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan1'",
+        "files" : {
+          "arista_interface" : [
+            4
+          ],
+          "cisco_interface" : [
+            302
+          ]
+        }
+      },
+      "unused:interface:Vlan100" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan100'",
+        "files" : {
+          "interface_name" : [
+            5
+          ]
+        }
+      },
+      "unused:interface:Vlan1005" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan1005'",
+        "files" : {
+          "cisco_interface" : [
+            308
+          ]
+        }
+      },
+      "unused:interface:Vlan1006" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan1006'",
+        "files" : {
+          "cisco_interface" : [
+            310
+          ]
+        }
+      },
+      "unused:interface:Vlan111" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan111'",
+        "files" : {
+          "cisco_interface" : [
+            297
+          ]
+        }
+      },
+      "unused:interface:Vlan1234" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan1234'",
+        "files" : {
+          "cisco_interface" : [
+            312
+          ]
+        }
+      },
+      "unused:interface:Vlan2" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan2'",
+        "files" : {
+          "cisco_interface" : [
+            304
+          ]
+        }
+      },
+      "unused:interface:Vlan3" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan3'",
+        "files" : {
+          "cisco_interface" : [
+            306
+          ]
+        }
+      },
+      "unused:interface:Vlan303" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan303'",
+        "files" : {
+          "interface_exit" : [
+            17
+          ]
+        }
+      },
+      "unused:interface:Vlan4094" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan4094'",
+        "files" : {
+          "cisco_interface" : [
+            314
+          ]
+        }
+      },
+      "unused:interface:Vlan803" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vlan803'",
+        "files" : {
+          "interface_exit" : [
+            4
+          ]
+        }
+      },
+      "unused:interface:Vxlan1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Vxlan1'",
+        "files" : {
+          "cisco_interface" : [
+            299
+          ]
+        }
+      },
+      "unused:interface:Wideband-Cable1/2/3:4" : {
+        "description" : "Unused structure of type: 'interface' with name: 'Wideband-Cable1/2/3:4'",
+        "files" : {
+          "cisco_interface" : [
+            316
+          ]
+        }
+      },
+      "unused:interface:ap1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'ap1'",
+        "files" : {
+          "mos_interface" : [
+            4
+          ]
+        }
+      },
+      "unused:interface:cable-downstream1/2" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-downstream1/2'",
+        "files" : {
+          "cadant_interface" : [
+            5
+          ]
+        }
+      },
+      "unused:interface:cable-downstream1/2/3" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-downstream1/2/3'",
+        "files" : {
+          "cadant_interface" : [
+            8
+          ]
+        }
+      },
+      "unused:interface:cable-downstream5/0/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-downstream5/0/0'",
+        "files" : {
+          "cadant_interface" : [
+            15
+          ]
+        }
+      },
+      "unused:interface:cable-mac1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-mac1'",
+        "files" : {
+          "cadant_interface" : [
+            39
+          ]
+        }
+      },
+      "unused:interface:cable-mac1.1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-mac1.1'",
+        "files" : {
+          "cadant_interface" : [
+            59
+          ]
+        }
+      },
+      "unused:interface:cable-mac1.2" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-mac1.2'",
+        "files" : {
+          "cadant_interface" : [
+            88
+          ]
+        }
+      },
+      "unused:interface:cable-mac2" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-mac2'",
+        "files" : {
+          "cadant_interface" : [
+            40
+          ]
+        }
+      },
+      "unused:interface:cable-mac3" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-mac3'",
+        "files" : {
+          "cadant_interface" : [
+            41
+          ]
+        }
+      },
+      "unused:interface:cable-upstream1/0/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-upstream1/0/0'",
+        "files" : {
+          "cadant_interface" : [
+            21
+          ]
+        }
+      },
+      "unused:interface:cable-upstream1/0/0.0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-upstream1/0/0.0'",
+        "files" : {
+          "cadant_interface" : [
+            31
+          ]
+        }
+      },
+      "unused:interface:cable-upstream1/0/10" : {
+        "description" : "Unused structure of type: 'interface' with name: 'cable-upstream1/0/10'",
+        "files" : {
+          "cadant_interface" : [
+            29
+          ]
+        }
+      },
+      "unused:interface:mgmt6/0" : {
+        "description" : "Unused structure of type: 'interface' with name: 'mgmt6/0'",
+        "files" : {
+          "cadant_interface" : [
+            134
+          ]
+        }
+      },
+      "unused:interface:nve1" : {
+        "description" : "Unused structure of type: 'interface' with name: 'nve1'",
+        "files" : {
+          "nxos_interface" : [
+            10
+          ]
+        }
+      },
+      "unused:interface:tunnel-ip6" : {
+        "description" : "Unused structure of type: 'interface' with name: 'tunnel-ip6'",
+        "files" : {
+          "cisco_interface" : [
+            295
+          ]
+        }
+      },
       "unused:ipv4 prefix-list:A+C" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'A+C'",
         "files" : {
@@ -1269,7 +1866,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 127
+      "numResults" : 211
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1301,6 +1898,30 @@
           ]
         }
       },
+      "arista_dhcp_relay" : {
+        "interface" : {
+          "Ethernet0" : [
+            9
+          ],
+          "Ethernet1" : [
+            13
+          ]
+        }
+      },
+      "arista_interface" : {
+        "interface" : {
+          "Vlan1" : [
+            4
+          ]
+        }
+      },
+      "aruba_interface" : {
+        "interface" : {
+          "GigabitEthernet0/0/0" : [
+            4
+          ]
+        }
+      },
       "as_path_prepend" : {
         "route-map" : {
           "rmap" : [
@@ -1320,6 +1941,13 @@
         },
         "standard ip access-list" : {
           "Local_LAN_Access" : [
+            5
+          ]
+        }
+      },
+      "asa_ospf" : {
+        "interface" : {
+          "Ethernet0/0" : [
             5
           ]
         }
@@ -1399,6 +2027,55 @@
         "docsis-policy" : {
           "1" : [
             48
+          ]
+        }
+      },
+      "cadant_interface" : {
+        "interface" : {
+          "Ethernet6/0.0" : [
+            104
+          ],
+          "Ethernet6/0.48" : [
+            124
+          ],
+          "Ethernet6/1" : [
+            129
+          ],
+          "cable-downstream1/2" : [
+            5
+          ],
+          "cable-downstream1/2/3" : [
+            8
+          ],
+          "cable-downstream5/0/0" : [
+            15
+          ],
+          "cable-mac1" : [
+            39
+          ],
+          "cable-mac1.1" : [
+            59
+          ],
+          "cable-mac1.2" : [
+            88
+          ],
+          "cable-mac2" : [
+            40
+          ],
+          "cable-mac3" : [
+            41
+          ],
+          "cable-upstream1/0/0" : [
+            21
+          ],
+          "cable-upstream1/0/0.0" : [
+            31
+          ],
+          "cable-upstream1/0/10" : [
+            29
+          ],
+          "mgmt6/0" : [
+            134
           ]
         }
       },
@@ -1522,6 +2199,11 @@
           "4" : [
             51
           ]
+        },
+        "interface" : {
+          "Cable1/2/3" : [
+            143
+          ]
         }
       },
       "cisco_crypto" : {
@@ -1569,6 +2251,90 @@
           "bloop_blop" : [
             90,
             91
+          ]
+        }
+      },
+      "cisco_flow" : {
+        "interface" : {
+          "GigabitEthernet0/1" : [
+            52
+          ]
+        }
+      },
+      "cisco_hsrp" : {
+        "interface" : {
+          "TenGigabitEthernet0/0/2/2" : [
+            33
+          ]
+        }
+      },
+      "cisco_interface" : {
+        "interface" : {
+          "Async1" : [
+            273
+          ],
+          "Cable1/2/3:4" : [
+            275
+          ],
+          "Crypto-Engine1/2/3" : [
+            277
+          ],
+          "Dot11Radio0" : [
+            279
+          ],
+          "Ethernet0" : [
+            7
+          ],
+          "Ethernet1/11" : [
+            281
+          ],
+          "Ethernet1/12" : [
+            318
+          ],
+          "GigabitEthernet0/0" : [
+            283
+          ],
+          "Loopback0" : [
+            289
+          ],
+          "Modular-Cable1/2/3:4" : [
+            291
+          ],
+          "Null0" : [
+            293
+          ],
+          "Vlan1" : [
+            302
+          ],
+          "Vlan1005" : [
+            308
+          ],
+          "Vlan1006" : [
+            310
+          ],
+          "Vlan111" : [
+            297
+          ],
+          "Vlan1234" : [
+            312
+          ],
+          "Vlan2" : [
+            304
+          ],
+          "Vlan3" : [
+            306
+          ],
+          "Vlan4094" : [
+            314
+          ],
+          "Vxlan1" : [
+            299
+          ],
+          "Wideband-Cable1/2/3:4" : [
+            316
+          ],
+          "tunnel-ip6" : [
+            295
           ]
         }
       },
@@ -1623,6 +2389,28 @@
           ]
         }
       },
+      "cisco_isis" : {
+        "interface" : {
+          "GigabitEthernet0/0" : [
+            56
+          ],
+          "GigabitEthernet0/0/1" : [
+            10
+          ],
+          "GigabitEthernet0/1" : [
+            4
+          ],
+          "HundredGigabitEthernet0/0/0/0.2302" : [
+            8
+          ],
+          "Loopback0" : [
+            104
+          ],
+          "Serial4/0" : [
+            6
+          ]
+        }
+      },
       "cisco_l2tp" : {
         "l2tp-class" : {
           "foobar" : [
@@ -1665,6 +2453,16 @@
           "SVCGRP-ICMP" : [
             176,
             177
+          ]
+        }
+      },
+      "cisco_ospf" : {
+        "interface" : {
+          "Ethernet0/0" : [
+            7
+          ],
+          "Loopback0" : [
+            4
           ]
         }
       },
@@ -1757,6 +2555,13 @@
           ]
         }
       },
+      "cisco_vrrp" : {
+        "interface" : {
+          "Ethernet0" : [
+            4
+          ]
+        }
+      },
       "community-name-numbers" : {
         "route-map" : {
           "AAA1-BBB-CCC" : [
@@ -1824,6 +2629,56 @@
           ]
         }
       },
+      "foundry_interface" : {
+        "interface" : {
+          "Ethernet1/15" : [
+            5
+          ]
+        }
+      },
+      "host2" : {
+        "interface" : {
+          "Ethernet0" : [
+            4
+          ],
+          "Ethernet1" : [
+            7
+          ]
+        }
+      },
+      "interface_exit" : {
+        "interface" : {
+          "Vlan303" : [
+            17
+          ],
+          "Vlan803" : [
+            4
+          ]
+        }
+      },
+      "interface_name" : {
+        "interface" : {
+          "FastEthernet12/13" : [
+            3
+          ],
+          "HundredGigabitEthernet0/6/0/8" : [
+            10
+          ],
+          "Port-Channel1" : [
+            7
+          ],
+          "Vlan100" : [
+            5
+          ]
+        }
+      },
+      "interface_sdr" : {
+        "interface" : {
+          "Loopback0" : [
+            4
+          ]
+        }
+      },
       "ios_xr_bgp_neighbor_group" : {
         "bgp group" : {
           "blabbety" : [
@@ -1845,6 +2700,44 @@
           ],
           "blibber" : [
             15
+          ]
+        }
+      },
+      "ios_xr_isis" : {
+        "interface" : {
+          "GigabitEthernet0/2/1/6" : [
+            5
+          ]
+        }
+      },
+      "ios_xr_ospf" : {
+        "interface" : {
+          "Bundle-Ethernet101" : [
+            17
+          ],
+          "Bundle-Ethernet103" : [
+            23
+          ],
+          "Bundle-Ethernet201" : [
+            27
+          ],
+          "HundredGigabitEthernet0/2/0/0.292" : [
+            41
+          ],
+          "HundredGigabitEthernet0/2/0/3" : [
+            43
+          ],
+          "Loopback0" : [
+            32
+          ],
+          "TenGigabitEthernet0/0/0/2" : [
+            50
+          ],
+          "TenGigabitEthernet0/0/0/4" : [
+            35
+          ],
+          "TenGigabitEthernet0/0/0/5" : [
+            38
           ]
         }
       },
@@ -1944,6 +2837,22 @@
           ]
         }
       },
+      "mos_interface" : {
+        "interface" : {
+          "Ethernet1" : [
+            6
+          ],
+          "Ethernet2" : [
+            9
+          ],
+          "Management1" : [
+            16
+          ],
+          "ap1" : [
+            4
+          ]
+        }
+      },
       "named_and_numbered_lists" : {
         "route-map" : {
           "foo" : [
@@ -2015,6 +2924,16 @@
           ],
           "standard" : [
             7
+          ]
+        }
+      },
+      "nxos_interface" : {
+        "interface" : {
+          "Ethernet0/0" : [
+            5
+          ],
+          "nve1" : [
+            10
           ]
         }
       },
@@ -2133,6 +3052,13 @@
           ]
         }
       },
+      "pim" : {
+        "interface" : {
+          "Loopback1" : [
+            25
+          ]
+        }
+      },
       "preSet" : {
         "prefix-set" : {
           "default_route" : [
@@ -2183,6 +3109,13 @@
           ]
         }
       },
+      "switchport_range" : {
+        "interface" : {
+          "FastEthernet0/1" : [
+            4
+          ]
+        }
+      },
       "tcpflags" : {
         "extended ip access-list" : {
           "100" : [
@@ -2200,6 +3133,20 @@
           "JKL_MNO_PQR" : [
             4,
             5
+          ]
+        }
+      },
+      "variables" : {
+        "interface" : {
+          "FastEthernet0/0" : [
+            4
+          ]
+        }
+      },
+      "variables_dos" : {
+        "interface" : {
+          "FastEthernet0/0" : [
+            4
           ]
         }
       }

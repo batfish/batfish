@@ -812,6 +812,11 @@ if_spanning_tree
    )
 ;
 
+if_speed_auto
+:
+   SPEED AUTO NEWLINE
+;
+
 if_speed_eos
 :
    SPEED
@@ -824,6 +829,51 @@ if_speed_eos
 if_speed_ios
 :
    SPEED mbits = DEC NEWLINE
+;
+
+if_speed_ios_dot11radio
+:
+// https://www.cisco.com/en/US/docs/routers/access/800/880/software/configuration/guide/880_radio_config.html
+   SPEED
+   (
+      BASIC_1_0
+      | BASIC_2_0
+      | BASIC_5_5
+      | BASIC_6_0
+      | BASIC_9_0
+      | BASIC_11_0
+      | BASIC_12_0
+      | BASIC_18_0
+      | BASIC_24_0
+      | BASIC_36_0
+      | BASIC_48_0
+      | BASIC_54_0
+      | DEFAULT
+      | FLOAT
+      | M0_7
+      | M0_DOT
+      | M1_DOT
+      | M2_DOT
+      | M3_DOT
+      | M4_DOT
+      | M5_DOT
+      | M6_DOT
+      | M7_DOT
+      | M8_15
+      | M8_DOT
+      | M9_DOT
+      | M10_DOT
+      | M11_DOT
+      | M12_DOT
+      | M13_DOT
+      | M14_DOT
+      | M15_DOT
+      | OFDM
+      | OFDM_THROUGHPUT
+      | ONLY_OFDM
+      | RANGE
+      | THROUGHPUT
+   )* NEWLINE
 ;
 
 if_st_null
@@ -1217,8 +1267,10 @@ s_interface
       | if_private_vlan
       | if_shutdown
       | if_spanning_tree
+      | if_speed_auto
       | if_speed_eos
       | if_speed_ios
+      | if_speed_ios_dot11radio
       | if_switchport
       | if_switchport_access
       | if_switchport_mode

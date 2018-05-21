@@ -279,9 +279,60 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "as1r1" : { },
-        "as1r2" : { },
-        "as2r1" : { }
+        "as1r1" : {
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "as1r2" : {
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
+        "as2r1" : {
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "FastEthernet0/1" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                10
+              ],
+              "numReferrers" : 0
+            }
+          }
+        }
       },
       "version" : "0.36.0"
     },

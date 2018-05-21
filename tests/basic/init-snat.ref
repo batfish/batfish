@@ -47,6 +47,20 @@
               "numReferrers" : 1
             }
           },
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            }
+          },
           "ipv4 prefix-list" : {
             "pl-atlantis-to-us-mcast" : {
               "definitionLines" : [
@@ -91,7 +105,22 @@
             }
           }
         },
-        "us_switch" : { }
+        "us_switch" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 0
+            }
+          }
+        }
       },
       "version" : "0.36.0"
     },

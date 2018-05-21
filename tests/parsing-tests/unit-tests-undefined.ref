@@ -162,6 +162,19 @@
           ]
         }
       },
+      "undefined:interface:usage:interface channel-group:Port-Channel1" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'interface channel-group' named 'Port-Channel1'",
+        "files" : {
+          "cisco_interface" : [
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
+          ]
+        }
+      },
       "undefined:interface:usage:router vrrp interface:GigabitEthernet0/0/0/19" : {
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'GigabitEthernet0/0/0/19'",
         "files" : {
@@ -1040,7 +1053,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 128
+      "numResults" : 129
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1294,6 +1307,18 @@
         }
       },
       "cisco_interface" : {
+        "interface" : {
+          "Port-Channel1" : {
+            "interface channel-group" : [
+              24,
+              25,
+              26,
+              27,
+              28,
+              29
+            ]
+          }
+        },
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
