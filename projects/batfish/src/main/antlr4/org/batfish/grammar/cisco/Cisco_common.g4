@@ -396,7 +396,8 @@ prefix_set_elem
 
 protocol
 :
-   AHP
+   AH
+   | AHP
    | DEC
    | EIGRP
    | ESP
