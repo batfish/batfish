@@ -1124,6 +1124,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.INSPECT_POLICY_MAP, usage);
   }
 
+  private void markInterfaces(CiscoStructureUsage usage) {
+    markConcreteStructure(CiscoStructureType.INTERFACE, usage);
+  }
+
   private void markIpOrMacAcls(CiscoStructureUsage usage) {
     markAbstractStructure(
         CiscoStructureType.ACCESS_LIST,
@@ -2373,6 +2377,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
+    newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setBandwidth(iface.getBandwidth());
@@ -3635,6 +3640,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // mark references to mac-ACLs that may not appear in data model
     // TODO: fill in
+
+    markInterfaces(CiscoStructureUsage.INTERFACE_CHANNEL_GROUP);
 
     markPrefixLists(CiscoStructureUsage.ROUTE_MAP_MATCH_IP_PREFIX_LIST);
     markPrefix6Lists(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);

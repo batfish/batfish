@@ -4406,6 +4406,11 @@ FORCE
    'force'
 ;
 
+FORCED
+:
+   'forced'
+;
+
 FOR
 :
    'for'
@@ -4414,6 +4419,11 @@ FOR
 FORMAT
 :
    'format'
+;
+
+FORTYG_FULL
+:
+  '40gfull'
 ;
 
 FORWARD_DIGITS
@@ -7623,9 +7633,19 @@ ONE
    'one'
 ;
 
+ONE_HUNDRED_FULL
+:
+  '100full'
+;
+
 ONE_OUT_OF
 :
    'one-out-of'
+;
+
+ONE_THOUSAND_FULL
+:
+  '1000full'
 ;
 
 ONEP
@@ -11158,6 +11178,11 @@ TELNET_SERVER
 TEMPLATE
 :
    'template'
+;
+
+TEN_THOUSAND_FULL
+:
+  '10000full'
 ;
 
 TERMINAL

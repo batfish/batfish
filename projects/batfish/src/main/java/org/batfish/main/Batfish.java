@@ -3154,17 +3154,83 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
         }
-        // Compute OSPF interface costs where they are missing
-        OspfProcess proc = vrf.getOspfProcess();
-        if (proc != null) {
-          proc.initInterfaceCosts(c);
-        }
       }
       // If device was not a host or router, call it a switch
       if (c.getDeviceType() == null) {
         c.setDeviceType(DeviceType.SWITCH);
       }
     }
+  }
+
+  private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(
+                        v -> {
+                          v.getInterfaces()
+                              .forEach(
+                                  (ifaceName, iface) -> {
+                                    String portChannelName = iface.getChannelGroup();
+                                    if (portChannelName == null) {
+                                      return;
+                                    }
+                                    Interface portChannel = v.getInterfaces().get(portChannelName);
+                                    if (portChannel == null) {
+                                      return;
+                                    }
+                                    portChannel.setChannelGroupMembers(
+                                        ImmutableSortedSet.<String>naturalOrder()
+                                            .addAll(portChannel.getChannelGroupMembers())
+                                            .add(ifaceName)
+                                            .build());
+                                  });
+                          v.getInterfaces()
+                              .values()
+                              .stream()
+                              .filter(i -> i.getInterfaceType() == InterfaceType.AGGREGATED)
+                              .forEach(
+                                  i -> {
+                                    if (i.getChannelGroupMembers().isEmpty()) {
+                                      i.setActive(false);
+                                    } else {
+                                      i.setBandwidth(
+                                          i.getChannelGroupMembers()
+                                              .stream()
+                                              .mapToDouble(
+                                                  ifaceName ->
+                                                      v.getInterfaces()
+                                                          .get(ifaceName)
+                                                          .getBandwidth())
+                                              .sum());
+                                    }
+                                  });
+                        }));
+  }
+
+  private void postProcessForEnvironment(Map<String, Configuration> configurations) {
+    postProcessAggregatedInterfaces(configurations);
+    postProcessOspfCosts(configurations);
+  }
+
+  private void postProcessOspfCosts(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(
+                        vrf -> {
+                          // Compute OSPF interface costs where they are missing
+                          OspfProcess proc = vrf.getOspfProcess();
+                          if (proc != null) {
+                            proc.initInterfaceCosts(c);
+                          }
+                        }));
   }
 
   private void printSymmetricEdgePairs() {
@@ -3653,6 +3719,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void applyEnvironment(Map<String, Configuration> configurationsWithoutEnvironment) {
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
+    postProcessForEnvironment(configurationsWithoutEnvironment);
 
     serializeObject(
         veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());

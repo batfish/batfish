@@ -6,6 +6,14 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+eos_bandwidth_specifier
+:
+   FORTYG_FULL
+   | TEN_THOUSAND_FULL
+   | ONE_HUNDRED_FULL
+   | ONE_THOUSAND_FULL
+;
+
 if_autostate
 :
    NO? AUTOSTATE NEWLINE
@@ -680,7 +688,6 @@ if_null_block
       | SIGNALLED_NAME
       | SONET
       | SOURCE
-      | SPEED
       | SPEED_DUPLEX
       | SNMP
       | SRR_QUEUE
@@ -803,6 +810,20 @@ if_spanning_tree
       | if_st_portfast
       | NEWLINE
    )
+;
+
+if_speed_eos
+:
+   SPEED
+   (
+      AUTO
+      | FORCED
+   )? eos_bandwidth_specifier NEWLINE
+;
+
+if_speed_ios
+:
+   SPEED mbits = DEC NEWLINE
 ;
 
 if_st_null
@@ -1196,6 +1217,8 @@ s_interface
       | if_private_vlan
       | if_shutdown
       | if_spanning_tree
+      | if_speed_eos
+      | if_speed_ios
       | if_switchport
       | if_switchport_access
       | if_switchport_mode
