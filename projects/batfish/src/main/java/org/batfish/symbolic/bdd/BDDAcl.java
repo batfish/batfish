@@ -184,7 +184,7 @@ public class BDDAcl {
    * representing the advertisement prefix.
    *
    * Note: We assume the prefix is never modified, so it will
-   * be a bitvector containing only the underlying routeVariables:
+   * be a bitvector containing only the underlying variables:
    * [var(0), ..., var(n)]
    */
   private BDD firstBitsEqual(BDD[] bits, Prefix p, int length) {

@@ -94,11 +94,11 @@ import org.batfish.symbolic.collections.PList;
  * stateless representation
  *
  * <p>The TransferSSA class makes policies stateless by converting the vendor-independent format to
- * a Static Single Assignment (SSA) form where all updates are reflected in new routeVariables.
+ * a Static Single Assignment (SSA) form where all updates are reflected in new variables.
  * Rather than create a full control flow graph (CFG) as is typically done in SSA, we use a simple
  * conversion based on adding merge points for every variable modified in an if statement.
  *
- * <p>The joint point defined as the [phi] function from SSA merges routeVariables that may differ
+ * <p>The joint point defined as the [phi] function from SSA merges variables that may differ
  * across different branches of an if statement. For example, if there is the following filter:
  *
  * <p>if match(c1) then add community c2 else prepend path 2
@@ -108,7 +108,7 @@ import org.batfish.symbolic.collections.PList;
  *
  * <p>c2' = (c1 ? true : c2) metric' = (c1 ? metric : metric + 2)
  *
- * <p>To model the return value of functions, we introduce three new routeVariables: [fallthrough],
+ * <p>To model the return value of functions, we introduce three new variables: [fallthrough],
  * [returnValue] and [returnAssigned]. For example, if we have the following AST function in
  * Batfish:
  *
