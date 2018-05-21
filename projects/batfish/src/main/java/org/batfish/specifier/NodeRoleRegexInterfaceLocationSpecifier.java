@@ -5,6 +5,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.batfish.role.NodeRole;
 
+/**
+ * A {@link LocationSpecifier} specifying interfaces belonging to nodes with roles matching the
+ * input dimension and regex.
+ */
 public class NodeRoleRegexInterfaceLocationSpecifier implements LocationSpecifier {
   private final String _roleDimension;
 

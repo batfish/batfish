@@ -4,6 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * A {@link LocationSpecifier} specifying interfaces that belong to VRFs with names matching the
+ * input regex.
+ */
 public class VrfNameRegexInterfaceLocationSpecifier implements LocationSpecifier {
   private final Pattern _pattern;
 

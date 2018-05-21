@@ -4,6 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * A {@link LocationSpecifier} specifying VRFs belonging to nodes with names matching the input
+ * regex.
+ */
 public class NodeNameRegexVrfLocationSpecifier implements LocationSpecifier {
   private final Pattern _nodeNamePattern;
 

@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/**
+ * A {@link LocationSpecifier} specifying all interfaces whose description matches the input regex.
+ */
 public class DescriptionRegexInterfaceLocationSpecifier implements LocationSpecifier {
   private final Pattern _pattern;
 

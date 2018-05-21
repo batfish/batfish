@@ -3,6 +3,7 @@ package org.batfish.specifier;
 import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 
+/** A {@link LocationSpecifier} specifying all interfaces in the network. */
 public class AllInterfacesLocationSpecifier implements LocationSpecifier {
   public static final LocationSpecifier INSTANCE = new AllInterfacesLocationSpecifier();
 

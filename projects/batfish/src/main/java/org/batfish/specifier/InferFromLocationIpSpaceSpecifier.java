@@ -9,10 +9,14 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.IpSpace;
 
+/**
+ * An {@link IpSpaceSpecifier} that specifies the {@link IpSpace} owned by each {@link Location}.
+ */
 public class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier {
   public static final InferFromLocationIpSpaceSpecifier INSTANCE =
       new InferFromLocationIpSpaceSpecifier();
 
+  /** A {@link LocationVisitor} that returns the {@link IpSpace} owned by that {@link Location}. */
   class IpSpaceLocationVisitor implements LocationVisitor<IpSpace> {
     private final SpecifierContext _specifierContext;
 

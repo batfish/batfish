@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/** A {@link LocationSpecifier} specifying interfaces with names matching the input regex. */
 public class NameRegexInterfaceLocationSpecifier implements LocationSpecifier {
   private final Pattern _pattern;
 

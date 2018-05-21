@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import java.util.regex.Pattern;
 
+/** A {@link LocationSpecifierFactory} that builds {@link NameRegexInterfaceLocationSpecifier}s. */
 public class NameRegexInterfaceLocationSpecifierFactory
     extends TypedLocationSpecifierFactory<Pattern> {
   @Override

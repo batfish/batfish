@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/** A {@link LocationSpecifier} specifying VRFs with names matching the input regex. */
 public class NameRegexVrfLocationSpecifier implements LocationSpecifier {
   public static final NameRegexVrfLocationSpecifier ALL_VRFS =
       new NameRegexVrfLocationSpecifier(Pattern.compile(".*"));

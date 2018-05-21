@@ -3,6 +3,10 @@ package org.batfish.specifier;
 import com.google.common.collect.Sets;
 import java.util.Set;
 
+/**
+ * A {@link LocationSpecifier} that specifies the set intersection of nodes specified by two other
+ * specifiers.
+ */
 public class IntersectionLocationSpecifier implements LocationSpecifier {
   private final LocationSpecifier _locationSpecifier1;
 
