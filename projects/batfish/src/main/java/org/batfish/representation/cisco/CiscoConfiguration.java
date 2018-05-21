@@ -3695,8 +3695,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // object-group
     markNetworkObjectGroups(
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
-        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT);
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
     markAbstractStructure(
         CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,
