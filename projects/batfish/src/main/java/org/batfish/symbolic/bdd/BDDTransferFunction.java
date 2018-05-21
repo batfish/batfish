@@ -23,10 +23,6 @@ public class BDDTransferFunction {
     return _filter;
   }
 
-  public String debug() {
-    return this.getRoute().dot(this.getFilter());
-  }
-
   @Override
   public boolean equals(Object o) {
     if (this == o) {

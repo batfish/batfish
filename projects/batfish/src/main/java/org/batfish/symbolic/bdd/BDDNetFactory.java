@@ -49,7 +49,7 @@ public class BDDNetFactory {
 
   private BDDNetConfig _config;
 
-  private Set<CommunityVar> _allCommunities;
+  private List<CommunityVar> _allCommunities;
 
   private List<String> _allRouters;
 
@@ -195,7 +195,7 @@ public class BDDNetFactory {
     */
     _pairing = _factory.makePair();
     _config = config;
-    _allCommunities = g.getAllCommunities();
+    _allCommunities = new ArrayList<>(g.getAllCommunities());
     _allRouters = new ArrayList<>(g.getRouters());
     _allLocalPrefs = new ArrayList<>(BDDUtils.findAllLocalPrefs(g));
 
@@ -323,6 +323,48 @@ public class BDDNetFactory {
     return _factory;
   }
 
+  public String dot(BDD bdd) {
+    StringBuilder sb = new StringBuilder();
+    sb.append("digraph G {\n");
+    if (!bdd.isOne()) {
+      sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    }
+    if (!bdd.isZero()) {
+      sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
+    }
+    dotRec(sb, bdd, new HashSet<>());
+    sb.append("}");
+    return sb.toString();
+  }
+
+  private Integer dotId(BDD bdd) {
+    if (bdd.isZero()) {
+      return 0;
+    }
+    if (bdd.isOne()) {
+      return 1;
+    }
+    return bdd.hashCode() + 2;
+  }
+
+  private void dotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
+    if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
+      return;
+    }
+    int val = dotId(bdd);
+    int valLow = dotId(bdd.low());
+    int valHigh = dotId(bdd.high());
+    String rname = _routeVariables._bitNames.get(bdd.var());
+    String pname = _packetVariables._bitNames.get(bdd.var());
+    String name = (rname == null ? pname : rname);
+    sb.append(val).append(" [label=\"").append(name).append("\"]\n");
+    sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
+    sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
+    visited.add(bdd);
+    dotRec(sb, bdd.low(), visited);
+    dotRec(sb, bdd.high(), visited);
+  }
+
   /*
    * Helper class for translating back from a BDD to a human-understandable
    * form. We walk the BDD, collecting the true/false bits for each value
@@ -343,6 +385,7 @@ public class BDDNetFactory {
     private int _med;
     private int _metric;
     private int _ospfMetric;
+    private List<CommunityVar> _communities;
     private TcpFlags _tcpFlags;
     private String _srcRouter;
     private String _dstRouter;
@@ -460,6 +503,14 @@ public class BDDNetFactory {
       this._ospfMetric = ospfMetric;
     }
 
+    public List<CommunityVar> getCommunities() {
+      return _communities;
+    }
+
+    public void setCommunities(List<CommunityVar> communities) {
+      this._communities = communities;
+    }
+
     public String getSrcRouter() {
       return _srcRouter;
     }
@@ -547,6 +598,7 @@ public class BDDNetFactory {
     int med = 0;
     int metric = 0;
     int ospfMetric = 0;
+    List<CommunityVar> cvars = new ArrayList<>();
     TcpFlags.Builder tcpFlags = TcpFlags.builder();
     for (int i = 0; i < variables.length; i++) {
       byte var = variables[i];
@@ -570,6 +622,9 @@ public class BDDNetFactory {
           metric += byIndex(_indexMetric, _numBitsMetric, i);
         } else if (i >= _indexOspfMetric && i < _indexOspfMetric + _numBitsOspfMetric) {
           ospfMetric += byIndex(_indexOspfMetric, _numBitsOspfMetric, i);
+        } else if (i >= _indexCommunities && i < _indexCommunities + _numBitsCommunities) {
+          int j = i - _indexCommunities;
+          cvars.add(_allCommunities.get(j));
         } else if (i >= _indexDstIp && i < _indexDstIp + _numBitsDstIp) {
           dstIp += byIndexL(_indexDstIp, _numBitsDstIp, i);
         } else if (i >= _indexSrcIp && i < _indexSrcIp + _numBitsSrcIp) {
@@ -615,11 +670,11 @@ public class BDDNetFactory {
         } else if (_config.getKeepRouters()
             && i >= _indexDstRouter
             && i < _indexDstRouter + _numBitsRouters) {
-          dstRouter = dstRouter + byIndex(_indexDstRouter, _numBitsRouters, i);
+          dstRouter += byIndex(_indexDstRouter, _numBitsRouters, i);
         } else if (_config.getKeepRouters()
             && i >= _indexSrcRouter
             && i < _indexSrcRouter + _numBitsRouters) {
-          srcRouter = srcRouter + byIndex(_indexSrcRouter, _numBitsRouters, i);
+          srcRouter += byIndex(_indexSrcRouter, _numBitsRouters, i);
         }
       }
     }
@@ -642,6 +697,7 @@ public class BDDNetFactory {
     entry.setMed(med);
     entry.setMetric(metric);
     entry.setOspfMetric(ospfMetric);
+    entry.setCommunities(cvars);
     return entry;
   }
 
@@ -852,46 +908,6 @@ public class BDDNetFactory {
     @Override
     public BDDRoute deepCopy() {
       return new BDDRoute(this);
-    }
-
-    public String dot(BDD bdd) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("digraph G {\n");
-      if (!bdd.isOne()) {
-        sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
-      }
-      if (!bdd.isZero()) {
-        sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
-      }
-      dotRec(sb, bdd, new HashSet<>());
-      sb.append("}");
-      return sb.toString();
-    }
-
-    private Integer dotId(BDD bdd) {
-      if (bdd.isZero()) {
-        return 0;
-      }
-      if (bdd.isOne()) {
-        return 1;
-      }
-      return bdd.hashCode() + 2;
-    }
-
-    private void dotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
-      if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
-        return;
-      }
-      int val = dotId(bdd);
-      int valLow = dotId(bdd.low());
-      int valHigh = dotId(bdd.high());
-      String name = _bitNames.get(bdd.var());
-      sb.append(val).append(" [label=\"").append(name).append("\"]\n");
-      sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
-      sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
-      visited.add(bdd);
-      dotRec(sb, bdd.low(), visited);
-      dotRec(sb, bdd.high(), visited);
     }
 
     public String name(int i) {
@@ -1286,53 +1302,6 @@ public class BDDNetFactory {
       return new BDDPacket(this);
     }
 
-    /*
-     * Converts a BDD to the graphviz DOT format for debugging.
-     */
-    public String dot(BDD bdd) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("digraph G {\n");
-      sb.append("0 [shape=box, label=\"0\", style=filled, shape=box, height=0.3, width=0.3];\n");
-      sb.append("1 [shape=box, label=\"1\", style=filled, shape=box, height=0.3, width=0.3];\n");
-      dotRec(sb, bdd, new HashSet<>());
-      sb.append("}");
-      return sb.toString();
-    }
-
-    /*
-     * Creates a unique id for a bdd node when generating
-     * a DOT file for graphviz
-     */
-    private Integer dotId(BDD bdd) {
-      if (bdd.isZero()) {
-        return 0;
-      }
-      if (bdd.isOne()) {
-        return 1;
-      }
-      return bdd.hashCode() + 2;
-    }
-
-    /*
-     * Recursively builds each of the intermediate BDD nodes in the
-     * graphviz DOT format.
-     */
-    private void dotRec(StringBuilder sb, BDD bdd, Set<BDD> visited) {
-      if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
-        return;
-      }
-      int val = dotId(bdd);
-      int valLow = dotId(bdd.low());
-      int valHigh = dotId(bdd.high());
-      String name = _bitNames.get(bdd.var());
-      sb.append(val).append(" [label=\"").append(name).append("\"]\n");
-      sb.append(val).append(" -> ").append(valLow).append("[style=dotted]\n");
-      sb.append(val).append(" -> ").append(valHigh).append("[style=filled]\n");
-      visited.add(bdd);
-      dotRec(sb, bdd.low(), visited);
-      dotRec(sb, bdd.high(), visited);
-    }
-
     public BDDInteger getDstIp() {
       return _dstIp;
     }
@@ -1504,7 +1473,7 @@ public class BDDNetFactory {
       BDD[] vals = new BDD[len];
       _pairing.reset();
       for (int i = 0; i < len; i++) {
-        int var = _dstIp.getBitvec()[i].var(); // dstIpIndex + i;
+        int var = _dstIp.getBitvec()[i].var();
         BDD subst = Ip.getBitAtPosition(bits, i) ? _factory.one() : _factory.zero();
         vars[i] = var;
         vals[i] = subst;

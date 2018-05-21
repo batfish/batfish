@@ -51,8 +51,6 @@ import org.batfish.symbolic.smt.EdgeType;
  */
 public class ReachabilityInterpreter {
 
-  private static BDDNetFactory netFactory;
-
   // The network topology graph
   private Graph _graph;
 
@@ -194,7 +192,6 @@ public class ReachabilityInterpreter {
 
   /*
    * Compute the set of BDD routeVariables to quantify away for a given prefix length.
-   * The boolean indicates whether the router bits should be removed
    * For efficiency, these values are cached.
    */
   private BDD removeBits(int len) {
@@ -382,12 +379,29 @@ public class ReachabilityInterpreter {
       BDD stat = domain.toBdd(val.getStaticRib());
       BDD rib = domain.toBdd(val.getMainRib());
       AbstractRib<BDD> bddRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, val.getAclIds());
-      AbstractFib<BDD> bddFib = new AbstractFib<>(bddRib, toHeaderspace(rib));
+
+      BDD headerspace = toHeaderspace(rib);
+      BDD notBlockedByAcl = notBlockedByAcl(val.getAclIds());
+      headerspace = headerspace.andWith(notBlockedByAcl);
+
+      AbstractFib<BDD> bddFib = new AbstractFib<>(bddRib, headerspace);
       reach.put(e.getKey(), bddFib);
     }
 
     System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
     return reach;
+  }
+
+  /*
+   * BDD representing those packets not blocked by an ACL
+   */
+  private BDD notBlockedByAcl(BitSet aclIds) {
+    BDD blocked = _netFactory.zero();
+    for (int i = aclIds.nextSetBit(0); i != -1; i = aclIds.nextSetBit(i + 1)) {
+      BDDAcl acl = _aclIndexes.value(i);
+      blocked = blocked.or(acl.getBdd());
+    }
+    return blocked.not();
   }
 
   /*
@@ -533,7 +547,7 @@ public class ReachabilityInterpreter {
       if (matchingFromSrc.isZero()) {
         continue;
       }
-      SatAssigment assignment = _netFactory.satOne(subset).get(0);
+      SatAssigment assignment = _netFactory.satOne(matchingFromSrc).get(0);
       Flow flow = assignment.toFlow();
       AbstractFlowTrace trace = new AbstractFlowTrace();
       trace.setIngressRouter(srcRouter);
