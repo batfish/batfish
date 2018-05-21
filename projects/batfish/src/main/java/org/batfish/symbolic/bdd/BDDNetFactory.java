@@ -16,6 +16,8 @@ import net.sf.javabdd.JFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.TcpFlags;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
@@ -34,10 +36,6 @@ import org.batfish.symbolic.Protocol;
  *
  */
 public class BDDNetFactory {
-
-  private static int id = 0;
-
-  private int _globalId;
 
   private BDDFactory _factory;
 
@@ -58,6 +56,40 @@ public class BDDNetFactory {
   private BDDRoute _routeVariables;
 
   private BDDPacket _packetVariables;
+
+  private int _numBitsIpProto;
+
+  private int _numBitsDstIp;
+
+  private int _numBitsSrcIp;
+
+  private int _numBitsDstPort;
+
+  private int _numBitsSrcPort;
+
+  private int _numBitsIcmpCode;
+
+  private int _numBitsIcmpType;
+
+  private int _numBitsTcpFlags;
+
+  private int _numBitsPrefixLen;
+
+  private int _numBitsAdminDist;
+
+  private int _numBitsCommunities;
+
+  private int _numBitsRoutingProtocol;
+
+  private int _numBitsMed;
+
+  private int _numBitsMetric;
+
+  private int _numBitsLocalPref;
+
+  private int _numBitsOspfMetric;
+
+  private int _numBitsRouters;
 
   private int _indexIpProto;
 
@@ -114,8 +146,6 @@ public class BDDNetFactory {
   private int _hcode = 0;
 
   public BDDNetFactory(Graph g, BDDNetConfig config) {
-    _globalId = id++;
-
     _allMetricTypes = new ArrayList<>();
     _allMetricTypes.add(OspfType.O);
     _allMetricTypes.add(OspfType.OIA);
@@ -168,72 +198,72 @@ public class BDDNetFactory {
     _allLocalPrefs = new ArrayList<>(BDDUtils.findAllLocalPrefs(g));
 
     // BDD Packet routeVariables
-    int numIpProto = 8;
-    int numDstIp = 32;
-    int numSrcIp = 32;
-    int numDstPort = 16;
-    int numSrcPort = 16;
-    int numIcmpCode = 8;
-    int numIcmpType = 8;
-    int numTcpFlags = 8;
+    _numBitsIpProto = 8;
+    _numBitsDstIp = 32;
+    _numBitsSrcIp = 32;
+    _numBitsDstPort = 16;
+    _numBitsSrcPort = 16;
+    _numBitsIcmpCode = 8;
+    _numBitsIcmpType = 8;
+    _numBitsTcpFlags = 8;
 
     // BDD Route routeVariables
-    int numPrefixLen = 6;
-    int numAd = (config.getKeepAd() ? 2 * 32 : 0);
-    int numCommunities = (config.getKeepCommunities() ? 2 * _allCommunities.size() : 0);
-    int numLocalPref = (config.getKeepLp() ? 2 * BDDUtils.numBits(_allLocalPrefs.size()) : 0);
-    int numMed = (config.getKeepMed() ? 2 * 32 : 0);
-    int numMetric = (config.getKeepMetric() ? 2 * 32 : 0);
-    int numOspfMetric = (config.getKeepOspfMetric() ? 2 * 32 : 0);
-    int numProtocol = (config.getKeepProtocol() ? 2 * BDDUtils.numBits(_allProtos.size()) : 0);
-    int numRouter = (config.getKeepRouters() ? 3 * BDDUtils.numBits(_allRouters.size()) : 0);
+    _numBitsPrefixLen = 6;
+    _numBitsAdminDist = (config.getKeepAd() ? 32 : 0);
+    _numBitsCommunities = (config.getKeepCommunities() ? _allCommunities.size() : 0);
+    _numBitsLocalPref = (config.getKeepLp() ? BDDUtils.numBits(_allLocalPrefs.size()) : 0);
+    _numBitsMed = (config.getKeepMed() ? 32 : 0);
+    _numBitsMetric = (config.getKeepMetric() ? 32 : 0);
+    _numBitsOspfMetric = (config.getKeepOspfMetric() ? 32 : 0);
+    _numBitsRoutingProtocol = (config.getKeepProtocol() ? BDDUtils.numBits(_allProtos.size()) : 0);
+    _numBitsRouters = (config.getKeepRouters() ? BDDUtils.numBits(_allRouters.size()) : 0);
     int numNeeded =
-        numIpProto
-            + numDstIp
-            + numSrcIp
-            + numDstPort
-            + numSrcPort
-            + numIcmpCode
-            + numIcmpType
-            + numTcpFlags
-            + numPrefixLen
-            + numAd
-            + numCommunities
-            + numLocalPref
-            + numMed
-            + numMetric
-            + numOspfMetric
-            + numProtocol
-            + numRouter;
+        _numBitsIpProto
+            + _numBitsDstIp
+            + _numBitsSrcIp
+            + _numBitsDstPort
+            + _numBitsSrcPort
+            + _numBitsIcmpCode
+            + _numBitsIcmpType
+            + _numBitsTcpFlags
+            + _numBitsPrefixLen
+            + 2 * _numBitsAdminDist
+            + 2 * _numBitsCommunities
+            + 2 * _numBitsLocalPref
+            + 2 * _numBitsMed
+            + 2 * _numBitsMetric
+            + 2 * _numBitsOspfMetric
+            + 2 * _numBitsRoutingProtocol
+            + 3 * _numBitsRouters;
 
     _factory.setVarNum(numNeeded);
 
     _indexIpProto = 0;
-    _indexRoutingProtocol = _indexIpProto + numIpProto;
-    _indexRoutingProtocolTemp = _indexRoutingProtocol + (numProtocol / 2);
-    _indexPrefixLen = _indexRoutingProtocolTemp + (numProtocol / 2);
-    _indexDstIp = _indexPrefixLen + numPrefixLen;
-    _indexSrcIp = _indexDstIp + numDstIp;
-    _indexDstPort = _indexSrcIp + numSrcIp;
-    _indexSrcPort = _indexDstPort + numDstPort;
-    _indexIcmpCode = _indexSrcPort + numSrcPort;
-    _indexIcmpType = _indexIcmpCode + numIcmpCode;
-    _indexTcpFlags = _indexIcmpType + numIcmpType;
-    _indexMetric = _indexTcpFlags + numTcpFlags;
-    _indexMetricTemp = _indexMetric + (numMetric / 2);
-    _indexOspfMetric = _indexMetricTemp + (numMetric / 2);
-    _indexOspfMetricTemp = _indexOspfMetric + (numOspfMetric / 2);
-    _indexMed = _indexOspfMetricTemp + (numOspfMetric / 2);
-    _indexMedTemp = _indexMed + (numMed / 2);
-    _indexAdminDist = _indexMedTemp + (numMed / 2);
-    _indexAdminDistTemp = _indexAdminDist + (numAd / 2);
-    _indexLocalPref = _indexAdminDistTemp + (numAd / 2);
-    _indexLocalPrefTemp = _indexLocalPref + (numLocalPref / 2);
-    _indexCommunities = _indexLocalPrefTemp + (numLocalPref / 2);
-    _indexCommunitiesTemp = _indexCommunities + (numCommunities / 2);
-    _indexDstRouter = _indexCommunitiesTemp + (numCommunities / 2);
-    _indexSrcRouter = _indexDstRouter + (numRouter / 3);
-    _indexRouterTemp = _indexSrcRouter + (numRouter / 3);
+    _indexRoutingProtocol = _indexIpProto + _numBitsIpProto;
+    _indexRoutingProtocolTemp = _indexRoutingProtocol + _numBitsRoutingProtocol;
+    _indexPrefixLen = _indexRoutingProtocolTemp + _numBitsRoutingProtocol;
+    _indexDstIp = _indexPrefixLen + _numBitsPrefixLen;
+    _indexSrcIp = _indexDstIp + _numBitsDstIp;
+    _indexDstPort = _indexSrcIp + _numBitsSrcIp;
+    _indexSrcPort = _indexDstPort + _numBitsDstPort;
+    _indexIcmpCode = _indexSrcPort + _numBitsSrcPort;
+    _indexIcmpType = _indexIcmpCode + _numBitsIcmpCode;
+    _indexTcpFlags = _indexIcmpType + _numBitsIcmpType;
+    _indexMetric = _indexTcpFlags + _numBitsTcpFlags;
+    _indexMetricTemp = _indexMetric + _numBitsMetric;
+    _indexOspfMetric = _indexMetricTemp + _numBitsMetric;
+    _indexOspfMetricTemp = _indexOspfMetric + _numBitsOspfMetric;
+    _indexMed = _indexOspfMetricTemp + _numBitsOspfMetric;
+    _indexMedTemp = _indexMed + _numBitsMed;
+    _indexAdminDist = _indexMedTemp + _numBitsMed;
+    _indexAdminDistTemp = _indexAdminDist + _numBitsAdminDist;
+    _indexLocalPref = _indexAdminDistTemp + _numBitsAdminDist;
+    _indexLocalPrefTemp = _indexLocalPref + _numBitsLocalPref;
+    _indexCommunities = _indexLocalPrefTemp + _numBitsLocalPref;
+    _indexCommunitiesTemp = _indexCommunities + _numBitsCommunities;
+    _indexDstRouter = _indexCommunitiesTemp + _numBitsCommunities;
+    _indexSrcRouter = _indexDstRouter + _numBitsRouters;
+    _indexRouterTemp = _indexSrcRouter + _numBitsRouters;
 
     _routeVariables = createRoute();
     _packetVariables = createPacket();
@@ -292,6 +322,293 @@ public class BDDNetFactory {
   }
 
   /*
+   * Helper class for translating back from a BDD to a human-understandable
+   * form. We walk the BDD, collecting the true/false bits for each value
+   * and translate it to a collection of values, one for each represented
+   * field in BDDRoute and/or BDDPacket.
+   */
+  public class SatAssigment {
+    private Ip _dstIp;
+    private Ip _srcIp;
+    private int _dstPort;
+    private int _srcPort;
+    private int _icmpCode;
+    private int _icmpType;
+    private int _prefixLen;
+    private int _adminDist;
+    private int _localPref;
+    private int _med;
+    private int _metric;
+    private int _ospfMetric;
+    private TcpFlags _tcpFlags;
+    private String _srcRouter;
+    private String _dstRouter;
+    private RoutingProtocol _protocol;
+
+    public Ip getDstIp() {
+      return _dstIp;
+    }
+
+    public void setDstIp(Ip dstIp) {
+      this._dstIp = dstIp;
+    }
+
+    public Ip getSrcIp() {
+      return _srcIp;
+    }
+
+    public void setSrcIp(Ip srcIp) {
+      this._srcIp = srcIp;
+    }
+
+    public int getDstPort() {
+      return _dstPort;
+    }
+
+    public void setDstPort(int dstPort) {
+      this._dstPort = dstPort;
+    }
+
+    public int getSrcPort() {
+      return _srcPort;
+    }
+
+    public void setSrcPort(int srcPort) {
+      this._srcPort = srcPort;
+    }
+
+    public int getIcmpCode() {
+      return _icmpCode;
+    }
+
+    public void setIcmpCode(int icmpCode) {
+      this._icmpCode = icmpCode;
+    }
+
+    public int getIcmpType() {
+      return _icmpType;
+    }
+
+    public void setIcmpType(int icmpType) {
+      this._icmpType = icmpType;
+    }
+
+    public TcpFlags getTcpFlags() {
+      return _tcpFlags;
+    }
+
+    public void setTcpFlags(TcpFlags tcpFlags) {
+      this._tcpFlags = tcpFlags;
+    }
+
+    public int getPrefixLen() {
+      return _prefixLen;
+    }
+
+    public void setPrefixLen(int prefixLen) {
+      this._prefixLen = prefixLen;
+    }
+
+    public int getAdminDist() {
+      return _adminDist;
+    }
+
+    public void setAdminDist(int adminDist) {
+      this._adminDist = adminDist;
+    }
+
+    public int getLocalPref() {
+      return _localPref;
+    }
+
+    public void setLocalPref(int localPref) {
+      this._localPref = localPref;
+    }
+
+    public int getMed() {
+      return _med;
+    }
+
+    public void setMed(int med) {
+      this._med = med;
+    }
+
+    public int getMetric() {
+      return _metric;
+    }
+
+    public void setMetric(int metric) {
+      this._metric = metric;
+    }
+
+    public int getOspfMetric() {
+      return _ospfMetric;
+    }
+
+    public void setOspfMetric(int ospfMetric) {
+      this._ospfMetric = ospfMetric;
+    }
+
+    public String getSrcRouter() {
+      return _srcRouter;
+    }
+
+    public void setSrcRouter(String srcRouter) {
+      this._srcRouter = srcRouter;
+    }
+
+    public String getDstRouter() {
+      return _dstRouter;
+    }
+
+    public void setDstRouter(String dstRouter) {
+      this._dstRouter = dstRouter;
+    }
+
+    public RoutingProtocol getProtocol() {
+      return _protocol;
+    }
+
+    public void setProtocol(RoutingProtocol protocol) {
+      this._protocol = protocol;
+    }
+  }
+
+  public List<SatAssigment> allSat(BDD x) {
+    List<SatAssigment> entries = new ArrayList<>();
+    @SuppressWarnings("unchecked")
+    List<byte[]> assignments = (List<byte[]>) x.allsat();
+    for (byte[] variables : assignments) {
+      SatAssigment entry = sat(variables);
+      entries.add(entry);
+    }
+    return entries;
+  }
+
+  public List<SatAssigment> satOne(BDD x) {
+    return allSat(x.satOne());
+  }
+
+  private int byIndex(int index, int numBits, int i) {
+    return 1 << ((numBits - 1) - i + index);
+  }
+
+  private long byIndexL(int index, int numBits, int i) {
+    return 1L << ((numBits - 1) - i + index);
+  }
+
+  private SatAssigment sat(byte[] variables) {
+    long dstIp = 0;
+    long srcIp = 0;
+    int prefixLen = 0;
+    int proto = 0;
+    int dstRouter = 0;
+    int srcRouter = 0;
+    int dstPort = 0;
+    int srcPort = 0;
+    int icmpCode = 0;
+    int icmpType = 0;
+    int adminDist = 0;
+    int localPref = 0;
+    int med = 0;
+    int metric = 0;
+    int ospfMetric = 0;
+    TcpFlags.Builder tcpFlags = TcpFlags.builder();
+    for (int i = 0; i < variables.length; i++) {
+      byte var = variables[i];
+      boolean isTrue = (var == 1);
+      if (isTrue) {
+        if (_config.getKeepProtocol()
+            && i >= _indexRoutingProtocol
+            && i < _indexRoutingProtocol + _numBitsRoutingProtocol) {
+          proto += (1 << i - _indexRoutingProtocol);
+        } else if (i >= _indexPrefixLen && i < _indexPrefixLen + _numBitsPrefixLen) {
+          prefixLen += byIndex(_indexPrefixLen, _numBitsPrefixLen, i);
+        } else if (i >= _indexAdminDist && i < _indexAdminDist + _numBitsAdminDist) {
+          adminDist += byIndex(_indexAdminDist, _numBitsAdminDist, i);
+        } else if (i >= _indexLocalPref && i < _indexLocalPref + _numBitsLocalPref) {
+          localPref += byIndex(_indexLocalPref, _numBitsLocalPref, i);
+        } else if (i >= _indexMed && i < _indexMed + _numBitsMed) {
+          med += byIndex(_indexMed, _numBitsMed, i);
+        } else if (i >= _indexMetric && i < _indexMetric + _numBitsMetric) {
+          metric += byIndex(_indexMetric, _numBitsMetric, i);
+        } else if (i >= _indexOspfMetric && i < _indexOspfMetric + _numBitsOspfMetric) {
+          ospfMetric += byIndex(_indexOspfMetric, _numBitsOspfMetric, i);
+        } else if (i >= _indexDstIp && i < _indexDstIp + _numBitsDstIp) {
+          dstIp += byIndexL(_indexDstIp, _numBitsDstIp, i);
+        } else if (i >= _indexSrcIp && i < _indexSrcIp + _numBitsSrcIp) {
+          srcIp += byIndexL(_indexSrcIp, _numBitsSrcIp, i);
+        } else if (i >= _indexDstPort && i < _indexDstPort + _numBitsDstPort) {
+          dstPort += byIndex(_indexDstPort, _numBitsDstPort, i);
+        } else if (i >= _indexSrcPort && i < _indexSrcPort + _numBitsSrcPort) {
+          srcPort += byIndex(_indexSrcPort, _numBitsSrcPort, i);
+        } else if (i >= _indexIcmpCode && i < _indexIcmpCode + _numBitsIcmpCode) {
+          icmpCode += byIndex(_indexIcmpCode, _numBitsIcmpCode, i);
+        } else if (i >= _indexIcmpType && i < _indexIcmpType + _numBitsIcmpType) {
+          icmpType += byIndex(_indexIcmpType, _numBitsIcmpType, i);
+        } else if (i >= _indexTcpFlags && i < _indexTcpFlags + _numBitsTcpFlags) {
+          int j = i - _indexTcpFlags;
+          switch (j) {
+            case 0:
+              tcpFlags.setAck(true);
+              break;
+            case 1:
+              tcpFlags.setCwr(true);
+              break;
+            case 2:
+              tcpFlags.setEce(true);
+              break;
+            case 3:
+              tcpFlags.setFin(true);
+              break;
+            case 4:
+              tcpFlags.setPsh(true);
+              break;
+            case 5:
+              tcpFlags.setRst(true);
+              break;
+            case 6:
+              tcpFlags.setSyn(true);
+              break;
+            case 7:
+              tcpFlags.setUrg(true);
+              break;
+            default:
+              break;
+          }
+        } else if (_config.getKeepRouters()
+            && i >= _indexDstRouter
+            && i < _indexDstRouter + _numBitsRouters) {
+          dstRouter = dstRouter + byIndex(_indexDstRouter, _numBitsRouters, i);
+        } else if (_config.getKeepRouters()
+            && i >= _indexSrcRouter
+            && i < _indexSrcRouter + _numBitsRouters) {
+          srcRouter = srcRouter + byIndex(_indexSrcRouter, _numBitsRouters, i);
+        }
+      }
+    }
+
+    SatAssigment entry = new SatAssigment();
+    entry.setDstIp(new Ip(dstIp));
+    entry.setSrcIp(new Ip(srcIp));
+    entry.setDstPort(dstPort);
+    entry.setSrcPort(srcPort);
+    entry.setIcmpCode(icmpCode);
+    entry.setIcmpType(icmpType);
+    entry.setTcpFlags(tcpFlags.build());
+    entry.setDstRouter(getRouter(dstRouter));
+    entry.setSrcRouter(getRouter(srcRouter));
+    entry.setProtocol(Protocol.toRoutingProtocol(getAllProtos().get(proto)));
+    entry.setPrefixLen(prefixLen);
+    entry.setAdminDist(adminDist);
+    entry.setLocalPref(localPref);
+    entry.setMed(med);
+    entry.setMetric(metric);
+    entry.setOspfMetric(ospfMetric);
+    return entry;
+  }
+
+  /*
    * BDD encoding of a route message. This includes things like
    * - local preference
    * - administrative distance
@@ -303,7 +620,9 @@ public class BDDNetFactory {
    *
    * There are also several temporary routeVariables named with *Temp. These
    * are here to allow for certain operations such as next state computation
-   * in classic symbolic model checking where they represent the next state.
+   * in classic symbolic model checking. This gives rise to more efficient
+   * ways to compute, e.g., strongest postcondition by doing a single
+   * BDD substitution operation for all temporary variables at the end.
    *
    */
   public class BDDRoute implements IDeepCopy<BDDRoute> {
@@ -397,7 +716,7 @@ public class BDDNetFactory {
       _prefixLength = BDDInteger.makeFromIndex(_factory, 6, _indexPrefixLen, false);
       addBitNames("pfxLen", 6, _indexPrefixLen, false);
       _prefix = BDDInteger.makeFromIndex(_factory, 32, _indexDstIp, false);
-      addBitNames("pfx", 32, _indexDstIp, false);
+      addBitNames("dstIp", 32, _indexDstIp, false);
 
       if (_config.getKeepCommunities()) {
         _communities = new TreeMap<>();
@@ -855,8 +1174,8 @@ public class BDDNetFactory {
 
       // Initialize integer values
       _ipProtocol = BDDInteger.makeFromIndex(_factory, 8, _indexIpProto, false);
-      _dstIp = BDDInteger.makeFromIndex(_factory, 32, _indexDstIp, true);
-      _srcIp = BDDInteger.makeFromIndex(_factory, 32, _indexSrcIp, true);
+      _dstIp = BDDInteger.makeFromIndex(_factory, 32, _indexDstIp, false);
+      _srcIp = BDDInteger.makeFromIndex(_factory, 32, _indexSrcIp, false);
       _dstPort = BDDInteger.makeFromIndex(_factory, 16, _indexDstPort, false);
       _srcPort = BDDInteger.makeFromIndex(_factory, 16, _indexSrcPort, false);
       _icmpCode = BDDInteger.makeFromIndex(_factory, 8, _indexIcmpCode, false);
@@ -891,6 +1210,7 @@ public class BDDNetFactory {
      * there is no need for a deep copy.
      */
     private BDDPacket(BDDPacket other) {
+      _bitNames = other._bitNames;
       _srcIp = new BDDInteger(other._srcIp);
       _dstIp = new BDDInteger(other._dstIp);
       _srcPort = new BDDInteger(other._srcPort);

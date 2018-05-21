@@ -17,7 +17,6 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
@@ -35,19 +34,19 @@ import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetConfig;
 import org.batfish.symbolic.bdd.BDDNetFactory;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
+import org.batfish.symbolic.bdd.BDDNetFactory.SatAssigment;
 import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.smt.EdgeType;
 
 // TODO: Take ACLs into account. Will likely require using a single Factory object
-// TODO: Compute end-to-end reachability (i.e., transitive closure)
 
 /*
  * Computes an overapproximation of some concrete set of states in the
  * network using abstract interpretation
  */
-public class AbstractInterpreter {
+public class ReachabilityInterpreter {
 
   private static BDDNetFactory netFactory;
 
@@ -92,7 +91,7 @@ public class AbstractInterpreter {
    * This could be done more in a fashion like Batfish, where we run
    * the computation once and then answer many questions.
    */
-  public AbstractInterpreter(IBatfish batfish) {
+  public ReachabilityInterpreter(IBatfish batfish) {
 
     _graph = new Graph(batfish);
     _lengthCache = new HashMap<>();
@@ -100,11 +99,6 @@ public class AbstractInterpreter {
     NodesSpecifier ns = new NodesSpecifier(".*");
     BDDNetConfig config = new BDDNetConfig(true);
     _network = BDDNetwork.create(_graph, ns, config, false);
-
-    if (netFactory == null) {
-      netFactory = _network.getNetFactory();
-    }
-
     _netFactory = _network.getNetFactory();
     _lenBits = _netFactory.one();
     _variables = _netFactory.routeVariables();
@@ -304,17 +298,6 @@ public class AbstractInterpreter {
           T newNeighborOspf = neighborOspf;
           T newNeighborBgp = neighborBgp;
 
-          // Update static
-          /* List<StaticRoute> srs = _graph.getStaticRoutes().get(neighbor,
-          //            rev.getStart().getName());
-          if (srs != null) {
-            Set<Prefix> pfxs = new HashSet<>();
-            for (StaticRoute sr : srs) {
-              pfxs.add(sr.getNetwork());
-            }
-            T stat = domain.value(neighbor, Protocol.STATIC, pfxs);
-          } */
-
           // Update OSPF
           if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)) {
             newNeighborOspf = domain.merge(neighborOspf, routerOspf);
@@ -401,7 +384,6 @@ public class AbstractInterpreter {
     }
 
     System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
-
     return reach;
   }
 
@@ -466,25 +448,9 @@ public class AbstractInterpreter {
     BDD newFib = fibs;
     do {
       seenFibs.add(newFib);
-
-      // System.out.println("old: ");
-      // System.out.println(_variables.dot(oldFib));
-
       newFib = newFib.replace(_dstToTempRouterSubstitution);
-
-      // System.out.println("replace dst with src: ");
-      // System.out.println(_variables.dot(newFib));
-
       newFib = newFib.and(fibsTemp);
-
-      // System.out.println("step with (and): ");
-      // System.out.println(_variables.dot(newFib));
-
       newFib = newFib.exist(_tempRouterBits);
-
-      // System.out.println("remove src bits: ");
-      // System.out.println(_variables.dot(newFib));
-
     } while (!seenFibs.contains(newFib));
     return newFib;
   }
@@ -502,55 +468,6 @@ public class AbstractInterpreter {
   }
 
   /*
-   * Print a collection of routes in a BDD as representative examples
-   * that can be understood by a human.
-   */
-  private SortedSet<RibEntry> toRoutes(String hostname, BDD rib) {
-    SortedSet<RibEntry> routes = new TreeSet<>();
-    @SuppressWarnings("unchecked")
-    List<byte[]> assignments = (List<byte[]>) rib.allsat();
-    for (byte[] variables : assignments) {
-      long pfx = 0;
-      int proto = 0;
-      int len = 0;
-      int router = 0;
-      for (int i = 0; i < variables.length; i++) {
-        byte var = variables[i];
-        String name = _variables.name(i);
-        // avoid temporary routeVariables
-        if (name != null) {
-          boolean isTrue = (var == 1);
-          if (isTrue) {
-            if (name.startsWith("proto") && !name.contains("'")) {
-              int num = Integer.parseInt(name.substring(5));
-              proto = proto + (1 << (2 - num));
-            } else if (name.startsWith("pfxLen") && !name.contains("'")) {
-              int num = Integer.parseInt(name.substring(6));
-              len = len + (1 << (6 - num));
-            } else if (name.startsWith("pfx") && !name.contains("'")) {
-              int num = Integer.parseInt(name.substring(3));
-              pfx = pfx + (1L << (32 - num));
-            } else if (name.startsWith("dstRouter") && !name.contains("'")) {
-              int num = Integer.parseInt(name.substring(9));
-              router =
-                  router + (1 << (_variables.getDstRouter().getInteger().getBitvec().length - num));
-            }
-          }
-        }
-      }
-
-      String r = _netFactory.getRouter(router);
-      Protocol prot = _netFactory.getAllProtos().get(proto);
-      Ip ip = new Ip(pfx);
-      Prefix p = new Prefix(ip, len);
-      RibEntry entry = new RibEntry(hostname, p, Protocol.toRoutingProtocol(prot), r);
-      routes.add(entry);
-    }
-
-    return routes;
-  }
-
-  /*
    * Compute an underapproximation of all-pairs reachability
    */
   public AnswerElement routes(NodesSpecifier ns) {
@@ -562,9 +479,15 @@ public class AbstractInterpreter {
     for (String router : routers) {
       AbstractFib<BDD> fib = reachable.get(router);
       BDD rib = fib.getRib().getMainRib();
-      SortedSet<RibEntry> entries = toRoutes(router, rib);
-      routesByHostname.put(router, entries);
-      routes.addAll(entries);
+      SortedSet<RibEntry> ribEntries = new TreeSet<>();
+      List<SatAssigment> entries = _netFactory.allSat(rib);
+      for (SatAssigment entry : entries) {
+        Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
+        RibEntry r = new RibEntry(router, p, entry.getProtocol(), entry.getDstRouter());
+        ribEntries.add(r);
+      }
+      routesByHostname.put(router, ribEntries);
+      routes.addAll(ribEntries);
     }
     AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
@@ -590,7 +513,6 @@ public class AbstractInterpreter {
   }
 
   // TODO: ensure unique reachability (i.e., no other destinations)
-  // TODO: better counter examples
   public AnswerElement reachability(HeaderLocationQuestion question) {
     ReachabilityDomain domain = new ReachabilityDomain(_netFactory, _communityAndProtocolBits);
     Map<String, AbstractFib<BDD>> reachable = computeFixedPoint(domain);
@@ -598,11 +520,22 @@ public class AbstractInterpreter {
     BDD fibs = transitiveClosure(reachable);
     System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
     BDD query = query(question);
-    BDD missingReachable = query.and(fibs.not());
-    if (missingReachable.isZero()) {
-      return new StringAnswerElement("Verified");
+    BDD subset = query.and(fibs);
+
+    if (subset.isZero()) {
+      return new StringAnswerElement("No matching example");
     } else {
-      return new StringAnswerElement("Counterexample found");
+      List<SatAssigment> assignments = _netFactory.satOne(subset);
+      StringBuilder answer = new StringBuilder();
+      for (SatAssigment assignment : assignments) {
+        answer
+            .append("From ")
+            .append(assignment.getSrcRouter())
+            .append(" to ")
+            .append(assignment.getDstRouter());
+        answer.append(" for dstIp=").append(assignment.getDstIp());
+      }
+      return new StringAnswerElement("Example found\n" + answer);
     }
   }
 }

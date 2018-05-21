@@ -57,10 +57,6 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
     // Filter routes that can not pass through the transformer
     BDD allow = f.getFilter();
     BDD block = allow.not();
-
-    // System.out.println(_variables.dot(input));
-    // System.out.println(_variables.dot(block));
-
     BDD blockedInputs = input.and(block);
     BDD blockedPrefixes = blockedInputs.exist(_projectVariables);
     BDD notBlockedPrefixes = blockedPrefixes.not();
