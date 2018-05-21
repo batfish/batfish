@@ -1,0 +1,8 @@
+!
+hostname aaaAuthenticationAsa
+!
+aaa authentication ssh console authServer LOCAL
+aaa authentication http console authServer LOCAL
+aaa authentication serial console LOCAL
+aaa authentication telnet console authServer
+!
