@@ -13,5 +13,4 @@ router bgp 1
    neighbor 2.2.2.2 remote-as 2
       address-family ipv4 unicast
       local-as 1
-   no neighbor 2.2.2.2 shutdown
 !

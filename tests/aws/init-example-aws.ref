@@ -64,7 +64,7 @@
               65,
               66
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "201" : {
             "definitionLines" : [
@@ -74,7 +74,7 @@
               71,
               72
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           }
         },
         "crypto isakmp profile" : {
@@ -85,7 +85,7 @@
               76,
               77
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "isakmp-vpn-ba2e34a8-1" : {
             "definitionLines" : [
@@ -94,7 +94,7 @@
               80,
               81
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           }
         },
         "crypto keyring" : {

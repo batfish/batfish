@@ -706,8 +706,8 @@ public class Encoder {
   }
 
   /**
-   * Checks that a property is always true by seeing if the encoding is unsatisfiable. mkIf the
-   * model is satisfiable, then there is a counter example to the property.
+   * Checks that a property is always true by seeing if the encoding is unsatisfiable. If the model
+   * is satisfiable, then there is a counter example to the property.
    *
    * @return A VerificationResult indicating the status of the check.
    */

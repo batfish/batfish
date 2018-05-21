@@ -1982,8 +1982,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else {
       Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
       if (interfaceActiveArea != null && !currentArea.equals(interfaceActiveArea)) {
-        throw new BatfishException(
-            "Interface: \"" + unitFullName + "\" assigned to multiple active areas");
+        _w.redFlag("Interface: \"" + unitFullName + "\" assigned to multiple active areas");
       }
       _currentOspfInterface.setOspfActiveArea(currentArea);
     }

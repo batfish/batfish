@@ -270,6 +270,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case METAMAKO:
       case MRV_COMMANDS:
       case MSS:
+      case PALO_ALTO:
       case VXWORKS:
         String unsupportedError =
             "Unsupported configuration format: '" + format + "' for file: '" + currentPath + "'\n";
