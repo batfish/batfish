@@ -2234,6 +2234,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.prefix != null) {
       ipSpace = new IpWildcard(ctx.prefix.getText()).toIpSpace();
     } else if (ctx.wildcard_address != null && ctx.wildcard_mask != null) {
+      // Mask needs to be inverted since zeros are don't-cares in this context
       ipSpace =
           new IpWildcard(toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
               .toIpSpace();
