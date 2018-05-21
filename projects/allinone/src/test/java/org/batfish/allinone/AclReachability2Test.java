@@ -110,7 +110,7 @@ public class AclReachability2Test {
     // Construct the expected rows set
     Multiset<Row> expected =
         ImmutableMultiset.of(
-            new Row()
+            Row.builder()
                 .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
                 .put(AclLinesAnswerElement.COL_ACL, acl.getName())
                 .put(AclLinesAnswerElement.COL_LINES, new String[2])
@@ -121,7 +121,8 @@ public class AclReachability2Test {
                     AclLinesAnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl2' has an unreachable line '1: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
-                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1}}"));
+                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1}}")
+                .build());
 
     assertThat(answer.getInitialRows().getData(), equalTo(expected));
     assertThat(specificAnswer.getInitialRows().getData(), equalTo(expected));
@@ -163,7 +164,7 @@ public class AclReachability2Test {
     // Construct the expected rows set
     Multiset<Row> expected =
         ImmutableMultiset.of(
-            new Row()
+            Row.builder()
                 .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
                 .put(AclLinesAnswerElement.COL_ACL, aclName)
                 .put(AclLinesAnswerElement.COL_LINES, new String[3])
@@ -174,7 +175,8 @@ public class AclReachability2Test {
                     AclLinesAnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '2: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}'."
-                        + " Multiple earlier lines partially block this line, making it unreachable."));
+                        + " Multiple earlier lines partially block this line, making it unreachable.")
+                .build());
 
     assertThat(answer.getInitialRows().getData(), equalTo(expected));
   }
@@ -220,7 +222,7 @@ public class AclReachability2Test {
     // Construct the expected rows set
     Multiset<Row> expected =
         ImmutableMultiset.of(
-            new Row()
+            Row.builder()
                 .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
                 .put(AclLinesAnswerElement.COL_ACL, aclName)
                 .put(AclLinesAnswerElement.COL_LINES, new String[5])
@@ -232,8 +234,9 @@ public class AclReachability2Test {
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '1: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
                         + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"),
-            new Row()
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
+                .build(),
+            Row.builder()
                 .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
                 .put(AclLinesAnswerElement.COL_ACL, aclName)
                 .put(AclLinesAnswerElement.COL_LINES, new String[5])
@@ -243,8 +246,9 @@ public class AclReachability2Test {
                 .put(
                     AclLinesAnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '2: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=FalseExpr{}}'. This line will never match any packet, independent of preceding lines."),
-            new Row()
+                        + "matchCondition=FalseExpr{}}'. This line will never match any packet, independent of preceding lines.")
+                .build(),
+            Row.builder()
                 .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
                 .put(AclLinesAnswerElement.COL_ACL, aclName)
                 .put(AclLinesAnswerElement.COL_LINES, new String[5])
@@ -256,7 +260,8 @@ public class AclReachability2Test {
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '3: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/32}}}}'. "
                         + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"));
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
+                .build());
 
     assertThat(answer.getInitialRows().getData(), equalTo(expected));
   }

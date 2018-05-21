@@ -57,7 +57,7 @@ public class AclLinesAnswerElement extends TableAnswerElement
     AclSpecs specs = _equivalenceClasses.get(aclName).get(hostname);
 
     _initialRows.add(
-        new Row()
+        Row.builder()
             .put(COL_NODES, specs.nodes)
             .put(COL_ACL, aclName)
             .put(COL_LINES, specs.lines)
@@ -66,7 +66,8 @@ public class AclLinesAnswerElement extends TableAnswerElement
             .put(COL_DIFF_ACTION, diffAction)
             .put(
                 COL_MESSAGE,
-                buildMessage(aclName, specs.nodes, lineNumber, line, unmatchable, blockingLines)));
+                buildMessage(aclName, specs.nodes, lineNumber, line, unmatchable, blockingLines))
+            .build());
   }
 
   private String buildMessage(
