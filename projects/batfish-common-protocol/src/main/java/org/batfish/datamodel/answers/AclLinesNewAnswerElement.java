@@ -1,6 +1,5 @@
 package org.batfish.datamodel.answers;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableMap;
 import java.util.List;
@@ -14,6 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
 
 @ParametersAreNonnullByDefault
 public class AclLinesNewAnswerElement extends TableAnswerElement implements AclLinesAnswerElement {
@@ -28,8 +28,9 @@ public class AclLinesNewAnswerElement extends TableAnswerElement implements AclL
   private SortedMap<String, SortedMap<String, AclSpecs>> _equivalenceClasses = new TreeMap<>();
   private Rows _initialRows = new Rows(null);
 
-  @JsonCreator
-  public AclLinesNewAnswerElement() {}
+  public AclLinesNewAnswerElement(TableMetadata tableMetadata) {
+    super(tableMetadata);
+  }
 
   @Override
   public void addEquivalenceClass(

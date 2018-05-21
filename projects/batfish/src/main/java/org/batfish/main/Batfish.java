@@ -114,8 +114,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
-import org.batfish.datamodel.answers.AclLinesNewAnswerElement;
-import org.batfish.datamodel.answers.AclLinesOldAnswerElement;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -721,22 +719,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement answerAclReachability(
-      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
-    AclLinesOldAnswerElement answerElement = new AclLinesOldAnswerElement();
-    answerAclReachabilityHelper(aclNameRegexStr, aclEqSets, answerElement);
-    return answerElement;
-  }
-
-  @Override
-  public AnswerElement answerAclReachability2(
-      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
-    AclLinesNewAnswerElement answerElement = new AclLinesNewAnswerElement();
-    answerAclReachabilityHelper(aclNameRegexStr, aclEqSets, answerElement);
-    return answerElement;
-  }
-
-  private void answerAclReachabilityHelper(
+  public void answerAclReachability(
       String aclNameRegexStr,
       NamedStructureEquivalenceSets<?> aclEqSets,
       AclLinesAnswerElement answerElement) {
@@ -884,7 +867,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
     }
 
-    // Log results and return answerElement.
+    // Log results
     for (Pair<String, String> qualifiedAcl : aclHostPairsWithUnreachableLines) {
       String hostname = qualifiedAcl.getFirst();
       String aclName = qualifiedAcl.getSecond();

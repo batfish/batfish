@@ -46,10 +46,8 @@ public class AclReachability2Answerer extends Answerer {
     NamedStructureEquivalenceSets<?> aclEqSets =
         csnAnswer.getEquivalenceSets().get(IpAccessList.class.getSimpleName());
 
-    AclLinesNewAnswerElement answer =
-        (AclLinesNewAnswerElement)
-            _batfish.answerAclReachability2(question.getAclNameRegex(), aclEqSets);
-    answer.setMetadata(createMetadata(question));
+    AclLinesNewAnswerElement answer = new AclLinesNewAnswerElement(createMetadata(question));
+    _batfish.answerAclReachability(question.getAclNameRegex(), aclEqSets, answer);
     answer.postProcessAnswer(question, answer.getInitialRows().getData());
     return answer;
   }
