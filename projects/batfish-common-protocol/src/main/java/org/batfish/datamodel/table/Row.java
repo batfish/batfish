@@ -81,6 +81,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The {@link JsonNode} object that represents the stored object
+   * @throws {@link NoSuchElementException} if this column does not exist
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
@@ -89,16 +90,12 @@ public class Row implements Comparable<Row> {
     return _data.get(columnName);
   }
 
-  private String getMissingColumnErrorMessage(String columnName) {
-    return String.format(
-        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
-  }
-
   /**
    * Gets the value of specified column name
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
@@ -115,6 +112,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public <T> T get(String columnName, TypeReference<?> valueTypeRef) {
     if (!_data.has(columnName)) {
@@ -141,6 +139,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
@@ -191,6 +190,11 @@ public class Row implements Comparable<Row> {
     return keyList;
   }
 
+  private String getMissingColumnErrorMessage(String columnName) {
+    return String.format(
+        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
+  }
+
   /**
    * Returns the list of values in all columns declared as value in the metadata.
    *
@@ -236,13 +240,20 @@ public class Row implements Comparable<Row> {
   }
 
   /**
-   * Removes the specified column from this row
+   * Returns a new {@link Row} that has only the specified columns from this row.
    *
-   * @param columnName The column to remove
-   * @return The Row object itself (to aid chaining)
+   * @param columns The columns to keep.
+   * @return A new {@link Row} object
+   * @throws {@link NoSuchElementException} if one of the specified columns are not present
    */
-  public Row remove(String columnName) {
-    _data.remove(columnName);
-    return this;
+  public Row selectColumns(Set<String> columns) {
+    Row retRow = new Row();
+    columns.forEach(col -> retRow.put(col, get(col)));
+    return retRow;
+  }
+
+  @Override
+  public String toString() {
+    return _data.toString();
   }
 }

@@ -40,3 +40,7 @@ ip access-list extended acl_indirect
 ip access-list extended acl_undef
  permit ip object-group ogn_undef any
 !
+ip access-list extended ACL
+  permit ip object-group ogn1 object-group ogn2
+  permit ip object-group ogn_undef object-group ogn1
+!

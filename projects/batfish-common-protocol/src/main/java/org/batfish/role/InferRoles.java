@@ -92,7 +92,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
         case ALPHA_PLUS_DIGIT_PLUS:
           return plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
         case ALNUM_PLUS:
-          return ALPHABETIC_REGEX + plus(ALPHANUMERIC_REGEX);
+          return ALPHABETIC_REGEX + star(ALPHANUMERIC_REGEX);
         case DELIMITER:
           return Pattern.quote(s);
         case DIGIT_PLUS:

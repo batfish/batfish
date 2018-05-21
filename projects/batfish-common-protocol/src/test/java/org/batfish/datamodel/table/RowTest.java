@@ -4,12 +4,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class RowTest {
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   Row initRowThree() {
     return new Row().put("col1", "value1").put("col2", "value2").put("col3", "value3");
@@ -70,5 +76,19 @@ public class RowTest {
     assertThat(row.getValue(metadataNoValues), equalTo(ImmutableList.of()));
     assertThat(row.getValue(metadataOneValue), equalTo(ImmutableList.of("value2")));
     assertThat(row.getValue(metadataTwoValues), equalTo(ImmutableList.of("value1", "value3")));
+  }
+
+  @Test
+  public void selectColumns() {
+    Row row = new Row().put("col1", 20).put("col2", 21).put("col3", 24);
+
+    // check expected results after selecting two columns
+    Row newRow = row.selectColumns(ImmutableSet.of("col1", "col3"));
+    assertThat(newRow, equalTo(new Row().put("col1", 20).put("col3", 24)));
+
+    // selecting a non-existent column throws an exception
+    _thrown.expect(NoSuchElementException.class);
+    _thrown.expectMessage("is not present");
+    newRow.selectColumns(ImmutableSet.of("col2"));
   }
 }

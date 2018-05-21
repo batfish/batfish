@@ -70,6 +70,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   IP_NAT_SOURCE_ACCESS_LIST("ip nat source dynamic access-list"),
   IP_NAT_SOURCE_POOL("ip nat source pool"),
   IPSEC_PROFILE_TRANSFORM_SET("ipsec profile set transform-set"),
+  ISAKMP_POLICY_SELF_REF("isakmp policy"),
+  ISAKMP_PROFILE_SELF_REF("isakmp profile"),
   ISAKMP_PROFILE_KEYRING("isakmp profile keyring"),
   LINE_ACCESS_CLASS_LIST("line access-class list"),
   LINE_ACCESS_CLASS_LIST6("line access-class ipv6 list"),

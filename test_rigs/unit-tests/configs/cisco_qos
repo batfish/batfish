@@ -29,6 +29,7 @@ object-group network dns_servers
 object-group network ntp_servers
  description External NTP Servers
  network-object host 1.1.1.1
+ network-object 1.1.1.1 255.255.255.255
 policy-map type inspect pminspect
  class type inspect cinspect
   inspect
