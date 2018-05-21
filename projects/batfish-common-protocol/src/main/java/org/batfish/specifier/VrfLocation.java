@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import java.util.Objects;
 
+/** Identifies the {@link Location} of a VRF in the network. */
 public class VrfLocation implements Location {
   private final String _hostname;
 

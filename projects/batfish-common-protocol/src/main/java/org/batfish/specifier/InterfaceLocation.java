@@ -3,6 +3,7 @@ package org.batfish.specifier;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
+/** Identifies the {@link Location} of an interface in the network. */
 public class InterfaceLocation implements Location {
   private final @Nonnull String _interfaceName;
 

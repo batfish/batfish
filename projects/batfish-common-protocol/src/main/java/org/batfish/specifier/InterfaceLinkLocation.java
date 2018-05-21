@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import java.util.Objects;
 
+/** Identifies the {@link Location} of the link of an interface in the network. */
 public class InterfaceLinkLocation implements Location {
   private final String _interfaceName;
 
