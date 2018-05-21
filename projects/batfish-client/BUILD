@@ -41,15 +41,34 @@ java_library(
     ],
 )
 
+java_library(
+    name = "client_testlib",
+    testonly = True,
+    srcs = glob(
+        [
+            "src/test/java/**/*.java",
+        ],
+        exclude = ["src/test/java/**/*Test.java"],
+    ),
+    deps = [
+        ":client",
+        "//projects/batfish-common-protocol:common",
+        "@guava//:compile",
+        "@jackson_annotations//:compile",
+    ],
+)
+
 junit_tests(
     name = "client_tests",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
-    runtime_deps = [
-    ],
+    resources = glob([
+        "src/test/resources/**",
+    ]),
     deps = [
         ":client",
+        ":client_testlib",
         "//projects/batfish-common-protocol:common",
         "@commons_lang3//:compile",
         "@guava//:compile",
