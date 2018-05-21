@@ -6,6 +6,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.role.NodeRole;
 
+/**
+ * A {@link NodeSpecifier} that specifies the set of nodes with a role with the input dimension and
+ * a name matching the input regex.
+ */
 public class RoleRegexNodeSpecifier implements NodeSpecifier {
   private final Pattern _rolePattern;
   private final String _roleDimension;
@@ -16,16 +20,14 @@ public class RoleRegexNodeSpecifier implements NodeSpecifier {
   }
 
   @Override
-  public Set<String> resolve(SpecifierContext specifierContext) {
+  public Set<String> resolve(SpecifierContext ctxt) {
     Set<NodeRole> roles =
-        specifierContext
-            .getNodeRolesByDimension(_roleDimension)
+        ctxt.getNodeRolesByDimension(_roleDimension)
             .stream()
             .filter(role -> _rolePattern.matcher(role.getName()).matches())
             .collect(Collectors.toSet());
 
-    return specifierContext
-        .getConfigs()
+    return ctxt.getConfigs()
         .keySet()
         .stream()
         .filter(node -> roles.stream().anyMatch(role -> role.matches(node)))

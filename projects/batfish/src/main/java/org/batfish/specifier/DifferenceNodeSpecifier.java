@@ -4,6 +4,10 @@ import com.google.common.collect.Sets;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
+/**
+ * A {@link NodeSpecifier} that specifies the set difference of nodes specified by two other
+ * specifiers.
+ */
 public class DifferenceNodeSpecifier implements NodeSpecifier {
   private final @Nonnull NodeSpecifier _nodeSpecifier1;
 
@@ -16,8 +20,7 @@ public class DifferenceNodeSpecifier implements NodeSpecifier {
   }
 
   @Override
-  public Set<String> resolve(SpecifierContext specifierContext) {
-    return Sets.difference(
-        _nodeSpecifier1.resolve(specifierContext), _nodeSpecifier2.resolve(specifierContext));
+  public Set<String> resolve(SpecifierContext ctxt) {
+    return Sets.difference(_nodeSpecifier1.resolve(ctxt), _nodeSpecifier2.resolve(ctxt));
   }
 }

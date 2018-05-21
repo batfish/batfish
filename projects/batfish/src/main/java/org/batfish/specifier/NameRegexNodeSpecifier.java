@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+/** A {@link NodeSpecifier} that specifies the set of nodes whose names match the input regex. */
 public class NameRegexNodeSpecifier implements NodeSpecifier {
   private final Pattern _namePattern;
 
@@ -12,9 +13,8 @@ public class NameRegexNodeSpecifier implements NodeSpecifier {
   }
 
   @Override
-  public Set<String> resolve(SpecifierContext specifierContext) {
-    return specifierContext
-        .getConfigs()
+  public Set<String> resolve(SpecifierContext ctxt) {
+    return ctxt.getConfigs()
         .keySet()
         .stream()
         .filter(n -> _namePattern.matcher(n).matches())
