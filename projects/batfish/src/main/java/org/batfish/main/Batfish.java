@@ -848,9 +848,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
           line.setEarliestMoreGeneralReachableLine(blockingLineNumber);
         }
         answerElement.addUnreachableLine(
-            hostname, aclName, lineNumber, lineName, unmatchable, blockingLines, diffAction);
+            hostname, ipAccessList, lineNumber, lineName, unmatchable, blockingLines, diffAction);
       } else {
         _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName, lineNumber, lineName);
+        answerElement.addReachableLine(hostname, ipAccessList, lineNumber, lineName);
       }
     }
 

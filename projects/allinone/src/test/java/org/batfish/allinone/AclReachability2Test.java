@@ -23,7 +23,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.answers.AclLinesAnswerElement;
+import org.batfish.datamodel.answers.AclLines2AnswerElement;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.table.Row;
 import org.batfish.main.Batfish;
@@ -102,23 +102,23 @@ public class AclReachability2Test {
 
     AnswerElement baseClassAnswer = answerer.answer();
     AnswerElement specificBaseClassAnswer = specificAnswerer.answer();
-    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-    assertThat(specificBaseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
-    AclLinesAnswerElement specificAnswer = (AclLinesAnswerElement) specificBaseClassAnswer;
+    assertThat(baseClassAnswer, instanceOf(AclLines2AnswerElement.class));
+    assertThat(specificBaseClassAnswer, instanceOf(AclLines2AnswerElement.class));
+    AclLines2AnswerElement answer = (AclLines2AnswerElement) baseClassAnswer;
+    AclLines2AnswerElement specificAnswer = (AclLines2AnswerElement) specificBaseClassAnswer;
 
     // Construct the expected rows set
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
-                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLinesAnswerElement.COL_ACL, acl.getName())
-                .put(AclLinesAnswerElement.COL_LINES, new String[2])
-                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 1)
-                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
-                .put(AclLinesAnswerElement.COL_DIFF_ACTION, false)
+                .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLines2AnswerElement.COL_ACL, acl.getName())
+                .put(AclLines2AnswerElement.COL_LINES, new String[2])
+                .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 1)
+                .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(AclLines2AnswerElement.COL_DIFF_ACTION, false)
                 .put(
-                    AclLinesAnswerElement.COL_MESSAGE,
+                    AclLines2AnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl2' has an unreachable line '1: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
                         + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1}}")
@@ -158,21 +158,21 @@ public class AclReachability2Test {
     AclReachability2Answerer answerer = new AclReachability2Answerer(question, batfish);
     AnswerElement baseClassAnswer = answerer.answer();
 
-    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
+    assertThat(baseClassAnswer, instanceOf(AclLines2AnswerElement.class));
+    AclLines2AnswerElement answer = (AclLines2AnswerElement) baseClassAnswer;
 
     // Construct the expected rows set
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
-                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLinesAnswerElement.COL_ACL, aclName)
-                .put(AclLinesAnswerElement.COL_LINES, new String[3])
-                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 2)
-                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
-                .put(AclLinesAnswerElement.COL_DIFF_ACTION, false)
+                .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_LINES, new String[3])
+                .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 2)
+                .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(AclLines2AnswerElement.COL_DIFF_ACTION, false)
                 .put(
-                    AclLinesAnswerElement.COL_MESSAGE,
+                    AclLines2AnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '2: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}'."
                         + " Multiple earlier lines partially block this line, making it unreachable.")
@@ -216,47 +216,47 @@ public class AclReachability2Test {
     AclReachability2Answerer answerer = new AclReachability2Answerer(question, batfish);
     AnswerElement baseClassAnswer = answerer.answer();
 
-    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
+    assertThat(baseClassAnswer, instanceOf(AclLines2AnswerElement.class));
+    AclLines2AnswerElement answer = (AclLines2AnswerElement) baseClassAnswer;
 
     // Construct the expected rows set
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
-                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLinesAnswerElement.COL_ACL, aclName)
-                .put(AclLinesAnswerElement.COL_LINES, new String[5])
-                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 1)
-                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
-                .put(AclLinesAnswerElement.COL_DIFF_ACTION, true)
+                .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_LINES, new String[5])
+                .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 1)
+                .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(AclLines2AnswerElement.COL_DIFF_ACTION, true)
                 .put(
-                    AclLinesAnswerElement.COL_MESSAGE,
+                    AclLines2AnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '1: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
                         + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
                 .build(),
             Row.builder()
-                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLinesAnswerElement.COL_ACL, aclName)
-                .put(AclLinesAnswerElement.COL_LINES, new String[5])
-                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 2)
-                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
-                .put(AclLinesAnswerElement.COL_DIFF_ACTION, false)
+                .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_LINES, new String[5])
+                .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 2)
+                .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(AclLines2AnswerElement.COL_DIFF_ACTION, false)
                 .put(
-                    AclLinesAnswerElement.COL_MESSAGE,
+                    AclLines2AnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '2: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=FalseExpr{}}'. This line will never match any packet, independent of preceding lines.")
                 .build(),
             Row.builder()
-                .put(AclLinesAnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLinesAnswerElement.COL_ACL, aclName)
-                .put(AclLinesAnswerElement.COL_LINES, new String[5])
-                .put(AclLinesAnswerElement.COL_BLOCKED_LINE_NUM, 3)
-                .put(AclLinesAnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
-                .put(AclLinesAnswerElement.COL_DIFF_ACTION, true)
+                .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
+                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_LINES, new String[5])
+                .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 3)
+                .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(AclLines2AnswerElement.COL_DIFF_ACTION, true)
                 .put(
-                    AclLinesAnswerElement.COL_MESSAGE,
+                    AclLines2AnswerElement.COL_MESSAGE,
                     "In node(s) '~Configuration_0~', ACL 'acl' has an unreachable line '3: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/32}}}}'. "
                         + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "

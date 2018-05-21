@@ -25,8 +25,8 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.answers.AclLinesOldAnswerElement;
-import org.batfish.datamodel.answers.AclLinesOldAnswerElement.AclReachabilityEntry;
+import org.batfish.datamodel.answers.AclLinesAnswerElement;
+import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -103,10 +103,10 @@ public class AclReachabilityTest {
 
     AnswerElement baseClassAnswer = answerer.answer();
     AnswerElement specificBaseClassAnswer = specificAnswerer.answer();
-    assertThat(baseClassAnswer, instanceOf(AclLinesOldAnswerElement.class));
-    assertThat(specificBaseClassAnswer, instanceOf(AclLinesOldAnswerElement.class));
-    AclLinesOldAnswerElement answer = (AclLinesOldAnswerElement) baseClassAnswer;
-    AclLinesOldAnswerElement specificAnswer = (AclLinesOldAnswerElement) specificBaseClassAnswer;
+    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
+    assertThat(specificBaseClassAnswer, instanceOf(AclLinesAnswerElement.class));
+    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
+    AclLinesAnswerElement specificAnswer = (AclLinesAnswerElement) specificBaseClassAnswer;
 
     // Tests for general ACL reachability answer
     assertThat(
@@ -158,9 +158,9 @@ public class AclReachabilityTest {
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
     AnswerElement baseClassAnswer = answerer.answer();
 
-    assertThat(baseClassAnswer, instanceOf(AclLinesOldAnswerElement.class));
+    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
 
-    AclLinesOldAnswerElement answer = (AclLinesOldAnswerElement) baseClassAnswer;
+    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
 
     assertThat(
         answer.getUnreachableLines(),
@@ -209,9 +209,9 @@ public class AclReachabilityTest {
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
     AnswerElement baseClassAnswer = answerer.answer();
 
-    assertThat(baseClassAnswer, instanceOf(AclLinesOldAnswerElement.class));
+    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
 
-    AclLinesOldAnswerElement answer = (AclLinesOldAnswerElement) baseClassAnswer;
+    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
 
     assertThat(
         answer.getUnreachableLines(),

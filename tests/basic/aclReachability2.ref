@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.datamodel.answers.AclLinesAnswerElement",
+    "class" : "org.batfish.datamodel.answers.AclLines2AnswerElement",
     "metadata" : {
       "columnMetadata" : [
         {

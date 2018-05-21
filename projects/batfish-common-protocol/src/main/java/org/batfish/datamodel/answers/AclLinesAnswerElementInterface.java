@@ -3,6 +3,7 @@ package org.batfish.datamodel.answers;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import org.batfish.datamodel.IpAccessList;
 
 public interface AclLinesAnswerElementInterface {
 
@@ -19,9 +20,11 @@ public interface AclLinesAnswerElementInterface {
   void addEquivalenceClass(
       String aclName, String hostname, SortedSet<String> eqClassNodes, List<String> aclLines);
 
+  void addReachableLine(String hostname, IpAccessList ipAccessList, int lineNumber, String line);
+
   void addUnreachableLine(
       String hostname,
-      String aclName,
+      IpAccessList acl,
       int lineNumber,
       String line,
       boolean unmatchable,
