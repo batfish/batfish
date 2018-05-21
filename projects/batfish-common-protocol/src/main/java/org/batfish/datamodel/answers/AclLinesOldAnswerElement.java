@@ -37,21 +37,20 @@ public class AclLinesOldAnswerElement extends AnswerElement implements AclLinesA
         int index,
         String name,
         boolean unmatchable,
-        Integer blockingLineNum,
-        String blockingLine,
+        SortedMap<Integer, String> blockingLines,
         boolean diffAction) {
       this(index, name);
       if (unmatchable) {
         _earliestMoreGeneralLineIndex = -1;
         _earliestMoreGeneralLineName =
             "This line will never match any packet, independent of preceding lines.";
-      } else if (blockingLineNum == null) {
+      } else if (blockingLines.isEmpty()) {
         _earliestMoreGeneralLineIndex = -1;
         _earliestMoreGeneralLineName =
             "Multiple earlier lines partially block this line, making it unreachable.";
       } else {
-        _earliestMoreGeneralLineIndex = blockingLineNum;
-        _earliestMoreGeneralLineName = blockingLine;
+        _earliestMoreGeneralLineIndex = blockingLines.firstKey();
+        _earliestMoreGeneralLineName = blockingLines.get(_earliestMoreGeneralLineIndex);
         _differentAction = diffAction;
       }
     }
@@ -167,12 +166,10 @@ public class AclLinesOldAnswerElement extends AnswerElement implements AclLinesA
       int lineNumber,
       String line,
       boolean unmatchable,
-      @Nullable Integer blockingLineNum,
-      String blockingLine,
+      @Nullable SortedMap<Integer, String> blockingLines,
       boolean diffAction) {
     AclReachabilityEntry reachabilityEntry =
-        new AclReachabilityEntry(
-            lineNumber, line, unmatchable, blockingLineNum, blockingLine, diffAction);
+        new AclReachabilityEntry(lineNumber, line, unmatchable, blockingLines, diffAction);
     _unreachableLines
         .computeIfAbsent(hostname, k -> new TreeMap<>())
         .computeIfAbsent(aclName, k -> new TreeSet<>())

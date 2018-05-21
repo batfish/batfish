@@ -844,24 +844,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
         aclHostPairsWithUnreachableLines.add(hostnameAclPair);
 
         boolean unmatchable = unmatchableLinesOnThisAcl.contains(lineNumber);
-        Integer blockingLineNumber = blockingLinesMap.get(line);
-        String blockingLine = "";
+        SortedMap<Integer, String> blockingLines = new TreeMap<>();
         boolean diffAction = false;
+        Integer blockingLineNumber = blockingLinesMap.get(line);
         if (blockingLineNumber != null) {
           IpAccessListLine blocker = ipAccessList.getLines().get(blockingLineNumber);
-          blockingLine = firstNonNull(blocker.getName(), blocker.toString());
           diffAction = !blocker.getAction().equals(ipAccessListLine.getAction());
+          blockingLines.put(
+              blockingLineNumber, firstNonNull(blocker.getName(), blocker.toString()));
           line.setEarliestMoreGeneralReachableLine(blockingLineNumber);
         }
         answerElement.addUnreachableLine(
-            hostname,
-            aclName,
-            lineNumber,
-            lineName,
-            unmatchable,
-            blockingLineNumber,
-            blockingLine,
-            diffAction);
+            hostname, aclName, lineNumber, lineName, unmatchable, blockingLines, diffAction);
       } else {
         _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName, lineNumber, lineName);
       }

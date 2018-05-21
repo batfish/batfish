@@ -1,8 +1,8 @@
 package org.batfish.datamodel.answers;
 
 import java.util.List;
+import java.util.SortedMap;
 import java.util.SortedSet;
-import javax.annotation.Nullable;
 
 public interface AclLinesAnswerElement {
 
@@ -25,7 +25,6 @@ public interface AclLinesAnswerElement {
       int lineNumber,
       String line,
       boolean unmatchable,
-      @Nullable Integer blockingLineNum,
-      String blockingLine,
+      SortedMap<Integer, String> blockingLines,
       boolean diffAction);
 }

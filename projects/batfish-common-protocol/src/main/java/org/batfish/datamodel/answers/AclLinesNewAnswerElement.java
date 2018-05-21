@@ -3,7 +3,6 @@ package org.batfish.datamodel.answers;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -52,15 +51,10 @@ public class AclLinesNewAnswerElement extends TableAnswerElement implements AclL
       int lineNumber,
       String line,
       boolean unmatchable,
-      @Nullable Integer blockingLineNum,
-      String blockingLine,
+      @Nullable SortedMap<Integer, String> blockingLines,
       boolean diffAction) {
 
     AclSpecs specs = _equivalenceClasses.get(aclName).get(hostname);
-    ImmutableMap<Integer, String> blockingLines =
-        blockingLineNum == null
-            ? ImmutableMap.of()
-            : ImmutableMap.of(blockingLineNum, blockingLine);
 
     _initialRows.add(
         new Row()
