@@ -11,7 +11,7 @@ import javax.annotation.Nullable;
  * that ends with 65001. >
  *
  * <p>To encode community semantics, the model introduces a single new boolean variable for every
- * exact match, and two new boolean routeVariables for every regex match. The first variable says
+ * exact match, and two new boolean variables for every regex match. The first variable says
  * whether there is a community value that matches the regex, but is not specified in the
  * configuration (e.g., came from a neighbor). The second variable says if the regex match is
  * successful, which is based on both the communities in the configuration as well as other
