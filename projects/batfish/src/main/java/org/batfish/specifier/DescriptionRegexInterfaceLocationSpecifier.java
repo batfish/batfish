@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -12,6 +13,24 @@ public class DescriptionRegexInterfaceLocationSpecifier implements LocationSpeci
 
   public DescriptionRegexInterfaceLocationSpecifier(Pattern pattern) {
     _pattern = pattern;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    DescriptionRegexInterfaceLocationSpecifier that =
+        (DescriptionRegexInterfaceLocationSpecifier) o;
+    return Objects.equals(_pattern, that._pattern);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_pattern);
   }
 
   protected Location makeLocation(String node, String iface) {

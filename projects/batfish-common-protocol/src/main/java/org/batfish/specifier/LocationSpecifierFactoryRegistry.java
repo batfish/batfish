@@ -5,10 +5,10 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import org.batfish.common.BatfishException;
 
-public class LocationResolverRegistry {
-  private static Map<String, LocationSpecifierFactory> _locationResolvers = new HashMap<>();
+public class LocationSpecifierFactoryRegistry {
+  private Map<String, LocationSpecifierFactory> _locationResolvers = new HashMap<>();
 
-  static {
+  public LocationSpecifierFactoryRegistry() {
     ServiceLoader.load(LocationSpecifierFactory.class)
         .iterator()
         .forEachRemaining(
@@ -17,7 +17,7 @@ public class LocationResolverRegistry {
                     locationSpecifierFactory.getName(), locationSpecifierFactory));
   }
 
-  public static LocationSpecifierFactory getLocationResolver(String name) {
+  public LocationSpecifierFactory getLocationSpecifierFactory(String name) {
     if (!_locationResolvers.containsKey(name)) {
       throw new BatfishException("No LocationSpecifierFactory found with name = " + name);
     }

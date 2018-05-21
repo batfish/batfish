@@ -1,10 +1,12 @@
 package org.batfish.specifier;
 
+import com.google.auto.service.AutoService;
 import java.util.regex.Pattern;
 
 /**
  * A {@link LocationSpecifierFactory} that builds {@link NodeNameRegexInterfaceLocationSpecifier}s.
  */
+@AutoService(LocationSpecifierFactory.class)
 public class NodeNameRegexInterfaceLocationSpecifierFactory
     extends TypedLocationSpecifierFactory<Pattern> {
   @Override
