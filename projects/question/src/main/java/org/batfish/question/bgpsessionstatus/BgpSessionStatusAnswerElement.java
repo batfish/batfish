@@ -118,7 +118,7 @@ public class BgpSessionStatusAnswerElement extends TableAnswerElement {
    * @return The output row
    */
   public static Row toRow(BgpSessionInfo info) {
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
     row.put(COL_CONFIGURED_STATUS, info.getConfiguredStatus())
         .put(COL_ESTABLISHED_NEIGHBORS, info.getEstablishedNeighbors())
         .put(COL_LOCAL_IP, info.getLocalIp())

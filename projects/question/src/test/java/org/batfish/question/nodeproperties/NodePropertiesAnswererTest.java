@@ -52,13 +52,13 @@ public class NodePropertiesAnswererTest {
     String colName1 = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(propSpec1);
     String colName2 = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(propSpec2);
     Row row1 =
-        new RowBuilder()
+        Row.builder()
             .put(NodePropertiesAnswerElement.COL_NODE, new Node("node1"))
             .put(colName1, ConfigurationFormat.CISCO_IOS)
             .put(colName2, ImmutableList.of())
             .build();
     Row row2 =
-        new RowBuilder()
+        Row.builder()
             .put(NodePropertiesAnswerElement.COL_NODE, new Node("node2"))
             .put(colName1, ConfigurationFormat.HOST)
             .put(colName2, ImmutableList.of("sa"))
@@ -75,7 +75,7 @@ public class NodePropertiesAnswererTest {
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("Could not recover object");
 
-    NodePropertiesAnswerer.fillProperty("col", "stringNotList", new RowBuilder(), propDescriptor);
+    NodePropertiesAnswerer.fillProperty("col", "stringNotList", Row.builder(), propDescriptor);
   }
 
   @Test
@@ -83,29 +83,28 @@ public class NodePropertiesAnswererTest {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setDefaultInboundAction(LineAction.ACCEPT);
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("default-inbound-action");
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
 
     NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with the String value
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
     assertThat(
-        row.build(),
-        equalTo(new RowBuilder().put(columnName, LineAction.ACCEPT.toString()).build()));
+        row.build(), equalTo(Row.builder().put(columnName, LineAction.ACCEPT.toString()).build()));
   }
 
   @Test
   public void fillPropertyListEmpty() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-servers");
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
 
     NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with an empty list
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
     assertThat(
-        row.build(), equalTo(new RowBuilder().put(columnName, new LinkedList<String>()).build()));
+        row.build(), equalTo(Row.builder().put(columnName, new LinkedList<String>()).build()));
   }
 
   @Test
@@ -113,15 +112,14 @@ public class NodePropertiesAnswererTest {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setNtpServers(ImmutableSortedSet.of("sa", "sb"));
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-servers");
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
 
     NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with the right list and the schemas map should be List<String>
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
     assertThat(
-        row.build(),
-        equalTo(new RowBuilder().put(columnName, ImmutableList.of("sa", "sb")).build()));
+        row.build(), equalTo(Row.builder().put(columnName, ImmutableList.of("sa", "sb")).build()));
   }
 
   @Test
@@ -129,26 +127,25 @@ public class NodePropertiesAnswererTest {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setInterfaces(ImmutableSortedMap.of("i1", new Interface("i1")));
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("interfaces");
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
 
     NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with the right list and the schemas map should be List<String>
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
-    assertThat(
-        row.build(), equalTo(new RowBuilder().put(columnName, ImmutableList.of("i1")).build()));
+    assertThat(row.build(), equalTo(Row.builder().put(columnName, ImmutableList.of("i1")).build()));
   }
 
   @Test
   public void fillPropertyNull() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     NodePropertySpecifier nodePropertySpec = new NodePropertySpecifier("ntp-source-interface");
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
 
     NodePropertiesAnswerer.fillProperty(configuration, nodePropertySpec, row);
 
     // the row should be filled out with null and the schemas shouldn't be
     String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
-    assertThat(row.build(), equalTo(new RowBuilder().put(columnName, null).build()));
+    assertThat(row.build(), equalTo(Row.builder().put(columnName, null).build()));
   }
 }

@@ -67,7 +67,7 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   static Row toRow(DefinedStructureRow info) {
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
     row.put(COL_DEFINITION_LINES, info.getDefinitionLines())
         .put(COL_NODE_NAME, info.getNodeName())
         .put(COL_NUM_REFERENCES, info.getNumReferences())

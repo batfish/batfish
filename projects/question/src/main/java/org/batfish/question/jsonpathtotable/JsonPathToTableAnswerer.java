@@ -115,7 +115,7 @@ public class JsonPathToTableAnswerer extends Answerer {
     computeExtractions(extractions, jpResult, answerValues);
     doCompositions(compositions, extractions, answerValues);
 
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
     Iterator<String> iterator = answerValues.fieldNames();
     while (iterator.hasNext()) {
       String columnName = iterator.next();

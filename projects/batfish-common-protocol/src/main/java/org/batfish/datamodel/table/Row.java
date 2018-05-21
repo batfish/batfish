@@ -31,11 +31,11 @@ public class Row implements Comparable<Row> {
 
     private final ObjectNode _data;
 
-    public RowBuilder() {
+    private RowBuilder() {
       _data = BatfishObjectMapper.mapper().createObjectNode();
     }
 
-    public RowBuilder(Row row) {
+    private RowBuilder(Row row) {
       this();
       row.getColumnNames().forEach(col -> _data.set(col, row.get(col)));
     }
@@ -60,13 +60,19 @@ public class Row implements Comparable<Row> {
 
   private final ObjectNode _data;
 
-  private Row() {
-    this(null);
-  }
-
   @JsonCreator
   public Row(ObjectNode data) {
     _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
+  }
+
+  /** Returns a builder object for Row */
+  public static RowBuilder builder() {
+    return new RowBuilder();
+  }
+
+  /** Returns a builder object for Row seeded by the contents of {@code otheRow} */
+  public static RowBuilder builder(Row otherRow) {
+    return new RowBuilder(otherRow);
   }
 
   /**

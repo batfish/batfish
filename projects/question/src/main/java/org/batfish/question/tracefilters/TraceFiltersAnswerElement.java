@@ -71,7 +71,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
       LineAction action,
       Integer matchLine,
       String lineContent) {
-    RowBuilder row = new RowBuilder();
+    RowBuilder row = Row.builder();
     row.put(COLUMN_NODE, new Node(nodeName))
         .put(COLUMN_FILTER_NAME, filterName)
         .put(COLUMN_FLOW, flow)

@@ -79,8 +79,7 @@ public class NodePropertiesAnswerer extends Answerer {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
-      RowBuilder row =
-          new RowBuilder().put(NodePropertiesAnswerElement.COL_NODE, new Node(nodeName));
+      RowBuilder row = Row.builder().put(NodePropertiesAnswerElement.COL_NODE, new Node(nodeName));
 
       for (NodePropertySpecifier nodePropertySpec : question.getProperties()) {
         fillProperty(configurations.get(nodeName), nodePropertySpec, row);
