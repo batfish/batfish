@@ -9,8 +9,13 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.OspfType;
+import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDPacket;
+import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDNetFactory.SatAssigment;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +29,51 @@ public class BDDNetFactoryTest {
   public void init() {
     BDDNetConfig config = new BDDNetConfig(false);
     List<String> routers = new ArrayList<>();
+    routers.add("A");
+    routers.add("B");
     List<CommunityVar> comms = new ArrayList<>();
     List<Integer> localPrefs = new ArrayList<>();
+    localPrefs.add(99);
     _netFactory = new BDDNetFactory(routers, comms, localPrefs, config);
     _factory = _netFactory.getFactory();
+  }
+
+  @Test
+  public void testRoute() {
+    BDDRoute r = _netFactory.routeVariables();
+
+    Ip dstIp = new Ip("1.2.3.0");
+    Prefix p = new Prefix(dstIp, 24);
+    BDD pfx = BDDUtils.prefixToBdd(_factory, r, p);
+    BDD metric = r.getMetric().value(100);
+    BDD ospfMetric = r.getOspfMetric().value(OspfType.E1);
+    BDD localPref = r.getLocalPref().value(99);
+    BDD adminDist = r.getAdminDist().value(20);
+    BDD med = r.getMed().value(80);
+    BDD proto = r.getProtocolHistory().value(Protocol.BGP);
+    BDD dst = r.getDstRouter().value("A");
+    BDD src = r.getSrcRouter().value("B");
+    BDD all =
+        pfx.and(metric)
+            .and(ospfMetric)
+            .and(localPref)
+            .and(adminDist)
+            .and(med)
+            .and(proto)
+            .and(dst)
+            .and(src);
+
+    SatAssigment assignment = _netFactory.satOne(all);
+    assertThat(assignment.getDstIp(), equalTo(dstIp));
+    assertThat(assignment.getPrefixLen(), equalTo(24));
+    assertThat(assignment.getMetric(), equalTo(100));
+    assertThat(assignment.getOspfMetric(), equalTo(OspfType.E1));
+    assertThat(assignment.getLocalPref(), equalTo(99));
+    assertThat(assignment.getAdminDist(), equalTo(20));
+    assertThat(assignment.getMed(), equalTo(80));
+    assertThat(assignment.getRoutingProtocol(), equalTo(RoutingProtocol.BGP));
+    assertThat(assignment.getDstRouter(), equalTo("A"));
+    assertThat(assignment.getSrcRouter(), equalTo("B"));
   }
 
   @Test
@@ -144,4 +190,5 @@ public class BDDNetFactoryTest {
     assertThat(a2.getTcpFlags().getUrg(), equalTo(false));
     assertThat(a2.getTcpFlags().getSyn(), equalTo(true));
   }
+
 }

@@ -36,7 +36,7 @@ public class BDDNetConfig {
       _keepMed = true;
       _keepMetric = true;
       _keepOspfMetric = true;
-      _keepRouters = false;
+      _keepRouters = true;
     }
   }
 

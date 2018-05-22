@@ -231,7 +231,7 @@ public class BDDNetFactory {
     _numBitsLocalPref = (config.getKeepLp() ? BDDUtils.numBits(_allLocalPrefs.size()) : 0);
     _numBitsMed = (config.getKeepMed() ? 32 : 0);
     _numBitsMetric = (config.getKeepMetric() ? 32 : 0);
-    _numBitsOspfMetric = (config.getKeepOspfMetric() ? 32 : 0);
+    _numBitsOspfMetric = (config.getKeepOspfMetric() ? 2 : 0);
     _numBitsRoutingProtocol = (config.getKeepProtocol() ? BDDUtils.numBits(_allProtos.size()) : 0);
     _numBitsRouters = (config.getKeepRouters() ? BDDUtils.numBits(_allRouters.size()) : 0);
     int numNeeded =
@@ -399,7 +399,7 @@ public class BDDNetFactory {
     private int _localPref;
     private int _med;
     private int _metric;
-    private int _ospfMetric;
+    private OspfType _ospfMetric;
     private List<CommunityVar> _communities;
     private TcpFlags _tcpFlags;
     private String _srcRouter;
@@ -510,11 +510,11 @@ public class BDDNetFactory {
       this._metric = metric;
     }
 
-    public int getOspfMetric() {
+    public OspfType getOspfMetric() {
       return _ospfMetric;
     }
 
-    public void setOspfMetric(int ospfMetric) {
+    public void setOspfMetric(OspfType ospfMetric) {
       this._ospfMetric = ospfMetric;
     }
 
@@ -584,8 +584,12 @@ public class BDDNetFactory {
     return entries;
   }
 
-  public List<SatAssigment> satOne(BDD x) {
-    return allSat(x.satOne());
+  public SatAssigment satOne(BDD x) {
+    List<SatAssigment> assigments = allSat(x.satOne());
+    if (assigments.isEmpty()) {
+      return null;
+    }
+    return assigments.get(0);
   }
 
   private int byIndex(int index, int numBits, int i) {
@@ -708,10 +712,10 @@ public class BDDNetFactory {
     assignment.setRoutingProtocol(Protocol.toRoutingProtocol(getAllProtos().get(proto)));
     assignment.setPrefixLen(prefixLen);
     assignment.setAdminDist(adminDist);
-    assignment.setLocalPref(localPref);
+    assignment.setLocalPref(_allLocalPrefs.isEmpty() ? 100 : _allLocalPrefs.get(localPref));
     assignment.setMed(med);
     assignment.setMetric(metric);
-    assignment.setOspfMetric(ospfMetric);
+    assignment.setOspfMetric(OspfType.values()[ospfMetric]);
     assignment.setCommunities(cvars);
     return assignment;
   }
