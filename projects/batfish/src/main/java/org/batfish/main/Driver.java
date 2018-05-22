@@ -766,7 +766,8 @@ public class Driver {
                   _mainSettings.getSslKeystoreFile(),
                   _mainSettings.getSslKeystorePassword(),
                   _mainSettings.getSslTruststoreFile(),
-                  _mainSettings.getSslTruststorePassword())
+                  _mainSettings.getSslTruststorePassword(),
+                  true)
               .build();
       WebTarget webTarget = client.target(url);
       for (Map.Entry<String, String> entry : params.entrySet()) {
