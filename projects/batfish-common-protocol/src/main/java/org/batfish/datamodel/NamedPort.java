@@ -61,6 +61,8 @@ public enum NamedPort {
   LOGINtcp_OR_WHOudp(513),
   LOTUSNOTES(1352),
   LPD(515),
+  MGCP_CA(2727),
+  MGCP_UA(2427),
   MICROSOFT_DS(445),
   /** not authoritative */
   MLAG(6784),

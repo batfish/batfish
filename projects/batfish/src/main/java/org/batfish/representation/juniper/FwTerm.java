@@ -11,6 +11,8 @@ public final class FwTerm implements Serializable {
 
   private final List<FwFromApplication> _fromApplications;
 
+  private final List<FwFromApplicationSet> _fromApplicationSets;
+
   private final List<FwFromHostProtocol> _fromHostProtocols;
 
   private final List<FwFromHostService> _fromHostServices;
@@ -26,6 +28,7 @@ public final class FwTerm implements Serializable {
   public FwTerm(String name) {
     _froms = new ArrayList<>();
     _fromApplications = new ArrayList<>();
+    _fromApplicationSets = new ArrayList<>();
     _fromHostProtocols = new ArrayList<>();
     _fromHostServices = new ArrayList<>();
     _name = name;
@@ -34,6 +37,10 @@ public final class FwTerm implements Serializable {
 
   public List<FwFromApplication> getFromApplications() {
     return _fromApplications;
+  }
+
+  public List<FwFromApplicationSet> getFromApplicationSets() {
+    return _fromApplicationSets;
   }
 
   public List<FwFromHostProtocol> getFromHostProtocols() {

@@ -9,8 +9,15 @@ public class ApplicationOrApplicationSetReference extends ApplicationSetMemberRe
     super(name);
   }
 
+  public ApplicationOrApplicationSetReference(Application application) {
+    super(application);
+  }
+
   @Override
   public ApplicationSetMember resolve(JuniperConfiguration jc) {
+    if (_application != null) {
+      return _application;
+    }
     ApplicationSetMember application = jc.getApplications().get(_name);
     return (application != null) ? application : jc.getApplicationSets().get(_name);
   }

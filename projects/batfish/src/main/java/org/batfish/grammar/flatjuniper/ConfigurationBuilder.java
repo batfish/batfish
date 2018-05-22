@@ -361,6 +361,7 @@ import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromApplication;
+import org.batfish.representation.juniper.FwFromApplicationSet;
 import org.batfish.representation.juniper.FwFromDestinationAddress;
 import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
 import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
@@ -1645,8 +1646,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAas_application_set(Aas_application_setContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
+    String name;
+    int line;
+    if (ctx.junos_application_set() != null) {
+      JunosApplicationSet junosApplicationSet = toJunosApplicationSet(ctx.junos_application_set());
+      name = junosApplicationSet.name();
+      line = ctx.junos_application_set().getStart().getLine();
+      if (!junosApplicationSet.hasDefinition()) {
+        _w.redFlag(
+            String.format(
+                "unimplemented pre-defined junos application-set: '%s'",
+                ctx.junos_application_set().getText()));
+        return;
+      }
+      _configuration
+          .getApplicationSets()
+          .putIfAbsent(name, junosApplicationSet.getApplicationSet());
+    } else {
+      name = ctx.name.getText();
+      line = ctx.name.getStart().getLine();
+    }
     _configuration.referenceStructure(
         JuniperStructureType.APPLICATION_SET,
         name,
@@ -4019,7 +4038,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
     } else if (ctx.junos_application_set() != null) {
       JunosApplicationSet applicationSet = toJunosApplicationSet(ctx.junos_application_set());
-
+      if (!applicationSet.hasDefinition()) {
+        _w.redFlag(
+            String.format(
+                "unimplemented pre-defined junos application-set: '%s'",
+                ctx.junos_application_set().getText()));
+        return;
+      }
+      FwFromApplicationSet from = new FwFromApplicationSet(applicationSet.getApplicationSet());
+      _currentFwTerm.getFromApplicationSets().add(from);
     } else {
       String name;
       int line;

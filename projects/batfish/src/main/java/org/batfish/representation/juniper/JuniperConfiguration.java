@@ -1436,6 +1436,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       boolean addLine =
           term.getFromApplications().isEmpty()
+              && term.getFromApplicationSets().isEmpty()
               && term.getFromHostProtocols().isEmpty()
               && term.getFromHostServices().isEmpty();
       for (FwFromHostProtocol from : term.getFromHostProtocols()) {
@@ -1446,6 +1447,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       for (FwFromApplication fromApplication : term.getFromApplications()) {
         fromApplication.applyTo(this, matchCondition, action, lines, _w);
+      }
+      for (FwFromApplicationSet fromApplicationSet : term.getFromApplicationSets()) {
+        fromApplicationSet.applyTo(this, matchCondition, action, lines, _w);
       }
       if (addLine) {
         IpAccessListLine line =
