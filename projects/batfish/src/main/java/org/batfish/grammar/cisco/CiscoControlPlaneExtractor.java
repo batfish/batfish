@@ -2229,7 +2229,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterOgn_network_object(Ogn_network_objectContext ctx) {
+  public void exitOgn_network_object(Ogn_network_objectContext ctx) {
     IpSpace ipSpace = null;
     if (ctx.prefix != null) {
       ipSpace = new IpWildcard(ctx.prefix.getText()).toIpSpace();
@@ -2250,15 +2250,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           ctx.name.start.getLine());
     }
     if (ipSpace == null) {
-      _w.redFlag("Network object-group not supported " + getFullText(ctx));
+      _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
     } else {
       _currentNetworkObjectGroup.getLines().add(ipSpace);
     }
-  }
-
-  @Override
-  public void exitOgn_network_object(Ogn_network_objectContext ctx) {
-    _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
   }
 
   @Override
