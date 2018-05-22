@@ -1,5 +1,7 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
@@ -13,6 +15,7 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -81,6 +84,12 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
       NodeRoleDimension roleDimension = _batfish.getNodeRoleDimension(question.getRoleDimension());
+      if (roleDimension == null) {
+        throw new BatfishException(
+            "No usable role dimension found. You asked for "
+                + firstNonNull(question.getRoleDimension(), "any"));
+      }
+
       SortedMap<String, SortedSet<String>> roleNodeMap =
           roleDimension.createRoleNodesMap(includeNodes);
 
@@ -154,7 +163,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
 
     private List<String> _roles;
 
-    @Nonnull private String _roleDimension;
+    @Nullable private String _roleDimension;
 
     @JsonCreator
     public PerRoleQuestion(
@@ -164,8 +173,7 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
         @JsonProperty(PROP_ROLES) List<String> roles) {
       _nodeRegex = nodeRegex == null ? NodesSpecifier.ALL : nodeRegex;
       _question = question;
-      _roleDimension =
-          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+      _roleDimension = roleDimension;
       _roles = roles;
     }
 

@@ -1,5 +1,7 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -445,6 +447,11 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (question.getStyle() == EdgeStyle.ROLE) {
         NodeRoleDimension roleDimension =
             _batfish.getNodeRoleDimension(question.getRoleDimension());
+        if (roleDimension == null) {
+          throw new BatfishException(
+              "No usable role dimension found. You asked for "
+                  + firstNonNull(question.getRoleDimension(), "any"));
+        }
         _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
       }
 
@@ -819,8 +826,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _node2Regex = nodes2 == null ? NodesSpecifier.ALL : nodes2;
       _neighborTypes = neighborTypes == null ? new TreeSet<>() : neighborTypes;
       _style = style == null ? EdgeStyle.SUMMARY : style;
-      _roleDimension =
-          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+      _roleDimension = roleDimension;
     }
 
     @Override

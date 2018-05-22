@@ -1948,7 +1948,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     NodeRoleDimension nodeRoleDimension = null;
     try {
-      nodeRoleDimension = NodeRolesData.getNodeRoleDimensionByName(nodeRoleDataPath, dimension);
+      nodeRoleDimension = NodeRolesData.getNodeRoleDimension(nodeRoleDataPath, dimension);
     } catch (IOException e) {
       _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
     }
