@@ -8,6 +8,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -83,15 +84,15 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       // collect the desired nodes in a list
       Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      NodeRoleDimension roleDimension = _batfish.getNodeRoleDimension(question.getRoleDimension());
-      if (roleDimension == null) {
+      Optional<NodeRoleDimension> roleDimension =
+          _batfish.getNodeRoleDimension(question.getRoleDimension());
+      if (!roleDimension.isPresent()) {
         throw new BatfishException(
-            "No usable role dimension found. You asked for "
-                + firstNonNull(question.getRoleDimension(), "any"));
+            "No role dimension found for " + firstNonNull(question.getRoleDimension(), "any"));
       }
 
       SortedMap<String, SortedSet<String>> roleNodeMap =
-          roleDimension.createRoleNodesMap(includeNodes);
+          roleDimension.get().createRoleNodesMap(includeNodes);
 
       List<String> desiredRoles = question.getRoles();
       if (desiredRoles != null) {

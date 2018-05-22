@@ -9,6 +9,7 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.Network;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -445,14 +446,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
 
       if (question.getStyle() == EdgeStyle.ROLE) {
-        NodeRoleDimension roleDimension =
+        Optional<NodeRoleDimension> roleDimension =
             _batfish.getNodeRoleDimension(question.getRoleDimension());
-        if (roleDimension == null) {
+        if (!roleDimension.isPresent()) {
           throw new BatfishException(
-              "No usable role dimension found. You asked for "
-                  + firstNonNull(question.getRoleDimension(), "any"));
+              "No role dimension found for " + firstNonNull(question.getRoleDimension(), "any"));
         }
-        _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
+        _nodeRolesMap = roleDimension.get().createNodeRolesMap(configurations.keySet());
       }
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {

@@ -9,7 +9,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -64,21 +63,16 @@ public class NodeRolesData {
    * @param dataPath Path from where to read {@link NodeRolesData}
    * @param dimension The name of the dimension to fetch
    * @return The {@link NodeRoleDimension} object if one exists or throws {@link
-   *     java.util.NoSuchElementException}
+   *     java.util.NoSuchElementException} if {@code dimension} is non-null and not found.
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
-  public static NodeRoleDimension getNodeRoleDimension(Path dataPath, String dimension)
+  public static Optional<NodeRoleDimension> getNodeRoleDimension(Path dataPath, String dimension)
       throws IOException {
     if (dimension == null) {
       return getNodeRoleDimension(dataPath);
     }
     NodeRolesData data = read(dataPath);
-    Optional<NodeRoleDimension> opt = data.getNodeRoleDimension(dimension);
-    if (opt.isPresent()) {
-      return opt.get();
-    } else {
-      throw new NoSuchElementException(String.format("Role dimension '%s' not found", dimension));
-    }
+    return data.getNodeRoleDimension(dimension);
   }
 
   /**
@@ -90,32 +84,27 @@ public class NodeRolesData {
    * @throws IOException If the contents of the file could not be cast to {@link NodeRolesData}
    */
   @Nullable
-  public static NodeRoleDimension getNodeRoleDimension(Path dataPath) throws IOException {
+  private static Optional<NodeRoleDimension> getNodeRoleDimension(Path dataPath)
+      throws IOException {
     NodeRolesData data = read(dataPath);
     // check default
     if (data.getDefaultDimension() != null) {
       Optional<NodeRoleDimension> opt = data.getNodeRoleDimension(data.getDefaultDimension());
       if (opt.isPresent()) {
-        return opt.get();
+        return opt;
       }
     }
     // check auto primary
     Optional<NodeRoleDimension> optAuto =
         data.getNodeRoleDimension(NodeRoleDimension.AUTO_DIMENSION_PRIMARY);
     if (optAuto.isPresent()) {
-      return optAuto.get();
+      return optAuto;
     }
     // check first
-    Optional<NodeRoleDimension> optFirst =
-        data.getNodeRoleDimensions()
-            .stream()
-            .sorted(Comparator.comparing(d -> d.getName()))
-            .findFirst();
-    if (optFirst.isPresent()) {
-      return optFirst.get();
-    }
-
-    return null;
+    return data.getNodeRoleDimensions()
+        .stream()
+        .sorted(Comparator.comparing(d -> d.getName()))
+        .findFirst();
   }
 
   @JsonProperty(PROP_ROLE_DIMENSIONS)

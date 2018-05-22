@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -66,14 +67,15 @@ public class RolesQuestionPlugin extends QuestionPlugin {
       // collect relevant nodes in a list.
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      NodeRoleDimension roleDimension = _batfish.getNodeRoleDimension(question.getRoleDimension());
-      if (roleDimension == null) {
+      Optional<NodeRoleDimension> roleDimension =
+          _batfish.getNodeRoleDimension(question.getRoleDimension());
+      if (!roleDimension.isPresent()) {
         throw new BatfishException(
-            "No usable role dimension found. You asked for "
-                + firstNonNull(question.getRoleDimension(), "any"));
+            "No role dimension found for " + firstNonNull(question.getRoleDimension(), "any"));
       }
       RolesAnswerElement answerElement =
-          new RolesAnswerElement(roleDimension, roleDimension.createRoleNodesMap(nodes));
+          new RolesAnswerElement(
+              roleDimension.get(), roleDimension.get().createRoleNodesMap(nodes));
 
       return answerElement;
     }
