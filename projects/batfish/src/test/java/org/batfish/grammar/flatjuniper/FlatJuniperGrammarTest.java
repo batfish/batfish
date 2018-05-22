@@ -200,10 +200,16 @@ public class FlatJuniperGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    /* a1 should be used, while a2 should be unused */
+    /* Confirm application usage is tracked properly */
     assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a2", 0));
     assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a1", 1));
     assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a3", 1));
+
+    /* Confirm undefined reference is identified */
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a_undef"));
   }
 
   @Test
@@ -212,8 +218,6 @@ public class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
-        undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
 
     /* Check that appset2 contains definition of appset1 concatenated with definition of a3 */
@@ -249,61 +253,76 @@ public class FlatJuniperGrammarTest {
      * Check that there is an undefined reference to appset4, but not to appset1-3
      * (via reference in security policy).
      */
-    assertThat(undefinedReferences, hasKey(hostname));
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
-        undefinedReferencesByType = undefinedReferences.get(hostname);
     assertThat(
-        undefinedReferencesByType,
-        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationOrApplicationSetByName =
-        undefinedReferencesByType.get(
-            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
-    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset1")));
-    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset2")));
-    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset3")));
-    assertThat(urApplicationOrApplicationSetByName, hasKey("appset4"));
-    SortedMap<String, SortedSet<Integer>> urApplicationOrApplicationSetByUsage =
-        urApplicationOrApplicationSetByName.get("appset4");
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
+            "appset4",
+            JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION));
     assertThat(
-        urApplicationOrApplicationSetByUsage,
-        hasKey(JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION.getDescription()));
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset1")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset2")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset3")));
 
     /*
      * Check that there is an undefined reference to application-set appset4, but not to appset1-3
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION_SET.getDescription()));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationSetByName =
-        undefinedReferencesByType.get(JuniperStructureType.APPLICATION_SET.getDescription());
-    assertThat(urApplicationSetByName, not(hasKey("appset1")));
-    assertThat(urApplicationSetByName, not(hasKey("appset2")));
-    assertThat(urApplicationSetByName, not(hasKey("appset3")));
-    assertThat(urApplicationSetByName, hasKey("appset4"));
-    SortedMap<String, SortedSet<Integer>> urApplicationSetByUsage =
-        urApplicationSetByName.get("appset4");
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.APPLICATION_SET,
+            "appset4",
+            JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET));
     assertThat(
-        urApplicationSetByUsage,
-        hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET.getDescription()));
+        ccae,
+        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset1")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset2")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset3")));
 
     /*
      * Check that there is an undefined reference to application a4 but not a1-3
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType,
-        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationByName =
-        undefinedReferencesByType.get(
-            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
-    assertThat(urApplicationByName, not(hasKey("a1")));
-    assertThat(urApplicationByName, not(hasKey("a2")));
-    assertThat(urApplicationByName, not(hasKey("a3")));
-    assertThat(urApplicationByName, hasKey("a4"));
-    SortedMap<String, SortedSet<Integer>> urApplicationByUsage = urApplicationByName.get("a4");
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
+            "a4",
+            JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION));
     assertThat(
-        urApplicationByUsage,
-        hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION.getDescription()));
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a1")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a2")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a3")));
   }
 
   @Test
@@ -378,6 +397,27 @@ public class FlatJuniperGrammarTest {
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
                                 .build()))))));
+  }
+
+  @Test
+  public void testAuthenticationKeyChain() throws IOException {
+    String hostname = "authentication-key-chain";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm filter usage is tracked properly */
+    assertThat(
+        ccae, hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC", 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNUSED", 0));
+
+    /* Confirm undefined reference is identified */
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNDEF"));
   }
 
   @Test
@@ -588,6 +628,26 @@ public class FlatJuniperGrammarTest {
         ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter", 1));
     assertThat(
         ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter2", 0));
+  }
+
+  @Test
+  public void testFirewallFilters() throws IOException {
+    String hostname = "firewall-filters";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm filter usage is tracked properly */
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER2", 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER_UNUSED", 0));
+
+    /* Confirm undefined reference is identified */
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER_UNDEF"));
   }
 
   @Test
@@ -1559,6 +1619,33 @@ public class FlatJuniperGrammarTest {
 
     assertThat(extractor.getNumSets(), equalTo(8));
     assertThat(extractor.getNumErrorNodes(), equalTo(8));
+  }
+
+  @Test
+  public void testPrefixList() throws IOException {
+    String hostname = "prefix-lists";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    Flow flowAccepted1 = createFlow("1.2.3.4", "0.0.0.0");
+    Flow flowAccepted2 = createFlow("1.2.3.5", "0.0.0.0");
+    Flow flowDenied = createFlow("9.8.7.6", "0.0.0.0");
+
+    IpAccessList filterPrefixList = c.getIpAccessLists().get("FILTER_PL");
+
+    // Confirm referrers are tracked properly
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL", 5));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNUSED", 0));
+
+    // Confirm undefined reference is detected
+    assertThat(ccae, hasUndefinedReference(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNDEF"));
+
+    // Only flow from accepted source-prefixes should be accepted
+    assertThat(filterPrefixList, rejects(flowDenied, null, c));
+    assertThat(filterPrefixList, accepts(flowAccepted1, null, c));
+    assertThat(filterPrefixList, accepts(flowAccepted2, null, c));
   }
 
   @Test
