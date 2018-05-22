@@ -8,9 +8,7 @@ import java.util.stream.Stream;
 import org.batfish.datamodel.Configuration;
 import org.batfish.role.NodeRole;
 
-/**
- * An abstract {@link LocationSpecifier} specifying locations by regex on node role names.
- */
+/** An abstract {@link LocationSpecifier} specifying locations by regex on node role names. */
 public abstract class NodeRoleRegexLocationSpecifier implements LocationSpecifier {
   private final String _roleDimension;
 
