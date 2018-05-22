@@ -1,6 +1,5 @@
 package org.batfish.specifier;
 
-import com.google.common.collect.Multimap;
 import java.util.Set;
 import org.batfish.datamodel.IpSpace;
 
@@ -17,5 +16,5 @@ public interface IpSpaceSpecifier {
    *     required that the set of values of the multimap matches exactly the input {@link
    *     Location}s, and that no {@link Location} is assigned more than one {@link IpSpace}.
    */
-  Multimap<IpSpace, Location> resolve(Set<Location> locations, SpecifierContext ctxt);
+  IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt);
 }

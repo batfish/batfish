@@ -32,7 +32,7 @@ public final class InterfaceLocation implements Location {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Location)) {
+    if (!(o instanceof InterfaceLocation)) {
       return false;
     }
     InterfaceLocation that = (InterfaceLocation) o;

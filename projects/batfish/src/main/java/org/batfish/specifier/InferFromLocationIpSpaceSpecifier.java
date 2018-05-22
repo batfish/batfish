@@ -1,8 +1,5 @@
 package org.batfish.specifier;
 
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableMultimap.Builder;
-import com.google.common.collect.Multimap;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AclIpSpace;
@@ -51,10 +48,11 @@ public class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier {
   private InferFromLocationIpSpaceSpecifier() {}
 
   @Override
-  public Multimap<IpSpace, Location> resolve(Set<Location> locations, SpecifierContext ctxt) {
+  public IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt) {
     IpSpaceLocationVisitor ipSpaceLocationVisitor = new IpSpaceLocationVisitor(ctxt);
-    Builder<IpSpace, Location> builder = ImmutableMultimap.builder();
-    locations.forEach(location -> builder.put(location.accept(ipSpaceLocationVisitor), location));
+    IpSpaceAssignment.Builder builder = IpSpaceAssignment.builder();
+    locations.forEach(
+        location -> builder.assign(location, location.accept(ipSpaceLocationVisitor)));
     return builder.build();
   }
 }
