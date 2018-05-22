@@ -371,6 +371,43 @@ public class VirtualRouterTest {
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(0));
   }
 
+  /**
+   * Test that {@link VirtualRouter#activateStaticRoutes()} removes a route if a route to its
+   * next-hop IP disappears.
+   */
+  @Test
+  public void testActivateStaticRoutesRemoval() {
+    VirtualRouter vr = makeIosVirtualRouter("n1");
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+
+    StaticRoute baseRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("Ethernet1")
+            .build();
+    StaticRoute dependentRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setNextHopIp(new Ip("1.1.1.1"))
+            .build();
+
+    vr.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setStaticRoutes(ImmutableSortedSet.of(baseRoute, dependentRoute));
+
+    // Initial activation
+    vr.initStaticRibs();
+    vr.activateStaticRoutes();
+
+    // Test: remove baseRoute, rerun activation
+    vr.getMainRib().removeRoute(baseRoute);
+    vr.activateStaticRoutes();
+
+    // Assert dependent route is not there
+    assertThat(vr.getMainRib().getRoutes(), not(containsInAnyOrder(dependentRoute)));
+  }
+
   @Test
   public void testGetBetterOspfRouteMetric() {
     Prefix ospfInterAreaRoutePrefix = Prefix.parse("1.1.1.1/24");

@@ -419,10 +419,6 @@ public class VirtualRouter extends ComparableStructure<String> {
    */
   @VisibleForTesting
   void initForIgpComputation() {
-    _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
-    _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
-    _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
-
     initConnectedRib();
     initLocalRib();
     initStaticRibs();
@@ -1194,6 +1190,10 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ebgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
     _ibgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
     _bgpBestPathRib = new BgpBestPathRib(tieBreaker, _receivedBgpRoutes, _mainRib);
+
+    _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
+    _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
+    _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
   }
 
   /**
