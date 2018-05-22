@@ -790,45 +790,47 @@ public class BDDNetFactory {
         _protocolHistory = new BDDFiniteDomain<>(_factory, _allProtos, _indexRoutingProtocol);
         _protocolHistoryTemp =
             new BDDFiniteDomain<>(_factory, _allProtos, _indexRoutingProtocolTemp);
-        addBitNames("proto", _protocolHistory.numBits(), _indexRoutingProtocol, false);
-        addBitNames("proto'", _protocolHistoryTemp.numBits(), _indexRoutingProtocolTemp, false);
+        addBitNames("proto", _numBitsRoutingProtocol, _indexRoutingProtocol, false);
+        addBitNames("proto'", _numBitsRoutingProtocol, _indexRoutingProtocolTemp, false);
       } else {
         _protocolHistory = null;
         _protocolHistoryTemp = null;
       }
 
       if (_config.getKeepMetric()) {
-        _metric = BDDInteger.makeFromIndex(_factory, 32, _indexMetric, false);
-        _metricTemp = BDDInteger.makeFromIndex(_factory, 32, _indexMetricTemp, false);
-        addBitNames("metric", 32, _indexMetric, false);
-        addBitNames("metric'", 32, _indexMetricTemp, false);
+        _metric = BDDInteger.makeFromIndex(_factory, _numBitsMetric, _indexMetric, false);
+        _metricTemp = BDDInteger.makeFromIndex(_factory, _numBitsMetric, _indexMetricTemp, false);
+        addBitNames("metric", _numBitsMetric, _indexMetric, false);
+        addBitNames("metric'", _numBitsMetric, _indexMetricTemp, false);
       }
 
       if (_config.getKeepMed()) {
-        _med = BDDInteger.makeFromIndex(_factory, 32, _indexMed, false);
-        _medTemp = BDDInteger.makeFromIndex(_factory, 32, _indexMedTemp, false);
-        addBitNames("med", 32, _indexMed, false);
-        addBitNames("med'", 32, _indexMedTemp, false);
+        _med = BDDInteger.makeFromIndex(_factory, _numBitsMed, _indexMed, false);
+        _medTemp = BDDInteger.makeFromIndex(_factory, _numBitsMed, _indexMedTemp, false);
+        addBitNames("med", _numBitsMed, _indexMed, false);
+        addBitNames("med'", _numBitsMed, _indexMedTemp, false);
       }
 
       if (_config.getKeepAd()) {
-        _adminDist = BDDInteger.makeFromIndex(_factory, 32, _indexAdminDist, false);
-        _adminDistTemp = BDDInteger.makeFromIndex(_factory, 32, _indexAdminDistTemp, false);
-        addBitNames("ad", 32, _indexAdminDist, false);
-        addBitNames("ad'", 32, _indexAdminDistTemp, false);
+        _adminDist = BDDInteger.makeFromIndex(_factory, _numBitsAdminDist, _indexAdminDist, false);
+        _adminDistTemp =
+            BDDInteger.makeFromIndex(_factory, _numBitsAdminDist, _indexAdminDistTemp, false);
+        addBitNames("ad", _numBitsAdminDist, _indexAdminDist, false);
+        addBitNames("ad'", _numBitsAdminDist, _indexAdminDistTemp, false);
       }
 
       if (_config.getKeepLp()) {
         _localPref = new BDDFiniteDomain<>(_factory, _allLocalPrefs, _indexLocalPref);
         _localPrefTemp = new BDDFiniteDomain<>(_factory, _allLocalPrefs, _indexLocalPrefTemp);
-        addBitNames("lp", _localPref.numBits(), _indexLocalPref, false);
-        addBitNames("lp'", _localPrefTemp.numBits(), _indexLocalPrefTemp, false);
+        addBitNames("lp", _numBitsLocalPref, _indexLocalPref, false);
+        addBitNames("lp'", _numBitsLocalPref, _indexLocalPrefTemp, false);
       }
 
-      _prefixLength = BDDInteger.makeFromIndex(_factory, 6, _indexPrefixLen, false);
-      addBitNames("pfxLen", 6, _indexPrefixLen, false);
-      _prefix = BDDInteger.makeFromIndex(_factory, 32, _indexDstIp, false);
-      addBitNames("dstIp", 32, _indexDstIp, false);
+      _prefixLength = BDDInteger.makeFromIndex(_factory, _numBitsPrefixLen, _indexPrefixLen, false);
+      addBitNames("pfxLen", _numBitsPrefixLen, _indexPrefixLen, false);
+
+      _prefix = BDDInteger.makeFromIndex(_factory, _numBitsDstIp, _indexDstIp, false);
+      addBitNames("dstIp", _numBitsDstIp, _indexDstIp, false);
 
       if (_config.getKeepCommunities()) {
         _communities = new TreeMap<>();
@@ -854,17 +856,17 @@ public class BDDNetFactory {
       if (_config.getKeepOspfMetric()) {
         _ospfMetric = new BDDFiniteDomain<>(_factory, _allMetricTypes, _indexOspfMetric);
         _ospfMetricTemp = new BDDFiniteDomain<>(_factory, _allMetricTypes, _indexOspfMetricTemp);
-        addBitNames("ospfMetric", _ospfMetric.numBits(), _indexOspfMetric, false);
-        addBitNames("ospfMetric'", _ospfMetricTemp.numBits(), _indexOspfMetricTemp, false);
+        addBitNames("ospfMetric", _numBitsOspfMetric, _indexOspfMetric, false);
+        addBitNames("ospfMetric'", _numBitsOspfMetric, _indexOspfMetricTemp, false);
       }
 
       if (_config.getKeepRouters()) {
         _dstRouter = new BDDFiniteDomain<>(_factory, _allRouters, _indexDstRouter);
         _srcRouter = new BDDFiniteDomain<>(_factory, _allRouters, _indexSrcRouter);
         _routerTemp = new BDDFiniteDomain<>(_factory, _allRouters, _indexRouterTemp);
-        addBitNames("dstRouter", _dstRouter.numBits(), _indexDstRouter, false);
-        addBitNames("srcRouter", _srcRouter.numBits(), _indexSrcRouter, false);
-        addBitNames("tempRouter", _routerTemp.numBits(), _indexRouterTemp, false);
+        addBitNames("dstRouter", _numBitsRouters, _indexDstRouter, false);
+        addBitNames("srcRouter", _numBitsRouters, _indexSrcRouter, false);
+        addBitNames("tempRouter", _numBitsRouters, _indexRouterTemp, false);
       }
     }
 
@@ -1074,7 +1076,7 @@ public class BDDNetFactory {
       if (_config.getKeepMetric()) {
         BDD[] metric = getMetric().getBitvec();
         BDD[] metric2 = other.getMetric().getBitvec();
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < metric.length; i++) {
           metric[i].orWith(metric2[i]);
         }
       }
@@ -1082,7 +1084,7 @@ public class BDDNetFactory {
       if (_config.getKeepAd()) {
         BDD[] adminDist = getAdminDist().getBitvec();
         BDD[] adminDist2 = other.getAdminDist().getBitvec();
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < adminDist.length; i++) {
           adminDist[i].orWith(adminDist2[i]);
         }
       }
@@ -1090,7 +1092,7 @@ public class BDDNetFactory {
       if (_config.getKeepMed()) {
         BDD[] med = getMed().getBitvec();
         BDD[] med2 = other.getMed().getBitvec();
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < med.length; i++) {
           med[i].orWith(med2[i]);
         }
       }
@@ -1098,7 +1100,7 @@ public class BDDNetFactory {
       if (_config.getKeepLp()) {
         BDD[] localPref = getLocalPref().getInteger().getBitvec();
         BDD[] localPref2 = other.getLocalPref().getInteger().getBitvec();
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < localPref.length; i++) {
           localPref[i].orWith(localPref2[i]);
         }
       }
@@ -1126,8 +1128,6 @@ public class BDDNetFactory {
       long bits = pfx.getStartIp().asLong();
       int[] vars = new int[len];
       BDD[] vals = new BDD[len];
-      // NOTE: do not create a new _pairing each time
-      // JavaBDD will start to memory leak
       _pairing.reset();
       for (int i = 0; i < len; i++) {
         int var = _prefix.getBitvec()[i].var(); // prefixIndex + i;
@@ -1141,21 +1141,21 @@ public class BDDNetFactory {
 
       if (_config.getKeepMetric()) {
         BDD[] metric = rec.getMetric().getBitvec();
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < metric.length; i++) {
           metric[i] = metric[i].veccompose(_pairing);
         }
       }
 
       if (_config.getKeepAd()) {
         BDD[] adminDist = rec.getAdminDist().getBitvec();
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < adminDist.length; i++) {
           adminDist[i] = adminDist[i].veccompose(_pairing);
         }
       }
 
       if (_config.getKeepMed()) {
         BDD[] med = rec.getMed().getBitvec();
-        for (int i = 0; i < 32; i++) {
+        for (int i = 0; i < med.length; i++) {
           med[i] = med[i].veccompose(_pairing);
         }
       }
@@ -1245,13 +1245,13 @@ public class BDDNetFactory {
       _bitNames = new HashMap<>();
 
       // Initialize integer values
-      _ipProtocol = BDDInteger.makeFromIndex(_factory, 8, _indexIpProto, false);
-      _dstIp = BDDInteger.makeFromIndex(_factory, 32, _indexDstIp, false);
-      _srcIp = BDDInteger.makeFromIndex(_factory, 32, _indexSrcIp, false);
-      _dstPort = BDDInteger.makeFromIndex(_factory, 16, _indexDstPort, false);
-      _srcPort = BDDInteger.makeFromIndex(_factory, 16, _indexSrcPort, false);
-      _icmpCode = BDDInteger.makeFromIndex(_factory, 8, _indexIcmpCode, false);
-      _icmpType = BDDInteger.makeFromIndex(_factory, 8, _indexIcmpType, false);
+      _ipProtocol = BDDInteger.makeFromIndex(_factory, _numBitsIpProto, _indexIpProto, false);
+      _dstIp = BDDInteger.makeFromIndex(_factory, _numBitsDstIp, _indexDstIp, false);
+      _srcIp = BDDInteger.makeFromIndex(_factory, _numBitsSrcIp, _indexSrcIp, false);
+      _dstPort = BDDInteger.makeFromIndex(_factory, _numBitsDstPort, _indexDstPort, false);
+      _srcPort = BDDInteger.makeFromIndex(_factory, _numBitsSrcPort, _indexSrcPort, false);
+      _icmpCode = BDDInteger.makeFromIndex(_factory, _numBitsIcmpCode, _indexIcmpCode, false);
+      _icmpType = BDDInteger.makeFromIndex(_factory, _numBitsIcmpType, _indexIcmpType, false);
       _tcpAck = _factory.ithVar(_indexTcpFlags);
       _tcpCwr = _factory.ithVar(_indexTcpFlags + 1);
       _tcpEce = _factory.ithVar(_indexTcpFlags + 2);
@@ -1260,13 +1260,13 @@ public class BDDNetFactory {
       _tcpRst = _factory.ithVar(_indexTcpFlags + 5);
       _tcpSyn = _factory.ithVar(_indexTcpFlags + 6);
       _tcpUrg = _factory.ithVar(_indexTcpFlags + 7);
-      addBitNames("ipProtocol", 8, _indexIpProto, false);
-      addBitNames("dstIp", 32, _indexDstIp, false);
-      addBitNames("srcIp", 32, _indexSrcIp, false);
-      addBitNames("dstPort", 16, _indexDstPort, false);
-      addBitNames("srcPort", 16, _indexSrcPort, false);
-      addBitNames("icmpCode", 8, _indexIcmpCode, false);
-      addBitNames("icmpType", 8, _indexIcmpType, false);
+      addBitNames("ipProtocol", _numBitsIpProto, _indexIpProto, false);
+      addBitNames("dstIp", _numBitsDstIp, _indexDstIp, false);
+      addBitNames("srcIp", _numBitsSrcIp, _indexSrcIp, false);
+      addBitNames("dstPort", _numBitsDstPort, _indexDstPort, false);
+      addBitNames("srcPort", _numBitsSrcPort, _indexSrcPort, false);
+      addBitNames("icmpCode", _numBitsIcmpCode, _indexIcmpCode, false);
+      addBitNames("icmpType", _numBitsIcmpType, _indexIcmpType, false);
       _bitNames.put(_indexTcpFlags, "tcpAck");
       _bitNames.put(_indexTcpFlags + 1, "tcpCwr");
       _bitNames.put(_indexTcpFlags + 2, "tcpEce");
