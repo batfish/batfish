@@ -1623,7 +1623,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     int line = ctx.name.getStart().getLine();
     _currentApplicationSet =
         _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet(n, line));
-    _configuration.defineStructure(APPLICATION_SET, name, line);
+    defineStructure(APPLICATION_SET, name, ctx);
   }
 
   @Override
@@ -1757,7 +1757,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentFilter = new FirewallFilter(name, _currentFirewallFamily, definitionLine);
       filters.put(name, _currentFilter);
     }
-    _configuration.defineStructure(FIREWALL_FILTER, name, definitionLine);
+    defineStructure(FIREWALL_FILTER, name, ctx);
   }
 
   @Override

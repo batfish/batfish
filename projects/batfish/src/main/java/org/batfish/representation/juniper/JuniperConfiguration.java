@@ -2269,8 +2269,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST,
         JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST,
         JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER);
-
-    markStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN, _vlanNameToVlan);
+    markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
     // record defined structures
     recordBgpGroups();
