@@ -170,9 +170,19 @@ bgp_listen_range_rb_stanza
    )? NEWLINE
 ;
 
+bgp_maxas_limit_rb_stanza
+:
+   BGP MAXAS_LIMIT limit = DEC NEWLINE
+;
+
 bgp_redistribute_internal_rb_stanza
 :
    BGP REDISTRIBUTE_INTERNAL NEWLINE
+;
+
+bgp_scan_time_rb_stanza
+:
+   BGP SCAN_TIME secs = DEC NEWLINE
 ;
 
 bgp_tail
@@ -594,7 +604,6 @@ null_bgp_tail
             | NEXTHOP
             | NON_DETERMINISTIC_MED
             | REDISTRIBUTE_INTERNAL
-            | SCAN_TIME
          )
       )
       | CAPABILITY
@@ -870,7 +879,9 @@ router_bgp_stanza_tail
    | bgp_advertise_inactive_rb_stanza
    | bgp_confederation_rb_stanza
    | bgp_listen_range_rb_stanza
+   | bgp_maxas_limit_rb_stanza
    | bgp_redistribute_internal_rb_stanza
+   | bgp_scan_time_rb_stanza
    | bgp_tail
    | cluster_id_rb_stanza
    | compare_routerid_rb_stanza
