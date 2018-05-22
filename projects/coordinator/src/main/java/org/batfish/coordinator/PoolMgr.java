@@ -129,7 +129,8 @@ public class PoolMgr {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  false)
               .build();
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
       WebTarget webTarget =
