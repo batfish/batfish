@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
@@ -60,8 +59,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private Set<String> _nodes;
 
-    public CompareSameNameAnswerElement() {
-      _equivalenceSets = new TreeMap<>();
+    @JsonCreator
+    public CompareSameNameAnswerElement(
+        @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
+            SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets,
+        @JsonProperty(PROP_NODES) Set<String> nodes) {
+      _equivalenceSets = firstNonNull(equivalenceSets, new TreeMap<>());
+      _nodes = nodes;
     }
 
     public void add(String className, NamedStructureEquivalenceSets<?> sets) {
@@ -94,17 +98,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         }
       }
       return sb.toString();
-    }
-
-    @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
-    public void setEquivalenceSets(
-        SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
-      _equivalenceSets = equivalenceSets;
-    }
-
-    @JsonProperty(PROP_NODES)
-    public void setNodes(Set<String> nodes) {
-      _nodes = nodes;
     }
   }
 
@@ -142,8 +135,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _configurations = _batfish.loadConfigurations();
       _csnQuestion = (CompareSameNameQuestion) _question;
       _nodes = _csnQuestion.getNodeRegex().getMatchingNodes(_batfish);
-      _answerElement = new CompareSameNameAnswerElement();
-      _answerElement.setNodes(_nodes);
+      _answerElement = new CompareSameNameAnswerElement(null, _nodes);
 
       add(AsPathAccessList.class, Configuration::getAsPathAccessLists);
       add(AuthenticationKeyChain.class, Configuration::getAuthenticationKeyChains);
@@ -282,7 +274,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
                   excludedNamedStructTypes,
                   Arrays.asList(Interface.class.getSimpleName(), Vrf.class.getSimpleName())));
       _missing = firstNonNull(missing, false);
-      _namedStructTypes = toLowerCase(firstNonNull(namedStructTypes, Collections.EMPTY_SET));
+      _namedStructTypes = toLowerCase(firstNonNull(namedStructTypes, ImmutableSortedSet.of()));
       _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
       _singletons = firstNonNull(singletons, false);
     }
