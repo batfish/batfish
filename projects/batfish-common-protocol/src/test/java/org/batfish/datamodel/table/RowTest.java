@@ -96,4 +96,25 @@ public class RowTest {
     _thrown.expectMessage("is not present");
     Row.selectColumns(newRow, ImmutableSet.of("col2"));
   }
+
+  @Test
+  public void testOfCorrect() {
+    assertThat(Row.of(), equalTo(Row.builder().build()));
+    assertThat(Row.of("a", 5), equalTo(Row.builder().put("a", 5).build()));
+    assertThat(Row.of("a", 5, "b", 7), equalTo(Row.builder().put("a", 5).put("b", 7).build()));
+  }
+
+  @Test
+  public void testOfOddElements() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("expecting an even number of parameters, not 1");
+    Row.of("a");
+  }
+
+  @Test
+  public void testOfArgumentsWrong() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("argument 2 must be a string, but is: 7");
+    Row.of("a", 5, 7, "b");
+  }
 }
