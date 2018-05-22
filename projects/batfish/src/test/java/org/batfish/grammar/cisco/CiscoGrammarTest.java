@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -39,6 +40,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
@@ -505,6 +507,16 @@ public class CiscoGrammarTest {
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testIosInterfaceSpeed() throws IOException {
+    String hostname = "ios-interface-speed";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
+    assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
+    assertThat(c, hasInterface("GigabitEthernet0/2", hasBandwidth(100E6D)));
   }
 
   @Test
@@ -1464,6 +1476,20 @@ public class CiscoGrammarTest {
             containsString(
                 String.format(
                     "No remote-as set for peer: %s", neighborWithoutRemoteAs.getStartIp()))));
+  }
+
+  @Test
+  public void testEosPortChannel() throws IOException {
+    String hostname = "eos-port-channel";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    assertThat(c, hasInterface("Ethernet0", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet1", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
+    assertThat(c, hasInterface("Port-Channel2", isActive(false)));
   }
 
   @Test

@@ -50,6 +50,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasBandwidth extends FeatureMatcher<Interface, Double> {
+    HasBandwidth(@Nonnull Matcher<? super Double> subMatcher) {
+      super(subMatcher, "an Interface with bandwidth:", "bandwidth");
+    }
+
+    @Override
+    protected Double featureValueOf(Interface actual) {
+      return actual.getBandwidth();
+    }
+  }
+
   static final class HasDeclaredNames extends FeatureMatcher<Interface, Set<String>> {
     HasDeclaredNames(@Nonnull Matcher<? super Set<String>> subMatcher) {
       super(subMatcher, "declared names", "declared names");

@@ -94,6 +94,8 @@ public class Interface extends ComparableStructure<String> {
       bandwidth = null;
     } else if (name.startsWith("Loopback")) {
       bandwidth = LOOPBACK_BANDWIDTH;
+    } else if (name.startsWith("Bundle-Ethernet") || name.startsWith("Port-Channel")) {
+      bandwidth = 0D;
     }
     if (bandwidth == null) {
       bandwidth = DEFAULT_INTERFACE_BANDWIDTH;
@@ -114,6 +116,8 @@ public class Interface extends ComparableStructure<String> {
   private boolean _autoState;
 
   private Double _bandwidth;
+
+  private String _channelGroup;
 
   private String _description;
 
@@ -259,6 +263,10 @@ public class Interface extends ComparableStructure<String> {
 
   public Double getBandwidth() {
     return _bandwidth;
+  }
+
+  public String getChannelGroup() {
+    return _channelGroup;
   }
 
   public String getDescription() {
@@ -410,6 +418,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setBandwidth(Double bandwidth) {
     _bandwidth = bandwidth;
+  }
+
+  public void setChannelGroup(String channelGroup) {
+    _channelGroup = channelGroup;
   }
 
   public void setDescription(String description) {
