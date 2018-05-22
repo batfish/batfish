@@ -190,5 +190,4 @@ public class BDDNetFactoryTest {
     assertThat(a2.getTcpFlags().getUrg(), equalTo(false));
     assertThat(a2.getTcpFlags().getSyn(), equalTo(true));
   }
-
 }
