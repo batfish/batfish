@@ -4,7 +4,7 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /** Identifies the {@link Location} of an interface in the network. */
-public class InterfaceLocation implements Location {
+public final class InterfaceLocation implements Location {
   private final @Nonnull String _interfaceName;
 
   private final @Nonnull String _nodeName;
@@ -32,7 +32,7 @@ public class InterfaceLocation implements Location {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof Location)) {
       return false;
     }
     InterfaceLocation that = (InterfaceLocation) o;

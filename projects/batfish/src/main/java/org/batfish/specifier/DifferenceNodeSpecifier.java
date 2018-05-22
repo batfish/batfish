@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
  * A {@link NodeSpecifier} that specifies the set difference of nodes specified by two other
  * specifiers.
  */
-public class DifferenceNodeSpecifier implements NodeSpecifier {
+public final class DifferenceNodeSpecifier implements NodeSpecifier {
   private final @Nonnull NodeSpecifier _nodeSpecifier1;
 
   private final @Nonnull NodeSpecifier _nodeSpecifier2;

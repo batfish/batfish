@@ -10,7 +10,7 @@ import org.batfish.role.NodeRole;
  * A {@link NodeSpecifier} that specifies the set of nodes with a role with the input dimension and
  * a name matching the input regex.
  */
-public class RoleRegexNodeSpecifier implements NodeSpecifier {
+public final class RoleRegexNodeSpecifier implements NodeSpecifier {
   private final Pattern _rolePattern;
   private final String _roleDimension;
 

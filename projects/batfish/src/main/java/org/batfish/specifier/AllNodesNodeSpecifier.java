@@ -3,7 +3,7 @@ package org.batfish.specifier;
 import java.util.Set;
 
 /** A {@link NodeSpecifier} specifying all nodes in the network. */
-public class AllNodesNodeSpecifier implements NodeSpecifier {
+public final class AllNodesNodeSpecifier implements NodeSpecifier {
   public static final AllNodesNodeSpecifier INSTANCE = new AllNodesNodeSpecifier();
 
   private AllNodesNodeSpecifier() {}

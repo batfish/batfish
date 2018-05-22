@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 /**
  * A {@link LocationSpecifier} specifying links of interfaces with names matching the input regex.
  */
-public class NameRegexInterfaceLinkLocationSpecifier extends NameRegexInterfaceLocationSpecifier {
+public final class NameRegexInterfaceLinkLocationSpecifier extends NameRegexInterfaceLocationSpecifier {
   public NameRegexInterfaceLinkLocationSpecifier(Pattern pattern) {
     super(pattern);
   }

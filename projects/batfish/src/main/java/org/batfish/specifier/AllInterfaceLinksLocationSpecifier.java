@@ -1,7 +1,7 @@
 package org.batfish.specifier;
 
 /** A {@link LocationSpecifier} specifying all interface links in the network. */
-public class AllInterfaceLinksLocationSpecifier extends AllInterfacesLocationSpecifier {
+public final class AllInterfaceLinksLocationSpecifier extends AllInterfacesLocationSpecifier {
   public static final AllInterfacesLocationSpecifier INSTANCE =
       new AllInterfaceLinksLocationSpecifier();
 

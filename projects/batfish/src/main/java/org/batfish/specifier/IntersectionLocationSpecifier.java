@@ -7,7 +7,7 @@ import java.util.Set;
  * A {@link LocationSpecifier} that specifies the set intersection of nodes specified by two other
  * specifiers.
  */
-public class IntersectionLocationSpecifier implements LocationSpecifier {
+public final class IntersectionLocationSpecifier implements LocationSpecifier {
   private final LocationSpecifier _locationSpecifier1;
 
   private final LocationSpecifier _locationSpecifier2;

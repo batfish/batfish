@@ -7,7 +7,7 @@ import java.util.Set;
  * A {@link LocationSpecifier} that specifies the set difference of nodes specified by two other
  * specifiers.
  */
-public class DifferenceLocationSpecifier implements LocationSpecifier {
+public final class DifferenceLocationSpecifier implements LocationSpecifier {
   private final LocationSpecifier _locationSpecifier1;
 
   private final LocationSpecifier _locationSpecifier2;

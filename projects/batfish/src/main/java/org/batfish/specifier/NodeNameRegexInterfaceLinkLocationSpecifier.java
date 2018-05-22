@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
  * A {@link LocationSpecifier} specifying links of interfaces belonging to nodes with names matching
  * the input regex.
  */
-public class NodeNameRegexInterfaceLinkLocationSpecifier
+public final class NodeNameRegexInterfaceLinkLocationSpecifier
     extends NodeNameRegexInterfaceLocationSpecifier {
   public NodeNameRegexInterfaceLinkLocationSpecifier(Pattern pattern) {
     super(pattern);

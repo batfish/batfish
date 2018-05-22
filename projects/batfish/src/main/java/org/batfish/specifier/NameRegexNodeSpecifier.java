@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 /** A {@link NodeSpecifier} that specifies the set of nodes whose names match the input regex. */
-public class NameRegexNodeSpecifier implements NodeSpecifier {
+public final class NameRegexNodeSpecifier implements NodeSpecifier {
   private final Pattern _namePattern;
 
   public NameRegexNodeSpecifier(Pattern namePattern) {

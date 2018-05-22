@@ -7,7 +7,7 @@ import java.util.Set;
  * A {@link LocationSpecifier} that specifies the set union of nodes specified by two other
  * specifiers.
  */
-public class UnionLocationSpecifier implements LocationSpecifier {
+public final class UnionLocationSpecifier implements LocationSpecifier {
   private final LocationSpecifier _locationSpecifier1;
 
   private final LocationSpecifier _locationSpecifier2;

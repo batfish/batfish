@@ -3,7 +3,7 @@ package org.batfish.specifier;
 import java.util.Objects;
 
 /** Identifies the {@link Location} of the link of an interface in the network. */
-public class InterfaceLinkLocation implements Location {
+public final class InterfaceLinkLocation implements Location {
   private final String _interfaceName;
 
   private final String _nodeName;
@@ -23,7 +23,7 @@ public class InterfaceLinkLocation implements Location {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof InterfaceLinkLocation)) {
       return false;
     }
     InterfaceLinkLocation that = (InterfaceLinkLocation) o;

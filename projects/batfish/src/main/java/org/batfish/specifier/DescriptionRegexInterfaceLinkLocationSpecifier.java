@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
  * A {@link LocationSpecifier} specifying all links of interfaces whose description matches the
  * input regex.
  */
-public class DescriptionRegexInterfaceLinkLocationSpecifier
+public final class DescriptionRegexInterfaceLinkLocationSpecifier
     extends DescriptionRegexInterfaceLocationSpecifier {
   public DescriptionRegexInterfaceLinkLocationSpecifier(Pattern pattern) {
     super(pattern);
