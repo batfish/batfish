@@ -1,5 +1,6 @@
 package org.batfish.symbolic.bdd;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -148,6 +149,23 @@ public class BDDNetFactory {
   private int _hcode = 0;
 
   public BDDNetFactory(Graph g, BDDNetConfig config) {
+    this(
+        new ArrayList<>(g.getRouters()),
+        new ArrayList<>(g.getAllCommunities()),
+        new ArrayList<>(BDDUtils.findAllLocalPrefs(g)),
+        config);
+  }
+
+  public BDDNetFactory(
+      List<String> routers,
+      List<CommunityVar> comms,
+      List<Integer> localPrefs,
+      BDDNetConfig config) {
+
+    _allCommunities = comms;
+    _allRouters = routers;
+    _allLocalPrefs = localPrefs;
+
     _allMetricTypes = new ArrayList<>();
     _allMetricTypes.add(OspfType.O);
     _allMetricTypes.add(OspfType.OIA);
@@ -162,7 +180,7 @@ public class BDDNetFactory {
 
     int numNodes;
     int cacheSize;
-    int numRouters = g.getRouters().size();
+    int numRouters = routers.size();
     if (numRouters < 100) {
       numNodes = 10000;
       cacheSize = 1000;
@@ -181,7 +199,7 @@ public class BDDNetFactory {
     _factory.disableReorder();
     _factory.setCacheRatio(32);
     // _factory.setIncreaseFactor(4);
-    /*
+
     try {
       // Disables printing
       CallbackHandler handler = new CallbackHandler();
@@ -192,12 +210,9 @@ public class BDDNetFactory {
     } catch (NoSuchMethodException e) {
       e.printStackTrace();
     }
-    */
+
     _pairing = _factory.makePair();
     _config = config;
-    _allCommunities = new ArrayList<>(g.getAllCommunities());
-    _allRouters = new ArrayList<>(g.getRouters());
-    _allLocalPrefs = new ArrayList<>(BDDUtils.findAllLocalPrefs(g));
 
     // BDD Packet routeVariables
     _numBitsIpProto = 8;
@@ -688,8 +703,8 @@ public class BDDNetFactory {
     assignment.setIcmpCode(icmpCode);
     assignment.setIcmpType(icmpType);
     assignment.setTcpFlags(tcpFlags.build());
-    assignment.setDstRouter(getRouter(dstRouter));
-    assignment.setSrcRouter(getRouter(srcRouter));
+    assignment.setDstRouter(_allRouters.isEmpty() ? null : getRouter(dstRouter));
+    assignment.setSrcRouter(_allRouters.isEmpty() ? null : getRouter(srcRouter));
     assignment.setRoutingProtocol(Protocol.toRoutingProtocol(getAllProtos().get(proto)));
     assignment.setPrefixLen(prefixLen);
     assignment.setAdminDist(adminDist);
