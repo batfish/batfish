@@ -1,0 +1,12 @@
+!
+hostname ios-interface-speed
+!
+interface GigabitEthernet0/0
+!
+interface GigabitEthernet0/1
+ speed 1000
+!
+interface GigabitEthernet0/2
+ speed 100
+!
+!

@@ -6302,6 +6302,7 @@
             ],
             "autostate" : true,
             "bandwidth" : 2.0E10,
+            "channelGroup" : "Port-Channel1",
             "declaredNames" : [
               "Ethernet0"
             ],
@@ -11371,9 +11372,9 @@
           "Port-Channel1" : {
             "name" : "Port-Channel1",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 0.0,
             "declaredNames" : [
               "Port-channel1"
             ],
@@ -11961,9 +11962,9 @@
           "Bundle-Ethernet101" : {
             "name" : "Bundle-Ethernet101",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 0.0,
             "declaredNames" : [
               "Bundle-Ether101"
             ],
@@ -11988,9 +11989,9 @@
           "Bundle-Ethernet103" : {
             "name" : "Bundle-Ethernet103",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 0.0,
             "declaredNames" : [
               "Bundle-Ether103"
             ],
@@ -12015,9 +12016,9 @@
           "Bundle-Ethernet201" : {
             "name" : "Bundle-Ethernet201",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 0.0,
             "declaredNames" : [
               "Bundle-Ether201"
             ],
@@ -13603,9 +13604,9 @@
           "ae0.0" : {
             "name" : "ae0.0",
             "accessVlan" : 0,
-            "active" : true,
+            "active" : false,
             "autostate" : true,
-            "bandwidth" : 1.0E12,
+            "bandwidth" : 0.0,
             "declaredNames" : [
               "ae0.0"
             ],
@@ -14475,7 +14476,7 @@
             "accessVlan" : 0,
             "active" : true,
             "autostate" : true,
-            "bandwidth" : 1.0E7,
+            "bandwidth" : 1.0E8,
             "declaredNames" : [
               "et2"
             ],

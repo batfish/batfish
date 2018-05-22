@@ -409,6 +409,7 @@ import org.batfish.grammar.cisco.CiscoParser.Else_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Elseif_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Empty_neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
@@ -421,6 +422,7 @@ import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
+import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
@@ -448,6 +450,8 @@ import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
+import org.batfish.grammar.cisco.CiscoParser.If_speed_eosContext;
+import org.batfish.grammar.cisco.CiscoParser.If_speed_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_st_portfastContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchportContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_accessContext;
@@ -4521,6 +4525,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_channel_group(If_channel_groupContext ctx) {
+    int num = toInteger(ctx.num);
+    String name = computeAggregatedInterfaceName(num, _format);
+    _currentInterfaces.forEach(i -> i.setChannelGroup(name));
+  }
+
+  private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
+    switch (format) {
+      case CISCO_ASA:
+      case ARISTA:
+      case FORCE10:
+      case CISCO_IOS:
+      case CISCO_NX:
+        return String.format("Port-Channel%d", num);
+
+      case CISCO_IOS_XR:
+        return String.format("Bundle-Ethernet%d", num);
+
+      default:
+        _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
+        return null;
+    }
+  }
+
+  @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -4771,6 +4800,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_spanning_tree(If_spanning_treeContext ctx) {
     _no = false;
+  }
+
+  @Override
+  public void exitIf_speed_eos(If_speed_eosContext ctx) {
+    double bandwidth = toBandwidth(ctx.eos_bandwidth_specifier());
+    _currentInterfaces.forEach(i -> i.setBandwidth(bandwidth));
+  }
+
+  private double toBandwidth(Eos_bandwidth_specifierContext ctx) {
+    if (ctx.FORTYG_FULL() != null) {
+      return 40E9D;
+    } else if (ctx.TEN_THOUSAND_FULL() != null) {
+      return 10E9D;
+    } else if (ctx.ONE_HUNDRED_FULL() != null) {
+      return 100E6D;
+    } else if (ctx.ONE_THOUSAND_FULL() != null) {
+      return 1E9D;
+    } else {
+      throw convError(Double.class, ctx);
+    }
+  }
+
+  @Override
+  public void exitIf_speed_ios(If_speed_iosContext ctx) {
+    int mbits = toInteger(ctx.mbits);
+    _currentInterfaces.forEach(i -> i.setBandwidth(mbits * 1E6D));
   }
 
   @Override

@@ -653,6 +653,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
+  private void computeAggregatedInterfaceBandwidth(
+      Interface iface, Map<String, Interface> interfaces) {
+    if (iface.getInterfaceType() != InterfaceType.AGGREGATED) {
+      return;
+    }
+    /* Bandwidth should be sum of bandwidth of channel-group members. */
+    iface.setBandwidth(
+        iface
+            .getChannelGroupMembers()
+            .stream()
+            .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
+            .sum());
+  }
+
   /**
    * Identifies any independently unmatchable ACL lines (i.e. they have unsatisfiable match
    * condition) in the given set of ACL lines.
@@ -3069,6 +3083,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettingsStack.remove(lastIndex);
   }
 
+  private void populateChannelGroupMembers(
+      Map<String, Interface> interfaces, String ifaceName, Interface iface) {
+    String portChannelName = iface.getChannelGroup();
+    if (portChannelName == null) {
+      return;
+    }
+    Interface portChannel = interfaces.get(portChannelName);
+    if (portChannel == null) {
+      return;
+    }
+    portChannel.setChannelGroupMembers(
+        ImmutableSortedSet.<String>naturalOrder()
+            .addAll(portChannel.getChannelGroupMembers())
+            .add(ifaceName)
+            .build());
+  }
+
   private void populateFlowHistory(
       FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
@@ -3082,6 +3113,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
         flowHistory.addFlowTrace(flow, envTag, environment, flowTrace);
       }
     }
+  }
+
+  private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(v -> postProcessAggregatedInterfacesHelper(v.getInterfaces())));
+  }
+
+  private void postProcessAggregatedInterfacesHelper(Map<String, Interface> interfaces) {
+    /* Populate aggregated interfaces with members referring to them. */
+    interfaces.forEach(
+        (ifaceName, iface) -> populateChannelGroupMembers(interfaces, ifaceName, iface));
+
+    /* Disable aggregated interfaces with no members. */
+    interfaces
+        .values()
+        .stream()
+        .filter(
+            i ->
+                i.getInterfaceType() == InterfaceType.AGGREGATED
+                    && i.getChannelGroupMembers().isEmpty())
+        .forEach(i -> i.setActive(false));
+
+    /* Compute bandwidth for aggregated interfaces. */
+    interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
   }
 
   private void postProcessConfigurations(Collection<Configuration> configurations) {
@@ -3098,17 +3158,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
         }
-        // Compute OSPF interface costs where they are missing
-        OspfProcess proc = vrf.getOspfProcess();
-        if (proc != null) {
-          proc.initInterfaceCosts(c);
-        }
       }
       // If device was not a host or router, call it a switch
       if (c.getDeviceType() == null) {
         c.setDeviceType(DeviceType.SWITCH);
       }
     }
+  }
+
+  private void postProcessForEnvironment(Map<String, Configuration> configurations) {
+    postProcessAggregatedInterfaces(configurations);
+    postProcessOspfCosts(configurations);
+  }
+
+  private void postProcessOspfCosts(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(
+                        vrf -> {
+                          // Compute OSPF interface costs where they are missing
+                          OspfProcess proc = vrf.getOspfProcess();
+                          if (proc != null) {
+                            proc.initInterfaceCosts(c);
+                          }
+                        }));
   }
 
   private void printSymmetricEdgePairs() {
@@ -3597,6 +3674,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void applyEnvironment(Map<String, Configuration> configurationsWithoutEnvironment) {
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
+    postProcessForEnvironment(configurationsWithoutEnvironment);
 
     serializeObject(
         veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());

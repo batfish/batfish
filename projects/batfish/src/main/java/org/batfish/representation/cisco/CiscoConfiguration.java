@@ -2350,6 +2350,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
+    newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setBandwidth(iface.getBandwidth());

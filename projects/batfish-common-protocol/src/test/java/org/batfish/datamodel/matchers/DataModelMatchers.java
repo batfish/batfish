@@ -30,6 +30,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwidth;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
@@ -151,6 +152,22 @@ public final class DataModelMatchers {
   public static @Nonnull Matcher<HeaderSpace> hasIpProtocols(
       @Nonnull Matcher<? super SortedSet<IpProtocol>> subMatcher) {
     return new HeaderSpaceMatchersImpl.HasIpProtocols(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code bandwidth} is that of the {@link
+   * Interface}.
+   */
+  public static @Nonnull Matcher<Interface> hasBandwidth(double bandwidth) {
+    return hasBandwidth(equalTo(bandwidth));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * Interface}'s bandwidth.
+   */
+  public static @Nonnull Matcher<Interface> hasBandwidth(Matcher<? super Double> subMatcher) {
+    return new HasBandwidth(subMatcher);
   }
 
   /**
