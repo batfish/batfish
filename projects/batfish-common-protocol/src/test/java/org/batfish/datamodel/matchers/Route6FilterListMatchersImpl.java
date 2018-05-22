@@ -46,7 +46,8 @@ final class Route6FilterListMatchersImpl {
 
     @Override
     public void describeTo(Description description) {
-      description.appendText(String.format("A RouteFilterList that rejects prefix: '%s'", _prefix));
+      description.appendText(
+          String.format("A Route6FilterList that rejects prefix: '%s'", _prefix));
     }
 
     @Override

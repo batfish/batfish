@@ -17,7 +17,7 @@ public class PrefixSpaceList {
         throw new BatfishException(
             String.format(
                 "Cannot convert RouteFilterLine with IP Wildcard %s to PrefixSpaceLine",
-                rfLine.getIpWildcard().isPrefix()));
+                rfLine.getIpWildcard()));
       }
       LineAction rflAction = rfLine.getAction();
       if (currentAction != rflAction) {
