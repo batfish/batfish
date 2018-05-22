@@ -14375,6 +14375,18 @@
             "            (null_rest_of_line",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "      (router_bgp_stanza_tail",
+            "        (bgp_maxas_limit_rb_stanza",
+            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "          MAXAS_LIMIT:'maxas-limit'  <== mode:DEFAULT_MODE",
+            "          DEC:'50'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_scan_time_rb_stanza",
+            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "          SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
+            "          DEC:'5'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_connected_bgp_tail",
             "            REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
@@ -52897,7 +52909,7 @@
           "bgp group" : {
             "p1" : {
               "definitionLines" : [
-                13
+                15
               ],
               "numReferrers" : 0
             }
@@ -52905,13 +52917,13 @@
           "route-map" : {
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                28
+                30
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                26
+                28
               ],
               "numReferrers" : 1
             }
@@ -54481,24 +54493,24 @@
           "bgp group" : {
             "p3" : {
               "inherited BGP group" : [
-                15
+                17
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                11
+                13
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                12
+                14
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                7
+                9
               ]
             }
           }
