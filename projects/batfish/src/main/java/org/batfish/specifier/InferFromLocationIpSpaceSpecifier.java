@@ -9,7 +9,7 @@ import org.batfish.datamodel.IpSpace;
 /**
  * An {@link IpSpaceSpecifier} that specifies the {@link IpSpace} owned by each {@link Location}.
  */
-public class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier {
+public final class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier {
   public static final InferFromLocationIpSpaceSpecifier INSTANCE =
       new InferFromLocationIpSpaceSpecifier();
 

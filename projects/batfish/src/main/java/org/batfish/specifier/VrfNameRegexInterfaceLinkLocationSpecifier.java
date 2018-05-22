@@ -8,7 +8,8 @@ import org.batfish.datamodel.Vrf;
  * A {@link LocationSpecifier} specifying links of interfaces that belong to VRFs with names
  * matching the input regex.
  */
-public class VrfNameRegexInterfaceLinkLocationSpecifier extends VrfNameRegexLocationSpecifier {
+public final class VrfNameRegexInterfaceLinkLocationSpecifier
+    extends VrfNameRegexLocationSpecifier {
   public VrfNameRegexInterfaceLinkLocationSpecifier(Pattern pattern) {
     super(pattern);
   }
