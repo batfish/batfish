@@ -1,0 +1,7 @@
+#
+set system host-name authentication-key-chain
+#
+set protocols bgp group GROUP1 authentication-key-chain KC
+set protocols bgp group GROUP2 authentication-key-chain KC_UNDEF
+set security authentication-key-chains key-chain KC key KNAME options basic
+set security authentication-key-chains key-chain KC_UNUSED key KNAME options basic

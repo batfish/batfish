@@ -1,6 +1,13 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -2017,6 +2024,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     int definitionLine = ctx.name.getStart().getLine();
     Map<String, PrefixList> prefixLists = _configuration.getPrefixLists();
     _currentPrefixList = prefixLists.computeIfAbsent(name, n -> new PrefixList(n, definitionLine));
+    defineStructure(PREFIX_LIST, name, ctx);
   }
 
   @Override
@@ -2283,6 +2291,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
             .getAuthenticationKeyChains()
             .computeIfAbsent(name, n -> new JuniperAuthenticationKeyChain(n, line));
     _currentAuthenticationKeyChain = authenticationkeyChain;
+    defineStructure(AUTHENTICATION_KEY_CHAIN, name, ctx);
   }
 
   @Override
@@ -2631,7 +2640,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentBgpGroup.setAuthenticationKeyChainName(ctx.name.getText());
     int line = ctx.getStart().getLine();
     _configuration.referenceStructure(
-        JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
+        AUTHENTICATION_KEY_CHAIN,
         ctx.name.getText(),
         JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY,
         line);
@@ -2795,6 +2804,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       from = new FwFromDestinationPrefixList(name);
     }
     _currentFwTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        PREFIX_LIST, name, FIREWALL_FILTER_DESTINATION_PREFIX_LIST, ctx.name.start.getLine());
   }
 
   @Override
@@ -2913,6 +2924,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
     FwFromPrefixList from = new FwFromPrefixList(name);
     _currentFwTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        PREFIX_LIST, name, FIREWALL_FILTER_PREFIX_LIST, ctx.name.start.getLine());
   }
 
   @Override
@@ -2965,6 +2978,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       from = new FwFromSourcePrefixList(name);
     }
     _currentFwTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        PREFIX_LIST, name, FIREWALL_FILTER_SOURCE_PREFIX_LIST, ctx.name.start.getLine());
   }
 
   @Override
@@ -3544,6 +3559,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsFrom from = new PsFromPrefixList(name);
     _currentPsTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        PREFIX_LIST, name, POLICY_STATEMENT_PREFIX_LIST, ctx.name.start.getLine());
   }
 
   @Override
@@ -3560,6 +3577,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       throw new BatfishException("Invalid prefix-list-filter length specification");
     }
     _currentPsTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        PREFIX_LIST, name, POLICY_STATEMENT_PREFIX_LIST_FILTER, ctx.name.start.getLine());
   }
 
   @Override

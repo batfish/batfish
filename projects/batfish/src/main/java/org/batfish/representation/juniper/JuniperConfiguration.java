@@ -2245,9 +2245,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // mark references to authentication key chain that may not appear in data model
-    markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
-
+    // mark structure usages to count them and identify undefined references
+    markConcreteStructure(
+        JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
+        JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY);
     markAbstractStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
@@ -2261,11 +2262,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET);
     markConcreteStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER);
+    markConcreteStructure(
+        JuniperStructureType.PREFIX_LIST,
+        JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,
+        JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST,
+        JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST,
+        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST,
+        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER);
 
     markStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN, _vlanNameToVlan);
 
     // record defined structures
-    recordAuthenticationKeyChains();
     recordBgpGroups();
     recordDhcpRelayServerGroups();
     recordPolicyStatements();
@@ -2274,7 +2281,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     recordIkeGateways();
     recordIpsecProposals();
     recordIpsecPolicies();
-    recordPrefixLists();
     recordAndDisableUnreferencedStInterfaces();
 
     warnEmptyPrefixLists();
@@ -2400,18 +2406,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void recordAuthenticationKeyChains() {
-    for (Entry<String, JuniperAuthenticationKeyChain> e : _authenticationKeyChains.entrySet()) {
-      String name = e.getKey();
-      JuniperAuthenticationKeyChain keyChain = e.getValue();
-      recordStructure(
-          keyChain,
-          JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
-          name,
-          keyChain.getDefinitionLine());
-    }
-  }
-
   private void recordBgpGroups() {
     for (RoutingInstance ri : _routingInstances.values()) {
       for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
@@ -2441,15 +2435,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         recordStructure(
             sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
       }
-    }
-  }
-
-  private void recordFirewallFilters() {
-    for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
-      String name = e.getKey();
-      FirewallFilter filter = e.getValue();
-      recordStructure(
-          filter, JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
     }
   }
 

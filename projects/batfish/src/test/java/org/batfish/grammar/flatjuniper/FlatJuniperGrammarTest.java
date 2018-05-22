@@ -393,6 +393,27 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testAuthenticationKeyChain() throws IOException {
+    String hostname = "authentication-key-chain";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm filter usage is tracked properly */
+    assertThat(
+        ccae, hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC", 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNUSED", 0));
+
+    /* Confirm undefined reference is identified */
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNDEF"));
+  }
+
+  @Test
   public void testPredefinedJunosApplications() throws IOException {
     Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-applications");
     InitInfoAnswerElement answer = batfish.initInfo(false, true);
@@ -1542,6 +1563,33 @@ public class FlatJuniperGrammarTest {
 
     assertThat(extractor.getNumSets(), equalTo(8));
     assertThat(extractor.getNumErrorNodes(), equalTo(8));
+  }
+
+  @Test
+  public void testPrefixList() throws IOException {
+    String hostname = "prefix-lists";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    Flow flowDenied = createFlow("9.8.7.6", "0.0.0.0");
+    Flow flowAccepted1 = createFlow("1.2.3.4", "0.0.0.0");
+    Flow flowAccepted2 = createFlow("1.2.3.5", "0.0.0.0");
+
+    IpAccessList filterPrefixList = c.getIpAccessLists().get("FILTER_PL");
+
+    // Confirm referrers are tracked properly
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL", 5));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNUSED", 0));
+
+    // Confirm undefined reference is detected
+    assertThat(ccae, hasUndefinedReference(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNDEF"));
+
+    // Only flow from accepted source-prefixes should be accepted
+    assertThat(filterPrefixList, rejects(flowDenied, null, c));
+    assertThat(filterPrefixList, accepts(flowAccepted1, null, c));
+    assertThat(filterPrefixList, accepts(flowAccepted2, null, c));
   }
 
   @Test
