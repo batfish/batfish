@@ -1,9 +1,8 @@
 package org.batfish.question.aclreachability2;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Collections;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
-import java.util.TreeSet;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.IpAccessList;
@@ -28,12 +27,14 @@ public class AclReachability2Answerer extends Answerer {
   public AclLines2AnswerElement answer() {
     AclReachability2Question question = (AclReachability2Question) _question;
     // get comparesamename results for acls
-    CompareSameNameQuestion csnQuestion = new CompareSameNameQuestion();
-    csnQuestion.setCompareGenerated(true);
-    csnQuestion.setNodeRegex(question.getNodeRegex());
-    csnQuestion.setNamedStructTypes(
-        new TreeSet<>(Collections.singleton(IpAccessList.class.getSimpleName())));
-    csnQuestion.setSingletons(true);
+    CompareSameNameQuestion csnQuestion =
+        new CompareSameNameQuestion(
+            true,
+            null,
+            null,
+            ImmutableSortedSet.of(IpAccessList.class.getSimpleName()),
+            question.getNodeRegex(),
+            true);
     CompareSameNameAnswerer csnAnswerer = new CompareSameNameAnswerer(csnQuestion, _batfish);
     CompareSameNameAnswerElement csnAnswer = csnAnswerer.answer();
     NamedStructureEquivalenceSets<?> aclEqSets =
