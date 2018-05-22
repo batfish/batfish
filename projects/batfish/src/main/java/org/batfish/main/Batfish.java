@@ -113,8 +113,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.AclLinesAnswerElement;
-import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -135,7 +134,6 @@ import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ReportAnswerElement;
 import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
-import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
@@ -156,14 +154,8 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
-import org.batfish.grammar.assertion.AssertionCombinedParser;
-import org.batfish.grammar.assertion.AssertionExtractor;
-import org.batfish.grammar.assertion.AssertionParser.AssertionContext;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
-import org.batfish.grammar.topology.GNS3TopologyCombinedParser;
-import org.batfish.grammar.topology.GNS3TopologyExtractor;
-import org.batfish.grammar.topology.TopologyExtractor;
 import org.batfish.grammar.vyos.VyosCombinedParser;
 import org.batfish.grammar.vyos.VyosFlattener;
 import org.batfish.job.BatfishJobExecutor;
@@ -720,8 +712,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement answerAclReachability(
-      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
+  public void answerAclReachability(
+      String aclNameRegexStr,
+      NamedStructureEquivalenceSets<?> aclEqSets,
+      AclLinesAnswerElementInterface answerElement) {
 
     Pattern aclNameRegex;
     try {
@@ -731,7 +725,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Supplied regex for nodes is not a valid Java regex: \"" + aclNameRegexStr + "\"", e);
     }
 
-    AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
     Map<String, Configuration> configurations = loadConfigurations();
 
     // Run first batch of nod jobs to find unreachable lines
@@ -832,7 +825,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
       IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(lineNumber);
       String lineName = firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString());
-      AclReachabilityEntry reachabilityEntry = new AclReachabilityEntry(lineNumber, lineName);
 
       Pair<String, String> hostnameAclPair = new Pair<>(hostname, aclName);
       allAclHostPairs.add(hostnameAclPair);
@@ -844,50 +836,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
         numUnreachableLines++;
         aclHostPairsWithUnreachableLines.add(hostnameAclPair);
 
-        /*
-         * We are using earliestMoreGeneralLineIndex and earliestMoreGeneralLineName inappropriately
-         * here. For both the multiple blocking lines case and the independently unmatchable case,
-         * we set the line index to -1 and set the line name to a hard-coded message (see below).
-         * For right now, it's hard to fix because the JsonPathAnswerElement for ACL reachability
-         * doesn't account for these two cases and changing that would be a breaking change.
-         * TODO Stop using the earliestMoreGeneralLine variables for other answer categories.
-         */
-        if (unmatchableLinesOnThisAcl.contains(lineNumber)) {
-          reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
-          reachabilityEntry.setEarliestMoreGeneralLineName(
-              "This line will never match any packet, independent of preceding lines.");
-        } else {
-          Integer earliestMoreGeneralReachableLineNumber = blockingLinesMap.get(line);
-          line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLineNumber);
-
-          if (earliestMoreGeneralReachableLineNumber != null) {
-            IpAccessListLine earliestMoreGeneralLine =
-                ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
-            reachabilityEntry.setEarliestMoreGeneralLineIndex(
-                earliestMoreGeneralReachableLineNumber);
-            reachabilityEntry.setEarliestMoreGeneralLineName(
-                firstNonNull(
-                    earliestMoreGeneralLine.getName(), earliestMoreGeneralLine.toString()));
-            if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
-              reachabilityEntry.setDifferentAction(true);
-            }
-          } else {
-            // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
-            // multiple partially-blocking lines. Provide that info in any way we can...
-            reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
-            reachabilityEntry.setEarliestMoreGeneralLineName(
-                "Multiple earlier lines partially block this line, making it unreachable.");
-          }
+        boolean unmatchable = unmatchableLinesOnThisAcl.contains(lineNumber);
+        SortedMap<Integer, String> blockingLines = new TreeMap<>();
+        boolean diffAction = false;
+        Integer blockingLineNumber = blockingLinesMap.get(line);
+        if (blockingLineNumber != null) {
+          IpAccessListLine blocker = ipAccessList.getLines().get(blockingLineNumber);
+          diffAction = !blocker.getAction().equals(ipAccessListLine.getAction());
+          blockingLines.put(
+              blockingLineNumber, firstNonNull(blocker.getName(), blocker.toString()));
+          line.setEarliestMoreGeneralReachableLine(blockingLineNumber);
         }
-        answerElement.addUnreachableLine(hostname, ipAccessList, reachabilityEntry);
-
+        answerElement.addUnreachableLine(
+            hostname, ipAccessList, lineNumber, lineName, unmatchable, blockingLines, diffAction);
       } else {
         _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName, lineNumber, lineName);
-        answerElement.addReachableLine(hostname, ipAccessList, reachabilityEntry);
+        answerElement.addReachableLine(hostname, ipAccessList, lineNumber, lineName);
       }
     }
 
-    // Log results and return answerElement.
+    // Log results
     for (Pair<String, String> qualifiedAcl : aclHostPairsWithUnreachableLines) {
       String hostname = qualifiedAcl.getFirst();
       String aclName = qualifiedAcl.getSecond();
@@ -904,15 +872,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf(
         "\t%d/%d (%.1f%%) acl lines are unreachable\n",
         numUnreachableLines, numLines, percentUnreachableLines);
-
-    return answerElement;
   }
 
   private List<NodSatJob<AclLine>> generateUnreachableAclLineJobs(
       Pattern aclNameRegex,
       NamedStructureEquivalenceSets<?> aclEqSets,
       Map<String, Configuration> configurations,
-      AclLinesAnswerElement answerElement) {
+      AclLinesAnswerElementInterface answerElement) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
 
     for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {
@@ -926,10 +892,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
         String hostname = aclEqSet.getRepresentativeElement();
         SortedSet<String> eqClassNodes = aclEqSet.getNodes();
-        answerElement.addEquivalenceClass(aclName, hostname, eqClassNodes);
         Configuration c = configurations.get(hostname);
-        IpAccessList acl = c.getIpAccessLists().get(aclName);
-        int numLines = acl.getLines().size();
+        List<IpAccessListLine> aclLines = c.getIpAccessLists().get(aclName).getLines();
+        answerElement.addEquivalenceClass(
+            aclName,
+            hostname,
+            eqClassNodes,
+            aclLines.stream().map(l -> l.getName()).collect(Collectors.toList()));
+        int numLines = aclLines.size();
         if (numLines == 0) {
           _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName + "\" contains no lines\n");
           continue;
@@ -2805,17 +2775,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return parse(parser);
   }
 
-  @Override
-  public AssertionAst parseAssertion(String text) {
-    AssertionCombinedParser parser = new AssertionCombinedParser(text, _settings);
-    AssertionContext tree = (AssertionContext) parse(parser);
-    ParseTreeWalker walker = new ParseTreeWalker();
-    AssertionExtractor extractor = new AssertionExtractor(text, parser.getParser());
-    walker.walk(extractor, tree);
-    AssertionAst ast = extractor.getAst();
-    return ast;
-  }
-
   private AwsConfiguration parseAwsConfigurations(Map<Path, String> configurationData) {
     AwsConfiguration config = new AwsConfiguration();
     for (Entry<Path, String> configFile : configurationData.entrySet()) {
@@ -2960,31 +2919,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Topology parseTopology(Path topologyFilePath) {
     _logger.info("*** PARSING TOPOLOGY ***\n");
-    _logger.resetTimer();
     String topologyFileText = CommonUtil.readFile(topologyFilePath);
-    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
-    Topology topology = null;
-    if (topologyFileText.equals("")) {
+    if (topologyFileText.trim().isEmpty()) {
       throw new BatfishException("ERROR: empty topology\n");
-    } else if (topologyFileText.startsWith("autostart")) {
-      BatfishCombinedParser<?, ?> parser = null;
-      TopologyExtractor extractor = null;
-      parser = new GNS3TopologyCombinedParser(topologyFileText, _settings);
-      extractor = new GNS3TopologyExtractor();
-      ParserRuleContext tree = parse(parser);
-      ParseTreeWalker walker = new ParseTreeWalker();
-      walker.walk(extractor, tree);
-      topology = extractor.getTopology();
-    } else {
-      try {
-        topology = BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
-      } catch (IOException e) {
-        _logger.fatal("...ERROR\n");
-        throw new BatfishException("Topology format error", e);
-      }
     }
-    _logger.printElapsedTime();
-    return topology;
+    _logger.infof("Parsing: \"%s\" ...", topologyFilePath.toAbsolutePath());
+    try {
+      return BatfishObjectMapper.mapper().readValue(topologyFileText, Topology.class);
+    } catch (IOException e) {
+      _logger.fatal("...ERROR\n");
+      throw new BatfishException("Topology format error " + e.getMessage(), e);
+    }
   }
 
   private SortedMap<String, VendorConfiguration> parseVendorConfigurations(

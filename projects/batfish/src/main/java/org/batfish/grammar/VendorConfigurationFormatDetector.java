@@ -39,6 +39,8 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: juniper$");
   private static final Pattern RANCID_MRV_PATTERN =
       Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: mrv$");
+  private static final Pattern RANCID_PALO_ALTO_PATTERN =
+      Pattern.compile("(?m)^!RANCID-CONTENT-TYPE: paloalto");
 
   // checkCisco patterns
   private static final Pattern ASA_VERSION_LINE_PATTERN = Pattern.compile("(?m)(^ASA Version.*$)");
@@ -61,6 +63,10 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^policy-options *\\{");
   private static final Pattern JUNIPER_SNMP_PATTERN = Pattern.compile("(?m)^snmp *\\{");
   private static final Pattern SET_PATTERN = Pattern.compile("(?m)^set ");
+
+  // checkPaloAlto patterns
+  private static final Pattern PALO_ALTO_PANORAMA_PATTERN =
+      Pattern.compile("(?m)(send-to-panorama|panorama-server)");
 
   private String _fileText;
 
@@ -118,6 +124,9 @@ public final class VendorConfigurationFormatDetector {
   private ConfigurationFormat checkCisco() {
     if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
+    }
+    if (checkCiscoXr() == ConfigurationFormat.CISCO_IOS_XR) {
+      return ConfigurationFormat.CISCO_IOS_XR;
     }
     if (fileTextMatches(NEXUS_FEATURE_LINE_PATTERN) || fileTextMatches(NEXUS_BOOTFLASH_PATTERN)) {
       return ConfigurationFormat.CISCO_NX;
@@ -228,6 +237,14 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
+  private ConfigurationFormat checkPaloAlto() {
+    if (fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)) {
+      return ConfigurationFormat.PALO_ALTO;
+    }
+    return null;
+  }
+
+  @Nullable
   private ConfigurationFormat checkMss() {
     if (fileTextMatches(MSS_PATTERN)) {
       return ConfigurationFormat.MSS;
@@ -250,6 +267,8 @@ public final class VendorConfigurationFormatDetector {
       return checkJuniper();
     } else if (fileTextMatches(RANCID_MRV_PATTERN)) {
       return ConfigurationFormat.MRV;
+    } else if (fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
+      return ConfigurationFormat.PALO_ALTO;
     }
     return null;
   }
@@ -318,6 +337,10 @@ public final class VendorConfigurationFormatDetector {
       return format;
     }
     format = checkMrvCommands();
+    if (format != null) {
+      return format;
+    }
+    format = checkPaloAlto();
     if (format != null) {
       return format;
     }

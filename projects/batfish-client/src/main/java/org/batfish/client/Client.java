@@ -6,6 +6,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -569,37 +570,14 @@ public class Client extends AbstractClient implements IClient {
       questionName = parameters.get("questionName").asText();
       parameters.remove("questionName");
     }
-    JSONObject instanceJson;
     try {
-      instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
-      instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
-    } catch (JSONException e) {
-      throw new BatfishException("Question is missing instance data", e);
-    }
-    String instanceDataStr = instanceJson.toString();
-    InstanceData instanceData;
-    try {
-      instanceData =
-          BatfishObjectMapper.mapper()
-              .readValue(instanceDataStr, new TypeReference<InstanceData>() {});
-    } catch (IOException e) {
-      throw new BatfishException("Invalid instance data (JSON)", e);
-    }
-    Map<String, Variable> variables = instanceData.getVariables();
-    validateAndSet(parameters, variables);
-    checkVariableState(variables);
-
-    String modifiedInstanceDataStr;
-    try {
-      modifiedInstanceDataStr = BatfishObjectMapper.writePrettyString(instanceData);
-      JSONObject modifiedInstanceData = new JSONObject(modifiedInstanceDataStr);
-      questionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
-    } catch (JSONException | JsonProcessingException e) {
-      throw new BatfishException("Could not process modified instance data", e);
+      questionJson = QuestionHelper.fillTemplate(questionJson, parameters, questionName);
+    } catch (IOException | JSONException e) {
+      throw new BatfishException("Could not fill template: ", e);
     }
     String modifiedQuestionStr = questionJson.toString();
-    boolean questionJsonDifferential = false;
-    // check whether question is valid modulo instance data
+
+    boolean questionJsonDifferential;
     try {
       questionJsonDifferential =
           questionJson.has(BfConsts.PROP_DIFFERENTIAL)
@@ -2686,6 +2664,8 @@ public class Client extends AbstractClient implements IClient {
         return test(options, parameters);
       case UPLOAD_CUSTOM_OBJECT:
         return uploadCustomObject(options, parameters);
+      case VALIDATE_TEMPLATE:
+        return validateTemplate(words, outWriter, options, parameters);
 
       case EXIT:
       case QUIT:
@@ -3366,6 +3346,48 @@ public class Client extends AbstractClient implements IClient {
         throw new BatfishException(v + " is missing description");
       }
     }
+  }
+
+  /**
+   * Template validation extracts the question template text and parameters, and then relies on
+   * {@link QuestionHelper#validateTemplate(JSONObject, Map)}
+   *
+   * @param words The array of command words that led to this function being called
+   * @param outWriter The parsed question is written to this FileWriter
+   * @param options The list of options in the command. Should be empty.
+   * @param parameters The list of parameters in the command.
+   * @return True if the command was valid and the template was valid; false otherwise.
+   */
+  @VisibleForTesting
+  boolean validateTemplate(
+      String[] words,
+      @Nullable FileWriter outWriter,
+      List<String> options,
+      List<String> parameters) {
+    if (!isValidArgument(options, parameters, 0, 1, Integer.MAX_VALUE, Command.VALIDATE_TEMPLATE)) {
+      return false;
+    }
+
+    String questionTemplateName = parameters.get(0);
+    String questionContentUnmodified = _bfq.get(questionTemplateName.toLowerCase());
+    if (questionContentUnmodified == null) {
+      throw new BatfishException("Invalid question template name: '" + questionTemplateName + "'");
+    }
+
+    Map<String, JsonNode> parsedParameters =
+        parseParams(String.join(" ", Arrays.copyOfRange(words, 2 + options.size(), words.length)));
+
+    try {
+      Question question =
+          QuestionHelper.validateTemplate(
+              new JSONObject(questionContentUnmodified), parsedParameters);
+      logOutput(outWriter, BatfishObjectMapper.writePrettyString(question));
+    } catch (IOException | JSONException e) {
+      throw new BatfishException(
+          "Could not create or write question template: " + e.getMessage(), e);
+    }
+
+    return true;
   }
 
   private boolean validCommandUsage(String[] words) {

@@ -10,7 +10,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
@@ -99,11 +98,11 @@ public class Roles {
     SortedSet<String> incomingAclNull = new TreeSet<>();
     SortedSet<String> outgoingAclNull = new TreeSet<>();
 
+    Set<String> includeNodes = _nodeSpecifier.getMatchingNodes(_graph.getBatfish());
     for (Entry<String, List<GraphEdge>> entry : _graph.getEdgeMap().entrySet()) {
       String router = entry.getKey();
 
-      Matcher m = _nodeSpecifier.getRegex().matcher(router);
-      if (!m.matches()) {
+      if (!includeNodes.contains(router)) {
         continue;
       }
 

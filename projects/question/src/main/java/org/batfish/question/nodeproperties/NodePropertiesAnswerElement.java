@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;

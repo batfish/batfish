@@ -472,6 +472,7 @@ popst_common
    | popst_next_term
    | popst_null
    | popst_origin
+   | popst_preference
    | popst_priority
    | popst_reject
    | popst_tag
@@ -594,6 +595,11 @@ popst_null
 popst_origin
 :
    ORIGIN IGP
+;
+
+popst_preference
+:
+   PREFERENCE preference = DEC
 ;
 
 popst_priority
