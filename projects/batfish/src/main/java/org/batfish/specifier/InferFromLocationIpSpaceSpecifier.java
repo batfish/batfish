@@ -46,11 +46,6 @@ public class InferFromLocationIpSpaceSpecifier implements IpSpaceSpecifier {
       return _specifierContext.getInterfaceOwnedIps(
           interfaceLocation.getNodeName(), interfaceLocation.getInterfaceName());
     }
-
-    @Override
-    public IpSpace visitVrfLocation(VrfLocation vrfLocation) {
-      return _specifierContext.getVrfOwnedIps(vrfLocation.getHostname(), vrfLocation.getVrf());
-    }
   }
 
   private InferFromLocationIpSpaceSpecifier() {}

@@ -8,6 +8,4 @@ public interface LocationVisitor<T> {
   T visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation);
 
   T visitInterfaceLocation(InterfaceLocation interfaceLocation);
-
-  T visitVrfLocation(VrfLocation vrfLocation);
 }
