@@ -16,14 +16,10 @@ public class IpOwnersQuestion extends Question {
   /** Whether to return duplicate IPs (owned by multiple nodes) only. */
   private boolean _duplicatesOnly;
 
-  /** Whether to exclude inactive interfaces from the computation */
-  private boolean _excludeInactive;
-
   @JsonCreator
   public IpOwnersQuestion(
       @JsonProperty(PROP_DUPLICATES_ONLY) boolean duplicatesOnly,
       @JsonProperty(PROP_EXCLUDE_INACTIVE) boolean excludeInactive) {
-    _excludeInactive = excludeInactive;
     _duplicatesOnly = duplicatesOnly;
   }
 
@@ -45,10 +41,5 @@ public class IpOwnersQuestion extends Question {
   @JsonProperty(PROP_DUPLICATES_ONLY)
   public boolean getDuplicatesOnly() {
     return _duplicatesOnly;
-  }
-
-  @JsonProperty(PROP_EXCLUDE_INACTIVE)
-  public boolean getExcludeInactive() {
-    return _excludeInactive;
   }
 }
