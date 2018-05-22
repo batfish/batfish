@@ -52394,13 +52394,6 @@
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
           }
         },
-        "cisco_qos" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Unimplemented object-group network line: network-object host 1.2.2.1\n",
-            "2" : "MISCELLANEOUS: Unimplemented object-group network line: network-object host 1.1.1.1\n",
-            "3" : "MISCELLANEOUS: Unimplemented object-group network line: network-object 1.1.1.1 255.255.255.255\n"
-          }
-        },
         "cisco_style_acl1" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl1'\n"
