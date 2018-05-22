@@ -42,7 +42,7 @@ public class BDDNetFactoryTest {
   public void testRoute() {
     BDDRoute r = _netFactory.routeVariables();
 
-    Ip dstIp = new Ip("1.2.3.0"); 
+    Ip dstIp = new Ip("1.2.3.0");
     Prefix p = new Prefix(dstIp, 24);
     BDD pfx = BDDUtils.prefixToBdd(_factory, r, p);
     BDD metric = r.getMetric().value(100);
