@@ -71,19 +71,19 @@
               "definitionLines" : [
                 7
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet1" : {
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet2" : {
               "definitionLines" : [
                 1
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -93,19 +93,19 @@
               "definitionLines" : [
                 7
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet1" : {
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet2" : {
               "definitionLines" : [
                 1
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -115,19 +115,19 @@
               "definitionLines" : [
                 7
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet1" : {
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet2" : {
               "definitionLines" : [
                 1
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -137,13 +137,13 @@
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet1" : {
               "definitionLines" : [
                 1
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -155,13 +155,13 @@
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet1" : {
               "definitionLines" : [
                 1
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },

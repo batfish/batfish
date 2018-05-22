@@ -144,73 +144,73 @@
             "definitionLines" : [
               124
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/0" : {
             "definitionLines" : [
               136
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/1" : {
             "definitionLines" : [
               142
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/2" : {
             "definitionLines" : [
               148
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/3" : {
             "definitionLines" : [
               152
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/4" : {
             "definitionLines" : [
               159
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/5" : {
             "definitionLines" : [
               164
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/6" : {
             "definitionLines" : [
               169
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Ethernet1/7" : {
             "definitionLines" : [
               174
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "GigabitEthernet0/0" : {
             "definitionLines" : [
               129
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "GigabitEthernet2/0" : {
             "definitionLines" : [
               179
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Loopback0" : {
             "definitionLines" : [
               105
             ],
-            "numReferrers" : 0
+            "numReferrers" : 1
           },
           "Tunnel1" : {
             "definitionLines" : [

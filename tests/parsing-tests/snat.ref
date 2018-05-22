@@ -499,13 +499,13 @@
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet2" : {
               "definitionLines" : [
                 9
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "ipv4 prefix-list" : {
@@ -558,13 +558,13 @@
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Ethernet2" : {
               "definitionLines" : [
                 8
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         }

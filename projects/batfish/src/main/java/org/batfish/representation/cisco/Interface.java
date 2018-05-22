@@ -563,4 +563,10 @@ public class Interface extends ComparableStructure<String> {
   public void setSecurityZone(String securityZone) {
     _securityZone = securityZone;
   }
+
+  public static boolean isSelfReferencingInterface(String name) {
+    return !(name.startsWith("Bundle-Ethernet")
+        || name.startsWith("Port-Channel")
+        || name.startsWith("Tunnel"));
+  }
 }

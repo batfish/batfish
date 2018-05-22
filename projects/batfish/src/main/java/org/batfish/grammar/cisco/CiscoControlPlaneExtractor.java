@@ -99,6 +99,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
@@ -1323,7 +1324,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Interface newInterface = _configuration.getInterfaces().get(name);
     if (newInterface == null) {
       newInterface = new Interface(name, _configuration);
-      _configuration.defineStructure(INTERFACE, name, ctx.getStart().getLine());
+      int line = ctx.getStart().getLine();
+      _configuration.defineStructure(INTERFACE, name, line);
+      if (Interface.isSelfReferencingInterface(name)) {
+        _configuration.referenceStructure(INTERFACE, name, INTERFACE_SELF_REFERENCE, line);
+      }
       initInterface(newInterface, _configuration.getVendor());
       _configuration.getInterfaces().put(name, newInterface);
       initInterface(newInterface, ctx);

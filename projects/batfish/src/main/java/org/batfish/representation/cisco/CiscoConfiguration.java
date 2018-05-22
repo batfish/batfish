@@ -1124,10 +1124,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.INSPECT_POLICY_MAP, usage);
   }
 
-  private void markInterfaces(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.INTERFACE, usage);
-  }
-
   private void markIpOrMacAcls(CiscoStructureUsage usage) {
     markAbstractStructure(
         CiscoStructureType.ACCESS_LIST,
@@ -3618,7 +3614,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to mac-ACLs that may not appear in data model
     // TODO: fill in
 
-    markInterfaces(CiscoStructureUsage.INTERFACE_CHANNEL_GROUP);
+    markConcreteStructure(
+        CiscoStructureType.INTERFACE,
+        CiscoStructureUsage.INTERFACE_CHANNEL_GROUP,
+        CiscoStructureUsage.INTERFACE_SELF_REFERENCE);
 
     markConcreteStructure(
         CiscoStructureType.PREFIX_LIST,

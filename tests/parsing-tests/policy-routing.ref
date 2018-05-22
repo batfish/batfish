@@ -1951,13 +1951,13 @@
               "definitionLines" : [
                 53
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet0/1" : {
               "definitionLines" : [
                 58
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -1977,13 +1977,13 @@
               "definitionLines" : [
                 51
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet0/1" : {
               "definitionLines" : [
                 57
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -2002,25 +2002,25 @@
               "definitionLines" : [
                 52
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet0/1" : {
               "definitionLines" : [
                 57
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet1/0" : {
               "definitionLines" : [
                 62
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet2/0" : {
               "definitionLines" : [
                 67
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "route-map" : {
@@ -2040,19 +2040,19 @@
               "definitionLines" : [
                 56
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet0/1" : {
               "definitionLines" : [
                 61
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
                 53
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -2062,13 +2062,13 @@
               "definitionLines" : [
                 53
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet0/1" : {
               "definitionLines" : [
                 58
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -2078,13 +2078,13 @@
               "definitionLines" : [
                 53
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "FastEthernet0/1" : {
               "definitionLines" : [
                 58
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         }
