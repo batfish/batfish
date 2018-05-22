@@ -192,7 +192,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
@@ -349,7 +350,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
@@ -1215,7 +1217,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
