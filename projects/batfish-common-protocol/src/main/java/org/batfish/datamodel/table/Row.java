@@ -151,7 +151,7 @@ public class Row implements Comparable<Row> {
    * @return The result
    * @throws {@link NoSuchElementException} if this column is not present
    */
-  public <T> T get(String columnName, TypeReference<?> valueTypeRef) {
+  public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
