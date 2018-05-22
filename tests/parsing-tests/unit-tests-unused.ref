@@ -521,7 +521,10 @@
         "description" : "Unused structure of type: 'firewall filter' with name: 'blah'",
         "files" : {
           "juniper_firewall" : [
-            5
+            5,
+            6,
+            7,
+            8
           ]
         }
       },
@@ -538,14 +541,6 @@
         "files" : {
           "juniper-tcpflags" : [
             4
-          ]
-        }
-      },
-      "unused:firewall filter:~GLOBAL_SECURITY_POLICY~" : {
-        "description" : "Unused structure of type: 'firewall filter' with name: '~GLOBAL_SECURITY_POLICY~'",
-        "files" : {
-          "juniper_security" : [
-            -1
           ]
         }
       },
@@ -1269,7 +1264,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 127
+      "numResults" : 126
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1865,7 +1860,10 @@
       "juniper_firewall" : {
         "firewall filter" : {
           "blah" : [
-            5
+            5,
+            6,
+            7,
+            8
           ],
           "f1" : [
             4
@@ -1903,13 +1901,6 @@
           ],
           "route-filter-test-v6" : [
             11
-          ]
-        }
-      },
-      "juniper_security" : {
-        "firewall filter" : {
-          "~GLOBAL_SECURITY_POLICY~" : [
-            -1
           ]
         }
       },
