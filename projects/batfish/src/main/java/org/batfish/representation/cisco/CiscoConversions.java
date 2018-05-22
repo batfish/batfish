@@ -252,7 +252,10 @@ class CiscoConversions {
     List<RouteFilterLine> newLines =
         list.getLines()
             .stream()
-            .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
+            .map(
+                l ->
+                    new RouteFilterLine(
+                        l.getAction(), new IpWildcard(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     newRouteFilterList.setLines(newLines);
     return newRouteFilterList;
@@ -356,7 +359,8 @@ class CiscoConversions {
     int statedPrefixLength = srcIpWildcard.getWildcard().inverted().numSubnetBits();
     int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
     Prefix prefix = new Prefix(ip, prefixLength);
-    return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
+    return new RouteFilterLine(
+        action, new IpWildcard(prefix), new SubRange(minPrefixLength, maxPrefixLength));
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class

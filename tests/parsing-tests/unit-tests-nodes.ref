@@ -275,8 +275,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "52-128",
-                "prefix" : "2607:f010:3f9:8000:0:0:0:0/52"
+                "ipWildcard" : "2607:f010:3f9:8000:0:0:0:0/52",
+                "lengthRange" : "52-128"
               }
             ],
             "name" : "ScienceDMZ-networks"
@@ -285,8 +285,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "52-52",
-                "prefix" : "2607:f010:3f9:8000:0:0:0:0/52"
+                "ipWildcard" : "2607:f010:3f9:8000:0:0:0:0/52",
+                "lengthRange" : "52-52"
               }
             ],
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -298,8 +298,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "192.154.2.0/24"
+                "ipWildcard" : "192.154.2.0/24",
+                "lengthRange" : "24-32"
               }
             ]
           },
@@ -308,8 +308,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "25-32",
-                "prefix" : "192.154.2.0/24"
+                "ipWildcard" : "192.154.2.0/24",
+                "lengthRange" : "25-32"
               }
             ]
           }
@@ -2882,8 +2882,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "32-32",
-                "prefix" : "2607:f380:0:0:0:0:0:0/32"
+                "ipWildcard" : "2607:f380:0:0:0:0:0:0/32",
+                "lengthRange" : "32-32"
               }
             ],
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -4082,13 +4082,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "128-128",
-                "prefix" : "0:0:0:0:0:0:0:0/128"
+                "ipWildcard" : "0:0:0:0:0:0:0:0",
+                "lengthRange" : "128-128"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "64-64",
-                "prefix" : "dead:beef:0:0:0:0:0:0/26"
+                "ipWildcard" : "dead:beef:0:0:0:0:0:0/26",
+                "lengthRange" : "64-64"
               }
             ],
             "name" : "bar"
@@ -4100,8 +4100,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "2.2.0.0/19"
+                "ipWildcard" : "2.2.0.0/19",
+                "lengthRange" : "24-32"
               }
             ]
           },
@@ -4110,13 +4110,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "32-32",
-                "prefix" : "1.1.1.1/32"
+                "ipWildcard" : "1.1.1.1",
+                "lengthRange" : "32-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "2.2.0.0/19"
+                "ipWildcard" : "2.2.0.0/19",
+                "lengthRange" : "24-32"
               }
             ]
           }
@@ -4746,13 +4746,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "192.0.2.0/24"
+                "ipWildcard" : "192.0.2.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "209.165.201.0/24"
+                "ipWildcard" : "209.165.201.0/24",
+                "lengthRange" : "24-32"
               }
             ]
           },
@@ -4761,13 +4761,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "192.0.2.0/24"
+                "ipWildcard" : "192.0.2.0/24",
+                "lengthRange" : "24-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "209.165.201.0/24"
+                "ipWildcard" : "209.165.201.0/24",
+                "lengthRange" : "24-32"
               }
             ]
           }
@@ -4878,8 +4878,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "17-32",
-                "prefix" : "192.168.0.0/16"
+                "ipWildcard" : "192.168.0.0/16",
+                "lengthRange" : "17-32"
               }
             ]
           }
@@ -8357,8 +8357,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "120-120",
-                "prefix" : "fe80:0:0:0:0:0:0:0/120"
+                "ipWildcard" : "fe80:0:0:0:0:0:0:0/120",
+                "lengthRange" : "120-120"
               }
             ],
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -8625,13 +8625,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "25-32",
-                "prefix" : "1.2.3.0/24"
+                "ipWildcard" : "1.2.3.0/24",
+                "lengthRange" : "25-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           },
@@ -8640,13 +8640,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "24-32",
-                "prefix" : "1.2.3.0/24"
+                "ipWildcard" : "1.2.3.0/24",
+                "lengthRange" : "24-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -10091,8 +10091,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "15-32",
-                "prefix" : "10.0.0.0/15"
+                "ipWildcard" : "10.0.0.0/15",
+                "lengthRange" : "15-32"
               }
             ]
           }
@@ -12210,13 +12210,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "16-32",
-                "prefix" : "10.0.0.0/15"
+                "ipWildcard" : "10.0.0.0/15",
+                "lengthRange" : "16-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -12458,8 +12458,8 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -14011,33 +14011,33 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "48-48",
-                "prefix" : "2001:db8:1234:0:0:0:0:0/48"
+                "ipWildcard" : "2001:db8:1234:0:0:0:0:0/48",
+                "lengthRange" : "48-48"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "59-128",
-                "prefix" : "2001:db8:1235:0:0:0:0:0/58"
+                "ipWildcard" : "2001:db8:1235:0:0:0:0:0/58",
+                "lengthRange" : "59-128"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "68-128",
-                "prefix" : "2001:db8:1236:0:0:0:0:0/68"
+                "ipWildcard" : "2001:db8:1236:0:0:0:0:0/68",
+                "lengthRange" : "68-128"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "78-88",
-                "prefix" : "2001:db8:1237:0:0:0:0:0/78"
+                "ipWildcard" : "2001:db8:1237:0:0:0:0:0/78",
+                "lengthRange" : "78-88"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "100-110",
-                "prefix" : "2001:db8:1238:0:0:0:0:0/88"
+                "ipWildcard" : "2001:db8:1238:0:0:0:0:0/88",
+                "lengthRange" : "100-110"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "98-98",
-                "prefix" : "2001:db8:1239:0:0:0:0:0/98"
+                "ipWildcard" : "2001:db8:1239:0:0:0:0:0/98",
+                "lengthRange" : "98-98"
               }
             ],
             "name" : "route-filter-test-v6:t1"
@@ -14049,33 +14049,48 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "1.2.0.0/16"
+                "ipWildcard" : "1.2.0.0/16",
+                "lengthRange" : "16-16"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "18-32",
-                "prefix" : "1.3.0.0/17"
+                "ipWildcard" : "1.3.0.0/17",
+                "lengthRange" : "18-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "18-32",
-                "prefix" : "1.4.0.0/18"
+                "ipWildcard" : "1.4.0.0/18",
+                "lengthRange" : "18-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "19-24",
-                "prefix" : "1.5.0.0/19"
+                "ipWildcard" : "1.5.0.0/19",
+                "lengthRange" : "19-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "26-29",
-                "prefix" : "1.6.0.0/20"
+                "ipWildcard" : "1.6.0.0/20",
+                "lengthRange" : "26-29"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "21-21",
-                "prefix" : "1.7.0.0/21"
+                "ipWildcard" : "1.7.0.0/21",
+                "lengthRange" : "21-21"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "1.7.0.0/22",
+                "lengthRange" : "22-22"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "1.7.0.0/23",
+                "lengthRange" : "23-23"
+              },
+              {
+                "action" : "ACCEPT",
+                "ipWildcard" : "1.7.0.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           }
@@ -14167,8 +14182,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "9-32",
-                "prefix" : "10.0.0.0/8"
+                "ipWildcard" : "10.0.0.0/8",
+                "lengthRange" : "9-32"
               }
             ]
           }
@@ -15331,8 +15346,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "64-64",
-                "prefix" : "1a01:111:a100:1001:0:0:0:0/64"
+                "ipWildcard" : "1a01:111:a100:1001:0:0:0:0/64",
+                "lengthRange" : "64-64"
               }
             ],
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -15483,8 +15498,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "120-120",
-                "prefix" : "0:0:0:0:0:0:102:300/120"
+                "ipWildcard" : "0:0:0:0:0:0:102:300/120",
+                "lengthRange" : "120-120"
               }
             ],
             "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
@@ -18203,8 +18218,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "32-32",
-                "prefix" : "0.0.0.0/32"
+                "ipWildcard" : "0.0.0.0",
+                "lengthRange" : "32-32"
               }
             ]
           },
@@ -18213,43 +18228,43 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "128.97.0.0/16"
+                "ipWildcard" : "128.97.0.0/16",
+                "lengthRange" : "16-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "131.179.0.0/16"
+                "ipWildcard" : "131.179.0.0/16",
+                "lengthRange" : "16-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "149.142.0.0/16"
+                "ipWildcard" : "149.142.0.0/16",
+                "lengthRange" : "16-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "164.67.0.0/16"
+                "ipWildcard" : "164.67.0.0/16",
+                "lengthRange" : "16-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "169.232.0.0/16"
+                "ipWildcard" : "169.232.0.0/16",
+                "lengthRange" : "16-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "192.35.225.0/24"
+                "ipWildcard" : "192.35.225.0/24",
+                "lengthRange" : "24-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "192.154.2.0/24"
+                "ipWildcard" : "192.154.2.0/24",
+                "lengthRange" : "24-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-32",
-                "prefix" : "198.17.109.0/24"
+                "ipWildcard" : "198.17.109.0/24",
+                "lengthRange" : "24-32"
               }
             ]
           }
@@ -18280,8 +18295,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-0",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-0"
               }
             ]
           },
@@ -18290,8 +18305,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "31-31",
-                "prefix" : "192.168.100.2/31"
+                "ipWildcard" : "192.168.100.2/31",
+                "lengthRange" : "31-31"
               }
             ]
           }
@@ -20256,8 +20271,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "128-128",
-                "prefix" : "0:0:0:0:0:0:0:0/128"
+                "ipWildcard" : "0:0:0:0:0:0:0:0",
+                "lengthRange" : "128-128"
               }
             ],
             "name" : "v6_list"
@@ -20269,8 +20284,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-0",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-0"
               }
             ]
           }
