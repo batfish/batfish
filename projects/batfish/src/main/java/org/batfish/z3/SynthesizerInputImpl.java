@@ -8,9 +8,11 @@ import static org.batfish.common.util.CommonUtil.toImmutableMap;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.google.common.math.LongMath;
@@ -40,6 +42,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.specifier.Location;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.expr.IpSpaceMatchExpr;
@@ -53,6 +56,7 @@ import org.batfish.z3.state.StateParameter.Type;
 public final class SynthesizerInputImpl implements SynthesizerInput {
 
   static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
+  private final Multimap<BooleanExpr, Location> _ingressLocationsBySrcIpConstraint;
 
   public static class Builder {
     private Map<String, Configuration> _configurations;
@@ -68,6 +72,9 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     private ForwardingAnalysis _forwardingAnalysis;
 
     @Nullable private HeaderSpace _headerSpace;
+
+    private ImmutableMultimap<IpSpace, Location> _ingressLocationsBySrcIpSpace =
+        ImmutableMultimap.of();
 
     private Set<String> _nonTransitNodes = ImmutableSortedSet.of();
 
@@ -149,6 +156,12 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
       _nonTransitNodes = ImmutableSet.copyOf(nonTransitNodes);
+      return this;
+    }
+
+    public Builder setIngressLocationsBySrcIpSpace(
+        Multimap<IpSpace, Location> ingressLocationsBySrcIpSpace) {
+      _ingressLocationsBySrcIpSpace = ImmutableMultimap.copyOf(ingressLocationsBySrcIpSpace);
       return this;
     }
   }
@@ -269,6 +282,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _enabledInterfacesByNodeVrf = computeEnabledInterfacesByNodeVrf();
     _enabledInterfaces = computeEnabledInterfaces();
     _incomingAcls = computeIncomingAcls();
+    _ingressLocationsBySrcIpConstraint =
+        computeIngressLocationsBySrcIpConstraint(builder._ingressLocationsBySrcIpSpace);
     _outgoingAcls = computeOutgoingAcls();
     _simplify = builder._simplify;
     _vectorizedParameters = builder._vectorizedParameters;
@@ -307,6 +322,18 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _nonTransitNodes = ImmutableSortedSet.copyOf(builder._nonTransitNodes);
     _transitNodes = ImmutableSortedSet.copyOf(builder._transitNodes);
     _aclConditions = computeAclConditions();
+  }
+
+  private static Multimap<BooleanExpr, Location> computeIngressLocationsBySrcIpConstraint(
+      Multimap<IpSpace, Location> ingressLocationsBySrcIpSpace) {
+    ImmutableMultimap.Builder<BooleanExpr, Location> builder = ImmutableMultimap.builder();
+    // Named IP spaces are not allowed here. TODO do we need them?
+    IpSpaceBooleanExprTransformer toBooleanExpr =
+        new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.ORIG_SRC_IP);
+    ingressLocationsBySrcIpSpace
+        .asMap()
+        .forEach((ipSpace, locations) -> builder.putAll(ipSpace.accept(toBooleanExpr), locations));
+    return builder.build();
   }
 
   private Set<String> computeNodesWithSrcInterfaceConstraints() {
@@ -839,6 +866,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Map<String, Map<String, String>> getIncomingAcls() {
     return _incomingAcls;
+  }
+
+  @Override
+  public Multimap<BooleanExpr, Location> getIngressLocationsBySrcIpConstraint() {
+    return _ingressLocationsBySrcIpConstraint;
   }
 
   @Override

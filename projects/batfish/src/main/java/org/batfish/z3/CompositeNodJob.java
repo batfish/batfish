@@ -22,9 +22,9 @@ public class CompositeNodJob extends AbstractNodJob {
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
-      SortedSet<IngressPoint> ingressPoints,
+      SortedSet<IngressLocation> ingressPoints,
       String tag) {
-    super(settings, ingressPoints, tag);
+    super(settings, null, tag);
     _numPrograms = dataPlaneSynthesizer.size();
     if (_numPrograms != querySynthesizer.size()) {
       throw new BatfishException("mismatch between number of programs and number of queries");

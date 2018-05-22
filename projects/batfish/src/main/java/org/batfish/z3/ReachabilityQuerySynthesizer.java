@@ -1,14 +1,16 @@
 package org.batfish.z3;
 
+import static org.batfish.main.SrcNattedConstraint.UNCONSTRAINED;
+
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.z3.expr.AndExpr;
+import org.batfish.main.SrcNattedConstraint;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.EqExpr;
@@ -16,32 +18,29 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
-import org.batfish.z3.state.OriginateInterface;
+import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 
 public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer {
 
   public abstract static class Builder<
       Q extends ReachabilityQuerySynthesizer, T extends Builder<Q, T>> {
+    protected Set<String> _forbiddenTransitNodes;
+
     protected HeaderSpace _headerSpace;
 
-    protected Multimap<String, String> _ingressNodeInterfaces;
+    protected ImmutableList<IngressLocation> _ingressLocations;
 
-    protected Multimap<String, String> _ingressNodeVrfs;
+    protected Set<String> _requiredTransitNodes;
 
-    protected Set<String> _nonTransitNodes;
-
-    protected Boolean _srcNatted;
-
-    protected Set<String> _transitNodes;
+    protected SrcNattedConstraint _srcNatted;
 
     public Builder() {
+      _forbiddenTransitNodes = ImmutableSet.of();
       _headerSpace = new HeaderSpace();
-      _ingressNodeInterfaces = ImmutableMultimap.of();
-      _ingressNodeVrfs = ImmutableMultimap.of();
-      _nonTransitNodes = ImmutableSet.of();
-      _srcNatted = false;
-      _transitNodes = ImmutableSet.of();
+      _ingressLocations = ImmutableList.of();
+      _requiredTransitNodes = ImmutableSet.of();
+      _srcNatted = UNCONSTRAINED;
     }
 
     public abstract Q build();
@@ -52,92 +51,96 @@ public abstract class ReachabilityQuerySynthesizer extends BaseQuerySynthesizer 
 
     public abstract T setFinalNodes(Set<String> finalNodes);
 
+    public T setForbiddenTransitNodes(Set<String> nonTransitNodes) {
+      _forbiddenTransitNodes = nonTransitNodes;
+      return getThis();
+    }
+
     public T setHeaderSpace(HeaderSpace headerSpace) {
       _headerSpace = headerSpace;
       return getThis();
     }
 
-    public T setIngressNodeInterfaces(Multimap<String, String> ingressNodeInterfaces) {
-      _ingressNodeInterfaces = ImmutableMultimap.copyOf(ingressNodeInterfaces);
+    public T setIngressLocations(List<IngressLocation> ingressLocations) {
+      _ingressLocations = ImmutableList.copyOf(ingressLocations);
       return getThis();
     }
 
-    public T setIngressNodeVrfs(Multimap<String, String> ingressNodeVrfs) {
-      _ingressNodeVrfs = ImmutableMultimap.copyOf(ingressNodeVrfs);
-      return getThis();
-    }
-
-    public T setNonTransitNodes(Set<String> nonTransitNodes) {
-      _nonTransitNodes = nonTransitNodes;
-      return getThis();
-    }
-
-    public T setSrcNatted(Boolean srcNatted) {
+    public T setSrcNatted(SrcNattedConstraint srcNatted) {
       _srcNatted = srcNatted;
       return getThis();
     }
 
-    public T setTransitNodes(Set<String> transitNodes) {
-      _transitNodes = transitNodes;
+    public T setRequiredTransitNodes(Set<String> transitNodes) {
+      _requiredTransitNodes = transitNodes;
       return getThis();
     }
   }
 
-  protected final HeaderSpace _headerSpace;
+  protected final @Nonnull HeaderSpace _headerSpace;
 
-  protected final Multimap<String, String> _ingressNodeInterfaces;
+  protected final @Nonnull List<IngressLocation> _ingressLocations;
 
-  protected final Multimap<String, String> _ingressNodeVrfs;
+  protected final @Nonnull Set<String> _nonTransitNodes;
 
-  protected final Set<String> _nonTransitNodes;
+  protected final @Nonnull SrcNattedConstraint _srcNatted;
 
-  protected final Boolean _srcNatted;
-
-  protected final Set<String> _transitNodes;
+  protected final @Nonnull Set<String> _transitNodes;
 
   public ReachabilityQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
-      @Nonnull Multimap<String, String> ingressNodeInterfaces,
-      @Nonnull Multimap<String, String> ingressNodeVrfs,
-      Boolean srcNatted,
+      @Nonnull ImmutableList<IngressLocation> ingressLocations,
+      @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
     _headerSpace = headerSpace;
-    _ingressNodeInterfaces = ingressNodeInterfaces;
-    _ingressNodeVrfs = ingressNodeVrfs;
+    _ingressLocations = ImmutableList.copyOf(ingressLocations);
     _srcNatted = srcNatted;
-    _transitNodes = transitNodes;
-    _nonTransitNodes = nonTransitNodes;
+    _transitNodes = ImmutableSet.copyOf(transitNodes);
+    _nonTransitNodes = ImmutableSet.copyOf(nonTransitNodes);
   }
 
   protected final void addOriginateRules(ImmutableList.Builder<RuleStatement> rules) {
     // create rules for injecting symbolic packets into ingress node(s)
     BooleanExpr initialConstraint =
-        new AndExpr(
-            ImmutableList.of(
-                new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP))));
+        new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP));
 
-    _ingressNodeVrfs.forEach(
-        (node, vrf) ->
-            rules.add(new BasicRuleStatement(initialConstraint, new OriginateVrf(node, vrf))));
+    _ingressLocations.forEach(
+        ingressLocation -> {
+          switch (ingressLocation.getType()) {
+            case INTERFACE_LINK:
+              rules.add(
+                  new BasicRuleStatement(
+                      initialConstraint,
+                      new OriginateInterfaceLink(
+                          ingressLocation.getNode(), ingressLocation.getInterface())));
+              break;
+            case VRF:
+              rules.add(
+                  new BasicRuleStatement(
+                      initialConstraint,
+                      new OriginateVrf(ingressLocation.getNode(), ingressLocation.getVrf())));
 
-    _ingressNodeInterfaces.forEach(
-        (node, iface) ->
-            rules.add(
-                new BasicRuleStatement(initialConstraint, new OriginateInterface(node, iface))));
+              break;
+            default:
+              throw new BatfishException(
+                  "Unexpected IngressLocation Type: " + ingressLocation.getType());
+          }
+        });
   }
 
   protected final BooleanExpr getSrcNattedConstraint() {
-    if (_srcNatted != null) {
-      BooleanExpr notSrcNatted =
-          new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP));
-      if (_srcNatted) {
-        return new NotExpr(notSrcNatted);
-      } else {
+    BooleanExpr notSrcNatted =
+        new EqExpr(new VarIntExpr(Field.SRC_IP), new VarIntExpr(Field.ORIG_SRC_IP));
+    switch (_srcNatted) {
+      case REQUIRE_NOT_SRC_NATTED:
         return notSrcNatted;
-      }
-    } else {
-      return TrueExpr.INSTANCE;
+      case REQUIRE_SRC_NATTED:
+        return new NotExpr(notSrcNatted);
+      case UNCONSTRAINED:
+        return TrueExpr.INSTANCE;
+      default:
+        throw new BatfishException("Unexpected SrcNattedConstraint: " + _srcNatted);
     }
   }
 }

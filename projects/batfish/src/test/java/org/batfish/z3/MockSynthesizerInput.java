@@ -1,8 +1,10 @@
 package org.batfish.z3;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -11,6 +13,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.specifier.Location;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.state.AclPermit;
@@ -40,6 +43,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Map<String, Set<String>> _enabledVrfs;
 
     private Map<String, Map<String, String>> _incomingAcls;
+
+    private Multimap<BooleanExpr, Location> _ingressLocationsBySrcIpConstraint;
 
     private Map<String, Set<Ip>> _ipsByHostname;
 
@@ -85,6 +90,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledNodes = ImmutableSet.of();
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
+      _ingressLocationsBySrcIpConstraint = ImmutableMultimap.of();
       _ipsByHostname = ImmutableMap.of();
       _ipsByNodeVrf = ImmutableMap.of();
       _namedIpSpaces = ImmutableMap.of();
@@ -151,6 +157,13 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     public Builder setIncomingAcls(Map<String, Map<String, String>> incomingAcls) {
       _incomingAcls = incomingAcls;
+      return this;
+    }
+
+    public Builder setIngressLocationsBySrcIpConstraint(
+        Multimap<BooleanExpr, Location> ingressLocationsBySrcIpConstraint) {
+      _ingressLocationsBySrcIpConstraint =
+          ImmutableMultimap.copyOf(ingressLocationsBySrcIpConstraint);
       return this;
     }
 
@@ -274,6 +287,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, String>> _incomingAcls;
 
+  private final Multimap<BooleanExpr, Location> _ingressLocationsBySrcIpConstraint;
+
   private final Map<String, Set<Ip>> _ipsByHostname;
 
   private final Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
@@ -319,6 +334,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _enabledNodes = builder._enabledNodes;
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
+    _ingressLocationsBySrcIpConstraint = builder._ingressLocationsBySrcIpConstraint;
     _ipsByHostname = builder._ipsByHostname;
     _ipsByNodeVrf = builder._ipsByNodeVrf;
     _neighborUnreachable = builder._neighborUnreachable;
@@ -387,6 +403,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Map<String, Map<String, String>> getIncomingAcls() {
     return _incomingAcls;
+  }
+
+  @Override
+  public Multimap<BooleanExpr, Location> getIngressLocationsBySrcIpConstraint() {
+    return _ingressLocationsBySrcIpConstraint;
   }
 
   @Override

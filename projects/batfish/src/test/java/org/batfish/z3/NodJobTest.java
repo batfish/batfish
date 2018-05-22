@@ -1,5 +1,8 @@
 package org.batfish.z3;
 
+import static org.batfish.main.SrcNattedConstraint.REQUIRE_NOT_SRC_NATTED;
+import static org.batfish.main.SrcNattedConstraint.REQUIRE_SRC_NATTED;
+import static org.batfish.main.SrcNattedConstraint.UNCONSTRAINED;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -14,7 +17,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
@@ -23,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
@@ -49,6 +51,9 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.main.SrcNattedConstraint;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -59,7 +64,7 @@ public class NodJobTest {
   private SortedMap<String, Configuration> _configs;
   private DataPlane _dataPlane;
   private Configuration _dstNode;
-  private IngressPoint _ingressPoint;
+  private IngressLocation _ingressLocation;
   private Configuration _srcNode;
   private Vrf _srcVrf;
   private Synthesizer _synthesizer;
@@ -73,23 +78,27 @@ public class NodJobTest {
   }
 
   private NodJob getNodJob(HeaderSpace headerSpace) {
-    return getNodJob(headerSpace, null);
+    return getNodJob(headerSpace, UNCONSTRAINED);
   }
 
-  private NodJob getNodJob(HeaderSpace headerSpace, Boolean srcNatted) {
+  private NodJob getNodJob(HeaderSpace headerSpace, SrcNattedConstraint srcNatted) {
+    IngressLocation ingressLocation = IngressLocation.vrf(_srcNode.getName(), _srcVrf.getName());
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
             .setHeaderSpace(headerSpace)
-            .setIngressNodeVrfs(ImmutableMultimap.of(_srcNode.getHostname(), _srcVrf.getName()))
+            .setIngressLocations(ImmutableList.of(ingressLocation))
             .setSrcNatted(srcNatted)
-            .setTransitNodes(ImmutableSet.of())
-            .setNonTransitNodes(ImmutableSet.of())
+            .setRequiredTransitNodes(ImmutableSet.of())
+            .setForbiddenTransitNodes(ImmutableSet.of())
             .build();
-    SortedSet<IngressPoint> ingressPoints =
-        ImmutableSortedSet.of(IngressPoint.ingressVrf(_srcNode.getHostname(), _srcVrf.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressPoints, "tag", false);
+    Multimap<BooleanExpr, IngressLocation> ingressLocations =
+        ImmutableMultimap.<BooleanExpr, IngressLocation>builder()
+            .putAll(TrueExpr.INSTANCE, ImmutableSet.of(ingressLocation))
+            .build();
+    return new NodJob(
+        new Settings(), _synthesizer, querySynthesizer, ingressLocations, "tag", false);
   }
 
   @Before
@@ -111,7 +120,7 @@ public class NodJobTest {
     _srcNode = cb.build();
     _dstNode = cb.build();
     _srcVrf = vb.setOwner(_srcNode).build();
-    _ingressPoint = IngressPoint.ingressVrf(_srcNode.getHostname(), _srcVrf.getName());
+    _ingressLocation = IngressLocation.vrf(_srcNode.getHostname(), _srcVrf.getName());
     Vrf dstVrf = vb.setOwner(_dstNode).build();
     Prefix p1 = Prefix.parse("1.0.0.0/31");
     Ip poolIp1 = new Ip("1.0.0.10");
@@ -193,23 +202,23 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<IngressPoint, Map<String, Long>> fieldConstraintsByIngressPoint =
-        nodJob.getIngressPointConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(1));
-    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressPoint));
-    Map<String, Long> fieldConstraints = fieldConstraintsByIngressPoint.get(_ingressPoint);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
+    assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
+    assertThat(ingressLocationConstraints, hasKey(_ingressLocation));
+    Map<String, Long> fieldConstraints = ingressLocationConstraints.get(_ingressLocation);
 
     // Only one OriginateVrf choice, so this must be 0
     assertThat(
         fieldConstraints,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
     assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
     assertThat(
         fieldConstraints,
         hasEntry(equalTo(Field.SRC_IP.getName()), not(equalTo(new Ip("3.0.0.0").asLong()))));
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
 
-    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByIngressPoint);
+    Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     _dataPlanePlugin.processFlows(flows, _dataPlane, false);
     List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
@@ -232,7 +241,7 @@ public class NodJobTest {
   public void testNattedSat() {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
-    NodJob nodJob = getNodJob(headerSpace, true);
+    NodJob nodJob = getNodJob(headerSpace, REQUIRE_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.SATISFIABLE));
   }
 
@@ -244,7 +253,7 @@ public class NodJobTest {
   public void testNattedUnsat() {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(ImmutableList.of(new IpWildcard("3.0.0.0")));
-    NodJob nodJob = getNodJob(headerSpace, false);
+    NodJob nodJob = getNodJob(headerSpace, REQUIRE_NOT_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }
 
@@ -258,22 +267,22 @@ public class NodJobTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<IngressPoint, Map<String, Long>> fieldConstraintsByOriginateVrf =
-        nodJob.getIngressPointConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(1));
-    assertThat(fieldConstraintsByOriginateVrf, hasKey(_ingressPoint));
-    Map<String, Long> fieldConstraints = fieldConstraintsByOriginateVrf.get(_ingressPoint);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
+    assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
+    assertThat(ingressLocationConstraints, hasKey(_ingressLocation));
+    Map<String, Long> fieldConstraints = ingressLocationConstraints.get(_ingressLocation);
 
     assertThat(
         fieldConstraints,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
     assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
 
-    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByOriginateVrf);
+    Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     _dataPlanePlugin.processFlows(flows, _dataPlane, false);
     List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
@@ -295,7 +304,7 @@ public class NodJobTest {
   public void testNotNattedSat() {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(new Ip("3.0.0.1").toIpSpace());
-    NodJob nodJob = getNodJob(headerSpace, false);
+    NodJob nodJob = getNodJob(headerSpace, REQUIRE_NOT_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.SATISFIABLE));
   }
 
@@ -307,7 +316,7 @@ public class NodJobTest {
   public void testNotNattedUnsat() {
     HeaderSpace headerSpace = new HeaderSpace();
     headerSpace.setSrcIps(new Ip("3.0.0.1").toIpSpace());
-    NodJob nodJob = getNodJob(headerSpace, true);
+    NodJob nodJob = getNodJob(headerSpace, REQUIRE_SRC_NATTED);
     assertThat(checkSat(nodJob), equalTo(Status.UNSATISFIABLE));
   }
 }

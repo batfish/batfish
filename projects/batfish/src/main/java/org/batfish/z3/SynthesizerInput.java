@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.collect.Multimap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -8,6 +9,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
+import org.batfish.specifier.Location;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.IntExpr;
 import org.batfish.z3.state.AclPermit;
@@ -58,6 +60,9 @@ public interface SynthesizerInput {
 
   /** Mapping: hostname -> interface-> incomingAcl */
   Map<String, Map<String, String>> getIncomingAcls();
+
+  /** Ingress locations grouped by the required constraint on src IP */
+  Multimap<BooleanExpr, Location> getIngressLocationsBySrcIpConstraint();
 
   /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();

@@ -105,6 +105,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
@@ -142,7 +143,6 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -170,6 +170,13 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.InterfaceLinkLocation;
+import org.batfish.specifier.InterfaceLocation;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.LocationVisitor;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierContextImpl;
+import org.batfish.specifier.VrfLocation;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -180,7 +187,7 @@ import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
-import org.batfish.z3.IngressPoint;
+import org.batfish.z3.IngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodFirstUnsatJob;
 import org.batfish.z3.NodJob;
@@ -191,6 +198,7 @@ import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.StandardReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
+import org.batfish.z3.expr.BooleanExpr;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -3013,8 +3021,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
-      SortedSet<IngressPoint> ingressPoints =
-          ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
+      SortedSet<IngressLocation> ingressPoints =
+          ImmutableSortedSet.of(IngressLocation.vrf(ingressNode, vrf));
       CompositeNodJob job =
           new CompositeNodJob(settings, commonEdgeSynthesizers, queries, ingressPoints, tag);
       jobs.add(job);
@@ -3042,8 +3050,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new ReachEdgeQuerySynthesizer(
                 ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
-        SortedSet<IngressPoint> ingressPoints =
-            ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
+        SortedSet<IngressLocation> ingressPoints =
+            ImmutableSortedSet.of(IngressLocation.vrf(ingressNode, vrf));
         CompositeNodJob job =
             new CompositeNodJob(settings, missingEdgeSynthesizers, queries, ingressPoints, tag);
         jobs.add(job);
@@ -3462,8 +3470,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
                         .stream()
                         .map(
                             vrf -> {
-                              Multimap<String, String> ingressNodeVrfs =
-                                  ImmutableMultimap.of(node, vrf);
                               StandardReachabilityQuerySynthesizer acceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
                                       .setActions(
@@ -3472,11 +3478,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                               ForwardingAction
                                                   .NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
                                       .setHeaderSpace(reachabilitySettings.getHeaderSpace())
-                                      .setIngressNodeVrfs(ingressNodeVrfs)
+                                      .setIngressLocations(
+                                          ImmutableList.of(IngressLocation.vrf(node, vrf)))
                                       .setFinalNodes(ImmutableSet.of())
-                                      .setTransitNodes(ImmutableSet.of())
-                                      .setNonTransitNodes(ImmutableSet.of())
-                                      .setSrcNatted(reachabilitySettings.getSrcNatted())
+                                      .setRequiredTransitNodes(ImmutableSet.of())
+                                      .setForbiddenTransitNodes(ImmutableSet.of())
+                                      .setSrcNatted(
+                                          SrcNattedConstraint.fromBoolean(
+                                              reachabilitySettings.getSrcNatted()))
                                       .build();
                               StandardReachabilityQuerySynthesizer notAcceptQuery =
                                   StandardReachabilityQuerySynthesizer.builder()
@@ -3486,14 +3495,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
                                               ForwardingAction
                                                   .NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
                                       .setHeaderSpace(new HeaderSpace())
-                                      .setIngressNodeVrfs(ingressNodeVrfs)
+                                      // TODO update
+                                      // .setIngressNodeVrfs(ingressNodeVrfs)
                                       .setFinalNodes(ImmutableSet.of())
-                                      .setTransitNodes(ImmutableSet.of())
-                                      .setNonTransitNodes(ImmutableSet.of())
+                                      .setRequiredTransitNodes(ImmutableSet.of())
+                                      .setForbiddenTransitNodes(ImmutableSet.of())
                                       .build();
                               notAcceptQuery.setNegate(true);
-                              SortedSet<IngressPoint> ingressPoints =
-                                  ImmutableSortedSet.of(IngressPoint.ingressVrf(node, vrf));
+                              SortedSet<IngressLocation> ingressPoints =
+                                  ImmutableSortedSet.of(IngressLocation.vrf(node, vrf));
                               List<QuerySynthesizer> queries =
                                   ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
                               return new CompositeNodJob(
@@ -3561,6 +3571,83 @@ public class Batfish extends PluginConsumer implements IBatfish {
     } else {
       computeDataPlane(false);
     }
+  }
+
+  /** Resolve reachability parameters. TODO factor this out into a separate testable class. */
+  private ResolvedReachabilityParameters resolveReachabilityParameters(
+      ReachabilityParameters params) {
+
+    Snapshot snapshot = getSnapshot();
+    boolean useCompression = params.getUseCompression();
+
+    /*
+     * TODO specialized compression is currently broken.
+     * With the new Location and IpSpaceSpecifiers system, we no longer have a single destination
+     * IpSpace to specialize to.
+     *
+     * What we should do instead is: resolve the destination IpSpaces using the uncompressed
+     * dataplane. Then for each destination IpSpace (which is a separate query anyway), compress
+     * the network to that IpSpace and proceed.
+     *
+     * So with specialized compression, we may have multiple dataplanes, which means multiple
+     * forwarding analyses and synthesizer input will need to be computed. Each of these is
+     * relatively expensive and should be only be done once when specialized compression is
+     * disabled.
+     *
+     * ResolvedReachabilityParameters already has the mapping IpSpace -> Set<Ingress Location>.
+     * We could add a field of type: List<Configs, DataPlane, Set<IpSpace>>
+     * - Without specialized compression, we'll have just one entry.
+     * - With specialized compression, we'll have multiple entries with only singleton IpSpace sets.
+     *
+     * Alternatively, consider doing data plane compression for specialized compression. That would
+     * reduce the overhead of computing multiple dataplanes, forwarding analyses, etc.
+     */
+
+    boolean useSpecializedCompression = false;
+
+    CompressDataPlaneResult compressionResult =
+        useCompression && useSpecializedCompression
+            ? computeCompressedDataPlane(params.getHeaderSpace())
+            : null;
+
+    Map<String, Configuration> configurations =
+        useCompression && useSpecializedCompression
+            ? compressionResult._compressedConfigs
+            : useCompression
+                ? loadCompressedConfigurations(snapshot)
+                : loadConfigurations(snapshot);
+
+    if (configurations == null) {
+      throw new BatfishException("error loading configurations");
+    }
+
+    DataPlane dataPlane =
+        useCompression && useSpecializedCompression
+            ? compressionResult._compressedDataPlane
+            : loadDataPlane(useCompression);
+
+    if (dataPlane == null) {
+      throw new BatfishException("error loading data plane");
+    }
+
+    SpecifierContext context = new SpecifierContextImpl(this, configurations);
+    return ResolvedReachabilityParameters.builder()
+        .setActions(params.getActions())
+        .setConfigurations(configurations)
+        .setDataPlane(dataPlane)
+        .setFinalNodes(params.getFinalNodesSpecifier().resolve(context))
+        .setForbiddenTransitNodes(params.getForbiddenTransitNodesSpecifier().resolve(context))
+        .setHeaderSpace(params.getHeaderSpace())
+        .setMaxChunkSize(params.getMaxChunkSize())
+        .setSourceLocationsByIpSpace(
+            params
+                .getSourceIpSpaceSpecifier()
+                .resolve(params.getSourceLocationSpecifier().resolve(context), context))
+        .setSrcNatted(params.getSrcNatted())
+        .setSpecialize(params.getSpecialize())
+        .setRequiredTransitNodes(params.getRequiredTransitNodesSpecifier().resolve(context))
+        .setUseCompression(params.getUseCompression())
+        .build();
   }
 
   /**
@@ -4116,147 +4203,123 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
+
+    ResolvedReachabilityParameters parameters =
+        resolveReachabilityParameters(
+            ReachabilitySettingsToReachabilityParameters.convert(reachabilitySettings));
+
     Set<ForwardingAction> actions = reachabilitySettings.getActions();
-    Snapshot snapshot = getSnapshot();
-    boolean useCompression = reachabilitySettings.getUseCompression();
 
-    boolean useSpecializedCompression = false;
-
-    CompressDataPlaneResult compressionResult =
-        useCompression && useSpecializedCompression
-            ? computeCompressedDataPlane(reachabilitySettings.getHeaderSpace())
-            : null;
-
-    Map<String, Configuration> configurations =
-        useCompression && useSpecializedCompression
-            ? compressionResult._compressedConfigs
-            : useCompression
-                ? loadCompressedConfigurations(snapshot)
-                : loadConfigurations(snapshot);
-
-    DataPlane dataPlane =
-        useCompression && useSpecializedCompression
-            ? compressionResult._compressedDataPlane
-            : loadDataPlane(useCompression);
-
-    if (configurations == null) {
-      throw new BatfishException("error loading configurations");
-    }
-
-    if (dataPlane == null) {
-      throw new BatfishException("error loading data plane");
-    }
-
-    Set<String> activeIngressNodes;
-    Set<String> activeFinalNodes;
-    HeaderSpace headerSpace;
-    Set<String> transitNodes;
-    Set<String> nonTransitNodes;
-    int maxChunkSize;
-
-    try {
-      activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
-      activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(this);
-      headerSpace = reachabilitySettings.getHeaderSpace();
-      transitNodes = reachabilitySettings.computeActiveTransitNodes(this);
-      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(this);
-      maxChunkSize = reachabilitySettings.getMaxChunkSize();
-      reachabilitySettings.validateTransitNodes(this);
-    } catch (InvalidReachabilitySettingsException e) {
-      return e.getInvalidSettingsAnswer();
-    }
-
-    List<IngressPoint> ingressPoints = new ArrayList<>();
-    if (reachabilitySettings.getIngressInterfaces() != InterfacesSpecifier.NONE) {
-      // originate from specified interfaces
-      activeIngressNodes
-          .stream()
-          .flatMap(
-              ingressNode ->
-                  configurations
-                      .get(ingressNode)
-                      .getInterfaces()
-                      .values()
-                      .stream()
-                      .filter(reachabilitySettings.getIngressInterfaces()::matches)
-                      .map(iface -> IngressPoint.ingressInterface(ingressNode, iface.getName())))
-          .forEach(ingressPoints::add);
-    } else {
-      // originate from VRFs
-      activeIngressNodes
-          .stream()
-          .flatMap(
-              ingressNode ->
-                  configurations
-                      .get(ingressNode)
-                      .getVrfs()
-                      .keySet()
-                      .stream()
-                      .map(ingressVrf -> IngressPoint.ingressVrf(ingressNode, ingressVrf)))
-          .forEach(ingressPoints::add);
-    }
-
-    int chunkSize =
-        Math.max(1, Math.min(maxChunkSize, ingressPoints.size() / _settings.getAvailableThreads()));
-
-    // partition originateNodeVrfs into chunks
-    List<List<IngressPoint>> ingressPointChunks = Lists.partition(ingressPoints, chunkSize);
-
+    Map<String, Configuration> configurations = parameters.getConfigurations();
+    DataPlane dataPlane = parameters.getDataPlane();
+    Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
+    HeaderSpace headerSpace = parameters.getHeaderSpace();
+    Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
     Synthesizer dataPlaneSynthesizer =
         synthesizeDataPlane(
             configurations,
             dataPlane,
             loadForwardingAnalysis(configurations, dataPlane),
             headerSpace,
-            nonTransitNodes,
-            reachabilitySettings.getSpecialize(),
-            transitNodes);
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            parameters.getSourceLocationsByIpSpace(),
+            reachabilitySettings.getSpecialize());
+
+    /*
+     * get ingress locations, and convert Locations to IngressLocation reachability
+     * analysis and traceroute.
+     */
+
+    Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
+        CommonUtil.toImmutableMultimap(
+            dataPlaneSynthesizer.getInput().getIngressLocationsBySrcIpConstraint(),
+            locations ->
+                locations
+                    .stream()
+                    .map(
+                        new LocationVisitor<IngressLocation>() {
+
+                              @Override
+                              public IngressLocation visitInterfaceLinkLocation(
+                                  InterfaceLinkLocation interfaceLinkLocation) {
+                                return IngressLocation.interfaceLink(
+                                    interfaceLinkLocation.getNodeName(),
+                                    interfaceLinkLocation.getInterfaceName());
+                              }
+
+                              @Override
+                              public IngressLocation visitInterfaceLocation(
+                                  InterfaceLocation interfaceLocation) {
+                                String node = interfaceLocation.getNodeName();
+                                String iface = interfaceLocation.getInterfaceName();
+                                return IngressLocation.vrf(
+                                    node,
+                                    configurations
+                                        .get(node)
+                                        .getInterfaces()
+                                        .get(iface)
+                                        .getVrfName());
+                              }
+
+                              @Override
+                              public IngressLocation visitVrfLocation(VrfLocation vrfLocation) {
+                                return IngressLocation.vrf(
+                                    vrfLocation.getHostname(), vrfLocation.getVrf());
+                              }
+                            }
+                            ::visit)
+                    .collect(ImmutableSet.toImmutableSet()));
+
+    // chunk ingress locations
+    int chunkSize =
+        Math.max(
+            1,
+            Math.min(
+                parameters.getMaxChunkSize(),
+                parameters.getSourceLocationsByIpSpace().size() / _settings.getAvailableThreads()));
+
+    // partition ingress locations into chunks.
+    List<Entry<BooleanExpr, IngressLocation>> ingressLocations =
+        ingressLocationsBySrcIpConstraint
+            .entries()
+            .stream()
+            .collect(ImmutableList.toImmutableList());
+
+    List<List<Entry<BooleanExpr, IngressLocation>>> partitionedIngressLocations =
+        Lists.partition(ingressLocations, chunkSize);
+
+    List<Multimap<BooleanExpr, IngressLocation>> chunkedIngressLocationsBySrcIpSpace =
+        partitionedIngressLocations
+            .stream()
+            .map(ImmutableMultimap::copyOf)
+            .collect(Collectors.toList());
 
     // build query jobs
     List<NodJob> jobs =
-        ingressPointChunks
+        chunkedIngressLocationsBySrcIpSpace
             .stream()
-            .map(ImmutableSortedSet::copyOf)
             .map(
-                chunkIngressPoints -> {
-                  ImmutableMultimap.Builder<String, String> ingressNodeInterfacesBuilder =
-                      ImmutableMultimap.builder();
-                  ImmutableMultimap.Builder<String, String> ingressNodeVrfsBuilder =
-                      ImmutableMultimap.builder();
-                  chunkIngressPoints.forEach(
-                      ingressPoint -> {
-                        if (ingressPoint.isIngressInterface()) {
-                          ingressNodeInterfacesBuilder.put(
-                              ingressPoint.getNode(), ingressPoint.getInterface());
-                        } else if (ingressPoint.isIngressVrf()) {
-                          ingressNodeVrfsBuilder.put(ingressPoint.getNode(), ingressPoint.getVrf());
-                        } else {
-                          throw new BatfishException("Unexpected IngressPoint type");
-                        }
-                      });
-                  Multimap<String, String> ingressNodeInterfaces =
-                      ingressNodeInterfacesBuilder.build();
-                  Multimap<String, String> ingressNodeVrfs = ingressNodeVrfsBuilder.build();
-
+                chunkIngressLocationsBySrcIpConstraint -> {
                   ReachabilityQuerySynthesizer query =
                       builder
                           .setActions(actions)
+                          .setFinalNodes(parameters.getFinalNodes())
                           .setHeaderSpace(headerSpace)
-                          .setFinalNodes(activeFinalNodes)
-                          .setIngressNodeInterfaces(ingressNodeInterfaces)
-                          .setIngressNodeVrfs(ingressNodeVrfs)
-                          .setTransitNodes(transitNodes)
-                          .setNonTransitNodes(nonTransitNodes)
-                          .setSrcNatted(reachabilitySettings.getSrcNatted())
+                          .setIngressLocations(
+                              ImmutableList.copyOf(chunkIngressLocationsBySrcIpConstraint.values()))
+                          .setRequiredTransitNodes(requiredTransitNodes)
+                          .setForbiddenTransitNodes(forbiddenTransitNodes)
+                          .setSrcNatted(parameters.getSrcNatted())
                           .build();
 
                   return new NodJob(
                       settings,
                       dataPlaneSynthesizer,
                       query,
-                      chunkIngressPoints,
+                      chunkIngressLocationsBySrcIpConstraint,
                       tag,
-                      reachabilitySettings.getSpecialize());
+                      parameters.getSpecialize());
                 })
             .collect(Collectors.toList());
 
@@ -4379,8 +4442,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         forwardingAnalysis,
         new HeaderSpace(),
         ImmutableSet.of(),
-        false,
-        ImmutableSet.of());
+        ImmutableSet.of(),
+        ImmutableMultimap.of(),
+        false);
   }
 
   @Nonnull
@@ -4390,8 +4454,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       Set<String> nonTransitNodes,
-      boolean specialize,
-      Set<String> transitNodes) {
+      Set<String> transitNodes,
+      Multimap<IpSpace, Location> ingressLocationsBySrcIpSpace,
+      boolean specialize) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4404,10 +4469,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 dataPlane,
                 forwardingAnalysis,
                 headerSpace,
+                ingressLocationsBySrcIpSpace,
+                transitNodes,
                 nonTransitNodes,
                 _settings.getSimplify(),
-                specialize,
-                transitNodes));
+                specialize));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4427,15 +4493,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
+      Multimap<IpSpace, Location> ingressLocationsBySrcIpSpace,
+      Set<String> transitNodes,
       Set<String> nonTransitNodes,
       boolean simplify,
-      boolean specialize,
-      Set<String> transitNodes) {
+      boolean specialize) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
         .setForwardingAnalysis(forwardingAnalysis)
         .setHeaderSpace(headerSpace)
+        .setIngressLocationsBySrcIpSpace(ingressLocationsBySrcIpSpace)
         .setNonTransitNodes(nonTransitNodes)
         .setSimplify(simplify)
         .setSpecialize(specialize)

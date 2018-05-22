@@ -3,13 +3,13 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.main.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.BooleanExpr;
@@ -62,11 +62,10 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           _actions,
           _headerSpace,
           _finalNodes,
-          _ingressNodeInterfaces,
-          _ingressNodeVrfs,
+          _ingressLocations,
           _srcNatted,
-          _transitNodes,
-          _nonTransitNodes);
+          _requiredTransitNodes,
+          _forbiddenTransitNodes);
     }
 
     @Override
@@ -99,18 +98,11 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       @Nonnull Set<ForwardingAction> actions,
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Set<String> finalNodes,
-      @Nonnull Multimap<String, String> ingressNodeInterfaces,
-      @Nonnull Multimap<String, String> ingressNodeVrfs,
-      Boolean srcNatted,
+      @Nonnull ImmutableList<IngressLocation> ingressLocations,
+      @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(
-        headerSpace,
-        ingressNodeInterfaces,
-        ingressNodeVrfs,
-        srcNatted,
-        transitNodes,
-        nonTransitNodes);
+    super(headerSpace, ingressLocations, srcNatted, transitNodes, nonTransitNodes);
     _actions = actions;
     _finalNodes = finalNodes;
   }

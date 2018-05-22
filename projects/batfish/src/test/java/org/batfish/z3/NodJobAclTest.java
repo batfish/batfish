@@ -19,14 +19,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Status;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
@@ -54,6 +53,8 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
@@ -155,40 +156,45 @@ public class NodJobAclTest {
             .setSrcIps(ImmutableList.of(new IpWildcard("1.1.1.1/32")))
             .setDstIps(ImmutableList.of(new IpWildcard("3.0.0.1/32")))
             .build();
-
+    IngressLocation ingressLocation = IngressLocation.vrf(srcNode.getHostname(), srcVrf.getName());
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .setFinalNodes(ImmutableSet.of(dstNode.getHostname()))
             .setHeaderSpace(headerSpace)
-            .setIngressNodeVrfs(ImmutableMultimap.of(srcNode.getHostname(), srcVrf.getName()))
+            .setIngressLocations(ImmutableList.of(ingressLocation))
             .build();
-    SortedSet<IngressPoint> ingressPoints =
-        ImmutableSortedSet.of(IngressPoint.ingressVrf(srcNode.getHostname(), srcVrf.getName()));
+    Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
+        ImmutableMultimap.of(TrueExpr.INSTANCE, ingressLocation);
     NodJob nodJob =
-        new NodJob(new Settings(), synthesizer, querySynthesizer, ingressPoints, "tag", false);
+        new NodJob(
+            new Settings(),
+            synthesizer,
+            querySynthesizer,
+            ingressLocationsBySrcIpConstraint,
+            "tag",
+            false);
 
     /* Run query */
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<IngressPoint, Map<String, Long>> fieldConstraintsByIngressPoint =
-        nodJob.getIngressPointConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(1));
-    IngressPoint ingressPoint = IngressPoint.ingressVrf(srcNode.getHostname(), srcVrf.getName());
-    assertThat(fieldConstraintsByIngressPoint, hasKey(ingressPoint));
-    Map<String, Long> fieldConstraints = fieldConstraintsByIngressPoint.get(ingressPoint);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
+    assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
+    assertThat(ingressLocationConstraints, hasKey(ingressLocation));
+    Map<String, Long> fieldConstraints = ingressLocationConstraints.get(ingressLocation);
 
     assertThat(
         fieldConstraints,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
     assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
 
-    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByIngressPoint);
+    Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
     dpPlugin.processFlows(flows, dataPlane, false);
     List<FlowTrace> flowTraces = dpPlugin.getHistoryFlowTraces(dataPlane);
@@ -211,7 +217,9 @@ public class NodJobAclTest {
                 allOf(hasDisposition(DENIED_OUT), hasHop(0, hasEdge(hasInt2(iface2)))))));
   }
 
-  /** Test MatchSrcInterface AclLineMatchExpr with a one-node network, using OriginateInterface. */
+  /**
+   * Test MatchSrcInterface AclLineMatchExpr with a one-node network, using OriginateInterfaceLink.
+   */
   @Test
   public void testMatchSrcInterface_OriginateInterface() throws IOException {
     NetworkFactory nf = new NetworkFactory();
@@ -296,39 +304,50 @@ public class NodJobAclTest {
             .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .setFinalNodes(ImmutableSet.of(node.getHostname()))
             .setHeaderSpace(headerSpace)
-            .setIngressNodeInterfaces(
-                ImmutableMultimap.of(
-                    node.getHostname(), iface1,
-                    node.getHostname(), iface2))
+            .setIngressLocations(
+                ImmutableList.of(
+                    IngressLocation.interfaceLink(node.getName(), iface1),
+                    IngressLocation.interfaceLink(node.getName(), iface2)))
             .build();
-    SortedSet<IngressPoint> ingressPoints =
-        ImmutableSortedSet.of(
-            IngressPoint.ingressInterface(node.getHostname(), iface1),
-            IngressPoint.ingressInterface(node.getHostname(), iface2));
+
+    ImmutableMultimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
+        ImmutableMultimap.<BooleanExpr, IngressLocation>builder()
+            .putAll(
+                TrueExpr.INSTANCE,
+                ImmutableList.of(
+                    IngressLocation.interfaceLink(node.getName(), iface1),
+                    IngressLocation.interfaceLink(node.getName(), iface2)))
+            .build();
     NodJob nodJob =
-        new NodJob(new Settings(), synthesizer, querySynthesizer, ingressPoints, "tag", true);
+        new NodJob(
+            new Settings(),
+            synthesizer,
+            querySynthesizer,
+            ingressLocationsBySrcIpConstraint,
+            "tag",
+            true);
 
     /* Run query */
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<IngressPoint, Map<String, Long>> fieldConstraintsByIngressPoint =
-        nodJob.getIngressPointConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(1));
-    IngressPoint ingressPoint = IngressPoint.ingressInterface(node.getHostname(), iface1);
-    assertThat(fieldConstraintsByIngressPoint, hasKey(ingressPoint));
-    Map<String, Long> fieldConstraints = fieldConstraintsByIngressPoint.get(ingressPoint);
+    Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
+    assertThat(ingressLocationConstraints.entrySet(), hasSize(1));
+    IngressLocation ingressLocation = IngressLocation.interfaceLink(node.getHostname(), iface1);
+    assertThat(ingressLocationConstraints, hasKey(ingressLocation));
+    Map<String, Long> fieldConstraints = ingressLocationConstraints.get(ingressLocation);
 
     assertThat(
         fieldConstraints,
-        hasEntry(IngressPointInstrumentation.INGRESS_POINT_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
     assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.1.1.1").asLong()));
 
-    Set<Flow> flows = nodJob.getFlows(fieldConstraintsByIngressPoint);
+    Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
     dpPlugin.processFlows(flows, dataPlane, false);
     List<FlowTrace> flowTraces = dpPlugin.getHistoryFlowTraces(dataPlane);
@@ -354,7 +373,7 @@ public class NodJobAclTest {
     testPermittedByAcl_helper(LineAction.REJECT);
   }
 
-  private void testPermittedByAcl_helper(LineAction action) throws IOException {
+  private static void testPermittedByAcl_helper(LineAction action) throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -426,16 +445,24 @@ public class NodJobAclTest {
     Synthesizer synthesizer = new Synthesizer(input);
 
     /* Construct NodJob */
+    IngressLocation ingressLocation = IngressLocation.vrf(node.getHostname(), vrf.getName());
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
             .setHeaderSpace(headerSpace)
-            .setIngressNodeVrfs(ImmutableMultimap.of(node.getHostname(), vrf.getName()))
+            .setIngressLocations(ImmutableList.of(ingressLocation))
             .build();
-    SortedSet<IngressPoint> ingressPoints =
-        ImmutableSortedSet.of(IngressPoint.ingressVrf(node.getHostname(), vrf.getName()));
+    Multimap<BooleanExpr, IngressLocation> ingressLocationsBySrcIpConstraint =
+        ImmutableMultimap.of(TrueExpr.INSTANCE, ingressLocation);
+
     NodJob nodJob =
-        new NodJob(new Settings(), synthesizer, querySynthesizer, ingressPoints, "tag", true);
+        new NodJob(
+            new Settings(),
+            synthesizer,
+            querySynthesizer,
+            ingressLocationsBySrcIpConstraint,
+            "tag",
+            true);
 
     /* Run query */
     Status status = NodJobTest.checkSat(nodJob);
