@@ -31,8 +31,8 @@ public class TableAnswerElementTest {
   public void testComputeSummary() {
     // generate an answer with two rows
     TableAnswerElement answer = new TableAnswerElementChild(new TableMetadata());
-    answer.addRow(new Row());
-    answer.addRow(new Row());
+    answer.addRow(Row.builder().build());
+    answer.addRow(Row.builder().build());
 
     Assertion assertion = new Assertion(AssertionType.countequals, new IntNode(1)); // wrong count
     AnswerSummary summary = answer.computeSummary(assertion);
@@ -48,11 +48,11 @@ public class TableAnswerElementTest {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
     TableAnswerElement oneRow = new TableAnswerElementChild(new TableMetadata());
-    oneRow.addRow(new Row());
+    oneRow.addRow(Row.builder().build());
 
     TableAnswerElement twoRows = new TableAnswerElementChild(new TableMetadata());
-    twoRows.addRow(new Row());
-    twoRows.addRow(new Row());
+    twoRows.addRow(Row.builder().build());
+    twoRows.addRow(Row.builder().build());
 
     assertThat(oneRow.evaluateAssertion(twoCount), equalTo(false));
     assertThat(twoRows.evaluateAssertion(twoCount), equalTo(true));
@@ -69,13 +69,13 @@ public class TableAnswerElementTest {
 
     // adding rows in different order shouldn't matter
     TableAnswerElement otherRows = new TableAnswerElementChild(new TableMetadata());
-    otherRows.addRow(new Row().put("key2", "value2"));
-    otherRows.addRow(new Row().put("key1", "value1"));
+    otherRows.addRow(Row.builder().put("key2", "value2").build());
+    otherRows.addRow(Row.builder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(true));
 
     // adding another duplicate row should matter
-    otherRows.addRow(new Row().put("key1", "value1"));
+    otherRows.addRow(Row.builder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
   }

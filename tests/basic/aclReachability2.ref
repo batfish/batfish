@@ -1,0 +1,103 @@
+[
+  {
+    "class" : "org.batfish.datamodel.answers.AclLines2AnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "Nodes",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "nodes",
+          "schema" : "List<Node>"
+        },
+        {
+          "description" : "ACL name",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "acl",
+          "schema" : "String"
+        },
+        {
+          "description" : "ACL lines",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "lines",
+          "schema" : "List<String>"
+        },
+        {
+          "description" : "Blocked line number",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "blockedLineNum",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Blocking line numbers",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "blockingLineNums",
+          "schema" : "List<Integer>"
+        },
+        {
+          "description" : "Different action",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "differentAction",
+          "schema" : "Boolean"
+        },
+        {
+          "description" : "Message",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "message",
+          "schema" : "String"
+        }
+      ],
+      "displayHints" : {
+        "textDesc" : "${message}"
+      }
+    },
+    "rows" : [
+      {
+        "nodes" : [
+          "as2dept1"
+        ],
+        "acl" : "RESTRICT_HOST_TRAFFIC_IN",
+        "lines" : [
+          "permit ip 2.128.0.0 0.0.255.255 any",
+          "deny   ip any any",
+          "permit icmp any any"
+        ],
+        "blockedLineNum" : 2,
+        "blockingLineNums" : [
+          1
+        ],
+        "differentAction" : true,
+        "message" : "In node(s) 'as2dept1', ACL 'RESTRICT_HOST_TRAFFIC_IN' has an unreachable line '2: permit icmp any any'. Blocking line(s):\n  [index 1] deny   ip any any"
+      },
+      {
+        "nodes" : [
+          "as2dept1"
+        ],
+        "acl" : "RESTRICT_HOST_TRAFFIC_OUT",
+        "lines" : [
+          "permit ip any 2.128.0.0 0.0.255.255",
+          "deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255",
+          "deny   ip any any"
+        ],
+        "blockedLineNum" : 1,
+        "blockingLineNums" : [
+          0
+        ],
+        "differentAction" : true,
+        "message" : "In node(s) 'as2dept1', ACL 'RESTRICT_HOST_TRAFFIC_OUT' has an unreachable line '1: deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255'. Blocking line(s):\n  [index 0] permit ip any 2.128.0.0 0.0.255.255"
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 2 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 2
+    }
+  }
+]
