@@ -27,6 +27,7 @@ import com.google.common.graph.Network;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -470,6 +471,36 @@ public class VirtualRouterTest {
                 .toArray(new LocalRoute[] {})));
   }
 
+  /** Check that VRF static routes are put into appropriate RIBs upon initialization. */
+  @Test
+  public void testInitStaticRibs() {
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+
+    List<StaticRoute> routes =
+        ImmutableList.of(
+            new StaticRoute(Prefix.parse("1.1.1.1/32"), null, "Ethernet1", 1, 1),
+            new StaticRoute(Prefix.parse("2.2.2.2/32"), new Ip("9.9.9.8"), null, 1, 1),
+            new StaticRoute(Prefix.parse("3.3.3.3/32"), new Ip("9.9.9.9"), "Ethernet1", 1, 1),
+            new StaticRoute(Prefix.parse("4.4.4.4/32"), null, Interface.NULL_INTERFACE_NAME, 1, 1),
+
+            // These do not get activated due to missing/incorrect interface names
+            new StaticRoute(Prefix.parse("5.5.5.5/32"), null, "Eth1", 1, 1),
+            new StaticRoute(Prefix.parse("6.6.6.6/32"), null, null, 1, 1));
+    vr.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setStaticRoutes(ImmutableSortedSet.copyOf(routes));
+
+    // Test
+    vr.initStaticRibs();
+
+    assertThat(
+        vr._staticInterfaceRib.getRoutes(),
+        containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
+    assertThat(vr._staticNextHopRib.getRoutes(), containsInAnyOrder(routes.get(1)));
+  }
+
   @Test
   public void testInitRibsEmpty() {
     VirtualRouter vr = makeIosVirtualRouter(null);
@@ -479,7 +510,7 @@ public class VirtualRouterTest {
 
     // Simple RIBs
     assertThat(vr.getConnectedRib().getRoutes(), is(emptyIterableOf(ConnectedRoute.class)));
-    assertThat(vr._staticRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
+    assertThat(vr._staticNextHopRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._staticInterfaceRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._independentRib.getRoutes(), is(emptyIterableOf(AbstractRoute.class)));
 
@@ -671,9 +702,9 @@ public class VirtualRouterTest {
     vr._vrf.setStaticRoutes(routeSet);
 
     // Test
-    vr.initStaticRib();
+    vr.initStaticRibs();
 
-    assertThat(vr._staticRib.getRoutes(), equalTo(routeSet));
+    assertThat(vr._staticNextHopRib.getRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */
