@@ -92,14 +92,12 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCE
 import static org.batfish.representation.cisco.CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
-import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_CHANNEL_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
-import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REFERENCE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
@@ -1324,11 +1322,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Interface newInterface = _configuration.getInterfaces().get(name);
     if (newInterface == null) {
       newInterface = new Interface(name, _configuration);
-      int line = ctx.getStart().getLine();
-      _configuration.defineStructure(INTERFACE, name, line);
-      if (Interface.isSelfReferencingInterface(name)) {
-        _configuration.referenceStructure(INTERFACE, name, INTERFACE_SELF_REFERENCE, line);
-      }
       initInterface(newInterface, _configuration.getVendor());
       _configuration.getInterfaces().put(name, newInterface);
       initInterface(newInterface, ctx);
@@ -4504,9 +4497,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_channel_group(If_channel_groupContext ctx) {
     int num = toInteger(ctx.num);
-    int line = ctx.num.getLine();
     String name = computeAggregatedInterfaceName(num, _format);
-    _configuration.referenceStructure(INTERFACE, name, INTERFACE_CHANNEL_GROUP, line);
     _currentInterfaces.forEach(i -> i.setChannelGroup(name));
   }
 

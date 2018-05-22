@@ -149,11 +149,10 @@
             "        IP_ADDRESS:'2.0.0.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -182,11 +181,10 @@
             "        IP_ADDRESS:'2.1.0.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -587,11 +585,10 @@
             "        IP_ADDRESS:'2.0.1.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -620,11 +617,10 @@
             "        IP_ADDRESS:'2.1.1.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -1025,11 +1021,10 @@
             "        IP_ADDRESS:'1.0.0.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -1058,11 +1053,10 @@
             "        IP_ADDRESS:'1.0.1.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -1091,11 +1085,10 @@
             "        IP_ADDRESS:'2.0.0.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -1529,11 +1522,10 @@
             "        IP_ADDRESS:'1.0.0.3'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -1562,11 +1554,10 @@
             "        IP_ADDRESS:'1.0.1.3'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -1595,11 +1586,10 @@
             "        IP_ADDRESS:'2.0.1.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -2033,11 +2023,10 @@
             "        IP_ADDRESS:'1.0.0.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -2066,11 +2055,10 @@
             "        IP_ADDRESS:'1.0.0.2'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -2099,11 +2087,10 @@
             "        IP_ADDRESS:'3.0.0.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -2511,11 +2498,10 @@
             "        IP_ADDRESS:'1.0.1.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -2544,11 +2530,10 @@
             "        IP_ADDRESS:'1.0.1.2'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -2577,11 +2562,10 @@
             "        IP_ADDRESS:'3.0.1.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -2989,11 +2973,10 @@
             "        IP_ADDRESS:'1.1.0.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -3022,11 +3005,10 @@
             "        IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -3055,11 +3037,10 @@
             "        IP_ADDRESS:'2.1.0.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -3493,11 +3474,10 @@
             "        IP_ADDRESS:'1.1.0.3'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -3526,11 +3506,10 @@
             "        IP_ADDRESS:'1.1.1.3'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -3559,11 +3538,10 @@
             "        IP_ADDRESS:'2.1.1.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -3997,11 +3975,10 @@
             "        IP_ADDRESS:'1.1.0.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -4030,11 +4007,10 @@
             "        IP_ADDRESS:'1.1.0.2'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -4063,11 +4039,10 @@
             "        IP_ADDRESS:'3.1.0.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -4475,11 +4450,10 @@
             "        IP_ADDRESS:'1.1.1.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -4508,11 +4482,10 @@
             "        IP_ADDRESS:'1.1.1.2'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -4541,11 +4514,10 @@
             "        IP_ADDRESS:'3.1.1.0'  <== mode:DEFAULT_MODE",
             "        IP_ADDRESS:'255.255.255.254'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_eos",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        FORCED:'forced'  <== mode:DEFAULT_MODE",
-            "        (eos_bandwidth_specifier",
-            "          TEN_THOUSAND_FULL:'10000full'  <== mode:DEFAULT_MODE)",
+            "        VARIABLE:'forced'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'10000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_switchport",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -4838,26 +4810,6 @@
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
         "plane_0_spine_0" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                46
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4882,26 +4834,6 @@
           }
         },
         "plane_1_spine_0" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                46
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4926,32 +4858,6 @@
           }
         },
         "pod_0_leaf_0" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4976,32 +4882,6 @@
           }
         },
         "pod_0_leaf_1" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5026,32 +4906,6 @@
           }
         },
         "pod_0_tor_0" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5076,32 +4930,6 @@
           }
         },
         "pod_0_tor_1" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5126,32 +4954,6 @@
           }
         },
         "pod_1_leaf_0" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5176,32 +4978,6 @@
           }
         },
         "pod_1_leaf_1" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5226,32 +5002,6 @@
           }
         },
         "pod_1_tor_0" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5276,32 +5026,6 @@
           }
         },
         "pod_1_tor_1" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                30
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                37
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet3" : {
-              "definitionLines" : [
-                44
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [

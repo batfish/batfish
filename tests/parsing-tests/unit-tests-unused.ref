@@ -549,38 +549,6 @@
           ]
         }
       },
-      "unused:interface:Bundle-Ethernet101" : {
-        "description" : "Unused structure of type: 'interface' with name: 'Bundle-Ethernet101'",
-        "files" : {
-          "ios_xr_ospf" : [
-            17
-          ]
-        }
-      },
-      "unused:interface:Bundle-Ethernet103" : {
-        "description" : "Unused structure of type: 'interface' with name: 'Bundle-Ethernet103'",
-        "files" : {
-          "ios_xr_ospf" : [
-            23
-          ]
-        }
-      },
-      "unused:interface:Bundle-Ethernet201" : {
-        "description" : "Unused structure of type: 'interface' with name: 'Bundle-Ethernet201'",
-        "files" : {
-          "ios_xr_ospf" : [
-            27
-          ]
-        }
-      },
-      "unused:interface:Port-Channel1" : {
-        "description" : "Unused structure of type: 'interface' with name: 'Port-Channel1'",
-        "files" : {
-          "interface_name" : [
-            7
-          ]
-        }
-      },
       "unused:ipv4 prefix-list:A+C" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'A+C'",
         "files" : {
@@ -1301,7 +1269,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 131
+      "numResults" : 127
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1856,13 +1824,6 @@
           ]
         }
       },
-      "interface_name" : {
-        "interface" : {
-          "Port-Channel1" : [
-            7
-          ]
-        }
-      },
       "ios_xr_bgp_neighbor_group" : {
         "bgp group" : {
           "blabbety" : [
@@ -1884,19 +1845,6 @@
           ],
           "blibber" : [
             15
-          ]
-        }
-      },
-      "ios_xr_ospf" : {
-        "interface" : {
-          "Bundle-Ethernet101" : [
-            17
-          ],
-          "Bundle-Ethernet103" : [
-            23
-          ],
-          "Bundle-Ethernet201" : [
-            27
           ]
         }
       },

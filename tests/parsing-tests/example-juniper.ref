@@ -2466,7 +2466,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -2491,7 +2491,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -2917,7 +2917,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -2942,7 +2942,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -2967,7 +2967,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -3882,7 +3882,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -3907,7 +3907,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -3932,7 +3932,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -4858,7 +4858,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -4883,7 +4883,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -4915,7 +4915,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -4947,7 +4947,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -5454,7 +5454,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -5479,7 +5479,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -5504,7 +5504,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -5529,7 +5529,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -6015,7 +6015,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -6040,7 +6040,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -6072,7 +6072,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -6699,7 +6699,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -6724,7 +6724,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -6749,7 +6749,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -7388,7 +7388,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -7413,7 +7413,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -7438,7 +7438,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -8077,7 +8077,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -8104,7 +8104,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -8366,7 +8366,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -8391,7 +8391,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -9250,7 +9250,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -9275,7 +9275,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -10134,7 +10134,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -10159,7 +10159,7 @@
             "        DUPLEX:'duplex'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_auto",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        AUTO:'auto'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
@@ -10646,26 +10646,6 @@
               ],
               "numReferrers" : -1
             }
-          },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                51
-              ],
-              "numReferrers" : 1
-            }
           }
         },
         "as2border1" : {
@@ -10736,32 +10716,6 @@
                 122,
                 123,
                 124
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                55
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                61
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                66
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                52
               ],
               "numReferrers" : 1
             }
@@ -10892,32 +10846,6 @@
               "numReferrers" : 1
             }
           },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                55
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                61
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                66
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                52
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
               "definitionLines" : [
@@ -10992,38 +10920,6 @@
               ],
               "numReferrers" : 2
             }
-          },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                67
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet2/0" : {
-              "definitionLines" : [
-                73
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
           }
         },
         "as2core2" : {
@@ -11033,38 +10929,6 @@
                 85
               ],
               "numReferrers" : -1
-            }
-          },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                67
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet2/0" : {
-              "definitionLines" : [
-                72
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
             }
           }
         },
@@ -11118,32 +10982,6 @@
                 100
               ],
               "numReferrers" : 0
-            }
-          },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                51
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                56
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                61
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                48
-              ],
-              "numReferrers" : 1
             }
           },
           "route-map" : {
@@ -11206,32 +11044,6 @@
               "numReferrers" : 2
             }
           },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                67
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
-          },
           "route-map" : {
             "as2_to_dept" : {
               "definitionLines" : [
@@ -11292,32 +11104,6 @@
               "numReferrers" : 2
             }
           },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                67
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
-          },
           "route-map" : {
             "as2_to_dept" : {
               "definitionLines" : [
@@ -11338,28 +11124,7 @@
             }
           }
         },
-        "as2host1" : {
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "as2host1" : { },
         "as3border1" : {
           "bgp group" : {
             "as1" : {
@@ -11422,26 +11187,6 @@
                 121
               ],
               "numReferrers" : 3
-            }
-          },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                55
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                60
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                52
-              ],
-              "numReferrers" : 1
             }
           },
           "ipv4 prefix-list" : {
@@ -11562,26 +11307,6 @@
               "numReferrers" : 3
             }
           },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                55
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                60
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                52
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
               "definitionLines" : [
@@ -11643,38 +11368,6 @@
                 81
               ],
               "numReferrers" : -1
-            }
-          },
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                58
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                63
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/0" : {
-              "definitionLines" : [
-                68
-              ],
-              "numReferrers" : 1
-            },
-            "FastEthernet1/1" : {
-              "definitionLines" : [
-                71
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                55
-              ],
-              "numReferrers" : 1
             }
           }
         }

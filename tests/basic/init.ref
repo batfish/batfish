@@ -121,32 +121,6 @@
               "numReferrers" : 2
             }
           },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                66
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                51
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "default_list" : {
               "definitionLines" : [
@@ -286,38 +260,6 @@
               "numReferrers" : 2
             }
           },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                69
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                73
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "as4-prefixes" : {
               "definitionLines" : [
@@ -403,32 +345,6 @@
               ],
               "numReferrers" : -1
             }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                69
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
           }
         },
         "as2border1" : {
@@ -502,38 +418,6 @@
                 135,
                 136,
                 137
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                64
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                73
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                77
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                56
               ],
               "numReferrers" : 1
             }
@@ -674,38 +558,6 @@
               "numReferrers" : 1
             }
           },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                56
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                61
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                70
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                74
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                53
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
               "definitionLines" : [
@@ -786,44 +638,6 @@
               ],
               "numReferrers" : 2
             }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                69
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                73
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet3/0" : {
-              "definitionLines" : [
-                78
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
           }
         },
         "as2core2" : {
@@ -833,44 +647,6 @@
                 91
               ],
               "numReferrers" : -1
-            }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                70
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                75
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet3/0" : {
-              "definitionLines" : [
-                80
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
             }
           }
         },
@@ -925,44 +701,6 @@
                 117
               ],
               "numReferrers" : 0
-            }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                66
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                70
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet3/0" : {
-              "definitionLines" : [
-                75
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                51
-              ],
-              "numReferrers" : 1
             }
           },
           "route-map" : {
@@ -1025,38 +763,6 @@
               "numReferrers" : 2
             }
           },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                66
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                70
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                51
-              ],
-              "numReferrers" : 1
-            }
-          },
           "route-map" : {
             "as2dist_to_dept" : {
               "definitionLines" : [
@@ -1115,38 +821,6 @@
                 120
               ],
               "numReferrers" : 2
-            }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                66
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                70
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                51
-              ],
-              "numReferrers" : 1
             }
           },
           "route-map" : {
@@ -1231,32 +905,6 @@
                 130
               ],
               "numReferrers" : 3
-            }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                69
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
             }
           },
           "ipv4 prefix-list" : {
@@ -1387,32 +1035,6 @@
               "numReferrers" : 3
             }
           },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                69
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
-            }
-          },
           "ipv4 prefix-list" : {
             "inbound_route_filter" : {
               "definitionLines" : [
@@ -1474,44 +1096,6 @@
                 87
               ],
               "numReferrers" : -1
-            }
-          },
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                57
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                62
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet1/0" : {
-              "definitionLines" : [
-                69
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet2/0" : {
-              "definitionLines" : [
-                73
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet3/0" : {
-              "definitionLines" : [
-                77
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                54
-              ],
-              "numReferrers" : 1
             }
           }
         },

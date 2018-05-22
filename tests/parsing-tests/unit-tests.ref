@@ -22213,9 +22213,9 @@
             "            COST:'cost'  <== mode:DEFAULT_MODE",
             "            DEC:'8'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "      (if_speed_ios_dot11radio",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
-            "        BASIC_6_0:'basic-6.0'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'basic-6.0'  <== mode:DEFAULT_MODE",
             "        FLOAT:'9.0'  <== mode:DEFAULT_MODE",
             "        FLOAT:'12.0'  <== mode:DEFAULT_MODE",
             "        FLOAT:'18.0'  <== mode:DEFAULT_MODE",
@@ -35195,7 +35195,7 @@
             "            (voice_service_voip_sip_null",
             "              EARLY_OFFER:'early-offer'  <== mode:DEFAULT_MODE",
             "              (null_rest_of_line",
-            "                FORCED:'forced'  <== mode:DEFAULT_MODE",
+            "                VARIABLE:'forced'  <== mode:DEFAULT_MODE",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "            (voice_service_voip_sip_null",
             "              ERROR_PASSTHRU:'error-passthru'  <== mode:DEFAULT_MODE",
@@ -46062,7 +46062,7 @@
             "        SOURCE:'source'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'et1'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_speed_ios",
+            "      (if_null_block",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        DEC:'100'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
@@ -46070,7 +46070,7 @@
             "        TRIMODE:'trimode'  <== mode:DEFAULT_MODE",
             "        SPEED:'speed'  <== mode:DEFAULT_MODE",
             "        FORCE:'force'  <== mode:DEFAULT_MODE",
-            "        ONE_THOUSAND_FULL:'1000full'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'1000full'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_interface",
@@ -52501,32 +52501,8 @@
             }
           }
         },
-        "arista_dhcp_relay" : {
-          "interface" : {
-            "Ethernet0" : {
-              "definitionLines" : [
-                9
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet1" : {
-              "definitionLines" : [
-                13
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
-        "arista_interface" : {
-          "interface" : {
-            "Vlan1" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "arista_dhcp_relay" : { },
+        "arista_interface" : { },
         "arista_ip_route" : { },
         "arista_logging" : { },
         "arista_misc" : {
@@ -52566,16 +52542,7 @@
           }
         },
         "aruba_dhcp" : { },
-        "aruba_interface" : {
-          "interface" : {
-            "GigabitEthernet0/0/0" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "aruba_interface" : { },
         "aruba_logging" : { },
         "aruba_misc" : { },
         "aruba_net" : { },
@@ -52621,16 +52588,7 @@
           }
         },
         "asa_banner" : { },
-        "asa_ospf" : {
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "asa_ospf" : { },
         "asa_ssh" : { },
         "banner" : { },
         "banner_dos" : { },
@@ -52797,100 +52755,7 @@
             }
           }
         },
-        "cadant_interface" : {
-          "interface" : {
-            "Ethernet6/0.0" : {
-              "definitionLines" : [
-                104
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet6/0.48" : {
-              "definitionLines" : [
-                124
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet6/1" : {
-              "definitionLines" : [
-                129
-              ],
-              "numReferrers" : 1
-            },
-            "cable-downstream1/2" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 1
-            },
-            "cable-downstream1/2/3" : {
-              "definitionLines" : [
-                8
-              ],
-              "numReferrers" : 1
-            },
-            "cable-downstream5/0/0" : {
-              "definitionLines" : [
-                15
-              ],
-              "numReferrers" : 1
-            },
-            "cable-mac1" : {
-              "definitionLines" : [
-                39
-              ],
-              "numReferrers" : 1
-            },
-            "cable-mac1.1" : {
-              "definitionLines" : [
-                59
-              ],
-              "numReferrers" : 1
-            },
-            "cable-mac1.2" : {
-              "definitionLines" : [
-                88
-              ],
-              "numReferrers" : 1
-            },
-            "cable-mac2" : {
-              "definitionLines" : [
-                40
-              ],
-              "numReferrers" : 1
-            },
-            "cable-mac3" : {
-              "definitionLines" : [
-                41
-              ],
-              "numReferrers" : 1
-            },
-            "cable-upstream1/0/0" : {
-              "definitionLines" : [
-                21
-              ],
-              "numReferrers" : 1
-            },
-            "cable-upstream1/0/0.0" : {
-              "definitionLines" : [
-                31
-              ],
-              "numReferrers" : 1
-            },
-            "cable-upstream1/0/10" : {
-              "definitionLines" : [
-                29
-              ],
-              "numReferrers" : 1
-            },
-            "mgmt6/0" : {
-              "definitionLines" : [
-                134
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "cadant_interface" : { },
         "cadant_ip_route" : { },
         "cadant_isis" : { },
         "cadant_line" : { },
@@ -53134,14 +52999,6 @@
               ],
               "numReferrers" : 0
             }
-          },
-          "interface" : {
-            "Cable1/2/3" : {
-              "definitionLines" : [
-                143
-              ],
-              "numReferrers" : 1
-            }
           }
         },
         "cisco_callhome" : { },
@@ -53251,167 +53108,15 @@
           }
         },
         "cisco_enable" : { },
-        "cisco_flow" : {
-          "interface" : {
-            "GigabitEthernet0/1" : {
-              "definitionLines" : [
-                52
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "cisco_flow" : { },
         "cisco_hardware" : { },
-        "cisco_hsrp" : {
-          "interface" : {
-            "TenGigabitEthernet0/0/2/2" : {
-              "definitionLines" : [
-                33
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "cisco_hsrp" : { },
         "cisco_interface" : {
           "extended ip access-list" : {
             "abc" : {
               "definitionLines" : [
                 4,
                 5
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "interface" : {
-            "Async1" : {
-              "definitionLines" : [
-                273
-              ],
-              "numReferrers" : 1
-            },
-            "Cable1/2/3:4" : {
-              "definitionLines" : [
-                275
-              ],
-              "numReferrers" : 1
-            },
-            "Crypto-Engine1/2/3" : {
-              "definitionLines" : [
-                277
-              ],
-              "numReferrers" : 1
-            },
-            "Dot11Radio0" : {
-              "definitionLines" : [
-                279
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet0" : {
-              "definitionLines" : [
-                7
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet1/11" : {
-              "definitionLines" : [
-                281
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet1/12" : {
-              "definitionLines" : [
-                318
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                283
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                289
-              ],
-              "numReferrers" : 1
-            },
-            "Modular-Cable1/2/3:4" : {
-              "definitionLines" : [
-                291
-              ],
-              "numReferrers" : 1
-            },
-            "Null0" : {
-              "definitionLines" : [
-                293
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan1" : {
-              "definitionLines" : [
-                302
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan1005" : {
-              "definitionLines" : [
-                308
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan1006" : {
-              "definitionLines" : [
-                310
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan111" : {
-              "definitionLines" : [
-                297
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan1234" : {
-              "definitionLines" : [
-                312
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan2" : {
-              "definitionLines" : [
-                304
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan3" : {
-              "definitionLines" : [
-                306
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan4094" : {
-              "definitionLines" : [
-                314
-              ],
-              "numReferrers" : 1
-            },
-            "Vxlan1" : {
-              "definitionLines" : [
-                299
-              ],
-              "numReferrers" : 1
-            },
-            "Wideband-Cable1/2/3:4" : {
-              "definitionLines" : [
-                316
-              ],
-              "numReferrers" : 1
-            },
-            "tunnel-ip6" : {
-              "definitionLines" : [
-                295
               ],
               "numReferrers" : 1
             }
@@ -53496,46 +53201,7 @@
             }
           }
         },
-        "cisco_isis" : {
-          "interface" : {
-            "GigabitEthernet0/0" : {
-              "definitionLines" : [
-                56
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/0/1" : {
-              "definitionLines" : [
-                10
-              ],
-              "numReferrers" : 1
-            },
-            "GigabitEthernet0/1" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            },
-            "HundredGigabitEthernet0/0/0/0.2302" : {
-              "definitionLines" : [
-                8
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                104
-              ],
-              "numReferrers" : 1
-            },
-            "Serial4/0" : {
-              "definitionLines" : [
-                6
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "cisco_isis" : { },
         "cisco_l2tp" : {
           "l2tp-class" : {
             "foobar" : {
@@ -53624,22 +53290,7 @@
             }
           }
         },
-        "cisco_ospf" : {
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                7
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "cisco_ospf" : { },
         "cisco_pim" : { },
         "cisco_platform" : { },
         "cisco_privilege" : { },
@@ -53791,16 +53442,7 @@
         "cisco_vpdn" : { },
         "cisco_vpn" : { },
         "cisco_vrf" : { },
-        "cisco_vrrp" : {
-          "interface" : {
-            "Ethernet0" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "cisco_vrrp" : { },
         "cisco_webvpn" : { },
         "cisco_wsma" : { },
         "colon_in_vrf" : { },
@@ -53921,90 +53563,15 @@
             }
           }
         },
-        "foundry_interface" : {
-          "interface" : {
-            "Ethernet1/15" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "foundry_interface" : { },
         "foundry_misc" : { },
         "foundry_vlan_group" : { },
         "host1" : { },
-        "host2" : {
-          "interface" : {
-            "Ethernet0" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet1" : {
-              "definitionLines" : [
-                7
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "host2" : { },
         "if_tag_is" : { },
-        "interface_exit" : {
-          "interface" : {
-            "Vlan303" : {
-              "definitionLines" : [
-                17
-              ],
-              "numReferrers" : 1
-            },
-            "Vlan803" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
-        "interface_name" : {
-          "interface" : {
-            "FastEthernet12/13" : {
-              "definitionLines" : [
-                3
-              ],
-              "numReferrers" : 1
-            },
-            "HundredGigabitEthernet0/6/0/8" : {
-              "definitionLines" : [
-                10
-              ],
-              "numReferrers" : 1
-            },
-            "Port-Channel1" : {
-              "definitionLines" : [
-                7
-              ],
-              "numReferrers" : 0
-            },
-            "Vlan100" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
-        "interface_sdr" : {
-          "interface" : {
-            "Loopback0" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "interface_exit" : { },
+        "interface_name" : { },
+        "interface_sdr" : { },
         "ios_bgp" : { },
         "ios_xr_acl" : { },
         "ios_xr_bgp" : { },
@@ -54080,76 +53647,10 @@
             }
           }
         },
-        "ios_xr_isis" : {
-          "interface" : {
-            "GigabitEthernet0/2/1/6" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "ios_xr_isis" : { },
         "ios_xr_multipart" : { },
         "ios_xr_ntp" : { },
-        "ios_xr_ospf" : {
-          "interface" : {
-            "Bundle-Ethernet101" : {
-              "definitionLines" : [
-                17
-              ],
-              "numReferrers" : 0
-            },
-            "Bundle-Ethernet103" : {
-              "definitionLines" : [
-                23
-              ],
-              "numReferrers" : 0
-            },
-            "Bundle-Ethernet201" : {
-              "definitionLines" : [
-                27
-              ],
-              "numReferrers" : 0
-            },
-            "HundredGigabitEthernet0/2/0/0.292" : {
-              "definitionLines" : [
-                41
-              ],
-              "numReferrers" : 1
-            },
-            "HundredGigabitEthernet0/2/0/3" : {
-              "definitionLines" : [
-                43
-              ],
-              "numReferrers" : 1
-            },
-            "Loopback0" : {
-              "definitionLines" : [
-                32
-              ],
-              "numReferrers" : 1
-            },
-            "TenGigabitEthernet0/0/0/2" : {
-              "definitionLines" : [
-                50
-              ],
-              "numReferrers" : 1
-            },
-            "TenGigabitEthernet0/0/0/4" : {
-              "definitionLines" : [
-                35
-              ],
-              "numReferrers" : 1
-            },
-            "TenGigabitEthernet0/0/0/5" : {
-              "definitionLines" : [
-                38
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "ios_xr_ospf" : { },
         "ios_xr_router_static" : { },
         "ios_xr_ssh" : { },
         "ios_xr_taskgroup" : { },
@@ -54363,34 +53864,7 @@
             }
           }
         },
-        "mos_interface" : {
-          "interface" : {
-            "Ethernet1" : {
-              "definitionLines" : [
-                6
-              ],
-              "numReferrers" : 1
-            },
-            "Ethernet2" : {
-              "definitionLines" : [
-                9
-              ],
-              "numReferrers" : 1
-            },
-            "Management1" : {
-              "definitionLines" : [
-                16
-              ],
-              "numReferrers" : 1
-            },
-            "ap1" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "mos_interface" : { },
         "mos_misc" : { },
         "msdp_originator_id" : { },
         "named_and_numbered_lists" : {
@@ -54525,22 +53999,7 @@
           }
         },
         "nxos_bgp" : { },
-        "nxos_interface" : {
-          "interface" : {
-            "Ethernet0/0" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 1
-            },
-            "nve1" : {
-              "definitionLines" : [
-                10
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "nxos_interface" : { },
         "nxos_misc" : { },
         "nxos_ospf" : { },
         "nxos_route_map_continue" : {
@@ -54680,16 +54139,7 @@
             }
           }
         },
-        "pim" : {
-          "interface" : {
-            "Loopback1" : {
-              "definitionLines" : [
-                25
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "pim" : { },
         "pim_snooping" : { },
         "preSet" : {
           "prefix-set" : {
@@ -54817,16 +54267,7 @@
         "router_msdp" : { },
         "set_inline_community" : { },
         "statistics" : { },
-        "switchport_range" : {
-          "interface" : {
-            "FastEthernet0/1" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "switchport_range" : { },
         "syslog_source_interface" : { },
         "taskgroup" : { },
         "tcpflags" : {
@@ -54856,26 +54297,8 @@
             }
           }
         },
-        "variables" : {
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
-        "variables_dos" : {
-          "interface" : {
-            "FastEthernet0/0" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 1
-            }
-          }
-        },
+        "variables" : { },
+        "variables_dos" : { },
         "vlan_access_map4" : { },
         "vrf_context" : { },
         "vxlan" : { }
@@ -55132,18 +54555,6 @@
           }
         },
         "cisco_interface" : {
-          "interface" : {
-            "Port-Channel1" : {
-              "interface channel-group" : [
-                24,
-                25,
-                26,
-                27,
-                28,
-                29
-              ]
-            }
-          },
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [

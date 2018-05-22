@@ -1459,22 +1459,12 @@ public class CiscoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations().get(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
 
     assertThat(c, hasInterface("Ethernet0", hasBandwidth(40E9D)));
     assertThat(c, hasInterface("Ethernet1", hasBandwidth(40E9D)));
     assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
     assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
     assertThat(c, hasInterface("Port-Channel2", isActive(false)));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.INTERFACE, "Port-Channel1", 2));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.INTERFACE, "Port-Channel2", 0));
-    assertThat(
-        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.INTERFACE, "Port-Channel1")));
-    assertThat(
-        ccae, not(hasUndefinedReference(hostname, CiscoStructureType.INTERFACE, "Port-Channel2")));
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.INTERFACE, "Port-Channel3"));
   }
 
   @Test

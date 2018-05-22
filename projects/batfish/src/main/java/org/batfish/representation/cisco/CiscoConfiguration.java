@@ -3615,11 +3615,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // TODO: fill in
 
     markConcreteStructure(
-        CiscoStructureType.INTERFACE,
-        CiscoStructureUsage.INTERFACE_CHANNEL_GROUP,
-        CiscoStructureUsage.INTERFACE_SELF_REFERENCE);
-
-    markConcreteStructure(
         CiscoStructureType.PREFIX_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
