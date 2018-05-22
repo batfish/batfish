@@ -1,6 +1,7 @@
 package org.batfish.datamodel.table;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -59,6 +60,24 @@ public class Row implements Comparable<Row> {
   }
 
   private final ObjectNode _data;
+
+  /**
+   * Returns a new {@link Row} with the given entries.
+   *
+   * <p>This function requires an even number of parameters, where the 0th and every even parameter
+   * is a {@link String} representing the name of a column.
+   */
+  public static Row of(Object... objects) {
+    checkArgument(
+        objects.length % 2 == 0, "expecting an even number of parameters, not %s", objects.length);
+    Row.RowBuilder builder = Row.builder();
+    for (int i = 0; i + 1 < objects.length; i += 2) {
+      checkArgument(
+          objects[i] instanceof String, "argument %s must be a string, but is: %s", i, objects[i]);
+      builder.put((String) objects[i], objects[i + 1]);
+    }
+    return builder.build();
+  }
 
   @JsonCreator
   public Row(ObjectNode data) {
