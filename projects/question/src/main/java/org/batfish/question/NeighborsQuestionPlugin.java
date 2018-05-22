@@ -1,7 +1,5 @@
 package org.batfish.question;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -9,7 +7,6 @@ import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.Network;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -446,13 +443,14 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       Set<String> includeNodes2 = question.getNode2Regex().getMatchingNodes(_batfish);
 
       if (question.getStyle() == EdgeStyle.ROLE) {
-        Optional<NodeRoleDimension> roleDimension =
-            _batfish.getNodeRoleDimension(question.getRoleDimension());
-        if (!roleDimension.isPresent()) {
-          throw new BatfishException(
-              "No role dimension found for " + firstNonNull(question.getRoleDimension(), "any"));
-        }
-        _nodeRolesMap = roleDimension.get().createNodeRolesMap(configurations.keySet());
+        NodeRoleDimension roleDimension =
+            _batfish
+                .getNodeRoleDimension(question.getRoleDimension())
+                .orElseThrow(
+                    () ->
+                        new BatfishException(
+                            "No role dimension found for " + question.getRoleDimension()));
+        _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
       }
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {

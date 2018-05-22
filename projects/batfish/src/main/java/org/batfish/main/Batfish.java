@@ -1941,8 +1941,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * Gets the {@link NodeRoleDimension} object give dimension name
    *
    * @param dimension The dimension name
-   * @return The {@link Optional<NodeRoleDimension>} object that has the requested NodeRoleDimension
-   *     or empty otherwise.
+   * @return An {@link Optional} that has the requested NodeRoleDimension or empty otherwise.
    */
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {

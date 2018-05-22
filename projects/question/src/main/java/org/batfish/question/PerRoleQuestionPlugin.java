@@ -1,14 +1,11 @@
 package org.batfish.question;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -84,15 +81,16 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
       // collect the desired nodes in a list
       Set<String> includeNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
-      Optional<NodeRoleDimension> roleDimension =
-          _batfish.getNodeRoleDimension(question.getRoleDimension());
-      if (!roleDimension.isPresent()) {
-        throw new BatfishException(
-            "No role dimension found for " + firstNonNull(question.getRoleDimension(), "any"));
-      }
+      NodeRoleDimension roleDimension =
+          _batfish
+              .getNodeRoleDimension(question.getRoleDimension())
+              .orElseThrow(
+                  () ->
+                      new BatfishException(
+                          "No role dimension found for " + question.getRoleDimension()));
 
       SortedMap<String, SortedSet<String>> roleNodeMap =
-          roleDimension.get().createRoleNodesMap(includeNodes);
+          roleDimension.createRoleNodesMap(includeNodes);
 
       List<String> desiredRoles = question.getRoles();
       if (desiredRoles != null) {
