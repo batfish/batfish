@@ -2245,7 +2245,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // mark structure usages to count them and identify undefined references
+    // Count and mark structure usages and identify undefined references
     markConcreteStructure(
         JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
         JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY);
