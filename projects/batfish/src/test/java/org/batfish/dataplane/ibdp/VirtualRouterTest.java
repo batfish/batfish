@@ -117,6 +117,44 @@ public class VirtualRouterTest {
   private RoutingPolicy.Builder _routingPolicyBuilder;
   private VirtualRouter _testVirtualRouter;
 
+  private static void addInterfaces(
+      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
+    NetworkFactory nf = new NetworkFactory();
+    Interface.Builder ib =
+        nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
+    interfaceAddresses.forEach(
+        (ifaceName, address) ->
+            ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
+  }
+
+  private static Map<String, Node> makeIosRouters(String... hostnames) {
+    return Arrays.stream(hostnames)
+        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
+  }
+
+  private static VirtualRouter makeIosVirtualRouter(String hostname) {
+    Node n = TestUtils.makeIosRouter(hostname);
+    return n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME);
+  }
+
+  /**
+   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
+   * {@link Vrf}
+   *
+   * @param nodeName Node name of the owner {@link Configuration}
+   * @return new instance of {@link VirtualRouter}
+   */
+  private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
+    Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf vrf = vb.setOwner(config).build();
+    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
+    VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
+    virtualRouter.initRibs();
+    virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
+    return virtualRouter;
+  }
+
   @Before
   public void setup() {
     NetworkFactory nf = new NetworkFactory();
@@ -144,26 +182,6 @@ public class VirtualRouterTest {
     _ipOwners = ImmutableMap.of(TEST_SRC_IP, ImmutableSet.of(TEST_VIRTUAL_ROUTER_NAME));
     _routingPolicyBuilder =
         nf.routingPolicyBuilder().setOwner(_testVirtualRouter.getConfiguration());
-  }
-
-  private static void addInterfaces(
-      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
-    NetworkFactory nf = new NetworkFactory();
-    Interface.Builder ib =
-        nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
-    interfaceAddresses.forEach(
-        (ifaceName, address) ->
-            ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
-  }
-
-  private static Map<String, Node> makeIosRouters(String... hostnames) {
-    return Arrays.stream(hostnames)
-        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
-  }
-
-  private static VirtualRouter makeIosVirtualRouter(String hostname) {
-    Node n = TestUtils.makeIosRouter(hostname);
-    return n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME);
   }
 
   @Test
@@ -351,24 +369,6 @@ public class VirtualRouterTest {
 
     // number of BGP advertisements should be zero given the reject all export policy
     assertThat(_testVirtualRouter.computeBgpAdvertisementsToOutside(_ipOwners), equalTo(0));
-  }
-
-  /**
-   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
-   * {@link Vrf}
-   *
-   * @param nodeName Node name of the owner {@link Configuration}
-   * @return new instance of {@link VirtualRouter}
-   */
-  private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
-    Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Vrf vrf = vb.setOwner(config).build();
-    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
-    VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
-    virtualRouter.initRibs();
-    virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
-    return virtualRouter;
   }
 
   @Test
