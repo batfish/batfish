@@ -22,6 +22,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.symbolic.bdd.BDDNetFactory.BDDPacket;
@@ -167,6 +168,11 @@ public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD
   @Override
   public BDD visitNotMatchExpr(NotMatchExpr notMatchExpr) {
     return notMatchExpr.getOperand().accept(this).not();
+  }
+
+  @Override
+  public BDD visitOriginatingFromDevice(OriginatingFromDevice originatingFromDevice) {
+    throw new BatfishException("OriginatingFromDevice is unsupported");
   }
 
   @Override

@@ -9,6 +9,14 @@ boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
 
+public boolean isPrefix() {
+   char nextChar = (char)this.getInputStream().LA(1);
+   if(Character.isDigit(nextChar) || nextChar == '.'){
+      return false;
+    }
+    return true;
+}
+
 @Override
 public String printStateVariables() {
    StringBuilder sb = new StringBuilder();
@@ -578,6 +586,11 @@ COMMIT
    'commit'
 ;
 
+COMMUNICATION_PROHIBITED_BY_FILTERING
+:
+   'communication-prohibited-by-filtering'
+;
+
 COMMUNITY
 :
    'community'
@@ -752,6 +765,11 @@ DESTINATION_ADDRESS_EXCLUDED
    'destination-address-excluded'
 ;
 
+DESTINATION_HOST_PROHIBITED
+:
+   'destination-host-prohibited'
+;
+
 DESTINATION_HOST_UNKNOWN
 :
    'destination-host-unknown'
@@ -760,6 +778,11 @@ DESTINATION_HOST_UNKNOWN
 DESTINATION_IP
 :
    'destination-ip'
+;
+
+DESTINATION_NETWORK_PROHIBITED
+:
+   'destination-network-prohibited'
 ;
 
 DESTINATION_NETWORK_UNKNOWN
@@ -1352,9 +1375,19 @@ HOST_NAME
    'host-name'
 ;
 
+HOST_PRECEDENCE_VIOLATION
+:
+   'host-precedence-violation'
+;
+
 HOST_UNREACHABLE
 :
    'host-unreachable'
+;
+
+HOST_UNREACHABLE_FOR_TOS
+:
+   'host-unreachable-for-tos'
 ;
 
 HOSTNAME
@@ -1677,9 +1710,19 @@ IP
    'ip'
 ;
 
+IP_HEADER_BAD
+:
+   'ip-header-bad'
+;
+
 IP_OPTIONS
 :
    'ip-options'
+;
+
+IP_PROTOCOL
+:
+   'ip-protocol'
 ;
 
 IPIP
@@ -1812,6 +1855,11 @@ JUNOS_FTP
    'junos-ftp'
 ;
 
+JUNOS_FTP_DATA
+:
+    'junos-ftp-data'
+;
+
 JUNOS_GNUTELLA
 :
    'junos-gnutella'
@@ -1820,6 +1868,28 @@ JUNOS_GNUTELLA
 JUNOS_GOPHER
 :
    'junos-gopher'
+;
+
+JUNOS_GPRS_GTP_C
+:
+    'junos-gprs-gtp-c'
+;
+
+
+JUNOS_GPRS_GTP_U
+:
+    'junos-gprs-gtp-u'
+;
+
+
+JUNOS_GPRS_GTP_V0
+:
+    'junos-gprs-gtp-v0'
+;
+
+JUNOS_GPRS_SCTP
+:
+    'junos-gprs-sctp'
 ;
 
 JUNOS_GRE
@@ -1907,9 +1977,9 @@ JUNOS_ICMP6_ECHO_REQUEST
    'junos-icmp6-echo-request'
 ;
 
-JUNOS_ICMP6_PACKET_TO_BIG
+JUNOS_ICMP6_PACKET_TOO_BIG
 :
-   'junos-icmp6-packet-to-big'
+   'junos-icmp6-packet-too-big'
 ;
 
 JUNOS_ICMP6_PARAM_PROB_HEADER
@@ -2337,6 +2407,11 @@ JUNOS_SMTP
    'junos-smtp'
 ;
 
+JUNOS_SMTPS
+:
+    'junos-smtps'
+;
+
 JUNOS_SNMP_AGENTX
 :
    'junos-snmp-agentx'
@@ -2685,6 +2760,11 @@ JUNOS_XNM_SSL
 JUNOS_YMSG
 :
    'junos-ymsg'
+;
+
+K
+:
+  'k'
 ;
 
 KEEP
@@ -3252,6 +3332,11 @@ NETWORK_SUMMARY_EXPORT
    'network-summary-export'
 ;
 
+NETWORK_UNREACHABLE_FOR_TOS
+:
+   'network-unreachable-for-tos'
+;
+
 NETWORK_UNREACHABLE
 :
    'network-unreachable'
@@ -3757,6 +3842,11 @@ PRECEDENCE
    'precedence'
 ;
 
+PRECEDENCE_CUTOFF_IN_EFFECT
+:
+   'precedence-cutoff-in-effect'
+;
+
 PRECISION_TIMERS
 :
    'precision-timers'
@@ -3872,6 +3962,11 @@ PROTOCOL
    'protocol'
 ;
 
+PROTOCOL_UNREACHABLE
+:
+   'protocol-unreachable'
+;
+
 PROTOCOLS
 :
    'protocols'
@@ -3967,6 +4062,26 @@ REDIRECT
    'redirect'
 ;
 
+REDIRECT_FOR_HOST
+:
+   'redirect-for-host'
+;
+
+REDIRECT_FOR_NETWORK
+:
+   'redirect-for-network'
+;
+
+REDIRECT_FOR_TOS_AND_HOST
+:
+   'redirect-for-tos-and-host'
+;
+
+REDIRECT_FOR_TOS_AND_NET
+:
+   'redirect-for-tos-and-net'
+;
+
 REDUNDANCY_GROUP
 :
    'redundancy-group'
@@ -3984,7 +4099,7 @@ REDUNDANT_PARENT
 
 REFERENCE_BANDWIDTH
 :
-   'reference-bandwidth'
+   'reference-bandwidth' -> pushMode ( M_ReferenceBandwidth )
 ;
 
 REJECT
@@ -4010,6 +4125,11 @@ REMOVE_PRIVATE
 REMOVED
 :
    'Removed'
+;
+
+REQUIRED_OPTION_MISSING
+:
+   'required-option-missing'
 ;
 
 RESOLUTION
@@ -4412,6 +4532,11 @@ SOURCE_ADDRESS_FILTER
    'source-address-filter'
 ;
 
+SOURCE_HOST_ISOLATED
+:
+   'source-host-isolated'
+;
+
 SOURCE_IDENTITY
 :
    'source-identity'
@@ -4440,6 +4565,11 @@ SOURCE_PORT
 SOURCE_PREFIX_LIST
 :
    'source-prefix-list'
+;
+
+SOURCE_ROUTE_FAILED
+:
+   'source-route-failed'
 ;
 
 SOURCE_QUENCH
@@ -4490,6 +4620,11 @@ STATION_ADDRESS
 STATION_PORT
 :
    'station-port'
+;
+
+STORM_CONTROL
+:
+   'storm-control'
 ;
 
 STORM_CONTROL_PROFILES
@@ -4761,6 +4896,16 @@ TTL
    'ttl'
 ;
 
+TTL_EQ_ZERO_DURING_REASSEMBLY
+:
+   'ttl-eq-zero-during-reassembly'
+;
+
+TTL_EQ_ZERO_DURING_TRANSIT
+:
+   'ttl-eq-zero-during-transit'
+;
+
 TUNNEL
 :
    'tunnel'
@@ -4961,6 +5106,11 @@ WIDE_METRICS_ONLY
    'wide-metrics-only'
 ;
 
+WILDCARD_ADDRESS
+:
+   'wildcard-address' -> pushMode(M_WildcardAddress)
+;
+
 XAUTH
 :
    'xauth'
@@ -5143,6 +5293,8 @@ IP_PREFIX
    {enableIP_ADDRESS}?
 
    F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit F_Digit?
+
+   {isPrefix()}?
 ;
 
 IPV6_ADDRESS
@@ -5304,6 +5456,12 @@ fragment
 F_HexDigit
 :
    [0-9a-fA-F]
+;
+
+fragment
+F_IpAddress
+:
+   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
 ;
 
 fragment
@@ -5816,6 +5974,38 @@ M_PrefixListName_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
+mode M_ReferenceBandwidth;
+
+M_ReferenceBandwidth_DEC
+:
+  F_Digit+ -> type ( DEC )
+;
+
+M_ReferenceBandwidth_G
+:
+  'g' -> type ( G )
+;
+
+M_ReferenceBandwidth_K
+:
+  'k' -> type ( K )
+;
+
+M_ReferenceBandwidth_M
+:
+  'm' -> type ( M )
+;
+
+M_ReferenceBandwidth_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_ReferenceBandwidth_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
 mode M_TcpFlags;
 
 M_TcpFlags_ACK
@@ -6118,4 +6308,28 @@ M_VrfTarget_TARGET
 M_VrfTarget_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_WildcardAddress;
+
+M_WildcardAddress_IP_ADDRESS
+:
+    F_IpAddress -> type ( IP_ADDRESS )
+;
+
+M_WildcardAddress_FORWARD_SLASH
+:
+    '/' -> type ( FORWARD_SLASH ) , mode ( M_WildcardAddress2 )
+;
+
+M_WildcardAddress_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_WildcardAddress2;
+
+M_WildcardAddress2_IP_ADDRESS
+:
+    F_IpAddress -> type ( IP_ADDRESS ) , popMode
 ;

@@ -2,33 +2,27 @@ package org.batfish.question.tracefilters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import java.util.List;
-import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
+import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
 public class TraceFiltersAnswerElement extends TableAnswerElement {
 
   private static final String COLUMN_NODE = "node";
-
   private static final String COLUMN_FILTER_NAME = "filterName";
-
   private static final String COLUMN_FLOW = "flow";
-
   private static final String COLUMN_ACTION = "action";
-
   private static final String COLUMN_LINE_NUMBER = "lineNumber";
-
   private static final String COLUMN_LINE_CONTENT = "lineContent";
 
   /**
@@ -39,27 +33,14 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
    * @return The creates the answer element object.
    */
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
-    Map<String, Schema> columnSchemas =
-        new ImmutableMap.Builder<String, Schema>()
-            .put(COLUMN_NODE, new Schema("Node"))
-            .put(COLUMN_FILTER_NAME, new Schema("String"))
-            .put(COLUMN_FLOW, new Schema("Flow"))
-            .put(COLUMN_ACTION, new Schema("String"))
-            .put(COLUMN_LINE_NUMBER, new Schema("Integer"))
-            .put(COLUMN_LINE_CONTENT, new Schema("String"))
-            .build();
-    List<String> primaryKey =
-        new ImmutableList.Builder<String>()
-            .add(COLUMN_NODE)
-            .add(COLUMN_FILTER_NAME)
-            .add(COLUMN_FLOW)
-            .build();
-    List<String> primaryValue =
-        new ImmutableList.Builder<String>()
-            .add(COLUMN_ACTION)
-            .add(COLUMN_LINE_NUMBER)
-            .add(COLUMN_LINE_CONTENT)
-            .build();
+    List<ColumnMetadata> columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false),
+            new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false),
+            new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true),
+            new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
+            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true));
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();
@@ -73,7 +54,7 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
               COLUMN_LINE_NUMBER,
               COLUMN_LINE_CONTENT));
     }
-    TableMetadata metadata = new TableMetadata(columnSchemas, primaryKey, primaryValue, dhints);
+    TableMetadata metadata = new TableMetadata(columnMetadata, dhints);
     return new TraceFiltersAnswerElement(metadata);
   }
 
@@ -83,20 +64,20 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
     super(tableMetadata);
   }
 
-  public ObjectNode getRow(
+  public Row getRow(
       String nodeName,
       String filterName,
       Flow flow,
       LineAction action,
       Integer matchLine,
       String lineContent) {
-    ObjectNode row = BatfishObjectMapper.mapper().createObjectNode();
-    row.set(COLUMN_NODE, BatfishObjectMapper.mapper().valueToTree(new Node(nodeName)));
-    row.set(COLUMN_FILTER_NAME, BatfishObjectMapper.mapper().valueToTree(filterName));
-    row.set(COLUMN_FLOW, BatfishObjectMapper.mapper().valueToTree(flow));
-    row.set(COLUMN_ACTION, BatfishObjectMapper.mapper().valueToTree(action));
-    row.set(COLUMN_LINE_NUMBER, BatfishObjectMapper.mapper().valueToTree(matchLine));
-    row.set(COLUMN_LINE_CONTENT, BatfishObjectMapper.mapper().valueToTree(lineContent));
-    return row;
+    RowBuilder row = Row.builder();
+    row.put(COLUMN_NODE, new Node(nodeName))
+        .put(COLUMN_FILTER_NAME, filterName)
+        .put(COLUMN_FLOW, flow)
+        .put(COLUMN_ACTION, action)
+        .put(COLUMN_LINE_NUMBER, matchLine)
+        .put(COLUMN_LINE_CONTENT, lineContent);
+    return row.build();
   }
 }

@@ -1,18 +1,23 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
-public class Conjunction extends BooleanExpr {
+public final class Conjunction extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -22,7 +27,12 @@ public class Conjunction extends BooleanExpr {
   private List<BooleanExpr> _conjuncts;
 
   public Conjunction() {
-    _conjuncts = new ArrayList<>();
+    this(new ArrayList<>());
+  }
+
+  @JsonCreator
+  public Conjunction(@JsonProperty("PROP_CONJUNCTS") List<BooleanExpr> conjuncts) {
+    _conjuncts = firstNonNull(conjuncts, Collections.emptyList());
   }
 
   @Override
@@ -40,21 +50,11 @@ public class Conjunction extends BooleanExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof Conjunction)) {
       return false;
     }
     Conjunction other = (Conjunction) obj;
-    if (_conjuncts == null) {
-      if (other._conjuncts != null) {
-        return false;
-      }
-    } else if (!_conjuncts.equals(other._conjuncts)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_conjuncts, other._conjuncts);
   }
 
   @Override
@@ -86,7 +86,6 @@ public class Conjunction extends BooleanExpr {
     return result;
   }
 
-  @JsonProperty(PROP_CONJUNCTS)
   public void setConjuncts(List<BooleanExpr> conjuncts) {
     _conjuncts = conjuncts;
   }
@@ -101,22 +100,22 @@ public class Conjunction extends BooleanExpr {
     boolean atLeastOneComplex = false;
     for (BooleanExpr conjunct : _conjuncts) {
       BooleanExpr simpleConjunct = conjunct.simplify();
-      if (simpleConjunct.equals(BooleanExprs.False.toStaticBooleanExpr())) {
+      if (simpleConjunct.equals(BooleanExprs.FALSE)) {
         atLeastOneFalse = true;
         if (!atLeastOneComplex) {
-          _simplified = BooleanExprs.False.toStaticBooleanExpr();
+          _simplified = BooleanExprs.FALSE;
           return _simplified;
         } else if (!atLeastOneFalse) {
           simpleConjunctsBuilder.add(simpleConjunct);
         }
-      } else if (!simpleConjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
+      } else if (!simpleConjunct.equals(BooleanExprs.TRUE)) {
         atLeastOneComplex = true;
         simpleConjunctsBuilder.add(simpleConjunct);
       }
     }
     List<BooleanExpr> simpleConjuncts = simpleConjunctsBuilder.build();
     if (simpleConjuncts.isEmpty()) {
-      _simplified = BooleanExprs.True.toStaticBooleanExpr();
+      _simplified = BooleanExprs.TRUE;
     } else if (simpleConjuncts.size() == 1) {
       _simplified = simpleConjuncts.get(0);
     } else {

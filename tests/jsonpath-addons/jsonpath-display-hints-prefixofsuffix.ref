@@ -427,11 +427,6 @@
                 "18.18.18.18",
                 "23.23.23.23"
               ],
-              "route6FilterLists" : {
-                "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-                  "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-                }
-              },
               "routeFilterLists" : {
                 "101" : {
                   "name" : "101",
@@ -843,7 +838,7 @@
                   "statements" : [
                     {
                       "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                      "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                      "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
                       "guard" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                         "prefix" : {
@@ -1043,6 +1038,7 @@
                             "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                             "expr" : {
                               "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                              "comment" : "match default route",
                               "prefix" : {
                                 "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                               },

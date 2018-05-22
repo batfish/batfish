@@ -2,36 +2,61 @@
   {
     "class" : "org.batfish.question.tracefilters.TraceFiltersAnswerElement",
     "metadata" : {
-      "columnSchemas" : {
-        "node" : "Node",
-        "filterName" : "String",
-        "flow" : "Flow",
-        "action" : "String",
-        "lineNumber" : "Integer",
-        "lineContent" : "String"
-      },
+      "columnMetadata" : [
+        {
+          "description" : "Node",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "node",
+          "schema" : "Node"
+        },
+        {
+          "description" : "Filter name",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "filterName",
+          "schema" : "String"
+        },
+        {
+          "description" : "Evaluated flow",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "flow",
+          "schema" : "Flow"
+        },
+        {
+          "description" : "Outcome",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "action",
+          "schema" : "String"
+        },
+        {
+          "description" : "Line number",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "lineNumber",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Line content",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "lineContent",
+          "schema" : "String"
+        }
+      ],
       "displayHints" : {
         "textDesc" : "Filter ${filterName} on node ${node} will ${action} flow ${flow} at line ${lineNumber} ${lineContent}"
-      },
-      "primaryKey" : [
-        "node",
-        "filterName",
-        "flow"
-      ],
-      "primaryValue" : [
-        "action",
-        "lineNumber",
-        "lineContent"
-      ]
+      }
     },
     "rows" : [
       {
         "node" : {
-          "name" : "host2",
           "id" : "node-host2",
-          "type" : "UNKNOWN"
+          "name" : "host2"
         },
-        "filterName" : "filter::FORWARD",
+        "filterName" : "filter::INPUT",
         "flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
@@ -57,15 +82,14 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "ACCEPT",
-        "lineNumber" : 0,
+        "action" : "REJECT",
+        "lineNumber" : 1,
         "lineContent" : "default"
       },
       {
         "node" : {
-          "name" : "host1",
           "id" : "node-host1",
-          "type" : "UNKNOWN"
+          "name" : "host1"
         },
         "filterName" : "filter::INPUT",
         "flow" : {
@@ -99,11 +123,45 @@
       },
       {
         "node" : {
-          "name" : "host2",
-          "id" : "node-host2",
-          "type" : "UNKNOWN"
+          "id" : "node-host1",
+          "name" : "host1"
         },
-        "filterName" : "filter::INPUT",
+        "filterName" : "filter::OUTPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host1",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "AUTO/NONE(-1l)",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default"
+      },
+      {
+        "node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "filterName" : "filter::FORWARD",
         "flow" : {
           "dscp" : 0,
           "dstIp" : "1.1.1.1",
@@ -129,15 +187,49 @@
           "tcpFlagsSyn" : 0,
           "tcpFlagsUrg" : 0
         },
-        "action" : "REJECT",
+        "action" : "ACCEPT",
+        "lineNumber" : 0,
+        "lineContent" : "default"
+      },
+      {
+        "node" : {
+          "id" : "node-host2",
+          "name" : "host2"
+        },
+        "filterName" : "filter::OUTPUT",
+        "flow" : {
+          "dscp" : 0,
+          "dstIp" : "1.1.1.1",
+          "dstPort" : 0,
+          "ecn" : 0,
+          "fragmentOffset" : 0,
+          "icmpCode" : 255,
+          "icmpVar" : 255,
+          "ingressNode" : "host2",
+          "ingressVrf" : "default",
+          "ipProtocol" : "IP",
+          "packetLength" : 0,
+          "srcIp" : "AUTO/NONE(-1l)",
+          "srcPort" : 0,
+          "state" : "NEW",
+          "tag" : "BASE",
+          "tcpFlagsAck" : 0,
+          "tcpFlagsCwr" : 0,
+          "tcpFlagsEce" : 0,
+          "tcpFlagsFin" : 0,
+          "tcpFlagsPsh" : 0,
+          "tcpFlagsRst" : 0,
+          "tcpFlagsSyn" : 0,
+          "tcpFlagsUrg" : 0
+        },
+        "action" : "ACCEPT",
         "lineNumber" : 1,
         "lineContent" : "default"
       },
       {
         "node" : {
-          "name" : "host1",
           "id" : "node-host1",
-          "type" : "UNKNOWN"
+          "name" : "host1"
         },
         "filterName" : "filter::FORWARD",
         "flow" : {
@@ -168,81 +260,10 @@
         "action" : "ACCEPT",
         "lineNumber" : 0,
         "lineContent" : "default"
-      },
-      {
-        "node" : {
-          "name" : "host1",
-          "id" : "node-host1",
-          "type" : "UNKNOWN"
-        },
-        "filterName" : "filter::OUTPUT",
-        "flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host1",
-          "ingressVrf" : "default",
-          "ipProtocol" : "IP",
-          "packetLength" : 0,
-          "srcIp" : "AUTO/NONE(-1l)",
-          "srcPort" : 0,
-          "state" : "NEW",
-          "tag" : "BASE",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "action" : "ACCEPT",
-        "lineNumber" : 0,
-        "lineContent" : "default"
-      },
-      {
-        "node" : {
-          "name" : "host2",
-          "id" : "node-host2",
-          "type" : "UNKNOWN"
-        },
-        "filterName" : "filter::OUTPUT",
-        "flow" : {
-          "dscp" : 0,
-          "dstIp" : "1.1.1.1",
-          "dstPort" : 0,
-          "ecn" : 0,
-          "fragmentOffset" : 0,
-          "icmpCode" : 255,
-          "icmpVar" : 255,
-          "ingressNode" : "host2",
-          "ingressVrf" : "default",
-          "ipProtocol" : "IP",
-          "packetLength" : 0,
-          "srcIp" : "AUTO/NONE(-1l)",
-          "srcPort" : 0,
-          "state" : "NEW",
-          "tag" : "BASE",
-          "tcpFlagsAck" : 0,
-          "tcpFlagsCwr" : 0,
-          "tcpFlagsEce" : 0,
-          "tcpFlagsFin" : 0,
-          "tcpFlagsPsh" : 0,
-          "tcpFlagsRst" : 0,
-          "tcpFlagsSyn" : 0,
-          "tcpFlagsUrg" : 0
-        },
-        "action" : "ACCEPT",
-        "lineNumber" : 1,
-        "lineContent" : "default"
       }
     ],
     "summary" : {
+      "notes" : "Found 6 results",
       "numFailed" : 0,
       "numPassed" : 0,
       "numResults" : 6

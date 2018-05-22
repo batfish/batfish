@@ -56,8 +56,8 @@ public class DisplayHints {
     }
 
     @JsonProperty(PROP_SCHEMA)
-    public void setSchema(String schema) {
-      _schema = new Schema(schema);
+    public void setSchema(Schema schema) {
+      _schema = schema;
     }
 
     public void validate(String varName) {
@@ -97,8 +97,8 @@ public class DisplayHints {
     }
 
     @JsonProperty(PROP_SCHEMA)
-    public void setSchema(String schema) {
-      _schema = new Schema(schema);
+    public void setSchema(Schema schema) {
+      _schema = schema;
     }
 
     public void validate(String varName) {

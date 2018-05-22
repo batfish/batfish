@@ -11,6 +11,48 @@ cm_end_class_map
    END_CLASS_MAP NEWLINE
 ;
 
+cm_ios_inspect
+:
+   INSPECT HTTP? match_semantics? name = variable_permissive NEWLINE cm_iosi_match*
+;
+
+cm_iosi_match
+:
+   MATCH
+   (
+      cm_iosim_access_group
+      | cm_iosim_protocol
+      | cm_iosim_req_resp
+      | cm_iosim_request
+      | cm_iosim_response
+   )
+;
+
+cm_iosim_access_group
+:
+   ACCESS_GROUP NAME name = variable_permissive NEWLINE
+;
+
+cm_iosim_protocol
+:
+   PROTOCOL inspect_protocol NEWLINE
+;
+
+cm_iosim_req_resp
+:
+   NOT? REQ_RESP CONTENT_TYPE MISMATCH
+;
+
+cm_iosim_request
+:
+   NOT? REQUEST null_rest_of_line
+;
+
+cm_iosim_response
+:
+   NOT? RESPONSE null_rest_of_line
+;
+
 cm_match
 :
    num = DEC? MATCH
@@ -158,6 +200,22 @@ color_setter
    )
 ;
 
+inspect_protocol
+:
+   HTTP
+   | HTTPS
+   | ICMP
+   | TCP
+   | TFTP
+   | UDP
+;
+
+match_semantics
+:
+   MATCH_ALL
+   | MATCH_ANY
+;
+
 o_network
 :
    NETWORK name = variable NEWLINE
@@ -299,6 +357,7 @@ ogn_network_object
    NETWORK_OBJECT
    (
       prefix = IP_PREFIX
+      | prefix_ip = IP_ADDRESS prefix_mask = IP_ADDRESS
       | prefix6 = IPV6_PREFIX
       |
       (
@@ -462,6 +521,59 @@ pm_end_policy_map
    END_POLICY_MAP NEWLINE
 ;
 
+pm_ios_inspect
+:
+   INSPECT name = variable NEWLINE
+   (
+      pm_iosi_class_default
+      | pm_iosi_class_type_inspect
+   )*
+;
+
+pm_iosi_class_default
+:
+   CLASS CLASS_DEFAULT NEWLINE
+   (
+      pi_iosicd_drop
+      | pi_iosicd_pass
+   )*
+;
+
+pm_iosi_class_type_inspect
+:
+   CLASS TYPE INSPECT name = variable NEWLINE
+   (
+      pm_iosict_drop
+      | pm_iosict_inspect
+      | pm_iosict_pass
+   )*
+;
+
+pi_iosicd_drop
+:
+   DROP LOG? NEWLINE
+;
+
+pi_iosicd_pass
+:
+   PASS NEWLINE
+;
+
+pm_iosict_drop
+:
+   DROP LOG? NEWLINE
+;
+
+pm_iosict_inspect
+:
+   INSPECT NEWLINE
+;
+
+pm_iosict_pass
+:
+   PASS NEWLINE
+;
+
 pm_null
 :
    NO?
@@ -549,7 +661,14 @@ s_class_map
 :
    CLASS_MAP
    (
-      TYPE ~NEWLINE
+      TYPE
+      (
+         CONTROL_PLANE
+         | NETWORK_QOS
+         | PBR
+         | QOS
+         | QUEUING
+      )
    )?
    (
       MATCH_ALL
@@ -562,6 +681,11 @@ s_class_map
       cm_end_class_map
       | cm_match
    )*
+;
+
+s_class_map_ios
+:
+   CLASS_MAP TYPE cm_ios_inspect
 ;
 
 s_object
@@ -588,13 +712,38 @@ s_object_group
 
 s_policy_map
 :
-   POLICY_MAP null_rest_of_line
+   POLICY_MAP
+   (
+      variable_policy_map_header
+      |
+      (
+         TYPE variable variable variable
+      )
+      |
+      (
+         TYPE
+         (
+            CONTROL_PLANE
+            | NETWORK_QOS
+            | PBR
+            | QUEUEING
+            | QUEUING
+            | QOS
+         ) mapname = variable
+         (TEMPLATE template = variable)?
+      )
+   ) NEWLINE
    (
       pm_class
       | pm_end_policy_map
       | pm_null
       | pm_parameters
    )*
+;
+
+s_policy_map_ios
+:
+   POLICY_MAP TYPE pm_ios_inspect
 ;
 
 s_qos_mapping
@@ -621,4 +770,9 @@ table_map_null
       | FROM
       | MAP
    ) null_rest_of_line
+;
+
+variable_policy_map_header
+:
+   ~( TYPE | NEWLINE )
 ;

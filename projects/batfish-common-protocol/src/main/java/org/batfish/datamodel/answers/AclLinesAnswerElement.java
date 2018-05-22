@@ -2,13 +2,14 @@ package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.IpAccessList;
 
-public class AclLinesAnswerElement extends AnswerElement {
+public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnswerElementInterface {
 
   public static class AclReachabilityEntry implements Comparable<AclReachabilityEntry> {
 
@@ -52,10 +53,33 @@ public class AclLinesAnswerElement extends AnswerElement {
       return _differentAction;
     }
 
+    /**
+     * Returns the line number of the earliest more general reachable line, which may be -1 if:
+     *
+     * <ul>
+     *   <li>The line is independently unmatchable (no blocking line)
+     *   <li>The line is blocked by multiple partially covering earlier lines
+     * </ul>
+     *
+     * <p>This is a temporary solution for communicating these cases and will be changed soon.
+     */
     public Integer getEarliestMoreGeneralLineIndex() {
       return _earliestMoreGeneralLineIndex;
     }
 
+    /**
+     * Returns the text of the earliest more general reachable line, except in these cases:
+     *
+     * <ul>
+     *   <li>If line is independently unmatchable, returns "This line will never match any packet,
+     *       independent of preceding lines."
+     *   <li>If line has multiple partially blocking lines, returns "Multiple earlier lines
+     *       partially block this line, making it unreachable."
+     * </ul>
+     *
+     * <p>This is a temporary solution for communicating the latter two cases and will be changed
+     * soon.
+     */
     public String getEarliestMoreGeneralLineName() {
       return _earliestMoreGeneralLineName;
     }
@@ -112,7 +136,9 @@ public class AclLinesAnswerElement extends AnswerElement {
     _unreachableLines = new TreeMap<>();
   }
 
-  public void addEquivalenceClass(String aclName, String hostname, SortedSet<String> eqClassNodes) {
+  @Override
+  public void addEquivalenceClass(
+      String aclName, String hostname, SortedSet<String> eqClassNodes, List<String> aclLines) {
     SortedMap<String, SortedSet<String>> byRep =
         _equivalenceClasses.computeIfAbsent(aclName, k -> new TreeMap<>());
     byRep.put(hostname, eqClassNodes);
@@ -136,13 +162,38 @@ public class AclLinesAnswerElement extends AnswerElement {
     linesByAcl.add(entry);
   }
 
+  @Override
   public void addReachableLine(
-      String hostname, IpAccessList ipAccessList, AclReachabilityEntry entry) {
-    addLine(_reachableLines, hostname, ipAccessList, entry);
+      String hostname, IpAccessList ipAccessList, int lineNumber, String line) {
+    addLine(_reachableLines, hostname, ipAccessList, new AclReachabilityEntry(lineNumber, line));
   }
 
+  @Override
   public void addUnreachableLine(
-      String hostname, IpAccessList ipAccessList, AclReachabilityEntry entry) {
+      String hostname,
+      IpAccessList ipAccessList,
+      int lineNumber,
+      String line,
+      boolean unmatchable,
+      SortedMap<Integer, String> blockingLines,
+      boolean diffAction) {
+
+    AclReachabilityEntry entry = new AclReachabilityEntry(lineNumber, line);
+    if (unmatchable) {
+      entry.setEarliestMoreGeneralLineIndex(-1);
+      entry.setEarliestMoreGeneralLineName(
+          "This line will never match any packet, independent of preceding lines.");
+    } else if (blockingLines.isEmpty()) {
+      entry.setEarliestMoreGeneralLineIndex(-1);
+      entry.setEarliestMoreGeneralLineName(
+          "Multiple earlier lines partially block this line, making it unreachable.");
+    } else {
+      int blockingLineNum = blockingLines.firstKey();
+      entry.setEarliestMoreGeneralLineIndex(blockingLineNum);
+      entry.setEarliestMoreGeneralLineName(blockingLines.get(blockingLineNum));
+    }
+    entry.setDifferentAction(diffAction);
+
     addLine(_unreachableLines, hostname, ipAccessList, entry);
   }
 

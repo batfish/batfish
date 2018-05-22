@@ -13,6 +13,7 @@ public enum Command {
   ADD_BATFISH_OPTION("add-batfish-option"),
   ANSWER("answer"),
   ANSWER_DELTA("answer-delta"),
+  AUTOCOMPLETE("autocomplete"),
   CAT("cat"),
   CHECK_API_KEY("checkapikey"),
   CLEAR_SCREEN("cls"),
@@ -89,7 +90,8 @@ public enum Command {
   SYNC_TESTRIGS_SYNC_NOW("sync-testrigs-sync-now"),
   SYNC_TESTRIGS_UPDATE_SETTINGS("sync-testrigs-update-settings"),
   TEST("test"),
-  UPLOAD_CUSTOM_OBJECT("upload-custom");
+  UPLOAD_CUSTOM_OBJECT("upload-custom"),
+  VALIDATE_TEMPLATE("validate-template");
 
   public enum TestComparisonMode {
     COMPAREANSWER,
@@ -134,11 +136,13 @@ public enum Command {
         new Pair<>(
             "<template-name>   [questionName=name] [param1=value1 [param2=value2] ...]",
             "Answer the template by name for the delta environment"));
+    descs.put(
+        AUTOCOMPLETE,
+        new Pair<>(
+            "[-maxSuggestions] <completion-type> <query>",
+            "Autocomplete information of question parameters"));
     descs.put(CAT, new Pair<>("<filename>", "Print the contents of the file"));
     descs.put(CHECK_API_KEY, new Pair<>("", "Check if API Key is valid"));
-    // descs.put(CHANGE_DIR, CHANGE_DIR
-    // + " <dirname>\n"
-    // + "\t Change the working directory");
     descs.put(CLEAR_SCREEN, new Pair<>("", "Clear screen"));
     descs.put(
         CONFIGURE_TEMPLATE,
@@ -346,6 +350,9 @@ public enum Command {
             "Run the command and compare its output to the ref file (used for testing)"));
     descs.put(
         UPLOAD_CUSTOM_OBJECT, new Pair<>("<object-name> <object-file>", "Uploads a custom object"));
+    descs.put(
+        VALIDATE_TEMPLATE,
+        new Pair<>("<template-file> [param1=value1 [param2=value2] ...]", "Validate the template"));
     return descs;
   }
 

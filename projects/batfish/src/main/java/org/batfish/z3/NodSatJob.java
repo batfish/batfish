@@ -7,17 +7,25 @@ import com.microsoft.z3.Status;
 import com.microsoft.z3.Z3Exception;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
 
 public class NodSatJob<KeyT> extends Z3ContextJob<NodSatResult<KeyT>> {
 
+  private final boolean _optimize;
+
   private final SatQuerySynthesizer<KeyT> _query;
 
   private final Synthesizer _synthesizer;
 
-  public NodSatJob(Settings settings, Synthesizer synthesizer, SatQuerySynthesizer<KeyT> query) {
+  public NodSatJob(
+      Settings settings,
+      Synthesizer synthesizer,
+      SatQuerySynthesizer<KeyT> query,
+      boolean optimize) {
     super(settings);
+    _optimize = optimize;
     _synthesizer = synthesizer;
     _query = query;
   }
@@ -27,9 +35,7 @@ public class NodSatJob<KeyT> extends Z3ContextJob<NodSatResult<KeyT>> {
     Map<KeyT, Boolean> results = new LinkedHashMap<>();
     long startTime = System.currentTimeMillis();
     try (Context ctx = new Context()) {
-      ReachabilityProgram baseProgram = _query.synthesizeBaseProgram(_synthesizer);
-      ReachabilityProgram queryProgram = _query.getReachabilityProgram(_synthesizer.getInput());
-      NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
+      NodProgram program = getNodProgram(ctx);
       Fixedpoint fix = mkFixedpoint(program, false);
       for (int queryNum = 0; queryNum < program.getQueries().size(); queryNum++) {
         BoolExpr query = program.getQueries().get(queryNum);
@@ -59,5 +65,15 @@ public class NodSatJob<KeyT> extends Z3ContextJob<NodSatResult<KeyT>> {
           _logger.getHistory(),
           new BatfishException("Error running NoD on concatenated data plane", e));
     }
+  }
+
+  @Nonnull
+  private NodProgram getNodProgram(Context ctx) {
+    ReachabilityProgram baseProgram = _synthesizer.synthesizeNodProgram();
+    ReachabilityProgram queryProgram = _query.getReachabilityProgram(_synthesizer.getInput());
+
+    return _optimize
+        ? optimizedProgram(ctx, baseProgram, queryProgram)
+        : new NodProgram(ctx, baseProgram, queryProgram);
   }
 }

@@ -13,6 +13,12 @@ options {
 
    private boolean _multilineBgpNeighbors;
 
+   private boolean _nxos;
+
+   public boolean isNxos() {
+      return _nxos;
+   }
+
    public void setCadant(boolean b) {
       _cadant = b;
    }
@@ -21,11 +27,16 @@ options {
       _multilineBgpNeighbors = multilineBgpNeighbors;
    }
 
+   public void setNxos(boolean b) {
+      _nxos = b;
+   }
+
    @Override
    public String getStateInfo() {
-      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n",
+      return String.format("_cadant: %s\n_multilineBgpNeighbors: %s\n_nxos: %s\n",
          _cadant,
-         _multilineBgpNeighbors
+         _multilineBgpNeighbors,
+         _nxos
       );
    }
 }
@@ -3411,6 +3422,7 @@ stanza
    | s_callhome
    | s_call_manager_fallback
    | s_class_map
+   | s_class_map_ios
    | s_cluster
    | s_configure
    | s_control_plane
@@ -3514,6 +3526,7 @@ stanza
    | s_passwd
    | s_phone_proxy
    | s_policy_map
+   | s_policy_map_ios
    | s_privilege
    | s_process_max_time
    | s_qos_mapping
@@ -4289,7 +4302,15 @@ vrfc_null
       (
          IP
          (
-            PIM
+            AMT
+            | AUTO_DISCARD
+            | DOMAIN_LIST
+            | DOMAIN_NAME
+            | IGMP
+            | MROUTE
+            | MSDP
+            | NAME_SERVER
+            | PIM
          )
       )
       | MDT

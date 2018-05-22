@@ -188,7 +188,7 @@ public class Settings extends BaseSettings {
     }
 
     if (getBooleanOptionValue(ARG_VERSION)) {
-      System.out.printf("Batfish version: %s\n", Version.getVersion());
+      System.out.printf(Version.getCompleteVersionString());
       System.exit(0);
     }
 

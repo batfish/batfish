@@ -292,11 +292,6 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
@@ -990,6 +985,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -1563,11 +1559,6 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
@@ -2277,6 +2268,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -2667,11 +2659,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -3340,11 +3327,6 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
@@ -3756,7 +3738,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {
@@ -3956,6 +3938,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -4601,11 +4584,6 @@
         "ntpServers" : [
           "18.18.18.18"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
@@ -5017,7 +4995,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {
@@ -5217,6 +5195,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -5727,11 +5706,6 @@
           "1.1.1.1",
           "2.1.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -6303,11 +6277,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -7120,11 +7089,6 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "102" : {
             "name" : "102",
@@ -7922,11 +7886,6 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "105" : {
             "name" : "105",
@@ -8178,6 +8137,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -8693,11 +8653,6 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "105" : {
             "name" : "105",
@@ -8949,6 +8904,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -9478,11 +9434,6 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
@@ -10126,6 +10077,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -10638,11 +10590,6 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
@@ -11229,6 +11176,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -11648,11 +11596,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",

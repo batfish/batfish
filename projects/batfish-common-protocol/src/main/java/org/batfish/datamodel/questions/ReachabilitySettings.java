@@ -19,6 +19,8 @@ public class ReachabilitySettings {
 
     private HeaderSpace _headerSpace;
 
+    private InterfacesSpecifier _ingressInterfaces;
+
     private NodesSpecifier _ingressNodes;
 
     private int _maxChunkSize;
@@ -148,6 +150,11 @@ public class ReachabilitySettings {
       _useCompression = useCompression;
       return this;
     }
+
+    public Builder setIngressInterfaces(InterfacesSpecifier ingressInterfaces) {
+      _ingressInterfaces = ingressInterfaces;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -159,6 +166,8 @@ public class ReachabilitySettings {
   private final NodesSpecifier _finalNodes;
 
   private final HeaderSpace _headerSpace;
+
+  private final InterfacesSpecifier _ingressInterfaces;
 
   private final NodesSpecifier _ingressNodes;
 
@@ -182,6 +191,7 @@ public class ReachabilitySettings {
     _finalNodes = builder._finalNodes;
     _notFinalNodes = builder._notFinalNodes;
     _headerSpace = builder._headerSpace;
+    _ingressInterfaces = builder._ingressInterfaces;
     _ingressNodes = builder._ingressNodes;
     _notIngressNodes = builder._notIngressNodes;
     _maxChunkSize = builder._maxChunkSize;
@@ -265,6 +275,10 @@ public class ReachabilitySettings {
 
   public HeaderSpace getHeaderSpace() {
     return _headerSpace;
+  }
+
+  public InterfacesSpecifier getIngressInterfaces() {
+    return _ingressInterfaces;
   }
 
   public NodesSpecifier getIngressNodes() {

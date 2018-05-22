@@ -1,5 +1,6 @@
 package org.batfish.datamodel.vendor_family.cisco;
 
+import org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchersImpl.HasAaa;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchersImpl.HasLogging;
 import org.hamcrest.Matcher;
 
@@ -11,5 +12,9 @@ public class CiscoFamilyMatchers {
    */
   public static HasLogging hasLogging(Matcher<? super Logging> subMatcher) {
     return new HasLogging(subMatcher);
+  }
+
+  public static HasAaa hasAaa(Matcher<? super Aaa> subMatcher) {
+    return new HasAaa(subMatcher);
   }
 }

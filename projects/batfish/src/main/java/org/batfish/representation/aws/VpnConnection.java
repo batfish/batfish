@@ -335,12 +335,11 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
         String rpRejectAllName = "~REJECT_ALL~";
 
         String rpAcceptAllEbgpAndSetNextHopSelfName = "~ACCEPT_ALL_EBGP_AND_SET_NEXT_HOP_SELF~";
-        If acceptIffEbgp = new If();
-        acceptIffEbgp.setGuard(new MatchProtocol(RoutingProtocol.BGP));
-        acceptIffEbgp.setTrueStatements(
-            ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
-        acceptIffEbgp.setFalseStatements(
-            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+        If acceptIffEbgp =
+            new If(
+                new MatchProtocol(RoutingProtocol.BGP),
+                ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
         RoutingPolicy vgwRpAcceptAllBgp =
             new RoutingPolicy(rpAcceptAllEbgpAndSetNextHopSelfName, vpnGatewayCfgNode);

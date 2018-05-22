@@ -37,6 +37,18 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
+  public void recognizeIosXr() {
+    String xr = "!! IOS XR Configuration 5.2.4\n";
+    String xrRancid = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
+
+    for (String fileText : ImmutableList.of(xr, xrRancid)) {
+      assertThat(
+          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
+          equalTo(ConfigurationFormat.CISCO_IOS_XR));
+    }
+  }
+
+  @Test
   public void recognizeNxos() {
     String n7000 = "boot system bootflash:n7000-s2-dk9.7.2.1.D1.1.bin sup-2 \n";
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";
@@ -45,6 +57,19 @@ public class VendorConfigurationFormatDetectorTest {
       assertThat(
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
           equalTo(ConfigurationFormat.CISCO_NX));
+    }
+  }
+
+  @Test
+  public void recognizePaloAlto() {
+    String rancid = "!RANCID-CONTENT-TYPE: paloalto\n!\n";
+    String panorama = "deviceconfig {\n  system {\n    panorama-server 1.2.3.4;\n  }\n}";
+    String sendPanorama = "alarm {\n  informational {\n    send-to-panorama yes;\n  }\n}";
+
+    for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama)) {
+      assertThat(
+          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
+          equalTo(ConfigurationFormat.PALO_ALTO));
     }
   }
 }

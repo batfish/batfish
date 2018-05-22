@@ -65,9 +65,13 @@ import org.batfish.datamodel.AnalysisMetadata;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
+import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
@@ -284,6 +288,44 @@ public class WorkMgr extends AbstractCoordinator {
       }
     } catch (Exception e) {
       _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getStackTrace(e));
+    }
+  }
+
+  public List<AutocompleteSuggestion> autoComplete(
+      String container,
+      String testrig,
+      CompletionType completionType,
+      String query,
+      int maxSuggestions)
+      throws IOException {
+    switch (completionType) {
+      case NODE:
+        {
+          // read all the nodes
+          Path pojoTopologyPath =
+              getdirTestrig(container, testrig)
+                  .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+          Topology topology =
+              BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
+          Set<String> nodes =
+              topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
+
+          // read node roles data
+          Path nodeRolespath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+          NodeRolesData nodeRolesData = NodeRolesData.read(nodeRolespath);
+
+          // get suggestions
+          List<AutocompleteSuggestion> suggestions =
+              NodesSpecifier.autoComplete(query, nodes, nodeRolesData);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      case NODE_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = NodePropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
+      default:
+        throw new UnsupportedOperationException("Unsupported completion type: " + completionType);
     }
   }
 
@@ -1076,10 +1118,12 @@ public class WorkMgr extends AbstractCoordinator {
           try {
             NodeRolesData testrigData = NodeRolesData.read(subFile);
             Path nodeRolesPath = containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-            NodeRolesData.replaceNodeRoleDimensions(
-                nodeRolesPath, testrigData.getNodeRoleDimensions(), NodeRoleDimension.Type.CUSTOM);
+            NodeRolesData.mergeNodeRoleDimensions(
+                nodeRolesPath, testrigData.getNodeRoleDimensions(), false);
           } catch (IOException e) {
-            throw new BatfishException("Could not process node role data", e);
+            // lets not stop the upload because that file is busted.
+            // TODO: figure out a way to surface this error to the user
+            _logger.errorf("Could not process node role data: %s", e);
           }
         }
       } else {
@@ -1543,7 +1587,8 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       Question.parseQuestion(questionJson);
     } catch (Exception e) {
-      throw new BatfishException(String.format("Invalid question %s/%s", containerName, qName), e);
+      throw new BatfishException(
+          String.format("Invalid question %s/%s: %s", containerName, qName, e.getMessage()), e);
     }
 
     Path containerDir = getdirContainer(containerName);

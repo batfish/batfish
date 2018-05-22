@@ -5,8 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import org.batfish.z3.expr.RuleStatement;
+import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.AclDeny;
+import org.batfish.z3.state.AclLineIndependentMatch;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.AclLineNoMatch;
 import org.batfish.z3.state.AclPermit;
@@ -26,16 +28,14 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
-import org.batfish.z3.state.Originate;
 import org.batfish.z3.state.OriginateVrf;
-import org.batfish.z3.state.PostIn;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
 import org.batfish.z3.state.PostOutEdge;
 import org.batfish.z3.state.PreInInterface;
-import org.batfish.z3.state.PreOut;
 import org.batfish.z3.state.PreOutEdge;
 import org.batfish.z3.state.PreOutEdgePostNat;
+import org.batfish.z3.state.PreOutVrf;
 import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class Synthesizer {
@@ -57,55 +57,50 @@ public class Synthesizer {
     return _warnings;
   }
 
-  public ReachabilityProgram synthesizeNodAclProgram(String hostname, String aclName) {
-    return synthesizeNodProgram(
-        ImmutableList.copyOf(
-            DefaultTransitionGenerator.generateTransitions(
-                _input,
+  public ReachabilityProgram synthesizeNodProgram() {
+    // Only want these 5 states if NoD program is for ACL reachability (only non-data-plane type)
+    ImmutableSet.Builder<StateExpr.State> builder =
+        ImmutableSet.<StateExpr.State>builder()
+            .addAll(
                 ImmutableSet.of(
                     AclDeny.State.INSTANCE,
+                    AclLineIndependentMatch.State.INSTANCE,
                     AclLineMatch.State.INSTANCE,
                     AclLineNoMatch.State.INSTANCE,
-                    AclPermit.State.INSTANCE))));
-  }
-
-  public ReachabilityProgram synthesizeNodDataPlaneProgram() {
+                    AclPermit.State.INSTANCE));
+    // Otherwise, we also want these other states
+    if (_input.isDataPlane()) {
+      builder.addAll(
+          ImmutableSet.of(
+              Accept.State.INSTANCE,
+              Drop.State.INSTANCE,
+              DropAcl.State.INSTANCE,
+              DropAclIn.State.INSTANCE,
+              DropAclOut.State.INSTANCE,
+              DropNoRoute.State.INSTANCE,
+              DropNullRoute.State.INSTANCE,
+              NeighborUnreachable.State.INSTANCE,
+              NodeAccept.State.INSTANCE,
+              NodeDrop.State.INSTANCE,
+              NodeDropAcl.State.INSTANCE,
+              NodeDropAclIn.State.INSTANCE,
+              NodeDropAclOut.State.INSTANCE,
+              NodeDropNoRoute.State.INSTANCE,
+              NodeDropNullRoute.State.INSTANCE,
+              NodeInterfaceNeighborUnreachable.State.INSTANCE,
+              NodeNeighborUnreachable.State.INSTANCE,
+              OriginateVrf.State.INSTANCE,
+              PostInInterface.State.INSTANCE,
+              PostInVrf.State.INSTANCE,
+              PostOutEdge.State.INSTANCE,
+              PreInInterface.State.INSTANCE,
+              PreOutEdge.State.INSTANCE,
+              PreOutEdgePostNat.State.INSTANCE,
+              PreOutVrf.State.INSTANCE));
+    }
     return synthesizeNodProgram(
         ImmutableList.copyOf(
-            DefaultTransitionGenerator.generateTransitions(
-                _input,
-                ImmutableSet.of(
-                    Accept.State.INSTANCE,
-                    AclDeny.State.INSTANCE,
-                    AclLineMatch.State.INSTANCE,
-                    AclLineNoMatch.State.INSTANCE,
-                    AclPermit.State.INSTANCE,
-                    Drop.State.INSTANCE,
-                    DropAcl.State.INSTANCE,
-                    DropAclIn.State.INSTANCE,
-                    DropAclOut.State.INSTANCE,
-                    DropNoRoute.State.INSTANCE,
-                    DropNullRoute.State.INSTANCE,
-                    NeighborUnreachable.State.INSTANCE,
-                    NodeAccept.State.INSTANCE,
-                    NodeDrop.State.INSTANCE,
-                    NodeDropAcl.State.INSTANCE,
-                    NodeDropAclIn.State.INSTANCE,
-                    NodeDropAclOut.State.INSTANCE,
-                    NodeDropNoRoute.State.INSTANCE,
-                    NodeDropNullRoute.State.INSTANCE,
-                    NodeInterfaceNeighborUnreachable.State.INSTANCE,
-                    NodeNeighborUnreachable.State.INSTANCE,
-                    Originate.State.INSTANCE,
-                    OriginateVrf.State.INSTANCE,
-                    PostIn.State.INSTANCE,
-                    PostInInterface.State.INSTANCE,
-                    PostInVrf.State.INSTANCE,
-                    PostOutEdge.State.INSTANCE,
-                    PreInInterface.State.INSTANCE,
-                    PreOut.State.INSTANCE,
-                    PreOutEdge.State.INSTANCE,
-                    PreOutEdgePostNat.State.INSTANCE))));
+            DefaultTransitionGenerator.generateTransitions(_input, builder.build())));
   }
 
   private ReachabilityProgram synthesizeNodProgram(List<RuleStatement> ruleStatements) {

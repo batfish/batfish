@@ -1,12 +1,13 @@
 package org.batfish.dataplane.ibdp;
 
-import static java.util.Collections.singletonList;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isIn;
 import static org.hamcrest.Matchers.lessThan;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
@@ -16,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -31,8 +32,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -44,28 +45,26 @@ import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
+import org.batfish.dataplane.rib.BgpBestPathRib;
+import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -113,25 +112,10 @@ public class IncrementalDataPlanePluginTest {
     configurations.put(
         "h2", BatfishTestUtils.createTestConfiguration("h2", ConfigurationFormat.HOST, "e0"));
     Batfish batfish = BatfishTestUtils.getBatfish(configurations, _folder);
-    IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
-
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     // Test that compute Data Plane finishes in a finite time
     dataPlanePlugin.computeDataPlane(false);
-  }
-
-  private static Flow makeFlow() {
-    Flow.Builder builder = new Flow.Builder();
-    builder.setSrcIp(new Ip("1.2.3.4"));
-    builder.setIngressNode("foo");
-    builder.setTag("TEST");
-    return builder.build();
-  }
-
-  private static IpAccessList makeAcl(String name, LineAction action) {
-    IpAccessListLine aclLine =
-        IpAccessListLine.builder().setAction(action).setMatchCondition(TrueExpr.INSTANCE).build();
-    return new IpAccessList(name, singletonList(aclLine));
   }
 
   private SortedMap<String, Configuration> generateNetworkWithDuplicates() {
@@ -200,83 +184,6 @@ public class IncrementalDataPlanePluginTest {
     return ImmutableSortedMap.of(CORE_NAME, core, "n1", n1, "n2", n2);
   }
 
-  @Test
-  public void testApplySourceNatSingleAclMatch() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("accept", LineAction.ACCEPT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    Flow transformed =
-        IncrementalBdpEngine.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplySourceNatSingleAclNoMatch() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("reject", LineAction.REJECT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    Flow transformed =
-        IncrementalBdpEngine.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-    assertThat(transformed, is(flow));
-  }
-
-  @Test
-  public void testApplySourceNatFirstMatchWins() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("firstAccept", LineAction.ACCEPT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("secondAccept", LineAction.ACCEPT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
-
-    Flow transformed =
-        IncrementalBdpEngine.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
-  }
-
-  @Test
-  public void testApplySourceNatLateMatchWins() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("rejectAll", LineAction.REJECT));
-    nat.setPoolIpFirst(new Ip("4.5.6.7"));
-
-    SourceNat secondNat = new SourceNat();
-    secondNat.setAcl(makeAcl("acceptAnyway", LineAction.ACCEPT));
-    secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
-
-    Flow transformed =
-        IncrementalBdpEngine.applySourceNat(
-            flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
-    assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
-  }
-
-  @Test
-  public void testApplySourceNatInvalidAclThrows() {
-    Flow flow = makeFlow();
-
-    SourceNat nat = new SourceNat();
-    nat.setAcl(makeAcl("matchAll", LineAction.ACCEPT));
-
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("missing NAT address or pool");
-    IncrementalBdpEngine.applySourceNat(
-        flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
-  }
-
   private void testBgpAsPathMultipathHelper(
       MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
       boolean primeBestPathInMultipathBgpRib,
@@ -322,7 +229,6 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     /*
      * Instantiate routes
@@ -362,7 +268,7 @@ public class IncrementalDataPlanePluginTest {
      * Set the as-path match mode prior to instantiating bgp multipath RIB
      */
     proc.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
 
     /*
      * Prime bgp multipath RIB with best path for the prefix
@@ -384,7 +290,7 @@ public class IncrementalDataPlanePluginTest {
      * Initialize the matchers with respect to the output route set
      */
     Set<BgpRoute> postMergeRoutes = bmr.getRoutes();
-    Matcher<BgpRoute> present = isIn(postMergeRoutes);
+    Matcher<BgpRoute> present = in(postMergeRoutes);
     Matcher<BgpRoute> absent = not(present);
 
     /*
@@ -443,9 +349,8 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
-    BgpBestPathRib bbr = BgpBestPathRib.initial(vr, null);
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpBestPathRib bbr = BgpBestPathRib.initial(null, null);
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     Prefix p = Prefix.ZERO;
     BgpRoute.Builder b = new BgpRoute.Builder().setNetwork(p).setProtocol(RoutingProtocol.IBGP);
 
@@ -496,8 +401,8 @@ public class IncrementalDataPlanePluginTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
 
     // Really just test that no exception is thrown
     dataPlanePlugin.computeDataPlane(false);
@@ -510,12 +415,11 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
 
     // good for both ebgp and ibgp
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     // ebgp
-    BgpBestPathRib ebgpBpr = BgpBestPathRib.initial(vr, null);
+    BgpBestPathRib ebgpBpr = BgpBestPathRib.initial(null, null);
     BgpRoute.Builder ebgpBuilder =
         new BgpRoute.Builder()
             .setNetwork(Prefix.ZERO)
@@ -529,7 +433,7 @@ public class IncrementalDataPlanePluginTest {
         ebgpBuilder.setOriginatorIp(Ip.MAX).setReceivedFromIp(new Ip("1.1.1.2")).build();
     BgpRoute ebgpLowerOriginator = ebgpBuilder.setOriginatorIp(Ip.ZERO).build();
     // ibgp
-    BgpBestPathRib ibgpBpr = BgpBestPathRib.initial(vr, null);
+    BgpBestPathRib ibgpBpr = BgpBestPathRib.initial(null, null);
     BgpRoute.Builder ibgpBuilder =
         new BgpRoute.Builder()
             .setNetwork(Prefix.ZERO)
@@ -611,9 +515,9 @@ public class IncrementalDataPlanePluginTest {
     Prefix r3Loopback0Prefix = Prefix.parse("3.0.0.3/32");
 
     // Ensure that r3loopback was accepted by r1
-    assertThat(r3Loopback0Prefix, isIn(r1Prefixes));
+    assertThat(r3Loopback0Prefix, in(r1Prefixes));
     // Check the other direction (r1loopback is accepted by r3)
-    assertThat(r1Loopback0Prefix, isIn(r3Prefixes));
+    assertThat(r1Loopback0Prefix, in(r3Prefixes));
   }
 
   @Test
@@ -623,9 +527,8 @@ public class IncrementalDataPlanePluginTest {
         BatfishTestUtils.createTestConfiguration(hostname, ConfigurationFormat.CISCO_IOS);
     BgpProcess proc = new BgpProcess();
     c.getVrfs().computeIfAbsent(DEFAULT_VRF_NAME, Vrf::new).setBgpProcess(proc);
-    VirtualRouter vr = new VirtualRouter(DEFAULT_VRF_NAME, c);
-    BgpBestPathRib bbr = BgpBestPathRib.initial(vr, null);
-    BgpMultipathRib bmr = new BgpMultipathRib(vr, proc.getMultipathEquivalentAsPathMatchMode());
+    BgpBestPathRib bbr = BgpBestPathRib.initial(null, null);
+    BgpMultipathRib bmr = new BgpMultipathRib(proc.getMultipathEquivalentAsPathMatchMode());
     Ip ip1 = new Ip("1.0.0.0");
     Ip ip2 = new Ip("2.2.0.0");
     BgpRoute.Builder b1 =
@@ -697,8 +600,8 @@ public class IncrementalDataPlanePluginTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
@@ -734,8 +637,9 @@ public class IncrementalDataPlanePluginTest {
                 .setConfigurationText(TESTRIGS_PREFIX + testrigName, configurationNames)
                 .build(),
             _folder);
-    IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(false);
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
         dataPlanePlugin.getRoutes(dp._dataPlane);
@@ -750,9 +654,9 @@ public class IncrementalDataPlanePluginTest {
     Prefix r1AdvertisedPrefix = Prefix.parse("9.9.9.9/32");
 
     // Ensure that the prefix is accepted by r2, because router ids are different
-    assertThat(r1AdvertisedPrefix, isIn(r2Prefixes));
+    assertThat(r1AdvertisedPrefix, in(r2Prefixes));
     // Ensure that the prefix is rejected by r3, because router ids are the same
-    assertThat(r1AdvertisedPrefix, not(isIn(r3Prefixes)));
+    assertThat(r1AdvertisedPrefix, not(in(r3Prefixes)));
   }
 
   @Test
@@ -768,8 +672,8 @@ public class IncrementalDataPlanePluginTest {
                 .setRoutingTablesText(testrigResourcePrefix, routingTableNames)
                 .build(),
             _folder);
-    IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     ComputeDataPlaneResult dp = dataPlanePlugin.computeDataPlane(false);
     SortedMap<String, RoutesByVrf> environmentRoutes = batfish.loadEnvironmentRoutingTables();
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routes =
@@ -846,8 +750,8 @@ public class IncrementalDataPlanePluginTest {
     SortedMap<String, Configuration> configs = generateNetworkWithDuplicates();
 
     Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
-    IncrementalDataPlanePlugin dataPlanePlugin = new IncrementalDataPlanePlugin();
-    dataPlanePlugin.initialize(batfish);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
 
     Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
@@ -863,5 +767,31 @@ public class IncrementalDataPlanePluginTest {
         configs.get("n1").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
     assertThat(n1Neighbors, hasSize(1));
     assertThat(bgpTopology.degree(n1Neighbors.iterator().next()), is(0));
+  }
+
+  @Test
+  public void testGeneratedRoutesInMainRib() throws IOException {
+    Configuration n1 =
+        _nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("n1")
+            .build();
+    Vrf vrf = _vb.setOwner(n1).build();
+
+    // Create generated route
+    Prefix genRoutePrefix = Prefix.parse("1.1.1.1/32");
+    Builder grb = new Builder();
+    GeneratedRoute route = grb.setNetwork(genRoutePrefix).setDiscard(true).build();
+    vrf.setGeneratedRoutes(ImmutableSortedSet.of(route));
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(n1.getHostname(), n1), _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
+
+    assertThat(
+        dp.getRibs().get(n1.getHostname()).get(vrf.getName()).getRoutes(),
+        hasItem(hasPrefix(genRoutePrefix)));
   }
 }

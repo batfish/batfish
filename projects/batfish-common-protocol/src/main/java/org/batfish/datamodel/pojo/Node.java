@@ -1,40 +1,54 @@
 package org.batfish.datamodel.pojo;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.DeviceType;
 
 public class Node extends BfObject {
 
-  private final String _name;
+  private static final String PROP_NAME = "name";
+  private static final String PROP_TYPE = "type";
 
-  private DeviceType _type;
+  @Nonnull private final String _name;
+
+  @Nullable private DeviceType _type;
 
   @JsonCreator
-  public Node(@JsonProperty("name") String name) {
-    super(getId(name));
+  public Node(
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_ID) String id,
+      @JsonProperty(PROP_TYPE) DeviceType type) {
+    super(firstNonNull(id, getId(name)));
     _name = name;
-    _type = DeviceType.UNKNOWN;
+    _type = type;
+    if (name == null) {
+      throw new IllegalArgumentException("Cannot build Node: name is null");
+    }
+  }
+
+  public Node(String name) {
+    this(name, getId(name), null);
   }
 
   public Node(String name, DeviceType type) {
-    this(name);
-    _type = type;
+    this(name, getId(name), type);
   }
 
   public static String getId(String name) {
     return "node-" + name;
   }
 
+  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
 
+  @JsonProperty(PROP_TYPE)
   public DeviceType getType() {
     return _type;
-  }
-
-  public void setType(DeviceType type) {
-    _type = type;
   }
 }

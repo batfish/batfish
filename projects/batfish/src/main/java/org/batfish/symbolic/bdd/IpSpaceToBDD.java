@@ -20,11 +20,11 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
 
   private final BDDFactory _factory;
 
-  private final BDDInteger _var;
+  private final BDD[] _bitBDDs;
 
   public IpSpaceToBDD(BDDFactory factory, BDDInteger var) {
     _factory = factory;
-    _var = var;
+    _bitBDDs = var.getBitvec();
   }
 
   @Override
@@ -36,7 +36,7 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
    * Does the 32 bit integer match the prefix using lpm?
    */
   private BDD isRelevantFor(Prefix p) {
-    return BDDUtils.firstBitsEqual(_factory, _var.getBitvec(), p.getStartIp(), p.getPrefixLength());
+    return BDDUtils.firstBitsEqual(_factory, _bitBDDs, p.getStartIp(), p.getPrefixLength());
   }
 
   public BDD toBDD(Ip ip) {
@@ -44,10 +44,21 @@ public class IpSpaceToBDD implements GenericIpSpaceVisitor<BDD> {
   }
 
   public BDD toBDD(IpWildcard ipWildcard) {
-    if (!ipWildcard.isPrefix()) {
-      throw new BatfishException("ERROR: computeDstWildcards, non sequential mask detected");
+    long ip = ipWildcard.getIp().asLong();
+    long wildcard = ipWildcard.getWildcard().asLong();
+    BDD acc = _factory.one();
+    for (int i = 0; i < Prefix.MAX_PREFIX_LENGTH; i++) {
+      boolean significant = !Ip.getBitAtPosition(wildcard, i);
+      if (significant) {
+        boolean bitValue = Ip.getBitAtPosition(ip, i);
+        if (bitValue) {
+          acc = acc.and(_bitBDDs[i]);
+        } else {
+          acc = acc.and(_bitBDDs[i].not());
+        }
+      }
     }
-    return toBDD(ipWildcard.toPrefix());
+    return acc;
   }
 
   @Override

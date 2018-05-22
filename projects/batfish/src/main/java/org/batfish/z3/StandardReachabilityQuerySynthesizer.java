@@ -3,8 +3,8 @@ package org.batfish.z3;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
@@ -12,11 +12,15 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
 import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
+import org.batfish.z3.expr.TrueExpr;
+import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Debug;
 import org.batfish.z3.state.Drop;
@@ -35,6 +39,7 @@ import org.batfish.z3.state.NodeDropNoRoute;
 import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.Query;
+import org.batfish.z3.state.visitors.DefaultTransitionGenerator;
 
 public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynthesizer {
 
@@ -57,6 +62,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           _actions,
           _headerSpace,
           _finalNodes,
+          _ingressNodeInterfaces,
           _ingressNodeVrfs,
           _srcNatted,
           _transitNodes,
@@ -93,11 +99,18 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
       @Nonnull Set<ForwardingAction> actions,
       @Nonnull HeaderSpace headerSpace,
       @Nonnull Set<String> finalNodes,
-      @Nonnull Map<String, Set<String>> ingressNodeVrfs,
+      @Nonnull Multimap<String, String> ingressNodeInterfaces,
+      @Nonnull Multimap<String, String> ingressNodeVrfs,
       Boolean srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(headerSpace, ingressNodeVrfs, srcNatted, transitNodes, nonTransitNodes);
+    super(
+        headerSpace,
+        ingressNodeInterfaces,
+        ingressNodeVrfs,
+        srcNatted,
+        transitNodes,
+        nonTransitNodes);
     _actions = actions;
     _finalNodes = finalNodes;
   }
@@ -216,6 +229,17 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         .map(finalAction -> new BasicRuleStatement(ImmutableSet.of(finalAction), Query.INSTANCE))
         .forEach(rules::add);
     addOriginateRules(rules);
+
+    /*
+     * If transit nodes are specified, make sure one was transited.
+     */
+    BooleanExpr transitNodesConstraint =
+        input.getTransitNodes().isEmpty()
+            ? TrueExpr.INSTANCE
+            : new EqExpr(
+                new VarIntExpr(DefaultTransitionGenerator.TRANSITED_TRANSIT_NODES_FIELD),
+                DefaultTransitionGenerator.TRANSITED);
+
     return ReachabilityProgram.builder()
         .setInput(input)
         .setQueries(ImmutableList.of(new QueryStatement(Query.INSTANCE)))
@@ -225,7 +249,8 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
                 ImmutableList.of(
                     new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
                     getSrcNattedConstraint(),
-                    SaneExpr.INSTANCE)))
+                    SaneExpr.INSTANCE,
+                    transitNodesConstraint)))
         .build();
   }
 }

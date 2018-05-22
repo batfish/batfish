@@ -2,10 +2,9 @@ package org.batfish.representation.cisco;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.IpWildcard;
 
-public class NetworkObjectGroup extends DefinedStructure<String> {
+public class NetworkObjectGroup extends ObjectGroup {
 
   /** */
   private static final long serialVersionUID = 1L;

@@ -2,6 +2,7 @@ package org.batfish.z3;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,6 +27,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
         _arpTrueEdge;
 
+    private boolean _dataPlane;
+
     private Set<Edge> _enabledEdges;
 
     private Map<String, Set<String>> _enabledInterfaces;
@@ -40,6 +43,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Set<Ip>> _ipsByHostname;
 
+    private Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
+
     private Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
     private Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
@@ -47,6 +52,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
     private Map<String, List<String>> _nodeInterfaces;
 
     private Set<String> _nodesWithSrcInterfaceConstraints;
+
+    private Set<String> _nonTransitNodes;
 
     private Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
@@ -66,6 +73,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
     private Map<String, Map<String, IntExpr>> _srcInterfaceFieldValues;
 
+    private Set<String> _transitNodes;
+
     private Builder() {
       _aclActions = ImmutableMap.of();
       _aclConditions = ImmutableMap.of();
@@ -77,10 +86,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _enabledVrfs = ImmutableMap.of();
       _incomingAcls = ImmutableMap.of();
       _ipsByHostname = ImmutableMap.of();
+      _ipsByNodeVrf = ImmutableMap.of();
       _namedIpSpaces = ImmutableMap.of();
       _neighborUnreachable = ImmutableMap.of();
       _nodeInterfaces = ImmutableMap.of();
       _nodesWithSrcInterfaceConstraints = ImmutableSet.of();
+      _nonTransitNodes = ImmutableSortedSet.of();
       _nullRoutedIps = ImmutableMap.of();
       _outgoingAcls = ImmutableMap.of();
       _routableIps = ImmutableMap.of();
@@ -88,6 +99,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _srcInterfaceField = null;
       _srcInterfaceFieldValues = ImmutableMap.of();
       _topologyInterfaces = ImmutableMap.of();
+      _transitNodes = ImmutableSortedSet.of();
       _vectorizedParameters = ImmutableSet.of();
     }
 
@@ -147,6 +159,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
       return this;
     }
 
+    public Builder setDataPlane(boolean dataPlane) {
+      _dataPlane = dataPlane;
+      return this;
+    }
+
     public Builder setNamedIpSpaces(Map<String, Map<String, IpSpace>> namedIpSpaces) {
       _namedIpSpaces = namedIpSpaces;
       return this;
@@ -166,6 +183,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
     public Builder setNodesWithSrcInterfaceConstraints(
         Set<String> nodesWithSrcInterfaceConstraints) {
       _nodesWithSrcInterfaceConstraints = nodesWithSrcInterfaceConstraints;
+      return this;
+    }
+
+    public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
+      _nonTransitNodes = nonTransitNodes;
       return this;
     }
 
@@ -215,6 +237,16 @@ public class MockSynthesizerInput implements SynthesizerInput {
       _vectorizedParameters = vectorizedParameters;
       return this;
     }
+
+    public Builder setTransitNodes(Set<String> transitNodes) {
+      _transitNodes = transitNodes;
+      return this;
+    }
+
+    public Builder setIpsByNodeVrf(Map<String, Map<String, Set<Ip>>> ipsByNodeVrf) {
+      _ipsByNodeVrf = ipsByNodeVrf;
+      return this;
+    }
   }
 
   public static Builder builder() {
@@ -227,6 +259,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Map<String, Map<String, Map<String, Map<String, BooleanExpr>>>>>
       _arpTrueEdge;
+
+  private final boolean _dataPlane;
 
   private final Set<Edge> _enabledEdges;
 
@@ -242,6 +276,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<Ip>> _ipsByHostname;
 
+  private final Map<String, Map<String, Set<Ip>>> _ipsByNodeVrf;
+
   private final Map<String, Map<String, IpSpace>> _namedIpSpaces;
 
   private final Map<String, Map<String, Map<String, BooleanExpr>>> _neighborUnreachable;
@@ -249,6 +285,8 @@ public class MockSynthesizerInput implements SynthesizerInput {
   private final Map<String, List<String>> _nodeInterfaces;
 
   private final Set<String> _nodesWithSrcInterfaceConstraints;
+
+  private final Set<String> _nonTransitNodes;
 
   private final Map<String, Map<String, BooleanExpr>> _nullRoutedIps;
 
@@ -266,12 +304,15 @@ public class MockSynthesizerInput implements SynthesizerInput {
 
   private final Map<String, Set<String>> _topologyInterfaces;
 
+  private Set<String> _transitNodes;
+
   private final Set<Type> _vectorizedParameters;
 
   private MockSynthesizerInput(Builder builder) {
     _aclActions = builder._aclActions;
     _aclConditions = builder._aclConditions;
     _arpTrueEdge = builder._arpTrueEdge;
+    _dataPlane = builder._dataPlane;
     _enabledEdges = builder._enabledEdges;
     _enabledInterfaces = builder._enabledInterfaces;
     _enabledInterfacesByNodeVrf = builder._enabledInterfacesByNodeVrf;
@@ -279,10 +320,12 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _enabledVrfs = builder._enabledVrfs;
     _incomingAcls = builder._incomingAcls;
     _ipsByHostname = builder._ipsByHostname;
+    _ipsByNodeVrf = builder._ipsByNodeVrf;
     _neighborUnreachable = builder._neighborUnreachable;
     _nodeInterfaces = builder._nodeInterfaces;
     _nodesWithSrcInterfaceConstraints = builder._nodesWithSrcInterfaceConstraints;
     _nullRoutedIps = builder._nullRoutedIps;
+    _nonTransitNodes = builder._nonTransitNodes;
     _outgoingAcls = builder._outgoingAcls;
     _routableIps = builder._routableIps;
     _simplify = builder._simplify;
@@ -290,6 +333,7 @@ public class MockSynthesizerInput implements SynthesizerInput {
     _sourceInterfaceField = builder._srcInterfaceField;
     _sourceInterfaceFieldValues = builder._srcInterfaceFieldValues;
     _topologyInterfaces = builder._topologyInterfaces;
+    _transitNodes = builder._transitNodes;
     _vectorizedParameters = builder._vectorizedParameters;
     _namedIpSpaces = builder._namedIpSpaces;
   }
@@ -351,6 +395,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Map<String, Map<String, Set<Ip>>> getIpsByNodeVrf() {
+    return _ipsByNodeVrf;
+  }
+
+  @Override
   public Map<String, Map<String, IpSpace>> getNamedIpSpaces() {
     return _namedIpSpaces;
   }
@@ -391,6 +440,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Set<String> getTransitNodes() {
+    return _transitNodes;
+  }
+
+  @Override
   public Field getSourceInterfaceField() {
     return _sourceInterfaceField;
   }
@@ -406,6 +460,11 @@ public class MockSynthesizerInput implements SynthesizerInput {
   }
 
   @Override
+  public Set<String> getNonTransitNodes() {
+    return _nonTransitNodes;
+  }
+
+  @Override
   public Map<String, Set<String>> getTraversableInterfaces() {
     return _topologyInterfaces;
   }
@@ -413,5 +472,10 @@ public class MockSynthesizerInput implements SynthesizerInput {
   @Override
   public Set<Type> getVectorizedParameters() {
     return _vectorizedParameters;
+  }
+
+  @Override
+  public boolean isDataPlane() {
+    return _dataPlane;
   }
 }

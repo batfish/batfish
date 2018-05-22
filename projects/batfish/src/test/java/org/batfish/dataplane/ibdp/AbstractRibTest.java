@@ -22,7 +22,13 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
-import org.batfish.dataplane.ibdp.RouteAdvertisement.Reason;
+import org.batfish.dataplane.rib.AbstractRib;
+import org.batfish.dataplane.rib.OspfIntraAreaRib;
+import org.batfish.dataplane.rib.RibDelta;
+import org.batfish.dataplane.rib.RipInternalRib;
+import org.batfish.dataplane.rib.RouteAdvertisement;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
+import org.batfish.dataplane.rib.StaticRib;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,7 +48,7 @@ public class AbstractRibTest {
 
   @Before
   public void setupEmptyRib() {
-    _rib = new StaticRib(null);
+    _rib = new StaticRib();
   }
 
   @Test
@@ -186,7 +192,7 @@ public class AbstractRibTest {
     List<StaticRoute> routes = setupOverlappingRoutes();
 
     // And create a new different RIB
-    AbstractRib<StaticRoute> rib2 = new StaticRib(null);
+    AbstractRib<StaticRoute> rib2 = new StaticRib();
     assertThat(rib2, not(equalTo(_rib)));
 
     // Add routes
@@ -260,7 +266,7 @@ public class AbstractRibTest {
   /** Test that correct delta is returned when adding a new route. */
   @Test
   public void testAddRouteGetDelta() {
-    AbstractRib<RipInternalRoute> rib = new RipInternalRib(null);
+    AbstractRib<RipInternalRoute> rib = new RipInternalRib();
     int admin = RoutingProtocol.RIP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS);
     Prefix prefix = new Prefix(new Ip("10.0.0.0"), 8);
     // High metric

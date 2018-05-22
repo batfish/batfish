@@ -17,6 +17,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.role.NodeRoleDimension.Type;
 
 /** Class that captures the node roles */
 public class NodeRolesData {
@@ -65,37 +66,42 @@ public class NodeRolesData {
   }
 
   /**
-   * Replace all dimensions of a type with the provided data
+   * Merge the dimensions in current file with new data. If the same dimension is present in both
+   * data sources, the new data wins. Optionally, delete all dimensions of type AUTO before adding
+   * new data.
    *
+   * @param dataPath Location of the old data
    * @param newDimensions The new role data. Null values are treated as if the map were empty.
-   * @param roleType The type of roles to replace
+   * @param deleteAutoFirst If dimensions of type AUTO should be deleted first
    */
-  public static synchronized void replaceNodeRoleDimensions(
-      Path dataPath, SortedSet<NodeRoleDimension> newDimensions, NodeRoleDimension.Type roleType)
+  public static synchronized void mergeNodeRoleDimensions(
+      Path dataPath, SortedSet<NodeRoleDimension> newDimensions, boolean deleteAutoFirst)
       throws IOException {
 
     NodeRolesData oldRolesData = read(dataPath);
 
+    final SortedSet<NodeRoleDimension> finalNewDimensions =
+        newDimensions == null ? new TreeSet<>() : newDimensions;
+
     SortedSet<NodeRoleDimension> newRoles = new TreeSet<>();
 
-    // in the new data, insert the type we don't want to replace from the old data
+    // add the old role dimensions that are not in common with new dimensions
     newRoles.addAll(
         oldRolesData
             ._roleDimensions
             .stream()
-            .filter(d -> roleType != d.getType())
-            .collect(Collectors.toList()));
+            .filter(d -> !finalNewDimensions.contains(d))
+            .collect(Collectors.toSet()));
 
-    // in the new data, get the type we want to replace from the new dimensions
-    if (newDimensions != null) {
-      newRoles.addAll(
-          newDimensions.stream().filter(d -> roleType == d.getType()).collect(Collectors.toList()));
+    // delete the auto dimensions if needed
+    if (deleteAutoFirst) {
+      newRoles.removeIf(d -> d.getType() == Type.AUTO);
     }
 
-    // this conditional write ensures that we update the last modified time only if needed
-    if (!oldRolesData._roleDimensions.equals(newRoles)) {
-      write(new NodeRolesData(new Date().toInstant(), newRoles), dataPath);
-    }
+    // add the new dimensions
+    newRoles.addAll(finalNewDimensions);
+
+    write(new NodeRolesData(new Date().toInstant(), newRoles), dataPath);
   }
 
   public static synchronized void write(NodeRolesData data, Path dataPath)

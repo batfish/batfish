@@ -394,6 +394,11 @@ ADVERTISE_INACTIVE
    'advertise-inactive'
 ;
 
+ADVERTISE_MAP
+:
+   'advertise-map'
+;
+
 AES
 :
    'aes'
@@ -522,6 +527,11 @@ AGGREGATE_ADDRESS
 AGING
 :
    'aging'
+;
+
+AH
+:
+   'ah'
 ;
 
 AHP
@@ -677,6 +687,11 @@ AM_SCAN_PROFILE
 AMON
 :
    'amon'
+;
+
+AMT
+:
+   'amt'
 ;
 
 AND
@@ -1106,6 +1121,11 @@ AUTO_COST
    'auto-cost'
 ;
 
+AUTO_DISCARD
+:
+   'auto-discard'
+;
+
 AUTO_IMPORT
 :
    'auto-import'
@@ -1264,6 +1284,11 @@ BEACON
 BESTPATH
 :
    'bestpath'
+;
+
+BESTPATH_LIMIT
+:
+   'bestpath-limit'
 ;
 
 BEYOND_SCOPE
@@ -1796,14 +1821,19 @@ CLASS
    'class'
 ;
 
-CLASSLESS
+CLASS_DEFAULT
 :
-   'classless'
+   'class-default'
 ;
 
 CLASS_MAP
 :
    'class-map'
+;
+
+CLASSLESS
+:
+   'classless'
 ;
 
 CLEANUP
@@ -2081,6 +2111,11 @@ CONNECTION
    'connection'
 ;
 
+CONNECTION_MODE
+:
+   'connection-mode'
+;
+
 CONNECTION_REUSE
 :
    'connection-reuse'
@@ -2104,6 +2139,11 @@ CONTACT_EMAIL_ADDR
 CONTACT_NAME
 :
    'contact-name' -> pushMode ( M_Description )
+;
+
+CONTENT_TYPE
+:
+   'content-type'
 ;
 
 CONTEXT
@@ -2187,6 +2227,11 @@ COPY
    'copy'
 ;
 
+COPY_ATTRIBUTES
+:
+   'copy-attributes'
+;
+
 COS
 :
    'cos'
@@ -2205,6 +2250,11 @@ COS_QUEUE_GROUP
 COST
 :
    'cost'
+;
+
+COST_COMMUNITY
+:
+   'cost-community'
 ;
 
 COUNT
@@ -3327,6 +3377,11 @@ DUAL_ACTIVE
    'dual-active'
 ;
 
+DUAL_AS
+:
+   'dual-as'
+;
+
 DUAL_MODE_DEFAULT_VLAN
 :
    'dual-mode-default-vlan'
@@ -3922,6 +3977,16 @@ EXECUTE
    'execute' -> pushMode ( M_Execute )
 ;
 
+EXEMPT
+:
+   'exempt'
+;
+
+EXIST_MAP
+:
+   'exist-map'
+;
+
 EXIT
 :
    'exit'
@@ -4336,6 +4401,11 @@ FLUSH_R1_ON_NEW_R0
    'flush-r1-on-new-r0'
 ;
 
+FLUSH_ROUTES
+:
+   'flush-routes'
+;
+
 FORCE
 :
    'force'
@@ -4534,6 +4604,11 @@ GOPHER
 GRACEFUL_RESTART
 :
    'graceful-restart'
+;
+
+GRACEFUL_RESTART_HELPER
+:
+   'graceful-restart-helper'
 ;
 
 GRACETIME
@@ -4986,6 +5061,11 @@ IDENT
    'ident'
 ;
 
+IDENTIFIER
+:
+   'identifier'
+;
+
 IDENTITY
 :
    'identity'
@@ -5254,6 +5334,11 @@ INIT_TECH_LIST
 INITIAL_ROLE
 :
    'initial-role'
+;
+
+INJECT_MAP
+:
+   'inject-map'
 ;
 
 INPUT
@@ -5693,6 +5778,11 @@ LAPB
    'lapb'
 ;
 
+LARGE
+:
+   'large'
+;
+
 LAST_AS
 :
    'last-as'
@@ -5871,6 +5961,11 @@ LINK_TYPE
 LINKDEBOUNCE
 :
    'linkdebounce'
+;
+
+LISP
+:
+   'lisp'
 ;
 
 LIST
@@ -6088,6 +6183,11 @@ LOTUSNOTES
    'lotusnotes'
 ;
 
+LOW_MEMORY
+:
+   'low-memory'
+;
+
 LPD
 :
    'lpd'
@@ -6296,6 +6396,11 @@ MATCHES_ANY
 MATCHES_EVERY
 :
    'matches-every'
+;
+
+MAXAS_LIMIT
+:
+   'maxas-limit'
 ;
 
 MAX_ASSOCIATIONS
@@ -6693,6 +6798,16 @@ MIRROR
    'mirror'
 ;
 
+MISMATCH
+:
+   'mismatch'
+;
+
+MISSING_AS_WORST
+:
+   'missing-as-worst'
+;
+
 MLAG
 :
    'mlag'
@@ -6943,6 +7058,11 @@ MULTI_TOPOLOGY
    'multi-topology'
 ;
 
+MVPN
+:
+   'mvpn'
+;
+
 MVR
 :
    'mvr'
@@ -7183,6 +7303,11 @@ NETWORK_OBJECT
    'network-object'
 ;
 
+NETWORK_QOS
+:
+   'network-qos'
+;
+
 NETWORK_UNKNOWN
 :
    'network-unknown'
@@ -7348,9 +7473,24 @@ NON_CLIENT_NRT
    'non-client-nrt'
 ;
 
+NON_CRITICAL
+:
+   'non-critical'
+;
+
+NON_DETERMINISTIC
+:
+   'non-deterministic'
+;
+
 NON_DETERMINISTIC_MED
 :
    'non-deterministic-med'
+;
+
+NON_EXIST_MAP
+:
+   'non-exist-map'
 ;
 
 NONE
@@ -7451,6 +7591,11 @@ OBJECT
 OBJECT_GROUP
 :
    'object-group' -> pushMode(M_ObjectGroup)
+;
+
+OBJSTORE
+:
+   'objstore'
 ;
 
 ON
@@ -7863,6 +8008,11 @@ PAUSE
    'pause'
 ;
 
+PBR
+:
+  'pbr'
+;
+
 PCANYWHERE_DATA
 :
    'pcanywhere-data'
@@ -7896,6 +8046,11 @@ PEAKDETECT
 PEER
 :
    'peer'
+;
+
+PEERS
+:
+   'peers'
 ;
 
 PEER_ADDRESS
@@ -8328,6 +8483,16 @@ PREFIX_LIST
    'prefix-list'
 ;
 
+PREFIX_PEER_TIMEOUT
+:
+   'prefix-peer-timeout'
+;
+
+PREFIX_PEER_WAIT
+:
+   'prefix-peer-wait'
+;
+
 PREFIX_SET
 :
    'prefix-set'
@@ -8663,6 +8828,16 @@ QUEUE_SET
    'queue-set'
 ;
 
+QUEUEING
+:
+   'queueing'
+;
+
+QUEUING
+:
+   'queuing'
+;
+
 QUIT
 :
    'quit'
@@ -8888,6 +9063,11 @@ REFLECT
    'reflect'
 ;
 
+REFLECTION
+:
+   'reflection'
+;
+
 REFLEXIVE_LIST
 :
    'reflexive-list'
@@ -9008,6 +9188,11 @@ REOPTIMIZE
    'reoptimize'
 ;
 
+REQ_RESP
+:
+   'req-resp'
+;
+
 REQ_TRANS_POLICY
 :
    'req-trans-policy'
@@ -9051,6 +9236,16 @@ RESPONDER
 RESPONSE
 :
    'response'
+;
+
+RESTART
+:
+   'restart'
+;
+
+RESTART_TIME
+:
+   'restart-time'
 ;
 
 RESTRICTED
@@ -9618,6 +9813,11 @@ SELECT
    'select'
 ;
 
+SELECTION
+:
+   'selection'
+;
+
 SELECTIVE
 :
    'selective'
@@ -10053,6 +10253,11 @@ SITE_ID
    'site-id'
 ;
 
+SIZE
+:
+   'size'
+;
+
 SLA
 :
    'sla'
@@ -10066,6 +10271,11 @@ SLOT
 SLOT_TABLE_COS
 :
    'slot-table-cos'
+;
+
+SMALL
+:
+   'small'
 ;
 
 SMALL_HELLO
@@ -10136,6 +10346,11 @@ SNR_MIN
 SNTP
 :
    'sntp'
+;
+
+SOO
+:
+   'soo'
 ;
 
 SORT_BY
@@ -10356,6 +10571,11 @@ STACK_MIB
 STACK_UNIT
 :
    'stack-unit'
+;
+
+STALEPATH_TIME
+:
+   'stalepath-time'
 ;
 
 STALE_ROUTE
@@ -10630,9 +10850,19 @@ SUPPRESS_ARP
    'suppress-arp'
 ;
 
+SUPPRESS_INACTIVE
+:
+   'suppress-inactive'
+;
+
 SUPPRESS_FIB_PENDING
 :
    'suppress-fib-pending'
+;
+
+SUPPRESS_MAP
+:
+   'suppress-map'
 ;
 
 SUPPRESSED
@@ -11250,6 +11480,11 @@ TRIGGER
    'trigger'
 ;
 
+TRIGGER_DELAY
+:
+   'trigger-delay'
+;
+
 TRIMODE
 :
    'trimode'
@@ -11453,6 +11688,11 @@ UNREACHABLE
 UNREACHABLES
 :
    'unreachables'
+;
+
+UNSUPPRESS_MAP
+:
+   'unsuppress-map'
 ;
 
 UNICAST
@@ -12022,6 +12262,11 @@ WAIT_FOR
   'wait-for'
 ;
 
+WAIT_IGP_CONVERGENCE
+:
+   'wait-igp-convergence'
+;
+
 WAIT_START
 :
    'wait-start'
@@ -12030,6 +12275,11 @@ WAIT_START
 WARNINGS
 :
    'warnings'
+;
+
+WARNING_ONLY
+:
+   'warning-only'
 ;
 
 WARNTIME
@@ -12622,6 +12872,11 @@ FLOAT
 FORWARD_SLASH
 :
    '/'
+;
+
+FOUR_BYTE_AS
+:
+   '4-byte-as'
 ;
 
 IP_ADDRESS
@@ -14037,9 +14292,19 @@ M_ObjectGroup_NETWORK
   'network' -> type ( NETWORK ) , popMode
 ;
 
+M_ObjectGroup_PROTOCOL
+:
+  'protocol' -> type ( PROTOCOL ) , popMode
+;
+
 M_ObjectGroup_SERVICE
 :
   'service' -> type ( SERVICE ) , popMode
+;
+
+M_ObjectGroup_USER
+:
+  'user' -> type ( USER ) , popMode
 ;
 
 /* Do not reorder above literals */

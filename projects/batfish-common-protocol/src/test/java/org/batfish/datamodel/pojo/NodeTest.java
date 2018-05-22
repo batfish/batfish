@@ -20,7 +20,7 @@ public class NodeTest {
   @Test
   public void constructorFail() throws IOException {
     String nodeStr = "{\"nonamefield\" : \"nodeName\"}";
-    _thrown.expect(com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException.class);
+    _thrown.expect(com.fasterxml.jackson.databind.exc.InvalidDefinitionException.class);
     BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
   }
 
@@ -29,7 +29,7 @@ public class NodeTest {
     String nodeStr = "{\"name\" : \"nodeName\"}";
     Node node = BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
 
-    assertThat(node.getId(), equalTo(Node.getId("nodeName")));
+    assertThat(node.getId(), equalTo("node-nodeName"));
     assertThat(node.getName(), equalTo("nodeName"));
   }
 
@@ -38,7 +38,7 @@ public class NodeTest {
     String nodeStr = "{\"name\" : \"nodeName\", \"properties\" : { \"key\": \"value\"}}";
     Node node = BatfishObjectMapper.mapper().readValue(nodeStr, Node.class);
 
-    assertThat(node.getId(), equalTo(Node.getId("nodeName")));
+    assertThat(node.getId(), equalTo("node-nodeName"));
     assertThat(node.getName(), equalTo("nodeName"));
     assertThat(node.getProperties().size(), equalTo(1));
     assertThat(node.getProperties().get("key"), equalTo("value"));
@@ -46,13 +46,13 @@ public class NodeTest {
 
   @Test
   public void serialization() {
-    Node node = new Node("testnode", DeviceType.HOST);
+    Node node = new Node("testnode", "myId", DeviceType.HOST);
     Map<String, String> properties = new HashMap<>();
     properties.put("key", "value");
     node.setProperties(properties);
     JsonNode jsonNode = BatfishObjectMapper.mapper().valueToTree(node);
 
-    assertThat(jsonNode.get("id").asText(), equalTo(Node.getId("testnode")));
+    assertThat(jsonNode.get("id").asText(), equalTo("myId"));
     assertThat(jsonNode.get("name").asText(), equalTo("testnode"));
     assertThat(jsonNode.get("type").asText(), equalTo("HOST"));
     assertThat(jsonNode.get("properties").get("key").asText(), equalTo("value"));

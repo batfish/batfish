@@ -68,11 +68,11 @@ public class ConvertConfigurationResult
           if (_warningsByHost.containsKey(hostname) && !_warningsByHost.get(hostname).isEmpty()) {
             answerElement.getWarnings().put(hostname, _warningsByHost.get(hostname));
           }
-          if (!_answerElement.getUnusedStructures().isEmpty()) {
-            answerElement.getUnusedStructures().putAll(_answerElement.getUnusedStructures());
-          }
           if (!_answerElement.getUndefinedReferences().isEmpty()) {
             answerElement.getUndefinedReferences().putAll(_answerElement.getUndefinedReferences());
+          }
+          if (!_answerElement.getDefinedStructures().isEmpty()) {
+            answerElement.getDefinedStructures().putAll(_answerElement.getDefinedStructures());
           }
         }
       }

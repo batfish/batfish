@@ -18,10 +18,10 @@ batfish_test_all || exit 1
 export ALLINONE_JAVA_ARGS="-enableassertions -DbatfishCoordinatorPropertiesPath=${BATFISH_ROOT}/.travis/travis_coordinator.properties"
 
 echo -e "\n  ..... Running parsing tests"
-allinone -cmdfile test_rigs/parsing-tests/commands || exit 1
+allinone -cmdfile tests/parsing-tests/commands || exit 1
 
 echo -e "\n  ..... Running parsing tests with error"
-allinone -cmdfile test_rigs/parsing-errors-tests/commands || exit 1
+allinone -cmdfile tests/parsing-errors-tests/commands || exit 1
 
 echo -e "\n  ..... Running basic client tests"
 allinone -cmdfile tests/basic/commands || exit 1
@@ -29,8 +29,9 @@ allinone -cmdfile tests/basic/commands || exit 1
 echo -e "\n  ..... Running role functionality tests"
 allinone -cmdfile tests/roles/commands || exit 1
 
-echo -e "\n  ..... Running jsonpath-addons tests"
+echo -e "\n  ..... Running jsonpath tests"
 allinone -cmdfile tests/jsonpath-addons/commands || exit 1
+allinone -cmdfile tests/jsonpathtotable/commands || exit 1
 
 echo -e "\n  ..... Running ui-focused client tests"
 allinone -cmdfile tests/ui-focused/commands || exit 1

@@ -5,8 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerSummary;
@@ -21,13 +19,20 @@ public class TableAnswerElementTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
+  private class TableAnswerElementChild extends TableAnswerElement {
+
+    public TableAnswerElementChild(TableMetadata metadata) {
+      super(metadata);
+    }
+  }
+
   /** Does computerSummary compute the correct summary? */
   @Test
   public void testComputeSummary() {
     // generate an answer with two rows
-    TableAnswerElement answer = new TableAnswerElement(new TableMetadata());
-    answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
-    answer.addRow(BatfishObjectMapper.mapper().createObjectNode());
+    TableAnswerElement answer = new TableAnswerElementChild(new TableMetadata());
+    answer.addRow(Row.builder().build());
+    answer.addRow(Row.builder().build());
 
     Assertion assertion = new Assertion(AssertionType.countequals, new IntNode(1)); // wrong count
     AnswerSummary summary = answer.computeSummary(assertion);
@@ -42,12 +47,12 @@ public class TableAnswerElementTest {
   public void testEvaluateAssertionCount() throws IOException {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
-    TableAnswerElement oneRow = new TableAnswerElement(new TableMetadata());
-    oneRow.addRow(BatfishObjectMapper.mapper().createObjectNode());
+    TableAnswerElement oneRow = new TableAnswerElementChild(new TableMetadata());
+    oneRow.addRow(Row.builder().build());
 
-    TableAnswerElement twoRows = new TableAnswerElement(new TableMetadata());
-    twoRows.addRow(BatfishObjectMapper.mapper().createObjectNode());
-    twoRows.addRow(BatfishObjectMapper.mapper().createObjectNode());
+    TableAnswerElement twoRows = new TableAnswerElementChild(new TableMetadata());
+    twoRows.addRow(Row.builder().build());
+    twoRows.addRow(Row.builder().build());
 
     assertThat(oneRow.evaluateAssertion(twoCount), equalTo(false));
     assertThat(twoRows.evaluateAssertion(twoCount), equalTo(true));
@@ -63,20 +68,14 @@ public class TableAnswerElementTest {
                 .readValue("[{\"key1\": \"value1\"}, {\"key2\": \"value2\"}]", JsonNode.class));
 
     // adding rows in different order shouldn't matter
-    TableAnswerElement otherRows = new TableAnswerElement(new TableMetadata());
-    otherRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key2", new TextNode("value2")));
-    otherRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value1")));
+    TableAnswerElement otherRows = new TableAnswerElementChild(new TableMetadata());
+    otherRows.addRow(Row.builder().put("key2", "value2").build());
+    otherRows.addRow(Row.builder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(true));
 
     // adding another duplicate row should matter
-    otherRows.addRow(
-        (ObjectNode)
-            BatfishObjectMapper.mapper().createObjectNode().set("key1", new TextNode("value1")));
+    otherRows.addRow(Row.builder().put("key1", "value1").build());
 
     assertThat(otherRows.evaluateAssertion(assertion), equalTo(false));
   }
