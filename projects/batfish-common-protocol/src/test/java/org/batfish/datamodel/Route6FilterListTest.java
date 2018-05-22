@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.batfish.datamodel.matchers.Route6FilterListMatchers.permits;
+import static org.batfish.datamodel.matchers.Route6FilterListMatchers.rejects;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -25,7 +26,6 @@ public class Route6FilterListTest {
                     new Ip6Wildcard(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:ffff:0:0:0:ffff:ffff:ffff"),
                     new SubRange(64, 64))));
-    _rfAddressMask.initCaches();
     _rfPrefixMoreSpecific =
         new Route6FilterList(
             "test-route6-filter-prefix",
@@ -35,7 +35,6 @@ public class Route6FilterListTest {
                     new Ip6Wildcard(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:0:0:0:ffff:ffff:ffff:ffff"),
                     new SubRange(65, 70))));
-    _rfPrefixMoreSpecific.initCaches();
     _rfPrefixExact =
         new Route6FilterList(
             "test-route6-filter-prefix",
@@ -45,7 +44,6 @@ public class Route6FilterListTest {
                     new Ip6Wildcard(
                         "2001:db8:1234:2345:3456:4567:5678:6789;0:0:0:0:ffff:ffff:ffff:ffff"),
                     new SubRange(64, 64))));
-    _rfPrefixExact.initCaches();
   }
 
   @Test
@@ -54,9 +52,9 @@ public class Route6FilterListTest {
     Prefix6 deniedPrefix1 = new Prefix6("2002:db8:2346:2347:5353:4567:5678:6789/64");
     Prefix6 deniedPrefix2 = new Prefix6("2001:db8:1234:2345:3456:4567:5678:6789/66");
 
-    assertThat(_rfAddressMask.permits(acceptedPrefix1), equalTo(true));
-    assertThat(_rfAddressMask.permits(deniedPrefix1), equalTo(false));
-    assertThat(_rfAddressMask.permits(deniedPrefix2), equalTo(false));
+    assertThat(_rfAddressMask, permits(acceptedPrefix1));
+    assertThat(_rfAddressMask, rejects(deniedPrefix1));
+    assertThat(_rfAddressMask, rejects(deniedPrefix2));
   }
 
   @Test
@@ -66,9 +64,9 @@ public class Route6FilterListTest {
     // matching prefix but is less specific
     Prefix6 deniedPrefix2 = new Prefix6("2001:db8:1234:2345:5353:8373:8728:1239/62");
 
-    assertThat(_rfPrefixMoreSpecific.permits(acceptedPrefix1), equalTo(true));
-    assertThat(_rfPrefixMoreSpecific.permits(deniedPrefix1), equalTo(false));
-    assertThat(_rfPrefixMoreSpecific.permits(deniedPrefix2), equalTo(false));
+    assertThat(_rfPrefixMoreSpecific, permits(acceptedPrefix1));
+    assertThat(_rfPrefixMoreSpecific, rejects(deniedPrefix1));
+    assertThat(_rfPrefixMoreSpecific, rejects(deniedPrefix2));
   }
 
   @Test
@@ -77,7 +75,7 @@ public class Route6FilterListTest {
     // matching prefix with non-equal prefix length
     Prefix6 deniedPrefix1 = new Prefix6("2001:db8:1234:2345:5353:8373:8728:1239/65");
 
-    assertThat(_rfPrefixExact.permits(acceptedPrefix1), equalTo(true));
-    assertThat(_rfPrefixExact.permits(deniedPrefix1), equalTo(false));
+    assertThat(_rfPrefixExact, permits(acceptedPrefix1));
+    assertThat(_rfPrefixExact, rejects(deniedPrefix1));
   }
 }

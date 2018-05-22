@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
@@ -12,7 +13,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
@@ -31,6 +31,8 @@ public class RouteFilterList extends ComparableStructure<String> {
   private final Supplier<Set<Prefix>> _permittedCache;
 
   private static class CacheSupplier implements Supplier<Set<Prefix>>, Serializable {
+    private static final long serialVersionUID = 1L;
+
     @Override
     public Set<Prefix> get() {
       return Collections.newSetFromMap(new ConcurrentHashMap<>());
@@ -44,8 +46,8 @@ public class RouteFilterList extends ComparableStructure<String> {
 
   public RouteFilterList(String name, List<RouteFilterLine> lines) {
     super(name);
-    _deniedCache = Suppliers.memoize(new CacheSupplier()::get);
-    _permittedCache = Suppliers.memoize(new CacheSupplier()::get);
+    _deniedCache = Suppliers.memoize(new CacheSupplier());
+    _permittedCache = Suppliers.memoize(new CacheSupplier());
     this._lines = lines;
   }
 

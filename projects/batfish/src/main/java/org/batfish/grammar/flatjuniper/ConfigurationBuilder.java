@@ -2055,7 +2055,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitPopsfrf_address_mask(Popsfrf_address_maskContext ctx) {
     if (_currentRouteFilterPrefix != null) { // ipv4
-      if (ctx.IP_ADDRESS().getText() != null) {
+      if (ctx.IP_ADDRESS() != null) {
         Route4FilterLine line =
             new Route4FilterLineAddressMask(
                 _currentRouteFilterPrefix, new Ip(ctx.IP_ADDRESS().getText()).inverted());
@@ -2067,7 +2067,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 _currentRouteFilterPrefix));
       }
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
-      if (ctx.IPV6_ADDRESS().getText() != null) {
+      if (ctx.IPV6_ADDRESS() != null) {
         Route6FilterLine line =
             new Route6FilterLineAddressMask(
                 _currentRoute6FilterPrefix, new Ip6(ctx.IPV6_ADDRESS().getText()).inverted());

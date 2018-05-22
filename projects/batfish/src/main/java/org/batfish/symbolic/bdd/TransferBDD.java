@@ -848,6 +848,9 @@ class TransferBDD {
     List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
     Collections.reverse(lines);
     for (RouteFilterLine line : lines) {
+      if (!line.getIpWildcard().isPrefix()) {
+        throw new BatfishException("non-prefix IpWildcards are unsupported");
+      }
       Prefix pfx = line.getIpWildcard().toPrefix();
       if (!PrefixUtils.isContainedBy(pfx, _ignoredNetworks)) {
         SubRange r = line.getLengthRange();

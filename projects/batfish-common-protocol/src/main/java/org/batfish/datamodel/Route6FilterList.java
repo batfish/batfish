@@ -5,10 +5,10 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -23,11 +23,20 @@ public class Route6FilterList extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
-  private transient Set<Prefix6> _deniedCache;
+  private final Supplier<Set<Prefix6>> _deniedCache;
 
   private List<Route6FilterLine> _lines;
 
-  private transient Set<Prefix6> _permittedCache;
+  private final Supplier<Set<Prefix6>> _permittedCache;
+
+  private static class CacheSupplier implements Supplier<Set<Prefix6>>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Set<Prefix6> get() {
+      return Collections.newSetFromMap(new ConcurrentHashMap<>());
+    }
+  }
 
   public Route6FilterList(String name) {
     this(name, new ArrayList<>());
@@ -38,6 +47,8 @@ public class Route6FilterList extends ComparableStructure<String> {
       @JsonProperty(PROP_NAME) String name,
       @JsonProperty(PROP_LINES) List<Route6FilterLine> lines) {
     super(name);
+    _deniedCache = Suppliers.memoize(new Route6FilterList.CacheSupplier());
+    _permittedCache = Suppliers.memoize(new Route6FilterList.CacheSupplier());
     _lines = firstNonNull(lines, Collections.emptyList());
   }
 
@@ -63,12 +74,6 @@ public class Route6FilterList extends ComparableStructure<String> {
     return _lines;
   }
 
-  @VisibleForTesting
-  void initCaches() {
-    _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-  }
-
   private boolean newPermits(Prefix6 prefix) {
     boolean accept = false;
     for (Route6FilterLine line : _lines) {
@@ -82,26 +87,20 @@ public class Route6FilterList extends ComparableStructure<String> {
       }
     }
     if (accept) {
-      _permittedCache.add(prefix);
+      _permittedCache.get().add(prefix);
     } else {
-      _deniedCache.add(prefix);
+      _deniedCache.get().add(prefix);
     }
     return accept;
   }
 
   public boolean permits(Prefix6 prefix) {
-    if (_deniedCache.contains(prefix)) {
+    if (_deniedCache.get().contains(prefix)) {
       return false;
-    } else if (_permittedCache.contains(prefix)) {
+    } else if (_permittedCache.get().contains(prefix)) {
       return true;
     }
     return newPermits(prefix);
-  }
-
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-    _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
   }
 
   @JsonProperty(PROP_LINES)

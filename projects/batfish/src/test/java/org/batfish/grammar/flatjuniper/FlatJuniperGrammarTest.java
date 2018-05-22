@@ -105,7 +105,9 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -223,7 +225,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             ACL_NAME_GLOBAL_POLICY,
-            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.acceptingHeaderSpace(
@@ -365,7 +367,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             ACL_NAME_GLOBAL_POLICY,
-            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.acceptingHeaderSpace(
@@ -1247,7 +1249,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             filterNameV4,
-            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
@@ -1282,7 +1284,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             filterNameV4,
-            org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
@@ -1611,7 +1613,7 @@ public class FlatJuniperGrammarTest {
     RouteFilterList rfl = c.getRouteFilterLists().get("route-filter-test:t1");
     assertThat(
         rfl,
-        org.batfish.datamodel.matchers.RouteFilterListMatchers.hasLines(
+        RouteFilterListMatchers.hasLines(
             containsInAnyOrder(
                 new RouteFilterLine(
                     LineAction.ACCEPT, Prefix.parse("1.2.0.0/16"), new SubRange(16, 16)),

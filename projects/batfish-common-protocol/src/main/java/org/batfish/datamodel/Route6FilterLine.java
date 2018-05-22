@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.MoreObjects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 
@@ -98,12 +99,10 @@ public class Route6FilterLine implements Serializable {
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("{ ");
-    sb.append("Action=" + _action + " ");
-    sb.append("IpWildcard=" + _ipWildcard + " ");
-    sb.append("LengthRange=" + _lengthRange + " ");
-    sb.append("}");
-    return sb.toString();
+    return MoreObjects.toStringHelper(getClass())
+        .add("Action", _action)
+        .add("IpWildCard", _ipWildcard)
+        .add("LengthRange", _lengthRange)
+        .toString();
   }
 }

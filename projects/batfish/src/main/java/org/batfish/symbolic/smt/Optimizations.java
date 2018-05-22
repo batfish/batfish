@@ -524,6 +524,9 @@ class Optimizations {
                       (name, filter) -> {
                         if (name.contains(AGGREGATION_SUPPRESS_NAME)) {
                           for (RouteFilterLine line : filter.getLines()) {
+                            if (!line.getIpWildcard().isPrefix()) {
+                              throw new BatfishException("non-prefix IpWildcards are unsupported");
+                            }
                             prefixes.add(line.getIpWildcard().toPrefix());
                           }
                         }

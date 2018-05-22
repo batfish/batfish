@@ -214,6 +214,9 @@ class TransferSSA {
     Collections.reverse(lines);
 
     for (RouteFilterLine line : lines) {
+      if (!line.getIpWildcard().isPrefix()) {
+        throw new BatfishException("non-prefix IpWildcards are unsupported");
+      }
       Prefix p = line.getIpWildcard().toPrefix();
       SubRange r = line.getLengthRange();
       PrefixRange range = new PrefixRange(p, r);

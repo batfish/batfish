@@ -8,9 +8,9 @@ import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.SubRange;
 
+/** Representation of a route-filter with a IPv6 prefix and an address mask */
 public final class Route6FilterLineAddressMask extends Route6FilterLine {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private final Ip6 _addressMask;
