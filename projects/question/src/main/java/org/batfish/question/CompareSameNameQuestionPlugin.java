@@ -1,14 +1,17 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
@@ -227,8 +230,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
   }
 
-  // <question_page_comment>
-
   /**
    * Compares named structures with identical names across multiple nodes.
    *
@@ -239,21 +240,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    * usually indicates a configuration error. For instance, if the ACL named
    * ``\verb|block_non_http_ssh|'' has identical content on nine out of ten routers, but is
    * different in the tenth router, the ACL is likely misconfigured on the tenth router.
-   *
-   * @type CompareSameName multifile
-   * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface,
-   *     Ip6AccessList, IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList,
-   *     RouteFilterList, RoutingPolicy, Vrf, Zone ) Default value is '[]', which denotes all types
-   *     except those in excludedNamedStructTypes.
-   * @param excludedNamedStructTypes Set of structure types to omit from the analysis. Default is
-   *     [Interface, Vrf].
-   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
-   *     nodes).
-   * @param singletons Defaults to false. Specifies whether or not to include named structures for
-   *     which there is only one equivalence class.
-   * @param missing Defaults to false. Specifies whether or not to create an equivalence class for
-   *     nodes that are missing a structure of a given name.
    */
   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
 
@@ -269,22 +255,56 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_SINGLETONS = "singletons";
 
+    /** Whether to also compare auto-generated structures */
     private boolean _compareGenerated;
 
+    /**
+     * Exclude structures of this type.
+     *
+     * <p>Default value is [Interface, Vrf] because these named structure types seem to be less
+     * useful and have many entries that slow down the computation considerably.
+     */
     private SortedSet<String> _excludedNamedStructTypes;
 
+    /**
+     * Whether to create an equivalence class for nodes that are missing a structure of a given
+     * name.
+     */
     private boolean _missing;
 
+    /**
+     * Set of structure types to analyze drawn from ( AsPathAccessList, * AuthenticationKeyChain,
+     * CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface, * Ip6AccessList, IpAccessList,
+     * IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, * RouteFilterList, RoutingPolicy,
+     * Vrf, Zone )
+     *
+     * <p>Default value is '[]', which denotes all types except those in excludedNamedStructTypes.
+     */
     private SortedSet<String> _namedStructTypes;
 
+    /** The set of nodes over which to run the analysis */
     private NodesSpecifier _nodeRegex;
 
+    /** Whether to include named structures for which there is only one equivalence class. */
     private boolean _singletons;
 
-    public CompareSameNameQuestion() {
-      _namedStructTypes = new TreeSet<>();
-      initExcludedNamedStructTypes();
-      _nodeRegex = NodesSpecifier.ALL;
+    @JsonCreator
+    public CompareSameNameQuestion(
+        @JsonProperty(PROP_COMPARE_GENERATED) Boolean compareGenerated,
+        @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES) SortedSet<String> excludedNamedStructTypes,
+        @JsonProperty(PROP_MISSING) Boolean missing,
+        @JsonProperty(PROP_NAMED_STRUCT_TYPES) SortedSet<String> namedStructTypes,
+        @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
+        @JsonProperty(PROP_SINGLETONS) Boolean singletons) {
+      _compareGenerated = firstNonNull(compareGenerated, false);
+      _excludedNamedStructTypes =
+          firstNonNull(
+              excludedNamedStructTypes,
+              ImmutableSortedSet.of(Interface.class.getSimpleName(), Vrf.class.getSimpleName()));
+      _missing = firstNonNull(missing, false);
+      _namedStructTypes = firstNonNull(namedStructTypes, ImmutableSortedSet.of());
+      _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+      _singletons = firstNonNull(singletons, false);
     }
 
     @JsonProperty(PROP_COMPARE_GENERATED)
@@ -328,44 +348,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return _singletons;
     }
 
-    // These named structure types seem to be less useful and have many entries
-    // so slow down the computation considerably.  Therefore they are excluded
-    // from the analysis by default.
-    private void initExcludedNamedStructTypes() {
-      _excludedNamedStructTypes = new TreeSet<>();
-      _excludedNamedStructTypes.add(Interface.class.getSimpleName());
-      _excludedNamedStructTypes.add(Vrf.class.getSimpleName());
-    }
-
-    @JsonProperty(PROP_COMPARE_GENERATED)
-    public void setCompareGenerated(boolean compareGenerated) {
-      _compareGenerated = compareGenerated;
-    }
-
-    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
-    public void setExcludedNamedStructTypes(SortedSet<String> excludedNamedStructTypes) {
-      _excludedNamedStructTypes = excludedNamedStructTypes;
-    }
-
-    @JsonProperty(PROP_MISSING)
-    public void setMissing(boolean missing) {
-      _missing = missing;
-    }
-
-    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
-    public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
-      _namedStructTypes = namedStructTypes;
-    }
-
     @Override
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
-    }
-
-    @JsonProperty(PROP_SINGLETONS)
-    public void setSingletons(boolean singletons) {
-      _singletons = singletons;
     }
   }
 
@@ -376,6 +362,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected CompareSameNameQuestion createQuestion() {
-    return new CompareSameNameQuestion();
+    return new CompareSameNameQuestion(null, null, null, null, null, null);
   }
 }
