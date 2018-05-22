@@ -12,7 +12,7 @@ import org.batfish.datamodel.table.TableMetadata;
 
 class IpOwnersAnswerElement extends TableAnswerElement {
 
-  static final String COL_HOSTNAME = "Hostname";
+  static final String COL_NODE = "Hostname";
   static final String COL_VRFNAME = "VRF";
   static final String COL_IP = "IP";
   static final String COL_INTERFACE_NAME = "Interface";
@@ -34,14 +34,14 @@ class IpOwnersAnswerElement extends TableAnswerElement {
     displayHints.setTextDesc(
         String.format(
             "On node ${%s} in VRF ${%s}, interface ${%s} has IP ${%s}.",
-            COL_HOSTNAME, COL_VRFNAME, COL_INTERFACE_NAME, COL_IP));
+            COL_NODE, COL_VRFNAME, COL_INTERFACE_NAME, COL_IP));
     return new TableMetadata(columnMetadata, displayHints);
   }
 
   /** Create column metadata. */
   private static List<ColumnMetadata> getColumnMetadata() {
     return ImmutableList.of(
-        new ColumnMetadata(COL_HOSTNAME, Schema.NODE, "Node hostname"),
+        new ColumnMetadata(COL_NODE, Schema.NODE, "Node hostname"),
         new ColumnMetadata(COL_VRFNAME, Schema.STRING, "VRF name"),
         new ColumnMetadata(COL_INTERFACE_NAME, Schema.STRING, "Interface name"),
         new ColumnMetadata(COL_IP, Schema.IP, "IP address"),

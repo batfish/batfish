@@ -1,9 +1,9 @@
 package org.batfish.question.ipowners;
 
 import static org.batfish.question.ipowners.IpOwnersAnswerElement.COL_ACTIVE;
-import static org.batfish.question.ipowners.IpOwnersAnswerElement.COL_HOSTNAME;
 import static org.batfish.question.ipowners.IpOwnersAnswerElement.COL_INTERFACE_NAME;
 import static org.batfish.question.ipowners.IpOwnersAnswerElement.COL_IP;
+import static org.batfish.question.ipowners.IpOwnersAnswerElement.COL_NODE;
 import static org.batfish.question.ipowners.IpOwnersAnswerElement.COL_VRFNAME;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -64,7 +64,7 @@ class IpOwnersAnswerer extends Answerer {
                       || !duplicatesOnly) {
                     rows.add(
                         Row.builder()
-                            .put(COL_HOSTNAME, new Node(hostname))
+                            .put(COL_NODE, new Node(hostname))
                             .put(COL_VRFNAME, iface.getVrfName())
                             .put(COL_INTERFACE_NAME, iface.getName())
                             .put(COL_IP, iface.getAddress().getIp())
