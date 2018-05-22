@@ -189,7 +189,7 @@
         "description" : "Unused structure of type: 'bgp group' with name: 'p1'",
         "files" : {
           "cisco_bgp" : [
-            13
+            15
           ]
         }
       },
@@ -1482,7 +1482,7 @@
       "cisco_bgp" : {
         "bgp group" : {
           "p1" : [
-            13
+            15
           ]
         }
       },
