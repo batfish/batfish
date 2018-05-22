@@ -192,7 +192,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
@@ -349,7 +350,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";
@@ -1119,7 +1121,10 @@ public class WorkMgr extends AbstractCoordinator {
             NodeRolesData testrigData = NodeRolesData.read(subFile);
             Path nodeRolesPath = containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
             NodeRolesData.mergeNodeRoleDimensions(
-                nodeRolesPath, testrigData.getNodeRoleDimensions(), false);
+                nodeRolesPath,
+                testrigData.getNodeRoleDimensions(),
+                testrigData.getDefaultDimension(),
+                false);
           } catch (IOException e) {
             // lets not stop the upload because that file is busted.
             // TODO: figure out a way to surface this error to the user
@@ -1215,7 +1220,8 @@ public class WorkMgr extends AbstractCoordinator {
                   _settings.getSslPoolKeystoreFile(),
                   _settings.getSslPoolKeystorePassword(),
                   _settings.getSslPoolTruststoreFile(),
-                  _settings.getSslPoolTruststorePassword())
+                  _settings.getSslPoolTruststorePassword(),
+                  true)
               .build();
 
       String protocol = _settings.getSslPoolDisable() ? "http" : "https";

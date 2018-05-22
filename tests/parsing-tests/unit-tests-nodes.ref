@@ -8836,10 +8836,27 @@
         },
         "ipSpaces" : {
           "dns_servers" : {
-            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+            "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+            "ipWildcard" : "1.2.2.1"
           },
           "ntp_servers" : {
-            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+            "class" : "org.batfish.datamodel.AclIpSpace",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                  "ipWildcard" : "1.1.1.1"
+                }
+              },
+              {
+                "action" : "ACCEPT",
+                "ipSpace" : {
+                  "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                  "ipWildcard" : "1.1.1.1"
+                }
+              }
+            ]
           }
         },
         "vendorFamily" : {
@@ -13842,6 +13859,58 @@
               }
             }
           }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
+      "juniper_policy_statement" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_policy_statement",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "routingPolicies" : {
+          "POLICY-NAME" : {
+            "name" : "POLICY-NAME",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "TERM",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "static"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost",
+                    "admin" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
+                      "value" : 100
+                    }
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "Return"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
+                  "type" : "CallExprContext"
+                }
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : { }
         },
         "vrfs" : {
           "default" : {

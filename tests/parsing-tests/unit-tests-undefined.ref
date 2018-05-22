@@ -78,7 +78,7 @@
         "description" : "Undefined reference to structure of type: 'bgp group' with usage: 'inherited BGP group' named 'p3'",
         "files" : {
           "cisco_bgp" : [
-            15
+            17
           ]
         }
       },
@@ -968,7 +968,7 @@
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute connected route-map' named 'bloop'",
         "files" : {
           "cisco_bgp" : [
-            7
+            9
           ]
         }
       },
@@ -984,7 +984,7 @@
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute rip route-map' named 'blah'",
         "files" : {
           "cisco_bgp" : [
-            12
+            14
           ]
         }
       },
@@ -992,7 +992,7 @@
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'bgp redistribute static route-map' named 'abcdefg'",
         "files" : {
           "cisco_bgp" : [
-            11
+            13
           ]
         }
       },
@@ -1220,24 +1220,24 @@
         "bgp group" : {
           "p3" : {
             "inherited BGP group" : [
-              15
+              17
             ]
           }
         },
         "route-map" : {
           "abcdefg" : {
             "bgp redistribute static route-map" : [
-              11
+              13
             ]
           },
           "blah" : {
             "bgp redistribute rip route-map" : [
-              12
+              14
             ]
           },
           "bloop" : {
             "bgp redistribute connected route-map" : [
-              7
+              9
             ]
           }
         }

@@ -189,7 +189,7 @@
         "description" : "Unused structure of type: 'bgp group' with name: 'p1'",
         "files" : {
           "cisco_bgp" : [
-            13
+            15
           ]
         }
       },
@@ -792,6 +792,14 @@
           ]
         }
       },
+      "unused:policy-statement:POLICY-NAME" : {
+        "description" : "Unused structure of type: 'policy-statement' with name: 'POLICY-NAME'",
+        "files" : {
+          "juniper_policy_statement" : [
+            4
+          ]
+        }
+      },
       "unused:policy-statement:route-filter-test-v4" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
         "files" : {
@@ -1261,7 +1269,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 126
+      "numResults" : 127
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1474,7 +1482,7 @@
       "cisco_bgp" : {
         "bgp group" : {
           "p1" : [
-            13
+            15
           ]
         }
       },
@@ -1871,6 +1879,13 @@
           ],
           "test2" : [
             26
+          ]
+        }
+      },
+      "juniper_policy_statement" : {
+        "policy-statement" : {
+          "POLICY-NAME" : [
+            4
           ]
         }
       },

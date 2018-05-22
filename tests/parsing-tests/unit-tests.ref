@@ -184,6 +184,7 @@
         "juniper_misc" : "juniper_misc",
         "juniper_ntp" : "juniper_ntp",
         "juniper_passwords" : "juniper_passwords",
+        "juniper_policy_statement" : "juniper_policy_statement",
         "juniper_relay" : "juniper_relay",
         "juniper_route_filter" : "juniper_route_filter",
         "juniper_routing_options" : "juniper_routing_options",
@@ -430,6 +431,7 @@
         "juniper_misc" : "PASSED",
         "juniper_ntp" : "PASSED",
         "juniper_passwords" : "PASSED",
+        "juniper_policy_statement" : "PASSED",
         "juniper_relay" : "PASSED",
         "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
@@ -14372,6 +14374,18 @@
             "            FAST_EXTERNAL_FALLOVER:'fast-external-fallover'  <== mode:DEFAULT_MODE",
             "            (null_rest_of_line",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_maxas_limit_rb_stanza",
+            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "          MAXAS_LIMIT:'maxas-limit'  <== mode:DEFAULT_MODE",
+            "          DEC:'50'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (router_bgp_stanza_tail",
+            "        (bgp_scan_time_rb_stanza",
+            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "          SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
+            "          DEC:'5'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_connected_bgp_tail",
@@ -43270,6 +43284,70 @@
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
+        "juniper_policy_statement" : {
+          "sentences" : [
+            "(flat_juniper_configuration",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_system",
+            "            SYSTEM:'system'  <== mode:DEFAULT_MODE",
+            "            (sy_host_name",
+            "              HOST_NAME:'host-name'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'juniper_policy_statement'  <== mode:DEFAULT_MODE))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'  <== mode:DEFAULT_MODE",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'  <== mode:DEFAULT_MODE",
+            "                      (routing_protocol",
+            "                        STATIC:'static'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              (variable",
+            "                VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_preference",
+            "                        PREFERENCE:'preference'  <== mode:DEFAULT_MODE",
+            "                        DEC:'100'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
+          ]
+        },
         "juniper_relay" : {
           "sentences" : [
             "(flat_juniper_configuration",
@@ -52316,13 +52394,6 @@
             "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
           }
         },
-        "cisco_qos" : {
-          "Red flags" : {
-            "1" : "MISCELLANEOUS: Unimplemented object-group network line: network-object host 1.2.2.1\n",
-            "2" : "MISCELLANEOUS: Unimplemented object-group network line: network-object host 1.1.1.1\n",
-            "3" : "MISCELLANEOUS: Unimplemented object-group network line: network-object 1.1.1.1 255.255.255.255\n"
-          }
-        },
         "cisco_style_acl1" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: No hostname set in file: 'testrig/configs/cisco_style_acl1'\n"
@@ -52831,7 +52902,7 @@
           "bgp group" : {
             "p1" : {
               "definitionLines" : [
-                13
+                15
               ],
               "numReferrers" : 0
             }
@@ -52839,13 +52910,13 @@
           "route-map" : {
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                28
+                30
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                26
+                28
               ],
               "numReferrers" : 1
             }
@@ -53701,6 +53772,16 @@
         "juniper_misc" : { },
         "juniper_ntp" : { },
         "juniper_passwords" : { },
+        "juniper_policy_statement" : {
+          "policy-statement" : {
+            "POLICY-NAME" : {
+              "definitionLines" : [
+                4
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "juniper_relay" : {
           "dhcp-relay server-group" : {
             "site-dhcp" : {
@@ -54405,24 +54486,24 @@
           "bgp group" : {
             "p3" : {
               "inherited BGP group" : [
-                15
+                17
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                11
+                13
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                12
+                14
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                7
+                9
               ]
             }
           }
@@ -55470,6 +55551,7 @@
         "juniper_misc" : "PASSED",
         "juniper_ntp" : "PASSED",
         "juniper_passwords" : "PASSED",
+        "juniper_policy_statement" : "PASSED",
         "juniper_relay" : "PASSED",
         "juniper_route_filter" : "PASSED",
         "juniper_routing_options" : "PASSED",
