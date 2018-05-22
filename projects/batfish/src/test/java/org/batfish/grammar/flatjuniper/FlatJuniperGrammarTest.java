@@ -209,8 +209,6 @@ public class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
-        undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
 
     /* Check that appset2 contains definition of appset1 concatenated with definition of a3 */

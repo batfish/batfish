@@ -870,7 +870,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -979,7 +980,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -1086,7 +1088,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -1194,7 +1197,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -1300,7 +1304,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -1511,7 +1516,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -3240,7 +3246,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -3346,7 +3353,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -3462,7 +3470,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -5124,7 +5133,8 @@
             "                    MATCH:'match'  <== mode:DEFAULT_MODE",
             "                    (sepctxpm_application",
             "                      APPLICATION:'application'  <== mode:DEFAULT_MODE",
-            "                      ANY:'any'  <== mode:DEFAULT_MODE)))))))))",
+            "                      (junos_application",
+            "                        ANY:'any'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -5926,68 +5936,6 @@
               "numReferrers" : -1
             }
           },
-          "firewall filter" : {
-            "~FROM_ZONE~junos-host~TO_ZONE~untrust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~FROM_ZONE~loopback~TO_ZONE~junos-host" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~FROM_ZONE~trust~TO_ZONE~trust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~FROM_ZONE~untrust~TO_ZONE~junos-host" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~FROM_ZONE~untrust~TO_ZONE~loopback" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~FROM_ZONE~untrust~TO_ZONE~untrust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~INBOUND_ZONE_FILTER~hostos" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 2
-            },
-            "~INBOUND_ZONE_FILTER~loopback" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 2
-            },
-            "~INBOUND_ZONE_FILTER~trust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 3
-            },
-            "~INBOUND_ZONE_FILTER~untrust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 3
-            }
-          },
           "ike gateway" : {
             "gateway-2" : {
               "definitionLines" : [
@@ -6084,38 +6032,6 @@
               "numReferrers" : -1
             }
           },
-          "firewall filter" : {
-            "~FROM_ZONE~trust~TO_ZONE~trust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~INBOUND_ZONE_FILTER~hostos" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 2
-            },
-            "~INBOUND_ZONE_FILTER~loopback" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 2
-            },
-            "~INBOUND_ZONE_FILTER~trust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 3
-            },
-            "~INBOUND_ZONE_FILTER~untrust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 3
-            }
-          },
           "ike gateway" : {
             "gateway-1" : {
               "definitionLines" : [
@@ -6204,38 +6120,6 @@
                 82
               ],
               "numReferrers" : -1
-            }
-          },
-          "firewall filter" : {
-            "~FROM_ZONE~trust~TO_ZONE~trust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "~INBOUND_ZONE_FILTER~hostos" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 2
-            },
-            "~INBOUND_ZONE_FILTER~loopback" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 2
-            },
-            "~INBOUND_ZONE_FILTER~trust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 3
-            },
-            "~INBOUND_ZONE_FILTER~untrust" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 3
             }
           },
           "ike gateway" : {

@@ -53642,7 +53642,13 @@
           "authentication-key-chain" : {
             "bgp-auth" : {
               "definitionLines" : [
-                12
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18
               ],
               "numReferrers" : 1
             }
@@ -53667,7 +53673,10 @@
           "firewall filter" : {
             "blah" : {
               "definitionLines" : [
-                5
+                5,
+                6,
+                7,
+                8
               ],
               "numReferrers" : 0
             },
@@ -53728,16 +53737,7 @@
           }
         },
         "juniper_routing_options" : { },
-        "juniper_security" : {
-          "firewall filter" : {
-            "~GLOBAL_SECURITY_POLICY~" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 0
-            }
-          }
-        },
+        "juniper_security" : { },
         "juniper_snmp" : { },
         "juniper_syslog" : { },
         "juniper_system" : { },

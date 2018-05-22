@@ -827,7 +827,7 @@ public class CiscoGrammarTest {
 
   @Test
   public void testIosPrefixList() throws IOException {
-    String hostname = "ios-prefix-lists";
+    String hostname = "ios-prefix-list";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();

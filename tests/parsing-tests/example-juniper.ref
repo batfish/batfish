@@ -10546,15 +10546,17 @@
           "prefix-list" : {
             "as3_prefixes" : {
               "definitionLines" : [
-                49
+                49,
+                50
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "original_prefixes" : {
               "definitionLines" : [
-                47
+                47,
+                48
               ],
-              "numReferrers" : 0
+              "numReferrers" : 3
             }
           }
         },
@@ -10620,9 +10622,10 @@
           "prefix-list" : {
             "as2_prefixes" : {
               "definitionLines" : [
-                56
+                56,
+                57
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             },
             "as4_prefixes" : {
               "definitionLines" : [
@@ -10632,9 +10635,10 @@
             },
             "original_prefixes" : {
               "definitionLines" : [
-                54
+                54,
+                55
               ],
-              "numReferrers" : 0
+              "numReferrers" : 3
             }
           }
         },
