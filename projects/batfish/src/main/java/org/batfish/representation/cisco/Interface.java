@@ -94,7 +94,7 @@ public class Interface extends ComparableStructure<String> {
       bandwidth = null;
     } else if (name.startsWith("Loopback")) {
       bandwidth = LOOPBACK_BANDWIDTH;
-    } else if (name.startsWith("Port-Channel")) {
+    } else if (name.startsWith("Bundle-Ethernet") || name.startsWith("Port-Channel")) {
       bandwidth = 0D;
     }
     if (bandwidth == null) {

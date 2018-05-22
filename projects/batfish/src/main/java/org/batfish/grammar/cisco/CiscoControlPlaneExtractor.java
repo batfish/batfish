@@ -4501,7 +4501,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentInterfaces.forEach(i -> i.setChannelGroup(name));
   }
 
-  private String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
+  private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
     switch (format) {
       case CISCO_ASA:
       case ARISTA:

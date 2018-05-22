@@ -653,6 +653,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
+  private void computeAggregatedInterfaceBandwidth(
+      Interface iface, Map<String, Interface> interfaces) {
+    if (iface.getInterfaceType() != InterfaceType.AGGREGATED) {
+      return;
+    }
+    /* Bandwidth should be sum of bandwidth of channel-group members. */
+    iface.setBandwidth(
+        iface
+            .getChannelGroupMembers()
+            .stream()
+            .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
+            .sum());
+  }
+
   /**
    * Identifies any independently unmatchable ACL lines (i.e. they have unsatisfiable match
    * condition) in the given set of ACL lines.
@@ -3093,6 +3107,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettingsStack.remove(lastIndex);
   }
 
+  private void populateChannelGroupMembers(
+      Map<String, Interface> interfaces, String ifaceName, Interface iface) {
+    String portChannelName = iface.getChannelGroup();
+    if (portChannelName == null) {
+      return;
+    }
+    Interface portChannel = interfaces.get(portChannelName);
+    if (portChannel == null) {
+      return;
+    }
+    portChannel.setChannelGroupMembers(
+        ImmutableSortedSet.<String>naturalOrder()
+            .addAll(portChannel.getChannelGroupMembers())
+            .add(ifaceName)
+            .build());
+  }
+
   private void populateFlowHistory(
       FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
@@ -3106,6 +3137,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
         flowHistory.addFlowTrace(flow, envTag, environment, flowTrace);
       }
     }
+  }
+
+  private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(v -> postProcessAggregatedInterfacesHelper(v.getInterfaces())));
+  }
+
+  private void postProcessAggregatedInterfacesHelper(Map<String, Interface> interfaces) {
+    /* Populate aggregated interfaces with members referring to them. */
+    interfaces.forEach(
+        (ifaceName, iface) -> populateChannelGroupMembers(interfaces, ifaceName, iface));
+
+    /* Disable aggregated interfaces with no members. */
+    interfaces
+        .values()
+        .stream()
+        .filter(
+            i ->
+                i.getInterfaceType() == InterfaceType.AGGREGATED
+                    && i.getChannelGroupMembers().isEmpty())
+        .forEach(i -> i.setActive(false));
+
+    /* Compute bandwidth for aggregated interfaces. */
+    interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
   }
 
   private void postProcessConfigurations(Collection<Configuration> configurations) {
@@ -3128,55 +3188,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         c.setDeviceType(DeviceType.SWITCH);
       }
     }
-  }
-
-  private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
-    configurations
-        .values()
-        .forEach(
-            c ->
-                c.getVrfs()
-                    .values()
-                    .forEach(
-                        v -> {
-                          v.getInterfaces()
-                              .forEach(
-                                  (ifaceName, iface) -> {
-                                    String portChannelName = iface.getChannelGroup();
-                                    if (portChannelName == null) {
-                                      return;
-                                    }
-                                    Interface portChannel = v.getInterfaces().get(portChannelName);
-                                    if (portChannel == null) {
-                                      return;
-                                    }
-                                    portChannel.setChannelGroupMembers(
-                                        ImmutableSortedSet.<String>naturalOrder()
-                                            .addAll(portChannel.getChannelGroupMembers())
-                                            .add(ifaceName)
-                                            .build());
-                                  });
-                          v.getInterfaces()
-                              .values()
-                              .stream()
-                              .filter(i -> i.getInterfaceType() == InterfaceType.AGGREGATED)
-                              .forEach(
-                                  i -> {
-                                    if (i.getChannelGroupMembers().isEmpty()) {
-                                      i.setActive(false);
-                                    } else {
-                                      i.setBandwidth(
-                                          i.getChannelGroupMembers()
-                                              .stream()
-                                              .mapToDouble(
-                                                  ifaceName ->
-                                                      v.getInterfaces()
-                                                          .get(ifaceName)
-                                                          .getBandwidth())
-                                              .sum());
-                                    }
-                                  });
-                        }));
   }
 
   private void postProcessForEnvironment(Map<String, Configuration> configurations) {
