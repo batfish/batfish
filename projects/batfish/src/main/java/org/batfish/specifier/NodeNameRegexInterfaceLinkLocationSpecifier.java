@@ -1,19 +1,24 @@
 package org.batfish.specifier;
 
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import org.batfish.datamodel.Configuration;
 
 /**
  * A {@link LocationSpecifier} specifying links of interfaces belonging to nodes with names matching
  * the input regex.
  */
 public final class NodeNameRegexInterfaceLinkLocationSpecifier
-    extends NodeNameRegexInterfaceLocationSpecifier {
+    extends NodeNameRegexLocationSpecifier {
   public NodeNameRegexInterfaceLinkLocationSpecifier(Pattern pattern) {
     super(pattern);
   }
 
   @Override
-  protected Location makeLocation(String node, String iface) {
-    return new InterfaceLinkLocation(node, iface);
+  protected Stream<Location> getNodeLocations(Configuration node) {
+    return node.getInterfaces()
+        .values()
+        .stream()
+        .map(iface -> new InterfaceLinkLocation(node.getHostname(), iface.getName()));
   }
 }
