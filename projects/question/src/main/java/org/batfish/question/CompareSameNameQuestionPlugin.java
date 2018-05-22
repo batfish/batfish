@@ -9,13 +9,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -281,7 +282,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
                   excludedNamedStructTypes,
                   Arrays.asList(Interface.class.getSimpleName(), Vrf.class.getSimpleName())));
       _missing = firstNonNull(missing, false);
-      _namedStructTypes = toLowerCase(firstNonNull(namedStructTypes, ImmutableSortedSet.of()));
+      _namedStructTypes = toLowerCase(firstNonNull(namedStructTypes, Collections.EMPTY_SET));
       _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
       _singletons = firstNonNull(singletons, false);
     }
@@ -334,8 +335,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     private SortedSet<String> toLowerCase(Collection<String> names) {
-      return ImmutableSortedSet.copyOf(
-          names.stream().map(name -> name.toLowerCase()).collect(Collectors.toSet()));
+      return names
+          .stream()
+          .map(name -> name.toLowerCase())
+          .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }
   }
 
