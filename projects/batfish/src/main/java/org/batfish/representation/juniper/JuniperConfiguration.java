@@ -22,6 +22,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
@@ -704,7 +705,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface iface = e.getValue();
       placeInterfaceIntoArea(newAreas, name, iface, vrfName);
     }
-    newProc.setRouterId(routingInstance.getRouterId());
+    newProc.setRouterId(getRouterId(routingInstance));
     newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
   }
@@ -2503,6 +2504,44 @@ public final class JuniperConfiguration extends VendorConfiguration {
       recordStructure(
           prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
     }
+  }
+
+  private Ip getRouterId(RoutingInstance routingInstance) {
+    Ip routerId = routingInstance.getRouterId();
+    if (routerId == null) {
+      Map<String, Interface> interfacesToCheck;
+      Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
+      Map<String, Interface> loopbackInterfaces =
+          allInterfaces
+              .entrySet()
+              .stream()
+              .filter(
+                  e ->
+                      e.getKey().toLowerCase().startsWith("lo")
+                          && e.getValue().getActive()
+                          && e.getValue().getPrimaryAddress() != null)
+              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+      interfacesToCheck = loopbackInterfaces.isEmpty() ? allInterfaces : loopbackInterfaces;
+
+      Ip lowesetIp = Ip.MAX;
+      for (Interface iface : interfacesToCheck.values()) {
+        if (!iface.getActive()) {
+          continue;
+        }
+        for (InterfaceAddress address : iface.getAllAddresses()) {
+          Ip ip = address.getIp();
+          if (lowesetIp.asLong() > ip.asLong()) {
+            lowesetIp = ip;
+          }
+        }
+      }
+      if (lowesetIp == Ip.MAX) {
+        _w.redFlag("No candidates for OSPF router-id");
+        return null;
+      }
+      routerId = lowesetIp;
+    }
+    return routerId;
   }
 
   public Map<String, ApplicationSet> getApplicationSets() {
