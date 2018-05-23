@@ -1,16 +1,21 @@
 package org.batfish.question;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
@@ -54,8 +59,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private Set<String> _nodes;
 
-    public CompareSameNameAnswerElement() {
-      _equivalenceSets = new TreeMap<>();
+    @JsonCreator
+    public CompareSameNameAnswerElement(
+        @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
+            SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets,
+        @JsonProperty(PROP_NODES) Set<String> nodes) {
+      _equivalenceSets = firstNonNull(equivalenceSets, new TreeMap<>());
+      _nodes = nodes;
     }
 
     public void add(String className, NamedStructureEquivalenceSets<?> sets) {
@@ -89,17 +99,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       }
       return sb.toString();
     }
-
-    @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
-    public void setEquivalenceSets(
-        SortedMap<String, NamedStructureEquivalenceSets<?>> equivalenceSets) {
-      _equivalenceSets = equivalenceSets;
-    }
-
-    @JsonProperty(PROP_NODES)
-    public void setNodes(Set<String> nodes) {
-      _nodes = nodes;
-    }
   }
 
   public static class CompareSameNameAnswerer extends Answerer {
@@ -108,17 +107,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private Map<String, Configuration> _configurations;
 
-    private Set<String> _excludedNamedStructTypes;
-
-    private boolean _missing;
-
-    private Set<String> _namedStructTypes;
+    private CompareSameNameQuestion _csnQuestion;
 
     private Set<String> _nodes;
-
-    private boolean _singletons;
-
-    private boolean _compareGenerated;
 
     private boolean _assumeAllUnique;
 
@@ -129,8 +120,9 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     private <T> void add(
         Class<T> structureClass, Function<Configuration, Map<String, T>> structureMapRetriever) {
       String structType = structureClass.getSimpleName().toLowerCase();
-      if ((_namedStructTypes.isEmpty() && !(_excludedNamedStructTypes.contains(structType)))
-          || _namedStructTypes.contains(structType)) {
+      if ((_csnQuestion.getNamedStructTypes().isEmpty()
+              && !(_csnQuestion.getExcludedNamedStructTypes().contains(structType)))
+          || _csnQuestion.getNamedStructTypes().contains(structType)) {
         _answerElement.add(
             structureClass.getSimpleName(),
             processStructures(structureClass, _nodes, _configurations, structureMapRetriever));
@@ -140,28 +132,10 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     @Override
     public CompareSameNameAnswerElement answer() {
       _assumeAllUnique = _batfish.debugFlagEnabled(DEBUG_FLAG_ASSUME_ALL_UNIQUE);
-      CompareSameNameQuestion question = (CompareSameNameQuestion) _question;
-      _compareGenerated = question.getCompareGenerated();
       _configurations = _batfish.loadConfigurations();
-      // collect relevant nodes in a list.
-      _nodes = question.getNodeRegex().getMatchingNodes(_batfish);
-      _namedStructTypes =
-          question
-              .getNamedStructTypes()
-              .stream()
-              .map(String::toLowerCase)
-              .collect(Collectors.toSet());
-      _excludedNamedStructTypes =
-          question
-              .getExcludedNamedStructTypes()
-              .stream()
-              .map(String::toLowerCase)
-              .collect(Collectors.toSet());
-      _singletons = question.getSingletons();
-      _missing = question.getMissing();
-
-      _answerElement = new CompareSameNameAnswerElement();
-      _answerElement.setNodes(_nodes);
+      _csnQuestion = (CompareSameNameQuestion) _question;
+      _nodes = _csnQuestion.getNodeRegex().getMatchingNodes(_batfish);
+      _answerElement = new CompareSameNameAnswerElement(null, _nodes);
 
       add(AsPathAccessList.class, Configuration::getAsPathAccessLists);
       add(AuthenticationKeyChain.class, Configuration::getAuthenticationKeyChains);
@@ -185,7 +159,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     }
 
     private boolean ignored(String structName) {
-      return !_compareGenerated && structName.startsWith("~");
+      return !_csnQuestion.getCompareGenerated() && structName.startsWith("~");
     }
 
     private <T> NamedStructureEquivalenceSets<T> processStructures(
@@ -210,13 +184,13 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
         Map<String, T> structureMap = structureMapRetriever.apply(node);
         for (String structName : allNames) {
           T struct = structureMap.get(structName);
-          if (struct != null || _missing) {
+          if (struct != null || _csnQuestion.getMissing()) {
             builder.addEntry(structName, hostname, struct, _assumeAllUnique);
           }
         }
       }
       NamedStructureEquivalenceSets<T> ae = builder.build();
-      if (!_singletons) {
+      if (!_csnQuestion.getSingletons()) {
         ae.clean();
       }
       return ae;
@@ -226,8 +200,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       _assumeAllUnique = assumeAllUnique;
     }
   }
-
-  // <question_page_comment>
 
   /**
    * Compares named structures with identical names across multiple nodes.
@@ -239,21 +211,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
    * usually indicates a configuration error. For instance, if the ACL named
    * ``\verb|block_non_http_ssh|'' has identical content on nine out of ten routers, but is
    * different in the tenth router, the ACL is likely misconfigured on the tenth router.
-   *
-   * @type CompareSameName multifile
-   * @param namedStructTypes Set of structure types to analyze drawn from ( AsPathAccessList,
-   *     AuthenticationKeyChain, CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface,
-   *     Ip6AccessList, IpAccessList, IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList,
-   *     RouteFilterList, RoutingPolicy, Vrf, Zone ) Default value is '[]', which denotes all types
-   *     except those in excludedNamedStructTypes.
-   * @param excludedNamedStructTypes Set of structure types to omit from the analysis. Default is
-   *     [Interface, Vrf].
-   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
-   *     nodes).
-   * @param singletons Defaults to false. Specifies whether or not to include named structures for
-   *     which there is only one equivalence class.
-   * @param missing Defaults to false. Specifies whether or not to create an equivalence class for
-   *     nodes that are missing a structure of a given name.
    */
   public static final class CompareSameNameQuestion extends Question implements INodeRegexQuestion {
 
@@ -269,22 +226,57 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_SINGLETONS = "singletons";
 
+    /** Whether to also compare auto-generated structures */
     private boolean _compareGenerated;
 
+    /**
+     * Exclude structures of this type.
+     *
+     * <p>Default value is [Interface, Vrf] because these named structure types seem to be less
+     * useful and have many entries that slow down the computation considerably.
+     */
     private SortedSet<String> _excludedNamedStructTypes;
 
+    /**
+     * Whether to create an equivalence class for nodes that are missing a structure of a given
+     * name.
+     */
     private boolean _missing;
 
+    /**
+     * Set of structure types to analyze drawn from ( AsPathAccessList, * AuthenticationKeyChain,
+     * CommunityList, IkeGateway, IkePolicy, IkeProposal, Interface, * Ip6AccessList, IpAccessList,
+     * IpsecPolicy, IpsecProposal, IpsecVpn, Route6FilterList, * RouteFilterList, RoutingPolicy,
+     * Vrf, Zone )
+     *
+     * <p>Default value is '[]', which denotes all types except those in excludedNamedStructTypes.
+     */
     private SortedSet<String> _namedStructTypes;
 
+    /** The set of nodes over which to run the analysis */
     private NodesSpecifier _nodeRegex;
 
+    /** Whether to include named structures for which there is only one equivalence class. */
     private boolean _singletons;
 
-    public CompareSameNameQuestion() {
-      _namedStructTypes = new TreeSet<>();
-      initExcludedNamedStructTypes();
-      _nodeRegex = NodesSpecifier.ALL;
+    @JsonCreator
+    public CompareSameNameQuestion(
+        @JsonProperty(PROP_COMPARE_GENERATED) Boolean compareGenerated,
+        @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES) SortedSet<String> excludedNamedStructTypes,
+        @JsonProperty(PROP_MISSING) Boolean missing,
+        @JsonProperty(PROP_NAMED_STRUCT_TYPES) SortedSet<String> namedStructTypes,
+        @JsonProperty(PROP_NODE_REGEX) NodesSpecifier nodeRegex,
+        @JsonProperty(PROP_SINGLETONS) Boolean singletons) {
+      _compareGenerated = firstNonNull(compareGenerated, false);
+      _excludedNamedStructTypes =
+          toLowerCase(
+              firstNonNull(
+                  excludedNamedStructTypes,
+                  Arrays.asList(Interface.class.getSimpleName(), Vrf.class.getSimpleName())));
+      _missing = firstNonNull(missing, false);
+      _namedStructTypes = toLowerCase(firstNonNull(namedStructTypes, ImmutableSortedSet.of()));
+      _nodeRegex = firstNonNull(nodeRegex, NodesSpecifier.ALL);
+      _singletons = firstNonNull(singletons, false);
     }
 
     @JsonProperty(PROP_COMPARE_GENERATED)
@@ -328,44 +320,17 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
       return _singletons;
     }
 
-    // These named structure types seem to be less useful and have many entries
-    // so slow down the computation considerably.  Therefore they are excluded
-    // from the analysis by default.
-    private void initExcludedNamedStructTypes() {
-      _excludedNamedStructTypes = new TreeSet<>();
-      _excludedNamedStructTypes.add(Interface.class.getSimpleName());
-      _excludedNamedStructTypes.add(Vrf.class.getSimpleName());
-    }
-
-    @JsonProperty(PROP_COMPARE_GENERATED)
-    public void setCompareGenerated(boolean compareGenerated) {
-      _compareGenerated = compareGenerated;
-    }
-
-    @JsonProperty(PROP_EXCLUDED_NAMED_STRUCT_TYPES)
-    public void setExcludedNamedStructTypes(SortedSet<String> excludedNamedStructTypes) {
-      _excludedNamedStructTypes = excludedNamedStructTypes;
-    }
-
-    @JsonProperty(PROP_MISSING)
-    public void setMissing(boolean missing) {
-      _missing = missing;
-    }
-
-    @JsonProperty(PROP_NAMED_STRUCT_TYPES)
-    public void setNamedStructTypes(SortedSet<String> namedStructTypes) {
-      _namedStructTypes = namedStructTypes;
-    }
-
     @Override
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
     }
 
-    @JsonProperty(PROP_SINGLETONS)
-    public void setSingletons(boolean singletons) {
-      _singletons = singletons;
+    private SortedSet<String> toLowerCase(Collection<String> names) {
+      return names
+          .stream()
+          .map(name -> name.toLowerCase())
+          .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }
   }
 
@@ -376,6 +341,6 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
   @Override
   protected CompareSameNameQuestion createQuestion() {
-    return new CompareSameNameQuestion();
+    return new CompareSameNameQuestion(null, null, null, null, null, null);
   }
 }
