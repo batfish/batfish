@@ -907,29 +907,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void markAuthenticationKeyChains(JuniperStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
-        _structureReferences.get(JuniperStructureType.AUTHENTICATION_KEY_CHAIN);
-    if (byName != null) {
-      byName.forEach(
-          (keyChainName, byUsage) -> {
-            SortedMultiset<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              JuniperAuthenticationKeyChain keyChain = _authenticationKeyChains.get(keyChainName);
-              if (keyChain != null) {
-                String msg = usage.getDescription();
-                keyChain.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(
-                      JuniperStructureType.AUTHENTICATION_KEY_CHAIN, keyChainName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
   private void placeInterfaceIntoArea(
       Map<Long, OspfArea> newAreas, String name, Interface iface, String vrfName) {
     Vrf vrf = _c.getVrfs().get(vrfName);
@@ -2494,15 +2471,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       PolicyStatement ps = e.getValue();
       recordStructure(ps, JuniperStructureType.POLICY_STATEMENT, name, ps.getDefinitionLine());
-    }
-  }
-
-  private void recordPrefixLists() {
-    for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
-      String name = e.getKey();
-      PrefixList prefixList = e.getValue();
-      recordStructure(
-          prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
     }
   }
 
