@@ -36,11 +36,11 @@ import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetConfig;
 import org.batfish.symbolic.bdd.BDDNetFactory;
-import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
-import org.batfish.symbolic.bdd.BDDNetFactory.SatAssigment;
 import org.batfish.symbolic.bdd.BDDNetwork;
+import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
+import org.batfish.symbolic.bdd.SatAssignment;
 import org.batfish.symbolic.smt.EdgeType;
 
 /*
@@ -582,8 +582,8 @@ public class ReachabilityInterpreter {
       AbstractFib<BDD> fib = reachable.get(router);
       BDD rib = fib.getRib().getUnderMainRib();
       SortedSet<RibEntry> ribEntries = new TreeSet<>();
-      List<SatAssigment> entries = _netFactory.allSat(rib);
-      for (SatAssigment entry : entries) {
+      List<SatAssignment> entries = BDDUtils.allSat(_netFactory, rib);
+      for (SatAssignment entry : entries) {
         Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
         RibEntry r = new RibEntry(router, p, entry.getRoutingProtocol(), entry.getDstRouter());
         ribEntries.add(r);
@@ -632,7 +632,8 @@ public class ReachabilityInterpreter {
       if (matchingFromSrc.isZero()) {
         continue;
       }
-      SatAssigment assignment = _netFactory.satOne(matchingFromSrc).get(0);
+      SatAssignment assignment = BDDUtils.satOne(_netFactory, matchingFromSrc);
+      assert(assignment != null);
       Flow flow = assignment.toFlow();
       AbstractFlowTrace trace = new AbstractFlowTrace();
       trace.setIngressRouter(srcRouter);

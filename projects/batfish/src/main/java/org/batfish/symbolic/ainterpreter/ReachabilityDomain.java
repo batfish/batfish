@@ -9,7 +9,7 @@ import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDNetFactory;
-import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
+import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 
