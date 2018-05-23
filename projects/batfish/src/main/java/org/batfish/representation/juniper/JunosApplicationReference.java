@@ -5,12 +5,14 @@ public class JunosApplicationReference extends ApplicationSetMemberReference {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public JunosApplicationReference(String name) {
-    super(name);
+  private JunosApplication _junosApplication;
+
+  public JunosApplicationReference(JunosApplication junosApplication) {
+    _junosApplication = junosApplication;
   }
 
   @Override
   public ApplicationSetMember resolve(JuniperConfiguration jc) {
-    return JunosApplication.valueOf(_name);
+    return _junosApplication;
   }
 }

@@ -370,7 +370,7 @@ import org.batfish.representation.juniper.AddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
 import org.batfish.representation.juniper.AggregateRoute;
-import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
+import org.batfish.representation.juniper.ApplicationReference;
 import org.batfish.representation.juniper.ApplicationSet;
 import org.batfish.representation.juniper.ApplicationSetMemberReference;
 import org.batfish.representation.juniper.ApplicationSetReference;
@@ -667,7 +667,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static JunosApplication toJunosApplication(Junos_applicationContext ctx) {
+  private JunosApplication toJunosApplication(Junos_applicationContext ctx) {
     if (ctx.ANY() != null) {
       return JunosApplication.ANY;
     } else if (ctx.JUNOS_AOL() != null) {
@@ -1015,12 +1015,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.JUNOS_YMSG() != null) {
       return JunosApplication.JUNOS_YMSG;
     } else {
-      throw new BatfishException(
-          "missing application mapping for application: \"" + ctx.getText() + "\"");
+      throw convError(JunosApplication.class, ctx);
     }
   }
 
-  private static JunosApplicationSet toJunosApplicationSet(Junos_application_setContext ctx) {
+  private JunosApplicationSet toJunosApplicationSet(Junos_application_setContext ctx) {
     if (ctx.JUNOS_CIFS() != null) {
       return JunosApplicationSet.JUNOS_CIFS;
     } else if (ctx.JUNOS_MGCP() != null) {
@@ -1068,8 +1067,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.JUNOS_SUN_RPC_YPSERV() != null) {
       return JunosApplicationSet.JUNOS_SUN_RPC_YPSERV;
     } else {
-      throw new BatfishException(
-          "missing application set mapping for application set: \"" + ctx.getText() + "\"");
+      throw convError(JunosApplicationSet.class, ctx);
     }
   }
 
@@ -1650,12 +1648,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitAas_application(Aas_applicationContext ctx) {
-    String name;
-    int line;
     if (ctx.junos_application() != null) {
       JunosApplication application = toJunosApplication(ctx.junos_application());
-      name = application.toString();
-      line = ctx.junos_application().getStart().getLine();
       if (!application.hasDefinition()) {
         _w.redFlag(
             String.format(
@@ -1666,29 +1660,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentApplicationSet.setMembers(
           ImmutableList.<ApplicationSetMemberReference>builder()
               .addAll(_currentApplicationSet.getMembers())
-              .add(new JunosApplicationReference(name))
+              .add(new JunosApplicationReference(application))
               .build());
     } else {
-      name = ctx.name.getText();
-      line = ctx.name.getStart().getLine();
+      String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
       _currentApplicationSet.setMembers(
           ImmutableList.<ApplicationSetMemberReference>builder()
               .addAll(_currentApplicationSet.getMembers())
-              .add(new ApplicationOrApplicationSetReference(name))
+              .add(new ApplicationReference(name))
               .build());
+      // only mark the structure as referenced if we know it's not a pre-defined application
+      _configuration.referenceStructure(
+          APPLICATION_OR_APPLICATION_SET, name, APPLICATION_SET_MEMBER_APPLICATION, line);
     }
-    _configuration.referenceStructure(
-        APPLICATION_OR_APPLICATION_SET, name, APPLICATION_SET_MEMBER_APPLICATION, line);
   }
 
   @Override
   public void exitAas_application_set(Aas_application_setContext ctx) {
-    String name;
-    int line;
     if (ctx.junos_application_set() != null) {
       JunosApplicationSet junosApplicationSet = toJunosApplicationSet(ctx.junos_application_set());
-      name = junosApplicationSet.name();
-      line = ctx.junos_application_set().getStart().getLine();
       if (!junosApplicationSet.hasDefinition()) {
         _w.redFlag(
             String.format(
@@ -1699,19 +1690,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _currentApplicationSet.setMembers(
           ImmutableList.<ApplicationSetMemberReference>builder()
               .addAll(_currentApplicationSet.getMembers())
-              .add(new JunosApplicationSetReference(name))
+              .add(new JunosApplicationSetReference(junosApplicationSet))
               .build());
     } else {
-      name = ctx.name.getText();
-      line = ctx.name.getStart().getLine();
+      String name = ctx.name.getText();
+      int line = ctx.name.getStart().getLine();
       _currentApplicationSet.setMembers(
           ImmutableList.<ApplicationSetMemberReference>builder()
               .addAll(_currentApplicationSet.getMembers())
               .add(new ApplicationSetReference(name))
               .build());
+      // only mark the structure as referenced if we know it's not a pre-defined application-set
+      _configuration.referenceStructure(
+          APPLICATION_SET, name, APPLICATION_SET_MEMBER_APPLICATION_SET, line);
     }
-    _configuration.referenceStructure(
-        APPLICATION_SET, name, APPLICATION_SET_MEMBER_APPLICATION_SET, line);
   }
 
   @Override
@@ -4144,8 +4136,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (application.getIpv6()) {
         _currentFwTerm.setIpv6(true);
       } else {
-        FwFromJunosApplication from = new FwFromJunosApplication(application.name());
-        _currentFwTerm.getFromJunosApplications().add(from);
+        FwFromJunosApplication from = new FwFromJunosApplication(application);
+        _currentFwTerm.getFromApplicationSetMembers().add(from);
       }
     } else if (ctx.junos_application_set() != null) {
       JunosApplicationSet applicationSet = toJunosApplicationSet(ctx.junos_application_set());
@@ -4156,8 +4148,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 ctx.junos_application_set().getText()));
         return;
       }
-      FwFromJunosApplicationSet from = new FwFromJunosApplicationSet(applicationSet.name());
-      _currentFwTerm.getFromJunosApplicationSets().add(from);
+      FwFromJunosApplicationSet from = new FwFromJunosApplicationSet(applicationSet);
+      _currentFwTerm.getFromApplicationSetMembers().add(from);
     } else {
       String name;
       int line;
@@ -4166,7 +4158,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       _configuration.referenceStructure(
           APPLICATION_OR_APPLICATION_SET, name, SECURITY_POLICY_MATCH_APPLICATION, line);
       FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet(name);
-      _currentFwTerm.getFromApplicationsOrApplicationSets().add(from);
+      _currentFwTerm.getFromApplicationSetMembers().add(from);
     }
   }
 
