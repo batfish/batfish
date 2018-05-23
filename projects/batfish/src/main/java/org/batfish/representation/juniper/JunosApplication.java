@@ -629,8 +629,6 @@ public enum JunosApplication implements Application {
         return null;
     }
 
-    //        "9": "MISCELLANEOUS: unimplemented pre-defined junos application: 'junos-syslog'",
-
     String t1Name = "t1";
     Term t1 = new Term(t1Name);
     HeaderSpace.Builder l1 = t1.getHeaderSpace().rebuild();
