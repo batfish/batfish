@@ -22,8 +22,8 @@ import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.answers.RoleAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetConfig;
-import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
 import org.batfish.symbolic.bdd.BDDNetwork;
+import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.utils.Tuple;
 
 public class Roles {

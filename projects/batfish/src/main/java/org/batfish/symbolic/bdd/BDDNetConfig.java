@@ -18,6 +18,12 @@ public class BDDNetConfig {
 
   private boolean _keepRouters;
 
+  /*
+   * A configuration object that lets us tweak the behavior of a BDDNetFactory.
+   * Currently, it lets you say what fields it should or should not model to
+   * allow for abstraction. In the future, it may be useful to add additional
+   * parameters such as the initial BDD table size, variable ordering and so on.
+   */
   public BDDNetConfig(boolean abstraction) {
     if (abstraction) {
       _keepAd = false;

@@ -25,7 +25,6 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
-import org.batfish.symbolic.bdd.BDDNetFactory.BDDPacket;
 
 public class AclLineMatchExprToBDD implements GenericAclLineMatchExprVisitor<BDD> {
 

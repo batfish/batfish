@@ -9,8 +9,11 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
-import org.batfish.symbolic.bdd.BDDNetFactory.BDDPacket;
 
+/*
+ * Represents an ACL and its BDD representation. The BDD says what packets
+ * are accepted by the ACL (i.e., pass through the ACL / are allowed)
+ */
 public class BDDAcl {
 
   private IpAccessList _acl;

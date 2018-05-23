@@ -14,9 +14,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.bdd.BDDNetFactory.BDDPacket;
-import org.batfish.symbolic.bdd.BDDNetFactory.BDDRoute;
-import org.batfish.symbolic.bdd.BDDNetFactory.SatAssigment;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -63,7 +60,7 @@ public class BDDNetFactoryTest {
             .and(dst)
             .and(src);
 
-    SatAssigment assignment = _netFactory.satOne(all);
+    SatAssignment assignment = BDDUtils.satOne(_netFactory, all);
     assertThat(assignment.getDstIp(), equalTo(dstIp));
     assertThat(assignment.getPrefixLen(), equalTo(24));
     assertThat(assignment.getMetric(), equalTo(100));
@@ -147,13 +144,13 @@ public class BDDNetFactoryTest {
             .and(tcpSyn2);
 
     BDD either = all1.or(all2);
-    List<SatAssigment> assignments = _netFactory.allSat(either);
-    SatAssigment a1 = assignments.get(0);
-    SatAssigment a2 = assignments.get(1);
+    List<SatAssignment> assignments = BDDUtils.allSat(_netFactory, either);
+    SatAssignment a1 = assignments.get(0);
+    SatAssignment a2 = assignments.get(1);
 
     // ensure the correct order
     if (a1.getIcmpCode() < a2.getIcmpCode()) {
-      SatAssigment tmp = a1;
+      SatAssignment tmp = a1;
       a1 = a2;
       a2 = tmp;
     }
