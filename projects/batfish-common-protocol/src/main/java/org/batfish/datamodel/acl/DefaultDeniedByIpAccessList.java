@@ -36,6 +36,11 @@ public class DefaultDeniedByIpAccessList implements TraceEvent {
   }
 
   @Override
+  public int hashCode() {
+    return _name.hashCode();
+  }
+
+  @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass()).add(PROP_NAME, _name).toString();
   }

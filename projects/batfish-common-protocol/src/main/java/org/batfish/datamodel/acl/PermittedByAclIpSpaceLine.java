@@ -3,6 +3,7 @@ package org.batfish.datamodel.acl;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 
 public class PermittedByAclIpSpaceLine implements TraceEvent {
@@ -58,6 +59,11 @@ public class PermittedByAclIpSpaceLine implements TraceEvent {
   @JsonProperty(PROP_NAME)
   public @Nonnull String getName() {
     return _name;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_index, _lineDescription, _name);
   }
 
   @Override

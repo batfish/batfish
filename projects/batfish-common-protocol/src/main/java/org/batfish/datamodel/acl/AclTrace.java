@@ -32,6 +32,11 @@ public class AclTrace implements Serializable {
     return _events.equals(((AclTrace) obj)._events);
   }
 
+  @Override
+  public int hashCode() {
+    return _events.hashCode();
+  }
+
   @JsonProperty(PROP_EVENTS)
   public @Nonnull List<TraceEvent> getEvents() {
     return _events;
