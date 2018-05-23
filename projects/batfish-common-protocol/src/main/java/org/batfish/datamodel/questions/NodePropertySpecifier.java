@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -177,26 +178,32 @@ public class NodePropertySpecifier {
 
     List<AutocompleteSuggestion> suggestions = new LinkedList<>();
 
-    // first add .* version if needed
     String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
-    if (!finalQuery.endsWith("*") // hack to check if its a regex already
-        && !finalQuery.startsWith(".*")
-        && !new NodePropertySpecifier(queryWithStars).getMatchingProperties().isEmpty()) {
-      suggestions.add(
-          new AutocompleteSuggestion(
-              queryWithStars, false, "All properties matching regex " + queryWithStars));
+    Pattern queryPattern = safeGetPattern(queryWithStars);
+
+    /**
+     * if queryWithStars is not a valid Pattern, finalQuery must be a funky string that will not
+     * match anything as string.contains or regex.matches; so we skip formalities altogether
+     */
+    if (queryPattern != null) {
+      // first add .* version if needed
+      if (!finalQuery.endsWith("*") // hack to check if its a regex already
+          && !finalQuery.startsWith(".*")
+          && !new NodePropertySpecifier(queryWithStars).getMatchingProperties().isEmpty()) {
+        suggestions.add(
+            new AutocompleteSuggestion(
+                queryWithStars, false, "All properties matching regex " + queryWithStars));
+      }
+
+      // now add all properties that contain the query
+      suggestions.addAll(
+          JAVA_MAP
+              .keySet()
+              .stream()
+              .filter(prop -> queryPattern.matcher(prop).matches())
+              .map(prop -> new AutocompleteSuggestion(prop, false))
+              .collect(Collectors.toList()));
     }
-
-    // now add all properties that contain the query
-    Pattern propPattern = Pattern.compile(queryWithStars);
-    suggestions.addAll(
-        JAVA_MAP
-            .keySet()
-            .stream()
-            .filter(prop -> propPattern.matcher(prop).matches())
-            .map(prop -> new AutocompleteSuggestion(prop, false))
-            .collect(Collectors.toList()));
-
     return suggestions;
   }
 
@@ -211,6 +218,15 @@ public class NodePropertySpecifier {
         .stream()
         .filter(prop -> _pattern.matcher(prop).matches())
         .collect(Collectors.toSet());
+  }
+
+  /** Returns the Pattern if {@code candidateRegex} is a valid regex, and null otherwise */
+  private static Pattern safeGetPattern(String candidateRegex) {
+    try {
+      return Pattern.compile(candidateRegex);
+    } catch (PatternSyntaxException e) {
+      return null;
+    }
   }
 
   @Override
