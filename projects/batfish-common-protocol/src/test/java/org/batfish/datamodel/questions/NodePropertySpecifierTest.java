@@ -30,7 +30,7 @@ public class NodePropertySpecifierTest {
             .stream()
             .map(s -> s.getText())
             .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of("ntp.*", "ntp-servers", "ntp-source-interface")));
+        equalTo(ImmutableSet.of(".*ntp.*", "ntp-servers", "ntp-source-interface")));
   }
 
   @Test
