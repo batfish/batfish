@@ -1,6 +1,7 @@
 package org.batfish.allinone;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
+import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -57,29 +58,74 @@ public class AclReachabilityTest {
   public void testIndirection() throws IOException {
     IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
 
-    IpAccessList acl1 = aclb.setLines(ImmutableList.of()).setName("acl1").build();
-    IpAccessList acl2 =
+    /*
+    Reference ACL contains 1 line: Permit 1.0.0.0/24
+    Main ACL contains 2 lines:
+    0. Permit anything that reference ACL permits
+    1. Permit 1.0.0.0/24
+    Runs two questions:
+    1. General ACL reachability (reference ACL won't be encoded after first NoD step)
+    2. Reachability specifically for main ACL (reference ACL won't be encoded at all)
+    Tests that both find line 1 to be blocked by line 0 in main ACL.
+     */
+
+    IpAccessList referencedAcl =
+        aclb.setLines(
+                ImmutableList.of(
+                    acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                            .build())))
+            .setName("acl1")
+            .build();
+    IpAccessList acl =
         aclb.setLines(
                 ImmutableList.of(
                     IpAccessListLine.accepting()
-                        .setMatchCondition(new PermittedByAcl(acl1.getName()))
-                        .build()))
+                        .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
+                        .build(),
+                    acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                            .build())))
             .setName("acl2")
             .build();
 
     Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
 
-    assertThat(_c, hasIpAccessLists(hasEntry(acl1.getName(), acl1)));
-    assertThat(_c, hasIpAccessLists(hasEntry(acl2.getName(), acl2)));
+    assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
+    assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
 
     AclReachabilityQuestion question = new AclReachabilityQuestion();
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
+    question.setAclNameRegex(acl.getName());
+    AclReachabilityAnswerer specificAnswerer = new AclReachabilityAnswerer(question, batfish);
 
-    /*
-     *  Test for NPE introduced by reverted PR #1272 due to missing definition for acl1 when
-     *  processing acl2.
-     */
-    answerer.answer();
+    AnswerElement baseClassAnswer = answerer.answer();
+    AnswerElement specificBaseClassAnswer = specificAnswerer.answer();
+    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
+    assertThat(specificBaseClassAnswer, instanceOf(AclLinesAnswerElement.class));
+    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
+    AclLinesAnswerElement specificAnswer = (AclLinesAnswerElement) specificBaseClassAnswer;
+
+    // Tests for general ACL reachability answer
+    assertThat(
+        answer.getUnreachableLines(),
+        hasEntry(equalTo(_c.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    AclReachabilityEntry blockedLine =
+        answer.getUnreachableLines().get(_c.getName()).get(acl.getName()).first();
+    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
+    assertThat("Same action", blockedLine.getDifferentAction(), equalTo(false));
+
+    // Tests for ACL reachability of main ACL specifically
+    assertThat(
+        specificAnswer.getUnreachableLines(),
+        hasEntry(equalTo(_c.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    blockedLine = specificAnswer.getUnreachableLines().get(_c.getName()).get(acl.getName()).first();
+    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
+    assertThat("Same action", blockedLine.getDifferentAction(), equalTo(false));
   }
 
   @Test
@@ -110,21 +156,22 @@ public class AclReachabilityTest {
 
     AclReachabilityQuestion question = new AclReachabilityQuestion();
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
-    AnswerElement answer = answerer.answer();
+    AnswerElement baseClassAnswer = answerer.answer();
 
-    assertThat(answer, instanceOf(AclLinesAnswerElement.class));
+    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
 
-    AclLinesAnswerElement aclLinesAnswerElement = (AclLinesAnswerElement) answer;
+    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
 
     assertThat(
-        aclLinesAnswerElement.getUnreachableLines(),
+        answer.getUnreachableLines(),
         hasEntry(equalTo(_c.getName()), hasEntry(equalTo(aclName), hasSize(1))));
     AclReachabilityEntry multipleBlockingLinesEntry =
-        aclLinesAnswerElement.getUnreachableLines().get(_c.getName()).get(aclName).first();
+        answer.getUnreachableLines().get(_c.getName()).get(aclName).first();
     assertThat(multipleBlockingLinesEntry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
     assertThat(
         multipleBlockingLinesEntry.getEarliestMoreGeneralLineName(),
         equalTo("Multiple earlier lines partially block this line, making it unreachable."));
+    assertThat(multipleBlockingLinesEntry.getDifferentAction(), equalTo(false));
   }
 
   @Test
@@ -135,7 +182,7 @@ public class AclReachabilityTest {
             .setOwner(_c)
             .setLines(
                 ImmutableList.of(
-                    acceptingHeaderSpace(
+                    rejectingHeaderSpace(
                         HeaderSpace.builder()
                             .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
                             .build()),
@@ -160,18 +207,18 @@ public class AclReachabilityTest {
 
     AclReachabilityQuestion question = new AclReachabilityQuestion();
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
-    AnswerElement answer = answerer.answer();
+    AnswerElement baseClassAnswer = answerer.answer();
 
-    assertThat(answer, instanceOf(AclLinesAnswerElement.class));
+    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
 
-    AclLinesAnswerElement aclLinesAnswerElement = (AclLinesAnswerElement) answer;
+    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
 
     assertThat(
-        aclLinesAnswerElement.getUnreachableLines(),
+        answer.getUnreachableLines(),
         hasEntry(equalTo(_c.getName()), hasEntry(equalTo(aclName), hasSize(3))));
 
     SortedSet<AclReachabilityEntry> unreachableLines =
-        aclLinesAnswerElement.getUnreachableLines().get(_c.getName()).get(aclName);
+        answer.getUnreachableLines().get(_c.getName()).get(aclName);
     assertThat(
         "Lines 1, 2, and 3 are unreachable",
         unreachableLines.stream().map(entry -> entry.getIndex()).collect(Collectors.toSet()),
@@ -181,9 +228,11 @@ public class AclReachabilityTest {
       if (entry.getIndex() == 1 || entry.getIndex() == 3) {
         // Lines 1 and 3: Blocked by line 0 but not unmatchable
         assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(0));
+        assertThat(entry.getDifferentAction(), equalTo(true));
       } else {
         // Line 2: Unmatchable
         assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+        assertThat(entry.getDifferentAction(), equalTo(false));
         assertThat(
             entry.getEarliestMoreGeneralLineName(),
             equalTo("This line will never match any packet, independent of preceding lines."));

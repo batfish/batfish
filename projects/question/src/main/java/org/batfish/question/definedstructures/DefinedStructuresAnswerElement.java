@@ -2,11 +2,8 @@ package org.batfish.question.definedstructures;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.google.common.collect.ImmutableSortedMap;
-import java.util.Comparator;
-import java.util.SortedMap;
-import java.util.SortedSet;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
@@ -14,6 +11,7 @@ import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -32,30 +30,26 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
   }
 
   public static TableMetadata createMetadata(Question question) {
-    SortedMap<String, ColumnMetadata> columnMetadataMap =
-        new ImmutableSortedMap.Builder<String, ColumnMetadata>(Comparator.naturalOrder())
-            .put(
+    List<ColumnMetadata> columnMetadataMap =
+        ImmutableList.of(
+            new ColumnMetadata(
+                COL_NODE_NAME, Schema.STRING, "Node where the structure is defined", true, false),
+            new ColumnMetadata(
+                COL_STRUCT_TYPE, Schema.STRING, "Type of the structure", true, false),
+            new ColumnMetadata(
+                COL_STRUCT_NAME, Schema.STRING, "Name of the structure", true, false),
+            new ColumnMetadata(
                 COL_DEFINITION_LINES,
-                new ColumnMetadata(
-                    Schema.list(Schema.INTEGER),
-                    "Lines where the structure is defined",
-                    false,
-                    true))
-            .put(
-                COL_NODE_NAME,
-                new ColumnMetadata(
-                    Schema.STRING, "Node where the structure is defined", true, false))
-            .put(
+                Schema.list(Schema.INTEGER),
+                "Lines where the structure is defined",
+                false,
+                true),
+            new ColumnMetadata(
                 COL_NUM_REFERENCES,
-                new ColumnMetadata(
-                    Schema.INTEGER, "Number of references to this structure", false, true))
-            .put(
-                COL_STRUCT_NAME,
-                new ColumnMetadata(Schema.STRING, "Name of the structure", true, false))
-            .put(
-                COL_STRUCT_TYPE,
-                new ColumnMetadata(Schema.STRING, "Type of the structure", true, false))
-            .build();
+                Schema.INTEGER,
+                "Number of references to this structure",
+                false,
+                true));
 
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
@@ -72,35 +66,13 @@ public class DefinedStructuresAnswerElement extends TableAnswerElement {
     return new TableMetadata(columnMetadataMap, dhints);
   }
 
-  @Override
-  public Object fromRow(Row row) {
-    return fromRowStatic(row);
-  }
-
-  public static DefinedStructureRow fromRowStatic(Row row) {
-    SortedSet<Integer> definitionLines =
-        row.get(COL_DEFINITION_LINES, new TypeReference<SortedSet<Integer>>() {});
-    Integer numReferences = row.get(COL_NUM_REFERENCES, Integer.class);
-    String nodeName = row.get(COL_NODE_NAME, String.class);
-    String structName = row.get(COL_STRUCT_NAME, String.class);
-    String structType = row.get(COL_STRUCT_TYPE, String.class);
-
-    return new DefinedStructureRow(
-        nodeName, structType, structName, numReferences, definitionLines);
-  }
-
-  @Override
-  public Row toRow(Object o) {
-    return toRowStatic((DefinedStructureRow) o);
-  }
-
-  public static Row toRowStatic(DefinedStructureRow info) {
-    Row row = new Row();
+  static Row toRow(DefinedStructureRow info) {
+    RowBuilder row = Row.builder();
     row.put(COL_DEFINITION_LINES, info.getDefinitionLines())
         .put(COL_NODE_NAME, info.getNodeName())
         .put(COL_NUM_REFERENCES, info.getNumReferences())
         .put(COL_STRUCT_NAME, new Node(info.getStructName()))
         .put(COL_STRUCT_TYPE, info.getStructType());
-    return row;
+    return row.build();
   }
 }

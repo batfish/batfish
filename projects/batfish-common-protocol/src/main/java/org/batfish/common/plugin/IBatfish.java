@@ -1,6 +1,7 @@
 package org.batfish.common.plugin;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -19,6 +20,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -26,7 +28,6 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentBgpTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseEnvironmentRoutingTablesAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
-import org.batfish.datamodel.assertion.AssertionAst;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.RoutesByVrf;
@@ -43,8 +44,10 @@ import org.batfish.role.NodeRolesData;
 
 public interface IBatfish extends IPluginConsumer {
 
-  AnswerElement answerAclReachability(
-      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets);
+  void answerAclReachability(
+      String aclNameRegexStr,
+      NamedStructureEquivalenceSets<?> aclEqSets,
+      AclLinesAnswerElementInterface emptyAnswer);
 
   void checkDataPlane();
 
@@ -76,7 +79,7 @@ public interface IBatfish extends IPluginConsumer {
 
   NodeRolesData getNodeRolesData();
 
-  NodeRoleDimension getNodeRoleDimension(String roleDimension);
+  Optional<NodeRoleDimension> getNodeRoleDimension(String roleDimension);
 
   Map<String, String> getQuestionTemplates();
 
@@ -127,8 +130,6 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement multipath(ReachabilitySettings reachabilitySettings);
 
   AtomicInteger newBatch(String description, int jobs);
-
-  AssertionAst parseAssertion(String text);
 
   AnswerElement pathDiff(ReachabilitySettings reachabilitySettings);
 

@@ -1,0 +1,5 @@
+!
+hostname aaaAuthenticationIos
+!
+aaa authentication login default group tacacs+ local
+!

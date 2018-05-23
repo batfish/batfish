@@ -348,12 +348,22 @@ popsfpl_orlonger
 
 popsfrf_common
 :
-   popsfrf_exact
+   popsfrf_address_mask
+   | popsfrf_exact
    | popsfrf_longer
    | popsfrf_orlonger
    | popsfrf_prefix_length_range
    | popsfrf_through
    | popsfrf_upto
+;
+
+popsfrf_address_mask
+:
+   ADDRESS_MASK
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
 ;
 
 popsfrf_exact
@@ -462,6 +472,7 @@ popst_common
    | popst_next_term
    | popst_null
    | popst_origin
+   | popst_preference
    | popst_priority
    | popst_reject
    | popst_tag
@@ -584,6 +595,11 @@ popst_null
 popst_origin
 :
    ORIGIN IGP
+;
+
+popst_preference
+:
+   PREFERENCE preference = DEC
 ;
 
 popst_priority

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.annotations.VisibleForTesting;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -235,8 +236,12 @@ public class NodesSpecifier {
       case NAME:
         return getMatchingNodesByName(nodes);
       case ROLE:
-        NodeRoleDimension roleDimension = batfish.getNodeRoleDimension(_roleDimension);
-        return getMatchingNodesByRole(roleDimension, nodes);
+        Optional<NodeRoleDimension> roleDimension = batfish.getNodeRoleDimension(_roleDimension);
+        if (roleDimension.isPresent()) {
+          return getMatchingNodesByRole(roleDimension.get(), nodes);
+        } else {
+          return Collections.emptySet();
+        }
       default:
         throw new BatfishException("Unhandled NodesSpecifier type: " + _type);
     }
@@ -256,7 +261,8 @@ public class NodesSpecifier {
   }
 
   @JsonIgnore
-  public Pattern getRegex() {
+  @VisibleForTesting
+  Pattern getRegex() {
     return _regex;
   }
 

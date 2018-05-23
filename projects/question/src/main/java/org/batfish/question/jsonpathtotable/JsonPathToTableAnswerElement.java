@@ -3,11 +3,12 @@ package org.batfish.question.jsonpathtotable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.table.ColumnMetadata;
-import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -30,14 +31,14 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
   }
 
   public static TableMetadata create(JsonPathToTableQuestion question) {
-    Map<String, ColumnMetadata> columnMetadataMap = new HashMap<>();
+    List<ColumnMetadata> columnMetadata = new LinkedList<>();
     for (Entry<String, JsonPathToTableExtraction> entry :
         question.getPathQuery().getExtractions().entrySet()) {
       JsonPathToTableExtraction extraction = entry.getValue();
       if (extraction.getInclude()) {
-        columnMetadataMap.put(
-            entry.getKey(),
+        columnMetadata.add(
             new ColumnMetadata(
+                entry.getKey(),
                 extraction.getSchema(),
                 extraction.getDescription(),
                 extraction.getIsKey(),
@@ -48,22 +49,16 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
         question.getPathQuery().getCompositions().entrySet()) {
       JsonPathToTableComposition composition = entry.getValue();
       if (composition.getInclude()) {
-        columnMetadataMap.put(
-            entry.getKey(),
+        columnMetadata.add(
             new ColumnMetadata(
+                entry.getKey(),
                 composition.getSchema(),
                 composition.getDescription(),
                 composition.getIsKey(),
                 composition.getIsValue()));
       }
     }
-    return new TableMetadata(columnMetadataMap, question.getDisplayHints());
-  }
-
-  @Override
-  public Object fromRow(Row o) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return new TableMetadata(columnMetadata, question.getDisplayHints());
   }
 
   public void addDebugInfo(String key, Object value) {
@@ -73,11 +68,5 @@ public class JsonPathToTableAnswerElement extends TableAnswerElement {
   @JsonProperty(PROP_DEBUG)
   public Map<String, Object> getDebug() {
     return _debug;
-  }
-
-  @Override
-  public Row toRow(Object object) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
   }
 }

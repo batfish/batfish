@@ -1,5 +1,6 @@
 package org.batfish.z3;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.microsoft.z3.BitVecExpr;
@@ -10,8 +11,14 @@ import com.microsoft.z3.Fixedpoint;
 import com.microsoft.z3.FuncDecl;
 import com.microsoft.z3.Params;
 import com.microsoft.z3.Status;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
@@ -23,6 +30,9 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.State;
 import org.batfish.job.BatfishJob;
 import org.batfish.job.BatfishJobResult;
+import org.batfish.z3.expr.QueryStatement;
+import org.batfish.z3.expr.ReachabilityProgramOptimizer;
+import org.batfish.z3.expr.RuleStatement;
 
 public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends BatfishJob<R> {
 
@@ -140,7 +150,30 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
   protected BoolExpr computeSmtConstraintsViaNod(NodProgram program, boolean negate) {
     Fixedpoint fix = mkFixedpoint(program, true);
     Expr answer = answerFixedPoint(fix, program);
-    return getSolverInput(answer, program, negate);
+    BoolExpr solverInput = getSolverInput(answer, program, negate);
+    if (_settings.debugFlagEnabled("saveSolverInput")) {
+      saveSolverInput(solverInput.simplify());
+    }
+    return solverInput;
+  }
+
+  private void saveSolverInput(Expr expr) {
+    // synchronize to avoid z3 concurrency bugs.
+    // use NodJob to synchronize with any other similar writers.
+    synchronized (NodJob.class) {
+      Path nodPath =
+          _settings
+              .getActiveTestrigSettings()
+              .getBasePath()
+              .resolve(
+                  String.format(
+                      "solverInput-%s-%d.smt2", Instant.now(), Thread.currentThread().getId()));
+      try (FileWriter writer = new FileWriter(nodPath.toFile())) {
+        writer.write(expr.toString());
+      } catch (IOException e) {
+        _logger.warnf("Error saving Nod program to file: %s", Throwables.getStackTraceAsString(e));
+      }
+    }
   }
 
   protected BoolExpr getSolverInput(Expr answer, NodProgram program, boolean negate) {
@@ -190,5 +223,44 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
       fix.addRule(rule, null);
     }
     return fix;
+  }
+
+  protected NodProgram optimizedProgram(
+      Context ctx, ReachabilityProgram baseProgram, ReachabilityProgram queryProgram) {
+    List<RuleStatement> allRules = new ArrayList<>(baseProgram.getRules());
+    allRules.addAll(queryProgram.getRules());
+
+    List<QueryStatement> allQueries = new ArrayList<>(baseProgram.getQueries());
+    allQueries.addAll(queryProgram.getQueries());
+
+    Set<RuleStatement> optimizedRules = ReachabilityProgramOptimizer.optimize(allRules, allQueries);
+
+    ReachabilityProgram optimizedBaseProgram =
+        ReachabilityProgram.builder()
+            .setInput(baseProgram.getInput())
+            .setRules(
+                baseProgram
+                    .getRules()
+                    .stream()
+                    .filter(optimizedRules::contains)
+                    .collect(Collectors.toList()))
+            .setQueries(baseProgram.getQueries())
+            .setSmtConstraint(baseProgram.getSmtConstraint())
+            .build();
+
+    ReachabilityProgram optimizedQueryProgram =
+        ReachabilityProgram.builder()
+            .setInput(queryProgram.getInput())
+            .setRules(
+                queryProgram
+                    .getRules()
+                    .stream()
+                    .filter(optimizedRules::contains)
+                    .collect(Collectors.toList()))
+            .setQueries(queryProgram.getQueries())
+            .setSmtConstraint(queryProgram.getSmtConstraint())
+            .build();
+
+    return new NodProgram(ctx, optimizedBaseProgram, optimizedQueryProgram);
   }
 }

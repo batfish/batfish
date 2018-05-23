@@ -1,6 +1,10 @@
 package org.batfish.dataplane;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -15,6 +19,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.ITracerouteEngine;
@@ -30,7 +35,6 @@ import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -79,7 +83,6 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
               }
               Set<Edge> visitedEdges = Collections.emptySet();
               List<FlowTraceHop> hops = new ArrayList<>();
-              Set<String> dstIpOwners = dataPlane.getIpOwners().get(dstIp);
               SortedSet<Edge> edges = new TreeSet<>();
               String ingressInterfaceName = flow.getIngressInterface();
               if (ingressInterfaceName != null) {
@@ -103,7 +106,6 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                     configurations.get(ingressNodeName).getIpAccessLists(),
                     configurations.get(ingressNodeName).getIpSpaces(),
                     dstIp,
-                    dstIpOwners,
                     null,
                     new TreeSet<>(),
                     null,
@@ -117,6 +119,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                     configurations,
                     dataPlane.getFibs(),
                     ingressNodeName,
+                    firstNonNull(flow.getIngressVrf(), Configuration.DEFAULT_VRF_NAME),
                     visitedEdges,
                     hops,
                     currentFlowTraces,
@@ -142,7 +145,6 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Map<String, IpAccessList> aclDefinitions,
       Map<String, IpSpace> namedIpSpaces,
       Ip dstIp,
-      Set<String> dstIpOwners,
       @Nullable String nextHopInterfaceName,
       SortedSet<String> routesForThisNextHopInterface,
       @Nullable Ip finalNextHopIp,
@@ -169,57 +171,18 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
               hopFlow(originalFlow, transformedFlow));
       newVisitedEdges.add(edge);
       newHops.add(newHop);
-      /*
-       * Check to see whether neighbor would refrain from sending ARP reply
-       * (NEIGHBOR_UNREACHABLE)
-       *
-       * This occurs if:
-       *
-       * - Using interface-only route
-       *
-       * AND
-       *
-       * - Neighbor does not own arpIp
-       *
-       * AND EITHER
-       *
-       * -- Neighbor not using proxy-arp
-       *
-       * - OR
-       *
-       * -- Subnet of neighbor's receiving-interface contains arpIp
-       */
       if (arp) {
-        Ip arpIp;
-        Set<String> arpIpOwners;
-        if (finalNextHopIp == null) {
-          arpIp = dstIp;
-          arpIpOwners = dstIpOwners;
-        } else {
-          arpIp = finalNextHopIp;
-          arpIpOwners = dp.getIpOwners().get(arpIp);
-        }
-        // using interface-only route
-        String node2 = edge.getNode2();
-        if (arpIpOwners == null || !arpIpOwners.contains(node2)) {
-          // neighbor does not own arpIp
-          String int2Name = edge.getInt2();
-          Interface int2 = configurations.get(node2).getInterfaces().get(int2Name);
-          boolean neighborUnreachable = false;
-          if (!int2.getProxyArp()) {
-            neighborUnreachable = true;
-          } else {
-            for (InterfaceAddress address : int2.getAllAddresses()) {
-              if (address.getPrefix().containsIp(arpIp)) {
-                neighborUnreachable = true;
-                break;
-              }
-            }
-          }
-          if (neighborUnreachable) {
-            unreachableNeighbors++;
-            continue;
-          }
+        Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
+        Interface arpInterface =
+            configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2());
+        Fib arpInterfaceFib =
+            dp.getFibs().get(arpInterface.getOwner().getHostname()).get(arpInterface.getVrfName());
+
+        boolean neighborUnreachable =
+            !interfaceRepliesToArpRequestForIp(arpInterface, arpInterfaceFib, arpIp);
+        if (neighborUnreachable) {
+          unreachableNeighbors++;
+          continue;
         }
       }
       if (visitedEdges.contains(edge)) {
@@ -257,8 +220,9 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
           }
         }
       }
-      IpAccessList inFilter =
-          configurations.get(nextNodeName).getInterfaces().get(edge.getInt2()).getIncomingFilter();
+      Interface nextInterface =
+          configurations.get(nextNodeName).getInterfaces().get(edge.getInt2());
+      IpAccessList inFilter = nextInterface.getIncomingFilter();
       if (!ignoreAcls && inFilter != null) {
         FlowDisposition disposition = FlowDisposition.DENIED_IN;
         boolean denied =
@@ -283,6 +247,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
           configurations,
           fibs,
           nextNodeName,
+          nextInterface.getVrfName(),
           newVisitedEdges,
           newHops,
           flowTraces,
@@ -302,6 +267,31 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       continueToNextNextHopInterface = true;
     }
     return continueToNextNextHopInterface;
+  }
+
+  @VisibleForTesting
+  static boolean interfaceRepliesToArpRequestForIp(Interface iface, Fib ifaceFib, Ip arpIp) {
+    // interfaces without addresses never reply
+    if (iface.getAllAddresses().isEmpty()) {
+      return false;
+    }
+    // the interface that owns the arpIp always replies
+    if (iface.getAllAddresses().stream().anyMatch(addr -> addr.getIp().equals(arpIp))) {
+      return true;
+    }
+
+    /*
+     * iface does not own arpIp, so it replies if and only if:
+     * 1. proxy-arp is enabled
+     * 2. the interface's vrf has a route to the destination
+     * 3. the destination is not on the incoming edge.
+     */
+    @Nonnull
+    Map<String, Map<Ip, Set<AbstractRoute>>> nextHopInterfaces =
+        ifaceFib.getNextHopInterfaces(arpIp);
+    return iface.getProxyArp()
+        && !nextHopInterfaces.isEmpty()
+        && nextHopInterfaces.keySet().stream().noneMatch(iface.getName()::equals);
   }
 
   /**
@@ -354,6 +344,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs,
       String currentNodeName,
+      String currentVrfName,
       Set<Edge> visitedEdges,
       List<FlowTraceHop> hopsSoFar,
       Set<FlowTrace> flowTraces,
@@ -361,9 +352,11 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Flow transformedFlow,
       boolean ignoreAcls) {
     Ip dstIp = transformedFlow.getDstIp();
-    Set<String> dstIpOwners = dp.getIpOwners().get(dstIp);
     Configuration currentConfiguration = configurations.get(currentNodeName);
-    if (dstIpOwners != null && dstIpOwners.contains(currentNodeName)) {
+    if (dp.getIpVrfOwners()
+        .getOrDefault(dstIp, ImmutableMap.of())
+        .getOrDefault(currentNodeName, ImmutableSet.of())
+        .contains(currentVrfName)) {
       FlowTrace trace =
           new FlowTrace(FlowDisposition.ACCEPTED, hopsSoFar, FlowDisposition.ACCEPTED.toString());
       flowTraces.add(trace);
@@ -457,8 +450,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
 
             SortedSet<Edge> edges = dp.getTopology().getInterfaceEdges().get(nextHopInterface);
             if (edges != null) {
-              boolean continueToNextNextHopInterface = false;
-              continueToNextNextHopInterface =
+              boolean continueToNextNextHopInterface =
                   processCurrentNextHopInterfaceEdges(
                       dp,
                       configurations,
@@ -473,7 +465,6 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                       aclDefinitions,
                       namedIpSpaces,
                       dstIp,
-                      dstIpOwners,
                       nextHopInterfaceName,
                       routesForThisNextHopInterface,
                       finalNextHopIp,

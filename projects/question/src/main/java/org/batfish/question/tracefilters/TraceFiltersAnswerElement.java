@@ -2,9 +2,8 @@ package org.batfish.question.tracefilters;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedMap;
-import java.util.Comparator;
-import java.util.SortedMap;
+import com.google.common.collect.ImmutableList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.LineAction;
@@ -13,6 +12,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -33,16 +33,14 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
    * @return The creates the answer element object.
    */
   public static TraceFiltersAnswerElement create(TraceFiltersQuestion question) {
-    SortedMap<String, ColumnMetadata> columnMetadata =
-        new ImmutableSortedMap.Builder<String, ColumnMetadata>(Comparator.naturalOrder())
-            .put(COLUMN_NODE, new ColumnMetadata(Schema.NODE, "Node", true, false))
-            .put(COLUMN_FILTER_NAME, new ColumnMetadata(Schema.STRING, "Filter name", true, false))
-            .put(COLUMN_FLOW, new ColumnMetadata(Schema.FLOW, "Evaluated flow", true, false))
-            .put(COLUMN_ACTION, new ColumnMetadata(Schema.STRING, "Outcome", false, true))
-            .put(COLUMN_LINE_NUMBER, new ColumnMetadata(Schema.INTEGER, "Line number", false, true))
-            .put(
-                COLUMN_LINE_CONTENT, new ColumnMetadata(Schema.STRING, "Line content", false, true))
-            .build();
+    List<ColumnMetadata> columnMetadata =
+        ImmutableList.of(
+            new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
+            new ColumnMetadata(COLUMN_FILTER_NAME, Schema.STRING, "Filter name", true, false),
+            new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false),
+            new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true),
+            new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
+            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true));
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();
@@ -66,12 +64,6 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
     super(tableMetadata);
   }
 
-  @Override
-  public Object fromRow(Row o) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
-  }
-
   public Row getRow(
       String nodeName,
       String filterName,
@@ -79,19 +71,13 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
       LineAction action,
       Integer matchLine,
       String lineContent) {
-    Row row = new Row();
+    RowBuilder row = Row.builder();
     row.put(COLUMN_NODE, new Node(nodeName))
         .put(COLUMN_FILTER_NAME, filterName)
         .put(COLUMN_FLOW, flow)
         .put(COLUMN_ACTION, action)
         .put(COLUMN_LINE_NUMBER, matchLine)
         .put(COLUMN_LINE_CONTENT, lineContent);
-    return row;
-  }
-
-  @Override
-  public Row toRow(Object object) {
-    throw new UnsupportedOperationException(
-        "no implementation for generated method"); // TODO Auto-generated method stub
+    return row.build();
   }
 }

@@ -29,6 +29,17 @@ final class BgpNeighborMatchersImpl {
     }
   }
 
+  static final class HasRemoteAs extends FeatureMatcher<BgpNeighbor, Integer> {
+    HasRemoteAs(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "A BgpNeighbor with remoteAs:", "remoteAs");
+    }
+
+    @Override
+    protected Integer featureValueOf(BgpNeighbor actual) {
+      return actual.getRemoteAs();
+    }
+  }
+
   static final class IsDynamic extends FeatureMatcher<BgpNeighbor, Boolean> {
     IsDynamic(@Nonnull Matcher<? super Boolean> subMatcher) {
       super(subMatcher, "A BgpNeighbor with dynamic set to:", "dynamic");

@@ -16,7 +16,7 @@ import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 
 /** A base class for tabular answers */
-public abstract class TableAnswerElement extends AnswerElement {
+public class TableAnswerElement extends AnswerElement {
 
   protected static final String PROP_EXCLUDED_ROWS = "excludedRows";
 
@@ -121,8 +121,6 @@ public abstract class TableAnswerElement extends AnswerElement {
     }
   }
 
-  public abstract Object fromRow(Row row);
-
   @JsonProperty(PROP_EXCLUDED_ROWS)
   public List<ExcludedRows> getExcludedRows() {
     return _excludedRows;
@@ -138,17 +136,22 @@ public abstract class TableAnswerElement extends AnswerElement {
     return _rows;
   }
 
-  public void postProcessAnswer(Question question, Multiset<?> objects) {
-    objects.forEach(
-        object -> {
-          Row row = toRow(object);
-
+  /**
+   * Given an initial set of rows produced by an {@link org.batfish.common.Answerer}, this procedure
+   * processes exclusions, assertions, and summary to update this object.
+   *
+   * @param question The question that generated the initial set of rows
+   * @param initialSet The initial set of rows
+   */
+  public void postProcessAnswer(Question question, Multiset<Row> initialSet) {
+    initialSet.forEach(
+        initialRow -> {
           // exclude or not?
-          Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
+          Exclusion exclusion = Exclusion.covered(initialRow, question.getExclusions());
           if (exclusion != null) {
-            addExcludedRow(row, exclusion.getName());
+            addExcludedRow(initialRow, exclusion.getName());
           } else {
-            addRow(row);
+            addRow(initialRow);
           }
         });
 
@@ -164,6 +167,4 @@ public abstract class TableAnswerElement extends AnswerElement {
   private void setRows(Rows rows) {
     _rows = rows == null ? new Rows() : rows;
   }
-
-  public abstract Row toRow(Object object);
 }

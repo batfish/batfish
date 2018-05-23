@@ -15,6 +15,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.1.1/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as1border1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -148,6 +157,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "10.12.11.1/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as1border1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfExternalType2Route",
             "administrativeCost" : 110,
             "advertiser" : "as1border2",
@@ -194,6 +212,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.0.2.0/24",
             "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHop" : "(none)",
+            "node" : "as1border2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.2.1/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as1border2",
             "vrf" : "default"
@@ -332,9 +359,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "10.13.22.1/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as1border2",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "10.14.22.0/24",
             "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHop" : "(none)",
+            "node" : "as1border2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "10.14.22.1/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as1border2",
             "vrf" : "default"
@@ -352,9 +397,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.1.2/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as1core1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "1.0.2.0/24",
             "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHop" : "(none)",
+            "node" : "as1core1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "1.0.2.2/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as1core1",
             "vrf" : "default"
@@ -670,9 +733,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.11.1/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2border1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.12.12.0/24",
             "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHop" : "(none)",
+            "node" : "as2border1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.12.1/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2border1",
             "vrf" : "default"
@@ -1164,6 +1245,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "10.12.11.0/24",
             "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHop" : "(none)",
+            "node" : "as2border1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "10.12.11.2/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2border1",
             "vrf" : "default"
@@ -1443,9 +1533,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.21.1/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2border2",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.12.22.0/24",
             "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHop" : "(none)",
+            "node" : "as2border2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.22.1/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2border2",
             "vrf" : "default"
@@ -1882,6 +1990,15 @@
             "nextHop" : "(none)",
             "node" : "as2border2",
             "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "10.23.21.2/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2border2",
+            "vrf" : "default"
           }
         ]
       },
@@ -2044,6 +2161,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.11.2/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2core1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -2058,6 +2184,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.12.21.0/24",
             "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHop" : "(none)",
+            "node" : "as2core1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.21.2/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2core1",
             "vrf" : "default"
@@ -2082,9 +2217,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.11.2/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2core1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.23.12.0/24",
             "nextHopInterface" : "GigabitEthernet3/0",
+            "nextHop" : "(none)",
+            "node" : "as2core1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.12.2/32",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2core1",
             "vrf" : "default"
@@ -2533,6 +2686,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.12.2/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2core2",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -2547,6 +2709,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.12.22.0/24",
             "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHop" : "(none)",
+            "node" : "as2core2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.12.22.2/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2core2",
             "vrf" : "default"
@@ -2582,9 +2753,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.21.2/32",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2core2",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.23.22.0/24",
             "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHop" : "(none)",
+            "node" : "as2core2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.22.2/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2core2",
             "vrf" : "default"
@@ -2980,9 +3169,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.34.101.4/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2dept1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.34.201.0/24",
             "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHop" : "(none)",
+            "node" : "as2dept1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.34.201.4/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2dept1",
             "vrf" : "default"
@@ -2996,9 +3203,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.128.0.1/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2dept1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.128.1.0/24",
             "nextHopInterface" : "GigabitEthernet3/0",
+            "nextHop" : "(none)",
+            "node" : "as2dept1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.128.1.1/32",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2dept1",
             "vrf" : "default"
@@ -3392,6 +3617,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.11.3/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2dist1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -3411,6 +3645,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.21.3/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2dist1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -3425,6 +3668,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.34.101.0/24",
             "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHop" : "(none)",
+            "node" : "as2dist1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.34.101.3/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2dist1",
             "vrf" : "default"
@@ -4049,6 +4301,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.12.3/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as2dist2",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -4063,6 +4324,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.23.22.0/24",
             "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHop" : "(none)",
+            "node" : "as2dist2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.23.22.3/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2dist2",
             "vrf" : "default"
@@ -4099,6 +4369,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.34.201.0/24",
             "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHop" : "(none)",
+            "node" : "as2dist2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.34.201.3/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as2dist2",
             "vrf" : "default"
@@ -4512,6 +4791,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.0.1.1/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as3border1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -4570,6 +4858,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "10.23.21.0/24",
             "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHop" : "(none)",
+            "node" : "as3border1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "10.23.21.3/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as3border1",
             "vrf" : "default"
@@ -4679,6 +4976,15 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.0.2.1/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as3border2",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.OspfIntraAreaRoute",
             "administrativeCost" : 110,
             "area" : 1,
@@ -4712,6 +5018,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "10.13.22.0/24",
             "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHop" : "(none)",
+            "node" : "as3border2",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "10.13.22.3/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as3border2",
             "vrf" : "default"
@@ -4821,9 +5136,27 @@
             "vrf" : "default"
           },
           {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.0.1.2/32",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as3core1",
+            "vrf" : "default"
+          },
+          {
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "3.0.2.0/24",
             "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHop" : "(none)",
+            "node" : "as3core1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "3.0.2.2/32",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "as3core1",
             "vrf" : "default"
@@ -4901,6 +5234,24 @@
             "nextHop" : "(none)",
             "node" : "as3core1",
             "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "90.90.90.1/32",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as3core1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "90.90.90.2/32",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "as3core1",
+            "vrf" : "default"
           }
         ]
       },
@@ -4921,6 +5272,15 @@
             "class" : "org.batfish.datamodel.ConnectedRoute",
             "network" : "2.128.0.0/24",
             "nextHopInterface" : "eth0",
+            "nextHop" : "(none)",
+            "node" : "host1",
+            "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.128.0.101/32",
+            "nextHopInterface" : "eth0",
+            "sourcePrefixLength" : 24,
             "nextHop" : "(none)",
             "node" : "host1",
             "vrf" : "default"
@@ -4947,6 +5307,15 @@
             "nextHop" : "(none)",
             "node" : "host2",
             "vrf" : "default"
+          },
+          {
+            "class" : "org.batfish.datamodel.LocalRoute",
+            "network" : "2.128.1.101/32",
+            "nextHopInterface" : "eth0",
+            "sourcePrefixLength" : 24,
+            "nextHop" : "(none)",
+            "node" : "host2",
+            "vrf" : "default"
           }
         ]
       }
@@ -4963,6 +5332,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as1border1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "1.0.1.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as1border1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5059,6 +5440,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as1border1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "10.12.11.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as1border1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5115,6 +5508,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "1.0.2.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as1border2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 3,
             "network" : "1.1.1.1/32",
@@ -5213,12 +5618,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "10.13.22.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as1border2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "10.14.22.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet2/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as1border2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "10.14.22.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as1border2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           }
@@ -5241,12 +5670,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "1.0.1.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as1core1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "1.0.2.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet0/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as1core1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "1.0.2.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as1core1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5509,12 +5962,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.12.11.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2border1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.12.12.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet2/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2border1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.12.12.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2border1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5731,6 +6208,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2border1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "10.12.11.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2border1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -5933,12 +6422,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.12.21.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2border2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.12.22.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet1/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2border2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.12.22.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2border2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -6157,6 +6670,18 @@
             "protocol" : "connected",
             "tag" : -1,
             "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "10.23.21.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2border2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
           }
         ]
       },
@@ -6307,6 +6832,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.12.11.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 2,
             "network" : "2.12.12.0/24",
@@ -6327,6 +6864,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2core1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.12.21.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -6357,12 +6906,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.23.11.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.23.12.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet3/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2core1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.23.12.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -6695,6 +7268,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.12.12.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 2,
             "network" : "2.12.21.0/24",
@@ -6715,6 +7300,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2core2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.12.22.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -6757,12 +7354,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.23.21.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.23.22.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet2/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2core2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.23.22.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2core2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -6989,12 +7610,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.34.101.4/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dept1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.34.201.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet1/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2dept1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.34.201.4/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dept1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -7013,12 +7658,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "2.128.0.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dept1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "2.128.1.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet3/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2dept1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.128.1.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dept1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -7267,6 +7936,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.23.11.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dist1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 2,
             "network" : "2.23.12.0/24",
@@ -7291,6 +7972,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.23.21.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dist1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 2,
             "network" : "2.23.22.0/24",
@@ -7311,6 +8004,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2dist1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.34.101.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dist1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -7667,6 +8372,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.23.12.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dist2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 2,
             "network" : "2.23.21.0/24",
@@ -7687,6 +8404,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2dist2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.23.22.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dist2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -7723,6 +8452,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as2dist2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.34.201.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as2dist2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -7899,6 +8640,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "3.0.1.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3border1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 2,
             "network" : "3.0.2.0/24",
@@ -7969,6 +8722,18 @@
             "protocol" : "connected",
             "tag" : -1,
             "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "10.23.21.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3border1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
           }
         ]
       },
@@ -8035,6 +8800,18 @@
             "vrf" : "default"
           },
           {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "3.0.2.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3border2",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
             "administrativeCost" : 110,
             "metric" : 3,
             "network" : "3.1.1.1/32",
@@ -8079,6 +8856,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as3border2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "10.13.22.3/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3border2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -8149,12 +8938,36 @@
           {
             "administrativeCost" : 0,
             "metric" : 0,
+            "network" : "3.0.1.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet1/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3core1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
             "network" : "3.0.2.0/24",
             "nextHop" : "(none)",
             "nextHopInterface" : "GigabitEthernet0/0",
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "as3core1",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "3.0.2.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet0/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3core1",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           },
@@ -8229,6 +9042,30 @@
             "protocol" : "connected",
             "tag" : -1,
             "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "90.90.90.1/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet2/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3core1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "90.90.90.2/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "GigabitEthernet3/0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "as3core1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
           }
         ]
       },
@@ -8257,6 +9094,18 @@
             "protocol" : "connected",
             "tag" : -1,
             "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.128.0.101/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "eth0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "host1",
+            "protocol" : "local",
+            "tag" : -1,
+            "vrf" : "default"
           }
         ]
       },
@@ -8283,6 +9132,18 @@
             "nextHopIp" : "AUTO/NONE(-1l)",
             "node" : "host2",
             "protocol" : "connected",
+            "tag" : -1,
+            "vrf" : "default"
+          },
+          {
+            "administrativeCost" : 0,
+            "metric" : 0,
+            "network" : "2.128.1.101/32",
+            "nextHop" : "(none)",
+            "nextHopInterface" : "eth0",
+            "nextHopIp" : "AUTO/NONE(-1l)",
+            "node" : "host2",
+            "protocol" : "local",
             "tag" : -1,
             "vrf" : "default"
           }

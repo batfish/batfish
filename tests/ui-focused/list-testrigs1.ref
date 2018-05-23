@@ -13,7 +13,6 @@ configs/
   ...... 3 more entries
 example-network.png
 example-topology.json
-gns-network.net
 hosts/
   host1.json
   host2.json

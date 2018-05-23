@@ -32,6 +32,8 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
 
   private Map<Ip, String> _ipOwnersSimple;
 
+  private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
+
   Map<String, Node> _nodes;
 
   private Topology _topology;
@@ -58,6 +60,11 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public Map<Ip, Set<String>> getIpOwners() {
     return _ipOwners;
+  }
+
+  @Override
+  public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
+    return _ipVrfOwners;
   }
 
   public Map<Ip, String> getIpOwnersSimple() {
@@ -98,11 +105,12 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   protected void initIpOwners(
-      Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
-      Map<Ip, String> ipOwnersSimple) {
+      Map<Ip, String> ipOwnersSimple,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     setIpOwners(ipOwners);
     setIpOwnersSimple(ipOwnersSimple);
+    setIpVrfOwners(ipVrfOwners);
   }
 
   public void setIpOwners(Map<Ip, Set<String>> ipOwners) {
@@ -111,6 +119,10 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
 
   public void setIpOwnersSimple(Map<Ip, String> ipOwnersSimple) {
     _ipOwnersSimple = ipOwnersSimple;
+  }
+
+  public void setIpVrfOwners(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    this._ipVrfOwners = ipVrfOwners;
   }
 
   public void setNodes(Map<String, Node> nodes) {
@@ -136,5 +148,33 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
 
   void setBgpTopology(Network<BgpNeighbor, BgpSession> bgpTopology) {
     this._bgpTopology = bgpTopology;
+  }
+
+  /**
+   * Retrieve the {@link PrefixTracer} for each {@link VirtualRouter} after dataplane computation.
+   * Map structure: Hostname -> VRF name -> prefix tracer.
+   */
+  public SortedMap<String, SortedMap<String, PrefixTracer>> getPrefixTracingInfo() {
+    /*
+     * Iterate over nodes, then virtual routers, and extract prefix tracer from each.
+     * Sort hostnames and VRF names
+     */
+    return _nodes
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                String::compareTo,
+                Entry::getKey,
+                e ->
+                    e.getValue()
+                        .getVirtualRouters()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                String::compareTo,
+                                Entry::getKey,
+                                e2 -> e2.getValue().getPrefixTracer()))));
   }
 }

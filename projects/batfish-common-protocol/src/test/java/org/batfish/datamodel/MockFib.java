@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
+import javax.annotation.Nonnull;
 
 public class MockFib implements Fib {
 
@@ -29,26 +30,27 @@ public class MockFib implements Fib {
     }
 
     public Builder setNextHopInterfaces(
-        Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces) {
+        @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfaces) {
       _nextHopInterfaces = nextHopInterfaces;
       return this;
     }
 
     public Builder setNextHopInterfacesByIp(
-        Map<Ip, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByIp) {
+        @Nonnull Map<Ip, Map<String, Map<Ip, Set<AbstractRoute>>>> nextHopInterfacesByIp) {
       _nextHopInterfacesByIp = nextHopInterfacesByIp;
       return this;
     }
 
     public Builder setNextHopInterfacesByRoute(
-        Map<Ip, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
-            nextHopInterfacesByRoute) {
+        @Nonnull
+            Map<Ip, Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>>
+                nextHopInterfacesByRoute) {
       _nextHopInterfacesByRoute = nextHopInterfacesByRoute;
       return this;
     }
 
     public Builder setRoutesByNextHopInterface(
-        Map<String, Set<AbstractRoute>> routesByNextHopInterface) {
+        @Nonnull Map<String, Set<AbstractRoute>> routesByNextHopInterface) {
       _routesByNextHopInterface = routesByNextHopInterface;
       return this;
     }
@@ -78,23 +80,24 @@ public class MockFib implements Fib {
   }
 
   @Override
-  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfaces() {
+  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      getNextHopInterfaces() {
     return _nextHopInterfaces;
   }
 
   @Override
-  public Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
-    return _nextHopInterfacesByIp.get(ip);
+  public @Nonnull Map<String, Map<Ip, Set<AbstractRoute>>> getNextHopInterfaces(Ip ip) {
+    return _nextHopInterfacesByIp.getOrDefault(ip, ImmutableMap.of());
   }
 
   @Override
-  public Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>> getNextHopInterfacesByRoute(
-      Ip dstIp) {
+  public @Nonnull Map<AbstractRoute, Map<String, Map<Ip, Set<AbstractRoute>>>>
+      getNextHopInterfacesByRoute(Ip dstIp) {
     return _nextHopInterfacesByRoute.get(dstIp);
   }
 
   @Override
-  public Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
+  public @Nonnull Map<String, Set<AbstractRoute>> getRoutesByNextHopInterface() {
     return _routesByNextHopInterface;
   }
 }

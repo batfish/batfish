@@ -214,7 +214,10 @@ class TransferSSA {
     Collections.reverse(lines);
 
     for (RouteFilterLine line : lines) {
-      Prefix p = line.getPrefix();
+      if (!line.getIpWildcard().isPrefix()) {
+        throw new BatfishException("non-prefix IpWildcards are unsupported");
+      }
+      Prefix p = line.getIpWildcard().toPrefix();
       SubRange r = line.getLengthRange();
       PrefixRange range = new PrefixRange(p, r);
       BoolExpr matches = _enc.isRelevantFor(other.getPrefixLength(), range);
@@ -881,7 +884,7 @@ class TransferSSA {
 
   /*
    * The [phi] function from SSA that merges variables that may differ across
-   * different branches of an mkIf statement.
+   * different branches of an If statement.
    */
   private Pair<Expr, Expr> joinPoint(
       TransferParam<SymbolicRoute> p,

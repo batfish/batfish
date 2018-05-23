@@ -76,13 +76,13 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "lengthRange" : "24-24",
-              "prefix" : "3.0.1.0/24"
+              "ipWildcard" : "3.0.1.0/24",
+              "lengthRange" : "24-24"
             },
             {
               "action" : "ACCEPT",
-              "lengthRange" : "24-24",
-              "prefix" : "3.0.2.0/24"
+              "ipWildcard" : "3.0.2.0/24",
+              "lengthRange" : "24-24"
             }
           ]
         },
@@ -105,13 +105,13 @@
           "lines" : [
             {
               "action" : "ACCEPT",
-              "lengthRange" : "8-8",
-              "prefix" : "2.0.0.0/8"
+              "ipWildcard" : "2.0.0.0/8",
+              "lengthRange" : "8-8"
             },
             {
               "action" : "ACCEPT",
-              "lengthRange" : "16-16",
-              "prefix" : "2.128.0.0/16"
+              "ipWildcard" : "2.128.0.0/16",
+              "lengthRange" : "16-16"
             }
           ]
         },

@@ -5,7 +5,9 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
 import com.google.common.graph.Network;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -23,6 +25,7 @@ import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
 public class BgpSessionStatusAnswerer extends Answerer {
 
+  /** Answerer for the BGP Session status question (new version). */
   public BgpSessionStatusAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
@@ -33,7 +36,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Multiset<BgpSessionInfo> sessions = rawAnswer(question);
     BgpSessionStatusAnswerElement answer =
         new BgpSessionStatusAnswerElement(BgpSessionStatusAnswerElement.createMetadata(question));
-    answer.postProcessAnswer(question, sessions);
+    answer.postProcessAnswer(
+        question,
+        sessions
+            .stream()
+            .map(BgpSessionStatusAnswerElement::toRow)
+            .collect(Collectors.toCollection(HashMultiset::create)));
     return answer;
   }
 
@@ -85,20 +93,20 @@ public class BgpSessionStatusAnswerer extends Answerer {
       }
 
       // Setup session info
-      boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
+      boolean ebgp = !Objects.equals(bgpNeighbor.getRemoteAs(), bgpNeighbor.getLocalAs());
       boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
       Prefix remotePrefix = bgpNeighbor.getPrefix();
-      BgpSessionInfoBuilder bsiBuilder = new BgpSessionInfoBuilder(hostname, vrfName, remotePrefix);
       SessionType sessionType =
           ebgp
               ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
               : SessionType.IBGP;
-
       // Skip session types we don't care about
       if (!question.matchesType(sessionType)) {
         continue;
       }
-      bsiBuilder.withSessionType(sessionType);
+      BgpSessionInfoBuilder bsiBuilder =
+          new BgpSessionInfoBuilder(hostname, vrfName, remotePrefix, sessionType);
+
       SessionStatus configuredStatus;
 
       Ip localIp = bgpNeighbor.getLocalIp();

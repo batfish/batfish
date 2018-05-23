@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.SortedMultiset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +19,6 @@ import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -86,6 +86,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.DisjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
@@ -444,11 +445,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
           .add(Statements.ExitReject.toStaticStatement());
 
       // export policies
-      String peerExportPolicyName = "~PEER_EXPORT_POLICY:" + ig.getRemoteAddress() + "~";
+      String peerExportPolicyName = computePeerExportPolicyName(ig.getRemoteAddress());
       neighbor.setExportPolicy(peerExportPolicyName);
       RoutingPolicy peerExportPolicy = new RoutingPolicy(peerExportPolicyName, _c);
       _c.getRoutingPolicies().put(peerExportPolicyName, peerExportPolicy);
       peerExportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_EXPORT_POLICY_NAME));
+      applyLocalRoutePolicy(routingInstance, peerExportPolicy);
 
       /*
        * For new BGP advertisements, i.e. those that are created from non-BGP
@@ -591,6 +593,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return proc;
   }
 
+  public static String computePeerExportPolicyName(Prefix remoteAddress) {
+    return "~PEER_EXPORT_POLICY:" + remoteAddress + "~";
+  }
+
+  private void applyLocalRoutePolicy(RoutingInstance routingInstance, RoutingPolicy targetPolicy) {
+    boolean lan = routingInstance.getExportLocalRoutesLan();
+    boolean ptp = routingInstance.getExportLocalRoutesPointToPoint();
+    if (lan && ptp) {
+      // All local routes are allowed, so no need for filter
+      return;
+    }
+    BooleanExpr matchProtocol = new MatchProtocol(RoutingProtocol.LOCAL);
+    BooleanExpr match;
+    if (!lan && !ptp) {
+      // No need to check length, since all local routes will be rejected
+      match = matchProtocol;
+    } else {
+      SubRange rejectedLength =
+          !lan
+              ? new SubRange(0, Prefix.MAX_PREFIX_LENGTH - 2)
+              : new SubRange(Prefix.MAX_PREFIX_LENGTH - 1, Prefix.MAX_PREFIX_LENGTH - 1);
+      match =
+          new Conjunction(
+              ImmutableList.of(
+                  matchProtocol, new MatchLocalRouteSourcePrefixLength(rejectedLength)));
+    }
+    targetPolicy
+        .getStatements()
+        .add(new If(match, ImmutableList.of(Statements.ExitReject.toStaticStatement())));
+  }
+
   private IsisProcess createIsisProcess(RoutingInstance routingInstance, IsoAddress netAddress) {
     IsisProcess newProc = new IsisProcess();
     // newProc.setNetAddress(netAddress);
@@ -628,8 +661,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     OspfProcess newProc = new OspfProcess();
     String vrfName = routingInstance.getName();
     // export policies
-    String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
+    String ospfExportPolicyName = computeOspfExportPolicyName(vrfName);
     RoutingPolicy ospfExportPolicy = new RoutingPolicy(ospfExportPolicyName, _c);
+    applyLocalRoutePolicy(routingInstance, ospfExportPolicy);
     _c.getRoutingPolicies().put(ospfExportPolicyName, ospfExportPolicy);
     newProc.setExportPolicy(ospfExportPolicyName);
     If ospfExportPolicyConditional = new If();
@@ -673,6 +707,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newProc.setRouterId(routingInstance.getRouterId());
     newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
+  }
+
+  public static String computeOspfExportPolicyName(String vrfName) {
+    return "~OSPF_EXPORT_POLICY:" + vrfName + "~";
   }
 
   public Set<Long> getAllStandardCommunities() {
@@ -870,12 +908,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void markAuthenticationKeyChains(JuniperStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedSet<Integer>>> byName =
+    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
         _structureReferences.get(JuniperStructureType.AUTHENTICATION_KEY_CHAIN);
     if (byName != null) {
       byName.forEach(
           (keyChainName, byUsage) -> {
-            SortedSet<Integer> lines = byUsage.get(usage);
+            SortedMultiset<Integer> lines = byUsage.get(usage);
             if (lines != null) {
               JuniperAuthenticationKeyChain keyChain = _authenticationKeyChains.get(keyChainName);
               if (keyChain != null) {
@@ -2216,39 +2254,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // mark references to authentication key chain that may not appear in data model
-    markAuthenticationKeyChains(JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY, _c);
-
-    markStructure(
+    // Count and mark structure usages and identify undefined references
+    markConcreteStructure(
+        JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
+        JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY);
+    markAbstractStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
-        ImmutableList.of(_applications, _applicationSets));
-    markStructure(
+        ImmutableList.of(JuniperStructureType.APPLICATION, JuniperStructureType.APPLICATION_SET));
+    markAbstractStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
-        ImmutableList.of(_applications, _applicationSets));
-    markStructure(
+        ImmutableList.of(JuniperStructureType.APPLICATION, JuniperStructureType.APPLICATION_SET));
+    markConcreteStructure(
         JuniperStructureType.APPLICATION_SET,
-        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET,
-        _applicationSets);
-    markStructure(
-        JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER, _filters);
-    markStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN, _vlanNameToVlan);
+        JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET);
+    markConcreteStructure(
+        JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER);
+    markConcreteStructure(
+        JuniperStructureType.PREFIX_LIST,
+        JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,
+        JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST,
+        JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST,
+        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST,
+        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER);
+    markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
     // record defined structures
-    recordStructure(_applications, JuniperStructureType.APPLICATION);
-    recordStructure(_applicationSets, JuniperStructureType.APPLICATION_SET);
-    recordAuthenticationKeyChains();
     recordBgpGroups();
     recordDhcpRelayServerGroups();
     recordPolicyStatements();
-    recordFirewallFilters();
     recordIkeProposals();
     recordIkePolicies();
     recordIkeGateways();
     recordIpsecProposals();
     recordIpsecPolicies();
-    recordPrefixLists();
     recordAndDisableUnreferencedStInterfaces();
 
     warnEmptyPrefixLists();
@@ -2374,18 +2414,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void recordAuthenticationKeyChains() {
-    for (Entry<String, JuniperAuthenticationKeyChain> e : _authenticationKeyChains.entrySet()) {
-      String name = e.getKey();
-      JuniperAuthenticationKeyChain keyChain = e.getValue();
-      recordStructure(
-          keyChain,
-          JuniperStructureType.AUTHENTICATION_KEY_CHAIN,
-          name,
-          keyChain.getDefinitionLine());
-    }
-  }
-
   private void recordBgpGroups() {
     for (RoutingInstance ri : _routingInstances.values()) {
       for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
@@ -2415,15 +2443,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         recordStructure(
             sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
       }
-    }
-  }
-
-  private void recordFirewallFilters() {
-    for (Entry<String, FirewallFilter> e : _filters.entrySet()) {
-      String name = e.getKey();
-      FirewallFilter filter = e.getValue();
-      recordStructure(
-          filter, JuniperStructureType.FIREWALL_FILTER, name, filter.getDefinitionLine());
     }
   }
 

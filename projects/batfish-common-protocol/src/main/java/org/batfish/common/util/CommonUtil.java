@@ -275,6 +275,43 @@ public class CommonUtil {
     return 0;
   }
 
+  /** Compute the {@link Ip}s owned by each interface. hostname -> interface name -> {@link Ip}s. */
+  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+      Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeInterfaceOwnedIps(
+        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive));
+  }
+
+  /**
+   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) to
+   * (hostname -> interface name -> Ip).
+   */
+  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
+    Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
+
+    ipInterfaceOwners.forEach(
+        (ip, owners) ->
+            owners.forEach(
+                (host, ifaces) ->
+                    ifaces.forEach(
+                        iface ->
+                            ownedIps
+                                .computeIfAbsent(host, k -> new HashMap<>())
+                                .computeIfAbsent(iface, k -> new HashSet<>())
+                                .add(ip))));
+
+    // freeze
+    return toImmutableMap(
+        ownedIps,
+        Entry::getKey, /* host */
+        hostEntry ->
+            toImmutableMap(
+                hostEntry.getValue(),
+                Entry::getKey, /* interface */
+                ifaceEntry -> ImmutableSet.copyOf(ifaceEntry.getValue())));
+  }
+
   /**
    * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
    * interface address)
@@ -371,49 +408,6 @@ public class CommonUtil {
                 ipOwnersEntry.getValue(),
                 Entry::getKey, // hostname
                 hostIpOwnersEntry -> ImmutableSet.copyOf(hostIpOwnersEntry.getValue())));
-  }
-
-  /**
-   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) to
-   * (hostname -> interface name -> Ip).
-   */
-  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
-      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
-    Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
-
-    ipInterfaceOwners.forEach(
-        (ip, owners) ->
-            owners.forEach(
-                (host, ifaces) ->
-                    ifaces.forEach(
-                        iface ->
-                            ownedIps
-                                .computeIfAbsent(host, k -> new HashMap<>())
-                                .computeIfAbsent(iface, k -> new HashSet<>())
-                                .add(ip))));
-
-    // freeze
-    return toImmutableMap(
-        ownedIps,
-        Entry::getKey, /* host */
-        hostEntry ->
-            toImmutableMap(
-                hostEntry.getValue(),
-                Entry::getKey, /* interface */
-                ifaceEntry -> ImmutableSet.copyOf(ifaceEntry.getValue())));
-  }
-
-  /**
-   * Compute the set of {@link Ip}s owned by each interface.
-   *
-   * @param configurations The network configurations.
-   * @param excludeInactive whether to ignore inactive interfaces
-   * @return A mapping hostname -> interface name -> owned {@link Ip}s
-   */
-  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
-      Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeInterfaceOwnedIps(
-        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive));
   }
 
   /**
@@ -518,13 +512,27 @@ public class CommonUtil {
     }
   }
 
+  /**
+   * Returns a {@link ClientBuilder} with supplied settings
+   *
+   * @param noSsl {@link javax.ws.rs.client.Client} will use plain HTTP with no SSL if set to true
+   * @param trustAllSslCerts {@link javax.ws.rs.client.Client} will not verify URL's hostname
+   *     against server's identification hostname
+   * @param keystoreFile File to be used to load the {@link KeyStore}
+   * @param keystorePassword Password to be used with the keyStoreFile
+   * @param truststoreFile File to be used to load the {@link TrustManager}
+   * @param truststorePassword Password to be used with the data in the trustStoreFile
+   * @param registerTracing Whether to register JAX-RS tracing on the {@link ClientBuilder}
+   * @return {@link ClientBuilder} with the supplied settings
+   */
   public static ClientBuilder createHttpClientBuilder(
       boolean noSsl,
       boolean trustAllSslCerts,
       Path keystoreFile,
       String keystorePassword,
       Path truststoreFile,
-      String truststorePassword) {
+      String truststorePassword,
+      boolean registerTracing) {
     ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     try {
       if (!noSsl) {
@@ -567,7 +575,7 @@ public class CommonUtil {
         KeyManager[] keyManagers;
         if (keystoreFile != null) {
           if (keystorePassword == null) {
-            throw new BatfishException("Keystore file supplied but keystore password");
+            throw new BatfishException("Keystore file supplied but keystore password missing");
           }
           char[] ksPass = keystorePassword.toCharArray();
           try (FileInputStream keystoreStream = new FileInputStream(keystoreFile.toFile())) {
@@ -581,7 +589,9 @@ public class CommonUtil {
         sslcontext.init(keyManagers, trustManagers, new java.security.SecureRandom());
         clientBuilder.sslContext(sslcontext);
       }
-      if (GlobalTracer.isRegistered()) {
+      /* register tracing feature if a tracer was initialized and caller wants client to
+      send tracing information */
+      if (GlobalTracer.isRegistered() && registerTracing) {
         clientBuilder.register(ClientTracingFeature.class);
       }
     } catch (Exception e) {

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.batfish.common.BatfishException;
@@ -29,7 +30,7 @@ public class Schema {
           .put("FileLine", getClassString(FileLinePair.class))
           .put("Flow", getClassString(Flow.class))
           .put("FlowTrace", getClassString(FlowTrace.class))
-          .put("Integer", getClassString(Long.class))
+          .put("Integer", getClassString(Integer.class))
           .put("Interface", getClassString(NodeInterfacePair.class))
           .put("Ip", getClassString(Ip.class))
           .put("Issue", getClassString(Issue.class))
@@ -95,8 +96,26 @@ public class Schema {
     }
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof Schema)) {
+      return false;
+    }
+    return Objects.equals(_baseType, ((Schema) o)._baseType)
+        && Objects.equals(_isListType, ((Schema) o)._isListType);
+  }
+
   public Class<?> getBaseType() {
     return _baseType;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_baseType, _isListType);
+  }
+
+  public boolean isIntOrIntList() {
+    return _baseType.equals(Integer.class);
   }
 
   public boolean isList() {
@@ -107,9 +126,5 @@ public class Schema {
   @JsonValue
   public String toString() {
     return _schemaStr;
-  }
-
-  public boolean isIntOrIntList() {
-    return _baseType.equals(Long.class);
   }
 }

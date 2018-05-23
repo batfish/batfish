@@ -19,6 +19,7 @@ router_bgp_nxos_toplevel
     | rbnx_fast_external_fallover
     | rbnx_flush_routes
     | rbnx_isolate
+    | rbnx_no_enforce_first_as
     | rbnx_proc_vrf_common
     | rbnx_shutdown
     | rbnx_template_peer
@@ -39,6 +40,7 @@ rbnx_proc_vrf_common
     | rbnx_log_neighbor_changes
     | rbnx_maxas_limit
     | rbnx_neighbor
+    | rbnx_reconnect_interval
     | rbnx_router_id
     | rbnx_suppress_fib_pending         // TODO
     | rbnx_timers_bestpath_limit        // TODO
@@ -73,6 +75,7 @@ rbnx_af_inner
     | rbnx_af_redistribute_isis
     | rbnx_af_redistribute_lisp
     | rbnx_af_redistribute_ospf
+    | rbnx_af_redistribute_ospfv3
     | rbnx_af_redistribute_rip
     | rbnx_af_redistribute_static
     | rbnx_af_suppress_inactive
@@ -95,6 +98,7 @@ rbnx_af_aggregate_address
     AGGREGATE_ADDRESS (
         network = IP_ADDRESS MASK subnet = IP_ADDRESS
         | prefix = IP_PREFIX
+        | prefix6 = IPV6_PREFIX
     ) rbnx_af_aa_tail* NEWLINE
 ;
 
@@ -147,7 +151,7 @@ rbnx_af_inject_map
 
 rbnx_af_maximum_paths
 :
-    MAXIMUM_PATHS IBGP? numpaths = DEC NEWLINE
+    MAXIMUM_PATHS (EIBGP | IBGP)? numpaths = DEC NEWLINE
 ;
 
 rbnx_af_network
@@ -155,6 +159,7 @@ rbnx_af_network
     NETWORK (
         address = IP MASK mask = IP
         | prefix = IP_PREFIX
+        | prefix6 = IPV6_PREFIX
     ) (ROUTE_MAP mapname = variable)? NEWLINE
 ;
 
@@ -191,6 +196,11 @@ rbnx_af_redistribute_lisp
 rbnx_af_redistribute_ospf
 :
     REDISTRIBUTE OSPF source_tag = variable ROUTE_MAP mapname = variable NEWLINE
+;
+
+rbnx_af_redistribute_ospfv3
+:
+    REDISTRIBUTE OSPFV3 source_tag = variable ROUTE_MAP mapname = variable NEWLINE
 ;
 
 rbnx_af_redistribute_rip
@@ -254,8 +264,8 @@ rbnx_enforce_first_as
 
 rbnx_event_history
 :
-    EVENT_HISTORY (CLI | DETAIL | EVENTS | PERIOD)
-    (SIZE (DISABLE | LARGE | MEDIUM | SMALL))?
+    EVENT_HISTORY (CLI | DETAIL | ERRORS | EVENTS | OBJSTORE | PERIODIC)
+    (SIZE (DISABLE | LARGE | MEDIUM | SMALL | sizebytes = DEC))?
     NEWLINE
 ;
 
@@ -300,7 +310,7 @@ rbnx_maxas_limit
 
 rbnx_neighbor
 :
-    NEIGHBOR (ip = IP_ADDRESS | prefix = IP_PREFIX)
+    NEIGHBOR (ip = IP_ADDRESS | prefix = IP_PREFIX | ip6 = IPV6_ADDRESS | prefix6 = IPV6_PREFIX)
     (
         REMOTE_AS (
             bgp_asn?
@@ -339,6 +349,7 @@ rbnx_n_common
     | rbnx_n_local_as
     | rbnx_n_low_memory
     | rbnx_n_maximum_peers
+    | rbnx_n_no_shutdown
     | rbnx_n_password
     | rbnx_n_remote_as
     | rbnx_n_remove_private_as
@@ -559,6 +570,11 @@ rbnx_n_maximum_peers
     MAXIMUM_PEERS max = DEC NEWLINE
 ;
 
+rbnx_n_no_shutdown
+:
+    NO SHUTDOWN NEWLINE
+;
+
 rbnx_n_password
 :
     PASSWORD type = DEC? password = ~NEWLINE+ NEWLINE
@@ -592,6 +608,16 @@ rbnx_n_transport
 rbnx_n_update_source
 :
     UPDATE_SOURCE interface_name NEWLINE
+;
+
+rbnx_no_enforce_first_as
+:
+    NO ENFORCE_FIRST_AS NEWLINE
+;
+
+rbnx_reconnect_interval
+:
+    RECONNECT_INTERVAL secs = DEC NEWLINE
 ;
 
 rbnx_router_id

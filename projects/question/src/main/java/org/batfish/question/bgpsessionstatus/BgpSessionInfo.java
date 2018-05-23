@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
@@ -41,7 +42,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   private final Integer _establishedNeighbors;
 
-  private final String _nodeName;
+  @Nonnull private final String _nodeName;
 
   private final Ip _localIp;
 
@@ -49,49 +50,53 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   private final String _remoteNode;
 
-  private final Prefix _remotePrefix;
+  @Nonnull private final Prefix _remotePrefix;
 
-  private final SessionType _sessionType;
+  @Nonnull private final SessionType _sessionType;
 
-  private final String _vrfName;
+  @Nonnull private final String _vrfName;
 
   @JsonCreator
   public BgpSessionInfo(
-      @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus staticStatus,
+      @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus configuredStatus,
       @JsonProperty(PROP_ESTABLISHED_NEIGHBORS) Integer dynamicNeighbors,
-      @JsonProperty(PROP_NODE_NAME) String nodeName,
+      @Nonnull @JsonProperty(PROP_NODE_NAME) String nodeName,
       @JsonProperty(PROP_LOCAL_IP) Ip localIp,
       @JsonProperty(PROP_ON_LOOPBACK) Boolean onLoopback,
       @JsonProperty(PROP_REMOTE_NODE) String remoteNode,
-      @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
-      @JsonProperty(PROP_SESSION_TYPE) SessionType sessionType,
-      @JsonProperty(PROP_VRF_NAME) String vrfName) {
+      @Nonnull @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
+      @Nonnull @JsonProperty(PROP_SESSION_TYPE) SessionType sessionType,
+      @Nonnull @JsonProperty(PROP_VRF_NAME) String vrfName) {
     _nodeName = nodeName;
     _vrfName = vrfName;
     _remotePrefix = remotePrefix;
     _localIp = localIp;
     _onLoopback = onLoopback;
     _remoteNode = remoteNode;
-    _configuredStatus = staticStatus;
+    _configuredStatus = configuredStatus;
     _establishedNeighbors = dynamicNeighbors;
     _sessionType = sessionType;
   }
 
+  @Nullable
   @JsonProperty(PROP_CONFIGURED_STATUS)
   public SessionStatus getConfiguredStatus() {
     return _configuredStatus;
   }
 
+  @Nullable
   @JsonProperty(PROP_ESTABLISHED_NEIGHBORS)
   public Integer getEstablishedNeighbors() {
     return _establishedNeighbors;
   }
 
+  @Nullable
   @JsonProperty(PROP_LOCAL_IP)
   public Ip getLocalIp() {
     return _localIp;
   }
 
+  @Nullable
   @JsonProperty(PROP_ON_LOOPBACK)
   public Boolean getOnLoopback() {
     return _onLoopback;
@@ -102,6 +107,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     return _nodeName;
   }
 
+  @Nullable
   @JsonProperty(PROP_REMOTE_NODE)
   public String getRemoteNode() {
     return _remoteNode;
@@ -132,7 +138,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof BgpSessionInfo)) {
+    if (!(o instanceof BgpSessionInfo)) {
       return false;
     }
     BgpSessionInfo other = (BgpSessionInfo) o;
@@ -188,10 +194,12 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     private SessionType _sessionType;
     private String _vrfName;
 
-    public BgpSessionInfoBuilder(String nodeName, String vfrName, Prefix remotePrefix) {
+    public BgpSessionInfoBuilder(
+        String nodeName, String vfrName, Prefix remotePrefix, SessionType sessionType) {
       _nodeName = nodeName;
       _vrfName = vfrName;
       _remotePrefix = remotePrefix;
+      _sessionType = sessionType;
     }
 
     public BgpSessionInfoBuilder withConfiguredStatus(SessionStatus configuredStatus) {
@@ -216,11 +224,6 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
     public BgpSessionInfoBuilder withRemoteNode(String remoteNode) {
       _remoteNode = remoteNode;
-      return this;
-    }
-
-    public BgpSessionInfoBuilder withSessionType(SessionType sessionType) {
-      _sessionType = sessionType;
       return this;
     }
 

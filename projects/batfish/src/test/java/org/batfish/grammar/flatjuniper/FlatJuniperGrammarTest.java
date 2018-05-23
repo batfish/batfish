@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
@@ -27,20 +28,26 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
 import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
-import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
+import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
+import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
+import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_EXISTING_CONNECTION;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
+import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
+import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -68,9 +75,12 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -78,10 +88,15 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OspfAreaSummary;
+import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RouteFilterLine;
+import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.State;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -90,7 +105,14 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.matchers.RouteFilterListMatchers;
+import org.batfish.datamodel.routing_policy.Environment;
+import org.batfish.datamodel.routing_policy.Environment.Direction;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -99,6 +121,7 @@ import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -148,10 +171,10 @@ public class FlatJuniperGrammarTest {
     return fb.build();
   }
 
-  private static Flow createTcpFlow(int port) {
+  private static Flow createFlow(IpProtocol protocol, int port) {
     Flow.Builder fb = new Flow.Builder();
     fb.setIngressNode("node");
-    fb.setIpProtocol(IpProtocol.TCP);
+    fb.setIpProtocol(protocol);
     fb.setDstPort(port);
     fb.setSrcPort(port);
     fb.setTag("test");
@@ -181,10 +204,16 @@ public class FlatJuniperGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    /* a1 should be used, while a2 should be unused */
+    /* Confirm application usage is tracked properly */
     assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a2", 0));
     assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a1", 1));
     assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.APPLICATION, "a3", 1));
+
+    /* Confirm undefined reference is identified */
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a_undef"));
   }
 
   @Test
@@ -193,8 +222,6 @@ public class FlatJuniperGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
-        undefinedReferences = ccae.getUndefinedReferences();
     Configuration c = parseConfig(hostname);
 
     /* Check that appset2 contains definition of appset1 concatenated with definition of a3 */
@@ -202,7 +229,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             ACL_NAME_GLOBAL_POLICY,
-            hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.acceptingHeaderSpace(
@@ -230,61 +257,76 @@ public class FlatJuniperGrammarTest {
      * Check that there is an undefined reference to appset4, but not to appset1-3
      * (via reference in security policy).
      */
-    assertThat(undefinedReferences, hasKey(hostname));
-    SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>
-        undefinedReferencesByType = undefinedReferences.get(hostname);
     assertThat(
-        undefinedReferencesByType,
-        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationOrApplicationSetByName =
-        undefinedReferencesByType.get(
-            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
-    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset1")));
-    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset2")));
-    assertThat(urApplicationOrApplicationSetByName, not(hasKey("appset3")));
-    assertThat(urApplicationOrApplicationSetByName, hasKey("appset4"));
-    SortedMap<String, SortedSet<Integer>> urApplicationOrApplicationSetByUsage =
-        urApplicationOrApplicationSetByName.get("appset4");
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
+            "appset4",
+            JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION));
     assertThat(
-        urApplicationOrApplicationSetByUsage,
-        hasKey(JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION.getDescription()));
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset1")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset2")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "appset3")));
 
     /*
      * Check that there is an undefined reference to application-set appset4, but not to appset1-3
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType, hasKey(JuniperStructureType.APPLICATION_SET.getDescription()));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationSetByName =
-        undefinedReferencesByType.get(JuniperStructureType.APPLICATION_SET.getDescription());
-    assertThat(urApplicationSetByName, not(hasKey("appset1")));
-    assertThat(urApplicationSetByName, not(hasKey("appset2")));
-    assertThat(urApplicationSetByName, not(hasKey("appset3")));
-    assertThat(urApplicationSetByName, hasKey("appset4"));
-    SortedMap<String, SortedSet<Integer>> urApplicationSetByUsage =
-        urApplicationSetByName.get("appset4");
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.APPLICATION_SET,
+            "appset4",
+            JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET));
     assertThat(
-        urApplicationSetByUsage,
-        hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET.getDescription()));
+        ccae,
+        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset1")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset2")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(hostname, JuniperStructureType.APPLICATION_SET, "appset3")));
 
     /*
      * Check that there is an undefined reference to application a4 but not a1-3
      * (via reference in application-set definition).
      */
     assertThat(
-        undefinedReferencesByType,
-        hasKey(JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription()));
-    SortedMap<String, SortedMap<String, SortedSet<Integer>>> urApplicationByName =
-        undefinedReferencesByType.get(
-            JuniperStructureType.APPLICATION_OR_APPLICATION_SET.getDescription());
-    assertThat(urApplicationByName, not(hasKey("a1")));
-    assertThat(urApplicationByName, not(hasKey("a2")));
-    assertThat(urApplicationByName, not(hasKey("a3")));
-    assertThat(urApplicationByName, hasKey("a4"));
-    SortedMap<String, SortedSet<Integer>> urApplicationByUsage = urApplicationByName.get("a4");
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
+            "a4",
+            JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION));
     assertThat(
-        urApplicationByUsage,
-        hasKey(JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION.getDescription()));
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a1")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a2")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                hostname, JuniperStructureType.APPLICATION_OR_APPLICATION_SET, "a3")));
   }
 
   @Test
@@ -300,8 +342,8 @@ public class FlatJuniperGrammarTest {
     IpAccessList aclNested = c.getIpAccessLists().get(aclNameNested);
     IpAccessList aclMultiNested = c.getIpAccessLists().get(aclNameMultiNested);
     /* Allowed application permits TCP from port 1 only */
-    Flow permittedFlow = createTcpFlow(1);
-    Flow rejectedFlow = createTcpFlow(2);
+    Flow permittedFlow = createFlow(IpProtocol.TCP, 1);
+    Flow rejectedFlow = createFlow(IpProtocol.TCP, 2);
 
     /*
      * Confirm non-nested application-set acl accepts the allowed protocol-port combo and reject
@@ -344,7 +386,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             ACL_NAME_GLOBAL_POLICY,
-            hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.acceptingHeaderSpace(
@@ -359,6 +401,27 @@ public class FlatJuniperGrammarTest {
                                 .setIpProtocols(ImmutableList.of(IpProtocol.UDP))
                                 .setSrcPorts(ImmutableList.of(new SubRange(4, 4)))
                                 .build()))))));
+  }
+
+  @Test
+  public void testAuthenticationKeyChain() throws IOException {
+    String hostname = "authentication-key-chain";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm filter usage is tracked properly */
+    assertThat(
+        ccae, hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC", 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNUSED", 0));
+
+    /* Confirm undefined reference is identified */
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, JuniperStructureType.AUTHENTICATION_KEY_CHAIN, "KC_UNDEF"));
   }
 
   @Test
@@ -496,9 +559,9 @@ public class FlatJuniperGrammarTest {
     IpAccessList aclApplicationSetAny = c.getIpAccessLists().get(aclApplicationSetAnyName);
     IpAccessList aclApplicationAny = c.getIpAccessLists().get(aclApplicationAnyName);
     /* Allowed applications permits TCP to port 80 and 443 */
-    Flow permittedHttpFlow = createTcpFlow(80);
-    Flow permittedHttpsFlow = createTcpFlow(443);
-    Flow rejectedFlow = createTcpFlow(100);
+    Flow permittedHttpFlow = createFlow(IpProtocol.TCP, 80);
+    Flow permittedHttpsFlow = createFlow(IpProtocol.TCP, 443);
+    Flow rejectedFlow = createFlow(IpProtocol.TCP, 100);
 
     /*
      * Confirm there are no undefined references
@@ -560,7 +623,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEnforceFistAs() throws IOException {
+  public void testEnforceFirstAs() throws IOException {
     String hostname = "bgp-enforce-first-as";
     Configuration c = parseConfig(hostname);
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasValue(hasEnforceFirstAs())))));
@@ -578,6 +641,26 @@ public class FlatJuniperGrammarTest {
         ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter", 1));
     assertThat(
         ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "esfilter2", 0));
+  }
+
+  @Test
+  public void testFirewallFilters() throws IOException {
+    String hostname = "firewall-filters";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm filter usage is tracked properly */
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER2", 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER_UNUSED", 0));
+
+    /* Confirm undefined reference is identified */
+    assertThat(
+        ccae,
+        hasUndefinedReference(hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER_UNDEF"));
   }
 
   @Test
@@ -1086,6 +1169,66 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testOspfReferenceBandwidth() throws IOException {
+    String hostname = "ospf-reference-bandwidth";
+    Configuration c = parseConfig(hostname);
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasReferenceBandwidth(equalTo(1E9D)))));
+    assertThat(c, hasVrf("vrf1", hasOspfProcess(hasReferenceBandwidth(equalTo(2E9D)))));
+    assertThat(c, hasVrf("vrf2", hasOspfProcess(hasReferenceBandwidth(equalTo(3E9D)))));
+    assertThat(c, hasVrf("vrf3", hasOspfProcess(hasReferenceBandwidth(equalTo(4E9D)))));
+    assertThat(c, hasVrf("vrf4", hasOspfProcess(hasReferenceBandwidth(equalTo(5E9D)))));
+  }
+
+  @Test
+  public void testPsPreferenceBehavior() throws IOException {
+    Configuration c = parseConfig("policy-statement-preference");
+
+    RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
+
+    StaticRoute staticRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("10.0.1.0/24"))
+            .setNextHopInterface("nextint")
+            .setNextHopIp(new Ip("10.0.0.1"))
+            .build();
+
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    eb.setVrf("vrf1");
+    policyPreference.call(
+        eb.setOriginalRoute(staticRoute)
+            .setOutputRoute(new OspfExternalType2Route.Builder())
+            .build());
+
+    // Checking admin cost set on the output route
+    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123));
+  }
+
+  @Test
+  public void testPsPreferenceStructure() throws IOException {
+    Configuration c = parseConfig("policy-statement-preference");
+
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    eb.setVrf("vrf1");
+
+    RoutingPolicy policyPreference = c.getRoutingPolicies().get("preference");
+
+    assertThat(policyPreference.getStatements(), hasSize(2));
+
+    // Extracting the If statement
+    MatcherAssert.assertThat(policyPreference.getStatements().get(0), instanceOf(If.class));
+
+    If i = (If) policyPreference.getStatements().get(0);
+
+    MatcherAssert.assertThat(i.getTrueStatements(), hasSize(1));
+    MatcherAssert.assertThat(
+        Iterables.getOnlyElement(i.getTrueStatements()), instanceOf(SetAdministrativeCost.class));
+
+    assertThat(
+        Iterables.getOnlyElement(i.getTrueStatements()),
+        isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
+  }
+
+  @Test
   public void testTacplusPsk() throws IOException {
     /* allow both encrypted and unencrypted key */
     parseConfig("tacplus-psk");
@@ -1147,6 +1290,19 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIpProtocol() throws IOException {
+    String hostname = "firewall-filter-ip-protocol";
+    Configuration c = parseConfig(hostname);
+
+    Flow tcpFlow = createFlow(IpProtocol.TCP, 0);
+    Flow icmpFlow = createFlow(IpProtocol.ICMP, 0);
+
+    // Tcp flow should be accepted by the filter and others should be rejected
+    assertThat(c, hasIpAccessList("FILTER", accepts(tcpFlow, null, c)));
+    assertThat(c, hasIpAccessList("FILTER", rejects(icmpFlow, null, c)));
+  }
+
+  @Test
   public void testSourceAddress() throws IOException {
     Configuration c = parseConfig("firewall-source-address");
     String filterNameV4 = "FILTER";
@@ -1162,7 +1318,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             filterNameV4,
-            hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
@@ -1197,7 +1353,7 @@ public class FlatJuniperGrammarTest {
         c,
         hasIpAccessList(
             filterNameV4,
-            hasLines(
+            IpAccessListMatchers.hasLines(
                 equalTo(
                     ImmutableList.of(
                         IpAccessListLine.builder()
@@ -1250,6 +1406,177 @@ public class FlatJuniperGrammarTest {
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testLocalRouteExportBgp() throws IOException {
+    Configuration c = parseConfig("local-route-export-bgp");
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
+
+    String peer1Vrf = "peer1Vrf";
+    RoutingPolicy peer1RejectAllLocal =
+        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("1.0.0.1/32")));
+
+    String peer2Vrf = "peer2Vrf";
+    RoutingPolicy peer2RejectPtpLocal =
+        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("2.0.0.1/32")));
+
+    String peer3Vrf = "peer3Vrf";
+    RoutingPolicy peer3RejectLanLocal =
+        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("3.0.0.1/32")));
+
+    String peer4Vrf = "peer3Vrf";
+    RoutingPolicy peer4AllowAllLocal =
+        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("4.0.0.1/32")));
+
+    LocalRoute localRoutePtp = new LocalRoute(new InterfaceAddress("10.0.0.0/31"), "ge-0/0/0.0");
+    LocalRoute localRouteLan = new LocalRoute(new InterfaceAddress("10.0.1.0/30"), "ge-0/0/1.0");
+
+    // Peer policies should reject local routes not exported by their VRFs
+    eb.setVrf(peer1Vrf);
+    assertThat(
+        peer1RejectAllLocal
+            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        peer1RejectAllLocal
+            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    eb.setVrf(peer2Vrf);
+    assertThat(
+        peer2RejectPtpLocal
+            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        peer2RejectPtpLocal
+            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(true));
+
+    eb.setVrf(peer3Vrf);
+    assertThat(
+        peer3RejectLanLocal
+            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        peer3RejectLanLocal
+            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    eb.setVrf(peer4Vrf);
+    assertThat(
+        peer4AllowAllLocal
+            .call(eb.setOriginalRoute(localRoutePtp).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        peer4AllowAllLocal
+            .call(eb.setOriginalRoute(localRouteLan).setOutputRoute(new BgpRoute.Builder()).build())
+            .getBooleanValue(),
+        equalTo(true));
+  }
+
+  @Test
+  public void testLocalRouteExportOspf() throws IOException {
+    Configuration c = parseConfig("local-route-export-ospf");
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.OUT);
+
+    String vrf1 = "vrf1";
+    RoutingPolicy vrf1RejectAllLocal =
+        c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf1));
+
+    String vrf2 = "vrf2";
+    RoutingPolicy vrf2RejectPtpLocal =
+        c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf2));
+
+    String vrf3 = "vrf3";
+    RoutingPolicy vrf3RejectLanLocal =
+        c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf3));
+
+    String vrf4 = "vrf4";
+    RoutingPolicy vrf4AllowAllLocal = c.getRoutingPolicies().get(computeOspfExportPolicyName(vrf4));
+
+    LocalRoute localRoutePtp = new LocalRoute(new InterfaceAddress("10.0.0.0/31"), "ge-0/0/0.0");
+    LocalRoute localRouteLan = new LocalRoute(new InterfaceAddress("10.0.1.0/30"), "ge-0/0/1.0");
+
+    // Peer policies should reject local routes not exported by their VRFs
+    eb.setVrf(vrf1);
+    assertThat(
+        vrf1RejectAllLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        vrf1RejectAllLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    eb.setVrf(vrf2);
+    assertThat(
+        vrf2RejectPtpLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        vrf2RejectPtpLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(true));
+
+    eb.setVrf(vrf3);
+    assertThat(
+        vrf3RejectLanLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        vrf3RejectLanLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    eb.setVrf(vrf4);
+    assertThat(
+        vrf4AllowAllLocal
+            .call(
+                eb.setOriginalRoute(localRoutePtp)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        vrf4AllowAllLocal
+            .call(
+                eb.setOriginalRoute(localRouteLan)
+                    .setOutputRoute(new OspfExternalType2Route.Builder())
+                    .build())
+            .getBooleanValue(),
+        equalTo(true));
   }
 
   @Test
@@ -1308,6 +1635,33 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testPrefixList() throws IOException {
+    String hostname = "prefix-lists";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    Flow flowAccepted1 = createFlow("1.2.3.4", "0.0.0.0");
+    Flow flowAccepted2 = createFlow("1.2.3.5", "0.0.0.0");
+    Flow flowDenied = createFlow("9.8.7.6", "0.0.0.0");
+
+    IpAccessList filterPrefixList = c.getIpAccessLists().get("FILTER_PL");
+
+    // Confirm referrers are tracked properly
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL", 5));
+    assertThat(ccae, hasNumReferrers(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNUSED", 0));
+
+    // Confirm undefined reference is detected
+    assertThat(ccae, hasUndefinedReference(hostname, JuniperStructureType.PREFIX_LIST, "PL_UNDEF"));
+
+    // Only flow from accepted source-prefixes should be accepted
+    assertThat(filterPrefixList, rejects(flowDenied, null, c));
+    assertThat(filterPrefixList, accepts(flowAccepted1, null, c));
+    assertThat(filterPrefixList, accepts(flowAccepted2, null, c));
+  }
+
+  @Test
   public void testPrefixListEmpty() throws IOException {
     Configuration c = parseConfig("prefix-list-empty");
     Flow testFlow1 = createFlow("9.8.7.6", "0.0.0.0");
@@ -1350,6 +1704,28 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRouteFilters() throws IOException {
+    Configuration c = parseConfig("route-filter");
+    RouteFilterList rfl = c.getRouteFilterLists().get("route-filter-test:t1");
+    assertThat(
+        rfl,
+        RouteFilterListMatchers.hasLines(
+            containsInAnyOrder(
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.2.0.0/16"), new SubRange(16, 16)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.2.0.0/16"), new SubRange(17, 32)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.7.0.0/16"), new SubRange(16, 16)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT, Prefix.parse("1.7.0.0/17"), new SubRange(17, 17)),
+                new RouteFilterLine(
+                    LineAction.ACCEPT,
+                    new IpWildcard("1.0.0.0:0.255.0.255"),
+                    new SubRange(16, 16)))));
+  }
+
+  @Test
   public void testRoutingInstanceType() throws IOException {
     Configuration c = parseConfig("routing-instance-type");
 
@@ -1360,6 +1736,104 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasVrfs(hasKey("ri-virtual-router")));
     assertThat(c, hasVrfs(hasKey("ri-virtual-switch")));
     assertThat(c, hasVrfs(hasKey("ri-vrf")));
+  }
+
+  @Test
+  public void testRoutingPolicy() throws IOException {
+    Configuration c = parseConfig("routing-policy");
+    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+
+    RoutingPolicy policyExact = c.getRoutingPolicies().get("route-filter-exact");
+    RoutingPolicy policyLonger = c.getRoutingPolicies().get("route-filter-longer");
+    RoutingPolicy policyPrange = c.getRoutingPolicies().get("route-filter-prange");
+    RoutingPolicy policyThrough = c.getRoutingPolicies().get("route-filter-through");
+    RoutingPolicy policyAddressmask = c.getRoutingPolicies().get("route-filter-addressmask");
+
+    ConnectedRoute connectedRouteExact =
+        new ConnectedRoute(Prefix.parse("1.2.3.4/16"), "nhinttest");
+    ConnectedRoute connectedRouteLonger =
+        new ConnectedRoute(Prefix.parse("1.2.3.4/19"), "nhinttest");
+    ConnectedRoute connectedRouteInRange =
+        new ConnectedRoute(Prefix.parse("1.2.3.4/17"), "nhinttest");
+    ConnectedRoute connectedRouteInvalidPrefix =
+        new ConnectedRoute(Prefix.parse("2.3.3.4/17"), "nhinttest");
+    ConnectedRoute connectedRouteInvalidLength =
+        new ConnectedRoute(Prefix.parse("2.3.3.4/29"), "nhinttest");
+
+    ConnectedRoute connectedRouteMaskInvalidPrefix =
+        new ConnectedRoute(Prefix.parse("9.2.9.4/16"), "nhinttest");
+    ConnectedRoute connectedRouteMaskValid =
+        new ConnectedRoute(Prefix.parse("1.9.3.9/16"), "nhinttest");
+    ConnectedRoute connectedRouteMaskInvalidLength =
+        new ConnectedRoute(Prefix.parse("1.9.3.9/17"), "nhinttest");
+
+    eb.setVrf("vrf1");
+
+    assertThat(
+        policyExact.call(eb.setOriginalRoute(connectedRouteExact).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyExact.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyExact
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyLonger.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyLonger
+            .call(eb.setOriginalRoute(connectedRouteInvalidLength).build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyLonger
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyPrange.call(eb.setOriginalRoute(connectedRouteInRange).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyPrange.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyPrange
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyThrough.call(eb.setOriginalRoute(connectedRouteInRange).build()).getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyThrough.call(eb.setOriginalRoute(connectedRouteLonger).build()).getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyThrough
+            .call(eb.setOriginalRoute(connectedRouteInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+
+    assertThat(
+        policyAddressmask
+            .call(eb.setOriginalRoute(connectedRouteMaskValid).build())
+            .getBooleanValue(),
+        equalTo(true));
+    assertThat(
+        policyAddressmask
+            .call(eb.setOriginalRoute(connectedRouteMaskInvalidPrefix).build())
+            .getBooleanValue(),
+        equalTo(false));
+    assertThat(
+        policyAddressmask
+            .call(eb.setOriginalRoute(connectedRouteMaskInvalidLength).build())
+            .getBooleanValue(),
+        equalTo(false));
   }
 
   @Test

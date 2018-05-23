@@ -295,6 +295,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_BANDWIDTH = "bandwidth";
 
+  private static final String PROP_CHANNEL_GROUP = "channelGroup";
+
+  private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
+
   private static final String PROP_DECLARED_NAMES = "declaredNames";
 
   private static final String PROP_DESCRIPTION = "description";
@@ -411,7 +415,7 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("HundredGigabitEthernet")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Group-Async")) {
-      return InterfaceType.AGGREGATED;
+      return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Loopback")) {
       return InterfaceType.LOOPBACK;
     } else if (name.startsWith("Management")) {
@@ -538,6 +542,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private transient boolean _blacklisted;
 
+  private String _channelGroup;
+
+  private SortedSet<String> _channelGroupMembers;
+
   private SortedSet<String> _declaredNames;
 
   private String _description;
@@ -634,6 +642,7 @@ public final class Interface extends ComparableStructure<String> {
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _allAddresses = ImmutableSortedSet.of();
+    _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
     _interfaceType = InterfaceType.UNKNOWN;
@@ -779,6 +788,16 @@ public final class Interface extends ComparableStructure<String> {
   @JsonIgnore
   public boolean getBlacklisted() {
     return _blacklisted;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP)
+  public String getChannelGroup() {
+    return _channelGroup;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
+  public SortedSet<String> getChannelGroupMembers() {
+    return _channelGroupMembers;
   }
 
   @JsonProperty(PROP_DECLARED_NAMES)
@@ -1121,6 +1140,16 @@ public final class Interface extends ComparableStructure<String> {
   @JsonIgnore
   public void setBlacklisted(boolean blacklisted) {
     _blacklisted = blacklisted;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP)
+  public void setChannelGroup(String channelGroup) {
+    _channelGroup = channelGroup;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
+  public void setChannelGroupMembers(Iterable<String> channelGroupMembers) {
+    _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
   }
 
   @JsonProperty(PROP_DECLARED_NAMES)
