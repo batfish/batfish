@@ -14,7 +14,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.role.NodeRole;
 import org.junit.Test;
 
-public class NodeSpecifierTests {
+public class NodeSpecifierTest {
   private static final Map<String, Configuration> _configs;
   private static final SpecifierContext _context;
   private static final String _roleDim;

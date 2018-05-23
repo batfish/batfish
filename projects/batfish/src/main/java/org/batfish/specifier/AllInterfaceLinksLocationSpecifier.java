@@ -1,16 +1,21 @@
 package org.batfish.specifier;
 
-/** A {@link LocationSpecifier} specifying all interface links in the network. */
-public final class AllInterfaceLinksLocationSpecifier extends AllInterfacesLocationSpecifier {
-  public static final AllInterfacesLocationSpecifier INSTANCE =
-      new AllInterfaceLinksLocationSpecifier();
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
-  private AllInterfaceLinksLocationSpecifier() {
-    super();
-  }
+/** A {@link LocationSpecifier} specifying all interface links in the network. */
+public final class AllInterfaceLinksLocationSpecifier implements LocationSpecifier {
+  public static final LocationSpecifier INSTANCE = new AllInterfaceLinksLocationSpecifier();
+
+  private AllInterfaceLinksLocationSpecifier() {}
 
   @Override
-  protected Location makeLocation(String node, String iface) {
-    return new InterfaceLinkLocation(node, iface);
+  public Set<Location> resolve(SpecifierContext ctxt) {
+    return ctxt.getConfigs()
+        .values()
+        .stream()
+        .flatMap(node -> node.getInterfaces().values().stream())
+        .map(iface -> new InterfaceLinkLocation(iface.getOwner().getHostname(), iface.getName()))
+        .collect(ImmutableSet.toImmutableSet());
   }
 }

@@ -12,22 +12,10 @@ public final class AllInterfacesLocationSpecifier implements LocationSpecifier {
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {
     return ctxt.getConfigs()
-        .entrySet()
+        .values()
         .stream()
-        .flatMap(
-            entry -> {
-              String node = entry.getKey();
-              return entry
-                  .getValue()
-                  .getInterfaces()
-                  .keySet()
-                  .stream()
-                  .map(iface -> makeLocation(node, iface));
-            })
+        .flatMap(node -> node.getInterfaces().values().stream())
+        .map(iface -> new InterfaceLocation(iface.getOwner().getHostname(), iface.getName()))
         .collect(ImmutableSet.toImmutableSet());
-  }
-
-  protected Location makeLocation(String node, String iface) {
-    return new InterfaceLocation(node, iface);
   }
 }
