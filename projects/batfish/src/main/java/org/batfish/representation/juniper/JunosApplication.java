@@ -723,7 +723,7 @@ public enum JunosApplication implements Application {
           ipProtocol = IpProtocol.ICMP;
           break;
         }
-        
+
       case JUNOS_PC_ANYWHERE:
         {
           portRangeStart = NamedPort.PCANYWHERE_STATUS.number();
