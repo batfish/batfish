@@ -180,7 +180,7 @@ public class NodePropertySpecifier {
     // first add .* version if needed
     String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
     if (!finalQuery.endsWith("*") // hack to check if its a regex already
-        && !finalQuery.startsWith("*")
+        && !finalQuery.startsWith(".*")
         && !new NodePropertySpecifier(queryWithStars).getMatchingProperties().isEmpty()) {
       suggestions.add(
           new AutocompleteSuggestion(
@@ -188,11 +188,12 @@ public class NodePropertySpecifier {
     }
 
     // now add all properties that contain the query
+    Pattern propPattern = Pattern.compile(queryWithStars);
     suggestions.addAll(
         JAVA_MAP
             .keySet()
             .stream()
-            .filter(prop -> Pattern.compile(queryWithStars).matcher(prop).matches())
+            .filter(prop -> propPattern.matcher(prop).matches())
             .map(prop -> new AutocompleteSuggestion(prop, false))
             .collect(Collectors.toList()));
 
