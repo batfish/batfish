@@ -36,7 +36,10 @@ set security policies global policy policy-name match application junos-ms-rpc-t
 set security policies global policy policy-name match application junos-ms-rpc-udp
 set security policies global policy policy-name match application junos-nntp
 set security policies global policy policy-name match application junos-ntp
+set security policies global policy policy-name match application junos-ping
 set security policies global policy policy-name match application junos-pptp
 set security policies global policy policy-name match application junos-printer
+set security policies global policy policy-name match application junos-radius
 set security policies global policy policy-name match application junos-smb
 set security policies global policy policy-name match application junos-ssh
+set security policies global policy policy-name match application junos-syslog
