@@ -258,32 +258,32 @@ public class BDDUtils {
             && i < nf.getIndexTcpFlags() + nf.getNumBitsTcpFlags()) {
           int j = i - nf.getIndexTcpFlags();
           switch (j) {
-          case 0:
-            tcpFlags.setAck(true);
-            break;
-          case 1:
-            tcpFlags.setCwr(true);
-            break;
-          case 2:
-            tcpFlags.setEce(true);
-            break;
-          case 3:
-            tcpFlags.setFin(true);
-            break;
-          case 4:
-            tcpFlags.setPsh(true);
-            break;
-          case 5:
-            tcpFlags.setRst(true);
-            break;
-          case 6:
-            tcpFlags.setSyn(true);
-            break;
-          case 7:
-            tcpFlags.setUrg(true);
-            break;
-          default:
-            break;
+            case 0:
+              tcpFlags.setAck(true);
+              break;
+            case 1:
+              tcpFlags.setCwr(true);
+              break;
+            case 2:
+              tcpFlags.setEce(true);
+              break;
+            case 3:
+              tcpFlags.setFin(true);
+              break;
+            case 4:
+              tcpFlags.setPsh(true);
+              break;
+            case 5:
+              tcpFlags.setRst(true);
+              break;
+            case 6:
+              tcpFlags.setSyn(true);
+              break;
+            case 7:
+              tcpFlags.setUrg(true);
+              break;
+            default:
+              break;
           }
         } else if (nf.getConfig().getKeepRouters()
             && i >= nf.getIndexDstRouter()

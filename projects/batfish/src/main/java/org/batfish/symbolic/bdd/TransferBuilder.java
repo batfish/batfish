@@ -353,27 +353,27 @@ class TransferBuilder {
       BooleanExprs.StaticBooleanExpr b = (BooleanExprs.StaticBooleanExpr) expr;
       BDDTransferFunction ret;
       switch (b.getType()) {
-      case CallExprContext:
-        p.debug("CallExprContext");
-        BDD x1 = mkBDD(p.getCallContext() == TransferParam.CallContext.EXPR_CALL);
-        ret = new BDDTransferFunction(p.getData(), x1);
-        return fromExpr(ret);
-      case CallStatementContext:
-        p.debug("CallStmtContext");
-        BDD x2 = mkBDD(p.getCallContext() == TransferParam.CallContext.STMT_CALL);
-        ret = new BDDTransferFunction(p.getData(), x2);
-        return fromExpr(ret);
-      case True:
-        p.debug("True");
-        ret = new BDDTransferFunction(p.getData(), _netFactory.one());
-        return fromExpr(ret);
-      case False:
-        p.debug("False");
-        ret = new BDDTransferFunction(p.getData(), _netFactory.zero());
-        return fromExpr(ret);
-      default:
-        throw new BatfishException(
-            "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
+        case CallExprContext:
+          p.debug("CallExprContext");
+          BDD x1 = mkBDD(p.getCallContext() == TransferParam.CallContext.EXPR_CALL);
+          ret = new BDDTransferFunction(p.getData(), x1);
+          return fromExpr(ret);
+        case CallStatementContext:
+          p.debug("CallStmtContext");
+          BDD x2 = mkBDD(p.getCallContext() == TransferParam.CallContext.STMT_CALL);
+          ret = new BDDTransferFunction(p.getData(), x2);
+          return fromExpr(ret);
+        case True:
+          p.debug("True");
+          ret = new BDDTransferFunction(p.getData(), _netFactory.one());
+          return fromExpr(ret);
+        case False:
+          p.debug("False");
+          ret = new BDDTransferFunction(p.getData(), _netFactory.zero());
+          return fromExpr(ret);
+        default:
+          throw new BatfishException(
+              "Unhandled " + BooleanExprs.class.getCanonicalName() + ": " + b.getType());
       }
 
     } else if (expr instanceof MatchAsPath) {
@@ -406,77 +406,77 @@ class TransferBuilder {
         StaticStatement ss = (StaticStatement) stmt;
 
         switch (ss.getType()) {
-        case ExitAccept:
-          doesReturn = true;
-          p.debug("ExitAccept");
-          result = returnValue(result, true);
-          break;
-
-        case ReturnTrue:
-          doesReturn = true;
-          p.debug("ReturnTrue");
-          result = returnValue(result, true);
-          break;
-
-        case ExitReject:
-          doesReturn = true;
-          p.debug("ExitReject");
-          result = returnValue(result, false);
-          break;
-
-        case ReturnFalse:
-          doesReturn = true;
-          p.debug("ReturnFalse");
-          result = returnValue(result, false);
-          break;
-
-        case SetDefaultActionAccept:
-          p.debug("SetDefaulActionAccept");
-          p = p.setDefaultAccept(true);
-          break;
-
-        case SetDefaultActionReject:
-          p.debug("SetDefaultActionReject");
-          p = p.setDefaultAccept(false);
-          break;
-
-        case SetLocalDefaultActionAccept:
-          p.debug("SetLocalDefaultActionAccept");
-          p = p.setDefaultAcceptLocal(true);
-          break;
-
-        case SetLocalDefaultActionReject:
-          p.debug("SetLocalDefaultActionReject");
-          p = p.setDefaultAcceptLocal(false);
-          break;
-
-        case ReturnLocalDefaultAction:
-          p.debug("ReturnLocalDefaultAction");
-          // TODO: need to set local default action in an environment
-          if (p.getDefaultAcceptLocal()) {
+          case ExitAccept:
+            doesReturn = true;
+            p.debug("ExitAccept");
             result = returnValue(result, true);
-          } else {
+            break;
+
+          case ReturnTrue:
+            doesReturn = true;
+            p.debug("ReturnTrue");
+            result = returnValue(result, true);
+            break;
+
+          case ExitReject:
+            doesReturn = true;
+            p.debug("ExitReject");
             result = returnValue(result, false);
-          }
-          break;
+            break;
 
-        case FallThrough:
-          p.debug("Fallthrough");
-          result = fallthrough(result);
-          break;
+          case ReturnFalse:
+            doesReturn = true;
+            p.debug("ReturnFalse");
+            result = returnValue(result, false);
+            break;
 
-        case Return:
-          // TODO: assumming this happens at the end of the function, so it is ignored for now.
-          p.debug("Return");
-          break;
+          case SetDefaultActionAccept:
+            p.debug("SetDefaulActionAccept");
+            p = p.setDefaultAccept(true);
+            break;
 
-        case RemovePrivateAs:
-          p.debug("RemovePrivateAs");
-          // System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
-          break;
+          case SetDefaultActionReject:
+            p.debug("SetDefaultActionReject");
+            p = p.setDefaultAccept(false);
+            break;
 
-        default:
-          throw new BatfishException("TODO: computeTransferFunction: " + ss.getType());
+          case SetLocalDefaultActionAccept:
+            p.debug("SetLocalDefaultActionAccept");
+            p = p.setDefaultAcceptLocal(true);
+            break;
+
+          case SetLocalDefaultActionReject:
+            p.debug("SetLocalDefaultActionReject");
+            p = p.setDefaultAcceptLocal(false);
+            break;
+
+          case ReturnLocalDefaultAction:
+            p.debug("ReturnLocalDefaultAction");
+            // TODO: need to set local default action in an environment
+            if (p.getDefaultAcceptLocal()) {
+              result = returnValue(result, true);
+            } else {
+              result = returnValue(result, false);
+            }
+            break;
+
+          case FallThrough:
+            p.debug("Fallthrough");
+            result = fallthrough(result);
+            break;
+
+          case Return:
+            // TODO: assumming this happens at the end of the function, so it is ignored for now.
+            p.debug("Return");
+            break;
+
+          case RemovePrivateAs:
+            p.debug("RemovePrivateAs");
+            // System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
+            break;
+
+          default:
+            throw new BatfishException("TODO: computeTransferFunction: " + ss.getType());
         }
 
       } else if (stmt instanceof If) {

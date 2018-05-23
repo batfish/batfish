@@ -633,7 +633,7 @@ public class ReachabilityInterpreter {
         continue;
       }
       SatAssignment assignment = BDDUtils.satOne(_netFactory, matchingFromSrc);
-      assert(assignment != null);
+      assert (assignment != null);
       Flow flow = assignment.toFlow();
       AbstractFlowTrace trace = new AbstractFlowTrace();
       trace.setIngressRouter(srcRouter);
