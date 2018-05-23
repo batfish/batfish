@@ -323,7 +323,7 @@ public enum JunosApplicationSet {
         ImmutableList.builder();
 
     for (JunosApplication app : applications) {
-      applicationSetMemberBuilder.add(new ApplicationOrApplicationSetReference(app));
+      applicationSetMemberBuilder.add(new JunosApplicationReference(app.name()));
     }
 
     applicationSet.setMembers(applicationSetMemberBuilder.build());

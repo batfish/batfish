@@ -9,9 +9,11 @@ public final class FwTerm implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final List<FwFromApplication> _fromApplications;
+  private final List<FwFromApplicationOrApplicationSet> _fromApplicationsOrApplicationSets;
 
-  private final List<FwFromApplicationSet> _fromApplicationSets;
+  private final List<FwFromJunosApplication> _fromJunosApplications;
+
+  private final List<FwFromJunosApplicationSet> _fromJunosApplicationSets;
 
   private final List<FwFromHostProtocol> _fromHostProtocols;
 
@@ -27,20 +29,25 @@ public final class FwTerm implements Serializable {
 
   public FwTerm(String name) {
     _froms = new ArrayList<>();
-    _fromApplications = new ArrayList<>();
-    _fromApplicationSets = new ArrayList<>();
+    _fromApplicationsOrApplicationSets = new ArrayList<>();
+    _fromJunosApplications = new ArrayList<>();
+    _fromJunosApplicationSets = new ArrayList<>();
     _fromHostProtocols = new ArrayList<>();
     _fromHostServices = new ArrayList<>();
     _name = name;
     _thens = new ArrayList<>();
   }
 
-  public List<FwFromApplication> getFromApplications() {
-    return _fromApplications;
+  public List<FwFromApplicationOrApplicationSet> getFromApplicationsOrApplicationSets() {
+    return _fromApplicationsOrApplicationSets;
   }
 
-  public List<FwFromApplicationSet> getFromApplicationSets() {
-    return _fromApplicationSets;
+  public List<FwFromJunosApplication> getFromJunosApplications() {
+    return _fromJunosApplications;
+  }
+
+  public List<FwFromJunosApplicationSet> getFromJunosApplicationSets() {
+    return _fromJunosApplicationSets;
   }
 
   public List<FwFromHostProtocol> getFromHostProtocols() {

@@ -360,8 +360,7 @@ import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
 import org.batfish.representation.juniper.FwFrom;
-import org.batfish.representation.juniper.FwFromApplication;
-import org.batfish.representation.juniper.FwFromApplicationSet;
+import org.batfish.representation.juniper.FwFromApplicationOrApplicationSet;
 import org.batfish.representation.juniper.FwFromDestinationAddress;
 import org.batfish.representation.juniper.FwFromDestinationAddressBookEntry;
 import org.batfish.representation.juniper.FwFromDestinationAddressExcept;
@@ -373,6 +372,8 @@ import org.batfish.representation.juniper.FwFromHostProtocol;
 import org.batfish.representation.juniper.FwFromHostService;
 import org.batfish.representation.juniper.FwFromIcmpCode;
 import org.batfish.representation.juniper.FwFromIcmpType;
+import org.batfish.representation.juniper.FwFromJunosApplication;
+import org.batfish.representation.juniper.FwFromJunosApplicationSet;
 import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromPrefixList;
@@ -408,7 +409,9 @@ import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.JunosApplication;
+import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
+import org.batfish.representation.juniper.JunosApplicationSetReference;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
 import org.batfish.representation.juniper.PolicyStatement;
@@ -1626,22 +1629,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 ctx.junos_application().getText()));
         return;
       }
-      // Need to add this default application to the config so it can be referenced later
-      _configuration.getApplications().putIfAbsent(name, application.getBaseApplication());
+      _currentApplicationSet.setMembers(
+          ImmutableList.<ApplicationSetMemberReference>builder()
+              .addAll(_currentApplicationSet.getMembers())
+              .add(new JunosApplicationReference(name))
+              .build());
     } else {
       name = ctx.name.getText();
       line = ctx.name.getStart().getLine();
+      _currentApplicationSet.setMembers(
+          ImmutableList.<ApplicationSetMemberReference>builder()
+              .addAll(_currentApplicationSet.getMembers())
+              .add(new ApplicationOrApplicationSetReference(name))
+              .build());
     }
     _configuration.referenceStructure(
         JuniperStructureType.APPLICATION_OR_APPLICATION_SET,
         name,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION,
         line);
-    _currentApplicationSet.setMembers(
-        ImmutableList.<ApplicationSetMemberReference>builder()
-            .addAll(_currentApplicationSet.getMembers())
-            .add(new ApplicationOrApplicationSetReference(name))
-            .build());
   }
 
   @Override
@@ -1659,23 +1665,25 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 ctx.junos_application_set().getText()));
         return;
       }
-      _configuration
-          .getApplicationSets()
-          .putIfAbsent(name, junosApplicationSet.getApplicationSet());
+      _currentApplicationSet.setMembers(
+          ImmutableList.<ApplicationSetMemberReference>builder()
+              .addAll(_currentApplicationSet.getMembers())
+              .add(new JunosApplicationSetReference(name))
+              .build());
     } else {
       name = ctx.name.getText();
       line = ctx.name.getStart().getLine();
+      _currentApplicationSet.setMembers(
+          ImmutableList.<ApplicationSetMemberReference>builder()
+              .addAll(_currentApplicationSet.getMembers())
+              .add(new ApplicationSetReference(name))
+              .build());
     }
     _configuration.referenceStructure(
         JuniperStructureType.APPLICATION_SET,
         name,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET,
         line);
-    _currentApplicationSet.setMembers(
-        ImmutableList.<ApplicationSetMemberReference>builder()
-            .addAll(_currentApplicationSet.getMembers())
-            .add(new ApplicationSetReference(name))
-            .build());
   }
 
   @Override
@@ -4033,8 +4041,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       if (application.getIpv6()) {
         _currentFwTerm.setIpv6(true);
       } else {
-        FwFromApplication from = new FwFromApplication(application);
-        _currentFwTerm.getFromApplications().add(from);
+        FwFromJunosApplication from = new FwFromJunosApplication(application.name());
+        _currentFwTerm.getFromJunosApplications().add(from);
       }
     } else if (ctx.junos_application_set() != null) {
       JunosApplicationSet applicationSet = toJunosApplicationSet(ctx.junos_application_set());
@@ -4045,8 +4053,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 ctx.junos_application_set().getText()));
         return;
       }
-      FwFromApplicationSet from = new FwFromApplicationSet(applicationSet.getApplicationSet());
-      _currentFwTerm.getFromApplicationSets().add(from);
+      FwFromJunosApplicationSet from = new FwFromJunosApplicationSet(applicationSet.name());
+      _currentFwTerm.getFromJunosApplicationSets().add(from);
     } else {
       String name;
       int line;
@@ -4073,8 +4081,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
           name,
           JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION,
           line);
-      FwFromApplication from = new FwFromApplication(name);
-      _currentFwTerm.getFromApplications().add(from);
+      FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet(name);
+      _currentFwTerm.getFromApplicationsOrApplicationSets().add(from);
     }
   }
 
