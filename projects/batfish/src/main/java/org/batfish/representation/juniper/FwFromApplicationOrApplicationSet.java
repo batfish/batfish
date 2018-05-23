@@ -27,6 +27,8 @@ public final class FwFromApplicationOrApplicationSet extends FwFromApplicationSe
     if (application == null) {
       application = jc.getApplicationSets().get(_applicationOrApplicationSetName);
     }
-    application.applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
+    if (application != null) {
+      application.applyTo(jc, srcHeaderSpaceBuilder, action, lines, w);
+    }
   }
 }
