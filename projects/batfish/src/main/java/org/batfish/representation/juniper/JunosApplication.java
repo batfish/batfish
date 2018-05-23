@@ -563,6 +563,12 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_PING:
+        {
+          ipProtocol = IpProtocol.ICMP;
+          break;
+        }
+
       case JUNOS_PPTP:
         {
           portRangeStart = NamedPort.PPTP.number();
@@ -574,6 +580,13 @@ public enum JunosApplication implements Application {
         {
           portRangeStart = NamedPort.LPD.number(); // TODO: rename LPD to LPD_OR_PRINTER
           ipProtocol = IpProtocol.TCP;
+          break;
+        }
+
+      case JUNOS_RADIUS:
+        {
+          portRangeStart = NamedPort.RADIUS_JUNIPER.number();
+          ipProtocol = IpProtocol.UDP;
           break;
         }
 
@@ -604,10 +617,19 @@ public enum JunosApplication implements Application {
           break;
         }
 
+      case JUNOS_SYSLOG:
+        {
+          portRangeStart = NamedPort.CMDtcp_OR_SYSLOGudp.number();
+          ipProtocol = IpProtocol.UDP;
+          break;
+        }
+
         // $CASES-OMITTED$
       default:
         return null;
     }
+
+    //        "9": "MISCELLANEOUS: unimplemented pre-defined junos application: 'junos-syslog'",
 
     String t1Name = "t1";
     Term t1 = new Term(t1Name);
