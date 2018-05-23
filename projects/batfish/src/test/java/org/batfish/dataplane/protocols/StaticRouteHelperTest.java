@@ -37,7 +37,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr = sb.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE).build();
     assertThat(isInterfaceRoute(sr), equalTo(false));
 
-    // Unset intface + nextHopIp
+    // Unset interface + nextHopIp
     sr = sb.setNextHopInterface(Route.UNSET_NEXT_HOP_INTERFACE).setNextHopIp(someIp).build();
     assertThat(isInterfaceRoute(sr), equalTo(false));
 
