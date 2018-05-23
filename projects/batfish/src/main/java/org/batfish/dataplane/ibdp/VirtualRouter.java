@@ -2,6 +2,8 @@ package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
+import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 import static org.batfish.dataplane.rib.RibDelta.importRibDelta;
 
@@ -196,7 +198,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   transient StaticRib _staticInterfaceRib;
 
-  transient StaticRib _staticRib;
+  transient StaticRib _staticNextHopRib;
 
   /** FIB (forwarding information base) built from the main RIB */
   private Fib _fib;
@@ -417,13 +419,9 @@ public class VirtualRouter extends ComparableStructure<String> {
    */
   @VisibleForTesting
   void initForIgpComputation() {
-    _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
-    _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
-    _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
-
     initConnectedRib();
     initLocalRib();
-    initStaticRib();
+    initStaticRibs();
     importRib(_independentRib, _connectedRib);
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib);
@@ -590,25 +588,20 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /**
-   * Re-activate static routes at the beginning of an iteration. Directly adds a static route R to
-   * the main RIB if there exists an active route to the R's next-hop-ip.
+   * Activate static routes with next hop IP. Adds a static route {@code route} to the main RIB if
+   * there exists an active route to the {@code routes}'s next-hop-ip.
+   *
+   * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
   void activateStaticRoutes() {
-    for (StaticRoute sr : _staticRib.getRoutes()) {
-      // See if we have any routes matching this route's next hop IP
-      Set<AbstractRoute> matchingRoutes = _mainRib.longestPrefixMatch(sr.getNextHopIp());
-      Prefix staticRoutePrefix = sr.getNetwork();
-
-      for (AbstractRoute matchingRoute : matchingRoutes) {
-        Prefix matchingRoutePrefix = matchingRoute.getNetwork();
+    for (StaticRoute sr : _staticNextHopRib.getRoutes()) {
+      if (shouldActivateNextHopIpRoute(sr, _mainRib)) {
+        _mainRibRouteDeltaBuiler.from(_mainRib.mergeRouteGetDelta(sr));
+      } else {
         /*
-         * check to make sure matching route's prefix does not totally
-         * contain this static route's prefix
+         * If the route is not in the RIB, this has no effect. But might add some overhead (TODO)
          */
-        if (!matchingRoutePrefix.containsPrefix(staticRoutePrefix)) {
-          _mainRibRouteDeltaBuiler.from(_mainRib.mergeRouteGetDelta(sr));
-          break; // break out of the inner loop but continue processing static routes
-        }
+        _mainRibRouteDeltaBuiler.from(_mainRib.removeRouteGetDelta(sr, Reason.WITHDRAW));
       }
     }
   }
@@ -1184,7 +1177,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ripInternalRib = new RipInternalRib();
     _ripInternalStagingRib = new RipInternalRib();
     _ripRib = new RipRib();
-    _staticRib = new StaticRib();
+    _staticNextHopRib = new StaticRib();
     _staticInterfaceRib = new StaticRib();
     _bgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
 
@@ -1197,23 +1190,34 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ebgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
     _ibgpBestPathRib = new BgpBestPathRib(tieBreaker, null, _mainRib);
     _bgpBestPathRib = new BgpBestPathRib(tieBreaker, _receivedBgpRoutes, _mainRib);
+
+    _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
+    _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
+    _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
   }
 
-  /** Initialize the static route RIB from the VRF config. */
-  void initStaticRib() {
+  /**
+   * Initialize the static route RIBs from the VRF config. Interface routes go into {@link
+   * #_staticInterfaceRib}; routes that only have next-hop-ip go into {@link #_staticNextHopRib}
+   */
+  @VisibleForTesting
+  void initStaticRibs() {
     for (StaticRoute sr : _vrf.getStaticRoutes()) {
-      String nextHopInt = sr.getNextHopInterface();
-      if (!nextHopInt.equals(Route.UNSET_NEXT_HOP_INTERFACE)
-          && !Interface.NULL_INTERFACE_NAME.equals(nextHopInt)
-          && (_c.getInterfaces().get(nextHopInt) == null
-              || !_c.getInterfaces().get(nextHopInt).getActive())) {
-        continue;
-      }
-      // interface route
-      if (sr.getNextHopIp().equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
-        _staticInterfaceRib.mergeRouteGetDelta(sr);
+      if (isInterfaceRoute(sr)) {
+        // We have an interface route, check if interface is active
+        Interface nextHopInterface = _c.getInterfaces().get(sr.getNextHopInterface());
+
+        if (Interface.NULL_INTERFACE_NAME.equals(sr.getNextHopInterface())
+            || (nextHopInterface != null && (nextHopInterface.getActive()))) {
+          // Interface is active (or special null interface), install route
+          _staticInterfaceRib.mergeRouteGetDelta(sr);
+        }
       } else {
-        _staticRib.mergeRouteGetDelta(sr);
+        if (Route.UNSET_ROUTE_NEXT_HOP_IP.equals(sr.getNextHopIp())) {
+          continue;
+        }
+        // We have a next-hop-ip route, keep in it that RIB
+        _staticNextHopRib.mergeRouteGetDelta(sr);
       }
     }
   }
