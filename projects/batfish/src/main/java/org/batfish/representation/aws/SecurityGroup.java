@@ -90,6 +90,7 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setDstIps(srcHeaderSpace.getSrcIps())
                                   .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
                                   .build()))
                       .setAction(ipAccessListLine.getAction())
                       .build();
@@ -110,22 +111,15 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
                                   .setIpProtocols(srcHeaderSpace.getIpProtocols())
                                   .setSrcIps(srcHeaderSpace.getDstIps())
                                   .setSrcPorts(srcHeaderSpace.getDstPorts())
+                                  .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
                                   .build()))
                       .setAction(ipAccessListLine.getAction())
                       .build();
                 })
             .collect(ImmutableList.toImmutableList());
 
-    // denying SYN-only packets to prevent new TCP connections
-    IpAccessListLine rejectSynOnly =
-        IpAccessListLine.rejectingHeaderSpace(
-            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
-    inboundRules.add(rejectSynOnly);
-    outboundRules.add(rejectSynOnly);
-
-    // adding reverse inbound/outbound rules for stateful allowance of packets
-    inboundRules.addAll(reverseOutboundRules);
-    outboundRules.addAll(reverseInboundRules);
+    addToBeginning(inboundRules, reverseOutboundRules);
+    addToBeginning(outboundRules, reverseInboundRules);
   }
 
   public void addInOutAccessLines(
@@ -178,6 +172,13 @@ public class SecurityGroup implements AwsVpcEntity, Serializable {
     for (int index = 0; index < ipPermsJson.length(); index++) {
       JSONObject childObject = ipPermsJson.getJSONObject(index);
       ipPermsList.add(new IpPermissions(childObject, logger));
+    }
+  }
+
+  private static void addToBeginning(
+      List<IpAccessListLine> ipAccessListLines, List<IpAccessListLine> toBeAdded) {
+    for (int i = toBeAdded.size() - 1; i >= 0; i--) {
+      ipAccessListLines.add(0, toBeAdded.get(i));
     }
   }
 }

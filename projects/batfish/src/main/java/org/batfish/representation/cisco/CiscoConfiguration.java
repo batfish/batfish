@@ -53,6 +53,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -1666,12 +1667,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           weInterior = new CallExpr(attributeMapName);
           attributeMap.getReferers().put(aggNet, "attribute-map of aggregate route: " + prefix);
           gr.setAttributePolicy(attributeMapName);
-        } else {
-          undefined(
-              CiscoStructureType.ROUTE_MAP,
-              attributeMapName,
-              CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-              aggNet.getAttributeMapLine());
         }
       }
       generateAggregateConditions.add(
@@ -1719,12 +1714,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .getReferers()
               .put(aggNet, "attribute-map of aggregate ipv6 route: " + prefix6);
           gr.setAttributePolicy(attributeMapName);
-        } else {
-          undefined(
-              CiscoStructureType.ROUTE_MAP,
-              attributeMapName,
-              CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-              aggNet.getAttributeMapLine());
         }
       }
     }
@@ -2727,13 +2716,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
         summaryFilter.addLine(
             new RouteFilterLine(
                 LineAction.REJECT,
-                prefix,
+                new IpWildcard(prefix),
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
       }
       area.setSummaries(ImmutableSortedMap.copyOf(summaries));
       summaryFilter.addLine(
           new RouteFilterLine(
-              LineAction.ACCEPT, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+              LineAction.ACCEPT,
+              new IpWildcard(Prefix.ZERO),
+              new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
 
     String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
@@ -3630,6 +3621,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(
         CiscoStructureType.ROUTE_MAP,
+        CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
         CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
         CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP,

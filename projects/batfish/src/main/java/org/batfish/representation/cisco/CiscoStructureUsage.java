@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoStructureUsage implements StructureUsage {
-  BGP_AGGREGATE_ATTRIBUTE_MAP("attribute-map"),
+  BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
   BGP_DEFAULT_ORIGINATE_ROUTE_MAP("bgp default-originate route-map"),
   BGP_INBOUND_FILTER_LIST("bgp inbound filter-list"),
   BGP_INBOUND_FILTER6_LIST("bgp inbound ipv6 filter-list"),

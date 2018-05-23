@@ -348,12 +348,22 @@ popsfpl_orlonger
 
 popsfrf_common
 :
-   popsfrf_exact
+   popsfrf_address_mask
+   | popsfrf_exact
    | popsfrf_longer
    | popsfrf_orlonger
    | popsfrf_prefix_length_range
    | popsfrf_through
    | popsfrf_upto
+;
+
+popsfrf_address_mask
+:
+   ADDRESS_MASK
+   (
+      IP_ADDRESS
+      | IPV6_ADDRESS
+   )
 ;
 
 popsfrf_exact

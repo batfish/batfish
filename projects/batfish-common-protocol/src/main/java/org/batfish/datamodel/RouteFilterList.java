@@ -4,10 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.io.IOException;
-import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -23,11 +24,20 @@ public class RouteFilterList extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
-  private transient Set<Prefix> _deniedCache;
+  private final Supplier<Set<Prefix>> _deniedCache;
 
   private List<RouteFilterLine> _lines;
 
-  private transient Set<Prefix> _permittedCache;
+  private final Supplier<Set<Prefix>> _permittedCache;
+
+  private static class CacheSupplier implements Supplier<Set<Prefix>>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Set<Prefix> get() {
+      return Collections.newSetFromMap(new ConcurrentHashMap<>());
+    }
+  }
 
   @JsonCreator
   public RouteFilterList(@JsonProperty(PROP_NAME) String name) {
@@ -36,6 +46,8 @@ public class RouteFilterList extends ComparableStructure<String> {
 
   public RouteFilterList(String name, List<RouteFilterLine> lines) {
     super(name);
+    _deniedCache = Suppliers.memoize(new CacheSupplier());
+    _permittedCache = Suppliers.memoize(new CacheSupplier());
     this._lines = lines;
   }
 
@@ -63,33 +75,27 @@ public class RouteFilterList extends ComparableStructure<String> {
   private boolean newPermits(Prefix prefix) {
     boolean accept = false;
     for (RouteFilterLine line : _lines) {
-      Prefix linePrefix = line.getPrefix();
-      int lineBits = linePrefix.getPrefixLength();
-      Prefix truncatedLinePrefix = new Prefix(linePrefix.getStartIp(), lineBits);
-      Prefix relevantPortion = new Prefix(prefix.getStartIp(), lineBits);
-      if (relevantPortion.equals(truncatedLinePrefix)) {
+      if (line.getIpWildcard().containsIp(prefix.getStartIp())) {
         int prefixLength = prefix.getPrefixLength();
         SubRange range = line.getLengthRange();
-        int min = range.getStart();
-        int max = range.getEnd();
-        if (prefixLength >= min && prefixLength <= max) {
+        if (prefixLength >= range.getStart() && prefixLength <= range.getEnd()) {
           accept = line.getAction() == LineAction.ACCEPT;
           break;
         }
       }
     }
     if (accept) {
-      _permittedCache.add(prefix);
+      _permittedCache.get().add(prefix);
     } else {
-      _deniedCache.add(prefix);
+      _deniedCache.get().add(prefix);
     }
     return accept;
   }
 
   public boolean permits(Prefix prefix) {
-    if (_deniedCache.contains(prefix)) {
+    if (_deniedCache.get().contains(prefix)) {
       return false;
-    } else if (_permittedCache.contains(prefix)) {
+    } else if (_permittedCache.get().contains(prefix)) {
       return true;
     }
     return newPermits(prefix);
@@ -111,16 +117,10 @@ public class RouteFilterList extends ComparableStructure<String> {
                 throw new BatfishException(
                     "Expected accept action for routerfilterlist from juniper");
               } else {
-                return new IpWildcard(rfLine.getPrefix());
+                return rfLine.getIpWildcard();
               }
             })
         .collect(Collectors.toList());
-  }
-
-  private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-    _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
   }
 
   @JsonProperty(PROP_LINES)

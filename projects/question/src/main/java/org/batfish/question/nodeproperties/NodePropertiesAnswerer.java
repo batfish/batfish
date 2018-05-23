@@ -8,8 +8,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier.PropertyDescriptor;
@@ -40,11 +42,7 @@ public class NodePropertiesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static void fillProperty(
-      Configuration configuration, NodePropertySpecifier nodePropertySpec, RowBuilder row) {
-    PropertyDescriptor propertyDescriptor =
-        NodePropertySpecifier.JAVA_MAP.get(nodePropertySpec.toString());
-    Object propertyValue = propertyDescriptor.getGetter().apply(configuration);
+  static Object convertTypeIfNeeded(Object propertyValue, PropertyDescriptor propertyDescriptor) {
 
     // for Maps (e.g., routing policies) we use the list of keys
     if (propertyValue instanceof Map<?, ?>) {
@@ -53,10 +51,31 @@ public class NodePropertiesAnswerer extends Answerer {
               .keySet()
               .stream()
               .map(k -> k.toString())
-              .collect(Collectors.toList());
+              .collect(Collectors.toSet());
     }
 
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
+    // check if a conversion to String is needed for complex objects (e.g., VRF)
+    if (propertyDescriptor.getSchema().equals(Schema.STRING)
+        && propertyValue != null
+        && !(propertyValue instanceof String)) {
+      if (propertyValue instanceof ComparableStructure) {
+        propertyValue = ((ComparableStructure) propertyValue).getName();
+      } else {
+        propertyValue = propertyValue.toString();
+      }
+    }
+
+    return propertyValue;
+  }
+
+  @VisibleForTesting
+  static void fillProperty(Configuration configuration, String property, RowBuilder row) {
+    PropertyDescriptor propertyDescriptor = NodePropertySpecifier.JAVA_MAP.get(property);
+    Object propertyValue = propertyDescriptor.getGetter().apply(configuration);
+
+    propertyValue = convertTypeIfNeeded(propertyValue, propertyDescriptor);
+
+    String columnName = NodePropertiesAnswerElement.getColumnNameFromProperty(property);
     fillProperty(columnName, propertyValue, row, propertyDescriptor); // separate for testing
   }
 
@@ -81,8 +100,8 @@ public class NodePropertiesAnswerer extends Answerer {
     for (String nodeName : nodes) {
       RowBuilder row = Row.builder().put(NodePropertiesAnswerElement.COL_NODE, new Node(nodeName));
 
-      for (NodePropertySpecifier nodePropertySpec : question.getProperties()) {
-        fillProperty(configurations.get(nodeName), nodePropertySpec, row);
+      for (String property : question.getPropertySpec().getMatchingProperties()) {
+        fillProperty(configurations.get(nodeName), property, row);
       }
 
       rows.add(row.build());

@@ -64,7 +64,9 @@ public class FibImpl implements Fib {
     Set<Prefix> newSeenNetworks = new HashSet<>(seenNetworks);
     newSeenNetworks.add(network);
     if (depth > MAX_DEPTH) {
-      throw new BatfishException("Exceeded max route recursion depth: " + MAX_DEPTH);
+      // TODO: Declare this a loop using some warning mechanism
+      // https://github.com/batfish/batfish/issues/1469
+      return;
     }
     Ip nextHopIp = route.getNextHopIp();
     if (!nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
@@ -88,7 +90,9 @@ public class FibImpl implements Fib {
                 mostRecentNextHopIp, k -> new TreeSet<>());
         nextHopInterfaceRoutes.add(route);
       } else {
-        throw new BatfishException("Encountered route with neither nextHopIp nor nextHopInterface");
+        // TODO: Declare this using some warning mechanism
+        // https://github.com/batfish/batfish/issues/1469
+        return;
       }
     }
   }

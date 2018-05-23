@@ -3,38 +3,45 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.base.MoreObjects;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 
-@JsonSchemaDescription("A line in an RouteFilterList")
+@JsonSchemaDescription("A line in a RouteFilterList")
 public class RouteFilterLine implements Serializable {
 
   private static final String PROP_ACTION = "action";
 
   private static final String PROP_LENGTH_RANGE = "lengthRange";
 
-  private static final String PROP_PREFIX = "prefix";
+  private static final String PROP_IP_WILDCARD = "ipWildcard";
 
   private static final long serialVersionUID = 1L;
 
   private final LineAction _action;
 
-  private final SubRange _lengthRange;
+  private final IpWildcard _ipWildcard;
 
-  private final Prefix _prefix;
+  private final SubRange _lengthRange;
 
   @JsonCreator
   public RouteFilterLine(
       @JsonProperty(PROP_ACTION) LineAction action,
-      @JsonProperty(PROP_PREFIX) Prefix prefix,
+      @JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard,
       @JsonProperty(PROP_LENGTH_RANGE) SubRange lengthRange) {
     _action = action;
-    _prefix = prefix;
+    _ipWildcard = ipWildcard;
+    _lengthRange = lengthRange;
+  }
+
+  public RouteFilterLine(LineAction action, Prefix prefix, SubRange lengthRange) {
+    _action = action;
+    _ipWildcard = new IpWildcard(prefix);
     _lengthRange = lengthRange;
   }
 
   public RouteFilterLine(LineAction action, PrefixRange prefixRange) {
-    this(action, prefixRange.getPrefix(), prefixRange.getLengthRange());
+    this(action, new IpWildcard(prefixRange.getPrefix()), prefixRange.getLengthRange());
   }
 
   @Override
@@ -51,7 +58,7 @@ public class RouteFilterLine implements Serializable {
     if (!_lengthRange.equals(other._lengthRange)) {
       return false;
     }
-    if (!_prefix.equals(other._prefix)) {
+    if (!_ipWildcard.equals(other._ipWildcard)) {
       return false;
     }
     return true;
@@ -70,12 +77,12 @@ public class RouteFilterLine implements Serializable {
     return _lengthRange;
   }
 
-  @JsonProperty(PROP_PREFIX)
+  @JsonProperty(PROP_IP_WILDCARD)
   @JsonPropertyDescription(
-      "The bits against which to compare a route's prefix. The length of this prefix is used to "
-          + "determine how many leading bits must match.")
-  public Prefix getPrefix() {
-    return _prefix;
+      "The bits against which to compare a route's prefix. The mask of this IP Wildcard determines "
+          + "which bits must match")
+  public IpWildcard getIpWildcard() {
+    return _ipWildcard;
   }
 
   @Override
@@ -84,26 +91,24 @@ public class RouteFilterLine implements Serializable {
     int result = 1;
     result = prime * result + _action.ordinal();
     result = prime * result + _lengthRange.hashCode();
-    result = prime * result + _prefix.hashCode();
+    result = prime * result + _ipWildcard.hashCode();
     return result;
   }
 
   public String toCompactString() {
     StringBuilder sb = new StringBuilder();
     sb.append(_action + " ");
-    sb.append(_prefix + " ");
+    sb.append(_ipWildcard + " ");
     sb.append(_lengthRange + " ");
     return sb.toString();
   }
 
   @Override
   public String toString() {
-    StringBuilder sb = new StringBuilder();
-    sb.append("{ ");
-    sb.append("Action=" + _action + " ");
-    sb.append("Prefix=" + _prefix + " ");
-    sb.append("LengthRange=" + _lengthRange + " ");
-    sb.append("}");
-    return sb.toString();
+    return MoreObjects.toStringHelper(getClass())
+        .add("Action", _action)
+        .add("IpWildCard", _ipWildcard)
+        .add("LengthRange", _lengthRange)
+        .toString();
   }
 }

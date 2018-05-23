@@ -2,11 +2,8 @@ package org.batfish.allinone;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
@@ -24,7 +21,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLines2AnswerElement;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.table.Row;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -45,31 +41,27 @@ public class AclReachability2Test {
 
   private Configuration _c;
 
+  private IpAccessList.Builder _aclb;
+
   @Before
   public void setup() {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _c = _cb.build();
+    _aclb = _nf.aclBuilder().setOwner(_c);
   }
 
   @Test
   public void testIndirection() throws IOException {
-    IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
-
     /*
-    Reference ACL contains 1 line: Permit 1.0.0.0/24
-    Main ACL contains 2 lines:
-    0. Permit anything that reference ACL permits
-    1. Permit 1.0.0.0/24
-
-    Runs two questions:
-    1. General ACL reachability (reference ACL won't be encoded after first NoD step)
-    2. Reachability specifically for main ACL (reference ACL won't be encoded at all)
-    Tests that both find line 1 to be blocked by line 0 in main ACL.
-     */
-
+     Referenced ACL contains 1 line: Permit 1.0.0.0/24
+     Main ACL contains 2 lines:
+     0. Permit anything that referenced ACL permits
+     1. Permit 1.0.0.0/24
+    */
     IpAccessList referencedAcl =
-        aclb.setLines(
+        _aclb
+            .setLines(
                 ImmutableList.of(
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
@@ -78,7 +70,8 @@ public class AclReachability2Test {
             .setName("acl1")
             .build();
     IpAccessList acl =
-        aclb.setLines(
+        _aclb
+            .setLines(
                 ImmutableList.of(
                     IpAccessListLine.accepting()
                         .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
@@ -90,24 +83,17 @@ public class AclReachability2Test {
             .setName("acl2")
             .build();
 
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
+    /*
+     Runs two questions:
+     1. General ACL reachability (referenced ACL won't be encoded after first NoD step)
+     2. Reachability specifically for main ACL (referenced ACL won't be encoded at all)
+     Will test that both give the same result.
+    */
+    AclLines2AnswerElement generalAnswer = answer(new AclReachability2Question());
+    AclLines2AnswerElement specificAnswer =
+        answer(new AclReachability2Question(acl.getName(), null));
 
-    assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
-    assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
-
-    AclReachability2Question question = new AclReachability2Question();
-    AclReachability2Answerer answerer = new AclReachability2Answerer(question, batfish);
-    question.setAclNameRegex(acl.getName());
-    AclReachability2Answerer specificAnswerer = new AclReachability2Answerer(question, batfish);
-
-    AnswerElement baseClassAnswer = answerer.answer();
-    AnswerElement specificBaseClassAnswer = specificAnswerer.answer();
-    assertThat(baseClassAnswer, instanceOf(AclLines2AnswerElement.class));
-    assertThat(specificBaseClassAnswer, instanceOf(AclLines2AnswerElement.class));
-    AclLines2AnswerElement answer = (AclLines2AnswerElement) baseClassAnswer;
-    AclLines2AnswerElement specificAnswer = (AclLines2AnswerElement) specificBaseClassAnswer;
-
-    // Construct the expected rows set
+    // Construct the expected result. Should find line 1 to be blocked by line 0 in main ACL.
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
@@ -124,16 +110,14 @@ public class AclReachability2Test {
                         + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1}}")
                 .build());
 
-    assertThat(answer.getInitialRows().getData(), equalTo(expected));
+    assertThat(generalAnswer.getInitialRows().getData(), equalTo(expected));
     assertThat(specificAnswer.getInitialRows().getData(), equalTo(expected));
   }
 
   @Test
   public void testMultipleCoveringLines() throws IOException {
-    String aclName = "acl";
     IpAccessList acl =
-        _nf.aclBuilder()
-            .setOwner(_c)
+        _aclb
             .setLines(
                 ImmutableList.of(
                     acceptingHeaderSpace(
@@ -148,25 +132,21 @@ public class AclReachability2Test {
                         HeaderSpace.builder()
                             .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.1").toIpSpace())
                             .build())))
-            .setName(aclName)
+            .setName("acl")
             .build();
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
 
-    assertThat(_c, hasIpAccessLists(hasEntry(equalTo(aclName), equalTo(acl))));
+    AclLines2AnswerElement answer = answer(new AclReachability2Question());
 
-    AclReachability2Question question = new AclReachability2Question();
-    AclReachability2Answerer answerer = new AclReachability2Answerer(question, batfish);
-    AnswerElement baseClassAnswer = answerer.answer();
-
-    assertThat(baseClassAnswer, instanceOf(AclLines2AnswerElement.class));
-    AclLines2AnswerElement answer = (AclLines2AnswerElement) baseClassAnswer;
-
-    // Construct the expected rows set
+    /*
+     Construct the expected result. Line 2 should be blocked by both previous lines.
+     Currently we are not finding the line numbers of multiple blocking lines, so list of blocking
+     line numbers should be empty.
+    */
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
                 .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_ACL, acl.getName())
                 .put(AclLines2AnswerElement.COL_LINES, new String[3])
                 .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 2)
                 .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
@@ -183,10 +163,16 @@ public class AclReachability2Test {
 
   @Test
   public void testIndependentlyUnmatchableLines() throws IOException {
-    String aclName = "acl";
+    /*
+    Construct ACL with lines:
+    0. Reject 1.0.0.0/24 (unblocked)
+    1. Accept 1.0.0.0/24 (blocked by line 0)
+    2. Accept [empty set] (unmatchable)
+    3. Accept 1.0.0.0/32 (blocked by line 0)
+    4. Accept 1.2.3.4/32 (unblocked)
+     */
     IpAccessList acl =
-        _nf.aclBuilder()
-            .setOwner(_c)
+        _aclb
             .setLines(
                 ImmutableList.of(
                     rejectingHeaderSpace(
@@ -206,25 +192,17 @@ public class AclReachability2Test {
                         HeaderSpace.builder()
                             .setSrcIps(Prefix.parse("1.2.3.4/32").toIpSpace())
                             .build())))
-            .setName(aclName)
+            .setName("acl")
             .build();
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
 
-    assertThat(_c, hasIpAccessLists(hasEntry(equalTo(aclName), equalTo(acl))));
+    AclLines2AnswerElement answer = answer(new AclReachability2Question());
 
-    AclReachability2Question question = new AclReachability2Question();
-    AclReachability2Answerer answerer = new AclReachability2Answerer(question, batfish);
-    AnswerElement baseClassAnswer = answerer.answer();
-
-    assertThat(baseClassAnswer, instanceOf(AclLines2AnswerElement.class));
-    AclLines2AnswerElement answer = (AclLines2AnswerElement) baseClassAnswer;
-
-    // Construct the expected rows set
+    // Construct the expected result
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
                 .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_ACL, acl.getName())
                 .put(AclLines2AnswerElement.COL_LINES, new String[5])
                 .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 1)
                 .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
@@ -238,7 +216,7 @@ public class AclReachability2Test {
                 .build(),
             Row.builder()
                 .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_ACL, acl.getName())
                 .put(AclLines2AnswerElement.COL_LINES, new String[5])
                 .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 2)
                 .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
@@ -250,7 +228,7 @@ public class AclReachability2Test {
                 .build(),
             Row.builder()
                 .put(AclLines2AnswerElement.COL_NODES, ImmutableList.of(_c.getName()))
-                .put(AclLines2AnswerElement.COL_ACL, aclName)
+                .put(AclLines2AnswerElement.COL_ACL, acl.getName())
                 .put(AclLines2AnswerElement.COL_LINES, new String[5])
                 .put(AclLines2AnswerElement.COL_BLOCKED_LINE_NUM, 3)
                 .put(AclLines2AnswerElement.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
@@ -264,5 +242,11 @@ public class AclReachability2Test {
                 .build());
 
     assertThat(answer.getInitialRows().getData(), equalTo(expected));
+  }
+
+  private AclLines2AnswerElement answer(AclReachability2Question q) throws IOException {
+    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
+    AclReachability2Answerer answerer = new AclReachability2Answerer(q, batfish);
+    return answerer.answer();
   }
 }

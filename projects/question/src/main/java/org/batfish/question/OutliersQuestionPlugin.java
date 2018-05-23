@@ -250,11 +250,13 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
 
       // first get the results of compareSameName
       CompareSameNameQuestionPlugin.CompareSameNameQuestion inner =
-          new CompareSameNameQuestionPlugin.CompareSameNameQuestion();
-      inner.setNodeRegex(question.getNodeRegex());
-      inner.setNamedStructTypes(question.getNamedStructTypes());
-      inner.setExcludedNamedStructTypes(new TreeSet<>());
-      inner.setSingletons(true);
+          new CompareSameNameQuestionPlugin.CompareSameNameQuestion(
+              null,
+              new TreeSet<>(),
+              null,
+              question.getNamedStructTypes(),
+              question.getNodeRegex(),
+              true);
       CompareSameNameQuestionPlugin.CompareSameNameAnswerer innerAnswerer =
           new CompareSameNameQuestionPlugin().createAnswerer(inner, _batfish);
       CompareSameNameQuestionPlugin.CompareSameNameAnswerElement innerAnswer =
@@ -462,6 +464,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       return _namedStructTypes;
     }
 
+    @Override
     @JsonProperty(PROP_NODE_REGEX)
     public NodesSpecifier getNodeRegex() {
       return _nodeRegex;
@@ -487,6 +490,7 @@ public class OutliersQuestionPlugin extends QuestionPlugin {
       _namedStructTypes = namedStructTypes;
     }
 
+    @Override
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
