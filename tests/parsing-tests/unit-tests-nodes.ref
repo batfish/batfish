@@ -4885,6 +4885,15 @@
           }
         },
         "routingPolicies" : {
+          "AGGREGATE-MAP" : {
+            "name" : "AGGREGATE-MAP",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                "type" : "ReturnTrue"
+              }
+            ]
+          },
           "CONNECTED-TO-BGP" : {
             "name" : "CONNECTED-TO-BGP",
             "statements" : [
@@ -4979,8 +4988,8 @@
                         {
                           "class" : "org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr",
                           "expr" : {
-                            "class" : "org.batfish.datamodel.routing_policy.expr.BooleanExprs$StaticBooleanExpr",
-                            "type" : "True"
+                            "class" : "org.batfish.datamodel.routing_policy.expr.CallExpr",
+                            "calledPolicyName" : "AGGREGATE-MAP"
                           },
                           "postStatements" : [
                             {
@@ -5386,11 +5395,15 @@
                 "class" : "org.batfish.datamodel.GeneratedRoute",
                 "administrativeCost" : 200,
                 "asPath" : [ ],
+                "attributePolicy" : "AGGREGATE-MAP",
                 "discard" : true,
                 "generationPolicy" : "~AGGREGATE_ROUTE_GEN:aVrfWithInnerStatements:192.168.0.0/16~",
                 "metric" : 0,
                 "network" : "192.168.0.0/16",
-                "nextHopIp" : "AUTO/NONE(-1l)"
+                "nextHopIp" : "AUTO/NONE(-1l)",
+                "attributePolicySources" : [
+                  "AGGREGATE-MAP"
+                ]
               }
             ],
             "bgpProcess" : {
@@ -5415,6 +5428,7 @@
                   "enforceFirstAs" : false,
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:aVrfWithInnerStatements:10.0.1.2~",
                   "exportPolicySources" : [
+                    "AGGREGATE-MAP",
                     "CONNECTED-TO-BGP"
                   ],
                   "localAs" : 1,

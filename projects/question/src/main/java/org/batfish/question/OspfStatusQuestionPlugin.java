@@ -144,17 +144,16 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
             if (question.getInterfacesSpecifier().matches(iface)) {
               if (iface.getSwitchport() != null && iface.getSwitchport().booleanValue()) {
                 // it's a layer2 interface
-                answerElement.add(hostname, interfaceName, OspfStatus.SWITCHPORT);
+                conditionalAdd(
+                    question, answerElement, hostname, interfaceName, OspfStatus.SWITCHPORT);
               } else if (iface.getOspfEnabled()) {
                 // ospf is running either passively or actively
                 if (iface.getOspfPassive()) {
-                  if (question.matchesStatus(OspfStatus.ENABLED_PASSIVE)) {
-                    answerElement.add(hostname, interfaceName, OspfStatus.ENABLED_PASSIVE);
-                  }
+                  conditionalAdd(
+                      question, answerElement, hostname, interfaceName, OspfStatus.ENABLED_PASSIVE);
                 } else {
-                  if (question.matchesStatus(OspfStatus.ENABLED_ACTIVE)) {
-                    answerElement.add(hostname, interfaceName, OspfStatus.ENABLED_ACTIVE);
-                  }
+                  conditionalAdd(
+                      question, answerElement, hostname, interfaceName, OspfStatus.ENABLED_ACTIVE);
                 }
               } else {
                 // check if exported as external ospf route
@@ -182,13 +181,19 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
                     }
                   }
                   if (exported) {
-                    if (question.matchesStatus(OspfStatus.DISABLED_EXPORTED)) {
-                      answerElement.add(hostname, interfaceName, OspfStatus.DISABLED_EXPORTED);
-                    }
+                    conditionalAdd(
+                        question,
+                        answerElement,
+                        hostname,
+                        interfaceName,
+                        OspfStatus.DISABLED_EXPORTED);
                   } else {
-                    if (question.matchesStatus(OspfStatus.DISABLED_NOT_EXPORTED)) {
-                      answerElement.add(hostname, interfaceName, OspfStatus.DISABLED_NOT_EXPORTED);
-                    }
+                    conditionalAdd(
+                        question,
+                        answerElement,
+                        hostname,
+                        interfaceName,
+                        OspfStatus.DISABLED_NOT_EXPORTED);
                   }
                 }
               }
@@ -198,6 +203,17 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
       }
 
       return answerElement;
+    }
+
+    private static void conditionalAdd(
+        OspfStatusQuestion question,
+        OspfStatusAnswerElement answerElement,
+        String hostname,
+        String interfaceName,
+        OspfStatus status) {
+      if (question.matchesStatus(status)) {
+        answerElement.add(hostname, interfaceName, status);
+      }
     }
   }
 

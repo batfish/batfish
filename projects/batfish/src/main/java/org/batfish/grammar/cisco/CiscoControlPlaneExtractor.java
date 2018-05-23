@@ -44,6 +44,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER_LIST;
@@ -3563,9 +3564,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         net.setSummaryOnly(summaryOnly);
         if (ctx.mapname != null) {
           String mapName = ctx.mapname.getText();
-          int mapLine = ctx.mapname.getStart().getLine();
           net.setAttributeMap(mapName);
-          net.setAttributeMapLine(mapLine);
+          _configuration.referenceStructure(
+              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
         }
         proc.getAggregateNetworks().put(prefix, net);
       } else if (ctx.ipv6_prefix != null) {
@@ -3576,9 +3577,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         net.setSummaryOnly(summaryOnly);
         if (ctx.mapname != null) {
           String mapName = ctx.mapname.getText();
-          int mapLine = ctx.mapname.getStart().getLine();
           net.setAttributeMap(mapName);
-          net.setAttributeMapLine(mapLine);
+          _configuration.referenceStructure(
+              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
         }
         proc.getAggregateIpv6Networks().put(prefix6, net);
       }
@@ -3591,9 +3592,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     } else if (ctx.mapname != null) {
       String map = ctx.mapname.getText();
-      int line = ctx.mapname.getStart().getLine();
       _configuration.getBgpVrfAggregateAddressRouteMaps().add(map);
-      _configuration.referenceStructure(ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, line);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, ctx.mapname.getStart().getLine());
     }
   }
 
