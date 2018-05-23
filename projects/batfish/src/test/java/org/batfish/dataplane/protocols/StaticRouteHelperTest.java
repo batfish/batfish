@@ -119,7 +119,7 @@ public class StaticRouteHelperTest {
     StaticRoute sr =
         StaticRoute.builder()
             .setNetwork(Prefix.parse("9.9.9.0/24"))
-            .setNextHopIp(new Ip("1.1.1.1"))
+            .setNextHopIp(new Ip("9.9.9.9"))
             .build();
 
     // Test & Assert
