@@ -205,7 +205,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /*
-   * Create a BDDRecord from another. Because BDDs are immutable,
+   * Create a BDDRoute from another. Because BDDs are immutable,
    * there is no need for a deep copy.
    */
   public BDDRoute(BDDRoute other) {
