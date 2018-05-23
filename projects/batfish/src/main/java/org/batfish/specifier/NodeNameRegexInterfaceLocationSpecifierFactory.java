@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  * A {@link LocationSpecifierFactory} that builds {@link NodeNameRegexInterfaceLocationSpecifier}s.
  */
 @AutoService(LocationSpecifierFactory.class)
-public class NodeNameRegexInterfaceLocationSpecifierFactory
+public final class NodeNameRegexInterfaceLocationSpecifierFactory
     extends TypedLocationSpecifierFactory<Pattern> {
   @Override
   protected Class<Pattern> getInputClass() {

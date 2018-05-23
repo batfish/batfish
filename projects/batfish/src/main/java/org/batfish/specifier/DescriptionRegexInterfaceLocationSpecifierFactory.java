@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 /** A {@link LocationSpecifierFactory} for {@link DescriptionRegexInterfaceLocationSpecifier}. */
 @AutoService(LocationSpecifierFactory.class)
-public class DescriptionRegexInterfaceLocationSpecifierFactory
+public final class DescriptionRegexInterfaceLocationSpecifierFactory
     extends TypedLocationSpecifierFactory<Pattern> {
   @Override
   public String getName() {

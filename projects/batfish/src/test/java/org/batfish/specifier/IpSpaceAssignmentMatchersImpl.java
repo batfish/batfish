@@ -7,7 +7,7 @@ import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-public class IpSpaceAssignmentMatchersImpl {
+public final class IpSpaceAssignmentMatchersImpl {
   public static class HasEntries extends FeatureMatcher<IpSpaceAssignment, Collection<Entry>> {
     public HasEntries(Matcher<? super Collection<Entry>> subMatcher) {
       super(subMatcher, "entries", "entries");

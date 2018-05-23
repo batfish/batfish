@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  * VrfNameRegexInterfaceLinkLocationSpecifier}s.
  */
 @AutoService(LocationSpecifierFactory.class)
-public class VrfNameRegexInterfaceLocationSpecifierFactory
+public final class VrfNameRegexInterfaceLocationSpecifierFactory
     extends TypedLocationSpecifierFactory<Pattern> {
   @Override
   public String getName() {

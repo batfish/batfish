@@ -40,16 +40,16 @@ public final class IpSpaceAssignment {
     private Set<Location> _allLocations = new HashSet<>();
 
     public Builder assign(Location location, IpSpace ipSpace) {
-      checkArgument(!_allLocations.contains(location), "duplicate location: %s", location);
-      _allLocations.add(location);
+      checkArgument(_allLocations.add(location), "duplicate location: %s", location);
       _entries.add(new Entry(ipSpace, ImmutableSet.of(location)));
       return this;
     }
 
     public Builder assign(Set<Location> locations, IpSpace ipSpace) {
-      locations.forEach(
-          loc -> checkArgument(!_allLocations.contains(loc), "duplicate location: %s", loc));
+      int oldSize = _allLocations.size();
       _allLocations.addAll(locations);
+      checkArgument(_allLocations.size() == oldSize + locations.size(), "duplicate location(s)");
+
       _entries.add(new Entry(ipSpace, locations));
       return this;
     }

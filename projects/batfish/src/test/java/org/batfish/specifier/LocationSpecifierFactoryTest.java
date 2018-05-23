@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
-public class LocationSpecifierFactoryTests {
+public class LocationSpecifierFactoryTest {
   /** Test that each Factory is discoverable by the registry. */
   @Test
   public void testLocationSpecifierFactoryRegistry() {

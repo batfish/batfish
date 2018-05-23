@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
  * org.batfish.specifier.NodeRoleRegexInterfaceLinkLocationSpecifier}s.
  */
 @AutoService(LocationSpecifierFactory.class)
-public class NodeRoleRegexInterfaceLinkLocationSpecifierFactory
+public final class NodeRoleRegexInterfaceLinkLocationSpecifierFactory
     extends NodeRoleRegexLocationSpecifierFactory {
 
   @Override

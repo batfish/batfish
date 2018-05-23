@@ -23,7 +23,7 @@ import org.batfish.role.NodeRole;
 import org.junit.Test;
 
 /** Tests for built-in location specifiers. */
-public class LocationSpecifierTests {
+public class LocationSpecifierTest {
   private static final Map<String, Configuration> _testConfigs;
   private static final List<Interface> _testConfigsInterfaces;
   private static final SpecifierContext _context;

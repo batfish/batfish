@@ -5,7 +5,7 @@ import org.batfish.common.BatfishException;
 /**
  * Helper class for implementing type-safe subclasses of {@link LocationSpecifierFactory}. It
  * validates that the input is of the appropriate type and then delegates to the subclass for
- * further validation and the build the {@link LocationSpecifier}.
+ * further validation and to build the {@link LocationSpecifier}.
  *
  * @param <T> The input type of the {@link LocationSpecifier}.
  */

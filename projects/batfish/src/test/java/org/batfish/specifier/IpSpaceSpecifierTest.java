@@ -23,7 +23,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.specifier.IpSpaceAssignment.Entry;
 import org.junit.Test;
 
-public class IpSpaceSpecifierTests {
+public class IpSpaceSpecifierTest {
   private static final Set<Location> _allLocations;
 
   private static final Map<String, Configuration> _configs;

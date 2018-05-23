@@ -4,10 +4,10 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 
 /** A {@link LocationSpecifier} specifying all interfaces in the network. */
-public class AllInterfacesLocationSpecifier implements LocationSpecifier {
+public final class AllInterfacesLocationSpecifier implements LocationSpecifier {
   public static final LocationSpecifier INSTANCE = new AllInterfacesLocationSpecifier();
 
-  AllInterfacesLocationSpecifier() {}
+  private AllInterfacesLocationSpecifier() {}
 
   @Override
   public Set<Location> resolve(SpecifierContext ctxt) {

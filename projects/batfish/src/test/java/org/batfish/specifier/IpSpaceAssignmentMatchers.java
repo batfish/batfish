@@ -11,7 +11,7 @@ import org.batfish.specifier.IpSpaceAssignmentMatchersImpl.HasIpSpace;
 import org.batfish.specifier.IpSpaceAssignmentMatchersImpl.HasLocations;
 import org.hamcrest.Matcher;
 
-public class IpSpaceAssignmentMatchers {
+public final class IpSpaceAssignmentMatchers {
   public static Matcher<IpSpaceAssignment> hasEntries(
       Matcher<? super Collection<Entry>> entriesMatcher) {
     return new IpSpaceAssignmentMatchersImpl.HasEntries(entriesMatcher);
