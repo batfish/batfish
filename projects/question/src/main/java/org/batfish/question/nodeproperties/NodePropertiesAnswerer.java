@@ -69,15 +69,13 @@ public class NodePropertiesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static void fillProperty(
-      Configuration configuration, NodePropertySpecifier nodePropertySpec, RowBuilder row) {
-    PropertyDescriptor propertyDescriptor =
-        NodePropertySpecifier.JAVA_MAP.get(nodePropertySpec.toString());
+  static void fillProperty(Configuration configuration, String property, RowBuilder row) {
+    PropertyDescriptor propertyDescriptor = NodePropertySpecifier.JAVA_MAP.get(property);
     Object propertyValue = propertyDescriptor.getGetter().apply(configuration);
 
     propertyValue = convertTypeIfNeeded(propertyValue, propertyDescriptor);
 
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromPropertySpec(nodePropertySpec);
+    String columnName = NodePropertiesAnswerElement.getColumnNameFromProperty(property);
     fillProperty(columnName, propertyValue, row, propertyDescriptor); // separate for testing
   }
 
@@ -102,8 +100,8 @@ public class NodePropertiesAnswerer extends Answerer {
     for (String nodeName : nodes) {
       RowBuilder row = Row.builder().put(NodePropertiesAnswerElement.COL_NODE, new Node(nodeName));
 
-      for (NodePropertySpecifier nodePropertySpec : question.getProperties()) {
-        fillProperty(configurations.get(nodeName), nodePropertySpec, row);
+      for (String property : question.getPropertySpec().getMatchingProperties()) {
+        fillProperty(configurations.get(nodeName), property, row);
       }
 
       rows.add(row.build());

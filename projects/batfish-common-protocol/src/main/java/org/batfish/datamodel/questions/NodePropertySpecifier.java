@@ -5,9 +5,12 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -22,6 +25,7 @@ import org.batfish.datamodel.answers.Schema;
  *
  * <ul>
  *   <li>ntp-servers —> gets NTP servers using a configured Java function
+ *   <li>ntp.* gets all properties that start with 'ntp'
  * </ul>
  *
  * <p>In the future, we might add other specifier types, e.g., those based on Json Path
@@ -149,16 +153,16 @@ public class NodePropertySpecifier {
           .put("zones", new PropertyDescriptor(Configuration::getZones, Schema.list(Schema.STRING)))
           .build();
 
+  public static final NodePropertySpecifier ALL = new NodePropertySpecifier(".*");
+
   private final String _expression;
+
+  private final Pattern _pattern;
 
   @JsonCreator
   public NodePropertySpecifier(String expression) {
-    _expression = expression.trim().toLowerCase(); // canonicalize
-
-    if (!JAVA_MAP.containsKey(expression)) {
-      throw new IllegalArgumentException(
-          "Invalid node property specification: '" + expression + "'");
-    }
+    _expression = expression.trim().toLowerCase();
+    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 
   /**
@@ -169,15 +173,42 @@ public class NodePropertySpecifier {
    * @return The list of suggestions
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    String finalQuery = firstNonNull(query, "");
-    List<AutocompleteSuggestion> suggestions =
+    String finalQuery = firstNonNull(query, "").toLowerCase();
+
+    List<AutocompleteSuggestion> suggestions = new LinkedList<>();
+
+    // first add .* version if needed
+    String queryWithStar = finalQuery + ".*";
+    if (!finalQuery.endsWith("*")
+        && !new NodePropertySpecifier(queryWithStar).getMatchingProperties().isEmpty()) {
+      suggestions.add(
+          new AutocompleteSuggestion(
+              queryWithStar, false, "All properties matching " + queryWithStar));
+    }
+
+    // now add all properties that contain the query
+    suggestions.addAll(
         JAVA_MAP
             .keySet()
             .stream()
-            .filter(prop -> prop.contains(finalQuery.toLowerCase()))
+            .filter(prop -> prop.contains(finalQuery))
             .map(prop -> new AutocompleteSuggestion(prop, false))
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
+
     return suggestions;
+  }
+
+  /**
+   * Returns all properties that match this specifier
+   *
+   * @return The matching set
+   */
+  public Set<String> getMatchingProperties() {
+    return JAVA_MAP
+        .keySet()
+        .stream()
+        .filter(prop -> _pattern.matcher(prop).matches())
+        .collect(Collectors.toSet());
   }
 
   @Override

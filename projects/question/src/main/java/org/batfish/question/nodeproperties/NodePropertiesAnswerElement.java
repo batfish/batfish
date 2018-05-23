@@ -35,14 +35,15 @@ public class NodePropertiesAnswerElement extends TableAnswerElement {
             .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
             .addAll(
                 question
-                    .getProperties()
+                    .getPropertySpec()
+                    .getMatchingProperties()
                     .stream()
                     .map(
-                        nps ->
+                        prop ->
                             new ColumnMetadata(
-                                getColumnNameFromPropertySpec(nps),
-                                NodePropertySpecifier.JAVA_MAP.get(nps.toString()).getSchema(),
-                                "Property " + nps.toString(),
+                                getColumnNameFromProperty(prop),
+                                NodePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
+                                "Property " + prop,
                                 false,
                                 true))
                     .collect(Collectors.toList()))
@@ -56,7 +57,7 @@ public class NodePropertiesAnswerElement extends TableAnswerElement {
     return new TableMetadata(columnMetadata, dhints);
   }
 
-  static String getColumnNameFromPropertySpec(NodePropertySpecifier nodePropertySpec) {
-    return nodePropertySpec.toString();
+  static String getColumnNameFromProperty(String property) {
+    return property;
   }
 }
