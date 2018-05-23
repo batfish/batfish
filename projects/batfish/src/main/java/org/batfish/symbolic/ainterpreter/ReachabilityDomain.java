@@ -52,16 +52,21 @@ public class ReachabilityDomain implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public BDD transform(BDD input, EdgeTransformer t) {
+  public BDD transform(BDD input, EdgeTransformer t, Transformation type) {
     BDDTransferFunction f = t.getBgpTransfer();
     // Filter routes that can not pass through the transformer
     BDD allow = f.getFilter();
-    BDD block = allow.not();
-    BDD blockedInputs = input.and(block);
-    BDD blockedPrefixes = blockedInputs.exist(_projectVariables);
-    BDD notBlockedPrefixes = blockedPrefixes.not();
-    // Not sure why, but andWith does not work here (JavaBDD bug?)
-    input = input.and(notBlockedPrefixes);
+
+    if (type == Transformation.OVER_APPROXIMATION) {
+      input = input.and(allow);
+    } else {
+      BDD block = allow.not();
+      BDD blockedInputs = input.and(block);
+      BDD blockedPrefixes = blockedInputs.exist(_projectVariables);
+      BDD notBlockedPrefixes = blockedPrefixes.not();
+      // Not sure why, but andWith does not work here (JavaBDD bug?)
+      input = input.and(notBlockedPrefixes);
+    }
 
     // Modify the result
     BDDRoute mods = f.getRoute();

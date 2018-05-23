@@ -12,7 +12,7 @@ public interface IAbstractDomain<T> {
 
   T value(String router, Protocol proto, @Nullable Set<Prefix> prefixes);
 
-  T transform(T input, EdgeTransformer f);
+  T transform(T input, EdgeTransformer f, Transformation type);
 
   T merge(T x, T y);
 

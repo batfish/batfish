@@ -43,8 +43,6 @@ import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.smt.EdgeType;
 
-// TODO: Take ACLs into account. Will likely require using a single Factory object
-
 /*
  * Computes an overapproximation of some concrete set of states in the
  * network using abstract interpretation
@@ -78,6 +76,9 @@ public class ReachabilityInterpreter {
   // The prefix length bits that we will quantify away
   private BDD _lenBits;
 
+  // The destination router bits that we will quantify away
+  private BDD _dstRouterBits;
+
   // The source router bits that we will quantify away
   private BDD _tempRouterBits;
 
@@ -93,7 +94,6 @@ public class ReachabilityInterpreter {
    * the computation once and then answer many questions.
    */
   public ReachabilityInterpreter(IBatfish batfish) {
-
     _graph = new Graph(batfish);
     _lengthCache = new HashMap<>();
     _dstBitsCache = new HashMap<>();
@@ -121,6 +121,17 @@ public class ReachabilityInterpreter {
       _tempRouterBits = _tempRouterBits.and(tempRouterBits[i]);
       _dstToTempRouterSubstitution.set(dstRouterBits[i].var(), tempRouterBits[i].var());
       _srcToTempRouterSubstitution.set(srcRouterBits[i].var(), tempRouterBits[i].var());
+    }
+
+    _dstRouterBits = _netFactory.one();
+    for (BDD x : dstRouterBits) {
+      _dstRouterBits = _dstRouterBits.and(x);
+    }
+
+    _lenBits = _netFactory.one();
+    BDD[] pfxLen = _variables.getPrefixLength().getBitvec();
+    for (BDD x : pfxLen) {
+      _lenBits = _lenBits.and(x);
     }
 
     _communityAndProtocolBits = _netFactory.one();
@@ -251,7 +262,8 @@ public class ReachabilityInterpreter {
       }
 
       T rib = domain.merge(domain.merge(domain.merge(bgp, ospf), stat), conn);
-      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, new BitSet());
+      AbstractRib<T> abstractRib =
+          new AbstractRib<>(bgp, bgp, ospf, ospf, stat, conn, rib, rib, new BitSet());
       reachable.put(router, abstractRib);
     }
 
@@ -272,8 +284,10 @@ public class ReachabilityInterpreter {
       Configuration conf = _graph.getConfigurations().get(router);
 
       AbstractRib<T> r = reachable.get(router);
-      T routerOspf = r.getOspfRib();
-      T routerRib = r.getMainRib();
+      T underRouterOspf = r.getUnderOspfRib();
+      T overRouterOspf = r.getOverOspfRib();
+      T underRouterRib = r.getUnderMainRib();
+      T overRouterRib = r.getOverMainRib();
       BitSet routerAclsSoFar = r.getAclIds();
 
       // System.out.println("Looking at router: " + router);
@@ -290,17 +304,23 @@ public class ReachabilityInterpreter {
           AbstractRib<T> nr = reachable.get(neighbor);
           T neighborConn = nr.getConnectedRib();
           T neighborStat = nr.getStaticRib();
-          T neighborBgp = nr.getBgpRib();
-          T neighborOspf = nr.getOspfRib();
-          T neighborRib = nr.getMainRib();
+          T underNeighborBgp = nr.getUnderBgpRib();
+          T overNeighborBgp = nr.getOverBgpRib();
+          T underNeighborOspf = nr.getUnderOspfRib();
+          T overNeighborOspf = nr.getOverOspfRib();
+          T underNeighborRib = nr.getUnderMainRib();
+          T overNeighborRib = nr.getOverMainRib();
           BitSet neighborAclsSoFar = nr.getAclIds();
 
-          T newNeighborOspf = neighborOspf;
-          T newNeighborBgp = neighborBgp;
+          T newUnderNeighborOspf = underNeighborOspf;
+          T newOverNeighborOspf = overNeighborOspf;
+          T newUnderNeighborBgp = underNeighborBgp;
+          T newOverNeighborBgp = overNeighborBgp;
 
           // Update OSPF
           if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)) {
-            newNeighborOspf = domain.merge(neighborOspf, routerOspf);
+            newUnderNeighborOspf = domain.merge(underNeighborOspf, underRouterOspf);
+            newOverNeighborOspf = domain.merge(overNeighborOspf, overRouterOspf);
           }
 
           // Update BGP
@@ -308,24 +328,30 @@ public class ReachabilityInterpreter {
             BDDTransferFunction exportFilter = _network.getExportBgpPolicies().get(ge);
             BDDTransferFunction importFilter = _network.getImportBgpPolicies().get(rev);
 
-            T tmpBgp = routerRib;
+            T underTmpBgp = underRouterRib;
+            T overTmpBgp = overRouterRib;
+
             if (exportFilter != null) {
-              // System.out.println(
-              // "  Export filter \n"
-              //    + _variables.dot(exportFilter.getFilter()));
               EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, exportFilter);
-              tmpBgp = domain.transform(tmpBgp, exp);
+              underTmpBgp = domain.transform(underTmpBgp, exp, Transformation.UNDER_APPROXIMATION);
+              overTmpBgp = domain.transform(overTmpBgp, exp, Transformation.OVER_APPROXIMATION);
+
+              if (!underTmpBgp.equals(overTmpBgp)) {
+                System.out.println("FAILED!!!");
+              }
             }
 
             if (importFilter != null) {
               EdgeTransformer imp = new EdgeTransformer(ge, EdgeType.IMPORT, importFilter);
-              tmpBgp = domain.transform(tmpBgp, imp);
+              underTmpBgp = domain.transform(underTmpBgp, imp, Transformation.UNDER_APPROXIMATION);
+              overTmpBgp = domain.transform(overTmpBgp, imp, Transformation.OVER_APPROXIMATION);
             }
 
             // System.out.println(
             //    "  After processing: " + "\n" + _variables.dot(domain.toBdd(tmpBgp)));
 
-            newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
+            newUnderNeighborBgp = domain.merge(underNeighborBgp, underTmpBgp);
+            newOverNeighborBgp = domain.merge(overNeighborBgp, overTmpBgp);
           }
 
           // Update set of relevant ACLs so far
@@ -345,20 +371,32 @@ public class ReachabilityInterpreter {
           // System.out.println("  New Headerspace: \n" + _variables.dot(newHeaderspace));
 
           // Update RIB
-          T newNeighborRib =
+          T newUnderNeighborRib =
               domain.merge(
-                  domain.merge(domain.merge(newNeighborBgp, newNeighborOspf), neighborStat),
+                  domain.merge(
+                      domain.merge(newUnderNeighborBgp, newUnderNeighborOspf), neighborStat),
+                  neighborConn);
+
+          T newOverNeighborRib =
+              domain.merge(
+                  domain.merge(domain.merge(newOverNeighborBgp, newOverNeighborOspf), neighborStat),
                   neighborConn);
 
           // If changed, then add it to the workset
-          if (!newNeighborRib.equals(neighborRib) || !newNeighborOspf.equals(neighborOspf)) {
+          if (!newUnderNeighborRib.equals(underNeighborRib)
+              || !newOverNeighborRib.equals(overNeighborRib)
+              || !newUnderNeighborOspf.equals(underNeighborOspf)
+              || !newOverNeighborOspf.equals(overNeighborOspf)) {
             AbstractRib<T> newAbstractRib =
                 new AbstractRib<>(
-                    newNeighborBgp,
-                    newNeighborOspf,
+                    newUnderNeighborBgp,
+                    newOverNeighborBgp,
+                    newUnderNeighborOspf,
+                    newOverNeighborOspf,
                     neighborStat,
                     neighborConn,
-                    newNeighborRib,
+                    newUnderNeighborRib,
+                    newOverNeighborRib,
                     newNeighborAclsSoFar);
             reachable.put(neighbor, newAbstractRib);
             if (!updateSet.contains(neighbor)) {
@@ -373,14 +411,26 @@ public class ReachabilityInterpreter {
     Map<String, AbstractFib<BDD>> reach = new HashMap<>();
     for (Entry<String, AbstractRib<T>> e : reachable.entrySet()) {
       AbstractRib<T> val = e.getValue();
-      BDD bgp = domain.toBdd(val.getMainRib());
-      BDD ospf = domain.toBdd(val.getOspfRib());
+      BDD underBgp = domain.toBdd(val.getUnderBgpRib());
+      BDD overBgp = domain.toBdd(val.getOverBgpRib());
+      BDD underOspf = domain.toBdd(val.getUnderOspfRib());
+      BDD overOspf = domain.toBdd(val.getOverOspfRib());
       BDD conn = domain.toBdd(val.getConnectedRib());
       BDD stat = domain.toBdd(val.getStaticRib());
-      BDD rib = domain.toBdd(val.getMainRib());
-      AbstractRib<BDD> bddRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, val.getAclIds());
-
-      BDD headerspace = toHeaderspace(rib);
+      BDD underRib = domain.toBdd(val.getUnderMainRib());
+      BDD overRib = domain.toBdd(val.getOverMainRib());
+      AbstractRib<BDD> bddRib =
+          new AbstractRib<>(
+              underBgp,
+              overBgp,
+              underOspf,
+              overOspf,
+              stat,
+              conn,
+              underRib,
+              overRib,
+              val.getAclIds());
+      BDD headerspace = toHeaderspace(underRib, overRib);
       BDD notBlockedByAcl = notBlockedByAcl(val.getAclIds());
       headerspace = headerspace.andWith(notBlockedByAcl);
 
@@ -405,40 +455,75 @@ public class ReachabilityInterpreter {
   }
 
   /*
-   * Convert a RIB represented as a BDD to the actual headerspace that
-   * it matches. Normally, the final destination router is preserved
-   * in this operation. The removeRouters flag allows the routers to
-   * be projected away.
+   * Convert a pair of an underapproximation of the RIB and an overapproximation
+   * of the RIB represented as a BDDs to an actual headerspace of packets that can
+   * reach a destination. Normally, the final destination router is preserved
+   * in this operation.
+   *
+   * As an example, if we have 1.2.3.0/24 learned from router X in the RIB, and
+   * there can not be any more specific routes (in the overapproximation of routes)
+   * that can take traffic away from this prefix, then the resulting packets matched
+   * are going to be 1.2.3.*
+   *
+   * In general, we want to remove destinations in the overapproximated set that
+   * are not in the underapproximated set. For instance, if we have prefix
+   * 1.2.3.4/32 --> A in the underapproximation, and prefix
+   * 1.2.3.4/32 --> {A,B} in the overapproximation, then we want to remove
+   * this prefix since we can't be guaranteed that it will forward to A.
+   *
+   * As another example, if we have the prefix
+   * 1.2.3.0/24 --> A in the underapproximated set, and another prefix
+   * 1.2.3.4/32 --> B in the overapproximated set, then we only want the
+   * destinations matched by the /24 but not the /32.
+   *
    */
-  private BDD toHeaderspace(BDD rib) {
-    BDD pfxOnly = rib.exist(_communityAndProtocolBits);
-    if (pfxOnly.isZero()) {
-      return pfxOnly;
+  private BDD toHeaderspace(BDD underRib, BDD overRib) {
+    // Get the prefixes only by removing communities, protocol tag etc.
+    BDD underPfxOnly = underRib.exist(_communityAndProtocolBits);
+    BDD overPfxOnly = overRib.exist(_communityAndProtocolBits);
+
+    // Early return if there is nothing in the rib
+    if (underPfxOnly.isZero()) {
+      return underPfxOnly;
     }
-    BDD acc = _netFactory.zero();
+
+    // Prefixes that might take traffic away
+    BDD allOverPrefixes = overPfxOnly.andWith(underPfxOnly.not()).exist(_dstRouterBits);
+
+    // Accumulate the might hijack destination addresses by prefix length
+    BDD mightHijack = _netFactory.zero();
+
+    // Accumulate the reachable packets (prefix length is removed at the end)
+    BDD reachablePackets = _netFactory.zero();
+
+    // Walk starting from most specific prefix length
     for (int i = 32; i >= 0; i--) {
-      // pick out the routes with prefix length i
       BDD len = makeLength(i);
-      BDD withLen = pfxOnly.and(len);
+
+      // Add new prefixes that might hijack traffic
+      BDD withLenOver = allOverPrefixes.and(len).exist(_lenBits);
+      mightHijack = mightHijack.orWith(withLenOver);
+
+      // Get the must reach prefixes for this length
+      BDD withLen = underPfxOnly.and(len);
       if (withLen.isZero()) {
         continue;
       }
+
       // quantify out bits i+1 to 32
       BDD removeBits = removeBits(i);
       if (!removeBits.isOne()) {
         withLen = withLen.exist(removeBits);
       }
+
+      // Remove the may hijack addresses
+      withLen = withLen.andWith(mightHijack.not());
+
       // accumulate resulting headers
-      acc = acc.orWith(withLen);
+      reachablePackets = reachablePackets.orWith(withLen);
     }
 
-    if (_lenBits.isOne()) {
-      BDD[] pfxLen = _variables.getPrefixLength().getBitvec();
-      for (BDD x : pfxLen) {
-        _lenBits = _lenBits.and(x);
-      }
-    }
-    return acc.exist(_lenBits);
+    return reachablePackets.exist(_lenBits);
   }
 
   /*
@@ -451,7 +536,7 @@ public class ReachabilityInterpreter {
             BDDNetFactory._factory, _variables.getPrefix().getBitvec(), dstIp, 32);
 
     AbstractRib<T> rib = ribs.get(router);
-    BDD headerspace = toHeaderspace(domain.toBdd(rib.getMainRib()));
+    BDD headerspace = toHeaderspace(domain.toBdd(rib.getUnderMainRib()));
 
     headerspace = headerspace.and(ip);
   } */
@@ -495,7 +580,7 @@ public class ReachabilityInterpreter {
     Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
     for (String router : routers) {
       AbstractFib<BDD> fib = reachable.get(router);
-      BDD rib = fib.getRib().getMainRib();
+      BDD rib = fib.getRib().getUnderMainRib();
       SortedSet<RibEntry> ribEntries = new TreeSet<>();
       List<SatAssigment> entries = _netFactory.allSat(rib);
       for (SatAssigment entry : entries) {
