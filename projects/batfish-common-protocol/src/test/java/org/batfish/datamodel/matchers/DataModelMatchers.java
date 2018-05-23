@@ -2,6 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
+import java.util.List;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -21,17 +22,34 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclTrace;
+import org.batfish.datamodel.acl.DefaultDeniedByAclIpSpace;
+import org.batfish.datamodel.acl.DefaultDeniedByIpAccessList;
+import org.batfish.datamodel.acl.DeniedByAclIpSpaceLine;
+import org.batfish.datamodel.acl.DeniedByIpAccessListLine;
 import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.acl.PermittedByAclIpSpaceLine;
+import org.batfish.datamodel.acl.PermittedByIpAccessListLine;
+import org.batfish.datamodel.acl.TraceEvent;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.datamodel.matchers.AclTraceMatchers.HasEvents;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning;
+import org.batfish.datamodel.matchers.DefaultDeniedByAclIpSpaceMatchers.IsDefaultDeniedByAclIpSpaceThat;
+import org.batfish.datamodel.matchers.DefaultDeniedByIpAccessListMatchers.IsDefaultDeniedByIpAccessListThat;
+import org.batfish.datamodel.matchers.DeniedByAclIpSpaceLineMatchersImpl.IsDeniedByAclIpSpaceLineThat;
+import org.batfish.datamodel.matchers.DeniedByIpAccessListLineMatchersImpl.IsDeniedByIpAccessListLineThat;
+import org.batfish.datamodel.matchers.DeniedByNamedIpSpaceMatchers.IsDeniedByNamedIpSpaceThat;
 import org.batfish.datamodel.matchers.HeaderSpaceMatchersImpl.HasSrcOrDstPorts;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasBandwidth;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwidth;
+import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchersImpl.IsPermittedByAclIpSpaceLineThat;
+import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchersImpl.IsPermittedByIpAccessListLineThat;
+import org.batfish.datamodel.matchers.PermittedByNamedIpSpaceMatchers.IsPermittedByNamedIpSpaceThat;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.hamcrest.Matcher;
@@ -147,6 +165,15 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
+   * AclTrace}'s events.
+   */
+  public static @Nonnull Matcher<AclTrace> hasEvents(
+      @Nonnull Matcher<? super List<TraceEvent>> subMatcher) {
+    return new HasEvents(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link
    * HeaderSpace}'s ipProtcols.
    */
   public static @Nonnull Matcher<HeaderSpace> hasIpProtocols(
@@ -231,6 +258,100 @@ public final class DataModelMatchers {
       @Nonnull String structureName,
       int numReferrers) {
     return new HasNumReferrers(hostname, type, structureName, numReferrers);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link DefaultDeniedByAclIpSpace} for the
+   * {@link AclIpSpace} named {@code aclName}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByAclIpSpaceNamed(
+      @Nonnull String aclName) {
+    return new IsDefaultDeniedByAclIpSpaceThat(
+        new DefaultDeniedByAclIpSpaceMatchers.HasName(equalTo(aclName)));
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link DefaultDeniedByAclIpSpace} matched
+   * by the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByAclIpSpaceThat(
+      Matcher<? super DefaultDeniedByAclIpSpace> subMatcher) {
+    return new IsDefaultDeniedByAclIpSpaceThat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link DefaultDeniedByIpAccessList} for the
+   * {@link IpAccessList} named {@code aclName}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByIpAccessListNamed(
+      @Nonnull String aclName) {
+    return new IsDefaultDeniedByIpAccessListThat(
+        new DefaultDeniedByIpAccessListMatchers.HasName(equalTo(aclName)));
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link DefaultDeniedByIpAccessList} matched
+   * by the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByIpAccessListThat(
+      Matcher<? super DefaultDeniedByIpAccessList> subMatcher) {
+    return new IsDefaultDeniedByIpAccessListThat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link DeniedByAclIpSpaceLine} matched by
+   * the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isDeniedByAclIpSpaceLineThat(
+      Matcher<? super DeniedByAclIpSpaceLine> subMatcher) {
+    return new IsDeniedByAclIpSpaceLineThat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link DeniedByIpAccessListLine} matched by
+   * the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isDeniedByIpAccessListLineThat(
+      Matcher<? super DeniedByIpAccessListLine> subMatcher) {
+    return new IsDeniedByIpAccessListLineThat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link DeniedByNamedIpSpace} for the {@link
+   * IpSpace} named {@code ipSpaceName}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isDeniedByNamedIpSpaceThat(
+      @Nonnull String ipSpaceName) {
+    return new IsDeniedByNamedIpSpaceThat(
+        new DeniedByNamedIpSpaceMatchers.HasName(equalTo(ipSpaceName)));
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link PermittedByAclIpSpaceLine} matched
+   * by the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isPermittedByAclIpSpaceLineThat(
+      Matcher<? super PermittedByAclIpSpaceLine> subMatcher) {
+    return new IsPermittedByAclIpSpaceLineThat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link PermittedByIpAccessListLine} matched
+   * by the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isPermittedByIpAccessListLineThat(
+      Matcher<? super PermittedByIpAccessListLine> subMatcher) {
+    return new IsPermittedByIpAccessListLineThat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the object is an {@link PermittedByNamedIpSpace} for the
+   * {@link IpSpace} named {@code ipSpaceName}.
+   */
+  public static @Nonnull Matcher<TraceEvent> isPermittedByNamedIpSpaceThat(
+      @Nonnull String ipSpaceName) {
+    return new IsPermittedByNamedIpSpaceThat(
+        new PermittedByNamedIpSpaceMatchers.HasName(equalTo(ipSpaceName)));
   }
 
   /**

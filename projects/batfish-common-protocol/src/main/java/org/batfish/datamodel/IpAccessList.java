@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.acl.AclTrace;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.Evaluator;
 
 @JsonSchemaDescription("An access-list used to filter IPV4 packets")
@@ -117,6 +119,28 @@ public class IpAccessList extends ComparableStructure<String> {
       }
     }
     return new FilterResult(null, LineAction.REJECT);
+  }
+
+  public AclTrace trace(
+      Flow flow,
+      String srcInterface,
+      Map<String, IpAccessList> availableAcls,
+      Map<String, IpSpace> namedIpSpaces) {
+    AclTracer tracer = new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces);
+    trace(tracer);
+    return tracer.getTrace();
+  }
+
+  public boolean trace(AclTracer tracer) {
+    for (int i = 0; i < _lines.size(); i++) {
+      IpAccessListLine line = _lines.get(i);
+      if (line.getMatchCondition().accept(tracer)) {
+        tracer.recordAction(this, i, line);
+        return line.getAction() == LineAction.ACCEPT;
+      }
+    }
+    tracer.recordDefaultDeny(this);
+    return false;
   }
 
   @JsonProperty(PROP_LINES)
