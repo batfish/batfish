@@ -178,12 +178,13 @@ public class NodePropertySpecifier {
     List<AutocompleteSuggestion> suggestions = new LinkedList<>();
 
     // first add .* version if needed
-    String queryWithStar = finalQuery + ".*";
-    if (!finalQuery.endsWith("*")
-        && !new NodePropertySpecifier(queryWithStar).getMatchingProperties().isEmpty()) {
+    String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
+    if (!finalQuery.endsWith("*") // hack to check if its a regex already
+        && !finalQuery.startsWith("*")
+        && !new NodePropertySpecifier(queryWithStars).getMatchingProperties().isEmpty()) {
       suggestions.add(
           new AutocompleteSuggestion(
-              queryWithStar, false, "All properties matching " + queryWithStar));
+              queryWithStars, false, "All properties matching regex " + queryWithStars));
     }
 
     // now add all properties that contain the query
@@ -191,7 +192,7 @@ public class NodePropertySpecifier {
         JAVA_MAP
             .keySet()
             .stream()
-            .filter(prop -> prop.contains(finalQuery))
+            .filter(prop -> Pattern.compile(queryWithStars).matcher(prop).matches())
             .map(prop -> new AutocompleteSuggestion(prop, false))
             .collect(Collectors.toList()));
 
