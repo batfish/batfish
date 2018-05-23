@@ -14518,6 +14518,9 @@
             "            AGGREGATE_ADDRESS:'aggregate-address'  <== mode:DEFAULT_MODE",
             "            IP_PREFIX:'192.168.0.0/16'  <== mode:DEFAULT_MODE",
             "            SUMMARY_ONLY:'summary-only'  <== mode:DEFAULT_MODE",
+            "            ATTRIBUTE_MAP:'attribute-map'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              VARIABLE:'AGGREGATE-MAP'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "          (bgp_tail",
             "            (redistribute_connected_bgp_tail",
@@ -14541,6 +14544,15 @@
             "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
             "      (variable",
             "        VARIABLE:'CONNECTED-TO-BGP'  <== mode:M_RouteMap)",
+            "      (access_list_action",
+            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "      DEC:'10'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        VARIABLE:'AGGREGATE-MAP'  <== mode:M_RouteMap)",
             "      (access_list_action",
             "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
             "      DEC:'10'  <== mode:DEFAULT_MODE",
@@ -52932,6 +52944,12 @@
             }
           },
           "route-map" : {
+            "AGGREGATE-MAP" : {
+              "definitionLines" : [
+                32
+              ],
+              "numReferrers" : 1
+            },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
                 30
