@@ -3,7 +3,7 @@ package org.batfish.representation.cisco;
 import org.batfish.vendor.StructureUsage;
 
 public enum CiscoStructureUsage implements StructureUsage {
-  BGP_AGGREGATE_ATTRIBUTE_MAP("attribute-map"),
+  BGP_AGGREGATE_ATTRIBUTE_MAP("bgp vrf aggregate-address attribute-map"),
   BGP_DEFAULT_ORIGINATE_ROUTE_MAP("bgp default-originate route-map"),
   BGP_INBOUND_FILTER_LIST("bgp inbound filter-list"),
   BGP_INBOUND_FILTER6_LIST("bgp inbound ipv6 filter-list"),
@@ -78,6 +78,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   MANAGEMENT_SSH_ACCESS_GROUP("management ssh ip access-group"),
   MANAGEMENT_TELNET_ACCESS_GROUP("management telnet ip access-group"),
   MSDP_PEER_SA_LIST("msdp peer sa-list"),
+  NETWORK_OBJECT_GROUP_GROUP_OBJECT("object-group network group-object"),
+  NETWORK_OBJECT_GROUP_NETWORK_OBJECT("object-group network network-object"),
   NTP_ACCESS_GROUP("ntp access-group"),
   OSPF_AREA_FILTER_LIST("ospf area filter-list"),
   OSPF_DEFAULT_ORIGINATE_ROUTE_MAP("ospf default-originate route-map"),

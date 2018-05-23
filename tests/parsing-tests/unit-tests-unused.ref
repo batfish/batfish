@@ -189,7 +189,7 @@
         "description" : "Unused structure of type: 'bgp group' with name: 'p1'",
         "files" : {
           "cisco_bgp" : [
-            13
+            15
           ]
         }
       },
@@ -462,7 +462,7 @@
         "description" : "Unused structure of type: 'extended ip access-list' with name: 'outside'",
         "files" : {
           "asa_acl" : [
-            6
+            7
           ]
         }
       },
@@ -521,7 +521,10 @@
         "description" : "Unused structure of type: 'firewall filter' with name: 'blah'",
         "files" : {
           "juniper_firewall" : [
-            5
+            5,
+            6,
+            7,
+            8
           ]
         }
       },
@@ -538,14 +541,6 @@
         "files" : {
           "juniper-tcpflags" : [
             4
-          ]
-        }
-      },
-      "unused:firewall filter:~GLOBAL_SECURITY_POLICY~" : {
-        "description" : "Unused structure of type: 'firewall filter' with name: '~GLOBAL_SECURITY_POLICY~'",
-        "files" : {
-          "juniper_security" : [
-            -1
           ]
         }
       },
@@ -749,13 +744,22 @@
           ]
         }
       },
+      "unused:object-group network:1.2.3.4-24" : {
+        "description" : "Unused structure of type: 'object-group network' with name: '1.2.3.4-24'",
+        "files" : {
+          "cisco_qos" : [
+            26,
+            27
+          ]
+        }
+      },
       "unused:object-group network:dns_servers" : {
         "description" : "Unused structure of type: 'object-group network' with name: 'dns_servers'",
         "files" : {
           "cisco_qos" : [
-            26,
-            27,
-            28
+            28,
+            29,
+            30
           ]
         }
       },
@@ -763,9 +767,10 @@
         "description" : "Unused structure of type: 'object-group network' with name: 'ntp_servers'",
         "files" : {
           "cisco_qos" : [
-            29,
-            30,
-            31
+            31,
+            32,
+            33,
+            34
           ]
         }
       },
@@ -782,12 +787,20 @@
         "description" : "Unused structure of type: 'policy-map type inspect' with name: 'pminspect'",
         "files" : {
           "cisco_qos" : [
-            32,
-            33,
-            34,
             35,
             36,
-            37
+            37,
+            38,
+            39,
+            40
+          ]
+        }
+      },
+      "unused:policy-statement:POLICY-NAME" : {
+        "description" : "Unused structure of type: 'policy-statement' with name: 'POLICY-NAME'",
+        "files" : {
+          "juniper_policy_statement" : [
+            4
           ]
         }
       },
@@ -1260,7 +1273,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 126
+      "numResults" : 127
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1303,7 +1316,7 @@
       "asa_acl" : {
         "extended ip access-list" : {
           "outside" : [
-            6
+            7
           ],
           "outside_in" : [
             4
@@ -1473,7 +1486,7 @@
       "cisco_bgp" : {
         "bgp group" : {
           "p1" : [
-            13
+            15
           ]
         }
       },
@@ -1661,25 +1674,30 @@
       },
       "cisco_qos" : {
         "object-group network" : {
-          "dns_servers" : [
+          "1.2.3.4-24" : [
             26,
-            27,
-            28
+            27
+          ],
+          "dns_servers" : [
+            28,
+            29,
+            30
           ],
           "ntp_servers" : [
-            29,
-            30,
-            31
+            31,
+            32,
+            33,
+            34
           ]
         },
         "policy-map type inspect" : {
           "pminspect" : [
-            32,
-            33,
-            34,
             35,
             36,
-            37
+            37,
+            38,
+            39,
+            40
           ]
         }
       },
@@ -1855,7 +1873,10 @@
       "juniper_firewall" : {
         "firewall filter" : {
           "blah" : [
-            5
+            5,
+            6,
+            7,
+            8
           ],
           "f1" : [
             4
@@ -1869,6 +1890,13 @@
           ],
           "test2" : [
             26
+          ]
+        }
+      },
+      "juniper_policy_statement" : {
+        "policy-statement" : {
+          "POLICY-NAME" : [
+            4
           ]
         }
       },
@@ -1886,13 +1914,6 @@
           ],
           "route-filter-test-v6" : [
             11
-          ]
-        }
-      },
-      "juniper_security" : {
-        "firewall filter" : {
-          "~GLOBAL_SECURITY_POLICY~" : [
-            -1
           ]
         }
       },

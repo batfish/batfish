@@ -37,6 +37,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -113,8 +114,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.AclLinesAnswerElement;
-import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerStatus;
@@ -653,6 +653,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return answer;
   }
 
+  private void computeAggregatedInterfaceBandwidth(
+      Interface iface, Map<String, Interface> interfaces) {
+    if (iface.getInterfaceType() != InterfaceType.AGGREGATED) {
+      return;
+    }
+    /* Bandwidth should be sum of bandwidth of channel-group members. */
+    iface.setBandwidth(
+        iface
+            .getChannelGroupMembers()
+            .stream()
+            .mapToDouble(ifaceName -> interfaces.get(ifaceName).getBandwidth())
+            .sum());
+  }
+
   /**
    * Identifies any independently unmatchable ACL lines (i.e. they have unsatisfiable match
    * condition) in the given set of ACL lines.
@@ -713,8 +727,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement answerAclReachability(
-      String aclNameRegexStr, NamedStructureEquivalenceSets<?> aclEqSets) {
+  public void answerAclReachability(
+      String aclNameRegexStr,
+      NamedStructureEquivalenceSets<?> aclEqSets,
+      AclLinesAnswerElementInterface answerElement) {
 
     Pattern aclNameRegex;
     try {
@@ -724,7 +740,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           "Supplied regex for nodes is not a valid Java regex: \"" + aclNameRegexStr + "\"", e);
     }
 
-    AclLinesAnswerElement answerElement = new AclLinesAnswerElement();
     Map<String, Configuration> configurations = loadConfigurations();
 
     // Run first batch of nod jobs to find unreachable lines
@@ -825,7 +840,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
       IpAccessList ipAccessList = configurations.get(hostname).getIpAccessLists().get(aclName);
       IpAccessListLine ipAccessListLine = ipAccessList.getLines().get(lineNumber);
       String lineName = firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString());
-      AclReachabilityEntry reachabilityEntry = new AclReachabilityEntry(lineNumber, lineName);
 
       Pair<String, String> hostnameAclPair = new Pair<>(hostname, aclName);
       allAclHostPairs.add(hostnameAclPair);
@@ -837,50 +851,26 @@ public class Batfish extends PluginConsumer implements IBatfish {
         numUnreachableLines++;
         aclHostPairsWithUnreachableLines.add(hostnameAclPair);
 
-        /*
-         * We are using earliestMoreGeneralLineIndex and earliestMoreGeneralLineName inappropriately
-         * here. For both the multiple blocking lines case and the independently unmatchable case,
-         * we set the line index to -1 and set the line name to a hard-coded message (see below).
-         * For right now, it's hard to fix because the JsonPathAnswerElement for ACL reachability
-         * doesn't account for these two cases and changing that would be a breaking change.
-         * TODO Stop using the earliestMoreGeneralLine variables for other answer categories.
-         */
-        if (unmatchableLinesOnThisAcl.contains(lineNumber)) {
-          reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
-          reachabilityEntry.setEarliestMoreGeneralLineName(
-              "This line will never match any packet, independent of preceding lines.");
-        } else {
-          Integer earliestMoreGeneralReachableLineNumber = blockingLinesMap.get(line);
-          line.setEarliestMoreGeneralReachableLine(earliestMoreGeneralReachableLineNumber);
-
-          if (earliestMoreGeneralReachableLineNumber != null) {
-            IpAccessListLine earliestMoreGeneralLine =
-                ipAccessList.getLines().get(earliestMoreGeneralReachableLineNumber);
-            reachabilityEntry.setEarliestMoreGeneralLineIndex(
-                earliestMoreGeneralReachableLineNumber);
-            reachabilityEntry.setEarliestMoreGeneralLineName(
-                firstNonNull(
-                    earliestMoreGeneralLine.getName(), earliestMoreGeneralLine.toString()));
-            if (!earliestMoreGeneralLine.getAction().equals(ipAccessListLine.getAction())) {
-              reachabilityEntry.setDifferentAction(true);
-            }
-          } else {
-            // If line is unreachable but earliestMoreGeneralReachableLine is null, there must be
-            // multiple partially-blocking lines. Provide that info in any way we can...
-            reachabilityEntry.setEarliestMoreGeneralLineIndex(-1);
-            reachabilityEntry.setEarliestMoreGeneralLineName(
-                "Multiple earlier lines partially block this line, making it unreachable.");
-          }
+        boolean unmatchable = unmatchableLinesOnThisAcl.contains(lineNumber);
+        SortedMap<Integer, String> blockingLines = new TreeMap<>();
+        boolean diffAction = false;
+        Integer blockingLineNumber = blockingLinesMap.get(line);
+        if (blockingLineNumber != null) {
+          IpAccessListLine blocker = ipAccessList.getLines().get(blockingLineNumber);
+          diffAction = !blocker.getAction().equals(ipAccessListLine.getAction());
+          blockingLines.put(
+              blockingLineNumber, firstNonNull(blocker.getName(), blocker.toString()));
+          line.setEarliestMoreGeneralReachableLine(blockingLineNumber);
         }
-        answerElement.addUnreachableLine(hostname, ipAccessList, reachabilityEntry);
-
+        answerElement.addUnreachableLine(
+            hostname, ipAccessList, lineNumber, lineName, unmatchable, blockingLines, diffAction);
       } else {
         _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName, lineNumber, lineName);
-        answerElement.addReachableLine(hostname, ipAccessList, reachabilityEntry);
+        answerElement.addReachableLine(hostname, ipAccessList, lineNumber, lineName);
       }
     }
 
-    // Log results and return answerElement.
+    // Log results
     for (Pair<String, String> qualifiedAcl : aclHostPairsWithUnreachableLines) {
       String hostname = qualifiedAcl.getFirst();
       String aclName = qualifiedAcl.getSecond();
@@ -897,15 +887,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf(
         "\t%d/%d (%.1f%%) acl lines are unreachable\n",
         numUnreachableLines, numLines, percentUnreachableLines);
-
-    return answerElement;
   }
 
   private List<NodSatJob<AclLine>> generateUnreachableAclLineJobs(
       Pattern aclNameRegex,
       NamedStructureEquivalenceSets<?> aclEqSets,
       Map<String, Configuration> configurations,
-      AclLinesAnswerElement answerElement) {
+      AclLinesAnswerElementInterface answerElement) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
 
     for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {
@@ -919,10 +907,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
         NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
         String hostname = aclEqSet.getRepresentativeElement();
         SortedSet<String> eqClassNodes = aclEqSet.getNodes();
-        answerElement.addEquivalenceClass(aclName, hostname, eqClassNodes);
         Configuration c = configurations.get(hostname);
-        IpAccessList acl = c.getIpAccessLists().get(aclName);
-        int numLines = acl.getLines().size();
+        List<IpAccessListLine> aclLines = c.getIpAccessLists().get(aclName).getLines();
+        answerElement.addEquivalenceClass(
+            aclName,
+            hostname,
+            eqClassNodes,
+            aclLines.stream().map(l -> l.getName()).collect(Collectors.toList()));
+        int numLines = aclLines.size();
         if (numLines == 0) {
           _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName + "\" contains no lines\n");
           continue;
@@ -1940,19 +1932,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * Gets the {@link NodeRoleDimension} object give dimension name
    *
    * @param dimension The dimension name
-   * @return The {@link NodeRoleDimension} object. Throws {@link java.util.NoSuchElementException}
-   *     if the dimension with the provided name does not exist
+   * @return An {@link Optional} that has the requested NodeRoleDimension or empty otherwise.
    */
   @Override
-  public NodeRoleDimension getNodeRoleDimension(String dimension) {
+  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
     Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-    NodeRoleDimension nodeRoleDimension = null;
     try {
-      nodeRoleDimension = NodeRolesData.getNodeRoleDimensionByName(nodeRoleDataPath, dimension);
+      return NodeRolesData.getNodeRoleDimension(nodeRoleDataPath, dimension);
     } catch (IOException e) {
       _logger.errorf("Could not read roles data from %s: %s", nodeRoleDataPath, e);
+      return Optional.empty();
     }
-    return nodeRoleDimension;
   }
 
   @Override
@@ -3093,6 +3083,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _testrigSettingsStack.remove(lastIndex);
   }
 
+  private void populateChannelGroupMembers(
+      Map<String, Interface> interfaces, String ifaceName, Interface iface) {
+    String portChannelName = iface.getChannelGroup();
+    if (portChannelName == null) {
+      return;
+    }
+    Interface portChannel = interfaces.get(portChannelName);
+    if (portChannel == null) {
+      return;
+    }
+    portChannel.setChannelGroupMembers(
+        ImmutableSortedSet.<String>naturalOrder()
+            .addAll(portChannel.getChannelGroupMembers())
+            .add(ifaceName)
+            .build());
+  }
+
   private void populateFlowHistory(
       FlowHistory flowHistory, String envTag, Environment environment, String flowTag) {
     DataPlanePlugin dataPlanePlugin = getDataPlanePlugin();
@@ -3106,6 +3113,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
         flowHistory.addFlowTrace(flow, envTag, environment, flowTrace);
       }
     }
+  }
+
+  private void postProcessAggregatedInterfaces(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(v -> postProcessAggregatedInterfacesHelper(v.getInterfaces())));
+  }
+
+  private void postProcessAggregatedInterfacesHelper(Map<String, Interface> interfaces) {
+    /* Populate aggregated interfaces with members referring to them. */
+    interfaces.forEach(
+        (ifaceName, iface) -> populateChannelGroupMembers(interfaces, ifaceName, iface));
+
+    /* Disable aggregated interfaces with no members. */
+    interfaces
+        .values()
+        .stream()
+        .filter(
+            i ->
+                i.getInterfaceType() == InterfaceType.AGGREGATED
+                    && i.getChannelGroupMembers().isEmpty())
+        .forEach(i -> i.setActive(false));
+
+    /* Compute bandwidth for aggregated interfaces. */
+    interfaces.values().forEach(iface -> computeAggregatedInterfaceBandwidth(iface, interfaces));
   }
 
   private void postProcessConfigurations(Collection<Configuration> configurations) {
@@ -3122,17 +3158,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 || vrf.getRipProcess() != null)) {
           c.setDeviceType(DeviceType.ROUTER);
         }
-        // Compute OSPF interface costs where they are missing
-        OspfProcess proc = vrf.getOspfProcess();
-        if (proc != null) {
-          proc.initInterfaceCosts(c);
-        }
       }
       // If device was not a host or router, call it a switch
       if (c.getDeviceType() == null) {
         c.setDeviceType(DeviceType.SWITCH);
       }
     }
+  }
+
+  private void postProcessForEnvironment(Map<String, Configuration> configurations) {
+    postProcessAggregatedInterfaces(configurations);
+    postProcessOspfCosts(configurations);
+  }
+
+  private void postProcessOspfCosts(Map<String, Configuration> configurations) {
+    configurations
+        .values()
+        .forEach(
+            c ->
+                c.getVrfs()
+                    .values()
+                    .forEach(
+                        vrf -> {
+                          // Compute OSPF interface costs where they are missing
+                          OspfProcess proc = vrf.getOspfProcess();
+                          if (proc != null) {
+                            proc.initInterfaceCosts(c);
+                          }
+                        }));
   }
 
   private void printSymmetricEdgePairs() {
@@ -3621,6 +3674,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private void applyEnvironment(Map<String, Configuration> configurationsWithoutEnvironment) {
     ValidateEnvironmentAnswerElement veae = new ValidateEnvironmentAnswerElement();
     updateBlacklistedAndInactiveConfigs(configurationsWithoutEnvironment, veae);
+    postProcessForEnvironment(configurationsWithoutEnvironment);
 
     serializeObject(
         veae, _testrigSettings.getEnvironmentSettings().getValidateEnvironmentAnswerPath());
@@ -3995,7 +4049,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         new InferRoles(configurations.keySet(), configurations, this).call();
     Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
-      NodeRolesData.mergeNodeRoleDimensions(nodeRoleDataPath, autoRoles, true);
+      NodeRolesData.mergeNodeRoleDimensions(nodeRoleDataPath, autoRoles, null, true);
     } catch (IOException e) {
       _logger.warnf("Could not update node roles in %s: %s", nodeRoleDataPath, e);
     }

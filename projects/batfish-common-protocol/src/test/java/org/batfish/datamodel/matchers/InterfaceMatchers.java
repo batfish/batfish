@@ -169,6 +169,14 @@ public final class InterfaceMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided active flag matches the interface's active
+   * flag.
+   */
+  public static IsActive isActive(boolean active) {
+    return new IsActive(equalTo(active));
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
    * active flag.
    */

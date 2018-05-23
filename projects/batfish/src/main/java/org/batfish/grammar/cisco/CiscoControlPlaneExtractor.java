@@ -44,6 +44,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.SECURITY_ZONE;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_FILTER_LIST;
@@ -111,6 +112,8 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.LINE_ACCESS_C
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.MSDP_PEER_SA_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT;
+import static org.batfish.representation.cisco.CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.NTP_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_FILTER_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
@@ -193,6 +196,8 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Ip6Wildcard;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProposal;
@@ -405,6 +410,7 @@ import org.batfish.grammar.cisco.CiscoParser.Else_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Elseif_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Empty_neighbor_block_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Enable_secretContext;
+import org.batfish.grammar.cisco.CiscoParser.Eos_bandwidth_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_additional_featureContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Extended_access_list_tailContext;
@@ -417,6 +423,7 @@ import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
+import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_addressContext;
@@ -444,6 +451,8 @@ import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
+import org.batfish.grammar.cisco.CiscoParser.If_speed_eosContext;
+import org.batfish.grammar.cisco.CiscoParser.If_speed_iosContext;
 import org.batfish.grammar.cisco.CiscoParser.If_st_portfastContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchportContext;
 import org.batfish.grammar.cisco.CiscoParser.If_switchport_accessContext;
@@ -548,8 +557,10 @@ import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogn_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_host_ipContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
@@ -2203,15 +2214,51 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitOgn_group_object(Ogn_group_objectContext ctx) {
+    String name = ctx.name.getText();
+    _currentNetworkObjectGroup.getLines().add(new IpSpaceReference(name));
+    _configuration.referenceStructure(
+        NETWORK_OBJECT_GROUP, name, NETWORK_OBJECT_GROUP_GROUP_OBJECT, ctx.name.start.getLine());
+  }
+
+  @Override
   public void exitOgn_host_ip(Ogn_host_ipContext ctx) {
-    _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)));
+    _currentNetworkObjectGroup.getLines().add(new IpWildcard(toIp(ctx.ip)).toIpSpace());
   }
 
   @Override
   public void exitOgn_ip_with_mask(Ogn_ip_with_maskContext ctx) {
     Ip ip = toIp(ctx.ip);
     Ip mask = toIp(ctx.mask);
-    _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)));
+    _currentNetworkObjectGroup.getLines().add(new IpWildcard(new Prefix(ip, mask)).toIpSpace());
+  }
+
+  @Override
+  public void exitOgn_network_object(Ogn_network_objectContext ctx) {
+    IpSpace ipSpace = null;
+    if (ctx.prefix != null) {
+      ipSpace = new IpWildcard(ctx.prefix.getText()).toIpSpace();
+    } else if (ctx.wildcard_address != null && ctx.wildcard_mask != null) {
+      // Mask needs to be inverted since zeros are don't-cares in this context
+      ipSpace =
+          new IpWildcard(toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
+              .toIpSpace();
+    } else if (ctx.address != null) {
+      ipSpace = new IpWildcard(ctx.address.getText()).toIpSpace();
+    } else if (ctx.name != null) {
+      String name = ctx.name.getText();
+      ipSpace = new IpSpaceReference(name);
+      _configuration.referenceStructure(
+          NETWORK_OBJECT_GROUP,
+          name,
+          NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
+          ctx.name.start.getLine());
+    }
+    if (ipSpace == null) {
+      _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
+    } else {
+      _currentNetworkObjectGroup.getLines().add(ipSpace);
+    }
   }
 
   @Override
@@ -3517,9 +3564,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         net.setSummaryOnly(summaryOnly);
         if (ctx.mapname != null) {
           String mapName = ctx.mapname.getText();
-          int mapLine = ctx.mapname.getStart().getLine();
           net.setAttributeMap(mapName);
-          net.setAttributeMapLine(mapLine);
+          _configuration.referenceStructure(
+              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
         }
         proc.getAggregateNetworks().put(prefix, net);
       } else if (ctx.ipv6_prefix != null) {
@@ -3530,9 +3577,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         net.setSummaryOnly(summaryOnly);
         if (ctx.mapname != null) {
           String mapName = ctx.mapname.getText();
-          int mapLine = ctx.mapname.getStart().getLine();
           net.setAttributeMap(mapName);
-          net.setAttributeMapLine(mapLine);
+          _configuration.referenceStructure(
+              ROUTE_MAP, mapName, BGP_AGGREGATE_ATTRIBUTE_MAP, ctx.mapname.getStart().getLine());
         }
         proc.getAggregateIpv6Networks().put(prefix6, net);
       }
@@ -3545,9 +3592,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     } else if (ctx.mapname != null) {
       String map = ctx.mapname.getText();
-      int line = ctx.mapname.getStart().getLine();
       _configuration.getBgpVrfAggregateAddressRouteMaps().add(map);
-      _configuration.referenceStructure(ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, line);
+      _configuration.referenceStructure(
+          ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, ctx.mapname.getStart().getLine());
     }
   }
 
@@ -4479,6 +4526,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_channel_group(If_channel_groupContext ctx) {
+    int num = toInteger(ctx.num);
+    String name = computeAggregatedInterfaceName(num, _format);
+    _currentInterfaces.forEach(i -> i.setChannelGroup(name));
+  }
+
+  private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
+    switch (format) {
+      case CISCO_ASA:
+      case ARISTA:
+      case FORCE10:
+      case CISCO_IOS:
+      case CISCO_NX:
+        return String.format("Port-Channel%d", num);
+
+      case CISCO_IOS_XR:
+        return String.format("Bundle-Ethernet%d", num);
+
+      default:
+        _w.redFlag("Don't know how to compute aggregated-interface name for format: " + format);
+        return null;
+    }
+  }
+
+  @Override
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
@@ -4729,6 +4801,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitIf_spanning_tree(If_spanning_treeContext ctx) {
     _no = false;
+  }
+
+  @Override
+  public void exitIf_speed_eos(If_speed_eosContext ctx) {
+    double bandwidth = toBandwidth(ctx.eos_bandwidth_specifier());
+    _currentInterfaces.forEach(i -> i.setBandwidth(bandwidth));
+  }
+
+  private double toBandwidth(Eos_bandwidth_specifierContext ctx) {
+    if (ctx.FORTYG_FULL() != null) {
+      return 40E9D;
+    } else if (ctx.TEN_THOUSAND_FULL() != null) {
+      return 10E9D;
+    } else if (ctx.ONE_HUNDRED_FULL() != null) {
+      return 100E6D;
+    } else if (ctx.ONE_THOUSAND_FULL() != null) {
+      return 1E9D;
+    } else {
+      throw convError(Double.class, ctx);
+    }
+  }
+
+  @Override
+  public void exitIf_speed_ios(If_speed_iosContext ctx) {
+    int mbits = toInteger(ctx.mbits);
+    _currentInterfaces.forEach(i -> i.setBandwidth(mbits * 1E6D));
   }
 
   @Override
@@ -7954,7 +8052,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.DEC() != null) {
       int num = toInteger(ctx.DEC());
       return IpProtocol.fromNumber(num);
-    } else if (ctx.AHP() != null) {
+    } else if (ctx.AH() != null || ctx.AHP() != null) {
+      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol
       return IpProtocol.AHP;
     } else if (ctx.EIGRP() != null) {
       return IpProtocol.EIGRP;

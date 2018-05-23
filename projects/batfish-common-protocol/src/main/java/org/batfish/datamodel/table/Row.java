@@ -1,6 +1,7 @@
 package org.batfish.datamodel.table;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -27,15 +28,70 @@ import org.batfish.datamodel.questions.Exclusion;
  */
 public class Row implements Comparable<Row> {
 
+  public static class RowBuilder {
+
+    private final ObjectNode _data;
+
+    private RowBuilder() {
+      _data = BatfishObjectMapper.mapper().createObjectNode();
+    }
+
+    private RowBuilder(Row row) {
+      this();
+      row.getColumnNames().forEach(col -> _data.set(col, row.get(col)));
+    }
+
+    public Row build() {
+      return new Row(_data);
+    }
+
+    /**
+     * Sets the value for the specified column to the specified value. Any existing values for the
+     * column are overwritten
+     *
+     * @param columnName The column to set
+     * @param value The value to set
+     * @return The RowBuilder object itself (to aid chaining)
+     */
+    public RowBuilder put(String columnName, Object value) {
+      _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
+      return this;
+    }
+  }
+
   private final ObjectNode _data;
 
-  public Row() {
-    this(null);
+  /**
+   * Returns a new {@link Row} with the given entries.
+   *
+   * <p>This function requires an even number of parameters, where the 0th and every even parameter
+   * is a {@link String} representing the name of a column.
+   */
+  public static Row of(Object... objects) {
+    checkArgument(
+        objects.length % 2 == 0, "expecting an even number of parameters, not %s", objects.length);
+    Row.RowBuilder builder = Row.builder();
+    for (int i = 0; i + 1 < objects.length; i += 2) {
+      checkArgument(
+          objects[i] instanceof String, "argument %s must be a string, but is: %s", i, objects[i]);
+      builder.put((String) objects[i], objects[i + 1]);
+    }
+    return builder.build();
   }
 
   @JsonCreator
   public Row(ObjectNode data) {
     _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
+  }
+
+  /** Returns a builder object for Row */
+  public static RowBuilder builder() {
+    return new RowBuilder();
+  }
+
+  /** Returns a builder object for Row seeded by the contents of {@code otheRow} */
+  public static RowBuilder builder(Row otherRow) {
+    return new RowBuilder(otherRow);
   }
 
   /**
@@ -81,6 +137,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The {@link JsonNode} object that represents the stored object
+   * @throws {@link NoSuchElementException} if this column does not exist
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
@@ -89,16 +146,12 @@ public class Row implements Comparable<Row> {
     return _data.get(columnName);
   }
 
-  private String getMissingColumnErrorMessage(String columnName) {
-    return String.format(
-        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
-  }
-
   /**
    * Gets the value of specified column name
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
@@ -115,8 +168,9 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
-  public <T> T get(String columnName, TypeReference<?> valueTypeRef) {
+  public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
@@ -141,6 +195,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
+   * @throws {@link NoSuchElementException} if this column is not present
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
@@ -191,6 +246,11 @@ public class Row implements Comparable<Row> {
     return keyList;
   }
 
+  private String getMissingColumnErrorMessage(String columnName) {
+    return String.format(
+        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
+  }
+
   /**
    * Returns the list of values in all columns declared as value in the metadata.
    *
@@ -223,28 +283,16 @@ public class Row implements Comparable<Row> {
   }
 
   /**
-   * Returns a new Row that has the specified columns from this row (which is not modified).
+   * Returns a new {@link Row} that has only the specified columns from this row.
    *
    * @param columns The columns to keep.
-   * @return The row with the specified columns
+   * @return A new {@link Row} object
+   * @throws {@link NoSuchElementException} if one of the specified columns are not present
    */
-  public Row project(Set<String> columns) {
-    Row retRow = new Row();
-    columns.forEach(col -> retRow.put(col, get(col)));
-    return retRow;
-  }
-
-  /**
-   * Sets the value for the specified column to the specified value. Any existing values for the
-   * column are overwritten
-   *
-   * @param columnName The column to set
-   * @param value The value to set
-   * @return The Row object itself (to aid chaining)
-   */
-  public Row put(String columnName, Object value) {
-    _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
-    return this;
+  public static Row selectColumns(Row inputRow, Set<String> columns) {
+    RowBuilder retRow = Row.builder();
+    columns.forEach(col -> retRow.put(col, inputRow.get(col)));
+    return retRow.build();
   }
 
   @Override

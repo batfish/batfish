@@ -4,6 +4,8 @@ hostname cisco_bgp
 router bgp 1
  reconnect-interval 30
  no bgp fast-external-fallover
+ bgp maxas-limit 50
+ bgp scan-time 5
  redistribute connected route-map bloop
  redistribute eigrp 1
  redistribute ospf 2
@@ -20,10 +22,12 @@ router bgp 1
  vrf aVrfWithInnerStatements
    neighbor 10.0.1.2 remote-as 65001
    network 192.168.1.3/11
-   aggregate-address 192.168.0.0/16 summary-only
+   aggregate-address 192.168.0.0/16 summary-only attribute-map AGGREGATE-MAP
    redistribute connected route-map CONNECTED-TO-BGP
 !
 route-map ospfv3_map permit 10
 !
 route-map CONNECTED-TO-BGP permit 10
+!
+route-map AGGREGATE-MAP permit 10
 !

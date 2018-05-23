@@ -18,6 +18,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
@@ -39,6 +40,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPointToPoint;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isProxyArp;
@@ -508,6 +510,16 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterfaceSpeed() throws IOException {
+    String hostname = "ios-interface-speed";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
+    assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
+    assertThat(c, hasInterface("GigabitEthernet0/2", hasBandwidth(100E6D)));
+  }
+
+  @Test
   public void testIosHttpInspection() throws IOException {
     String hostname = "ios-http-inspection";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -551,27 +563,52 @@ public class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
-    Ip ogn1TestIp = new Ip("1.128.0.0");
-    Ip ogn2TestIp1 = new Ip("2.0.0.0");
-    Ip ogn2TestIp2 = new Ip("2.0.0.1");
+    Ip ognWildcardIp = new Ip("1.128.0.0");
+    Ip ognHostIp = new Ip("2.0.0.1");
+    Ip ognUnmatchedIp = new Ip("2.0.0.0");
 
-    /* Confirm the used object groups have referrers */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn1", 2));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn2", 1));
+    String ognNameHost = "ogn_host";
+    String ognNameIndirect = "ogn_indirect";
+    String ognNameNetworkObject = "ogn_network_object";
+    String ognNameNetworkObjectIndirect = "ogn_network_object_indirect";
+    String ognNameUndef = "ogn_undef";
+    String ognNameUnused = "ogn_unused";
+    String ognNameWildcard = "ogn_wildcard";
+
+    /* Each object group should permit an IP iff it is in its space. */
+    assertThat(c, hasIpSpace(ognNameHost, containsIp(ognHostIp)));
+    assertThat(c, hasIpSpace(ognNameHost, not(containsIp(ognUnmatchedIp))));
+    assertThat(c, hasIpSpace(ognNameIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
+    assertThat(c, hasIpSpace(ognNameIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
+    assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognHostIp)));
+    assertThat(c, hasIpSpace(ognNameNetworkObject, containsIp(ognWildcardIp)));
+    assertThat(c, hasIpSpace(ognNameNetworkObject, not(containsIp(ognUnmatchedIp))));
+    assertThat(c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognHostIp, c.getIpSpaces())));
+    assertThat(
+        c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
+    assertThat(
+        c,
+        hasIpSpace(ognNameNetworkObjectIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
+    assertThat(c, hasIpSpace(ognNameUnused, not(containsIp(ognUnmatchedIp))));
+    assertThat(c, hasIpSpace(ognNameWildcard, containsIp(ognWildcardIp)));
+    assertThat(c, hasIpSpace(ognNameWildcard, not(containsIp(ognUnmatchedIp))));
+
+    /* Confirm the used object groups have the correct number of referrers */
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameWildcard, 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameHost, 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameIndirect, 1));
     /* Confirm the unused object group has no referrers */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn3", 0));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameUnused, 0));
     /* Confirm the undefined reference shows up as such */
     assertThat(
         ccae,
-        hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, "ogn_undef"));
-
-    /* Each object group should permit an IP iff it is in its space. */
-    assertThat(c, hasIpSpace("ogn1", containsIp(ogn1TestIp)));
-    assertThat(c, hasIpSpace("ogn1", not(containsIp(ogn2TestIp1))));
-    assertThat(c, hasIpSpace("ogn2", not(containsIp(ogn1TestIp))));
-    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp1)));
-    assertThat(c, hasIpSpace("ogn2", containsIp(ogn2TestIp2)));
-    assertThat(c, hasIpSpace("ogn3", not(containsIp(ogn2TestIp2))));
+        hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT_GROUP, ognNameUndef));
   }
 
   @Test
@@ -1439,6 +1476,20 @@ public class CiscoGrammarTest {
             containsString(
                 String.format(
                     "No remote-as set for peer: %s", neighborWithoutRemoteAs.getStartIp()))));
+  }
+
+  @Test
+  public void testEosPortChannel() throws IOException {
+    String hostname = "eos-port-channel";
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations().get(hostname);
+
+    assertThat(c, hasInterface("Ethernet0", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet1", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Ethernet2", hasBandwidth(40E9D)));
+    assertThat(c, hasInterface("Port-Channel1", hasBandwidth(80E9D)));
+    assertThat(c, hasInterface("Port-Channel2", isActive(false)));
   }
 
   @Test

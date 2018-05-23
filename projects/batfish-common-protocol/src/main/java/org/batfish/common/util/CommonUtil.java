@@ -590,13 +590,27 @@ public class CommonUtil {
     }
   }
 
+  /**
+   * Returns a {@link ClientBuilder} with supplied settings
+   *
+   * @param noSsl {@link javax.ws.rs.client.Client} will use plain HTTP with no SSL if set to true
+   * @param trustAllSslCerts {@link javax.ws.rs.client.Client} will not verify URL's hostname
+   *     against server's identification hostname
+   * @param keystoreFile File to be used to load the {@link KeyStore}
+   * @param keystorePassword Password to be used with the keyStoreFile
+   * @param truststoreFile File to be used to load the {@link TrustManager}
+   * @param truststorePassword Password to be used with the data in the trustStoreFile
+   * @param registerTracing Whether to register JAX-RS tracing on the {@link ClientBuilder}
+   * @return {@link ClientBuilder} with the supplied settings
+   */
   public static ClientBuilder createHttpClientBuilder(
       boolean noSsl,
       boolean trustAllSslCerts,
       Path keystoreFile,
       String keystorePassword,
       Path truststoreFile,
-      String truststorePassword) {
+      String truststorePassword,
+      boolean registerTracing) {
     ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     try {
       if (!noSsl) {
@@ -639,7 +653,7 @@ public class CommonUtil {
         KeyManager[] keyManagers;
         if (keystoreFile != null) {
           if (keystorePassword == null) {
-            throw new BatfishException("Keystore file supplied but keystore password");
+            throw new BatfishException("Keystore file supplied but keystore password missing");
           }
           char[] ksPass = keystorePassword.toCharArray();
           try (FileInputStream keystoreStream = new FileInputStream(keystoreFile.toFile())) {
@@ -653,7 +667,9 @@ public class CommonUtil {
         sslcontext.init(keyManagers, trustManagers, new java.security.SecureRandom());
         clientBuilder.sslContext(sslcontext);
       }
-      if (GlobalTracer.isRegistered()) {
+      /* register tracing feature if a tracer was initialized and caller wants client to
+      send tracing information */
+      if (GlobalTracer.isRegistered() && registerTracing) {
         clientBuilder.register(ClientTracingFeature.class);
       }
     } catch (Exception e) {

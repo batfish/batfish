@@ -27,6 +27,7 @@ import com.google.common.graph.Network;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -116,6 +117,44 @@ public class VirtualRouterTest {
   private RoutingPolicy.Builder _routingPolicyBuilder;
   private VirtualRouter _testVirtualRouter;
 
+  private static void addInterfaces(
+      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
+    NetworkFactory nf = new NetworkFactory();
+    Interface.Builder ib =
+        nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
+    interfaceAddresses.forEach(
+        (ifaceName, address) ->
+            ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
+  }
+
+  private static Map<String, Node> makeIosRouters(String... hostnames) {
+    return Arrays.stream(hostnames)
+        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
+  }
+
+  private static VirtualRouter makeIosVirtualRouter(String hostname) {
+    Node n = TestUtils.makeIosRouter(hostname);
+    return n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME);
+  }
+
+  /**
+   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
+   * {@link Vrf}
+   *
+   * @param nodeName Node name of the owner {@link Configuration}
+   * @return new instance of {@link VirtualRouter}
+   */
+  private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
+    Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf vrf = vb.setOwner(config).build();
+    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
+    VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
+    virtualRouter.initRibs();
+    virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
+    return virtualRouter;
+  }
+
   @Before
   public void setup() {
     NetworkFactory nf = new NetworkFactory();
@@ -143,26 +182,6 @@ public class VirtualRouterTest {
     _ipOwners = ImmutableMap.of(TEST_SRC_IP, ImmutableSet.of(TEST_VIRTUAL_ROUTER_NAME));
     _routingPolicyBuilder =
         nf.routingPolicyBuilder().setOwner(_testVirtualRouter.getConfiguration());
-  }
-
-  private static void addInterfaces(
-      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
-    NetworkFactory nf = new NetworkFactory();
-    Interface.Builder ib =
-        nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
-    interfaceAddresses.forEach(
-        (ifaceName, address) ->
-            ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
-  }
-
-  private static Map<String, Node> makeIosRouters(String... hostnames) {
-    return Arrays.stream(hostnames)
-        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
-  }
-
-  private static VirtualRouter makeIosVirtualRouter(String hostname) {
-    Node n = TestUtils.makeIosRouter(hostname);
-    return n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME);
   }
 
   @Test
@@ -353,21 +372,40 @@ public class VirtualRouterTest {
   }
 
   /**
-   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
-   * {@link Vrf}
-   *
-   * @param nodeName Node name of the owner {@link Configuration}
-   * @return new instance of {@link VirtualRouter}
+   * Test that {@link VirtualRouter#activateStaticRoutes()} removes a route if a route to its
+   * next-hop IP disappears.
    */
-  private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
-    Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Vrf vrf = vb.setOwner(config).build();
-    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
-    VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
-    virtualRouter.initRibs();
-    virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
-    return virtualRouter;
+  @Test
+  public void testActivateStaticRoutesRemoval() {
+    VirtualRouter vr = makeIosVirtualRouter("n1");
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+
+    StaticRoute baseRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("Ethernet1")
+            .build();
+    StaticRoute dependentRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setNextHopIp(new Ip("1.1.1.1"))
+            .build();
+
+    vr.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setStaticRoutes(ImmutableSortedSet.of(baseRoute, dependentRoute));
+
+    // Initial activation
+    vr.initStaticRibs();
+    vr.activateStaticRoutes();
+
+    // Test: remove baseRoute, rerun activation
+    vr.getMainRib().removeRoute(baseRoute);
+    vr.activateStaticRoutes();
+
+    // Assert dependent route is not there
+    assertThat(vr.getMainRib().getRoutes(), not(containsInAnyOrder(dependentRoute)));
   }
 
   @Test
@@ -470,6 +508,36 @@ public class VirtualRouterTest {
                 .toArray(new LocalRoute[] {})));
   }
 
+  /** Check that VRF static routes are put into appropriate RIBs upon initialization. */
+  @Test
+  public void testInitStaticRibs() {
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+
+    List<StaticRoute> routes =
+        ImmutableList.of(
+            new StaticRoute(Prefix.parse("1.1.1.1/32"), null, "Ethernet1", 1, 1),
+            new StaticRoute(Prefix.parse("2.2.2.2/32"), new Ip("9.9.9.8"), null, 1, 1),
+            new StaticRoute(Prefix.parse("3.3.3.3/32"), new Ip("9.9.9.9"), "Ethernet1", 1, 1),
+            new StaticRoute(Prefix.parse("4.4.4.4/32"), null, Interface.NULL_INTERFACE_NAME, 1, 1),
+
+            // These do not get activated due to missing/incorrect interface names
+            new StaticRoute(Prefix.parse("5.5.5.5/32"), null, "Eth1", 1, 1),
+            new StaticRoute(Prefix.parse("6.6.6.6/32"), null, null, 1, 1));
+    vr.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setStaticRoutes(ImmutableSortedSet.copyOf(routes));
+
+    // Test
+    vr.initStaticRibs();
+
+    assertThat(
+        vr._staticInterfaceRib.getRoutes(),
+        containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
+    assertThat(vr._staticNextHopRib.getRoutes(), containsInAnyOrder(routes.get(1)));
+  }
+
   @Test
   public void testInitRibsEmpty() {
     VirtualRouter vr = makeIosVirtualRouter(null);
@@ -479,7 +547,7 @@ public class VirtualRouterTest {
 
     // Simple RIBs
     assertThat(vr.getConnectedRib().getRoutes(), is(emptyIterableOf(ConnectedRoute.class)));
-    assertThat(vr._staticRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
+    assertThat(vr._staticNextHopRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._staticInterfaceRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._independentRib.getRoutes(), is(emptyIterableOf(AbstractRoute.class)));
 
@@ -671,9 +739,9 @@ public class VirtualRouterTest {
     vr._vrf.setStaticRoutes(routeSet);
 
     // Test
-    vr.initStaticRib();
+    vr.initStaticRibs();
 
-    assertThat(vr._staticRib.getRoutes(), equalTo(routeSet));
+    assertThat(vr._staticNextHopRib.getRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */

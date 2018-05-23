@@ -12,6 +12,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
@@ -70,13 +71,13 @@ public class TraceFiltersAnswerElement extends TableAnswerElement {
       LineAction action,
       Integer matchLine,
       String lineContent) {
-    Row row = new Row();
+    RowBuilder row = Row.builder();
     row.put(COLUMN_NODE, new Node(nodeName))
         .put(COLUMN_FILTER_NAME, filterName)
         .put(COLUMN_FLOW, flow)
         .put(COLUMN_ACTION, action)
         .put(COLUMN_LINE_NUMBER, matchLine)
         .put(COLUMN_LINE_CONTENT, lineContent);
-    return row;
+    return row.build();
   }
 }

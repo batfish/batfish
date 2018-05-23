@@ -53,6 +53,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
@@ -1170,8 +1171,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.L2TP_CLASS, usage);
   }
 
-  private void markNetworkObjectGroups(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usage);
+  private void markNetworkObjectGroups(CiscoStructureUsage... usages) {
+    markConcreteStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usages);
   }
 
   private void markPrefixSets(CiscoStructureUsage usage) {
@@ -1666,12 +1667,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           weInterior = new CallExpr(attributeMapName);
           attributeMap.getReferers().put(aggNet, "attribute-map of aggregate route: " + prefix);
           gr.setAttributePolicy(attributeMapName);
-        } else {
-          undefined(
-              CiscoStructureType.ROUTE_MAP,
-              attributeMapName,
-              CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-              aggNet.getAttributeMapLine());
         }
       }
       generateAggregateConditions.add(
@@ -1719,12 +1714,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
               .getReferers()
               .put(aggNet, "attribute-map of aggregate ipv6 route: " + prefix6);
           gr.setAttributePolicy(attributeMapName);
-        } else {
-          undefined(
-              CiscoStructureType.ROUTE_MAP,
-              attributeMapName,
-              CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
-              aggNet.getAttributeMapLine());
         }
       }
     }
@@ -2350,6 +2339,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);
     newIface.setDescription(iface.getDescription());
     newIface.setActive(iface.getActive());
+    newIface.setChannelGroup(iface.getChannelGroup());
     newIface.setAutoState(iface.getAutoState());
     newIface.setVrf(c.getVrfs().get(vrfName));
     newIface.setBandwidth(iface.getBandwidth());
@@ -2726,13 +2716,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
         summaryFilter.addLine(
             new RouteFilterLine(
                 LineAction.REJECT,
-                prefix,
+                new IpWildcard(prefix),
                 new SubRange(filterMinPrefixLength, Prefix.MAX_PREFIX_LENGTH)));
       }
       area.setSummaries(ImmutableSortedMap.copyOf(summaries));
       summaryFilter.addLine(
           new RouteFilterLine(
-              LineAction.ACCEPT, Prefix.ZERO, new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
+              LineAction.ACCEPT,
+              new IpWildcard(Prefix.ZERO),
+              new SubRange(0, Prefix.MAX_PREFIX_LENGTH)));
     }
 
     String ospfExportPolicyName = "~OSPF_EXPORT_POLICY:" + vrfName + "~";
@@ -3629,6 +3621,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // mark references to route-maps
     markConcreteStructure(
         CiscoStructureType.ROUTE_MAP,
+        CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP,
         CiscoStructureUsage.BGP_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.BGP_INBOUND_ROUTE_MAP,
         CiscoStructureUsage.BGP_INBOUND_ROUTE6_MAP,
@@ -3693,7 +3686,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
 
     // object-group
-    markNetworkObjectGroups(CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP);
+    markNetworkObjectGroups(
+        CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
+        CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
     markAbstractStructure(
         CiscoStructureType.PROTOCOL_OR_SERVICE_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP,

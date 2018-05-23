@@ -16,6 +16,7 @@ import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.CommunityList;
@@ -32,7 +33,6 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
-import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -204,7 +204,7 @@ class CiscoConversions {
   }
 
   static IpSpace toIpSpace(NetworkObjectGroup networkObjectGroup) {
-    return IpWildcardSetIpSpace.builder().including(networkObjectGroup.getLines()).build();
+    return AclIpSpace.union(networkObjectGroup.getLines());
   }
 
   static org.batfish.datamodel.IsisProcess toIsisProcess(
@@ -252,7 +252,10 @@ class CiscoConversions {
     List<RouteFilterLine> newLines =
         list.getLines()
             .stream()
-            .map(l -> new RouteFilterLine(l.getAction(), l.getPrefix(), l.getLengthRange()))
+            .map(
+                l ->
+                    new RouteFilterLine(
+                        l.getAction(), new IpWildcard(l.getPrefix()), l.getLengthRange()))
             .collect(ImmutableList.toImmutableList());
     newRouteFilterList.setLines(newLines);
     return newRouteFilterList;
@@ -356,7 +359,8 @@ class CiscoConversions {
     int statedPrefixLength = srcIpWildcard.getWildcard().inverted().numSubnetBits();
     int prefixLength = Math.min(statedPrefixLength, minPrefixLength);
     Prefix prefix = new Prefix(ip, prefixLength);
-    return new RouteFilterLine(action, prefix, new SubRange(minPrefixLength, maxPrefixLength));
+    return new RouteFilterLine(
+        action, new IpWildcard(prefix), new SubRange(minPrefixLength, maxPrefixLength));
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class
