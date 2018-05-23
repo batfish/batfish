@@ -4164,7 +4164,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       name = ctx.name.getText();
       line = ctx.name.getStart().getLine();
       _configuration.referenceStructure(
-        APPLICATION_OR_APPLICATION_SET, name, SECURITY_POLICY_MATCH_APPLICATION, line);
+          APPLICATION_OR_APPLICATION_SET, name, SECURITY_POLICY_MATCH_APPLICATION, line);
       FwFromApplicationOrApplicationSet from = new FwFromApplicationOrApplicationSet(name);
       _currentFwTerm.getFromApplicationsOrApplicationSets().add(from);
     }
