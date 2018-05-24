@@ -12708,6 +12708,21 @@
           }
         }
       },
+      "juniper_application" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_application",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "SWITCH",
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default"
+          }
+        }
+      },
       "juniper_apply_macro" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_apply_macro",
@@ -14266,6 +14281,47 @@
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "ipAccessLists" : {
+          "~EXISTING_CONNECTION~" : {
+            "name" : "~EXISTING_CONNECTION~",
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "states" : [
+                      "ESTABLISHED"
+                    ]
+                  }
+                },
+                "name" : "~EXISTING_CONNECTION~"
+              }
+            ]
+          },
+          "~FROM_ZONE~A~TO_ZONE~B" : {
+            "name" : "~FROM_ZONE~A~TO_ZONE~B",
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.AndMatchExpr",
+                  "conjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "negate" : false
+                      }
+                    },
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchSrcInterface"
+                    }
+                  ]
+                },
+                "name" : "123-4"
+              }
+            ]
+          },
           "~GLOBAL_SECURITY_POLICY~" : {
             "name" : "~GLOBAL_SECURITY_POLICY~",
             "lines" : [
@@ -14282,12 +14338,28 @@
             ]
           }
         },
+        "ipSpaces" : {
+          "global~ASET" : {
+            "class" : "org.batfish.datamodel.IpWildcardSetIpSpace"
+          }
+        },
         "vendorFamily" : {
           "juniper" : { }
         },
         "vrfs" : {
           "default" : {
             "name" : "default"
+          }
+        },
+        "zones" : {
+          "A" : {
+            "name" : "A",
+            "toZonePolicies" : {
+              "B" : "~FROM_ZONE~A~TO_ZONE~B"
+            }
+          },
+          "B" : {
+            "name" : "B"
           }
         }
       },

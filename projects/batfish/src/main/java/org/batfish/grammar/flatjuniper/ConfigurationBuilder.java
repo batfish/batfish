@@ -211,7 +211,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_apply_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_ip6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
@@ -3503,11 +3502,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
               + text
               + "'");
     }
-  }
-
-  @Override
-  public void exitPoplt_apply_path(Poplt_apply_pathContext ctx) {
-    _w.redFlag("unimplemented policy-options prefix-list " + getFullText(ctx).trim());
   }
 
   @Override
