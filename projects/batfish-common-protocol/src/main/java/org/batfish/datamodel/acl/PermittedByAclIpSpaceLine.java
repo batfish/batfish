@@ -6,7 +6,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class PermittedByAclIpSpaceLine implements TraceEvent {
+public final class PermittedByAclIpSpaceLine implements TraceEvent {
 
   private static final String PROP_INDEX = "index";
 

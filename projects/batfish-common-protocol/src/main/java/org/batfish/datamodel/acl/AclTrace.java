@@ -8,7 +8,7 @@ import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
 
-public class AclTrace implements Serializable {
+public final class AclTrace implements Serializable {
 
   private static final String PROP_EVENTS = "events";
 

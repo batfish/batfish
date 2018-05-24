@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 
-public class DefaultDeniedByAclIpSpace implements TraceEvent {
+public final class DefaultDeniedByAclIpSpace implements TraceEvent {
 
   private static final String PROP_NAME = "name";
 

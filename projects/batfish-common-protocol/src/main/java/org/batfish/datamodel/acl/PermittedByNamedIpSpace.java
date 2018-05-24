@@ -6,7 +6,7 @@ import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-public class PermittedByNamedIpSpace implements TraceEvent {
+public final class PermittedByNamedIpSpace implements TraceEvent {
 
   private static final String PROP_DESCRIPTION = "description";
 

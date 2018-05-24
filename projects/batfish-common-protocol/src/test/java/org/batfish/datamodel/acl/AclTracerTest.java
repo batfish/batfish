@@ -49,7 +49,7 @@ public class AclTracerTest {
     IpAccessList acl = IpAccessList.builder().setName(ACL_NAME).build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     /* The ACL has no lines, so the only event should be a default deny */
     assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(ACL_NAME))));
@@ -70,7 +70,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -101,7 +101,7 @@ public class AclTracerTest {
     Map<String, IpAccessList> availableAcls =
         ImmutableMap.of(ACL_NAME, acl, aclIndirectName, aclIndirect);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -127,7 +127,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -155,7 +155,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -185,7 +185,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ipSpaceName, Ip.MAX.toIpSpace());
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -209,7 +209,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(ACL_NAME))));
   }
@@ -227,7 +227,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(ACL_NAME))));
   }
@@ -241,7 +241,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -268,7 +268,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -300,7 +300,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ipSpaceName, Ip.ZERO.toIpSpace());
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -327,7 +327,7 @@ public class AclTracerTest {
             .build();
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -354,7 +354,7 @@ public class AclTracerTest {
 
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
+    AclTrace trace = AclTracer.trace(acl, FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,

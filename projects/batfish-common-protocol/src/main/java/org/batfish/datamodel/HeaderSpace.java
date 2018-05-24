@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import org.batfish.common.util.CommonUtil;
-import org.batfish.datamodel.acl.AclTracer;
 
 public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
@@ -561,7 +560,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return new Builder();
   }
 
-  private static boolean rangesContain(Collection<SubRange> ranges, int num) {
+  public static boolean rangesContain(Collection<SubRange> ranges, int num) {
     for (SubRange range : ranges) {
       if (range.getStart() <= num && num <= range.getEnd()) {
         return true;
@@ -1427,171 +1426,5 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
             && _states.isEmpty()
             && _tcpFlags.isEmpty();
     return ret;
-  }
-
-  public boolean trace(AclTracer aclTracer) {
-    Flow flow = aclTracer.getFlow();
-    if (!_dscps.isEmpty() && !_dscps.contains(flow.getDscp())) {
-      return false;
-    }
-    if (!_notDscps.isEmpty() && _notDscps.contains(flow.getDscp())) {
-      return false;
-    }
-    if (_dstIps != null && !aclTracer.trace(_dstIps, flow.getDstIp())) {
-      return false;
-    }
-    if (_notDstIps != null && aclTracer.trace(_notDstIps, flow.getDstIp())) {
-      return false;
-    }
-    if (!_dstPorts.isEmpty() && !rangesContain(_dstPorts, flow.getDstPort())) {
-      return false;
-    }
-    if (!_notDstPorts.isEmpty() && rangesContain(_notDstPorts, flow.getDstPort())) {
-      return false;
-    }
-    if (!_dstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol dstProtocol : _dstProtocols) {
-        if (dstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = dstProtocol.getPort();
-          if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (!_notDstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol notDstProtocol : _notDstProtocols) {
-        if (notDstProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer dstPort = notDstProtocol.getPort();
-          if (dstPort != null && !dstPort.equals(flow.getDstPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
-    }
-    if (!_fragmentOffsets.isEmpty() && !rangesContain(_fragmentOffsets, flow.getFragmentOffset())) {
-      return false;
-    }
-    if (!_notFragmentOffsets.isEmpty()
-        && rangesContain(_notFragmentOffsets, flow.getFragmentOffset())) {
-      return false;
-    }
-    if (!_icmpCodes.isEmpty() && !rangesContain(_icmpCodes, flow.getIcmpCode())) {
-      return false;
-    }
-    if (!_notIcmpCodes.isEmpty() && rangesContain(_notIcmpCodes, flow.getFragmentOffset())) {
-      return false;
-    }
-    if (!_icmpTypes.isEmpty() && !rangesContain(_icmpTypes, flow.getIcmpType())) {
-      return false;
-    }
-    if (!_notIcmpTypes.isEmpty() && rangesContain(_notIcmpTypes, flow.getFragmentOffset())) {
-      return false;
-    }
-    if (!_ipProtocols.isEmpty() && !_ipProtocols.contains(flow.getIpProtocol())) {
-      return false;
-    }
-    if (!_notIpProtocols.isEmpty() && _notIpProtocols.contains(flow.getIpProtocol())) {
-      return false;
-    }
-    if (!_packetLengths.isEmpty() && !rangesContain(_packetLengths, flow.getPacketLength())) {
-      return false;
-    }
-    if (!_notPacketLengths.isEmpty() && rangesContain(_notPacketLengths, flow.getPacketLength())) {
-      return false;
-    }
-    if (_srcOrDstIps != null
-        && !(aclTracer.trace(_srcOrDstIps, flow.getSrcIp())
-            || aclTracer.trace(_srcOrDstIps, flow.getDstIp()))) {
-      return false;
-    }
-    if (!_srcOrDstPorts.isEmpty()
-        && !(rangesContain(_srcOrDstPorts, flow.getSrcPort())
-            || rangesContain(_srcOrDstPorts, flow.getDstPort()))) {
-      return false;
-    }
-    if (!_srcOrDstProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol protocol : _srcOrDstProtocols) {
-        if (protocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer port = protocol.getPort();
-          if (port != null && !port.equals(flow.getDstPort()) && !port.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (_srcIps != null && !aclTracer.trace(_srcIps, flow.getSrcIp())) {
-      return false;
-    }
-    if (_notSrcIps != null && aclTracer.trace(_notSrcIps, flow.getSrcIp())) {
-      return false;
-    }
-    if (!_srcPorts.isEmpty() && !rangesContain(_srcPorts, flow.getSrcPort())) {
-      return false;
-    }
-    if (!_notSrcPorts.isEmpty() && rangesContain(_notSrcPorts, flow.getSrcPort())) {
-      return false;
-    }
-    if (!_srcProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol srcProtocol : _srcProtocols) {
-        if (srcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = srcProtocol.getPort();
-          if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            break;
-          }
-        }
-      }
-      if (!match) {
-        return false;
-      }
-    }
-    if (!_notSrcProtocols.isEmpty()) {
-      boolean match = false;
-      for (Protocol notSrcProtocol : _notSrcProtocols) {
-        if (notSrcProtocol.getIpProtocol().equals(flow.getIpProtocol())) {
-          match = true;
-          Integer srcPort = notSrcProtocol.getPort();
-          if (srcPort != null && !srcPort.equals(flow.getSrcPort())) {
-            match = false;
-          }
-          if (match) {
-            return false;
-          }
-        }
-      }
-    }
-    if (!_states.isEmpty() && !_states.contains(flow.getState())) {
-      return false;
-    }
-    if (!_tcpFlags.isEmpty() && !_tcpFlags.stream().anyMatch(tcpFlags -> tcpFlags.match(flow))) {
-      return false;
-    }
-    return true;
   }
 }
