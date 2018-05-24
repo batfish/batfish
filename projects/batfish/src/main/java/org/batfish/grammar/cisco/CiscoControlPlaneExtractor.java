@@ -11,6 +11,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.AS_PATH_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureType.CLASS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_CLASS;
@@ -35,6 +36,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.L2TP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.NAT_POOL;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
+import static org.batfish.representation.cisco.CiscoStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX_SET;
@@ -99,6 +101,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -129,6 +132,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_ANNOUN
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_CANDIDATE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
@@ -451,6 +455,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
 import org.batfish.grammar.cisco.CiscoParser.If_mtuContext;
 import org.batfish.grammar.cisco.CiscoParser.If_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.If_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_spanning_treeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_speed_eosContext;
@@ -584,6 +589,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_announce_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
+import org.batfish.grammar.cisco.CiscoParser.Pm_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_ios_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosi_class_type_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_dropContext;
@@ -716,6 +722,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
 import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
+import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_tunnelContext;
 import org.batfish.grammar.cisco.CiscoParser.S_domain_nameContext;
@@ -739,6 +746,7 @@ import org.batfish.grammar.cisco.CiscoParser.S_mac_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_extendedContext;
 import org.batfish.grammar.cisco.CiscoParser.S_no_access_list_standardContext;
 import org.batfish.grammar.cisco.CiscoParser.S_ntpContext;
+import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
@@ -3021,6 +3029,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_class_map(S_class_mapContext ctx) {
+    // TODO: do something with this.
+    String name = ctx.name.getText();
+    defineStructure(CLASS_MAP, name, ctx);
+  }
+
+  @Override
   public void enterS_depi_class(S_depi_classContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.getStart().getLine();
@@ -3220,6 +3235,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_ntp(S_ntpContext ctx) {
     if (_configuration.getCf().getNtp() == null) {
       _configuration.getCf().setNtp(new Ntp());
+    }
+  }
+
+  @Override
+  public void enterS_policy_map(S_policy_mapContext ctx) {
+    // TODO: do something with this.
+    if (ctx.variable_policy_map_header() != null) {
+      String name = ctx.variable_policy_map_header().getText();
+      defineStructure(POLICY_MAP, name, ctx);
     }
   }
 
@@ -4803,6 +4827,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_service_policy(If_service_policyContext ctx) {
+    // TODO: do something with this.
+    String mapname = ctx.policy_map.getText();
+    _configuration.referenceStructure(
+        POLICY_MAP, mapname, INTERFACE_SERVICE_POLICY, ctx.getStart().getLine());
+  }
+
+  @Override
   public void exitIf_shutdown(If_shutdownContext ctx) {
     if (ctx.NO() == null) {
       for (Interface currentInterface : _currentInterfaces) {
@@ -6090,6 +6122,25 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getInspectPolicyMaps()
             .computeIfAbsent(name, n -> new InspectPolicyMap(n, line));
     defineStructure(INSPECT_POLICY_MAP, name, ctx);
+  }
+
+  @Override
+  public void enterPm_class(Pm_classContext ctx) {
+    // TODO: do something with this.
+    // should be something like _currentPolicyMapClass = ...
+    String name = ctx.name.getText();
+    _configuration.referenceStructure(CLASS_MAP, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
+    if ("class-default".equals(name)) {
+      // This is a hack because there's an implicit class named "class-default" and we don't want
+      // a false positive undefined reference.
+      _configuration.defineStructure(CLASS_MAP, "class-default", ctx.getStart().getLine());
+    }
+  }
+
+  @Override
+  public void exitPm_class(Pm_classContext ctx) {
+    // TODO: do something with this.
+    // should be something like _currentPolicyMapClass = null.
   }
 
   @Override

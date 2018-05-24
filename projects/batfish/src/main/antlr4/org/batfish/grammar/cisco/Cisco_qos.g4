@@ -505,7 +505,17 @@ os_service
 
 pm_class
 :
-   num = DEC? CLASS null_rest_of_line
+   num = DEC? CLASS
+   (   TYPE
+       (
+          CONTROL_PLANE
+          | NETWORK_QOS
+          | PBR
+          | QOS
+          | QUEUING
+       ) name = variable_permissive
+       | name = variable_permissive
+   ) NEWLINE
    (
       pmc_null
       | pmc_police
