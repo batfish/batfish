@@ -1,0 +1,7 @@
+
+set system host-name static-route-preference
+
+set routing-options static route 1.2.3.4/24 next-hop 10.0.0.1
+set routing-options static route 1.2.3.4/24 preference 250
+
+set routing-options static route 2.3.4.5/24 next-hop 10.0.0.2

@@ -62,6 +62,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
@@ -1842,6 +1843,28 @@ public class FlatJuniperGrammarTest {
             .call(eb.setOriginalRoute(connectedRouteMaskInvalidLength).build())
             .getBooleanValue(),
         equalTo(false));
+  }
+
+  @Test
+  public void testStaticRoutePreference() throws IOException {
+    Configuration c = parseConfig("static-route-preference");
+    assertThat(
+        c,
+        hasVrf(
+            "default",
+            hasStaticRoutes(
+                equalTo(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("1.2.3.4/24"))
+                            .setNextHopIp(new Ip("10.0.0.1"))
+                            .setAdministrativeCost(250)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("2.3.4.5/24"))
+                            .setNextHopIp(new Ip("10.0.0.2"))
+                            .setAdministrativeCost(5)
+                            .build())))));
   }
 
   @Test
