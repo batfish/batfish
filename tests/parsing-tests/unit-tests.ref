@@ -17911,6 +17911,19 @@
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
+            "      (crypto_ipsec",
+            "        IPSEC:'ipsec'  <== mode:DEFAULT_MODE",
+            "        (cip_transform_set",
+            "          TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'noAuthHeader'  <== mode:DEFAULT_MODE)",
+            "          (ipsec_encryption",
+            "            ESP_AES:'esp-aes'  <== mode:DEFAULT_MODE",
+            "            strength = DEC:'256'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
             "      (crypto_isakmp",
             "        ISAKMP:'isakmp'  <== mode:DEFAULT_MODE",
             "        (cis_null",
@@ -18345,37 +18358,42 @@
             "            REVERSE_ROUTE:'reverse-route'  <== mode:DEFAULT_MODE",
             "            (null_rest_of_line",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "          (crypto_map_ii_null",
+            "          (crypto_map_ii_set",
             "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
+            "            (crypto_map_ii_set_isakmp_profile",
             "              ISAKMP_PROFILE:'isakmp-profile'  <== mode:DEFAULT_MODE",
-            "              VARIABLE:'myisakmpprofile'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                VARIABLE:'myisakmpprofile'  <== mode:DEFAULT_MODE)",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "          (crypto_map_ii_null",
+            "          (crypto_map_ii_set",
             "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
+            "            (crypto_map_ii_set_null",
             "              PEER:'peer'  <== mode:DEFAULT_MODE",
-            "              IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "          (crypto_map_ii_null",
+            "              (null_rest_of_line",
+            "                IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (crypto_map_ii_set",
             "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
+            "            (crypto_map_ii_set_null",
             "              PFS:'pfs'  <== mode:DEFAULT_MODE",
-            "              GROUP2:'group2'  <== mode:DEFAULT_MODE",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "          (crypto_map_ii_null",
+            "              (null_rest_of_line",
+            "                GROUP2:'group2'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (crypto_map_ii_set",
             "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
+            "            (crypto_map_ii_set_null",
             "              SECURITY_ASSOCIATION:'security-association'  <== mode:DEFAULT_MODE",
-            "              LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
-            "              VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
-            "              DEC:'14400'  <== mode:DEFAULT_MODE",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "          (crypto_map_ii_null",
+            "              (null_rest_of_line",
+            "                LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
+            "                VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
+            "                DEC:'14400'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "          (crypto_map_ii_set",
             "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
+            "            (crypto_map_ii_set_transform_set",
             "              TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
-            "              VARIABLE:'mytransformset'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                VARIABLE:'mytransformset'  <== mode:DEFAULT_MODE)",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
             "  (stanza",
             "    (s_crypto",
@@ -53227,17 +53245,23 @@
                 152
               ],
               "numReferrers" : 0
+            },
+            "noAuthHeader" : {
+              "definitionLines" : [
+                153
+              ],
+              "numReferrers" : 0
             }
           },
           "crypto isakmp policy" : {
             "001" : {
               "definitionLines" : [
-                159,
                 160,
                 161,
                 162,
                 163,
-                164
+                164,
+                165
               ],
               "numReferrers" : 1
             }
@@ -53245,11 +53269,11 @@
           "crypto isakmp profile" : {
             "myprofile" : {
               "definitionLines" : [
-                166,
                 167,
                 168,
                 169,
-                170
+                170,
+                171
               ],
               "numReferrers" : 1
             }
@@ -53257,8 +53281,8 @@
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                189,
-                190
+                190,
+                191
               ],
               "numReferrers" : 0
             }
@@ -54826,9 +54850,19 @@
               "ipsec profile set transform-set" : [
                 139
               ]
+            },
+            "mytransformset" : {
+              "crypto map ipsec-isakmp transform-set" : [
+                210
+              ]
             }
           },
           "crypto isakmp profile" : {
+            "myisakmpprofile" : {
+              "crypto map ipsec-isakmp isakmp-profile" : [
+                206
+              ]
+            },
             "someOtherprofile" : {
               "ipsec profile set isakmp-profile" : [
                 142
@@ -54838,14 +54872,14 @@
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                167
+                168
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                203
+                204
               ]
             }
           }

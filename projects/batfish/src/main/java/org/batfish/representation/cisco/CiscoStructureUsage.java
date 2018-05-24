@@ -45,6 +45,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   CONTROLLER_DEPI_TUNNEL("controller rf-channel depi-tunnel"),
   COPS_LISTENER_ACCESS_LIST("cops listener access-list"),
   CRYPTO_MAP_IPSEC_ISAKMP_ACL("crypto map ipsec-isakmp acl"),
+  CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE("crypto map ipsec-isakmp isakmp-profile"),
+  CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET("crypto map ipsec-isakmp transform-set"),
   DEPI_TUNNEL_DEPI_CLASS("depi-tunnel depi-class"),
   DEPI_TUNNEL_L2TP_CLASS("depi-tunnel l2tp-class"),
   DEPI_TUNNEL_PROTECT_TUNNEL("depi-tunnel protect-tunnel"),
