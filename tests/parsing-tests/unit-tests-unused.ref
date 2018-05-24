@@ -251,7 +251,8 @@
             138,
             139,
             140,
-            141
+            141,
+            142
           ]
         }
       },
@@ -259,9 +260,9 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
         "files" : {
           "cisco_crypto" : [
-            146,
             147,
-            148
+            148,
+            149
           ]
         }
       },
@@ -269,7 +270,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'IPSEC_AES_256'",
         "files" : {
           "cisco_crypto" : [
-            149
+            150
           ]
         }
       },
@@ -277,7 +278,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts1'",
         "files" : {
           "cisco_crypto" : [
-            150
+            151
           ]
         }
       },
@@ -285,7 +286,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts2'",
         "files" : {
           "cisco_crypto" : [
-            151
+            152
           ]
         }
       },
@@ -293,8 +294,8 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            188,
-            189
+            189,
+            190
           ]
         }
       },
@@ -1543,29 +1544,30 @@
             138,
             139,
             140,
-            141
+            141,
+            142
           ]
         },
         "crypto ipsec transform-set" : {
           "ESP-3DES-MD5" : [
-            146,
             147,
-            148
-          ],
-          "IPSEC_AES_256" : [
+            148,
             149
           ],
-          "cipts1" : [
+          "IPSEC_AES_256" : [
             150
           ],
-          "cipts2" : [
+          "cipts1" : [
             151
+          ],
+          "cipts2" : [
+            152
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            188,
-            189
+            189,
+            190
           ]
         }
       },
