@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import java.util.Objects;
 import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -31,7 +32,7 @@ public class Keyring extends DefinedStructure<String> {
   }
 
   public boolean match(Ip localAddress, Prefix matchIdentity) {
-    return localAddress.equals(_localAddress) && matchIdentity.containsIp(_remoteAddress);
+    return Objects.equals(localAddress, _localAddress) && matchIdentity.containsIp(_remoteAddress);
   }
 
   public void setKey(String key) {
