@@ -12,6 +12,10 @@ import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 
+/**
+ * A set of parameters for reachability analysis that uses high-level specifiers. It is a good
+ * choice for questions because relatively little work is needed to map user input into it.
+ */
 public final class ReachabilityParameters {
 
   public static class Builder {

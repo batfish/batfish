@@ -6,8 +6,22 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.main.ReachabilityParameters;
+import org.batfish.main.SrcNattedConstraint;
+import org.batfish.specifier.AllInterfacesLocationSpecifier;
+import org.batfish.specifier.ConstantIpSpaceSpecifier;
+import org.batfish.specifier.DifferenceLocationSpecifier;
+import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.LocationSpecifier;
+import org.batfish.specifier.LocationSpecifiers;
+import org.batfish.specifier.NodeSpecifiers;
+import org.batfish.specifier.UnionLocationSpecifier;
 
 public class ReachabilitySettings {
 
@@ -330,6 +344,68 @@ public class ReachabilitySettings {
         _transitNodes,
         _specialize,
         _useCompression);
+  }
+
+  public ReachabilityParameters toReachabilityParameters(ReachabilitySettings settings) {
+    // compute the source LocationSpecifier
+    LocationSpecifier ingressInterfaces =
+        _ingressInterfaces == null ? null : LocationSpecifiers.from(_ingressInterfaces);
+    LocationSpecifier ingressNodes =
+        _ingressNodes == null ? null : LocationSpecifiers.from(_ingressNodes);
+    LocationSpecifier notIngressNodes =
+        _notIngressNodes == null ? null : LocationSpecifiers.from(_notIngressNodes);
+
+    /* combine ingressNodes and notIngressNodes into ingressNodes */
+    if (ingressNodes != null && notIngressNodes != null) {
+      ingressNodes = new DifferenceLocationSpecifier(ingressNodes, notIngressNodes);
+    } else if (ingressNodes == null && notIngressNodes != null) {
+      ingressNodes =
+          new DifferenceLocationSpecifier(AllInterfacesLocationSpecifier.INSTANCE, notIngressNodes);
+    }
+
+    LocationSpecifier sourceLocations = AllInterfacesLocationSpecifier.INSTANCE;
+    if (ingressInterfaces != null && ingressNodes != null) {
+      sourceLocations = new UnionLocationSpecifier(ingressInterfaces, ingressNodes);
+    } else if (ingressInterfaces != null) {
+      sourceLocations = ingressInterfaces;
+    } else if (ingressNodes != null) {
+      sourceLocations = ingressNodes;
+    }
+    LocationSpecifier sourceSpecifier = AllInterfacesLocationSpecifier.INSTANCE;
+
+    // remove src IPs from headerspace since they're specified via an IpSpaceSpecifier
+    IpSpace nullIpSpace = null;
+    HeaderSpace headerSpace =
+        _headerSpace.toBuilder().setNotSrcIps(nullIpSpace).setSrcIps(nullIpSpace).build();
+
+    // compute the source IpSpaceSpecifier
+    IpSpaceSpecifier sourceIpSpace = InferFromLocationIpSpaceSpecifier.INSTANCE;
+    IpSpace srcIps = headerSpace.getSrcIps();
+    IpSpace notSrcIps = headerSpace.getNotSrcIps();
+    if (srcIps != null && notSrcIps != null) {
+      sourceIpSpace = new ConstantIpSpaceSpecifier(AclIpSpace.difference(srcIps, notSrcIps));
+    } else if (srcIps != null) {
+      sourceIpSpace = new ConstantIpSpaceSpecifier(srcIps);
+    } else if (notSrcIps != null) {
+      sourceIpSpace =
+          new ConstantIpSpaceSpecifier(AclIpSpace.difference(UniverseIpSpace.INSTANCE, notSrcIps));
+    }
+
+    return ReachabilityParameters.builder()
+        .setActions(settings.getActions())
+        .setFinalNodesSpecifier(
+            NodeSpecifiers.difference(
+                NodeSpecifiers.from(_finalNodes), NodeSpecifiers.from(_notFinalNodes)))
+        .setForbiddenTransitNodesSpecifier(NodeSpecifiers.from(settings.getNonTransitNodes()))
+        .setHeaderSpace(headerSpace)
+        .setMaxChunkSize(settings.getMaxChunkSize())
+        .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(settings.getTransitNodes()))
+        .setSourceIpSpaceSpecifier(sourceIpSpace)
+        .setSourceSpecifier(sourceLocations)
+        .setSrcNatted(SrcNattedConstraint.fromBoolean(settings.getSrcNatted()))
+        .setSpecialize(settings.getSpecialize())
+        .setUseCompression(settings.getUseCompression())
+        .build();
   }
 
   public void validateTransitNodes(IBatfish batfish) throws InvalidReachabilitySettingsException {

@@ -12,6 +12,10 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.specifier.IpSpaceAssignment;
 
+/**
+ * A set of parameters for reachability that are fully resolved, meaning everything is concrete.
+ * There are no specifiers, etc.
+ */
 public final class ResolvedReachabilityParameters {
 
   public static class Builder {
