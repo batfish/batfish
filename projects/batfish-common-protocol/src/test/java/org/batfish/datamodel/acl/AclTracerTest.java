@@ -35,59 +35,58 @@ import org.junit.Test;
 
 public class AclTracerTest {
 
+  private static final String ACL_IP_SPACE_NAME = "aclIpSpace";
+
+  private static final String ACL_NAME = "acl";
+
+  private static final Flow FLOW =
+      Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
+
+  private static final String srcInterface = null;
+
   @Test
   public void testDefaultDeniedByIpAccessList() {
-    String aclName = "acl1";
-    IpAccessList acl = IpAccessList.builder().setName(aclName).build();
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    IpAccessList acl = IpAccessList.builder().setName(ACL_NAME).build();
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     /* The ACL has no lines, so the only event should be a default deny */
-    assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(aclName))));
+    assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(ACL_NAME))));
   }
 
   @Test
   public void testDefaultDeniedByNamedAclIpSpace() {
-    String aclIpSpaceName = "aclIpSpace";
     AclIpSpace aclIpSpace = AclIpSpace.DENY_ALL;
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setDstIps(new IpSpaceReference(aclIpSpaceName))
+                            .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
                             .build())))
             .build();
-
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
-    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(aclIpSpaceName, aclIpSpace);
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
+    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isDefaultDeniedByAclIpSpaceNamed(aclIpSpaceName),
-                    isDefaultDeniedByIpAccessListNamed(aclName)))));
+                    isDefaultDeniedByAclIpSpaceNamed(ACL_IP_SPACE_NAME),
+                    isDefaultDeniedByIpAccessListNamed(ACL_NAME)))));
   }
 
   @Test
   public void testDeniedByIndirectPermit() {
-    String aclName = "acl";
     String aclIndirectName = "aclIndirect";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.rejecting()
@@ -100,11 +99,9 @@ public class AclTracerTest {
             .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
             .build();
     Map<String, IpAccessList> availableAcls =
-        ImmutableMap.of(aclName, acl, aclIndirectName, aclIndirect);
+        ImmutableMap.of(ACL_NAME, acl, aclIndirectName, aclIndirect);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -117,23 +114,20 @@ public class AclTracerTest {
                             PermittedByIpAccessListLineMatchers.hasIndex(0))),
                     isDeniedByIpAccessListLineThat(
                         allOf(
-                            DeniedByIpAccessListLineMatchers.hasName(aclName),
+                            DeniedByIpAccessListLineMatchers.hasName(ACL_NAME),
                             DeniedByIpAccessListLineMatchers.hasIndex(0)))))));
   }
 
   @Test
   public void testDeniedByIpAccessListLine() {
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(ImmutableList.of(IpAccessListLine.REJECT_ALL))
             .build();
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -141,33 +135,28 @@ public class AclTracerTest {
             contains(
                 isDeniedByIpAccessListLineThat(
                     allOf(
-                        DeniedByIpAccessListLineMatchers.hasName(aclName),
+                        DeniedByIpAccessListLineMatchers.hasName(ACL_NAME),
                         DeniedByIpAccessListLineMatchers.hasIndex(0))))));
   }
 
   @Test
   public void testDeniedByNamedAclIpSpaceLine() {
-    String aclIpSpaceName = "aclIpSpace";
     AclIpSpace aclIpSpace =
         AclIpSpace.builder().setLines(ImmutableList.of(AclIpSpaceLine.DENY_ALL)).build();
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setDstIps(new IpSpaceReference(aclIpSpaceName))
+                            .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
                             .build())))
             .build();
 
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
-    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(aclIpSpaceName, aclIpSpace);
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
+    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -176,19 +165,18 @@ public class AclTracerTest {
                 ImmutableList.of(
                     isDeniedByAclIpSpaceLineThat(
                         allOf(
-                            DeniedByAclIpSpaceLineMatchers.hasName(aclIpSpaceName),
+                            DeniedByAclIpSpaceLineMatchers.hasName(ACL_IP_SPACE_NAME),
                             DeniedByAclIpSpaceLineMatchers.hasIndex(0))),
-                    isDefaultDeniedByIpAccessListNamed(aclName)))));
+                    isDefaultDeniedByIpAccessListNamed(ACL_NAME)))));
   }
 
   @Test
   public void testDeniedByNamedSimpleIpSpace() {
     String ipSpaceName = "aclIpSpace";
 
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
@@ -196,12 +184,9 @@ public class AclTracerTest {
                             .setDstIps(new IpSpaceReference(ipSpaceName))
                             .build())))
             .build();
-
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ipSpaceName, Ip.MAX.toIpSpace());
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -209,68 +194,57 @@ public class AclTracerTest {
             contains(
                 ImmutableList.of(
                     isDeniedByNamedIpSpace(ipSpaceName),
-                    isDefaultDeniedByIpAccessListNamed(aclName)))));
+                    isDefaultDeniedByIpAccessListNamed(ACL_NAME)))));
   }
 
   @Test
   public void testDeniedByUnnamedAclIpSpace() {
     AclIpSpace aclIpSpace = AclIpSpace.DENY_ALL;
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(aclIpSpace).build())))
             .build();
 
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
-    assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(aclName))));
+    assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(ACL_NAME))));
   }
 
   @Test
   public void testDeniedByUnnamedSimpleIpSpace() {
     IpSpace ipSpace = EmptyIpSpace.INSTANCE;
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(ipSpace).build())))
             .build();
 
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
-    assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(aclName))));
+    assertThat(trace, hasEvents(contains(isDefaultDeniedByIpAccessListNamed(ACL_NAME))));
   }
 
   @Test
   public void testPermittedByIpAccessListLine() {
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(ImmutableList.of(IpAccessListLine.ACCEPT_ALL))
             .build();
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -278,32 +252,26 @@ public class AclTracerTest {
             contains(
                 isPermittedByIpAccessListLineThat(
                     allOf(
-                        PermittedByIpAccessListLineMatchers.hasName(aclName),
+                        PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
                         PermittedByIpAccessListLineMatchers.hasIndex(0))))));
   }
 
   @Test
   public void testPermittedByNamedAclIpSpaceLine() {
-    String aclIpSpaceName = "aclIpSpace";
     AclIpSpace aclIpSpace = AclIpSpace.PERMIT_ALL;
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder()
-                            .setDstIps(new IpSpaceReference(aclIpSpaceName))
+                            .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
                             .build())))
             .build();
-
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
-    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(aclIpSpaceName, aclIpSpace);
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
+    Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -312,22 +280,20 @@ public class AclTracerTest {
                 ImmutableList.of(
                     isPermittedByAclIpSpaceLineThat(
                         allOf(
-                            PermittedByAclIpSpaceLineMatchers.hasName(aclIpSpaceName),
+                            PermittedByAclIpSpaceLineMatchers.hasName(ACL_IP_SPACE_NAME),
                             PermittedByAclIpSpaceLineMatchers.hasIndex(0))),
                     isPermittedByIpAccessListLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(aclName),
+                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
                             PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
   }
 
   @Test
   public void testPermittedByNamedSimpleIpSpace() {
     String ipSpaceName = "aclIpSpace";
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
@@ -336,11 +302,9 @@ public class AclTracerTest {
                             .build())))
             .build();
 
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ipSpaceName, Ip.ZERO.toIpSpace());
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -350,29 +314,24 @@ public class AclTracerTest {
                     isPermittedByNamedIpSpace(ipSpaceName),
                     isPermittedByIpAccessListLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(aclName),
+                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
                             PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
   }
 
   @Test
   public void testPermittedByUnnamedAclIpSpace() {
     AclIpSpace aclIpSpace = AclIpSpace.PERMIT_ALL;
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(aclIpSpace).build())))
             .build();
-
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -381,29 +340,25 @@ public class AclTracerTest {
                 ImmutableList.of(
                     isPermittedByIpAccessListLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(aclName),
+                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
                             PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
   }
 
   @Test
   public void testPermittedByUnnamedSimpleIpSpace() {
     IpSpace ipSpace = UniverseIpSpace.INSTANCE;
-
-    String aclName = "acl1";
     IpAccessList acl =
         IpAccessList.builder()
-            .setName(aclName)
+            .setName(ACL_NAME)
             .setLines(
                 ImmutableList.of(
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(ipSpace).build())))
             .build();
 
-    Map<String, IpAccessList> availableAcls = ImmutableMap.of(aclName, acl);
+    Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
-    String srcInterface = null;
-    Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
-    AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
+    AclTrace trace = acl.trace(FLOW, srcInterface, availableAcls, namedIpSpaces);
 
     assertThat(
         trace,
@@ -412,7 +367,7 @@ public class AclTracerTest {
                 ImmutableList.of(
                     isPermittedByIpAccessListLineThat(
                         allOf(
-                            PermittedByIpAccessListLineMatchers.hasName(aclName),
+                            PermittedByIpAccessListLineMatchers.hasName(ACL_NAME),
                             PermittedByIpAccessListLineMatchers.hasIndex(0)))))));
   }
 }
