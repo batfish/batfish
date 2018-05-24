@@ -204,18 +204,6 @@ final class CiscoNxConversions {
                         warnings)));
   }
 
-  /** Returns {@code asn} cast to {@code int}, warning if the AS number given is a 4-byte AS. */
-  private static int coerceTwoByteAsn(
-      Warnings warnings, String vrfName, Prefix prefix, String type, long asn) {
-    if (asn >= (1 << 16)) {
-      warnings.redFlag(
-          String.format(
-              "4-byte AS numbers are not fully supported: vrf %s neighbor %s %s-as %d",
-              vrfName, prefix, type, asn));
-    }
-    return (int) asn;
-  }
-
   @Nullable
   private static Ip computeUpdateSource(
       Vrf vrf,
@@ -292,21 +280,17 @@ final class CiscoNxConversions {
     }
 
     if (neighbor.getLocalAs() != null) {
-      newNeighbor.setLocalAs(
-          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", neighbor.getLocalAs()));
+      newNeighbor.setLocalAs(neighbor.getLocalAs());
     } else if (vrfConfig.getLocalAs() != null) {
-      newNeighbor.setLocalAs(
-          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", vrfConfig.getLocalAs()));
+      newNeighbor.setLocalAs(vrfConfig.getLocalAs());
     } else {
-      newNeighbor.setLocalAs(
-          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "local", bgpConfig.getLocalAs()));
+      newNeighbor.setLocalAs(bgpConfig.getLocalAs());
     }
 
     newNeighbor.setLocalIp(computeUpdateSource(vrf, prefix, neighbor, dynamic, warnings));
 
     if (neighbor.getRemoteAs() != null) {
-      newNeighbor.setRemoteAs(
-          coerceTwoByteAsn(warnings, vrf.getName(), prefix, "remote", neighbor.getRemoteAs()));
+      newNeighbor.setRemoteAs(neighbor.getRemoteAs());
     }
 
     newNeighbor.setVrf(vrf.getName());

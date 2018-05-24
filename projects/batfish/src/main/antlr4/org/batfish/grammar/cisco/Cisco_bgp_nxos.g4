@@ -9,7 +9,7 @@ options {
 bgp_asn
 :
     asn = DEC
-    | asn_hi = DEC PERIOD asn_lo = DEC
+    | asn4b = FLOAT // DEC.DEC , but this lexes as FLOAT
 ;
 
 router_bgp_nxos_toplevel

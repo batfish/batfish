@@ -53,7 +53,7 @@ public abstract class BgpPeerGroup implements Serializable {
 
   private transient boolean _inherited;
 
-  private Integer _localAs;
+  private Long _localAs;
 
   private Integer _maximumPaths;
 
@@ -81,7 +81,7 @@ public abstract class BgpPeerGroup implements Serializable {
 
   private int _peerSessionLine;
 
-  protected Integer _remoteAs;
+  protected Long _remoteAs;
 
   protected Boolean _removePrivateAs;
 
@@ -191,7 +191,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return _inherited;
   }
 
-  public Integer getLocalAs() {
+  public Long getLocalAs() {
     return _localAs;
   }
 
@@ -290,7 +290,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return _peerSessionLine;
   }
 
-  public Integer getRemoteAs() {
+  public Long getRemoteAs() {
     return _remoteAs;
   }
 
@@ -527,7 +527,7 @@ public abstract class BgpPeerGroup implements Serializable {
     _inboundRouteMapLine = inboundRouteMapLine;
   }
 
-  public void setLocalAs(Integer localAs) {
+  public void setLocalAs(Long localAs) {
     _localAs = localAs;
   }
 
@@ -583,7 +583,7 @@ public abstract class BgpPeerGroup implements Serializable {
     _peerSessionLine = peerSessionLine;
   }
 
-  public void setRemoteAs(int remoteAS) {
+  public void setRemoteAs(long remoteAS) {
     _remoteAs = remoteAS;
   }
 
