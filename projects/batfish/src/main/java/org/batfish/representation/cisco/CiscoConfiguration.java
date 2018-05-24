@@ -1477,11 +1477,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .getIpNetworks()
           .forEach(
               (prefix, routeMapOrEmpty) -> {
+                PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(prefix));
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefixSet(
-                            new DestinationNetwork(),
-                            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
+                            new DestinationNetwork(), new ExplicitPrefixSet(exportSpace)),
                         new Not(new MatchProtocol(RoutingProtocol.BGP)),
                         new Not(new MatchProtocol(RoutingProtocol.IBGP)),
                         new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
@@ -1490,6 +1490,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 ? new CallExpr(routeMapOrEmpty)
                                 : BooleanExprs.TRUE,
                             OriginType.IGP));
+                newBgpProcess.addToOriginationSpace(exportSpace);
                 exportConditions.add(new Conjunction(exportNetworkConditions));
               });
     }
@@ -1903,6 +1904,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               Conjunction exportNetworkConditions = new Conjunction();
               PrefixSpace space = new PrefixSpace();
               space.addPrefix(prefix);
+              newBgpProcess.addToOriginationSpace(space);
               exportNetworkConditions
                   .getConjuncts()
                   .add(new MatchPrefixSet(new DestinationNetwork(), new ExplicitPrefixSet(space)));
