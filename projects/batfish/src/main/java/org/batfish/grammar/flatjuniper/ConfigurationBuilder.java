@@ -2313,18 +2313,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSead_address(Sead_addressContext ctx) {
     String name = ctx.name.getText();
-    IpWildcard ipWildcard = null;
     if (ctx.wildcard_address() != null) {
-      ipWildcard = toIpWildcard(ctx.wildcard_address());
+      IpWildcard ipWildcard = toIpWildcard(ctx.wildcard_address());
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
+      _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.address != null) {
-      ipWildcard = new IpWildcard(new Ip(ctx.address.getText()));
+      IpWildcard ipWildcard = new IpWildcard(new Ip(ctx.address.getText()));
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
+      _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.prefix != null) {
-      ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+      IpWildcard ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
+      _currentAddressBook.getEntries().put(name, addressEntry);
+    } else if (ctx.DESCRIPTION() != null) {
+      /* TODO - data model doesn't have a place to put this yet. */
     } else {
       throw convError(IpWildcard.class, ctx);
     }
-    AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
-    _currentAddressBook.getEntries().put(name, addressEntry);
   }
 
   @Override

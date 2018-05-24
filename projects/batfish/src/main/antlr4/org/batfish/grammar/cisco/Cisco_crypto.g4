@@ -285,6 +285,7 @@ cipprf_set_null
 :
    (
       IKEV2_PROFILE
+      | SECURITY_ASSOCIATION
    ) null_rest_of_line
 ;
 

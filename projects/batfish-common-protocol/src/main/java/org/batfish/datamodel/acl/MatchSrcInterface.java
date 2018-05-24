@@ -1,5 +1,7 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -21,10 +23,10 @@ public class MatchSrcInterface extends AclLineMatchExpr {
 
   @JsonCreator
   public MatchSrcInterface(
-      @JsonProperty(PROP_SRC_INTERFACES) Iterable<String> interfaces,
+      @JsonProperty(PROP_SRC_INTERFACES) @Nullable Iterable<String> interfaces,
       @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
     super(description);
-    _srcInterfaces = ImmutableSet.copyOf(interfaces);
+    _srcInterfaces = ImmutableSet.copyOf(firstNonNull(interfaces, ImmutableSet.of()));
   }
 
   @Override
