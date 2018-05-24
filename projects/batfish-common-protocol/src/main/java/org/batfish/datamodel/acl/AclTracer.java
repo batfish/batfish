@@ -1,6 +1,6 @@
 package org.batfish.datamodel.acl;
 
-import static org.batfish.datamodel.HeaderSpace.rangesContain;
+import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;

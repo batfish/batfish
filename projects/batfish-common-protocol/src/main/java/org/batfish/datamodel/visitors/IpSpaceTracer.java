@@ -15,6 +15,12 @@ import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.AclTracer;
 
+/**
+ * Evaluates whether an {@link IpSpace} contains an {@link Ip}.<br>
+ * Visit functions:<br>
+ * - add tracing information via {@code _aclTracer} if the {@link IpSpace} is named<br>
+ * - return true iff the {@link IpSpace} contains {@code _ip}.
+ */
 public class IpSpaceTracer implements GenericIpSpaceVisitor<Boolean> {
 
   private final Ip _ip;

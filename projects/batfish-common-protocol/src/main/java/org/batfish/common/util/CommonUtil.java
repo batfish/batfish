@@ -113,6 +113,7 @@ import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -1399,6 +1400,10 @@ public class CommonUtil {
       throw new BatfishException(
           "Failed to read and output lines of file: '" + downloadedFile + "'");
     }
+  }
+
+  public static boolean rangesContain(Collection<SubRange> ranges, int num) {
+    return ranges.stream().anyMatch(sr -> sr.includes(num));
   }
 
   public static String readFile(Path file) {
