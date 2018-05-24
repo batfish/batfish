@@ -2033,6 +2033,11 @@ COMMON
    'common'
 ;
 
+COMMON_NAME
+:
+   'common-name'
+;
+
 COMMUNITY
 :
    'community'
@@ -2445,6 +2450,11 @@ CSD
 CSNP_INTERVAL
 :
    'csnp-interval'
+;
+
+CSR_PARAMS
+:
+   'csr-params'
 ;
 
 CTIQBE
@@ -5608,6 +5618,11 @@ ISAKMP
    'isakmp'
 ;
 
+ISAKMP_PROFILE
+:
+   'isakmp-profile'
+;
+
 ISDN
 :
    'isdn'
@@ -6096,6 +6111,11 @@ LOAD_SHARING
 LOCAL
 :
    'local'
+;
+
+LOCALITY
+:
+   'locality'
 ;
 
 LOCAL_ADDRESS
@@ -7653,6 +7673,11 @@ NON_EXIST_MAP
    'non-exist-map'
 ;
 
+NON_SILENT
+:
+    'non-silent'
+;
+
 NONE
 :
    'none'
@@ -7881,6 +7906,16 @@ OPTIONS
 OR
 :
    'or'
+;
+
+ORGANIZATION_NAME
+:
+   'organization-name'
+;
+
+ORGANIZATION_UNIT
+:
+   'organization-unit'
 ;
 
 ORIGIN
@@ -10366,6 +10401,11 @@ SIGNATURE_PROFILE
 SIGNING
 :
    'signing'
+;
+
+SILENT
+:
+    'silent'
 ;
 
 SINGLE_CONNECTION

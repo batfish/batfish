@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.SortedMultiset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,10 +17,10 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
@@ -98,7 +97,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -704,7 +702,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface iface = e.getValue();
       placeInterfaceIntoArea(newAreas, name, iface, vrfName);
     }
-    newProc.setRouterId(routingInstance.getRouterId());
+    newProc.setRouterId(getOspfRouterId(routingInstance));
     newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
   }
@@ -904,29 +902,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
           }
         }
       }
-    }
-  }
-
-  private void markAuthenticationKeyChains(JuniperStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
-        _structureReferences.get(JuniperStructureType.AUTHENTICATION_KEY_CHAIN);
-    if (byName != null) {
-      byName.forEach(
-          (keyChainName, byUsage) -> {
-            SortedMultiset<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              JuniperAuthenticationKeyChain keyChain = _authenticationKeyChains.get(keyChainName);
-              if (keyChain != null) {
-                String msg = usage.getDescription();
-                keyChain.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(
-                      JuniperStructureType.AUTHENTICATION_KEY_CHAIN, keyChainName, usage, line);
-                }
-              }
-            }
-          });
     }
   }
 
@@ -1473,7 +1448,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         from.applyTo(matchCondition, this, _w, _c);
       }
       boolean addLine =
-          term.getFromApplications().isEmpty()
+          term.getFromApplicationSetMembers().isEmpty()
               && term.getFromHostProtocols().isEmpty()
               && term.getFromHostServices().isEmpty();
       for (FwFromHostProtocol from : term.getFromHostProtocols()) {
@@ -1482,8 +1457,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (FwFromHostService from : term.getFromHostServices()) {
         from.applyTo(lines, _w);
       }
-      for (FwFromApplication fromApplication : term.getFromApplications()) {
-        fromApplication.applyTo(this, matchCondition, action, lines, _w);
+      for (FwFromApplicationSetMember fromApplicationSetMember :
+          term.getFromApplicationSetMembers()) {
+        fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
       }
       if (addLine) {
         IpAccessListLine line =
@@ -2503,6 +2479,44 @@ public final class JuniperConfiguration extends VendorConfiguration {
       recordStructure(
           prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
     }
+  }
+
+  private Ip getOspfRouterId(RoutingInstance routingInstance) {
+    Ip routerId = routingInstance.getRouterId();
+    if (routerId == null) {
+      Map<String, Interface> interfacesToCheck;
+      Map<String, Interface> allInterfaces = routingInstance.getInterfaces();
+      Map<String, Interface> loopbackInterfaces =
+          allInterfaces
+              .entrySet()
+              .stream()
+              .filter(
+                  e ->
+                      e.getKey().toLowerCase().startsWith("lo")
+                          && e.getValue().getActive()
+                          && e.getValue().getPrimaryAddress() != null)
+              .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+      interfacesToCheck = loopbackInterfaces.isEmpty() ? allInterfaces : loopbackInterfaces;
+
+      Ip lowesetIp = Ip.MAX;
+      for (Interface iface : interfacesToCheck.values()) {
+        if (!iface.getActive()) {
+          continue;
+        }
+        for (InterfaceAddress address : iface.getAllAddresses()) {
+          Ip ip = address.getIp();
+          if (lowesetIp.asLong() > ip.asLong()) {
+            lowesetIp = ip;
+          }
+        }
+      }
+      if (lowesetIp == Ip.MAX) {
+        _w.redFlag("No candidates for OSPF router-id");
+        return null;
+      }
+      routerId = lowesetIp;
+    }
+    return routerId;
   }
 
   public Map<String, ApplicationSet> getApplicationSets() {

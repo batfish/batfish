@@ -49,9 +49,14 @@ public class CompareSameNameTest {
         BatfishTestUtils.getBatfish(
             ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2), _folder);
 
-    CompareSameNameQuestion csnQuestion = new CompareSameNameQuestion();
-    csnQuestion.setNamedStructTypes(ImmutableSortedSet.of(IpAccessList.class.getSimpleName()));
-    csnQuestion.setSingletons(true);
+    CompareSameNameQuestion csnQuestion =
+        new CompareSameNameQuestion(
+            null,
+            null,
+            null,
+            ImmutableSortedSet.of(IpAccessList.class.getSimpleName()),
+            null,
+            true);
     CompareSameNameAnswerer csnAnswerer = new CompareSameNameAnswerer(csnQuestion, batfish);
     CompareSameNameAnswerElement answerNoAssumption = csnAnswerer.answer();
     batfish

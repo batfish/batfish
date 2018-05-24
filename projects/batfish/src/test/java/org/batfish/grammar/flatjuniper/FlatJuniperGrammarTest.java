@@ -37,6 +37,7 @@ import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprTh
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -433,6 +434,15 @@ public class FlatJuniperGrammarTest {
         not(Matchers.containsString("unimplemented pre-defined junos application")));
   }
 
+  @Test
+  public void testPredefinedJunosApplicationSets() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application-set")));
+  }
+
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
   @Test
   public void testBgpAllow() throws IOException {
@@ -461,9 +471,9 @@ public class FlatJuniperGrammarTest {
     Configuration c2 = configurations.get(c2Name);
     Configuration c3 = configurations.get(c3Name);
 
-    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1)))));
-    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1)))));
-    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1)))));
+    assertThat(c1, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c2, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
+    assertThat(c3, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborPrefix, hasLocalAs(1L)))));
   }
 
   @Test
@@ -1608,6 +1618,13 @@ public class FlatJuniperGrammarTest {
         hasDefaultVrf(
             hasOspfProcess(
                 hasArea(1L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))))));
+  }
+
+  @Test
+  public void testOspfRouterId() throws IOException {
+    Configuration c = parseConfig("ospf-router-id");
+
+    assertThat(c, hasVrf("default", hasOspfProcess(hasRouterId(equalTo(new Ip("1.0.0.0"))))));
   }
 
   @Test

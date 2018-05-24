@@ -130,11 +130,163 @@
           ]
         }
       },
+      "undefined:class-map:usage:policy-map class:ICMP-cmap" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'ICMP-cmap'",
+        "files" : {
+          "cisco_misc" : [
+            205
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:TCP-cmap" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'TCP-cmap'",
+        "files" : {
+          "cisco_misc" : [
+            207
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bippetyboo-drop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-drop'",
+        "files" : {
+          "cisco_qos" : [
+            43
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bippetyboo-ndrop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-ndrop'",
+        "files" : {
+          "cisco_qos" : [
+            59
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bippetyboo-ndrop-fcoe" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-ndrop-fcoe'",
+        "files" : {
+          "cisco_qos" : [
+            55
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bleefee" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bleefee'",
+        "files" : {
+          "cisco_qos" : [
+            95
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bleefee2" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bleefee2'",
+        "files" : {
+          "cisco_qos" : [
+            100
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:blerf" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'blerf'",
+        "files" : {
+          "cisco_qos" : [
+            91
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-bleeb-drop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-bleeb-drop'",
+        "files" : {
+          "cisco_qos" : [
+            102
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-bleeb-ndrop-fcoe" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-bleeb-ndrop-fcoe'",
+        "files" : {
+          "cisco_qos" : [
+            107
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-foob-drop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-drop'",
+        "files" : {
+          "cisco_qos" : [
+            74
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-foob-ndrop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-ndrop'",
+        "files" : {
+          "cisco_qos" : [
+            86
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-foob-ndrop-fcoe" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-ndrop-fcoe'",
+        "files" : {
+          "cisco_qos" : [
+            82
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:fffoooddd" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'fffoooddd'",
+        "files" : {
+          "cisco_qos" : [
+            65
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:floop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'floop'",
+        "files" : {
+          "cisco_qos" : [
+            112
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:inspection_default" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'inspection_default'",
+        "files" : {
+          "cisco_misc" : [
+            194
+          ]
+        }
+      },
+      "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:mytransformset" : {
+        "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
+        "files" : {
+          "cisco_crypto" : [
+            218
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:ipsec profile set transform-set:hijklmnop" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'ipsec profile set transform-set' named 'hijklmnop'",
         "files" : {
           "cisco_crypto" : [
-            139
+            146
+          ]
+        }
+      },
+      "undefined:crypto isakmp profile:usage:crypto map ipsec-isakmp isakmp-profile:myisakmpprofile" : {
+        "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'crypto map ipsec-isakmp isakmp-profile' named 'myisakmpprofile'",
+        "files" : {
+          "cisco_crypto" : [
+            214
+          ]
+        }
+      },
+      "undefined:crypto isakmp profile:usage:ipsec profile set isakmp-profile:someOtherprofile" : {
+        "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'ipsec profile set isakmp-profile' named 'someOtherprofile'",
+        "files" : {
+          "cisco_crypto" : [
+            149
           ]
         }
       },
@@ -142,7 +294,7 @@
         "description" : "Undefined reference to structure of type: 'crypto keyring' with usage: 'isakmp profile keyring' named 'VRF:MMS:RMT:UPM:1143'",
         "files" : {
           "cisco_crypto" : [
-            165
+            175
           ]
         }
       },
@@ -201,7 +353,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface incoming ip access-list' named 'ag1'",
         "files" : {
           "cisco_interface" : [
-            52
+            53
           ]
         }
       },
@@ -209,7 +361,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            119
+            120
           ]
         }
       },
@@ -217,7 +369,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            122
+            123
           ]
         }
       },
@@ -236,7 +388,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named 'ag2'",
         "files" : {
           "cisco_interface" : [
-            53
+            54
           ]
         }
       },
@@ -244,7 +396,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat destination acl' named 'mynatacl'",
         "files" : {
           "cisco_interface" : [
-            83
+            84
           ]
         }
       },
@@ -252,7 +404,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
           "cisco_interface" : [
-            86
+            87
           ]
         }
       },
@@ -530,7 +682,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'myvpnacl'",
         "files" : {
           "cisco_crypto" : [
-            201
+            212
           ]
         }
       },
@@ -538,7 +690,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface igmp access-group acl' named '1'",
         "files" : {
           "cisco_interface" : [
-            73
+            74
           ]
         }
       },
@@ -554,7 +706,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
           "cisco_interface" : [
-            86
+            87
           ]
         }
       },
@@ -685,7 +837,7 @@
         "description" : "Undefined reference to structure of type: 'nat pool' with usage: 'ip nat source pool' named 'beeble'",
         "files" : {
           "cisco_interface" : [
-            87
+            88
           ]
         }
       },
@@ -1041,7 +1193,7 @@
         "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
         "files" : {
           "cisco_interface" : [
-            271
+            273
           ]
         }
       }
@@ -1049,7 +1201,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 129
+      "numResults" : 148
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1283,21 +1435,38 @@
         "crypto ipsec transform-set" : {
           "hijklmnop" : {
             "ipsec profile set transform-set" : [
-              139
+              146
+            ]
+          },
+          "mytransformset" : {
+            "crypto map ipsec-isakmp transform-set" : [
+              218
+            ]
+          }
+        },
+        "crypto isakmp profile" : {
+          "myisakmpprofile" : {
+            "crypto map ipsec-isakmp isakmp-profile" : [
+              214
+            ]
+          },
+          "someOtherprofile" : {
+            "ipsec profile set isakmp-profile" : [
+              149
             ]
           }
         },
         "crypto keyring" : {
           "VRF:MMS:RMT:UPM:1143" : {
             "isakmp profile keyring" : [
-              165
+              175
             ]
           }
         },
         "ipv4/6 acl" : {
           "myvpnacl" : {
             "crypto map ipsec-isakmp acl" : [
-              201
+              212
             ]
           }
         }
@@ -1306,58 +1475,58 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              119
+              120
             ]
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              122
+              123
             ]
           },
           "ag1" : {
             "interface incoming ip access-list" : [
-              52
+              53
             ]
           },
           "ag2" : {
             "interface outgoing ip access-list" : [
-              53
+              54
             ]
           },
           "def" : {
             "ip nat source dynamic access-list" : [
-              86
+              87
             ]
           },
           "mynatacl" : {
             "ip nat destination acl" : [
-              83
+              84
             ]
           }
         },
         "ipv4/6 acl" : {
           "1" : {
             "interface igmp access-group acl" : [
-              73
+              74
             ]
           },
           "def" : {
             "ip nat source dynamic access-list" : [
-              86
+              87
             ]
           }
         },
         "nat pool" : {
           "beeble" : {
             "ip nat source pool" : [
-              87
+              88
             ]
           }
         },
         "zone security" : {
           "z1" : {
             "interface zone-member" : [
-              271
+              273
             ]
           }
         }
@@ -1404,6 +1573,23 @@
         }
       },
       "cisco_misc" : {
+        "class-map" : {
+          "ICMP-cmap" : {
+            "policy-map class" : [
+              205
+            ]
+          },
+          "TCP-cmap" : {
+            "policy-map class" : [
+              207
+            ]
+          },
+          "inspection_default" : {
+            "policy-map class" : [
+              194
+            ]
+          }
+        },
         "ipv4/6 acl" : {
           "cops-acl" : {
             "cops listener access-list" : [
@@ -1449,6 +1635,73 @@
           "boop" : {
             "class-map access-group" : [
               14
+            ]
+          }
+        },
+        "class-map" : {
+          "bippetyboo-drop" : {
+            "policy-map class" : [
+              43
+            ]
+          },
+          "bippetyboo-ndrop" : {
+            "policy-map class" : [
+              59
+            ]
+          },
+          "bippetyboo-ndrop-fcoe" : {
+            "policy-map class" : [
+              55
+            ]
+          },
+          "bleefee" : {
+            "policy-map class" : [
+              95
+            ]
+          },
+          "bleefee2" : {
+            "policy-map class" : [
+              100
+            ]
+          },
+          "blerf" : {
+            "policy-map class" : [
+              91
+            ]
+          },
+          "c-bleeb-drop" : {
+            "policy-map class" : [
+              102
+            ]
+          },
+          "c-bleeb-ndrop-fcoe" : {
+            "policy-map class" : [
+              107
+            ]
+          },
+          "c-foob-drop" : {
+            "policy-map class" : [
+              74
+            ]
+          },
+          "c-foob-ndrop" : {
+            "policy-map class" : [
+              86
+            ]
+          },
+          "c-foob-ndrop-fcoe" : {
+            "policy-map class" : [
+              82
+            ]
+          },
+          "fffoooddd" : {
+            "policy-map class" : [
+              65
+            ]
+          },
+          "floop" : {
+            "policy-map class" : [
+              112
             ]
           }
         },

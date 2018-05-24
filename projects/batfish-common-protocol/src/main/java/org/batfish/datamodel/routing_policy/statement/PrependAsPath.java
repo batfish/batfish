@@ -48,13 +48,13 @@ public class PrependAsPath extends Statement {
 
   @Override
   public Result execute(Environment environment) {
-    List<Integer> toPrepend = _expr.evaluate(environment);
-    List<SortedSet<Integer>> newAsPaths =
+    List<Long> toPrepend = _expr.evaluate(environment);
+    List<SortedSet<Long>> newAsPaths =
         toPrepend.stream().map(ImmutableSortedSet::of).collect(ImmutableList.toImmutableList());
 
     BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
     bgpRouteBuilder.setAsPath(
-        ImmutableList.<SortedSet<Integer>>builder()
+        ImmutableList.<SortedSet<Long>>builder()
             .addAll(newAsPaths)
             .addAll(bgpRouteBuilder.getAsPath())
             .build());
@@ -62,7 +62,7 @@ public class PrependAsPath extends Statement {
     if (environment.getWriteToIntermediateBgpAttributes()) {
       BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
       ir.setAsPath(
-          ImmutableList.<SortedSet<Integer>>builder()
+          ImmutableList.<SortedSet<Long>>builder()
               .addAll(newAsPaths)
               .addAll(ir.getAsPath())
               .build());

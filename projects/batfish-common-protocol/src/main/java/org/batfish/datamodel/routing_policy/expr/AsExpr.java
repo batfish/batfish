@@ -13,7 +13,7 @@ public abstract class AsExpr implements Serializable {
   @Override
   public abstract boolean equals(Object obj);
 
-  public abstract int evaluate(Environment environment);
+  public abstract long evaluate(Environment environment);
 
   @Override
   public abstract int hashCode();

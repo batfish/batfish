@@ -907,8 +907,8 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
 
-      int localAs = neighbor.getLocalAs();
-      int remoteAs = neighbor.getRemoteAs();
+      long localAs = neighbor.getLocalAs();
+      long remoteAs = neighbor.getRemoteAs();
       String remoteHostname = remoteIp.toString();
       String remoteVrfName = _vrf.getName();
       RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(neighbor.getExportPolicy());
@@ -1031,7 +1031,7 @@ public class VirtualRouter extends ComparableStructure<String> {
           }
         }
         if (ebgpSession) {
-          SortedSet<Integer> newAsPathElement = new TreeSet<>();
+          SortedSet<Long> newAsPathElement = new TreeSet<>();
           newAsPathElement.add(localAs);
           transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
         }
@@ -1169,8 +1169,8 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (localIp.equals(Ip.AUTO)) {
           localIp = remoteBgpNeighbor.getAddress();
         }
-        int localAs = neighbor.getLocalAs();
-        int remoteAs = neighbor.getRemoteAs();
+        long localAs = neighbor.getLocalAs();
+        long remoteAs = neighbor.getRemoteAs();
         Configuration remoteConfig = remoteBgpNeighbor.getOwner();
         String remoteHostname = remoteConfig.getHostname();
         String remoteVrfName = remoteBgpNeighbor.getVrf();
@@ -1338,7 +1338,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             }
           }
           if (ebgpSession) {
-            SortedSet<Integer> newAsPathElement = new TreeSet<>();
+            SortedSet<Long> newAsPathElement = new TreeSet<>();
             newAsPathElement.add(remoteAs);
             transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
           }

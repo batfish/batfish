@@ -33,6 +33,7 @@ java -cp $(location //third_party/org/antlr4/antlr4-complete) \
        $(location CiscoParser.g4) \
     -package org.batfish.grammar.cisco \
     -encoding UTF-8 \
+    -Werror \
     -o $(@D)""",
     tools = ["//third_party/org/antlr4/antlr4-complete"],
 )

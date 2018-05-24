@@ -551,6 +551,11 @@ CLEAR
    'clear'
 ;
 
+CLIENT_LIST
+:
+   'client-list'
+;
+
 CLIENT_LIST_NAME
 :
    'client-list-name'
@@ -4477,11 +4482,6 @@ SRLG_VALUE
    'srlg-value'
 ;
 
-START_TIME
-:
-   'start-time'
-;
-
 SMTP
 :
    'smtp'
@@ -4597,6 +4597,11 @@ STANDARD
    'standard'
 ;
 
+START_TIME
+:
+   'start-time'
+;
+
 STATIC
 :
    'static'
@@ -4635,6 +4640,11 @@ STORM_CONTROL_PROFILES
 STP
 :
    'stp'
+;
+
+STRUCTURED_DATA
+:
+   'structured-data'
 ;
 
 STUB

@@ -10,7 +10,7 @@ import org.hamcrest.Matcher;
 public class BgpNeighborMatchers {
 
   /** Provides a matcher that matches if the BGP neighbor has the specified localAs. */
-  public static HasLocalAs hasLocalAs(Integer localAs) {
+  public static HasLocalAs hasLocalAs(Long localAs) {
     return new HasLocalAs(equalTo(localAs));
   }
 
@@ -18,7 +18,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the BGP neighbor's
    * localAs.
    */
-  public static HasLocalAs hasLocalAs(Matcher<? super Integer> subMatcher) {
+  public static HasLocalAs hasLocalAs(Matcher<? super Long> subMatcher) {
     return new HasLocalAs(subMatcher);
   }
 
@@ -39,7 +39,7 @@ public class BgpNeighborMatchers {
   }
 
   /** Provides a matcher that matches if the BGP neighbor has the specified remoteAs. */
-  public static HasRemoteAs hasRemoteAs(Integer remoteAs) {
+  public static HasRemoteAs hasRemoteAs(Long remoteAs) {
     return new HasRemoteAs(equalTo(remoteAs));
   }
 
@@ -47,7 +47,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the BGP neighbor's
    * remoteAs.
    */
-  public static HasRemoteAs hasRemoteAs(Matcher<? super Integer> subMatcher) {
+  public static HasRemoteAs hasRemoteAs(Matcher<? super Long> subMatcher) {
     return new HasRemoteAs(subMatcher);
   }
 }
