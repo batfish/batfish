@@ -269,10 +269,16 @@ cipprf_set
 :
    SET
    (
-      cipprf_set_null
+      cipprf_set_isakmp_profile
+      | cipprf_set_null
       | cipprf_set_pfs
       | cipprf_set_transform_set
    )
+;
+
+cipprf_set_isakmp_profile
+:
+    ISAKMP_PROFILE name = variable NEWLINE
 ;
 
 cipprf_set_null

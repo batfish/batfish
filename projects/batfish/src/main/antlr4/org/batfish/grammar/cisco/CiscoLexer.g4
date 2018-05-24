@@ -5608,6 +5608,11 @@ ISAKMP
    'isakmp'
 ;
 
+ISAKMP_PROFILE
+:
+   'isakmp-profile'
+;
+
 ISDN
 :
    'isdn'
