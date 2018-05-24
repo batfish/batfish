@@ -153,7 +153,6 @@ public class AclTracerTest {
                             .setDstIps(new IpSpaceReference(ACL_IP_SPACE_NAME))
                             .build())))
             .build();
-
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ACL_IP_SPACE_NAME, aclIpSpace);
     AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
@@ -208,7 +207,6 @@ public class AclTracerTest {
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(aclIpSpace).build())))
             .build();
-
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
     AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
@@ -227,7 +225,6 @@ public class AclTracerTest {
                     IpAccessListLine.acceptingHeaderSpace(
                         HeaderSpace.builder().setDstIps(ipSpace).build())))
             .build();
-
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of();
     AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
@@ -301,7 +298,6 @@ public class AclTracerTest {
                             .setDstIps(new IpSpaceReference(ipSpaceName))
                             .build())))
             .build();
-
     Map<String, IpAccessList> availableAcls = ImmutableMap.of(ACL_NAME, acl);
     Map<String, IpSpace> namedIpSpaces = ImmutableMap.of(ipSpaceName, Ip.ZERO.toIpSpace());
     AclTrace trace = acl.trace(FLOW, SRC_INTERFACE, availableAcls, namedIpSpaces);
