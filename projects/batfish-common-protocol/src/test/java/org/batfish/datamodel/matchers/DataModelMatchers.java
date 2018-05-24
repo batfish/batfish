@@ -261,7 +261,7 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link DefaultDeniedByAclIpSpace} for the
+   * Provides a matcher that matches if the object is a {@link DefaultDeniedByAclIpSpace} for the
    * {@link AclIpSpace} named {@code aclName}.
    */
   public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByAclIpSpaceNamed(
@@ -271,8 +271,8 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link DefaultDeniedByAclIpSpace} matched
-   * by the provided {@code subMatcher}.
+   * Provides a matcher that matches if the object is a {@link DefaultDeniedByAclIpSpace} matched by
+   * the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByAclIpSpaceThat(
       Matcher<? super DefaultDeniedByAclIpSpace> subMatcher) {
@@ -280,7 +280,7 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link DefaultDeniedByIpAccessList} for the
+   * Provides a matcher that matches if the object is a {@link DefaultDeniedByIpAccessList} for the
    * {@link IpAccessList} named {@code aclName}.
    */
   public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByIpAccessListNamed(
@@ -290,7 +290,7 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link DefaultDeniedByIpAccessList} matched
+   * Provides a matcher that matches if the object is a {@link DefaultDeniedByIpAccessList} matched
    * by the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<TraceEvent> isDefaultDeniedByIpAccessListThat(
@@ -299,7 +299,7 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link DeniedByAclIpSpaceLine} matched by
+   * Provides a matcher that matches if the object is a {@link DeniedByAclIpSpaceLine} matched by
    * the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<TraceEvent> isDeniedByAclIpSpaceLineThat(
@@ -308,7 +308,7 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link DeniedByIpAccessListLine} matched by
+   * Provides a matcher that matches if the object is a {@link DeniedByIpAccessListLine} matched by
    * the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<TraceEvent> isDeniedByIpAccessListLineThat(
@@ -317,18 +317,17 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link DeniedByNamedIpSpace} for the {@link
+   * Provides a matcher that matches if the object is a {@link DeniedByNamedIpSpace} for the {@link
    * IpSpace} named {@code ipSpaceName}.
    */
-  public static @Nonnull Matcher<TraceEvent> isDeniedByNamedIpSpaceThat(
-      @Nonnull String ipSpaceName) {
+  public static @Nonnull Matcher<TraceEvent> isDeniedByNamedIpSpace(@Nonnull String ipSpaceName) {
     return new IsDeniedByNamedIpSpaceThat(
         new DeniedByNamedIpSpaceMatchers.HasName(equalTo(ipSpaceName)));
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link PermittedByAclIpSpaceLine} matched
-   * by the provided {@code subMatcher}.
+   * Provides a matcher that matches if the object is a {@link PermittedByAclIpSpaceLine} matched by
+   * the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<TraceEvent> isPermittedByAclIpSpaceLineThat(
       Matcher<? super PermittedByAclIpSpaceLine> subMatcher) {
@@ -336,7 +335,7 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link PermittedByIpAccessListLine} matched
+   * Provides a matcher that matches if the object is a {@link PermittedByIpAccessListLine} matched
    * by the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<TraceEvent> isPermittedByIpAccessListLineThat(
@@ -345,10 +344,10 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the object is an {@link PermittedByNamedIpSpace} for the
+   * Provides a matcher that matches if the object is a {@link PermittedByNamedIpSpace} for the
    * {@link IpSpace} named {@code ipSpaceName}.
    */
-  public static @Nonnull Matcher<TraceEvent> isPermittedByNamedIpSpaceThat(
+  public static @Nonnull Matcher<TraceEvent> isPermittedByNamedIpSpace(
       @Nonnull String ipSpaceName) {
     return new IsPermittedByNamedIpSpaceThat(
         new PermittedByNamedIpSpaceMatchers.HasName(equalTo(ipSpaceName)));

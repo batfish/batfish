@@ -5,10 +5,10 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isDefaultDeniedBy
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDefaultDeniedByIpAccessListNamed;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByAclIpSpaceLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByIpAccessListLineThat;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByNamedIpSpaceThat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isDeniedByNamedIpSpace;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclIpSpaceLineThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAccessListLineThat;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByNamedIpSpaceThat;
+import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByNamedIpSpace;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
@@ -208,7 +208,7 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isDeniedByNamedIpSpaceThat(ipSpaceName),
+                    isDeniedByNamedIpSpace(ipSpaceName),
                     isDefaultDeniedByIpAccessListNamed(aclName)))));
   }
 
@@ -347,7 +347,7 @@ public class AclTracerTest {
         hasEvents(
             contains(
                 ImmutableList.of(
-                    isPermittedByNamedIpSpaceThat(ipSpaceName),
+                    isPermittedByNamedIpSpace(ipSpaceName),
                     isPermittedByIpAccessListLineThat(
                         allOf(
                             PermittedByIpAccessListLineMatchers.hasName(aclName),
@@ -405,7 +405,6 @@ public class AclTracerTest {
     Flow flow = Flow.builder().setTag("tag").setDstIp(Ip.ZERO).setIngressNode("node1").build();
     AclTrace trace = acl.trace(flow, srcInterface, availableAcls, namedIpSpaces);
 
-    /* The ACL has no lines, so the only event should be a default deny */
     assertThat(
         trace,
         hasEvents(
