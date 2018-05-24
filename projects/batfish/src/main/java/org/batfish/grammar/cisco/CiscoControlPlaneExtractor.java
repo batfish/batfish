@@ -78,6 +78,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_ATTRIBUTE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_OTHER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_TABLE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP;
@@ -825,6 +826,7 @@ import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaCont
 import org.batfish.grammar.cisco.CiscoParser.Ts_hostContext;
 import org.batfish.grammar.cisco.CiscoParser.U_passwordContext;
 import org.batfish.grammar.cisco.CiscoParser.U_roleContext;
+import org.batfish.grammar.cisco.CiscoParser.Unsuppress_map_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Update_source_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_neighbor_group_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Use_session_group_bgp_tailContext;
@@ -7615,6 +7617,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitU_role(U_roleContext ctx) {
     String role = ctx.role.getText();
     _currentUser.setRole(role);
+  }
+
+  @Override
+  public void exitUnsuppress_map_bgp_tail(Unsuppress_map_bgp_tailContext ctx) {
+    String name = ctx.mapname.getText();
+    _configuration.referenceStructure(
+        CiscoStructureType.ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
   }
 
   @Override

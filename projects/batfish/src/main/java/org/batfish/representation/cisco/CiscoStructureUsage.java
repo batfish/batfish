@@ -37,6 +37,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   BGP_ROUTE_MAP_ATTRIBUTE("bgp address-family aggregate-address attribute-map"),
   BGP_ROUTE_MAP_OTHER("bgp otherwise in/outbound route-map"),
   BGP_ROUTE_MAP_SUPPRESS("bgp address-family aggregate-address suppress-map"),
+  BGP_ROUTE_MAP_UNSUPPRESS("bgp unsuppress-map"),
   BGP_TABLE_MAP("bgp table-map"),
   BGP_UPDATE_SOURCE_INTERFACE("update-source interface"),
   BGP_VRF_AGGREGATE_ROUTE_MAP("bgp vrf aggregate-address route-map"),

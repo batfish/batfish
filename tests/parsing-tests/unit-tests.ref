@@ -14482,6 +14482,16 @@
             "              (null_rest_of_line",
             "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "          ip = IP_ADDRESS:'10.0.0.1'  <== mode:M_NEIGHBOR",
+            "          (bgp_tail",
+            "            (unsuppress_map_bgp_tail",
+            "              UNSUPPRESS_MAP:'unsuppress-map'  <== mode:DEFAULT_MODE",
+            "              mapname = (variable_permissive",
+            "                VARIABLE:'UNSUPP-MAP'  <== mode:DEFAULT_MODE)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "      (router_bgp_stanza_tail",
             "        (address_family_rb_stanza",
             "          (address_family_header",
             "            ADDRESS_FAMILY:'address-family'  <== mode:DEFAULT_MODE",
@@ -14555,6 +14565,15 @@
             "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
             "      name = (variable",
             "        VARIABLE:'AGGREGATE-MAP'  <== mode:M_RouteMap)",
+            "      rmt = (access_list_action",
+            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "      num = DEC:'10'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'UNSUPP-MAP'  <== mode:M_RouteMap)",
             "      rmt = (access_list_action",
             "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
             "      num = DEC:'10'  <== mode:DEFAULT_MODE",
@@ -52600,7 +52619,8 @@
         },
         "cisco_bgp" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
+            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'",
+            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
           }
         },
         "cisco_style_acl1" : {
@@ -53119,19 +53139,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                32
+                33
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                30
+                31
+              ],
+              "numReferrers" : 1
+            },
+            "UNSUPP-MAP" : {
+              "definitionLines" : [
+                35
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                28
+                29
               ],
               "numReferrers" : 1
             }
