@@ -13867,6 +13867,75 @@
           }
         }
       },
+      "juniper_ospf_stub_areas" : {
+        "configurationFormat" : "FLAT_JUNIPER",
+        "name" : "juniper_ospf_stub_areas",
+        "defaultCrossZoneAction" : "ACCEPT",
+        "defaultInboundAction" : "ACCEPT",
+        "deviceType" : "ROUTER",
+        "routingPolicies" : {
+          "~OSPF_EXPORT_POLICY:default~" : {
+            "name" : "~OSPF_EXPORT_POLICY:default~",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                  "protocol" : "local"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ]
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                "metricType" : "E2"
+              },
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitReject"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ExitAccept"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        "vendorFamily" : {
+          "juniper" : { }
+        },
+        "vrfs" : {
+          "default" : {
+            "name" : "default",
+            "ospfProcess" : {
+              "areas" : {
+                "7" : {
+                  "name" : 7
+                },
+                "46" : {
+                  "name" : 46
+                }
+              },
+              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
+              "referenceBandwidth" : 1.0E9
+            }
+          }
+        }
+      },
       "juniper_passwords" : {
         "configurationFormat" : "FLAT_JUNIPER",
         "name" : "juniper_passwords",
@@ -17707,75 +17776,6 @@
         "vrfs" : {
           "default" : {
             "name" : "default"
-          }
-        }
-      },
-      "ospf-stub" : {
-        "configurationFormat" : "FLAT_JUNIPER",
-        "name" : "ospf-stub",
-        "defaultCrossZoneAction" : "ACCEPT",
-        "defaultInboundAction" : "ACCEPT",
-        "deviceType" : "ROUTER",
-        "routingPolicies" : {
-          "~OSPF_EXPORT_POLICY:default~" : {
-            "name" : "~OSPF_EXPORT_POLICY:default~",
-            "statements" : [
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                  "protocol" : "local"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ]
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
-                "metricType" : "E2"
-              },
-              {
-                "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "falseStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitReject"
-                  }
-                ],
-                "guard" : {
-                  "class" : "org.batfish.datamodel.routing_policy.expr.Disjunction"
-                },
-                "trueStatements" : [
-                  {
-                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
-                    "type" : "ExitAccept"
-                  }
-                ]
-              }
-            ]
-          }
-        },
-        "vendorFamily" : {
-          "juniper" : { }
-        },
-        "vrfs" : {
-          "default" : {
-            "name" : "default",
-            "ospfProcess" : {
-              "areas" : {
-                "7" : {
-                  "name" : 7
-                },
-                "46" : {
-                  "name" : 46
-                }
-              },
-              "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
-              "referenceBandwidth" : 1.0E9
-            }
           }
         }
       },

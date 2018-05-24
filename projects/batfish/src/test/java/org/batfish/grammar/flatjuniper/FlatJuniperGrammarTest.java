@@ -37,6 +37,7 @@ import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprTh
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
+import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -1617,6 +1618,13 @@ public class FlatJuniperGrammarTest {
         hasDefaultVrf(
             hasOspfProcess(
                 hasArea(1L, OspfAreaMatchers.hasInterfaces(not(hasItem("xe-0/0/0.3")))))));
+  }
+
+  @Test
+  public void testOspfRouterId() throws IOException {
+    Configuration c = parseConfig("ospf-router-id");
+
+    assertThat(c, hasVrf("default", hasOspfProcess(hasRouterId(equalTo(new Ip("1.0.0.0"))))));
   }
 
   @Test
