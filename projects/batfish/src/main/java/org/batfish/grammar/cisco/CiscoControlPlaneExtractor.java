@@ -4000,7 +4000,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitCrypto_map_ii_set_isakmp_profile(Crypto_map_ii_set_isakmp_profileContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    // only reference counting -- no more
+    // TODO: go beyond reference counting
     _configuration.referenceStructure(
         ISAKMP_PROFILE, name, CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE, line);
   }
@@ -4009,7 +4009,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitCrypto_map_ii_set_transform_set(Crypto_map_ii_set_transform_setContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    // only reference counting -- no more
+    // TODO: go beyond reference counting
     _configuration.referenceStructure(
         IPSEC_TRANSFORM_SET, name, CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET, line);
   }

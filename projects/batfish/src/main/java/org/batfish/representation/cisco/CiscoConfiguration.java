@@ -1137,14 +1137,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             CiscoStructureType.MAC_ACCESS_LIST));
   }
 
-  private void markIpsecProfiles(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.IPSEC_PROFILE, usage);
-  }
-
-  private void markIpsecTransformSets(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.IPSEC_TRANSFORM_SET, usage);
-  }
-
   private void markIpv4Acls(CiscoStructureUsage usage) {
     markAbstractStructure(
         CiscoStructureType.IPV4_ACCESS_LIST,
@@ -3665,29 +3657,24 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
     markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
-    // Crypto map
-    markConcreteStructure(
-        CiscoStructureType.IPSEC_TRANSFORM_SET,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET);
-    markConcreteStructure(
-        CiscoStructureType.ISAKMP_PROFILE,
-        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE);
-
     // L2tp
     markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
-    // Vpn
-    markIpsecProfiles(CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
+    // Crypto, Isakmp, and Ipsec
     markConcreteStructure(
-        CiscoStructureType.ISAKMP_PROFILE, CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
-    markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
-    markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
-
-    // ISAKMP mark self-references
+        CiscoStructureType.ISAKMP_PROFILE,
+        CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE,
+        CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
     markConcreteStructure(
         CiscoStructureType.ISAKMP_POLICY, CiscoStructureUsage.ISAKMP_POLICY_SELF_REF);
     markConcreteStructure(
-        CiscoStructureType.ISAKMP_PROFILE, CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF);
+        CiscoStructureType.IPSEC_PROFILE, CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
+    markConcreteStructure(
+        CiscoStructureType.IPSEC_TRANSFORM_SET,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
+        CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
+    markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
     // class-map
     markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
