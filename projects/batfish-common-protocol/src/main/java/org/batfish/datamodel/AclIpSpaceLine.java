@@ -36,8 +36,9 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
     }
   }
 
-  public static final AclIpSpaceLine PERMIT_ALL =
-      AclIpSpaceLine.builder().setIpSpace(UniverseIpSpace.INSTANCE).build();
+  public static final AclIpSpaceLine DENY_ALL = AclIpSpaceLine.reject(UniverseIpSpace.INSTANCE);
+
+  public static final AclIpSpaceLine PERMIT_ALL = AclIpSpaceLine.permit(UniverseIpSpace.INSTANCE);
 
   private static final String PROP_ACTION = "action";
 
