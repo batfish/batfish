@@ -7,6 +7,8 @@ public class IpsecProfile extends DefinedStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
+  private String _isakmpProfile;
+
   private DiffieHellmanGroup _pfsGroup;
 
   private String _transformSet;
@@ -15,12 +17,20 @@ public class IpsecProfile extends DefinedStructure<String> {
     super(name, definitionLine);
   }
 
+  public String getIsakmpProfile() {
+    return _isakmpProfile;
+  }
+
   public DiffieHellmanGroup getPfsGroup() {
     return _pfsGroup;
   }
 
   public String getTransformSet() {
     return _transformSet;
+  }
+
+  public void setIsakmpProfile(String isakmpProfile) {
+    _isakmpProfile = isakmpProfile;
   }
 
   public void setPfsGroup(DiffieHellmanGroup pfsGroup) {

@@ -36,6 +36,10 @@ if_channel_group
          | ON
          | PASSIVE
       )
+      (
+        NON_SILENT
+        | SILENT
+      )?
    )? NEWLINE
 ;
 
@@ -681,7 +685,6 @@ if_null_block
       | SERIAL
       | SERVICE
       | SERVICE_MODULE
-      | SERVICE_POLICY
       | SFLOW
       | SHAPE
       | SIGNALLED_BANDWIDTH
@@ -772,7 +775,7 @@ if_null_inner
       | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
 ;
 
 if_null_single
@@ -783,10 +786,11 @@ if_null_single
       | JUMBO
       | LINKDEBOUNCE
       | PHY
+      | SWITCHPORT CAPTURE
       | SUPPRESS_ARP
       | TRIMODE
       | TRUSTED
-   ) ~NEWLINE* NEWLINE
+   ) ~NEWLINE* NEWLINE // do not change to null_rest_of_line
 ;
 
 if_port_security
@@ -915,6 +919,11 @@ if_port_security_null
       | SECURE_MAC_ADDRESS
       | VIOLATION
    ) null_rest_of_line
+;
+
+if_service_policy
+:
+   SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
 ;
 
 if_shutdown
@@ -1265,6 +1274,7 @@ s_interface
       | if_no_ip_address
       | if_port_security
       | if_private_vlan
+      | if_service_policy
       | if_shutdown
       | if_spanning_tree
       | if_speed_auto

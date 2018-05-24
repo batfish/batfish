@@ -1137,14 +1137,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             CiscoStructureType.MAC_ACCESS_LIST));
   }
 
-  private void markIpsecProfiles(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.IPSEC_PROFILE, usage);
-  }
-
-  private void markIpsecTransformSets(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.IPSEC_TRANSFORM_SET, usage);
-  }
-
   private void markIpv4Acls(CiscoStructureUsage usage) {
     markAbstractStructure(
         CiscoStructureType.IPV4_ACCESS_LIST,
@@ -1181,10 +1173,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private void markServiceClasses(CiscoStructureUsage usage) {
     markConcreteStructure(CiscoStructureType.SERVICE_CLASS, usage);
-  }
-
-  private void markServiceObjectGroups(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.SERVICE_OBJECT_GROUP, usage);
   }
 
   private void processFailoverSettings() {
@@ -1481,11 +1469,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .getIpNetworks()
           .forEach(
               (prefix, routeMapOrEmpty) -> {
+                PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(prefix));
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefixSet(
-                            new DestinationNetwork(),
-                            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
+                            new DestinationNetwork(), new ExplicitPrefixSet(exportSpace)),
                         new Not(new MatchProtocol(RoutingProtocol.BGP)),
                         new Not(new MatchProtocol(RoutingProtocol.IBGP)),
                         new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
@@ -1494,6 +1482,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 ? new CallExpr(routeMapOrEmpty)
                                 : BooleanExprs.TRUE,
                             OriginType.IGP));
+                newBgpProcess.addToOriginationSpace(exportSpace);
                 exportConditions.add(new Conjunction(exportNetworkConditions));
               });
     }
@@ -1907,6 +1896,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               Conjunction exportNetworkConditions = new Conjunction();
               PrefixSpace space = new PrefixSpace();
               space.addPrefix(prefix);
+              newBgpProcess.addToOriginationSpace(space);
               exportNetworkConditions
                   .getConjuncts()
                   .add(new MatchPrefixSet(new DestinationNetwork(), new ExplicitPrefixSet(space)));
@@ -2189,8 +2179,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag("No remote-as set for peer: " + lpg.getName());
           continue;
         }
-        Integer pgLocalAs = lpg.getLocalAs();
-        int localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
+        Long pgLocalAs = lpg.getLocalAs();
+        long localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
         BgpNeighbor newNeighbor;
         if (lpg instanceof IpBgpPeerGroup) {
           IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
@@ -3465,6 +3455,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         policy.getProposals().put(transformSetName, c.getIpsecProposals().get(transformSetName));
       }
       c.getIpsecPolicies().put(name, policy);
+
+      if (profile.getIsakmpProfile() != null) {
+        _w.unimplemented("isakmp profiles set within ipsec profiles");
+      }
     }
 
     // ipsec vpns
@@ -3642,6 +3636,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ROUTE_MAP_ATTRIBUTE,
         CiscoStructureUsage.BGP_ROUTE_MAP_OTHER,
         CiscoStructureUsage.BGP_ROUTE_MAP_SUPPRESS,
+        CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
@@ -3668,22 +3663,30 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // L2tp
     markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
-    // Vpn
-    markIpsecProfiles(CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
-    markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
-    markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
-
-    // ISAKMP mark self-references
+    // Crypto, Isakmp, and Ipsec
+    markConcreteStructure(
+        CiscoStructureType.ISAKMP_PROFILE,
+        CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE,
+        CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
     markConcreteStructure(
         CiscoStructureType.ISAKMP_POLICY, CiscoStructureUsage.ISAKMP_POLICY_SELF_REF);
     markConcreteStructure(
-        CiscoStructureType.ISAKMP_PROFILE, CiscoStructureUsage.ISAKMP_PROFILE_SELF_REF);
+        CiscoStructureType.IPSEC_PROFILE, CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
+    markConcreteStructure(
+        CiscoStructureType.IPSEC_TRANSFORM_SET,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
+        CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
+    markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
     // class-map
     markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
+    markConcreteStructure(CiscoStructureType.CLASS_MAP, CiscoStructureUsage.POLICY_MAP_CLASS);
 
     // policy-map
     markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.POLICY_MAP, CiscoStructureUsage.INTERFACE_SERVICE_POLICY);
 
     // object-group
     markNetworkObjectGroups(

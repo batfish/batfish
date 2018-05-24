@@ -5,13 +5,17 @@ public class ApplicationOrApplicationSetReference extends ApplicationSetMemberRe
   /** */
   private static final long serialVersionUID = 1L;
 
+  private String _name;
+
   public ApplicationOrApplicationSetReference(String name) {
-    super(name);
+    _name = name;
   }
 
   @Override
   public ApplicationSetMember resolve(JuniperConfiguration jc) {
-    ApplicationSetMember application = jc.getApplications().get(_name);
-    return (application != null) ? application : jc.getApplicationSets().get(_name);
+    ApplicationSetMember applicationSetMember = jc.getApplications().get(_name);
+    return (applicationSetMember != null)
+        ? applicationSetMember
+        : jc.getApplicationSets().get(_name);
   }
 }

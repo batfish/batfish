@@ -2,6 +2,14 @@
   {
     "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
     "problems" : {
+      "unused:application:APP" : {
+        "description" : "Unused structure of type: 'application' with name: 'APP'",
+        "files" : {
+          "juniper_application" : [
+            4
+          ]
+        }
+      },
       "unused:as-path-set:ama-coe-as-path" : {
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
         "files" : {
@@ -236,13 +244,64 @@
           ]
         }
       },
+      "unused:class-map:bippety" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'bippety'",
+        "files" : {
+          "cisco_qos" : [
+            5,
+            6,
+            7
+          ]
+        }
+      },
+      "unused:class-map:boop" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'boop'",
+        "files" : {
+          "cisco_qos" : [
+            13,
+            14
+          ]
+        }
+      },
+      "unused:class-map:boppety" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'boppety'",
+        "files" : {
+          "cisco_qos" : [
+            8,
+            9,
+            10,
+            11
+          ]
+        }
+      },
+      "unused:class-map:copp-icmp" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'copp-icmp'",
+        "files" : {
+          "cisco_nxos" : [
+            7,
+            8
+          ]
+        }
+      },
+      "unused:class-map:cos_all" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'cos_all'",
+        "files" : {
+          "cisco_qos" : [
+            16,
+            17,
+            18
+          ]
+        }
+      },
       "unused:crypto ipsec profile:abcdefg" : {
         "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
         "files" : {
           "cisco_crypto" : [
-            138,
-            139,
-            140
+            145,
+            146,
+            147,
+            148,
+            149
           ]
         }
       },
@@ -250,9 +309,9 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
         "files" : {
           "cisco_crypto" : [
-            145,
-            146,
-            147
+            154,
+            155,
+            156
           ]
         }
       },
@@ -260,7 +319,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'IPSEC_AES_256'",
         "files" : {
           "cisco_crypto" : [
-            148
+            157
           ]
         }
       },
@@ -268,7 +327,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts1'",
         "files" : {
           "cisco_crypto" : [
-            149
+            158
           ]
         }
       },
@@ -276,7 +335,15 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts2'",
         "files" : {
           "cisco_crypto" : [
-            150
+            159
+          ]
+        }
+      },
+      "unused:crypto ipsec transform-set:noAuthHeader" : {
+        "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'noAuthHeader'",
+        "files" : {
+          "cisco_crypto" : [
+            160
           ]
         }
       },
@@ -284,8 +351,8 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            187,
-            188
+            198,
+            199
           ]
         }
       },
@@ -796,6 +863,40 @@
           ]
         }
       },
+      "unused:policy-map:global_policy" : {
+        "description" : "Unused structure of type: 'policy-map' with name: 'global_policy'",
+        "files" : {
+          "cisco_misc" : [
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210
+          ]
+        }
+      },
+      "unused:policy-map:limitarp" : {
+        "description" : "Unused structure of type: 'policy-map' with name: 'limitarp'",
+        "files" : {
+          "foundry_misc" : [
+            41,
+            42
+          ]
+        }
+      },
       "unused:policy-statement:POLICY-NAME" : {
         "description" : "Unused structure of type: 'policy-statement' with name: 'POLICY-NAME'",
         "files" : {
@@ -1273,7 +1374,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 127
+      "numResults" : 136
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1531,31 +1632,36 @@
       "cisco_crypto" : {
         "crypto ipsec profile" : {
           "abcdefg" : [
-            138,
-            139,
-            140
+            145,
+            146,
+            147,
+            148,
+            149
           ]
         },
         "crypto ipsec transform-set" : {
           "ESP-3DES-MD5" : [
-            145,
-            146,
-            147
+            154,
+            155,
+            156
           ],
           "IPSEC_AES_256" : [
-            148
+            157
           ],
           "cipts1" : [
-            149
+            158
           ],
           "cipts2" : [
-            150
+            159
+          ],
+          "noAuthHeader" : [
+            160
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            187,
-            188
+            198,
+            199
           ]
         }
       },
@@ -1670,9 +1776,61 @@
             176,
             177
           ]
+        },
+        "policy-map" : {
+          "global_policy" : [
+            193,
+            194,
+            195,
+            196,
+            197,
+            198,
+            199,
+            200,
+            201,
+            202,
+            203,
+            204,
+            205,
+            206,
+            207,
+            208,
+            209,
+            210
+          ]
+        }
+      },
+      "cisco_nxos" : {
+        "class-map" : {
+          "copp-icmp" : [
+            7,
+            8
+          ]
         }
       },
       "cisco_qos" : {
+        "class-map" : {
+          "bippety" : [
+            5,
+            6,
+            7
+          ],
+          "boop" : [
+            13,
+            14
+          ],
+          "boppety" : [
+            8,
+            9,
+            10,
+            11
+          ],
+          "cos_all" : [
+            16,
+            17,
+            18
+          ]
+        },
         "object-group network" : {
           "1.2.3.4-24" : [
             26,
@@ -1832,6 +1990,14 @@
           ]
         }
       },
+      "foundry_misc" : {
+        "policy-map" : {
+          "limitarp" : [
+            41,
+            42
+          ]
+        }
+      },
       "ios_xr_bgp_neighbor_group" : {
         "bgp group" : {
           "blabbety" : [
@@ -1866,6 +2032,13 @@
       "juniper-tcpflags" : {
         "firewall filter" : {
           "foo" : [
+            4
+          ]
+        }
+      },
+      "juniper_application" : {
+        "application" : {
+          "APP" : [
             4
           ]
         }

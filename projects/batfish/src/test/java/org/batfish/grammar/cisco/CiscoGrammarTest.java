@@ -129,6 +129,8 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
@@ -1289,6 +1291,18 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testBgpOriginationSpace() throws IOException {
+    Configuration c = parseConfig("ios-bgp-origination-space");
+
+    assertThat(
+        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+        equalTo(
+            new PrefixSpace(
+                PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
+                PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
+  }
+
+  @Test
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "bgp-remove-private-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
@@ -1467,7 +1481,7 @@ public class CiscoGrammarTest {
      * The peer with a remote-as should appear in the datamodel. The peer without a remote-as
      * should not appear, and there should be a warning about the missing remote-as.
      */
-    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborWithRemoteAs, hasRemoteAs(1)))));
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbor(neighborWithRemoteAs, hasRemoteAs(1L)))));
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(not(hasKey(neighborWithoutRemoteAs))))));
     assertThat(
         ccae,

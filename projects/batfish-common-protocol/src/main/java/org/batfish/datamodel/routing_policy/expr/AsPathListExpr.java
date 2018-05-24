@@ -14,7 +14,7 @@ public abstract class AsPathListExpr implements Serializable {
   @Override
   public abstract boolean equals(Object obj);
 
-  public abstract List<Integer> evaluate(Environment environment);
+  public abstract List<Long> evaluate(Environment environment);
 
   @Override
   public abstract int hashCode();

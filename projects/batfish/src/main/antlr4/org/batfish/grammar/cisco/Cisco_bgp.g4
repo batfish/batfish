@@ -223,6 +223,7 @@ bgp_tail
    | send_community_bgp_tail
    | shutdown_bgp_tail
    | subnet_bgp_tail
+   | unsuppress_map_bgp_tail
    | update_source_bgp_tail
    | weight_bgp_tail
 ;
@@ -1029,6 +1030,11 @@ template_peer_session_rb_stanza
    (
       EXIT_PEER_SESSION NEWLINE
    )?
+;
+
+unsuppress_map_bgp_tail
+:
+    UNSUPPRESS_MAP mapname = variable_permissive NEWLINE
 ;
 
 update_source_bgp_tail

@@ -140,13 +140,13 @@ public class RouteReflectionTest {
         .setVrf(vEdge1)
         .setBgpProcess(edge1Proc)
         .setClusterId(edge1LoopbackIp.asLong())
-        .setRemoteAs(1)
+        .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
         .setPeerAddress(as1PeeringIp)
         .setExportPolicy(edge1EbgpExportPolicy.getName())
         .build();
     RoutingPolicy edge1IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setRemoteAs(2)
+    _nb.setRemoteAs(2L)
         .setLocalIp(edge1LoopbackIp)
         .setPeerAddress(rrLoopbackIp)
         .setExportPolicy(edge1IbgpExportPolicy.getName())
@@ -172,7 +172,7 @@ public class RouteReflectionTest {
         .setVrf(vRr)
         .setBgpProcess(rrProc)
         .setClusterId(rrLoopbackIp.asLong())
-        .setRemoteAs(2)
+        .setRemoteAs(2L)
         .setLocalIp(rrLoopbackIp)
         .setExportPolicy(rrExportPolicy.getName());
     if (edge1RouteReflectorClient) {
@@ -203,13 +203,13 @@ public class RouteReflectionTest {
         .setVrf(vEdge2)
         .setBgpProcess(edge2Proc)
         .setClusterId(edge2LoopbackIp.asLong())
-        .setRemoteAs(3)
+        .setRemoteAs(3L)
         .setLocalIp(edge2EbgpIfaceIp)
         .setPeerAddress(as3PeeringIp)
         .setExportPolicy(edge2EbgpExportPolicy.getName())
         .build();
     RoutingPolicy edge2IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge2).build();
-    _nb.setRemoteAs(2)
+    _nb.setRemoteAs(2L)
         .setLocalIp(edge2LoopbackIp)
         .setPeerAddress(rrLoopbackIp)
         .setExportPolicy(edge2IbgpExportPolicy.getName())
@@ -233,7 +233,7 @@ public class RouteReflectionTest {
             configurations,
             topology,
             ImmutableSet.of(
-                _ab.setAsPath(AsPath.ofSingletonAsSets(1))
+                _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setDstIp(edge1EbgpIfaceIp)
                     .setDstNode(edge1.getName())
                     .setNetwork(AS1_PREFIX)
@@ -242,7 +242,7 @@ public class RouteReflectionTest {
                     .setSrcIp(as1PeeringIp)
                     .setSrcNode("as1Edge")
                     .build(),
-                _ab.setAsPath(AsPath.ofSingletonAsSets(3))
+                _ab.setAsPath(AsPath.ofSingletonAsSets(3L))
                     .setDstIp(edge2EbgpIfaceIp)
                     .setDstNode(edge2.getName())
                     .setNetwork(AS3_PREFIX)
@@ -285,13 +285,13 @@ public class RouteReflectionTest {
         .setVrf(vEdge1)
         .setBgpProcess(edge1Proc)
         .setClusterId(edge1LoopbackIp.asLong())
-        .setRemoteAs(1)
+        .setRemoteAs(1L)
         .setLocalIp(edge1EbgpIfaceIp)
         .setPeerAddress(as1PeeringIp)
         .setExportPolicy(edge1EbgpExportPolicy.getName())
         .build();
     RoutingPolicy edge1IbgpExportPolicy = _defaultExportPolicyBuilder.setOwner(edge1).build();
-    _nb.setRemoteAs(2)
+    _nb.setRemoteAs(2L)
         .setLocalIp(edge1LoopbackIp)
         .setPeerAddress(rr1LoopbackIp)
         .setExportPolicy(edge1IbgpExportPolicy.getName())
@@ -317,7 +317,7 @@ public class RouteReflectionTest {
         .setVrf(vRr1)
         .setBgpProcess(rr1Proc)
         .setClusterId(rr1LoopbackIp.asLong())
-        .setRemoteAs(2)
+        .setRemoteAs(2L)
         .setLocalIp(rr1LoopbackIp)
         .setExportPolicy(rr1ExportPolicy.getName())
         .setRouteReflectorClient(true)
@@ -366,7 +366,7 @@ public class RouteReflectionTest {
             configurations,
             topology,
             ImmutableSet.of(
-                _ab.setAsPath(AsPath.ofSingletonAsSets(1))
+                _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
                     .setDstIp(edge1EbgpIfaceIp)
                     .setDstNode(edge1.getName())
                     .setNetwork(AS1_PREFIX)
@@ -394,7 +394,7 @@ public class RouteReflectionTest {
     _nf = new NetworkFactory();
     _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     _ib = _nf.interfaceBuilder().setActive(true);
-    _nb = _nf.bgpNeighborBuilder().setLocalAs(2);
+    _nb = _nf.bgpNeighborBuilder().setLocalAs(2L);
     _pb = _nf.bgpProcessBuilder();
     _vb = _nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
     If acceptIffBgp = new If();

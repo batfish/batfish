@@ -22,8 +22,8 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private Configuration _owner;
     private Ip _localIp;
     private Ip _peerIpAddress;
-    private Integer _localAs;
-    private Integer _remoteAs;
+    private Long _localAs;
+    private Long _remoteAs;
     private BgpProcess _bgpProcess;
     private String _exportPolicy;
     private Boolean _advertiseExternal;
@@ -103,12 +103,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
       return this;
     }
 
-    public Builder setLocalAs(Integer localAs) {
+    public Builder setLocalAs(Long localAs) {
       _localAs = localAs;
       return this;
     }
 
-    public Builder setRemoteAs(Integer remoteAs) {
+    public Builder setRemoteAs(Long remoteAs) {
       _remoteAs = remoteAs;
       return this;
     }
@@ -267,7 +267,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   private SortedSet<String> _importPolicySources;
 
   /** The autonomous system number of the containing BGP process as reported to this peer */
-  private Integer _localAs;
+  private Long _localAs;
 
   /** The ip address of the containing router as reported to this peer */
   private Ip _localIp;
@@ -278,7 +278,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   private boolean _dynamic;
 
   /** The autonomous system number that the containing BGP process considers this peer to have. */
-  private Integer _remoteAs;
+  private Long _remoteAs;
 
   /** Flag indicating that this neighbor is a route reflector client */
   private boolean _routeReflectorClient;
@@ -539,7 +539,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonProperty(PROP_LOCAL_AS)
   @JsonPropertyDescription("The local autonomous system of this peering")
   @Nullable
-  public Integer getLocalAs() {
+  public Long getLocalAs() {
     return _localAs;
   }
 
@@ -565,7 +565,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   @JsonProperty(PROP_REMOTE_AS)
   @JsonPropertyDescription("The remote autonomous system of this peering")
   @Nullable
-  public Integer getRemoteAs() {
+  public Long getRemoteAs() {
     return _remoteAs;
   }
 
@@ -697,7 +697,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   }
 
   @JsonProperty(PROP_LOCAL_AS)
-  public void setLocalAs(Integer localAs) {
+  public void setLocalAs(Long localAs) {
     _localAs = localAs;
   }
 
@@ -712,7 +712,7 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   }
 
   @JsonProperty(PROP_REMOTE_AS)
-  public void setRemoteAs(Integer remoteAs) {
+  public void setRemoteAs(Long remoteAs) {
     _remoteAs = remoteAs;
   }
 

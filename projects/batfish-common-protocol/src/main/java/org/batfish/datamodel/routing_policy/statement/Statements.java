@@ -81,12 +81,11 @@ public enum Statements {
         case RemovePrivateAs:
           {
             BgpRoute.Builder bgpRouteBuilder = (BgpRoute.Builder) environment.getOutputRoute();
-            List<SortedSet<Integer>> newAsPath =
-                AsPath.removePrivateAs(bgpRouteBuilder.getAsPath());
+            List<SortedSet<Long>> newAsPath = AsPath.removePrivateAs(bgpRouteBuilder.getAsPath());
             bgpRouteBuilder.setAsPath(newAsPath);
             if (environment.getWriteToIntermediateBgpAttributes()) {
               BgpRoute.Builder ir = environment.getIntermediateBgpAttributes();
-              List<SortedSet<Integer>> iAsPath = AsPath.removePrivateAs(ir.getAsPath());
+              List<SortedSet<Long>> iAsPath = AsPath.removePrivateAs(ir.getAsPath());
               ir.setAsPath(iAsPath);
             }
             break;
