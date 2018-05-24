@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.question;
 
 import javax.annotation.Nullable;
 

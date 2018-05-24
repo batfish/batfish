@@ -6,6 +6,8 @@ import org.batfish.common.Snapshot;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
+import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 
@@ -14,7 +16,7 @@ import org.batfish.specifier.SpecifierContextImpl;
  * object. This involves getting the right configs and dataplane, and resolving Location, Node, and
  * IpSpace specifiers.
  */
-public final class ReachabilityParameterResolver {
+final class ReachabilityParametersResolver {
   private final Batfish _batfish;
 
   Map<String, Configuration> _configs;
@@ -25,7 +27,7 @@ public final class ReachabilityParameterResolver {
 
   private final Snapshot _snapshot;
 
-  private ReachabilityParameterResolver(
+  private ReachabilityParametersResolver(
       Batfish batfish, ReachabilityParameters params, Snapshot snapshot) {
     _batfish = batfish;
     _params = params;
@@ -36,8 +38,8 @@ public final class ReachabilityParameterResolver {
   public static ResolvedReachabilityParameters resolveReachabilityParameters(
       Batfish batfish, ReachabilityParameters params, Snapshot snapshot) {
 
-    ReachabilityParameterResolver resolver =
-        new ReachabilityParameterResolver(batfish, params, snapshot);
+    ReachabilityParametersResolver resolver =
+        new ReachabilityParametersResolver(batfish, params, snapshot);
 
     SpecifierContext context = new SpecifierContextImpl(batfish, resolver._configs);
     return ResolvedReachabilityParameters.builder()

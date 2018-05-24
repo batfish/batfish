@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.question;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

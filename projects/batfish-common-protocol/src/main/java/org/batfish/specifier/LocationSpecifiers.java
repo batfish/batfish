@@ -5,7 +5,9 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 
-public class LocationSpecifiers {
+public final class LocationSpecifiers {
+  private LocationSpecifiers() {}
+
   public static LocationSpecifier difference(
       @Nonnull LocationSpecifier locsIn, @Nonnull LocationSpecifier locsOut) {
     if (locsIn == NullLocationSpecifier.INSTANCE) {

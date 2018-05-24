@@ -1,4 +1,4 @@
-package org.batfish.main;
+package org.batfish.question;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
