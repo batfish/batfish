@@ -775,7 +775,7 @@ if_null_inner
       | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
-   ) null_rest_of_line
+   ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
 ;
 
 if_null_single
@@ -790,7 +790,7 @@ if_null_single
       | SUPPRESS_ARP
       | TRIMODE
       | TRUSTED
-   ) null_rest_of_line
+   ) ~NEWLINE* NEWLINE // do not change to null_rest_of_line
 ;
 
 if_port_security
