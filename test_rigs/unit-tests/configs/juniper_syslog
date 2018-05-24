@@ -76,7 +76,7 @@ set system syslog host 1.2.3.4 interactive-commands any
 set system syslog host 1.2.3.4 kernel notice
 set system syslog host 1.2.3.4 log-prefix abcdefg
 set system syslog host 1.2.3.4 match BIPPETY
-set system syslog host 1.2.3.4 port 1234
+set system syslog host 1.2.3.4 port 1234 structured-data
 set system syslog host 1.2.3.4 source-address 3.4.5.6
 set system syslog host 1.2.3.4 user info
 set system syslog time-format millisecond

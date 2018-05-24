@@ -2,6 +2,14 @@
   {
     "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
     "problems" : {
+      "unused:application:APP" : {
+        "description" : "Unused structure of type: 'application' with name: 'APP'",
+        "files" : {
+          "juniper_application" : [
+            4
+          ]
+        }
+      },
       "unused:as-path-set:ama-coe-as-path" : {
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
         "files" : {
@@ -1273,7 +1281,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 127
+      "numResults" : 128
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1866,6 +1874,13 @@
       "juniper-tcpflags" : {
         "firewall filter" : {
           "foo" : [
+            4
+          ]
+        }
+      },
+      "juniper_application" : {
+        "application" : {
+          "APP" : [
             4
           ]
         }
