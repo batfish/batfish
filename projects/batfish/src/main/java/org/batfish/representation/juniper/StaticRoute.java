@@ -11,8 +11,7 @@ public class StaticRoute implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-
-  protocols-default-route-preference-values.html */
+  /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-default-route-preference-values.html */
   private static final int DEFAULT_ADMIN_DISTANCE = 5;
 
   private int _distance;
