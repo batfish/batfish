@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 import static org.batfish.common.util.CommonUtil.nullIfEmpty;
+import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -10,7 +11,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -558,15 +558,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   public static Builder builder() {
     return new Builder();
-  }
-
-  private static boolean rangesContain(Collection<SubRange> ranges, int num) {
-    for (SubRange range : ranges) {
-      if (range.getStart() <= num && num <= range.getEnd()) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private SortedSet<Integer> _dscps;
