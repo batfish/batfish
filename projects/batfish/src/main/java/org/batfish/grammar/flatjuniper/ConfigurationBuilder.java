@@ -1280,12 +1280,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static Integer toInt(TerminalNode node) {
+  private static int toInt(TerminalNode node) {
     return toInt(node.getSymbol());
   }
 
   private static int toInt(Token token) {
     return Integer.parseInt(token.getText());
+  }
+
+  private static long toLong(TerminalNode node) {
+    return toLong(node.getSymbol());
   }
 
   private static long toLong(Token token) {
@@ -4535,14 +4539,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   private AsPath toAsPath(As_path_exprContext path) {
-    List<SortedSet<Integer>> asPath = new ArrayList<>();
+    List<SortedSet<Long>> asPath = new ArrayList<>();
     for (As_unitContext ctx : path.items) {
-      SortedSet<Integer> asSet = new TreeSet<>();
+      SortedSet<Long> asSet = new TreeSet<>();
       if (ctx.DEC() != null) {
-        asSet.add(toInt(ctx.DEC()));
+        asSet.add(toLong(ctx.DEC()));
       } else {
         for (Token token : ctx.as_set().items) {
-          asSet.add(toInt(token));
+          asSet.add(toLong(token));
         }
       }
       asPath.add(asSet);

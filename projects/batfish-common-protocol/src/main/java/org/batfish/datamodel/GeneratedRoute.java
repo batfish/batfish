@@ -18,7 +18,7 @@ public final class GeneratedRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, GeneratedRoute> {
 
-    private List<SortedSet<Integer>> _asPath;
+    private List<SortedSet<Long>> _asPath;
 
     private String _attributePolicy;
 
@@ -53,7 +53,7 @@ public final class GeneratedRoute extends AbstractRoute {
       return this;
     }
 
-    public Builder setAsPath(List<SortedSet<Integer>> asPath) {
+    public Builder setAsPath(List<SortedSet<Long>> asPath) {
       _asPath = asPath;
       return this;
     }

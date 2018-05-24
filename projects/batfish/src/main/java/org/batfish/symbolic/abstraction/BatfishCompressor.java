@@ -144,13 +144,13 @@ public class BatfishCompressor {
   private String internalRegex() {
     StringBuilder matchInternal = new StringBuilder("(,|\\\\{|\\\\}|^|\\$| )(");
     Collection<BgpNeighbor> neighbors = _graph.getEbgpNeighbors().values();
-    Set<Integer> allAsns = new HashSet<>();
+    Set<Long> allAsns = new HashSet<>();
     for (BgpNeighbor n : neighbors) {
-      Integer asn = n.getLocalAs();
+      Long asn = n.getLocalAs();
       allAsns.add(asn);
     }
     int i = 0;
-    for (Integer asn : allAsns) {
+    for (Long asn : allAsns) {
       i++;
       matchInternal.append(asn);
       if (i < allAsns.size()) {

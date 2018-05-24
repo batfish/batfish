@@ -2185,8 +2185,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           _w.redFlag("No remote-as set for peer: " + lpg.getName());
           continue;
         }
-        Integer pgLocalAs = lpg.getLocalAs();
-        int localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
+        Long pgLocalAs = lpg.getLocalAs();
+        long localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
         BgpNeighbor newNeighbor;
         if (lpg instanceof IpBgpPeerGroup) {
           IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
