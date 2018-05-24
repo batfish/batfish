@@ -138,6 +138,7 @@ crypto ipsec ikev2 ipsec-proposal ffffffffff
 crypto ipsec profile abcdefg
  set transform-set hijklmnop
  set ikev2-profile someprofile
+ set security-association lifetime kilobytes disable
 !
 crypto ipsec nat-transparency udp-encapsulation
 crypto ipsec nat-transparency spi-matching
