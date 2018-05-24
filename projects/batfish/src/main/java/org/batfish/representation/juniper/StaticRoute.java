@@ -11,6 +11,8 @@ public class StaticRoute implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private static final int DEFAULT_ADMIN_DISTANCE = 5;
+
   private int _distance;
 
   private boolean _drop;
@@ -30,6 +32,8 @@ public class StaticRoute implements Serializable {
   public StaticRoute(Prefix prefix) {
     _prefix = prefix;
     _policies = new ArrayList<>();
+    // default admin costs for static routes in Juniper
+    _distance = DEFAULT_ADMIN_DISTANCE;
   }
 
   public int getDistance() {

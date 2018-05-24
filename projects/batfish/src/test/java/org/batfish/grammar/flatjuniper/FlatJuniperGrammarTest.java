@@ -107,7 +107,6 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
-import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
@@ -1632,18 +1631,23 @@ public class FlatJuniperGrammarTest {
   @Test
   public void testStaticRoutePreference() throws IOException {
     Configuration c = parseConfig("static-route-preference");
-
+    c.getInterfaces();
     assertThat(
         c,
-        ConfigurationMatchers.hasVrf(
+        hasVrf(
             "default",
             hasStaticRoutes(
                 equalTo(
                     ImmutableSet.of(
                         StaticRoute.builder()
-                            .setNetwork(Prefix.ZERO)
+                            .setNetwork(Prefix.parse("1.2.3.4/24"))
                             .setNextHopIp(new Ip("10.0.0.1"))
                             .setAdministrativeCost(250)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("2.3.4.5/24"))
+                            .setNextHopIp(new Ip("10.0.0.2"))
+                            .setAdministrativeCost(5)
                             .build())))));
   }
 
