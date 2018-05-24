@@ -130,6 +130,134 @@
           ]
         }
       },
+      "undefined:class-map:usage:policy-map class:ICMP-cmap" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'ICMP-cmap'",
+        "files" : {
+          "cisco_misc" : [
+            205
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:TCP-cmap" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'TCP-cmap'",
+        "files" : {
+          "cisco_misc" : [
+            207
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bippetyboo-drop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-drop'",
+        "files" : {
+          "cisco_qos" : [
+            43
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bippetyboo-ndrop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-ndrop'",
+        "files" : {
+          "cisco_qos" : [
+            59
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bippetyboo-ndrop-fcoe" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-ndrop-fcoe'",
+        "files" : {
+          "cisco_qos" : [
+            55
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bleefee" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bleefee'",
+        "files" : {
+          "cisco_qos" : [
+            95
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:bleefee2" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bleefee2'",
+        "files" : {
+          "cisco_qos" : [
+            100
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:blerf" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'blerf'",
+        "files" : {
+          "cisco_qos" : [
+            91
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-bleeb-drop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-bleeb-drop'",
+        "files" : {
+          "cisco_qos" : [
+            102
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-bleeb-ndrop-fcoe" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-bleeb-ndrop-fcoe'",
+        "files" : {
+          "cisco_qos" : [
+            107
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-foob-drop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-drop'",
+        "files" : {
+          "cisco_qos" : [
+            74
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-foob-ndrop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-ndrop'",
+        "files" : {
+          "cisco_qos" : [
+            86
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:c-foob-ndrop-fcoe" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-ndrop-fcoe'",
+        "files" : {
+          "cisco_qos" : [
+            82
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:fffoooddd" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'fffoooddd'",
+        "files" : {
+          "cisco_qos" : [
+            65
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:floop" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'floop'",
+        "files" : {
+          "cisco_qos" : [
+            112
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map class:inspection_default" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'inspection_default'",
+        "files" : {
+          "cisco_misc" : [
+            194
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:mytransformset" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
         "files" : {
@@ -1064,7 +1192,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 131
+      "numResults" : 147
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1426,6 +1554,23 @@
         }
       },
       "cisco_misc" : {
+        "class-map" : {
+          "ICMP-cmap" : {
+            "policy-map class" : [
+              205
+            ]
+          },
+          "TCP-cmap" : {
+            "policy-map class" : [
+              207
+            ]
+          },
+          "inspection_default" : {
+            "policy-map class" : [
+              194
+            ]
+          }
+        },
         "ipv4/6 acl" : {
           "cops-acl" : {
             "cops listener access-list" : [
@@ -1471,6 +1616,73 @@
           "boop" : {
             "class-map access-group" : [
               14
+            ]
+          }
+        },
+        "class-map" : {
+          "bippetyboo-drop" : {
+            "policy-map class" : [
+              43
+            ]
+          },
+          "bippetyboo-ndrop" : {
+            "policy-map class" : [
+              59
+            ]
+          },
+          "bippetyboo-ndrop-fcoe" : {
+            "policy-map class" : [
+              55
+            ]
+          },
+          "bleefee" : {
+            "policy-map class" : [
+              95
+            ]
+          },
+          "bleefee2" : {
+            "policy-map class" : [
+              100
+            ]
+          },
+          "blerf" : {
+            "policy-map class" : [
+              91
+            ]
+          },
+          "c-bleeb-drop" : {
+            "policy-map class" : [
+              102
+            ]
+          },
+          "c-bleeb-ndrop-fcoe" : {
+            "policy-map class" : [
+              107
+            ]
+          },
+          "c-foob-drop" : {
+            "policy-map class" : [
+              74
+            ]
+          },
+          "c-foob-ndrop" : {
+            "policy-map class" : [
+              86
+            ]
+          },
+          "c-foob-ndrop-fcoe" : {
+            "policy-map class" : [
+              82
+            ]
+          },
+          "fffoooddd" : {
+            "policy-map class" : [
+              65
+            ]
+          },
+          "floop" : {
+            "policy-map class" : [
+              112
             ]
           }
         },
