@@ -62,6 +62,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
@@ -106,6 +107,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
@@ -1625,6 +1627,24 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("ospf-router-id");
 
     assertThat(c, hasVrf("default", hasOspfProcess(hasRouterId(equalTo(new Ip("1.0.0.0"))))));
+  }
+
+  @Test
+  public void testStaticRoutePreference() throws IOException {
+    Configuration c = parseConfig("static-route-preference");
+
+    assertThat(
+        c,
+        ConfigurationMatchers.hasVrf(
+            "default",
+            hasStaticRoutes(
+                equalTo(
+                    ImmutableSet.of(
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.ZERO)
+                            .setNextHopIp(new Ip("10.0.0.1"))
+                            .setAdministrativeCost(250)
+                            .build())))));
   }
 
   @Test
