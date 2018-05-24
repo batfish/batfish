@@ -97,9 +97,9 @@ public class VirtualRouterTest {
   private static final String NEIGHBOR_HOST_NAME = "neighbornode";
   private static final int TEST_ADMIN = 100;
   private static final Long TEST_AREA = 1L;
-  private static final int TEST_AS1 = 1;
-  private static final int TEST_AS2 = 2;
-  private static final int TEST_AS3 = 3;
+  private static final long TEST_AS1 = 1;
+  private static final long TEST_AS2 = 2;
+  private static final long TEST_AS3 = 3;
   private static final Ip TEST_DEST_IP = new Ip("2.2.2.2");
   private static final ConfigurationFormat FORMAT = ConfigurationFormat.CISCO_IOS;
   private static final int TEST_METRIC = 30;

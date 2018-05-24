@@ -246,7 +246,7 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
         // then, we can't assume remote AS will always be a single integer that is present and
         // non-null.
         bgpSessionInfo._sessionType = SessionType.UNKNOWN;
-        Integer remoteAs = bgpNeighbor.getRemoteAs();
+        Long remoteAs = bgpNeighbor.getRemoteAs();
         if (remoteAs != null && !remoteAs.equals(bgpNeighbor.getLocalAs())) {
           bgpSessionInfo._sessionType =
               ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
