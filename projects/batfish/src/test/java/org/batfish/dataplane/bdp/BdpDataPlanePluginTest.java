@@ -145,13 +145,13 @@ public class BdpDataPlanePluginTest {
     _nb.setOwner(core)
         .setVrf(corevrf)
         .setBgpProcess(coreProc)
-        .setRemoteAs(1)
-        .setLocalAs(1)
+        .setRemoteAs(1L)
+        .setLocalAs(1L)
         .setLocalIp(coreId)
         .setPeerAddress(neighborId1)
         .setExportPolicy(_epb.setOwner(core).build().getName())
         .build();
-    _nb.setRemoteAs(1).setLocalAs(1).setLocalIp(coreId).setPeerAddress(neighborId2).build();
+    _nb.setRemoteAs(1L).setLocalAs(1L).setLocalIp(coreId).setPeerAddress(neighborId2).build();
 
     Configuration n1 = _cb.setHostname("n1").build();
     Vrf n1Vrf = _vb.setOwner(n1).build();
@@ -161,8 +161,8 @@ public class BdpDataPlanePluginTest {
     _nb.setOwner(n1)
         .setVrf(n1Vrf)
         .setBgpProcess(n1Proc)
-        .setRemoteAs(1)
-        .setLocalAs(1)
+        .setRemoteAs(1L)
+        .setLocalAs(1L)
         .setLocalIp(neighborId1)
         .setPeerAddress(coreId)
         .setExportPolicy(_epb.setOwner(n1).build().getName())
@@ -176,8 +176,8 @@ public class BdpDataPlanePluginTest {
     _nb.setOwner(n2)
         .setVrf(n2Vrf)
         .setBgpProcess(n2Proc)
-        .setRemoteAs(1)
-        .setLocalAs(1)
+        .setRemoteAs(1L)
+        .setLocalAs(1L)
         .setLocalIp(neighborId2)
         .setPeerAddress(coreId)
         .setExportPolicy(_epb.setOwner(n2).build().getName())
@@ -214,15 +214,15 @@ public class BdpDataPlanePluginTest {
      * Properties of the routes
      */
     // Should appear only for path-length match
-    List<SortedSet<Integer>> asPath2 = AsPath.ofSingletonAsSets(2, 4, 6).getAsSets();
+    List<SortedSet<Long>> asPath2 = AsPath.ofSingletonAsSets(2L, 4L, 6L).getAsSets();
     // Should appear only for first-as match and path-length match
-    List<SortedSet<Integer>> asPath3a = AsPath.ofSingletonAsSets(3, 5, 6).getAsSets();
+    List<SortedSet<Long>> asPath3a = AsPath.ofSingletonAsSets(3L, 5L, 6L).getAsSets();
     // Should never appear
-    List<SortedSet<Integer>> asPath3b = AsPath.ofSingletonAsSets(3, 4, 4, 6).getAsSets();
+    List<SortedSet<Long>> asPath3b = AsPath.ofSingletonAsSets(3L, 4L, 4L, 6L).getAsSets();
     // Should always appear
-    AsPath bestAsPath = AsPath.ofSingletonAsSets(3, 4, 6);
-    List<SortedSet<Integer>> asPath3c = bestAsPath.getAsSets();
-    List<SortedSet<Integer>> asPath3d = bestAsPath.getAsSets();
+    AsPath bestAsPath = AsPath.ofSingletonAsSets(3L, 4L, 6L);
+    List<SortedSet<Long>> asPath3c = bestAsPath.getAsSets();
+    List<SortedSet<Long>> asPath3d = bestAsPath.getAsSets();
     Ip nextHop2 = new Ip("2.0.0.0");
     Ip nextHop3a = new Ip("3.0.0.1");
     Ip nextHop3b = new Ip("3.0.0.2");

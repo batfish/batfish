@@ -20,7 +20,7 @@ public class BgpRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, BgpRoute> {
 
-    private List<SortedSet<Integer>> _asPath;
+    private List<SortedSet<Long>> _asPath;
 
     private SortedSet<Long> _clusterList;
 
@@ -77,7 +77,7 @@ public class BgpRoute extends AbstractRoute {
           _weight);
     }
 
-    public List<SortedSet<Integer>> getAsPath() {
+    public List<SortedSet<Long>> getAsPath() {
       return _asPath;
     }
 
@@ -114,7 +114,7 @@ public class BgpRoute extends AbstractRoute {
       return _weight;
     }
 
-    public Builder setAsPath(List<SortedSet<Integer>> asPath) {
+    public Builder setAsPath(List<SortedSet<Long>> asPath) {
       _asPath = asPath;
       return getThis();
     }

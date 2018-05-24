@@ -1099,11 +1099,11 @@ public class CommonUtil {
           continue;
         }
       }
-      int localLocalAs = neighbor.getLocalAs();
-      int localRemoteAs = neighbor.getRemoteAs();
+      long localLocalAs = neighbor.getLocalAs();
+      long localRemoteAs = neighbor.getRemoteAs();
       for (BgpNeighbor candidateNeighbor : candidates) {
-        int remoteLocalAs = candidateNeighbor.getLocalAs();
-        int remoteRemoteAs = candidateNeighbor.getRemoteAs();
+        long remoteLocalAs = candidateNeighbor.getLocalAs();
+        long remoteRemoteAs = candidateNeighbor.getRemoteAs();
         if (neighbor.getLocalIp() == null
             || !candidateNeighbor.getPrefix().containsIp(neighbor.getLocalIp())
             || localLocalAs != remoteRemoteAs

@@ -24,19 +24,19 @@ public class AsPath implements Serializable, Comparable<AsPath> {
    * Returns true iff the provided AS number is reserved for private use by RFC 6696:
    * https://tools.ietf.org/html/rfc6996#section-5
    */
-  public static boolean isPrivateAs(int as) {
-    return (as >= 64512 && as <= 65535);
+  public static boolean isPrivateAs(long as) {
+    return (as >= 64512L && as <= 65534L) || (as >= 4200000000L && as <= 4294967294L);
   }
 
-  public static AsPath ofSingletonAsSets(Integer... asNums) {
+  public static AsPath ofSingletonAsSets(Long... asNums) {
     return ofSingletonAsSets(Arrays.asList(asNums));
   }
 
-  public static AsPath ofSingletonAsSets(List<Integer> asNums) {
+  public static AsPath ofSingletonAsSets(List<Long> asNums) {
     return new AsPath(asNums.stream().map(ImmutableSortedSet::of).collect(Collectors.toList()));
   }
 
-  public static List<SortedSet<Integer>> removePrivateAs(List<SortedSet<Integer>> asPath) {
+  public static List<SortedSet<Long>> removePrivateAs(List<SortedSet<Long>> asPath) {
     return asPath
         .stream()
         .map(
@@ -49,23 +49,23 @@ public class AsPath implements Serializable, Comparable<AsPath> {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private final List<SortedSet<Integer>> _asSets;
+  private final List<SortedSet<Long>> _asSets;
 
   @JsonCreator
-  public AsPath(List<SortedSet<Integer>> asSets) {
+  public AsPath(List<SortedSet<Long>> asSets) {
     _asSets = copyAsSets(asSets);
   }
 
   @Override
   public int compareTo(@Nonnull AsPath rhs) {
-    Iterator<SortedSet<Integer>> l = _asSets.iterator();
-    Iterator<SortedSet<Integer>> r = rhs._asSets.iterator();
+    Iterator<SortedSet<Long>> l = _asSets.iterator();
+    Iterator<SortedSet<Long>> r = rhs._asSets.iterator();
     while (l.hasNext()) {
       if (!r.hasNext()) {
         return 1;
       }
-      SortedSet<Integer> lVal = l.next();
-      SortedSet<Integer> rVal = r.next();
+      SortedSet<Long> lVal = l.next();
+      SortedSet<Long> rVal = r.next();
       int ret = CommonUtil.compareCollection(lVal, rVal);
       if (ret != 0) {
         return ret;
@@ -77,19 +77,14 @@ public class AsPath implements Serializable, Comparable<AsPath> {
     return 0;
   }
 
-  public boolean containsAs(int as) {
-    for (Set<Integer> asSet : _asSets) {
-      if (asSet.contains(as)) {
-        return true;
-      }
-    }
-    return false;
+  public boolean containsAs(long as) {
+    return _asSets.stream().anyMatch(a -> a.contains(as));
   }
 
-  private List<SortedSet<Integer>> copyAsSets(List<SortedSet<Integer>> asSets) {
-    List<SortedSet<Integer>> newAsSets = new ArrayList<>(asSets.size());
-    for (SortedSet<Integer> asSet : asSets) {
-      SortedSet<Integer> newAsSet = ImmutableSortedSet.copyOf(asSet);
+  private List<SortedSet<Long>> copyAsSets(List<SortedSet<Long>> asSets) {
+    List<SortedSet<Long>> newAsSets = new ArrayList<>(asSets.size());
+    for (SortedSet<Long> asSet : asSets) {
+      SortedSet<Long> newAsSet = ImmutableSortedSet.copyOf(asSet);
       newAsSets.add(newAsSet);
     }
     return newAsSets;
@@ -119,13 +114,13 @@ public class AsPath implements Serializable, Comparable<AsPath> {
 
   public String getAsPathString() {
     StringBuilder sb = new StringBuilder();
-    for (Set<Integer> asSet : _asSets) {
+    for (Set<Long> asSet : _asSets) {
       if (asSet.size() == 1) {
-        int elem = asSet.iterator().next();
+        long elem = asSet.iterator().next();
         sb.append(elem);
       } else {
         sb.append("{");
-        Iterator<Integer> i = asSet.iterator();
+        Iterator<Long> i = asSet.iterator();
         sb.append(i.next());
         while (i.hasNext()) {
           sb.append(",");
@@ -139,7 +134,7 @@ public class AsPath implements Serializable, Comparable<AsPath> {
   }
 
   @JsonValue
-  public List<SortedSet<Integer>> getAsSets() {
+  public List<SortedSet<Long>> getAsSets() {
     return copyAsSets(_asSets);
   }
 

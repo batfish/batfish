@@ -106,9 +106,9 @@ public class PrefixTracerTest {
         .setVrf(vrf1)
         .setBgpProcess(bp)
         .setLocalIp(neighbor1Ip)
-        .setLocalAs(1)
+        .setLocalAs(1L)
         .setPeerAddress(neighbor2Ip)
-        .setRemoteAs(2)
+        .setRemoteAs(2L)
         .setExportPolicy(policy.getName())
         .build();
 
@@ -127,9 +127,9 @@ public class PrefixTracerTest {
         .setVrf(vrf2)
         .setBgpProcess(bp)
         .setLocalIp(neighbor2Ip)
-        .setLocalAs(2)
+        .setLocalAs(2L)
         .setPeerAddress(neighbor1Ip)
-        .setRemoteAs(1)
+        .setRemoteAs(1L)
         .setExportPolicy(policy.getName())
         .build();
     return ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2);

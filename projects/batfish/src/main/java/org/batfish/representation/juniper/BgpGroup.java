@@ -50,7 +50,7 @@ public class BgpGroup implements Serializable {
 
   private Ip _localAddress;
 
-  private Integer _localAs;
+  private Long _localAs;
 
   private Integer _loops;
 
@@ -60,7 +60,7 @@ public class BgpGroup implements Serializable {
 
   private BgpGroup _parent;
 
-  private Integer _peerAs;
+  private Long _peerAs;
 
   private Boolean _removePrivate;
 
@@ -205,7 +205,7 @@ public class BgpGroup implements Serializable {
     return _localAddress;
   }
 
-  public final Integer getLocalAs() {
+  public final Long getLocalAs() {
     return _localAs;
   }
 
@@ -225,7 +225,7 @@ public class BgpGroup implements Serializable {
     return _parent;
   }
 
-  public Integer getPeerAs() {
+  public Long getPeerAs() {
     return _peerAs;
   }
 
@@ -289,7 +289,7 @@ public class BgpGroup implements Serializable {
     _localAddress = localAddress;
   }
 
-  public final void setLocalAs(int localAs) {
+  public final void setLocalAs(long localAs) {
     _localAs = localAs;
   }
 
@@ -309,7 +309,7 @@ public class BgpGroup implements Serializable {
     _parent = parent;
   }
 
-  public void setPeerAs(int peerAs) {
+  public void setPeerAs(long peerAs) {
     _peerAs = peerAs;
   }
 
