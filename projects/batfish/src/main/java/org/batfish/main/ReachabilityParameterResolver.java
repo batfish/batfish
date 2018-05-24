@@ -9,7 +9,12 @@ import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierContextImpl;
 
-public class ReachabilityParameterResolver {
+/**
+ * Resolve a {@link ReachabilityParameters} and return a {@link ResolvedReachabilityParameters}
+ * object. This involves getting the right configs and dataplane, and resolving Location, Node, and
+ * IpSpace specifiers.
+ */
+public final class ReachabilityParameterResolver {
   private final Batfish _batfish;
 
   Map<String, Configuration> _configs;

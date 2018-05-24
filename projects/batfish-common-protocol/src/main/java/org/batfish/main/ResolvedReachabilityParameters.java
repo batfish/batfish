@@ -12,7 +12,7 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.specifier.IpSpaceAssignment;
 
-public class ResolvedReachabilityParameters {
+public final class ResolvedReachabilityParameters {
 
   public static class Builder {
     private SortedSet<ForwardingAction> _actions;

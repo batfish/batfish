@@ -12,7 +12,7 @@ import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.NoNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
 
-public class ReachabilityParameters {
+public final class ReachabilityParameters {
 
   public static class Builder {
     private @Nonnull SortedSet<ForwardingAction> _actions = ImmutableSortedSet.of();
