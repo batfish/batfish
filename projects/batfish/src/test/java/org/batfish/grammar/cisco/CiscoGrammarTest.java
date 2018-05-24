@@ -1293,14 +1293,13 @@ public class CiscoGrammarTest {
   @Test
   public void testBgpOriginationSpace() throws IOException {
     Configuration c = parseConfig("ios-bgp-origination-space");
-    PrefixSpace space =
-        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace();
-    PrefixSpace expected =
-        new PrefixSpace(
-            PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
-            PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")));
 
-    assertThat(space, equalTo(expected));
+    assertThat(
+        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+        equalTo(
+            new PrefixSpace(
+                PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
+                PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
   }
 
   @Test
