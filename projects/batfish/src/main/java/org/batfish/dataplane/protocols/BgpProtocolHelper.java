@@ -10,6 +10,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
@@ -116,6 +117,8 @@ public class BgpProtocolHelper {
           return null;
         }
       }
+    } else {
+      transformedOutgoingRouteBuilder.setOriginType(OriginType.INCOMPLETE);
     }
 
     // Outgoing asPath
