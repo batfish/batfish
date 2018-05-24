@@ -23,11 +23,12 @@ import static org.batfish.representation.cisco.CiscoStructureType.INTERFACE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureType.IPSEC_TRANSFORM_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV4_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED;
 import static org.batfish.representation.cisco.CiscoStructureType.IPV6_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST;
-import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST_EXTENDED;
-import static org.batfish.representation.cisco.CiscoStructureType.IP_ACCESS_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.ISAKMP_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
@@ -94,8 +95,10 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_INCOMING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
@@ -130,17 +133,15 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SPT_THRES
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
-import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IP_ACCESS_LIST;
-import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IP_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET;
-import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST;
-import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV4_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SSH_IPV6_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
@@ -1807,7 +1808,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration
             .getExtendedAcls()
             .computeIfAbsent(name, n -> new ExtendedAccessList(n, definitionLine));
-    defineStructure(IP_ACCESS_LIST_EXTENDED, name, ctx);
+    defineStructure(IPV4_ACCESS_LIST_EXTENDED, name, ctx);
     _currentExtendedAcl = list;
   }
 
@@ -1826,7 +1827,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getExtendedIpv6Acls()
             .computeIfAbsent(name, n -> new ExtendedIpv6AccessList(n, definitionLine));
     _currentExtendedIpv6Acl = list;
-    defineStructure(IPV6_ACCESS_LIST_STANDARD, name, ctx);
+    defineStructure(IPV6_ACCESS_LIST_EXTENDED, name, ctx);
   }
 
   @Override
@@ -3370,7 +3371,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getStandardAcls()
             .computeIfAbsent(name, n -> new StandardAccessList(n, definitionLine));
     _currentStandardAcl = list;
-    defineStructure(IP_ACCESS_LIST_STANDARD, name, ctx);
+    defineStructure(IPV4_ACCESS_LIST_STANDARD, name, ctx);
   }
 
   @Override
@@ -3388,7 +3389,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .getStandardIpv6Acls()
             .computeIfAbsent(name, n -> new StandardIpv6AccessList(n, definitionLine));
     _currentStandardIpv6Acl = list;
-    defineStructure(IPV6_ACCESS_LIST, name, ctx);
+    defineStructure(IPV6_ACCESS_LIST_STANDARD, name, ctx);
   }
 
   @Override
@@ -4553,19 +4554,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_access_group(If_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
+    CiscoStructureUsage usage = null;
     if (ctx.IN() != null || ctx.INGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setIncomingFilter(name);
         currentInterface.setIncomingFilterLine(line);
+        usage = INTERFACE_INCOMING_FILTER;
       }
     } else if (ctx.OUT() != null || ctx.EGRESS() != null) {
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setOutgoingFilter(name);
         currentInterface.setOutgoingFilterLine(line);
+        usage = INTERFACE_OUTGOING_FILTER;
       }
     } else {
       throw new BatfishException("bad direction");
     }
+    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, usage, line);
   }
 
   @Override
@@ -4643,7 +4648,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int aclLine = ctx.acl.getStart().getLine();
       nat.setAclName(acl);
       nat.setAclNameLine(aclLine);
-      _configuration.referenceStructure(IP_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_SOURCE_ACCESS_LIST, aclLine);
     }
     if (ctx.pool != null) {
       String pool = ctx.pool.getText();
@@ -5355,7 +5360,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration.getLineIpv6AccessClassLists().add(name);
       } else {
         setter = Line::setOutputAccessList;
-        structureType = IP_ACCESS_LIST;
+        structureType = IPV4_ACCESS_LIST;
         structureUsage = LINE_ACCESS_CLASS_LIST;
         _configuration.getLineAccessClassLists().add(name);
       }
@@ -5368,7 +5373,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration.getLineIpv6AccessClassLists().add(name);
       } else {
         setter = Line::setInputAccessList;
-        structureType = IP_ACCESS_LIST;
+        structureType = IPV4_ACCESS_LIST;
         structureUsage = LINE_ACCESS_CLASS_LIST;
         _configuration.getLineAccessClassLists().add(name);
       }
@@ -5593,55 +5598,50 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitMatch_ip_access_list_rm_stanza(Match_ip_access_list_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Set<String> names = new TreeSet<>();
     for (Variable_access_listContext v : ctx.name_list) {
       names.add(v.getText());
       _configuration.referenceStructure(
-          IP_ACCESS_LIST, v.getText(), ROUTE_MAP_MATCH_IP_ACCESS_LIST, v.getStart().getLine());
+          IPV4_ACCESS_LIST, v.getText(),
+          ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, v.getStart().getLine());
     }
-    RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(names, statementLine);
+    RouteMapMatchIpAccessListLine line = new RouteMapMatchIpAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
   }
 
   @Override
   public void exitMatch_ip_prefix_list_rm_stanza(Match_ip_prefix_list_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Set<String> names = new TreeSet<>();
     for (VariableContext t : ctx.name_list) {
       names.add(t.getText());
       _configuration.referenceStructure(
-          PREFIX_LIST, t.getText(), ROUTE_MAP_MATCH_IP_PREFIX_LIST, t.getStart().getLine());
+          PREFIX_LIST, t.getText(), ROUTE_MAP_MATCH_IPV4_PREFIX_LIST, t.getStart().getLine());
     }
-    RouteMapMatchIpPrefixListLine line = new RouteMapMatchIpPrefixListLine(names, statementLine);
+    RouteMapMatchIpPrefixListLine line = new RouteMapMatchIpPrefixListLine(names);
     _currentRouteMapClause.addMatchLine(line);
   }
 
   @Override
   public void exitMatch_ipv6_access_list_rm_stanza(Match_ipv6_access_list_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Set<String> names = new TreeSet<>();
     for (Variable_access_listContext v : ctx.name_list) {
       names.add(v.getText());
       _configuration.referenceStructure(
           IPV6_ACCESS_LIST, v.getText(), ROUTE_MAP_MATCH_IPV6_ACCESS_LIST, v.getStart().getLine());
     }
-    RouteMapMatchIpv6AccessListLine line =
-        new RouteMapMatchIpv6AccessListLine(names, statementLine);
+    RouteMapMatchIpv6AccessListLine line = new RouteMapMatchIpv6AccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
   }
 
   @Override
   public void exitMatch_ipv6_prefix_list_rm_stanza(Match_ipv6_prefix_list_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Set<String> names = new TreeSet<>();
     for (VariableContext t : ctx.name_list) {
       names.add(t.getText());
       _configuration.referenceStructure(
           PREFIX6_LIST, t.getText(), ROUTE_MAP_MATCH_IPV6_PREFIX_LIST, t.getStart().getLine());
     }
-    RouteMapMatchIpv6PrefixListLine line =
-        new RouteMapMatchIpv6PrefixListLine(names, statementLine);
+    RouteMapMatchIpv6PrefixListLine line = new RouteMapMatchIpv6PrefixListLine(names);
     _currentRouteMapClause.addMatchLine(line);
   }
 
@@ -7281,7 +7281,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       line = ctx.acl4.getStart().getLine();
       _configuration.getSnmpAccessLists().add(name);
       _currentSnmpCommunity.setAccessList(name);
-      _configuration.referenceStructure(IP_ACCESS_LIST, name, SNMP_SERVER_COMMUNITY_ACL, line);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, SNMP_SERVER_COMMUNITY_ACL4, line);
     }
     if (ctx.acl6 != null) {
       String name = ctx.acl6.getText();
@@ -7316,7 +7316,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(IPV6_ACCESS_LIST, acl, SSH_IPV6_ACL, line);
     } else {
       _configuration.getSshAcls().add(acl);
-      _configuration.referenceStructure(IP_ACCESS_LIST, acl, SSH_ACL, line);
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, SSH_IPV4_ACL, line);
     }
   }
 

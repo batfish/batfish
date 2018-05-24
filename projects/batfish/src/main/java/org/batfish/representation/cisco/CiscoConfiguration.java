@@ -1095,8 +1095,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.IP_ACCESS_LIST,
         usage,
         ImmutableList.of(
-            CiscoStructureType.IP_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IP_ACCESS_LIST_EXTENDED,
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
             CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
             CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
   }
@@ -1130,8 +1130,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.ACCESS_LIST,
         usage,
         Arrays.asList(
-            CiscoStructureType.IP_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IP_ACCESS_LIST_STANDARD,
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
             CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
             CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
             CiscoStructureType.MAC_ACCESS_LIST));
@@ -1150,8 +1150,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.IPV4_ACCESS_LIST,
         usage,
         ImmutableList.of(
-            CiscoStructureType.IP_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IP_ACCESS_LIST_EXTENDED));
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
   }
 
   private void markIpv6Acls(CiscoStructureUsage usage) {
@@ -2444,51 +2444,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {
-      IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);
-      if (incomingFilter == null) {
-        undefined(
-            CiscoStructureType.IP_ACCESS_LIST,
-            incomingFilterName,
-            CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
-            iface.getIncomingFilterLine());
-      } else {
-        String msg = "incoming acl for interface: " + iface.getName();
-        ExtendedAccessList incomingExtendedAccessList =
-            _extendedAccessLists.get(incomingFilterName);
-        if (incomingExtendedAccessList != null) {
-          incomingExtendedAccessList.getReferers().put(iface, msg);
-        }
-        StandardAccessList incomingStandardAccessList =
-            _standardAccessLists.get(incomingFilterName);
-        if (incomingStandardAccessList != null) {
-          incomingStandardAccessList.getReferers().put(iface, msg);
-        }
-      }
-      newIface.setIncomingFilter(incomingFilter);
+      newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
     }
     String outgoingFilterName = iface.getOutgoingFilter();
     if (outgoingFilterName != null) {
-      IpAccessList outgoingFilter = ipAccessLists.get(outgoingFilterName);
-      if (outgoingFilter == null) {
-        undefined(
-            CiscoStructureType.IP_ACCESS_LIST,
-            outgoingFilterName,
-            CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
-            iface.getOutgoingFilterLine());
-      } else {
-        String msg = "outgoing acl for interface: " + iface.getName();
-        ExtendedAccessList outgoingExtendedAccessList =
-            _extendedAccessLists.get(outgoingFilterName);
-        if (outgoingExtendedAccessList != null) {
-          outgoingExtendedAccessList.getReferers().put(iface, msg);
-        }
-        StandardAccessList outgoingStandardAccessList =
-            _standardAccessLists.get(outgoingFilterName);
-        if (outgoingStandardAccessList != null) {
-          outgoingStandardAccessList.getReferers().put(iface, msg);
-        }
-      }
-      newIface.setOutgoingFilter(outgoingFilter);
+      newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
     }
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
@@ -3582,12 +3542,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markAcls(CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL);
+    markIpv4Acls(CiscoStructureUsage.INTERFACE_INCOMING_FILTER);
     markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST);
+    markIpv4Acls(CiscoStructureUsage.INTERFACE_OUTGOING_FILTER);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER);
     markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST);
     markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST);
-    markAcls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
+    markIpv4Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
     markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6);
     markIpv4Acls(CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP);
@@ -3601,6 +3563,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL);
     markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST);
+    markIpv4Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST);
+    markIpv6Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST);
     markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL);
     markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST);
@@ -3621,7 +3585,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.PREFIX_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IP_PREFIX_LIST);
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
     markConcreteStructure(
         CiscoStructureType.PREFIX6_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
@@ -3722,12 +3686,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordDocsisPolicies();
     recordDocsisPolicyRules();
     recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
-    recordIpAccessLists();
     recordStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
     recordStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
     recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
-    recordIpv6AccessLists();
     recordStructure(_natPools, CiscoStructureType.NAT_POOL);
     recordPeerGroups();
     recordPeerSessions();
@@ -4159,8 +4121,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   private void recordIpAccessLists() {
-    recordStructure(_extendedAccessLists, CiscoStructureType.IP_ACCESS_LIST_EXTENDED);
-    recordStructure(_standardAccessLists, CiscoStructureType.IP_ACCESS_LIST_STANDARD);
+    recordStructure(_extendedAccessLists, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED);
+    recordStructure(_standardAccessLists, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD);
   }
 
   private void recordIpv6AccessLists() {

@@ -1947,7 +1947,7 @@
       "definedStructures" : {
         "D1" : { },
         "D2" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "drop10" : {
               "definitionLines" : [
                 74,
@@ -1959,7 +1959,7 @@
           }
         },
         "R" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "policy-filter" : {
               "definitionLines" : [
                 84,

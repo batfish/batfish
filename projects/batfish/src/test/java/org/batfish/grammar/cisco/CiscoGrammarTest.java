@@ -280,9 +280,10 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(hostName, CiscoStructureType.MAC_ACCESS_LIST, "mac_acl", 1));
     assertThat(
         ccae,
-        hasNumReferrers(hostName, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "ip_acl_unused", 0));
+        hasNumReferrers(
+            hostName, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "ip_acl_unused", 0));
     assertThat(
-        ccae, hasNumReferrers(hostName, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "ip_acl", 1));
+        ccae, hasNumReferrers(hostName, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "ip_acl", 1));
   }
 
   @Test
@@ -421,6 +422,64 @@ public class CiscoGrammarTest {
             CiscoStructureType.NETWORK_OBJECT_GROUP,
             "ognfake1",
             CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+  }
+
+  @Test
+  public void testIosAclReferences() throws IOException {
+    String hostname = "ios-acl";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference counts are correct for ACLs
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 3));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "10", 0));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED, "AL6", 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD, "AL6_UNUSED", 0));
+
+    // Confirm undefined references are detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_UNDEF",
+            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV6_ACCESS_LIST,
+            "AL6_UNDEF",
+            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_IF_UNDEF",
+            CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_IF_UNDEF",
+            CiscoStructureUsage.INTERFACE_INCOMING_FILTER));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_IF_UNDEF",
+            CiscoStructureUsage.INTERFACE_OUTGOING_FILTER));
   }
 
   @Test
@@ -912,10 +971,10 @@ public class CiscoGrammarTest {
      */
     assertThat(
         ccae,
-        hasNumReferrers(hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "acldefined", 1));
+        hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "acldefined", 1));
     assertThat(
         ccae,
-        hasNumReferrers(hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "aclunused", 0));
+        hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "aclunused", 0));
 
     /*
      * We expect an undefined reference only to aclundefined

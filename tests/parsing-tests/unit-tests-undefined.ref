@@ -213,6 +213,39 @@
           ]
         }
       },
+      "undefined:ipv4 acl:usage:ip nat source dynamic access-list:def" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
+        "files" : {
+          "cisco_interface" : [
+            86
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:line access-class list:40" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'line access-class list' named '40'",
+        "files" : {
+          "cisco_line" : [
+            6,
+            25
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:line access-class list:99" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'line access-class list' named '99'",
+        "files" : {
+          "cisco_line" : [
+            55
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:line access-class list:vty-acl" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'line access-class list' named 'vty-acl'",
+        "files" : {
+          "cisco_line" : [
+            21
+          ]
+        }
+      },
       "undefined:ipv4 acl:usage:management telnet ip access-group:abc" : {
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'management telnet ip access-group' named 'abc'",
         "files" : {
@@ -248,10 +281,124 @@
           ]
         }
       },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:1" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named '1'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:2" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named '2'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:4" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named '4'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:456def" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named '456def'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:5" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named '5'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:95qrs5" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named '95qrs5'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:a4" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named 'a4'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:abc123" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named 'abc123'",
+        "files" : {
+          "named_and_numbered_lists" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:route-map match ipv4 access-list:test" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named 'test'",
+        "files" : {
+          "cisco_route_map" : [
+            21
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:1" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named '1'",
+        "files" : {
+          "cisco_snmp" : [
+            9
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:2" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named '2'",
+        "files" : {
+          "cisco_snmp" : [
+            8,
+            10
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:52" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named '52'",
+        "files" : {
+          "cadant_snmp" : [
+            7
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:customer-snmp" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named 'customer-snmp'",
+        "files" : {
+          "cisco_snmp" : [
+            14
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:dummyacl" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named 'dummyacl'",
+        "files" : {
+          "cisco_snmp" : [
+            13
+          ]
+        }
+      },
       "undefined:ipv4 acl:usage:snmp server community ipv4 acl:snmp-acl" : {
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named 'snmp-acl'",
         "files" : {
           "cisco_snmp" : [
+            7,
             11
           ]
         }
@@ -261,6 +408,14 @@
         "files" : {
           "cisco_snmp" : [
             12
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:snmp server community ipv4 acl:to-VTY" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'snmp server community ipv4 acl' named 'to-VTY'",
+        "files" : {
+          "cisco_snmp" : [
+            16
           ]
         }
       },
@@ -280,40 +435,48 @@
           ]
         }
       },
-      "undefined:ipv4 prefix-list:usage:route-map match ip prefix-list:ABC_DEF" : {
-        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ip prefix-list' named 'ABC_DEF'",
+      "undefined:ipv4 acl:usage:ssh ipv4 access-list:blib" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ssh ipv4 access-list' named 'blib'",
+        "files" : {
+          "foundry_misc" : [
+            31
+          ]
+        }
+      },
+      "undefined:ipv4 prefix-list:usage:route-map match ipv4 prefix-list:ABC_DEF" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ipv4 prefix-list' named 'ABC_DEF'",
         "files" : {
           "underscore_variable" : [
             5
           ]
         }
       },
-      "undefined:ipv4 prefix-list:usage:route-map match ip prefix-list:_GHI" : {
-        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ip prefix-list' named '_GHI'",
+      "undefined:ipv4 prefix-list:usage:route-map match ipv4 prefix-list:_GHI" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ipv4 prefix-list' named '_GHI'",
         "files" : {
           "underscore_variable" : [
             5
           ]
         }
       },
-      "undefined:ipv4 prefix-list:usage:route-map match ip prefix-list:bar-prefix-list" : {
-        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ip prefix-list' named 'bar-prefix-list'",
+      "undefined:ipv4 prefix-list:usage:route-map match ipv4 prefix-list:bar-prefix-list" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ipv4 prefix-list' named 'bar-prefix-list'",
         "files" : {
           "cadant_route_map" : [
             6
           ]
         }
       },
-      "undefined:ipv4 prefix-list:usage:route-map match ip prefix-list:bobble" : {
-        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ip prefix-list' named 'bobble'",
+      "undefined:ipv4 prefix-list:usage:route-map match ipv4 prefix-list:bobble" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ipv4 prefix-list' named 'bobble'",
         "files" : {
           "cisco_route_map" : [
             31
           ]
         }
       },
-      "undefined:ipv4 prefix-list:usage:route-map match ip prefix-list:hpr-connector-subnets" : {
-        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ip prefix-list' named 'hpr-connector-subnets'",
+      "undefined:ipv4 prefix-list:usage:route-map match ipv4 prefix-list:hpr-connector-subnets" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ipv4 prefix-list' named 'hpr-connector-subnets'",
         "files" : {
           "cisco_route_map" : [
             5
@@ -379,6 +542,14 @@
           ]
         }
       },
+      "undefined:ipv4/6 acl:usage:interface outgoing ip access-list:ag2" : {
+        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface outgoing ip access-list' named 'ag2'",
+        "files" : {
+          "cisco_interface" : [
+            53
+          ]
+        }
+      },
       "undefined:ipv4/6 acl:usage:ip nat source dynamic access-list:def" : {
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
@@ -400,103 +571,6 @@
         "files" : {
           "cisco_ip" : [
             11
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:line access-class list:40" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'line access-class list' named '40'",
-        "files" : {
-          "cisco_line" : [
-            6,
-            25
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:line access-class list:99" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'line access-class list' named '99'",
-        "files" : {
-          "cisco_line" : [
-            55
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:line access-class list:vty-acl" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'line access-class list' named 'vty-acl'",
-        "files" : {
-          "cisco_line" : [
-            21
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:1" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named '1'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:2" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named '2'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:4" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named '4'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:456def" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named '456def'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:5" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named '5'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:95qrs5" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named '95qrs5'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:a4" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named 'a4'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:abc123" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named 'abc123'",
-        "files" : {
-          "named_and_numbered_lists" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:route-map match ip access-list:test" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'route-map match ip access-list' named 'test'",
-        "files" : {
-          "cisco_route_map" : [
-            21
           ]
         }
       },
@@ -535,63 +609,6 @@
           ]
         }
       },
-      "undefined:ipv4/6 acl:usage:snmp server community acl:1" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server community acl' named '1'",
-        "files" : {
-          "cisco_snmp" : [
-            9
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:snmp server community acl:2" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server community acl' named '2'",
-        "files" : {
-          "cisco_snmp" : [
-            8,
-            10
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:snmp server community acl:52" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server community acl' named '52'",
-        "files" : {
-          "cadant_snmp" : [
-            7
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:snmp server community acl:customer-snmp" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server community acl' named 'customer-snmp'",
-        "files" : {
-          "cisco_snmp" : [
-            14
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:snmp server community acl:dummyacl" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server community acl' named 'dummyacl'",
-        "files" : {
-          "cisco_snmp" : [
-            13
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:snmp server community acl:snmp-acl" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server community acl' named 'snmp-acl'",
-        "files" : {
-          "cisco_snmp" : [
-            7
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:snmp server community acl:to-VTY" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server community acl' named 'to-VTY'",
-        "files" : {
-          "cisco_snmp" : [
-            16
-          ]
-        }
-      },
       "undefined:ipv4/6 acl:usage:snmp server file transfer acl:8" : {
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'snmp server file transfer acl' named '8'",
         "files" : {
@@ -605,14 +622,6 @@
         "files" : {
           "cisco_snmp" : [
             92
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:ssh acl:blib" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ssh acl' named 'blib'",
-        "files" : {
-          "foundry_misc" : [
-            31
           ]
         }
       },
@@ -1040,7 +1049,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 128
+      "numResults" : 129
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1185,7 +1194,7 @@
       "cadant_route_map" : {
         "ipv4 prefix-list" : {
           "bar-prefix-list" : {
-            "route-map match ip prefix-list" : [
+            "route-map match ipv4 prefix-list" : [
               6
             ]
           }
@@ -1199,9 +1208,9 @@
         }
       },
       "cadant_snmp" : {
-        "ipv4/6 acl" : {
+        "ipv4 acl" : {
           "52" : {
-            "snmp server community acl" : [
+            "snmp server community ipv4 acl" : [
               7
             ]
           }
@@ -1300,6 +1309,11 @@
               119
             ]
           },
+          "def" : {
+            "ip nat source dynamic access-list" : [
+              86
+            ]
+          },
           "mynatacl" : {
             "ip nat destination acl" : [
               83
@@ -1320,6 +1334,11 @@
           "ag1" : {
             "interface incoming ip access-list" : [
               52
+            ]
+          },
+          "ag2" : {
+            "interface outgoing ip access-list" : [
+              53
             ]
           },
           "def" : {
@@ -1358,7 +1377,7 @@
         }
       },
       "cisco_line" : {
-        "ipv4/6 acl" : {
+        "ipv4 acl" : {
           "40" : {
             "line access-class list" : [
               6,
@@ -1454,30 +1473,52 @@
         }
       },
       "cisco_route_map" : {
+        "ipv4 acl" : {
+          "test" : {
+            "route-map match ipv4 access-list" : [
+              21
+            ]
+          }
+        },
         "ipv4 prefix-list" : {
           "bobble" : {
-            "route-map match ip prefix-list" : [
+            "route-map match ipv4 prefix-list" : [
               31
             ]
           },
           "hpr-connector-subnets" : {
-            "route-map match ip prefix-list" : [
+            "route-map match ipv4 prefix-list" : [
               5
-            ]
-          }
-        },
-        "ipv4/6 acl" : {
-          "test" : {
-            "route-map match ip access-list" : [
-              21
             ]
           }
         }
       },
       "cisco_snmp" : {
         "ipv4 acl" : {
+          "1" : {
+            "snmp server community ipv4 acl" : [
+              9
+            ]
+          },
+          "2" : {
+            "snmp server community ipv4 acl" : [
+              8,
+              10
+            ]
+          },
+          "customer-snmp" : {
+            "snmp server community ipv4 acl" : [
+              14
+            ]
+          },
+          "dummyacl" : {
+            "snmp server community ipv4 acl" : [
+              13
+            ]
+          },
           "snmp-acl" : {
             "snmp server community ipv4 acl" : [
+              7,
               11
             ]
           },
@@ -1485,46 +1526,20 @@
             "snmp server community ipv4 acl" : [
               12
             ]
+          },
+          "to-VTY" : {
+            "snmp server community ipv4 acl" : [
+              16
+            ]
           }
         },
         "ipv4/6 acl" : {
-          "1" : {
-            "snmp server community acl" : [
-              9
-            ]
-          },
-          "2" : {
-            "snmp server community acl" : [
-              8,
-              10
-            ]
-          },
           "8" : {
             "snmp server file transfer acl" : [
               67
             ],
             "snmp server tftp-server list" : [
               92
-            ]
-          },
-          "customer-snmp" : {
-            "snmp server community acl" : [
-              14
-            ]
-          },
-          "dummyacl" : {
-            "snmp server community acl" : [
-              13
-            ]
-          },
-          "snmp-acl" : {
-            "snmp server community acl" : [
-              7
-            ]
-          },
-          "to-VTY" : {
-            "snmp server community acl" : [
-              16
             ]
           }
         },
@@ -1574,9 +1589,9 @@
         }
       },
       "foundry_misc" : {
-        "ipv4/6 acl" : {
+        "ipv4 acl" : {
           "blib" : {
-            "ssh acl" : [
+            "ssh ipv4 access-list" : [
               31
             ]
           }
@@ -1697,44 +1712,44 @@
         }
       },
       "named_and_numbered_lists" : {
-        "ipv4/6 acl" : {
+        "ipv4 acl" : {
           "1" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           },
           "2" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           },
           "4" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           },
           "456def" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           },
           "5" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           },
           "95qrs5" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           },
           "a4" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           },
           "abc123" : {
-            "route-map match ip access-list" : [
+            "route-map match ipv4 access-list" : [
               5
             ]
           }
@@ -1919,12 +1934,12 @@
       "underscore_variable" : {
         "ipv4 prefix-list" : {
           "ABC_DEF" : {
-            "route-map match ip prefix-list" : [
+            "route-map match ipv4 prefix-list" : [
               5
             ]
           },
           "_GHI" : {
-            "route-map match ip prefix-list" : [
+            "route-map match ipv4 prefix-list" : [
               5
             ]
           }

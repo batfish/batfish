@@ -19,7 +19,7 @@
       "definedStructures" : {
         "host1" : { },
         "us_border" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "acl-atlantis-nat" : {
               "definitionLines" : [
                 28,
