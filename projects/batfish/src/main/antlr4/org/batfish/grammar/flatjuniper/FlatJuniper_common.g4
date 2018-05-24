@@ -566,6 +566,11 @@ variable_permissive
    ~NEWLINE+
 ;
 
+variable_policy
+:
+   text = ~( DESCRIPTION | MATCH | THEN )+
+;
+
 wildcard_address
 :
    ip_address = IP_ADDRESS FORWARD_SLASH wildcard_mask = IP_ADDRESS

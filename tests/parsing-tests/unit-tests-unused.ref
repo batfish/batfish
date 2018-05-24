@@ -2,6 +2,14 @@
   {
     "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresAnswerElement",
     "problems" : {
+      "unused:application:APP" : {
+        "description" : "Unused structure of type: 'application' with name: 'APP'",
+        "files" : {
+          "juniper_application" : [
+            4
+          ]
+        }
+      },
       "unused:as-path-set:ama-coe-as-path" : {
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
         "files" : {
@@ -291,7 +299,8 @@
           "cisco_crypto" : [
             138,
             139,
-            140
+            140,
+            141
           ]
         }
       },
@@ -299,9 +308,9 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
         "files" : {
           "cisco_crypto" : [
-            145,
             146,
-            147
+            147,
+            148
           ]
         }
       },
@@ -309,7 +318,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'IPSEC_AES_256'",
         "files" : {
           "cisco_crypto" : [
-            148
+            149
           ]
         }
       },
@@ -317,7 +326,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts1'",
         "files" : {
           "cisco_crypto" : [
-            149
+            150
           ]
         }
       },
@@ -325,7 +334,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts2'",
         "files" : {
           "cisco_crypto" : [
-            150
+            151
           ]
         }
       },
@@ -333,8 +342,8 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            187,
-            188
+            188,
+            189
           ]
         }
       },
@@ -1356,7 +1365,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 134
+      "numResults" : 135
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1616,29 +1625,30 @@
           "abcdefg" : [
             138,
             139,
-            140
+            140,
+            141
           ]
         },
         "crypto ipsec transform-set" : {
           "ESP-3DES-MD5" : [
-            145,
             146,
-            147
-          ],
-          "IPSEC_AES_256" : [
+            147,
             148
           ],
-          "cipts1" : [
+          "IPSEC_AES_256" : [
             149
           ],
-          "cipts2" : [
+          "cipts1" : [
             150
+          ],
+          "cipts2" : [
+            151
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            187,
-            188
+            188,
+            189
           ]
         }
       },
@@ -2009,6 +2019,13 @@
       "juniper-tcpflags" : {
         "firewall filter" : {
           "foo" : [
+            4
+          ]
+        }
+      },
+      "juniper_application" : {
+        "application" : {
+          "APP" : [
             4
           ]
         }

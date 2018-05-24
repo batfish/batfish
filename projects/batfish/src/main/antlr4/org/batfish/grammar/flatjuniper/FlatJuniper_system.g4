@@ -172,6 +172,7 @@ sysh_null
       | MATCH
       | PORT
       | SOURCE_ADDRESS
+      | STRUCTURED_DATA
       | USER
    ) null_filler
 ;
