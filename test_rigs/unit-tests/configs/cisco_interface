@@ -25,6 +25,7 @@ interface Ethernet0
  channel-group 1 mode active
  channel-group 1 mode auto
  channel-group 1 mode desirable
+ channel-group 1 mode desirable non-silent
  channel-group 1 mode on
  channel-group 1 mode passive
  delay 1
@@ -235,6 +236,7 @@ interface Ethernet0
  switchport backup interface Gi1/0 preemption mode forced
  no switchport block unicast
  no switchport block multicast
+ switchport capture
  no switchport dot1q ethertype
  switchport mode trunk
  no switchport monitor
