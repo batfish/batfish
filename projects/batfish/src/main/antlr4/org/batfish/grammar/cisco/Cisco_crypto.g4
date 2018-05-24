@@ -243,7 +243,7 @@ cip_profile
 
 cip_transform_set
 :
-   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication NEWLINE
+   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication? NEWLINE
    (
       cipt_mode
    )*
@@ -639,8 +639,36 @@ crypto_map_ii_null
    (
       DESCRIPTION
       | REVERSE_ROUTE
-      | SET
    ) null_rest_of_line
+;
+
+crypto_map_ii_set
+:
+    SET
+    (
+       crypto_map_ii_set_isakmp_profile
+       | crypto_map_ii_set_null
+       | crypto_map_ii_set_transform_set
+    )
+;
+
+crypto_map_ii_set_isakmp_profile
+:
+    ISAKMP_PROFILE name = variable NEWLINE
+;
+
+crypto_map_ii_set_null
+:
+    (
+        PEER
+        | PFS
+        | SECURITY_ASSOCIATION
+    ) null_rest_of_line
+;
+
+crypto_map_ii_set_transform_set
+:
+    TRANSFORM_SET name = variable NEWLINE
 ;
 
 crypto_map_ipsec_isakmp
@@ -649,6 +677,7 @@ crypto_map_ipsec_isakmp
    (
       crypto_map_ii_match_address
       | crypto_map_ii_null
+      | crypto_map_ii_set
    )*
 ;
 

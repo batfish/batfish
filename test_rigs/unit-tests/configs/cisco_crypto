@@ -150,6 +150,7 @@ crypto ipsec transform-set ESP-3DES-MD5 esp-3des esp-md5-hmac
 crypto ipsec transform-set IPSEC_AES_256 esp-aes 256 esp-sha-hmac
 crypto ipsec transform-set cipts1 esp-aes 256 esp-sha256-hmac
 crypto ipsec transform-set cipts2 esp-aes 256 esp-sha512-hmac
+crypto ipsec transform-set noAuthHeader esp-aes 256
 crypto isakmp identity address
 crypto isakmp invalid-spi-recovery
 crypto isakmp keepalive 10 3 periodic

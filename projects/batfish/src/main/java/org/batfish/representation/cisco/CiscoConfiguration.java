@@ -3665,6 +3665,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
     markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
+    // Crypto map
+    markConcreteStructure(
+        CiscoStructureType.IPSEC_TRANSFORM_SET,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET);
+    markConcreteStructure(
+        CiscoStructureType.ISAKMP_PROFILE,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ISAKMP_PROFILE);
+
     // L2tp
     markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
