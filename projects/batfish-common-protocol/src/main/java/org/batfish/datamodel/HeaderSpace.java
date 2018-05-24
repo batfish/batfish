@@ -1128,7 +1128,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return true;
   }
 
-  public Builder rebuild() {
+  public Builder toBuilder() {
     return builder()
         .setDscps(_dscps)
         .setDstIps(_dstIps)

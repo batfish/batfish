@@ -163,7 +163,7 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
 
     HeaderSpace specializedHeaderSpace =
         headerSpace
-            .rebuild()
+            .toBuilder()
             .setDstIps(simplifyPositiveIpConstraint(dstIps))
             .setNotDstIps(simplifyNegativeIpConstraint(notDstIps))
             .setNotSrcIps(simplifyNegativeIpConstraint(notSrcIps))

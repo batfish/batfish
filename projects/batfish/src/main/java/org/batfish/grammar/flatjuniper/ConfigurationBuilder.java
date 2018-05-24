@@ -2641,7 +2641,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace
-            .rebuild()
+            .toBuilder()
             .setDstPorts(
                 ImmutableSet.<SubRange>builder()
                     .addAll(oldHeaderSpace.getDstPorts())
@@ -2656,7 +2656,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace
-            .rebuild()
+            .toBuilder()
             .setIpProtocols(
                 ImmutableSet.<IpProtocol>builder()
                     .addAll(oldHeaderSpace.getIpProtocols())
@@ -2671,7 +2671,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     HeaderSpace oldHeaderSpace = _currentApplicationTerm.getHeaderSpace();
     _currentApplicationTerm.setHeaderSpace(
         oldHeaderSpace
-            .rebuild()
+            .toBuilder()
             .setSrcPorts(
                 ImmutableSet.<SubRange>builder()
                     .addAll(oldHeaderSpace.getSrcPorts())
