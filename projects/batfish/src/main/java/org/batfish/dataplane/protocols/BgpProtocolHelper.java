@@ -128,7 +128,7 @@ public class BgpProtocolHelper {
       }
     }
     if (ebgpSession) {
-      SortedSet<Integer> newAsPathElement = new TreeSet<>();
+      SortedSet<Long> newAsPathElement = new TreeSet<>();
       newAsPathElement.add(fromNeighbor.getLocalAs());
       transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
     }

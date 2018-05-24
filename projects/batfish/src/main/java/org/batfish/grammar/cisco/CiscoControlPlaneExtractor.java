@@ -1111,7 +1111,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.asn != null) {
       return toLong(ctx.asn);
     }
-    return toLong(ctx.asn_hi) << 16 + toLong(ctx.asn_lo);
+    String[] parts = ctx.asn4b.getText().split("\\.");
+    return Long.parseLong(parts[0]) << 16 + Long.parseLong(parts[1]);
   }
 
   private static Ip toIp(TerminalNode t) {
@@ -2066,7 +2067,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentDynamicIpv6PeerGroup = pg;
     }
     if (ctx.asnum != null) {
-      int remoteAs = toInteger(ctx.asnum);
+      long remoteAs = toLong(ctx.asnum);
       _currentPeerGroup.setRemoteAs(remoteAs);
     }
     if (ctx.mapname != null) {
@@ -3702,7 +3703,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       pg.setGroupName(name);
       pg.setGroupNameLine(line);
       if (ctx.as != null) {
-        int remoteAs = toInteger(ctx.as);
+        long remoteAs = toLong(ctx.as);
         pg.setRemoteAs(remoteAs);
       }
     } else if (ctx.IPV6_PREFIX() != null) {
@@ -3711,7 +3712,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       pg.setGroupName(name);
       pg.setGroupNameLine(line);
       if (ctx.as != null) {
-        int remoteAs = toInteger(ctx.as);
+        long remoteAs = toLong(ctx.as);
         pg.setRemoteAs(remoteAs);
       }
     }
@@ -5474,7 +5475,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitLocal_as_bgp_tail(Local_as_bgp_tailContext ctx) {
-    int as = toInteger(ctx.as);
+    long as = toLong(ctx.as);
     _currentPeerGroup.setLocalAs(as);
   }
 
@@ -6446,7 +6447,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRemote_as_bgp_tail(Remote_as_bgp_tailContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
-    int as = toInteger(ctx.as);
+    long as = toLong(ctx.as);
     if (_currentPeerGroup != proc.getMasterBgpPeerGroup()) {
       _currentPeerGroup.setRemoteAs(as);
     } else {

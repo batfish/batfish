@@ -28972,7 +28972,25 @@
             "                    SOFT_RECONFIGURATION:'soft-reconfiguration'  <== mode:DEFAULT_MODE",
             "                    INBOUND:'inbound'  <== mode:DEFAULT_MODE",
             "                    ALWAYS:'always'  <== mode:DEFAULT_MODE",
-            "                    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))))))",
+            "                    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_neighbor",
+            "            NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "            ip = IP_ADDRESS:'3.3.3.3'  <== mode:M_NEIGHBOR",
+            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn = DEC:'4123456789'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (router_bgp_nxos_toplevel",
+            "        (rbnx_proc_vrf_common",
+            "          (rbnx_neighbor",
+            "            NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "            ip = IP_ADDRESS:'4.4.4.4'  <== mode:M_NEIGHBOR",
+            "            REMOTE_AS:'remote-as'  <== mode:DEFAULT_MODE",
+            "            (bgp_asn",
+            "              asn4b = FLOAT:'12.345'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -55618,8 +55636,10 @@
         "cisco_nxos_bgp" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Router-id is not manually configured for BGP process in VRF default. Unable to infer default router-id as no interfaces have IP addresses",
-            "2" : "MISCELLANEOUS: BGP neighbor 2.2.2.2 in vrf default: could not determine update source",
-            "3" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
+            "2" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 4.4.4.4 in vrf default",
+            "3" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 3.3.3.3 in vrf default",
+            "4" : "MISCELLANEOUS: BGP neighbor 2.2.2.2 in vrf default: could not determine update source",
+            "5" : "MISCELLANEOUS: No supported address-family configured for BGP neighbor 123.123.123.0/24 in vrf default"
           }
         },
         "ios_xr_bgp_neighbor_group" : {

@@ -82,15 +82,15 @@ public class BgpMultipathRib extends AbstractRib<BgpRoute> {
           break;
 
         case FIRST_AS:
-          SortedSet<Integer> lhsFirstAsSet =
+          SortedSet<Long> lhsFirstAsSet =
               lhsAsPath.getAsSets().isEmpty()
                   ? Collections.emptySortedSet()
                   : lhsAsPath.getAsSets().get(0);
-          SortedSet<Integer> rhsFirstAsSet =
+          SortedSet<Long> rhsFirstAsSet =
               rhsAsPath.getAsSets().isEmpty()
                   ? Collections.emptySortedSet()
                   : rhsAsPath.getAsSets().get(0);
-          SortedSet<Integer> bestFirstAsSet =
+          SortedSet<Long> bestFirstAsSet =
               bestAsPath.getAsSets().isEmpty()
                   ? Collections.emptySortedSet()
                   : bestAsPath.getAsSets().get(0);
