@@ -103,6 +103,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
+import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST;
@@ -355,6 +356,7 @@ import org.batfish.grammar.cisco.CiscoParser.Boolean_tag_is_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Cadant_stdacl_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Cip_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cip_transform_setContext;
+import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_isakmp_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_pfsContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipprf_set_transform_setContext;
 import org.batfish.grammar.cisco.CiscoParser.Cipt_modeContext;
@@ -1533,6 +1535,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw convError(IpsecProtocol.class, ctx);
     }
+  }
+
+  @Override
+  public void exitCipprf_set_isakmp_profile(Cipprf_set_isakmp_profileContext ctx) {
+    String name = ctx.name.getText();
+    int line = ctx.getStart().getLine();
+    if (_currentIpsecProfile == null) {
+      throw new BatfishException("_currentIsakmpProfile shouldn't be null!");
+    }
+    _currentIpsecProfile.setIsakmpProfile(name);
+    _configuration.referenceStructure(ISAKMP_PROFILE, name, IPSEC_PROFILE_ISAKMP_PROFILE, line);
   }
 
   @Override
