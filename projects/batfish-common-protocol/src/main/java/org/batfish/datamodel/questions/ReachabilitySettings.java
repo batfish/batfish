@@ -355,7 +355,7 @@ public class ReachabilitySettings {
     LocationSpecifier notIngressNodes =
         _notIngressNodes == null ? null : LocationSpecifiers.from(_notIngressNodes);
 
-    /* combine ingressNodes and notIngressNodes into ingressNodes */
+    // combine ingressNodes and notIngressNodes into ingressNodes
     if (ingressNodes != null && notIngressNodes != null) {
       ingressNodes = new DifferenceLocationSpecifier(ingressNodes, notIngressNodes);
     } else if (ingressNodes == null && notIngressNodes != null) {
@@ -363,6 +363,7 @@ public class ReachabilitySettings {
           new DifferenceLocationSpecifier(AllInterfacesLocationSpecifier.INSTANCE, notIngressNodes);
     }
 
+    // combine ingressInterfaces and ingressNodes into sourceLocations
     LocationSpecifier sourceLocations = AllInterfacesLocationSpecifier.INSTANCE;
     if (ingressInterfaces != null && ingressNodes != null) {
       sourceLocations = new UnionLocationSpecifier(ingressInterfaces, ingressNodes);
@@ -371,7 +372,6 @@ public class ReachabilitySettings {
     } else if (ingressNodes != null) {
       sourceLocations = ingressNodes;
     }
-    LocationSpecifier sourceSpecifier = AllInterfacesLocationSpecifier.INSTANCE;
 
     // remove src IPs from headerspace since they're specified via an IpSpaceSpecifier
     IpSpace nullIpSpace = null;
