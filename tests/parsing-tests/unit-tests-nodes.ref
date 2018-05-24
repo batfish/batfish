@@ -5724,6 +5724,12 @@
             "authenticationAlgorithm" : "HMAC_SHA_512",
             "encryptionAlgorithm" : "AES_256_CBC",
             "protocol" : "ESP"
+          },
+          "noAuthHeader" : {
+            "name" : "noAuthHeader",
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "protocol" : "ESP"
           }
         },
         "vendorFamily" : {

@@ -290,12 +290,20 @@
           ]
         }
       },
+      "unused:crypto ipsec transform-set:noAuthHeader" : {
+        "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'noAuthHeader'",
+        "files" : {
+          "cisco_crypto" : [
+            153
+          ]
+        }
+      },
       "unused:crypto keyring:VRF:ABC:DEF:GHI:1234" : {
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            189,
-            190
+            190,
+            191
           ]
         }
       },
@@ -1283,7 +1291,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 128
+      "numResults" : 129
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1562,12 +1570,15 @@
           ],
           "cipts2" : [
             152
+          ],
+          "noAuthHeader" : [
+            153
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            189,
-            190
+            190,
+            191
           ]
         }
       },
