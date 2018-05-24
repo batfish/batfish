@@ -17371,6 +17371,39 @@
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
+            "      (crypto_csr_params",
+            "        CSR_PARAMS:'csr-params'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'BATFISH'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        COUNTRY:'country'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'US'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        STATE:'state'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'WA'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        LOCALITY:'locality'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'Seattle'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        ORGANIZATION_NAME:'organization-name'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'Batfish'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        ORGANIZATION_UNIT:'organization-unit'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'Network'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'Validation'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        COMMON_NAME:'common-name'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'batfish.org'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_crypto",
+            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
             "      (crypto_dynamic_map",
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
@@ -53261,11 +53294,11 @@
           "crypto ipsec profile" : {
             "abcdefg" : {
               "definitionLines" : [
-                138,
-                139,
-                140,
-                141,
-                142
+                145,
+                146,
+                147,
+                148,
+                149
               ],
               "numReferrers" : 0
             }
@@ -53273,52 +53306,39 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
               "definitionLines" : [
-                147,
-                148,
-                149
+                154,
+                155,
+                156
               ],
               "numReferrers" : 0
             },
             "IPSEC_AES_256" : {
               "definitionLines" : [
-                150
+                157
               ],
               "numReferrers" : 0
             },
             "cipts1" : {
               "definitionLines" : [
-                151
+                158
               ],
               "numReferrers" : 0
             },
             "cipts2" : {
               "definitionLines" : [
-                152
+                159
               ],
               "numReferrers" : 0
             },
             "noAuthHeader" : {
               "definitionLines" : [
-                153
+                160
               ],
               "numReferrers" : 0
             }
           },
           "crypto isakmp policy" : {
             "001" : {
-              "definitionLines" : [
-                160,
-                161,
-                162,
-                163,
-                164,
-                165
-              ],
-              "numReferrers" : 1
-            }
-          },
-          "crypto isakmp profile" : {
-            "myprofile" : {
               "definitionLines" : [
                 167,
                 168,
@@ -53330,11 +53350,24 @@
               "numReferrers" : 1
             }
           },
+          "crypto isakmp profile" : {
+            "myprofile" : {
+              "definitionLines" : [
+                174,
+                175,
+                176,
+                177,
+                178,
+                179
+              ],
+              "numReferrers" : 1
+            }
+          },
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                191,
-                192
+                198,
+                199
               ],
               "numReferrers" : 0
             }
@@ -54900,38 +54933,38 @@
           "crypto ipsec transform-set" : {
             "hijklmnop" : {
               "ipsec profile set transform-set" : [
-                139
+                146
               ]
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                211
+                218
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                207
+                214
               ]
             },
             "someOtherprofile" : {
               "ipsec profile set isakmp-profile" : [
-                142
+                149
               ]
             }
           },
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                168
+                175
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                205
+                212
               ]
             }
           }

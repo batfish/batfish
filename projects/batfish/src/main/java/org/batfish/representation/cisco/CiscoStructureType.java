@@ -15,6 +15,7 @@ public enum CiscoStructureType implements StructureType {
   COMMUNITY_LIST("community-list"),
   COMMUNITY_LIST_EXPANDED("expanded community-list"),
   COMMUNITY_LIST_STANDARD("standard community-list"),
+  CSR_PARAMS("csr-params"),
   DEPI_CLASS("depi-class"),
   DEPI_TUNNEL("depi-tunnel"),
   DOCSIS_POLICY("docsis-policy"),
