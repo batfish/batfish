@@ -434,6 +434,15 @@ public class FlatJuniperGrammarTest {
         not(Matchers.containsString("unimplemented pre-defined junos application")));
   }
 
+  @Test
+  public void testPredefinedJunosApplicationSets() throws IOException {
+    Batfish batfish = getBatfishForConfigurationNames("pre-defined-junos-application-sets");
+    InitInfoAnswerElement answer = batfish.initInfo(false, true);
+    assertThat(
+        answer.prettyPrint(),
+        not(Matchers.containsString("unimplemented pre-defined junos application-set")));
+  }
+
   /** Tests support for dynamic bgp parsing using "bgp allow" command */
   @Test
   public void testBgpAllow() throws IOException {

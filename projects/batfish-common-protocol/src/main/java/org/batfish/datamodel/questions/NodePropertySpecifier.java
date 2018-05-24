@@ -5,9 +5,13 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -22,6 +26,7 @@ import org.batfish.datamodel.answers.Schema;
  *
  * <ul>
  *   <li>ntp-servers —> gets NTP servers using a configured Java function
+ *   <li>ntp.* gets all properties that start with 'ntp'
  * </ul>
  *
  * <p>In the future, we might add other specifier types, e.g., those based on Json Path
@@ -149,16 +154,16 @@ public class NodePropertySpecifier {
           .put("zones", new PropertyDescriptor(Configuration::getZones, Schema.list(Schema.STRING)))
           .build();
 
+  public static final NodePropertySpecifier ALL = new NodePropertySpecifier(".*");
+
   private final String _expression;
+
+  private final Pattern _pattern;
 
   @JsonCreator
   public NodePropertySpecifier(String expression) {
-    _expression = expression.trim().toLowerCase(); // canonicalize
-
-    if (!JAVA_MAP.containsKey(expression)) {
-      throw new IllegalArgumentException(
-          "Invalid node property specification: '" + expression + "'");
-    }
+    _expression = expression.trim().toLowerCase();
+    _pattern = Pattern.compile(_expression.trim().toLowerCase()); // canonicalize
   }
 
   /**
@@ -169,15 +174,59 @@ public class NodePropertySpecifier {
    * @return The list of suggestions
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    String finalQuery = firstNonNull(query, "");
-    List<AutocompleteSuggestion> suggestions =
-        JAVA_MAP
-            .keySet()
-            .stream()
-            .filter(prop -> prop.contains(finalQuery.toLowerCase()))
-            .map(prop -> new AutocompleteSuggestion(prop, false))
-            .collect(Collectors.toList());
+    String finalQuery = firstNonNull(query, "").toLowerCase();
+
+    List<AutocompleteSuggestion> suggestions = new LinkedList<>();
+
+    String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
+    Pattern queryPattern = safeGetPattern(queryWithStars);
+
+    /**
+     * if queryWithStars is not a valid Pattern, finalQuery must be a funky string that will not
+     * match anything as string.contains or regex.matches; so we skip formalities altogether
+     */
+    if (queryPattern != null) {
+      // first add .* version if needed
+      if (!finalQuery.endsWith("*") // hack to check if its a regex already
+          && !finalQuery.startsWith(".*")
+          && !new NodePropertySpecifier(queryWithStars).getMatchingProperties().isEmpty()) {
+        suggestions.add(
+            new AutocompleteSuggestion(
+                queryWithStars, false, "All properties matching regex " + queryWithStars));
+      }
+
+      // now add all properties that contain the query
+      suggestions.addAll(
+          JAVA_MAP
+              .keySet()
+              .stream()
+              .filter(prop -> queryPattern.matcher(prop).matches())
+              .map(prop -> new AutocompleteSuggestion(prop, false))
+              .collect(Collectors.toList()));
+    }
     return suggestions;
+  }
+
+  /**
+   * Returns all properties that match this specifier
+   *
+   * @return The matching set
+   */
+  public Set<String> getMatchingProperties() {
+    return JAVA_MAP
+        .keySet()
+        .stream()
+        .filter(prop -> _pattern.matcher(prop).matches())
+        .collect(Collectors.toSet());
+  }
+
+  /** Returns the Pattern if {@code candidateRegex} is a valid regex, and null otherwise */
+  private static Pattern safeGetPattern(String candidateRegex) {
+    try {
+      return Pattern.compile(candidateRegex);
+    } catch (PatternSyntaxException e) {
+      return null;
+    }
   }
 
   @Override

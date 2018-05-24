@@ -1183,10 +1183,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.SERVICE_CLASS, usage);
   }
 
-  private void markServiceObjectGroups(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.SERVICE_OBJECT_GROUP, usage);
-  }
-
   private void processFailoverSettings() {
     if (_failover) {
       Interface commIface;

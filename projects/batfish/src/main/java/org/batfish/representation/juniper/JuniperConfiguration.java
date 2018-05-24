@@ -5,7 +5,6 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.SortedMultiset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -18,7 +17,6 @@ import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
@@ -99,7 +97,6 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 import org.batfish.representation.juniper.BgpGroup.BgpGroupType;
-import org.batfish.vendor.StructureUsage;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class JuniperConfiguration extends VendorConfiguration {
@@ -908,29 +905,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void markAuthenticationKeyChains(JuniperStructureUsage usage, Configuration c) {
-    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
-        _structureReferences.get(JuniperStructureType.AUTHENTICATION_KEY_CHAIN);
-    if (byName != null) {
-      byName.forEach(
-          (keyChainName, byUsage) -> {
-            SortedMultiset<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              JuniperAuthenticationKeyChain keyChain = _authenticationKeyChains.get(keyChainName);
-              if (keyChain != null) {
-                String msg = usage.getDescription();
-                keyChain.getReferers().put(this, msg);
-              } else {
-                for (int line : lines) {
-                  undefined(
-                      JuniperStructureType.AUTHENTICATION_KEY_CHAIN, keyChainName, usage, line);
-                }
-              }
-            }
-          });
-    }
-  }
-
   private void placeInterfaceIntoArea(
       Map<Long, OspfArea> newAreas, String name, Interface iface, String vrfName) {
     Vrf vrf = _c.getVrfs().get(vrfName);
@@ -1474,7 +1448,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         from.applyTo(matchCondition, this, _w, _c);
       }
       boolean addLine =
-          term.getFromApplications().isEmpty()
+          term.getFromApplicationSetMembers().isEmpty()
               && term.getFromHostProtocols().isEmpty()
               && term.getFromHostServices().isEmpty();
       for (FwFromHostProtocol from : term.getFromHostProtocols()) {
@@ -1483,8 +1457,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       for (FwFromHostService from : term.getFromHostServices()) {
         from.applyTo(lines, _w);
       }
-      for (FwFromApplication fromApplication : term.getFromApplications()) {
-        fromApplication.applyTo(this, matchCondition, action, lines, _w);
+      for (FwFromApplicationSetMember fromApplicationSetMember :
+          term.getFromApplicationSetMembers()) {
+        fromApplicationSetMember.applyTo(this, matchCondition, action, lines, _w);
       }
       if (addLine) {
         IpAccessListLine line =
