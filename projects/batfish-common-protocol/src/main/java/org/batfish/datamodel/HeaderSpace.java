@@ -1137,7 +1137,7 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return true;
   }
 
-  public Builder rebuild() {
+  public Builder toBuilder() {
     return builder()
         .setDscps(_dscps)
         .setDstIps(_dstIps)
@@ -1351,43 +1351,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   @JsonProperty(PROP_TCP_FLAGS)
   public void setTcpFlags(Iterable<TcpFlags> tcpFlags) {
     _tcpFlags = ImmutableList.copyOf(tcpFlags);
-  }
-
-  public Builder toBuilder() {
-    Builder bld = new Builder();
-    bld._dscps = ImmutableSortedSet.copyOf(_dscps);
-    bld._dstIps = _dstIps;
-    bld._dstPorts = ImmutableSortedSet.copyOf(_dstPorts);
-    bld._dstProtocols = ImmutableSortedSet.copyOf(_dstProtocols);
-    bld._ecns = ImmutableSortedSet.copyOf(_ecns);
-    bld._fragmentOffsets = ImmutableSortedSet.copyOf(_fragmentOffsets);
-    bld._icmpCodes = ImmutableSortedSet.copyOf(_icmpCodes);
-    bld._icmpTypes = ImmutableSortedSet.copyOf(_icmpTypes);
-    bld._ipProtocols = ImmutableSortedSet.copyOf(_ipProtocols);
-    bld._negate = _negate;
-    bld._notDscps = ImmutableSortedSet.copyOf(_notDscps);
-    bld._notDstIps = _notDstIps;
-    bld._notDstPorts = ImmutableSortedSet.copyOf(_notDstPorts);
-    bld._notDstProtocols = ImmutableSortedSet.copyOf(_notDstProtocols);
-    bld._notEcns = ImmutableSortedSet.copyOf(_notEcns);
-    bld._notFragmentOffsets = ImmutableSortedSet.copyOf(_notFragmentOffsets);
-    bld._notIcmpCodes = ImmutableSortedSet.copyOf(_notIcmpCodes);
-    bld._notIcmpTypes = ImmutableSortedSet.copyOf(_notIcmpTypes);
-    bld._notIpProtocols = ImmutableSortedSet.copyOf(_notIpProtocols);
-    bld._notPacketLengths = ImmutableSortedSet.copyOf(_notPacketLengths);
-    bld._notSrcIps = _notSrcIps;
-    bld._notSrcPorts = ImmutableSortedSet.copyOf(_notSrcPorts);
-    bld._notSrcProtocols = ImmutableSortedSet.copyOf(_notSrcProtocols);
-    bld._packetLengths = ImmutableSortedSet.copyOf(_packetLengths);
-    bld._srcIps = _srcIps;
-    bld._srcOrDstIps = _srcOrDstIps;
-    bld._srcOrDstPorts = ImmutableSortedSet.copyOf(_srcOrDstPorts);
-    bld._srcOrDstProtocols = ImmutableSortedSet.copyOf(_srcOrDstProtocols);
-    bld._srcPorts = ImmutableSortedSet.copyOf(_srcPorts);
-    bld._srcProtocols = ImmutableSortedSet.copyOf(_srcProtocols);
-    bld._states = ImmutableSortedSet.copyOf(_states);
-    bld._tcpFlags = ImmutableList.copyOf(_tcpFlags);
-    return bld;
   }
 
   @Override
