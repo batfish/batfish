@@ -32,7 +32,6 @@ import org.junit.Test;
 public class SecurityGroupsTest {
 
   private JSONArray _securityGroups;
-  private IpAccessListLine _rejectSynOnly;
   private IpAccessListLine _allowAllReverseOutboundRule;
   private Flow.Builder _flowBuilder;
   private Region _region;
@@ -45,12 +44,12 @@ public class SecurityGroupsTest {
         new JSONObject(
                 CommonUtil.readResource("org/batfish/representation/aws/SecurityGroupTest.json"))
             .getJSONArray(JSON_KEY_SECURITY_GROUPS);
-    _rejectSynOnly =
-        IpAccessListLine.rejectingHeaderSpace(
-            HeaderSpace.builder().setTcpFlags(ImmutableSet.of(TcpFlags.SYN_ONLY)).build());
     _allowAllReverseOutboundRule =
         IpAccessListLine.acceptingHeaderSpace(
-            HeaderSpace.builder().setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0"))).build());
+            HeaderSpace.builder()
+                .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
+                .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                .build());
     _region = new Region("test");
     _flowBuilder = new Builder();
     _flowBuilder.setIngressNode("foo");
@@ -71,14 +70,13 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -94,14 +92,13 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(0, 22)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -117,14 +114,13 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(65530, 65535)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -140,13 +136,12 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -162,13 +157,12 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setSrcIps(Sets.newHashSet(new IpWildcard("0.0.0.0/0")))
                         .setDstPorts(Sets.newHashSet())
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -184,14 +178,13 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(45, 50)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -207,14 +200,13 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(0, 50)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -230,14 +222,13 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
+                _allowAllReverseOutboundRule,
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setDstPorts(Sets.newHashSet(new SubRange(30, 65535)))
-                        .build()),
-                _rejectSynOnly,
-                _allowAllReverseOutboundRule)));
+                        .build()))));
   }
 
   @Test
@@ -253,37 +244,37 @@ public class SecurityGroupsTest {
         inboundRules,
         equalTo(
             ImmutableList.of(
-                IpAccessListLine.acceptingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
-                        .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
-                        .build()),
-                _rejectSynOnly,
                 // reverse of outbound rule
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setSrcIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(80, 80)))
+                        .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                        .build()),
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setSrcIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(22, 22)))
                         .build()))));
     assertThat(
         outboundRules,
         equalTo(
             ImmutableList.of(
-                IpAccessListLine.acceptingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
-                        .setDstIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
-                        .setDstPorts(Sets.newHashSet(new SubRange(80, 80)))
-                        .build()),
-                _rejectSynOnly,
                 // reverse of inbound rule
                 IpAccessListLine.acceptingHeaderSpace(
                     HeaderSpace.builder()
                         .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
                         .setDstIps(Sets.newHashSet(new IpWildcard("1.2.3.4/32")))
                         .setSrcPorts(Sets.newHashSet(new SubRange(22, 22)))
+                        .setTcpFlags(ImmutableSet.of(TcpFlags.ACK_TCP_FLAG))
+                        .build()),
+                IpAccessListLine.acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setIpProtocols(Sets.newHashSet(IpProtocol.TCP))
+                        .setDstIps(Sets.newHashSet(new IpWildcard("5.6.7.8/32")))
+                        .setDstPorts(Sets.newHashSet(new SubRange(80, 80)))
                         .build()))));
   }
 

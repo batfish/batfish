@@ -62,7 +62,11 @@ aas_application
 
 aas_application_set
 :
-   APPLICATION_SET name = variable
+   APPLICATION_SET
+   (
+      junos_application_set
+      | name = variable
+   )
 ;
 
 aat_alg
