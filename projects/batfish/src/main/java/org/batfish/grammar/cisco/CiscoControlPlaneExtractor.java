@@ -7623,7 +7623,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitUnsuppress_map_bgp_tail(Unsuppress_map_bgp_tailContext ctx) {
     String name = ctx.mapname.getText();
     _configuration.referenceStructure(
-        CiscoStructureType.ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
+        ROUTE_MAP, name, BGP_ROUTE_MAP_UNSUPPRESS, ctx.getStart().getLine());
   }
 
   @Override
