@@ -2326,7 +2326,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.DESCRIPTION() != null) {
-      _currentAddressBook.setDescription(getFullText(ctx.null_filler()).trim());
+      /* TODO - data model doesn't have a place to put this yet. */
     } else {
       throw convError(IpWildcard.class, ctx);
     }

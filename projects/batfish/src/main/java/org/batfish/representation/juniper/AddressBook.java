@@ -14,8 +14,6 @@ public final class AddressBook extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  @Nullable private String _description;
-
   private final Map<String, AddressBookEntry> _entries;
 
   private final Map<String, AddressBook> _globalBooks;
@@ -68,14 +66,5 @@ public final class AddressBook extends ComparableStructure<String> {
     } else {
       return entry.getIpWildcards(w);
     }
-  }
-
-  @Nullable
-  public String getDescription() {
-    return _description;
-  }
-
-  public void setDescription(@Nullable String description) {
-    _description = description;
   }
 }
