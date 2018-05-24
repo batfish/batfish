@@ -1137,10 +1137,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             CiscoStructureType.MAC_ACCESS_LIST));
   }
 
-  private void markIpsecIsakmpProfile(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.ISAKMP_POLICY, usage);
-  }
-
   private void markIpsecProfiles(CiscoStructureUsage usage) {
     markConcreteStructure(CiscoStructureType.IPSEC_PROFILE, usage);
   }
@@ -3674,7 +3670,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Vpn
     markIpsecProfiles(CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
-    markIpsecIsakmpProfile(CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
+    markConcreteStructure(
+        CiscoStructureType.ISAKMP_PROFILE, CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 

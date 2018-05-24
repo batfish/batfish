@@ -139,7 +139,7 @@ crypto ipsec profile abcdefg
  set transform-set hijklmnop
  set ikev2-profile someprofile
  set security-association lifetime kilobytes disable
- set isakmp-profile someprofile
+ set isakmp-profile someOtherprofile
 !
 crypto ipsec nat-transparency udp-encapsulation
 crypto ipsec nat-transparency spi-matching
