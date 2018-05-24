@@ -3461,6 +3461,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         policy.getProposals().put(transformSetName, c.getIpsecProposals().get(transformSetName));
       }
       c.getIpsecPolicies().put(name, policy);
+
+      if (profile.getIsakmpProfile() != null) {
+        _w.unimplemented("isakmp profiles set within ipsec profiles");
+      }
     }
 
     // ipsec vpns
@@ -3666,6 +3670,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // Vpn
     markIpsecProfiles(CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE);
+    markConcreteStructure(
+        CiscoStructureType.ISAKMP_PROFILE, CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE);
     markIpsecTransformSets(CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
     markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
