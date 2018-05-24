@@ -210,6 +210,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_apply_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_ip6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
@@ -2288,18 +2289,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSead_address(Sead_addressContext ctx) {
     String name = ctx.name.getText();
-    IpWildcard ipWildcard = null;
     if (ctx.wildcard_address() != null) {
-      ipWildcard = toIpWildcard(ctx.wildcard_address());
+      IpWildcard ipWildcard = toIpWildcard(ctx.wildcard_address());
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
+      _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.address != null) {
-      ipWildcard = new IpWildcard(new Ip(ctx.address.getText()));
+      IpWildcard ipWildcard = new IpWildcard(new Ip(ctx.address.getText()));
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
+      _currentAddressBook.getEntries().put(name, addressEntry);
     } else if (ctx.prefix != null) {
-      ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+      IpWildcard ipWildcard = new IpWildcard(Prefix.parse(ctx.prefix.getText()));
+      AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
+      _currentAddressBook.getEntries().put(name, addressEntry);
+    } else if (ctx.DESCRIPTION() != null) {
+      _currentAddressBook.setDescription(getFullText(ctx.null_filler()).trim());
     } else {
       throw convError(IpWildcard.class, ctx);
     }
-    AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
-    _currentAddressBook.getEntries().put(name, addressEntry);
   }
 
   @Override
@@ -3472,6 +3478,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
               + text
               + "'");
     }
+  }
+
+  @Override
+  public void exitPoplt_apply_path(Poplt_apply_pathContext ctx) {
+    _w.redFlag("unimplemented policy-options prefix-list " + getFullText(ctx).trim());
   }
 
   @Override

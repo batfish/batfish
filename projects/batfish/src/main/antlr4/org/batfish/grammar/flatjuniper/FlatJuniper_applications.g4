@@ -11,6 +11,7 @@ a_application
    APPLICATION name = variable
    (
       aa_common
+      | aa_description
       | aa_term
    )
 ;
@@ -38,6 +39,11 @@ aa_common
    | aat_rpc_program_number
    | aat_source_port
    | aat_uuid
+;
+
+aa_description
+:
+   DESCRIPTION null_filler
 ;
 
 aa_term

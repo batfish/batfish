@@ -433,6 +433,7 @@ sead_address
    ADDRESS name = variable
    (
       apply
+      | DESCRIPTION null_filler
       | address = IP_ADDRESS
       | prefix = IP_PREFIX
       | WILDCARD_ADDRESS wildcard_address
@@ -446,6 +447,7 @@ sead_address_set
       apply
       | seada_address
       | seada_address_set
+      | seada_description
    )
 ;
 
@@ -457,6 +459,11 @@ seada_address
 seada_address_set
 :
    ADDRESS_SET name = variable
+;
+
+seada_description
+:
+   DESCRIPTION null_filler
 ;
 
 sec_local
@@ -975,7 +982,7 @@ sep_global
 
 sepctx_policy
 :
-   POLICY name = variable
+   POLICY name = variable_policy
    (
       apply
       | sepctxp_description
