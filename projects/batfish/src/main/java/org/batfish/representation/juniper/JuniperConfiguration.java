@@ -705,7 +705,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Interface iface = e.getValue();
       placeInterfaceIntoArea(newAreas, name, iface, vrfName);
     }
-    newProc.setRouterId(getRouterId(routingInstance));
+    newProc.setRouterId(getOspfRouterId(routingInstance));
     newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
   }
@@ -2506,7 +2506,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private Ip getRouterId(RoutingInstance routingInstance) {
+  private Ip getOspfRouterId(RoutingInstance routingInstance) {
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {
       Map<String, Interface> interfacesToCheck;
