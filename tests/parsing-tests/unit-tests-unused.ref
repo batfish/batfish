@@ -297,11 +297,11 @@
         "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
         "files" : {
           "cisco_crypto" : [
-            138,
-            139,
-            140,
-            141,
-            142
+            145,
+            146,
+            147,
+            148,
+            149
           ]
         }
       },
@@ -309,9 +309,9 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
         "files" : {
           "cisco_crypto" : [
-            147,
-            148,
-            149
+            154,
+            155,
+            156
           ]
         }
       },
@@ -319,7 +319,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'IPSEC_AES_256'",
         "files" : {
           "cisco_crypto" : [
-            150
+            157
           ]
         }
       },
@@ -327,7 +327,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts1'",
         "files" : {
           "cisco_crypto" : [
-            151
+            158
           ]
         }
       },
@@ -335,7 +335,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts2'",
         "files" : {
           "cisco_crypto" : [
-            152
+            159
           ]
         }
       },
@@ -343,7 +343,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'noAuthHeader'",
         "files" : {
           "cisco_crypto" : [
-            153
+            160
           ]
         }
       },
@@ -351,8 +351,8 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            191,
-            192
+            198,
+            199
           ]
         }
       },
@@ -1632,36 +1632,36 @@
       "cisco_crypto" : {
         "crypto ipsec profile" : {
           "abcdefg" : [
-            138,
-            139,
-            140,
-            141,
-            142
+            145,
+            146,
+            147,
+            148,
+            149
           ]
         },
         "crypto ipsec transform-set" : {
           "ESP-3DES-MD5" : [
-            147,
-            148,
-            149
+            154,
+            155,
+            156
           ],
           "IPSEC_AES_256" : [
-            150
+            157
           ],
           "cipts1" : [
-            151
+            158
           ],
           "cipts2" : [
-            152
+            159
           ],
           "noAuthHeader" : [
-            153
+            160
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            191,
-            192
+            198,
+            199
           ]
         }
       },
