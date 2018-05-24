@@ -8294,7 +8294,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private Integer toLoggingSeverityNum(Logging_severityContext ctx) {
-    if (ctx.EMERGENCIES() != null) {
+    if (ctx.DEC() != null) {
+      return toInteger(ctx.DEC());
+    } else if (ctx.EMERGENCIES() != null) {
       return 0;
     } else if (ctx.ALERTS() != null) {
       return 1;

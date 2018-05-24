@@ -23,6 +23,7 @@ logging cmts ipc-cable log-level errors
 logging cmts sea syslog-level errors
 logging console warnings
 logging console disable
+logging console 3
 logging count
 logging debug-trace
 logging discriminator AFLSEC severity drops 6 msg-body drops AFLSEC
@@ -82,6 +83,7 @@ logging suppress apply rule BCD
 !
 logging timestamp milliseconds
 logging trap errors
+logging trap 6
 logging userinfo
 logging vrf mgmt host 11.2.3.4
 logging vrf mgmt source-interface Management0
