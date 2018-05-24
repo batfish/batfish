@@ -7658,6 +7658,11 @@ NON_EXIST_MAP
    'non-exist-map'
 ;
 
+NON_SILENT
+:
+    'non-silent'
+;
+
 NONE
 :
    'none'
@@ -10371,6 +10376,11 @@ SIGNATURE_PROFILE
 SIGNING
 :
    'signing'
+;
+
+SILENT
+:
+    'silent'
 ;
 
 SINGLE_CONNECTION
