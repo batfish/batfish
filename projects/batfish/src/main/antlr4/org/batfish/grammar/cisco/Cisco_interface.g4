@@ -36,6 +36,10 @@ if_channel_group
          | ON
          | PASSIVE
       )
+      (
+        NON_SILENT
+        | SILENT
+      )?
    )? NEWLINE
 ;
 
@@ -771,7 +775,7 @@ if_null_inner
       | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 if_null_single
@@ -782,10 +786,11 @@ if_null_single
       | JUMBO
       | LINKDEBOUNCE
       | PHY
+      | SWITCHPORT CAPTURE
       | SUPPRESS_ARP
       | TRIMODE
       | TRUSTED
-   ) ~NEWLINE* NEWLINE
+   ) null_rest_of_line
 ;
 
 if_port_security
