@@ -262,7 +262,7 @@ public class NodesSpecifier {
 
   @JsonIgnore
   @VisibleForTesting
-  Pattern getRegex() {
+  public Pattern getRegex() {
     return _regex;
   }
 

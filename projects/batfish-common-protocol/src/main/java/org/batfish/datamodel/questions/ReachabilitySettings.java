@@ -293,6 +293,14 @@ public class ReachabilitySettings {
     return _nonTransitNodes;
   }
 
+  public NodesSpecifier getNotFinalNodes() {
+    return _notFinalNodes;
+  }
+
+  public NodesSpecifier getNotIngressNodes() {
+    return _notIngressNodes;
+  }
+
   public Boolean getSrcNatted() {
     return _srcNatted;
   }
