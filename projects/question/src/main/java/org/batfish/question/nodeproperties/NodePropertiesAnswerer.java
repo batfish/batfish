@@ -59,7 +59,7 @@ public class NodePropertiesAnswerer extends Answerer {
         && propertyValue != null
         && !(propertyValue instanceof String)) {
       if (propertyValue instanceof ComparableStructure) {
-        propertyValue = ((ComparableStructure) propertyValue).getName();
+        propertyValue = ((ComparableStructure<?>) propertyValue).getName();
       } else {
         propertyValue = propertyValue.toString();
       }
