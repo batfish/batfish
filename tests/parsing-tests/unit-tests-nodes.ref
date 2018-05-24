@@ -8107,7 +8107,10 @@
                 "severity" : "warnings",
                 "severityNum" : 4
               },
-              "console" : { },
+              "console" : {
+                "severity" : "errors",
+                "severityNum" : 3
+              },
               "hosts" : {
                 "1.1.1.1" : {
                   "name" : "1.1.1.1"
@@ -8131,8 +8134,8 @@
               "on" : true,
               "sourceInterface" : "Management0",
               "trap" : {
-                "severity" : "errors",
-                "severityNum" : 3
+                "severity" : "informational",
+                "severityNum" : 6
               }
             }
           }
