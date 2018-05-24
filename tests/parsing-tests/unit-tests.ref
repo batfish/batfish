@@ -54555,6 +54555,21 @@
                 119
               ]
             },
+            "310-systems" : {
+              "interface outgoing ip access-list" : [
+                122
+              ]
+            },
+            "ag1" : {
+              "interface incoming ip access-list" : [
+                52
+              ]
+            },
+            "ag2" : {
+              "interface outgoing ip access-list" : [
+                53
+              ]
+            },
             "def" : {
               "ip nat source dynamic access-list" : [
                 86
@@ -54570,21 +54585,6 @@
             "1" : {
               "interface igmp access-group acl" : [
                 73
-              ]
-            },
-            "310-systems" : {
-              "interface outgoing ip access-list" : [
-                122
-              ]
-            },
-            "ag1" : {
-              "interface incoming ip access-list" : [
-                52
-              ]
-            },
-            "ag2" : {
-              "interface outgoing ip access-list" : [
-                53
               ]
             },
             "def" : {
@@ -55192,7 +55192,7 @@
           }
         },
         "variables" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "ABC_def.gh_vlan789_out_20000101" : {
               "interface outgoing ip access-list" : [
                 5
@@ -55201,7 +55201,7 @@
           }
         },
         "variables_dos" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "ABC_def.gh_vlan789_out_20000101" : {
               "interface outgoing ip access-list" : [
                 5

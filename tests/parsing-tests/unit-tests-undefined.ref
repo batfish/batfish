@@ -197,11 +197,46 @@
           ]
         }
       },
+      "undefined:ipv4 acl:usage:interface incoming ip access-list:ag1" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface incoming ip access-list' named 'ag1'",
+        "files" : {
+          "cisco_interface" : [
+            52
+          ]
+        }
+      },
       "undefined:ipv4 acl:usage:interface ip verify access-list:167" : {
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
             119
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:interface outgoing ip access-list:310-systems" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
+        "files" : {
+          "cisco_interface" : [
+            122
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:interface outgoing ip access-list:ABC_def.gh_vlan789_out_20000101" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named 'ABC_def.gh_vlan789_out_20000101'",
+        "files" : {
+          "variables" : [
+            5
+          ],
+          "variables_dos" : [
+            5
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:interface outgoing ip access-list:ag2" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named 'ag2'",
+        "files" : {
+          "cisco_interface" : [
+            53
           ]
         }
       },
@@ -507,46 +542,11 @@
           ]
         }
       },
-      "undefined:ipv4/6 acl:usage:interface incoming ip access-list:ag1" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface incoming ip access-list' named 'ag1'",
-        "files" : {
-          "cisco_interface" : [
-            52
-          ]
-        }
-      },
       "undefined:ipv4/6 acl:usage:interface ip inband access-group:fleep-acl" : {
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface ip inband access-group' named 'fleep-acl'",
         "files" : {
           "cadant_interface" : [
             130
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:interface outgoing ip access-list:310-systems" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
-        "files" : {
-          "cisco_interface" : [
-            122
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:interface outgoing ip access-list:ABC_def.gh_vlan789_out_20000101" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface outgoing ip access-list' named 'ABC_def.gh_vlan789_out_20000101'",
-        "files" : {
-          "variables" : [
-            5
-          ],
-          "variables_dos" : [
-            5
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:interface outgoing ip access-list:ag2" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface outgoing ip access-list' named 'ag2'",
-        "files" : {
-          "cisco_interface" : [
-            53
           ]
         }
       },
@@ -1309,6 +1309,21 @@
               119
             ]
           },
+          "310-systems" : {
+            "interface outgoing ip access-list" : [
+              122
+            ]
+          },
+          "ag1" : {
+            "interface incoming ip access-list" : [
+              52
+            ]
+          },
+          "ag2" : {
+            "interface outgoing ip access-list" : [
+              53
+            ]
+          },
           "def" : {
             "ip nat source dynamic access-list" : [
               86
@@ -1324,21 +1339,6 @@
           "1" : {
             "interface igmp access-group acl" : [
               73
-            ]
-          },
-          "310-systems" : {
-            "interface outgoing ip access-list" : [
-              122
-            ]
-          },
-          "ag1" : {
-            "interface incoming ip access-list" : [
-              52
-            ]
-          },
-          "ag2" : {
-            "interface outgoing ip access-list" : [
-              53
             ]
           },
           "def" : {
@@ -1946,7 +1946,7 @@
         }
       },
       "variables" : {
-        "ipv4/6 acl" : {
+        "ipv4 acl" : {
           "ABC_def.gh_vlan789_out_20000101" : {
             "interface outgoing ip access-list" : [
               5
@@ -1955,7 +1955,7 @@
         }
       },
       "variables_dos" : {
-        "ipv4/6 acl" : {
+        "ipv4 acl" : {
           "ABC_def.gh_vlan789_out_20000101" : {
             "interface outgoing ip access-list" : [
               5
