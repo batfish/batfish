@@ -2033,6 +2033,11 @@ COMMON
    'common'
 ;
 
+COMMON_NAME
+:
+   'common-name'
+;
+
 COMMUNITY
 :
    'community'
@@ -2445,6 +2450,11 @@ CSD
 CSNP_INTERVAL
 :
    'csnp-interval'
+;
+
+CSR_PARAMS
+:
+   'csr-params'
 ;
 
 CTIQBE
@@ -6103,6 +6113,11 @@ LOCAL
    'local'
 ;
 
+LOCALITY
+:
+   'locality'
+;
+
 LOCAL_ADDRESS
 :
    'local-address'
@@ -7891,6 +7906,16 @@ OPTIONS
 OR
 :
    'or'
+;
+
+ORGANIZATION_NAME
+:
+   'organization-name'
+;
+
+ORGANIZATION_UNIT
+:
+   'organization-unit'
 ;
 
 ORIGIN

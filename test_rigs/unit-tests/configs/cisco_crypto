@@ -82,6 +82,13 @@ crypto ca trustpoint abcdefg
  subject-name cn="ccccccccc";ou="aaaaa";o="bbbbbbb"
  no validation-usage
 crypto ca trustpool policy
+crypto csr-params BATFISH
+  country US
+  state WA
+  locality Seattle
+  organization-name Batfish
+  organization-unit Network Validation
+  common-name batfish.org
 crypto dynamic-map mydefaultcryptomap 65534 set ikev1 transform-set ESP-3DES-MD5-trans ESP-3DES-SHA-TRANS ESP-3DES-MD5 ESP-3DES-SHA
 crypto dynamic-map mydefaultcryptomap 65535 set pfs group1
 crypto dynamic-map mydefaultcryptomap 65535 set ikev1 transform-set ESP-3DES-MD5 ESP-AES-128-SHA ESP-AES-128-MD5 ESP-AES-192-SHA ESP-AES-192-MD5 ESP-AES-256-SHA ESP-AES-256-MD5 ESP-3DES-SHA ESP-DES-SHA ESP-DES-MD5

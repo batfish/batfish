@@ -539,6 +539,23 @@ crypto_ca
    )
 ;
 
+crypto_csr_params
+:
+   CSR_PARAMS name = variable_permissive NEWLINE
+   (
+      (
+         COMMON_NAME
+         | COUNTRY
+         | EMAIL
+         | LOCALITY
+         | ORGANIZATION_NAME
+         | ORGANIZATION_UNIT
+         | SERIAL_NUMBER
+         | STATE
+      ) null_rest_of_line
+   )*
+;
+
 crypto_dynamic_map
 :
    DYNAMIC_MAP name = variable num = DEC
@@ -773,6 +790,7 @@ s_crypto
    NO? CRYPTO
    (
       crypto_ca
+      | crypto_csr_params
       | crypto_dynamic_map
       | crypto_engine
       | crypto_ikev1
