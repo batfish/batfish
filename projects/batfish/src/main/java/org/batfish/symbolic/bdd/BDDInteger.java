@@ -70,7 +70,7 @@ public class BDDInteger {
   /*
    * Create a BDD representing the exact value
    */
-  public BDD value(int val) {
+  public BDD value(long val) {
     BDD bdd = _factory.one();
     for (int i = this._bitvec.length - 1; i >= 0; i--) {
       BDD b = this._bitvec[i];
@@ -82,6 +82,13 @@ public class BDDInteger {
       val >>= 1;
     }
     return bdd;
+  }
+
+  /*
+   * Create a BDD representing the exact value
+   */
+  public BDD value(int val) {
+    return value((long) val);
   }
 
   /*

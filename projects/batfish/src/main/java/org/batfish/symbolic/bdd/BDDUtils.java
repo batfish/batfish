@@ -7,6 +7,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -318,5 +319,39 @@ public class BDDUtils {
     assignment.setOspfMetric(OspfType.values()[ospfMetric]);
     assignment.setCommunities(cvars);
     return assignment;
+  }
+
+  public static BDD flowToBdd(BDDNetFactory factory, Flow flow) {
+    BDDPacket pkt = factory.packetVariables();
+    BDD dstIp = pkt.getDstIp().value(flow.getDstIp().asLong());
+    BDD srcIp = pkt.getSrcIp().value(flow.getSrcIp().asLong());
+    BDD dstPort = pkt.getDstPort().value(flow.getDstPort());
+    BDD srcPort = pkt.getSrcPort().value(flow.getSrcPort());
+    BDD proto = pkt.getIpProtocol().value(flow.getIpProtocol().number());
+    BDD icmpCode = pkt.getIcmpCode().value(flow.getIcmpCode());
+    BDD icmpType = pkt.getIcmpType().value(flow.getIcmpType());
+    BDD tcpAck = flow.getTcpFlagsAck() == 0 ? factory.zero() : factory.one();
+    BDD tcpCwr = flow.getTcpFlagsCwr() == 0 ? factory.zero() : factory.one();
+    BDD tcpEce = flow.getTcpFlagsEce() == 0 ? factory.zero() : factory.one();
+    BDD tcpPsh = flow.getTcpFlagsPsh() == 0 ? factory.zero() : factory.one();
+    BDD tcpRst = flow.getTcpFlagsRst() == 0 ? factory.zero() : factory.one();
+    BDD tcpSyn = flow.getTcpFlagsSyn() == 0 ? factory.zero() : factory.one();
+    BDD tcpUrg = flow.getTcpFlagsUrg() == 0 ? factory.zero() : factory.one();
+    BDD tcpFin = flow.getTcpFlagsFin() == 0 ? factory.zero() : factory.one();
+    return dstIp
+        .andWith(srcIp)
+        .andWith(dstPort)
+        .andWith(srcPort)
+        .andWith(proto)
+        .andWith(icmpCode)
+        .and(icmpType)
+        .andWith(tcpAck)
+        .andWith(tcpCwr)
+        .andWith(tcpEce)
+        .andWith(tcpPsh)
+        .andWith(tcpRst)
+        .andWith(tcpSyn)
+        .andWith(tcpUrg)
+        .andWith(tcpFin);
   }
 }
