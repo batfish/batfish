@@ -351,8 +351,8 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            190,
-            191
+            191,
+            192
           ]
         }
       },
@@ -1660,8 +1660,8 @@
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            190,
-            191
+            191,
+            192
           ]
         }
       },

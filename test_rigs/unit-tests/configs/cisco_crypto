@@ -169,6 +169,7 @@ crypto isakmp profile myprofile
    match identity address 1.2.3.4 255.255.255.255
    reverse-route
    vrf VRF:MMS:RMT:UPM:1143
+   keepalive 10 retry 3
 !
 crypto key generate rsa general-keys modulus 1024
 crypto key param rsa label abcdefg modulus 1024
