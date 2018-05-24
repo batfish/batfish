@@ -54724,6 +54724,13 @@
               ]
             }
           },
+          "crypto isakmp profile" : {
+            "someOtherprofile" : {
+              "ipsec profile set isakmp-profile" : [
+                142
+              ]
+            }
+          },
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [

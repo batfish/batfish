@@ -138,6 +138,14 @@
           ]
         }
       },
+      "undefined:crypto isakmp profile:usage:ipsec profile set isakmp-profile:someOtherprofile" : {
+        "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'ipsec profile set isakmp-profile' named 'someOtherprofile'",
+        "files" : {
+          "cisco_crypto" : [
+            142
+          ]
+        }
+      },
       "undefined:crypto keyring:usage:isakmp profile keyring:VRF:MMS:RMT:UPM:1143" : {
         "description" : "Undefined reference to structure of type: 'crypto keyring' with usage: 'isakmp profile keyring' named 'VRF:MMS:RMT:UPM:1143'",
         "files" : {
@@ -1040,7 +1048,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 128
+      "numResults" : 129
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1275,6 +1283,13 @@
           "hijklmnop" : {
             "ipsec profile set transform-set" : [
               139
+            ]
+          }
+        },
+        "crypto isakmp profile" : {
+          "someOtherprofile" : {
+            "ipsec profile set isakmp-profile" : [
+              142
             ]
           }
         },
