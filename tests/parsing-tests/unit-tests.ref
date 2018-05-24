@@ -27571,9 +27571,9 @@
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'inspection_default'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        name = (variable_permissive",
+            "          VARIABLE:'inspection_default'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          INSPECT:'inspect'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -27630,9 +27630,9 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'ICMP-cmap'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        name = (variable_permissive",
+            "          VARIABLE:'ICMP-cmap'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          INSPECT:'inspect'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -27640,9 +27640,9 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'TCP-cmap'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        name = (variable_permissive",
+            "          VARIABLE:'TCP-cmap'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          SET:'set'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -27652,9 +27652,9 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          CLASS_DEFAULT:'class-default'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        name = (variable_permissive",
+            "          CLASS_DEFAULT:'class-default'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          USER_STATISTICS:'user-statistics'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30246,11 +30246,11 @@
             "          NEWLINE:'\\n'  <== mode:M_Description))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'bippetyboo-drop'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'bippetyboo-drop'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          BANDWIDTH:'bandwidth'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30325,11 +30325,11 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'bippetyboo-ndrop-fcoe'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'bippetyboo-ndrop-fcoe'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30347,11 +30347,11 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'bippetyboo-ndrop'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'bippetyboo-ndrop'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30380,9 +30380,9 @@
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'fffoooddd'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        name = (variable_permissive",
+            "          VARIABLE:'fffoooddd'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          SET:'set'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30441,11 +30441,11 @@
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'c-foob-drop'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'c-foob-drop'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          RANDOM_DETECT:'random-detect'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30488,11 +30488,11 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'c-foob-ndrop-fcoe'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'c-foob-ndrop-fcoe'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30510,11 +30510,11 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'c-foob-ndrop'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'c-foob-ndrop'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30541,9 +30541,9 @@
             "      (pm_class",
             "        num = DEC:'10'  <== mode:DEFAULT_MODE",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          VARIABLE:'blerf'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        name = (variable_permissive",
+            "          VARIABLE:'blerf'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          SET:'set'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30560,11 +30560,11 @@
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          QUEUING:'queuing'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'bleefee'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        QUEUING:'queuing'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'bleefee'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          PRIORITY:'priority'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30592,11 +30592,11 @@
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          QUEUING:'queuing'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'bleefee2'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        QUEUING:'queuing'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'bleefee2'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_policy_map",
             "      POLICY_MAP:'policy-map'  <== mode:DEFAULT_MODE",
@@ -30607,11 +30607,11 @@
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'c-bleeb-drop'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'c-bleeb-drop'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          NO:'no'  <== mode:DEFAULT_MODE",
             "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
@@ -30635,11 +30635,11 @@
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'c-bleeb-ndrop-fcoe'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'c-bleeb-ndrop-fcoe'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -30665,11 +30665,11 @@
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "      (pm_class",
             "        CLASS:'class'  <== mode:DEFAULT_MODE",
-            "        (null_rest_of_line",
-            "          TYPE:'type'  <== mode:DEFAULT_MODE",
-            "          NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'floop'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "        NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
+            "        name = (variable_permissive",
+            "          VARIABLE:'floop'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (pmc_null",
             "          NO:'no'  <== mode:DEFAULT_MODE",
             "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
@@ -53414,11 +53414,44 @@
           }
         },
         "cisco_misc" : {
+          "class-map" : {
+            "class-default" : {
+              "definitionLines" : [
+                209
+              ],
+              "numReferrers" : 1
+            }
+          },
           "object-group service" : {
             "SVCGRP-ICMP" : {
               "definitionLines" : [
                 176,
                 177
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "policy-map" : {
+            "global_policy" : {
+              "definitionLines" : [
+                193,
+                194,
+                195,
+                196,
+                197,
+                198,
+                199,
+                200,
+                201,
+                202,
+                203,
+                204,
+                205,
+                206,
+                207,
+                208,
+                209,
+                210
               ],
               "numReferrers" : 0
             }
@@ -53429,6 +53462,15 @@
         "cisco_multicast" : { },
         "cisco_ntp" : { },
         "cisco_nxos" : {
+          "class-map" : {
+            "copp-icmp" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 0
+            }
+          },
           "extended ip access-list" : {
             "copp-system-acl-icmp" : {
               "definitionLines" : [
@@ -53455,6 +53497,40 @@
         "cisco_platform" : { },
         "cisco_privilege" : { },
         "cisco_qos" : {
+          "class-map" : {
+            "bippety" : {
+              "definitionLines" : [
+                5,
+                6,
+                7
+              ],
+              "numReferrers" : 0
+            },
+            "boop" : {
+              "definitionLines" : [
+                13,
+                14
+              ],
+              "numReferrers" : 0
+            },
+            "boppety" : {
+              "definitionLines" : [
+                8,
+                9,
+                10,
+                11
+              ],
+              "numReferrers" : 0
+            },
+            "cos_all" : {
+              "definitionLines" : [
+                16,
+                17,
+                18
+              ],
+              "numReferrers" : 0
+            }
+          },
           "object-group network" : {
             "1.2.3.4-24" : {
               "definitionLines" : [
@@ -53731,7 +53807,17 @@
           }
         },
         "foundry_interface" : { },
-        "foundry_misc" : { },
+        "foundry_misc" : {
+          "policy-map" : {
+            "limitarp" : {
+              "definitionLines" : [
+                41,
+                42
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "foundry_vlan_group" : { },
         "host1" : { },
         "host2" : { },
@@ -54823,6 +54909,23 @@
           }
         },
         "cisco_misc" : {
+          "class-map" : {
+            "ICMP-cmap" : {
+              "policy-map class" : [
+                205
+              ]
+            },
+            "TCP-cmap" : {
+              "policy-map class" : [
+                207
+              ]
+            },
+            "inspection_default" : {
+              "policy-map class" : [
+                194
+              ]
+            }
+          },
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
@@ -54868,6 +54971,73 @@
             "boop" : {
               "class-map access-group" : [
                 14
+              ]
+            }
+          },
+          "class-map" : {
+            "bippetyboo-drop" : {
+              "policy-map class" : [
+                43
+              ]
+            },
+            "bippetyboo-ndrop" : {
+              "policy-map class" : [
+                59
+              ]
+            },
+            "bippetyboo-ndrop-fcoe" : {
+              "policy-map class" : [
+                55
+              ]
+            },
+            "bleefee" : {
+              "policy-map class" : [
+                95
+              ]
+            },
+            "bleefee2" : {
+              "policy-map class" : [
+                100
+              ]
+            },
+            "blerf" : {
+              "policy-map class" : [
+                91
+              ]
+            },
+            "c-bleeb-drop" : {
+              "policy-map class" : [
+                102
+              ]
+            },
+            "c-bleeb-ndrop-fcoe" : {
+              "policy-map class" : [
+                107
+              ]
+            },
+            "c-foob-drop" : {
+              "policy-map class" : [
+                74
+              ]
+            },
+            "c-foob-ndrop" : {
+              "policy-map class" : [
+                86
+              ]
+            },
+            "c-foob-ndrop-fcoe" : {
+              "policy-map class" : [
+                82
+              ]
+            },
+            "fffoooddd" : {
+              "policy-map class" : [
+                65
+              ]
+            },
+            "floop" : {
+              "policy-map class" : [
+                112
               ]
             }
           },
