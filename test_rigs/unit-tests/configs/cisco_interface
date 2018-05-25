@@ -26,6 +26,7 @@ interface Ethernet0
  channel-group 1 mode auto
  channel-group 1 mode desirable
  channel-group 1 mode desirable non-silent
+ channel-group 1 mode desirable silent
  channel-group 1 mode on
  channel-group 1 mode passive
  delay 1

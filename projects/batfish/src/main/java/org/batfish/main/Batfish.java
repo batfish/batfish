@@ -1116,7 +1116,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  private CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
+  CompressDataPlaneResult computeCompressedDataPlane(HeaderSpace headerSpace) {
     // Since compression mutates the configurations, we must clone them before that happens.
     // A simple way to do this is to create a deep clone of each entry using Java serialization.
     _logger.info("Computing compressed dataplane\n");
@@ -2388,7 +2388,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return loadConfigurations(snapshot);
   }
 
-  private SortedMap<String, Configuration> loadCompressedConfigurations(Snapshot snapshot) {
+  SortedMap<String, Configuration> loadCompressedConfigurations(Snapshot snapshot) {
     // Do we already have configurations in the cache?
     SortedMap<String, Configuration> configurations =
         _cachedCompressedConfigurations.getIfPresent(snapshot);
@@ -2415,7 +2415,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * Returns the configurations for given snapshot, which including any environment-specific
    * features.
    */
-  private SortedMap<String, Configuration> loadConfigurations(Snapshot snapshot) {
+  SortedMap<String, Configuration> loadConfigurations(Snapshot snapshot) {
     // Do we already have configurations in the cache?
     SortedMap<String, Configuration> configurations = _cachedConfigurations.getIfPresent(snapshot);
     if (configurations != null) {
@@ -2477,7 +2477,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return loadDataPlane(false);
   }
 
-  private DataPlane loadDataPlane(boolean compressed) {
+  DataPlane loadDataPlane(boolean compressed) {
     Cache<TestrigSettings, DataPlane> cache =
         compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
 

@@ -17,11 +17,13 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
     return item.accept(new Evaluator(flow, srcInterface, availableAcls, namedIpSpaces));
   }
 
-  private final Map<String, IpAccessList> _availableAcls;
-  private final Flow _flow;
+  protected final Map<String, IpAccessList> _availableAcls;
 
-  private final Map<String, IpSpace> _namedIpSpaces;
-  private final String _srcInterface;
+  protected final Flow _flow;
+
+  protected final Map<String, IpSpace> _namedIpSpaces;
+
+  protected final String _srcInterface;
 
   public Evaluator(
       Flow flow,

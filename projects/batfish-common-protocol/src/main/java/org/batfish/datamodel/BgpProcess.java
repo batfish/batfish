@@ -98,7 +98,8 @@ public class BgpProcess implements Serializable {
    */
   private SortedMap<Prefix, BgpNeighbor> _neighbors;
 
-  private transient PrefixSpace _originationSpace;
+  /** Space of prefixes to be advertised using explicit network statements */
+  private PrefixSpace _originationSpace;
 
   private Ip _routerId;
 
@@ -110,6 +111,16 @@ public class BgpProcess implements Serializable {
     _generatedRoutes = new TreeSet<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds = new ClusterIdsSupplier();
+    _originationSpace = new PrefixSpace();
+  }
+
+  /**
+   * Expand the origination space for this prefix
+   *
+   * @param space {@link PrefixSpace} to add
+   */
+  public void addToOriginationSpace(PrefixSpace space) {
+    _originationSpace.addSpace(space);
   }
 
   /**

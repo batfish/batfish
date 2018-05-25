@@ -28,6 +28,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConsts.WorkStatusCode;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.common.Pair;
 import org.batfish.common.Version;
 import org.batfish.common.WorkItem;
@@ -242,12 +243,12 @@ public class BfCoordWorkHelper {
       Response response =
           webTarget
               .request(MediaType.APPLICATION_JSON)
-              .header(CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey())
-              .header(CoordConsts.SVC_KEY_VERSION, Version.getVersion())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
               .delete();
 
       if (response.getStatus() != Status.NO_CONTENT.getStatusCode()) {
-        _logger.error("delContainer: Did not get the expected response\n");
+        _logger.errorf("delContainer: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return false;
       }
@@ -532,14 +533,14 @@ public class BfCoordWorkHelper {
       Response response =
           webTarget
               .request(MediaType.APPLICATION_JSON)
-              .header(CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey())
-              .header(CoordConsts.SVC_KEY_VERSION, Version.getVersion())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
+              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
               .get();
 
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
       if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-        _logger.error("GetContainer: Did not get the expected response\n");
+        _logger.errorf("GetContainer: Did not get OK response. Got: %s\n", response.getStatus());
         _logger.error(response.readEntity(String.class) + "\n");
         return null;
       }

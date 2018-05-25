@@ -129,6 +129,8 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
@@ -1345,6 +1347,18 @@ public class CiscoGrammarTest {
     assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
     assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+  }
+
+  @Test
+  public void testBgpOriginationSpace() throws IOException {
+    Configuration c = parseConfig("ios-bgp-origination-space");
+
+    assertThat(
+        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+        equalTo(
+            new PrefixSpace(
+                PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
+                PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
   }
 
   @Test

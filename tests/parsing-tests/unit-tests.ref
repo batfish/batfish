@@ -21217,6 +21217,13 @@
             "        CHANNEL_GROUP:'channel-group'  <== mode:DEFAULT_MODE",
             "        num = DEC:'1'  <== mode:DEFAULT_MODE",
             "        MODE:'mode'  <== mode:DEFAULT_MODE",
+            "        DESIRABLE:'desirable'  <== mode:DEFAULT_MODE",
+            "        SILENT:'silent'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_channel_group",
+            "        CHANNEL_GROUP:'channel-group'  <== mode:DEFAULT_MODE",
+            "        num = DEC:'1'  <== mode:DEFAULT_MODE",
+            "        MODE:'mode'  <== mode:DEFAULT_MODE",
             "        ON:'on'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_channel_group",
@@ -54942,58 +54949,58 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                120
+                121
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                123
+                124
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                53
+                54
               ]
             },
             "ag2" : {
               "interface outgoing ip access-list" : [
-                54
+                55
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                87
+                88
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                84
+                85
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                74
+                75
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                87
+                88
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                88
+                89
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                273
+                274
               ]
             }
           }

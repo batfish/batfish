@@ -355,7 +355,7 @@ public class PropertyChecker {
 
     // copy before updating header space, so these changes don't get propagated to the answer
     HeaderLocationQuestion q = new HeaderLocationQuestion(qOrig);
-    q.setHeaderSpace(q.getHeaderSpace().rebuild().build());
+    q.setHeaderSpace(q.getHeaderSpace().toBuilder().build());
     inferDestinationHeaderSpace(graph, destPorts, q);
 
     Set<GraphEdge> failOptions = failLinkSet(graph, q);
