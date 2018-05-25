@@ -665,6 +665,43 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallCombinedPolicies() throws IOException {
+    Configuration c = parseConfig("firewall-combined-policies");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String addrPermitted = "1.2.3.1";
+    String addrDeniedByZonePolicy = "1.2.3.3";
+    String addrDeniedByGlobalPolicy = "1.2.3.7";
+    String addrDefaultPolicy = "1.2.3.15";
+    String untrustIpAddr = "1.2.4.5";
+
+    Flow flowPermitted = createFlow(addrPermitted, untrustIpAddr);
+    Flow flowDeniedByZonePolicy = createFlow(addrDeniedByZonePolicy, untrustIpAddr);
+    Flow flowDeniedByGlobalPolicy = createFlow(addrDeniedByGlobalPolicy, untrustIpAddr);
+    Flow flowDefaultPolicy = createFlow(addrDefaultPolicy, untrustIpAddr);
+
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    /* Confirm flow from address explicitly allowed by zone policy is accepted */
+    assertThat(
+        aclUntrustOut,
+        accepts(flowPermitted, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow from trust interface not matching any policy deny is accepted (accepted by default permit-all) */
+    assertThat(
+        aclUntrustOut,
+        accepts(flowDefaultPolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow matching zone policy deny is rejected */
+    assertThat(
+        aclUntrustOut,
+        rejects(flowDeniedByZonePolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow matching global policy deny is rejected */
+    assertThat(
+        aclUntrustOut,
+        rejects(
+            flowDeniedByGlobalPolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
   public void testFirewallGlobalAddressBook() throws IOException {
     Configuration c = parseConfig("firewall-global-address-book");
     String interfaceNameTrust = "ge-0/0/0.0";
