@@ -2471,15 +2471,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void recordPrefixLists() {
-    for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
-      String name = e.getKey();
-      PrefixList prefixList = e.getValue();
-      recordStructure(
-          prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
-    }
-  }
-
   private Ip getOspfRouterId(RoutingInstance routingInstance) {
     Ip routerId = routingInstance.getRouterId();
     if (routerId == null) {
