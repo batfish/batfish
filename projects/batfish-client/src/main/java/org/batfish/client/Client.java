@@ -2678,13 +2678,13 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
+  /** Processes a batch of commands and returns true iff every command succeeded. */
   private boolean processCommands(List<String> commands) {
+    boolean allPass = true;
     for (String command : commands) {
-      if (!processCommand(command)) {
-        return false;
-      }
+      allPass = processCommand(command) && allPass;
     }
-    return true;
+    return allPass;
   }
 
   private boolean prompt(List<String> options, List<String> parameters) throws IOException {
@@ -3260,7 +3260,7 @@ public class Client extends AbstractClient implements IClient {
       CommonUtil.writeFile(failedTestoutPath, testOutput);
       _logger.outputf("Copied output to %s\n", failedTestoutPath);
     }
-    return true;
+    return testPassed;
   }
 
   private void unsetTestrig(boolean doDelta) {
