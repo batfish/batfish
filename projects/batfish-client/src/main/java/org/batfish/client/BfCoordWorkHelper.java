@@ -19,7 +19,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.client.config.Settings;
@@ -236,24 +235,17 @@ public class BfCoordWorkHelper {
 
   public boolean delContainer(String containerName) {
     try {
-      WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConsts.SVC_KEY_CONTAINERS, containerName));
+      WebTarget webTarget = getTarget(CoordConsts.SVC_RSC_DEL_CONTAINER);
 
-      Response response =
-          webTarget
-              .request(MediaType.APPLICATION_JSON)
-              .header(CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey())
-              .header(CoordConsts.SVC_KEY_VERSION, Version.getVersion())
-              .delete();
+      MultiPart multiPart = new MultiPart();
+      multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
 
-      if (response.getStatus() != Status.NO_CONTENT.getStatusCode()) {
-        _logger.error("delContainer: Did not get the expected response\n");
-        _logger.error(response.readEntity(String.class) + "\n");
-        return false;
-      }
-      return true;
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_API_KEY, _settings.getApiKey());
+      addTextMultiPart(multiPart, CoordConsts.SVC_KEY_CONTAINER_NAME, containerName);
+
+      return postData(webTarget, multiPart) != null;
     } catch (Exception e) {
-      _logger.errorf("Exception in delContainer from %s for %s\n", _coordWorkMgrV2, containerName);
+      _logger.errorf("Exception in delContainer from %s for %s\n", _coordWorkMgr, containerName);
       _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
       return false;
     }
