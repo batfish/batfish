@@ -28,8 +28,6 @@ interface Ethernet1
  ip access-group AL_IF out
  ip nat source dynamic access-list AL_IF
  ip nat destination static 1.2.3.4 access-list AL_IF_UNDEF 2.3.4.5
- ipv6 nat source dynamic access-list AL6_IF
- ipv6 nat destination static 1.2.3.4 access-list AL6_IF_UNDEF 2.3.4.5
 !
 interface Ethernet2
  ip access-group AL_IF_UNDEF in
