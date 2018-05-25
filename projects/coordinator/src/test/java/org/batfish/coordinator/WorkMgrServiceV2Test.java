@@ -11,17 +11,23 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.BfConsts;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.batfish.coordinator.config.Settings;
+import org.batfish.role.NodeRole;
+import org.batfish.role.NodeRoleDimension;
+import org.batfish.role.NodeRolesData;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
@@ -70,6 +76,39 @@ public class WorkMgrServiceV2Test extends JerseyTest {
     response = getContainersTarget().request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
+  }
+
+  /**
+   * This test writes some data directly and reads back via the get call
+   *
+   * @throws JsonProcessingException if writing data fails
+   */
+  @Test
+  public void getNodeRoles() throws JsonProcessingException {
+    String container = "someContainer";
+    Main.getWorkMgr().initContainer(container, null);
+    NodeRolesData data =
+        new NodeRolesData(
+            null,
+            null,
+            ImmutableSortedSet.of(
+                new NodeRoleDimension(
+                    "someDimension",
+                    ImmutableSortedSet.of(new NodeRole("someRole", ".*")),
+                    null,
+                    null)));
+    NodeRolesData.write(
+        data,
+        Main.getWorkMgr().getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
+    Response response = getNodeRolesTarget(container).request().get();
+
+    // got OK and what we got back equalled what we wrote
+    assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
+    assertThat(response.readEntity(new GenericType<NodeRolesData>() {}), equalTo(data));
+  }
+
+  private WebTarget getNodeRolesTarget(String container) {
+    return getContainersTarget().path(container).path("noderoles");
   }
 
   @Test

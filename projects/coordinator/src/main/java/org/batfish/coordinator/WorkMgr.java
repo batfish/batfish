@@ -877,6 +877,19 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
+  /**
+   * Gets the {@link NodeRolesData} for the {@code container}.
+   *
+   * @param container The container for which we should fetch the node roles
+   * @return The node roles
+   * @throws {@link IOException} The contents of node roles file cannot be converted to {@link
+   *     NodeRolesData}
+   */
+  public NodeRolesData getNodeRolesData(String container) throws IOException {
+    Path nodeRolesPath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    return NodeRolesData.read(nodeRolesPath);
+  }
+
   public JSONObject getParsingResults(String containerName, String testrigName)
       throws JsonProcessingException, JSONException {
 

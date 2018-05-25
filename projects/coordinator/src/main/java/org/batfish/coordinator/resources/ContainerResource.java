@@ -37,7 +37,7 @@ public class ContainerResource {
   @GET
   public Response getContainer() {
     _logger.infof("WMS2: getContainer '%s'\n", _name);
-    checkAccessToContainer();
+    checkAccessToContainer(_apiKey, _name);
     Container container = Main.getWorkMgr().getContainer(_name);
     return Response.ok(container).build();
   }
@@ -46,7 +46,7 @@ public class ContainerResource {
   @DELETE
   public Response deleteContainer() {
     _logger.infof("WMS2: delContainer '%s'\n", _name);
-    checkAccessToContainer();
+    checkAccessToContainer(_apiKey, _name);
     if (Main.getWorkMgr().delContainer(_name)) {
       return Response.noContent().build();
     } else {
@@ -54,15 +54,15 @@ public class ContainerResource {
     }
   }
 
-  /** Check the container {@link #_name} exists and {@link #_apiKey} has accessibility to it. */
-  private void checkAccessToContainer() {
-    if (!Main.getWorkMgr().checkContainerExists(_name)) {
-      throw new NotFoundException(String.format("Container '%s' does not exist", _name));
+  /** Check is {@code container} exists and {@code apiKey} has access to it. */
+  static void checkAccessToContainer(String apiKey, String container) {
+    if (!Main.getWorkMgr().checkContainerExists(container)) {
+      throw new NotFoundException(String.format("Container '%s' does not exist", container));
     }
 
-    if (!Main.getAuthorizer().isAccessibleContainer(_apiKey, _name, false)) {
+    if (!Main.getAuthorizer().isAccessibleContainer(apiKey, container, false)) {
       throw new ForbiddenException(
-          String.format("container '%s' is not accessible by the api key: %s", _name, _apiKey));
+          String.format("container '%s' is not accessible by the api key: %s", container, apiKey));
     }
   }
 }

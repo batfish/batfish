@@ -17,6 +17,7 @@ import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.resources.ContainerResource;
+import org.batfish.coordinator.resources.NodeRolesResource;
 
 /**
  * The Work Manager is a RESTful service for servicing client API calls.
@@ -59,7 +60,13 @@ public class WorkMgrServiceV2 {
 
   /** Relocate the request to ContainerResource. */
   @Path("containers/{id}")
-  public ContainerResource getResource(@PathParam("id") String id) {
+  public ContainerResource getContainerResource(@PathParam("id") String id) {
     return new ContainerResource(_uriInfo, _apiKey, id);
+  }
+
+  /** Relocate the request to ContainerResource. */
+  @Path("containers/{id}/noderoles")
+  public NodeRolesResource getNodeRolesResource(@PathParam("id") String id) {
+    return new NodeRolesResource(_uriInfo, _apiKey, id);
   }
 }
