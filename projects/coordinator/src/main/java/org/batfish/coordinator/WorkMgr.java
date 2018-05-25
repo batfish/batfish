@@ -311,13 +311,9 @@ public class WorkMgr extends AbstractCoordinator {
           Set<String> nodes =
               topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
 
-          // read node roles data
-          Path nodeRolespath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-          NodeRolesData nodeRolesData = NodeRolesData.read(nodeRolespath);
-
           // get suggestions
           List<AutocompleteSuggestion> suggestions =
-              NodesSpecifier.autoComplete(query, nodes, nodeRolesData);
+              NodesSpecifier.autoComplete(query, nodes, getNodeRolesData(container));
           return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
         }
       case NODE_PROPERTY:
