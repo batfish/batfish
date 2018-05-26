@@ -141,7 +141,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   private BDD transformAux(BDD input, EdgeTransformer t, Transformation type) {
-    BDDTransferFunction f = t.getBgpTransfer();
+    BDDTransferFunction f = t.getBddTransfer();
     // Filter routes that can not pass through the transformer
     BDD allow = f.getFilter();
 
@@ -171,10 +171,23 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
       }
     }
 
+    input = modifyProtocol(input, mods, t.getProtocol());
+    input = input.exist(_communityAndProtocolBits);
+    input = input.replaceWith(_pairing);
+    return input;
+  }
+
+  /*
+   * Substitutes the old protocol for the new one by updating the input to
+   * have temporary variables, and modify the BDDPairing to have the
+   * appropriate substitution. This has a side-effect, which is used
+   * to be able to batch modifications and only apply them all once.
+   */
+  private BDD modifyProtocol(BDD input, BDDRoute mods, Protocol proto) {
     if (mods.getConfig().getKeepProtocol()) {
       BDDFiniteDomain<Protocol> var = _variables.getProtocolHistory();
       BDDFiniteDomain<Protocol> prot = new BDDFiniteDomain<>(var);
-      prot.setValue(Protocol.BGP);
+      prot.setValue(proto);
       BDD[] vec = _variables.getProtocolHistory().getInteger().getBitvec();
       for (int i = 0; i < vec.length; i++) {
         BDD x = vec[i];
@@ -185,9 +198,6 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
         _pairing.set(temp.var(), x.var());
       }
     }
-
-    input = input.exist(_communityAndProtocolBits);
-    input = input.replaceWith(_pairing);
     return input;
   }
 
@@ -250,7 +260,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
    * As another example, if we have the prefix
    * 1.2.3.0/24 --> A in the underapproximated set, and another prefix
    * 1.2.3.4/32 --> B in the overapproximated set, then we only want the
-   * destinations matched by the /24 but not the /32.
+   * destinations matched by the /24 but not the /32 to go to A
    *
    */
   private BDD toFibAux(AbstractRib<Tuple<BDD, BDD>> value, FiniteIndexMap<BDDAcl> aclMap) {
@@ -411,5 +421,10 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
         return true;
       }
     }
+  }
+
+  @Override
+  public String debug(Tuple<BDD, BDD> value) {
+    return BDDUtils.dot(_netFactory, value.getFirst());
   }
 }

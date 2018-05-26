@@ -41,6 +41,10 @@ public class BDDNetwork {
 
   private Map<GraphEdge, BDDTransferFunction> _importBgpPolicies;
 
+  private Map<GraphEdge, BDDTransferFunction> _exportOspfPolicies;
+
+  private Map<GraphEdge, BDDTransferFunction> _importOspfPolicies;
+
   private Map<GraphEdge, InterfacePolicy> _exportPolicyMap;
 
   private Map<GraphEdge, InterfacePolicy> _importPolicyMap;
@@ -65,6 +69,8 @@ public class BDDNetwork {
     _exportPolicyMap = new HashMap<>();
     _importBgpPolicies = new HashMap<>();
     _exportBgpPolicies = new HashMap<>();
+    _importOspfPolicies = new HashMap<>();
+    _exportOspfPolicies = new HashMap<>();
     _inAcls = new HashMap<>();
     _outAcls = new HashMap<>();
   }
@@ -109,6 +115,7 @@ public class BDDNetwork {
       Configuration conf = entry.getValue();
       List<GraphEdge> edges = _graph.getEdgeMap().get(router);
       for (GraphEdge ge : edges) {
+
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
         if (importBgp != null) {
@@ -120,6 +127,18 @@ public class BDDNetwork {
         if (exportBgp != null) {
           BDDTransferFunction rec = computeBDD(conf, exportBgp);
           _exportBgpPolicies.put(ge, rec);
+        }
+        // Import OSPF policy
+        RoutingPolicy importOspf = _graph.findImportRoutingPolicy(router, Protocol.OSPF, ge);
+        if (importOspf != null) {
+          BDDTransferFunction rec = computeBDD(conf, importOspf);
+          _importOspfPolicies.put(ge, rec);
+        }
+        // Export OSPF policy
+        RoutingPolicy exportOspf = _graph.findExportRoutingPolicy(router, Protocol.OSPF, ge);
+        if (exportOspf != null) {
+          BDDTransferFunction rec = computeBDD(conf, exportOspf);
+          _exportOspfPolicies.put(ge, rec);
         }
 
         IpAccessList in = ge.getStart().getIncomingFilter();
@@ -175,6 +194,14 @@ public class BDDNetwork {
 
   public Map<GraphEdge, BDDTransferFunction> getImportBgpPolicies() {
     return _importBgpPolicies;
+  }
+
+  public Map<GraphEdge, BDDTransferFunction> getExportOspfPolicies() {
+    return _exportOspfPolicies;
+  }
+
+  public Map<GraphEdge, BDDTransferFunction> getImportOspfPolicies() {
+    return _importOspfPolicies;
   }
 
   public Map<GraphEdge, InterfacePolicy> getExportPolicyMap() {

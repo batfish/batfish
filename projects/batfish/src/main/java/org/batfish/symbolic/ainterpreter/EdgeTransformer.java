@@ -1,7 +1,7 @@
 package org.batfish.symbolic.ainterpreter;
 
-import java.util.Objects;
 import org.batfish.symbolic.GraphEdge;
+import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.smt.EdgeType;
 
@@ -11,12 +11,16 @@ public class EdgeTransformer {
 
   private EdgeType _edgeType;
 
-  private BDDTransferFunction _bgpTransfer;
+  private Protocol _protocol;
 
-  public EdgeTransformer(GraphEdge edge, EdgeType edgeType, BDDTransferFunction bgpTransfer) {
+  private BDDTransferFunction _bddTransfer;
+
+  public EdgeTransformer(
+      GraphEdge edge, EdgeType edgeType, Protocol proto, BDDTransferFunction bgpTransfer) {
     this._edge = edge;
     this._edgeType = edgeType;
-    this._bgpTransfer = bgpTransfer;
+    this._protocol = proto;
+    this._bddTransfer = bgpTransfer;
   }
 
   public GraphEdge getEdge() {
@@ -27,26 +31,11 @@ public class EdgeTransformer {
     return _edgeType;
   }
 
-  public BDDTransferFunction getBgpTransfer() {
-    return _bgpTransfer;
+  public Protocol getProtocol() {
+    return _protocol;
   }
 
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    EdgeTransformer that = (EdgeTransformer) o;
-    return Objects.equals(_edge, that._edge)
-        && _edgeType == that._edgeType
-        && Objects.equals(_bgpTransfer, that._bgpTransfer);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(_edge, _edgeType, _bgpTransfer);
+  public BDDTransferFunction getBddTransfer() {
+    return _bddTransfer;
   }
 }

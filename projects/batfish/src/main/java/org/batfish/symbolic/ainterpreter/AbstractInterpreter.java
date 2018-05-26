@@ -90,6 +90,7 @@ public class AbstractInterpreter {
    * starting values for the fixed point computation.
    */
   private void initializeOriginatedPrefixes(
+      Map<String, Set<Prefix>> originatedBGP,
       Map<String, Set<Prefix>> originatedOSPF,
       Map<String, Set<Prefix>> originatedConnected,
       Map<String, Map<String, Set<Prefix>>> originatedStatic) {
@@ -97,6 +98,9 @@ public class AbstractInterpreter {
     for (String router : _graph.getRouters()) {
       Configuration conf = _graph.getConfigurations().get(router);
       Vrf vrf = conf.getDefaultVrf();
+      if (vrf.getBgpProcess() != null) {
+        originatedBGP.put(router, Graph.getOriginatedNetworks(conf, Protocol.BGP));
+      }
       if (vrf.getOspfProcess() != null) {
         originatedOSPF.put(router, Graph.getOriginatedNetworks(conf, Protocol.OSPF));
       }
@@ -122,21 +126,25 @@ public class AbstractInterpreter {
    * reachable sets at each router for every iteration.
    */
   private <T> Map<String, AbstractRib<T>> computeFixedPoint(IAbstractDomain<T> domain) {
-
-    Map<String, Set<Prefix>> originatedOSPF = new HashMap<>();
-    Map<String, Set<Prefix>> originatedConnected = new HashMap<>();
-    Map<String, Map<String, Set<Prefix>>> originatedStatic = new HashMap<>();
-    initializeOriginatedPrefixes(originatedOSPF, originatedConnected, originatedStatic);
+    Map<String, Set<Prefix>> origBgp = new HashMap<>();
+    Map<String, Set<Prefix>> origOspf = new HashMap<>();
+    Map<String, Set<Prefix>> origConn = new HashMap<>();
+    Map<String, Map<String, Set<Prefix>>> origStatic = new HashMap<>();
+    initializeOriginatedPrefixes(origBgp, origOspf, origConn, origStatic);
 
     Map<String, AbstractRib<T>> reachable = new HashMap<>();
     Set<String> initialRouters = new HashSet<>();
 
     long t = System.currentTimeMillis();
     for (String router : _graph.getRouters()) {
-      Set<Prefix> ospfPrefixes = originatedOSPF.get(router);
-      Set<Prefix> connPrefixes = originatedConnected.get(router);
-      Map<String, Set<Prefix>> staticPrefixes = originatedStatic.get(router);
+      Set<Prefix> bgpPrefixes = origBgp.get(router);
+      Set<Prefix> ospfPrefixes = origOspf.get(router);
+      Set<Prefix> connPrefixes = origConn.get(router);
+      Map<String, Set<Prefix>> staticPrefixes = origStatic.get(router);
 
+      if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
+        initialRouters.add(router);
+      }
       if (staticPrefixes != null && !staticPrefixes.isEmpty()) {
         initialRouters.add(router);
       }
@@ -152,7 +160,7 @@ public class AbstractInterpreter {
         for (Entry<String, Set<Prefix>> e : staticPrefixes.entrySet()) {
           String neighbor = e.getKey();
           Set<Prefix> prefixes = e.getValue();
-          neighbor = (neighbor == null ? router : neighbor);
+          neighbor = (neighbor == null || neighbor.equals("(none)") ? router : neighbor);
           T statForNeighbor = domain.value(neighbor, Protocol.STATIC, prefixes);
           stat = domain.merge(stat, statForNeighbor);
         }
@@ -185,10 +193,15 @@ public class AbstractInterpreter {
       T routerMainRib = r.getMainRib();
       BitSet routerAclsSoFar = r.getAclIds();
 
+      // System.out.println("At: " + router);
+      // System.out.println("Current RIB: ");
+      // System.out.println(domain.debug(routerMainRib));
+
       for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
         GraphEdge rev = _graph.getOtherEnd().get(ge);
         if (ge.getPeer() != null && rev != null) {
           String neighbor = ge.getPeer();
+          Configuration neighborConf = _graph.getConfigurations().get(neighbor);
 
           AbstractRib<T> nr = reachable.get(neighbor);
           T neighborConn = nr.getConnectedRib();
@@ -201,9 +214,37 @@ public class AbstractInterpreter {
           T newNeighborOspf = neighborOspf;
           T newNeighborBgp = neighborBgp;
 
+          // System.out.println("  neighbor: " + neighbor);
+          // System.out.println("  neighbor RIB: ");
+          // System.out.println(domain.debug(neighborMainRib));
+
           // Update OSPF
-          if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)) {
+          if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)
+              && _graph.isEdgeUsed(neighborConf, Protocol.OSPF, rev)) {
+            T tmpOspf = routerMainRib;
+            BDDTransferFunction exportFilter = _network.getExportOspfPolicies().get(ge);
+            BDDTransferFunction importFilter = _network.getImportOspfPolicies().get(rev);
+
+            if (exportFilter != null) {
+              EdgeTransformer exp =
+                  new EdgeTransformer(ge, EdgeType.EXPORT, Protocol.OSPF, exportFilter);
+
+              // System.out.println("  OSPF export policy: ");
+              // System.out.println(BDDUtils.dot(_netFactory, exportFilter.getFilter()));
+
+              tmpOspf = domain.transform(tmpOspf, exp);
+
+              // System.out.println("  After export: ");
+              // System.out.println(domain.debug(tmpOspf));
+            }
+            if (importFilter != null) {
+              EdgeTransformer imp =
+                  new EdgeTransformer(ge, EdgeType.IMPORT, Protocol.OSPF, importFilter);
+              tmpOspf = domain.transform(tmpOspf, imp);
+            }
+
             newNeighborOspf = domain.merge(neighborOspf, routerOspf);
+            newNeighborOspf = domain.merge(newNeighborOspf, tmpOspf);
           }
 
           // Update BGP
@@ -249,15 +290,24 @@ public class AbstractInterpreter {
 
             if (doUpdate) {
               if (exportFilter != null) {
-                EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, exportFilter);
+                EdgeTransformer exp =
+                    new EdgeTransformer(ge, EdgeType.EXPORT, Protocol.BGP, exportFilter);
                 tmpBgp = domain.transform(tmpBgp, exp);
+
+                // System.out.println("  export policy is:");
+                // System.out.println(BDDUtils.dot(_netFactory, exp.getBddTransfer().getFilter()));
               }
               if (importFilter != null) {
-                EdgeTransformer imp = new EdgeTransformer(ge, EdgeType.IMPORT, importFilter);
+                EdgeTransformer imp =
+                    new EdgeTransformer(ge, EdgeType.IMPORT, Protocol.BGP, importFilter);
                 tmpBgp = domain.transform(tmpBgp, imp);
               }
               newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
             }
+
+            // System.out.println("  now neighbor is:");
+            // System.out.println(domain.debug(newNeighborBgp));
+
           }
 
           // Update set of relevant ACLs so far
@@ -274,13 +324,11 @@ public class AbstractInterpreter {
             newNeighborAclsSoFar.set(idx);
           }
 
-          // System.out.println("  New Headerspace: \n" + _variables.dot(newHeaderspace));
-
           // Update RIB and apply decision process (if any)
-          T acc = domain.merge(newNeighborBgp, newNeighborOspf);
-          acc = domain.merge(acc, neighborStat);
-          acc = domain.merge(acc, neighborConn);
-          T newNeighborRib = domain.selectBest(acc);
+          T newNeighborRib = domain.merge(newNeighborBgp, newNeighborOspf);
+          newNeighborRib = domain.merge(newNeighborRib, neighborStat);
+          newNeighborRib = domain.merge(newNeighborRib, neighborConn);
+          newNeighborRib = domain.selectBest(newNeighborRib);
 
           // If changed, then add it to the workset
           if (!newNeighborRib.equals(neighborMainRib) || !newNeighborOspf.equals(neighborOspf)) {

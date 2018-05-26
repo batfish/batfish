@@ -111,7 +111,7 @@ public class BDDUtils {
    * graphviz dot format. The BDDNetFactory parameter is used to translate
    * the BDD variable indices back into meaningful names.
    */
-  public String dot(BDDNetFactory netFactory, BDD bdd) {
+  public static String dot(BDDNetFactory netFactory, BDD bdd) {
     StringBuilder sb = new StringBuilder();
     sb.append("digraph G {\n");
     if (!bdd.isOne()) {
@@ -125,7 +125,7 @@ public class BDDUtils {
     return sb.toString();
   }
 
-  private Integer dotId(BDD bdd) {
+  private static Integer dotId(BDD bdd) {
     if (bdd.isZero()) {
       return 0;
     }
@@ -135,7 +135,8 @@ public class BDDUtils {
     return bdd.hashCode() + 2;
   }
 
-  private void dotRec(BDDNetFactory netFactory, StringBuilder sb, BDD bdd, Set<BDD> visited) {
+  private static void dotRec(
+      BDDNetFactory netFactory, StringBuilder sb, BDD bdd, Set<BDD> visited) {
     if (bdd.isOne() || bdd.isZero() || visited.contains(bdd)) {
       return;
     }

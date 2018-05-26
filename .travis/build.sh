@@ -41,6 +41,9 @@ allinone -cmdfile tests/aws/commands || exit 1
 echo -e "\n  ..... Running java-smt client tests"
 allinone -cmdfile tests/java-smt/commands || exit 1
 
+echo -e "\n  ..... Running java-ai client tests"
+allinone -cmdfile tests/java-ai/commands || exit 1
+
 echo -e "\n  ..... Running watchdog tests"
 allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit 1
 sleep 5

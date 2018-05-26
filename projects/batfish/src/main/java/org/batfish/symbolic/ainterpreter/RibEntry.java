@@ -76,6 +76,12 @@ public class RibEntry implements Comparable<RibEntry> {
 
   @Override
   public int compareTo(RibEntry that) {
+    if (this._prefix.compareTo(that._prefix) < 0) {
+      return -1;
+    } else if (this._prefix.compareTo(that._prefix) > 0) {
+      return 1;
+    }
+
     if (this._protocol.compareTo(that._protocol) < 0) {
       return -1;
     } else if (this._protocol.compareTo(that._protocol) > 0) {
@@ -85,12 +91,6 @@ public class RibEntry implements Comparable<RibEntry> {
     if (this._hostname.compareTo(that._hostname) < 0) {
       return -1;
     } else if (this._hostname.compareTo(that._hostname) > 0) {
-      return 1;
-    }
-
-    if (this._prefix.compareTo(that._prefix) < 0) {
-      return -1;
-    } else if (this._prefix.compareTo(that._prefix) > 0) {
       return 1;
     }
 

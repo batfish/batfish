@@ -21,6 +21,7 @@ public class AiRoutesQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       AiRoutesQuestion q = (AiRoutesQuestion) _question;
+
       NodesSpecifier ns = new NodesSpecifier(q.getNodeRegex());
       return _batfish.aiRoutes(ns);
     }
@@ -30,7 +31,7 @@ public class AiRoutesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
-    private String _nodeRegex;
+    private String _nodeRegex = ".*";
 
     @Override
     public boolean getDataPlane() {

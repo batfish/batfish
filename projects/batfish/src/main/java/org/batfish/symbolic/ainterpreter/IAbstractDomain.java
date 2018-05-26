@@ -32,4 +32,6 @@ public interface IAbstractDomain<T> {
       String src,
       String dst,
       Flow flow);
+
+  String debug(T value);
 }

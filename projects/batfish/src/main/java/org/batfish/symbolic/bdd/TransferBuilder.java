@@ -492,11 +492,11 @@ class TransferBuilder {
         TransferParam<BDDRoute> pFalse = p.indent().setData(current.deepCopy());
         p.debug("True Branch");
         TransferResult<BDDTransferFunction, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
-        p.debug("True Branch: " + trueBranch.getReturnValue().getRoute().hashCode());
+        // p.debug("True Branch: " + trueBranch.getReturnValue().getRoute().hashCode());
         p.debug("False Branch");
         TransferResult<BDDTransferFunction, BDD> falseBranch =
             compute(i.getFalseStatements(), pFalse);
-        p.debug("False Branch: " + trueBranch.getReturnValue().getRoute().hashCode());
+        // p.debug("False Branch: " + trueBranch.getReturnValue().getRoute().hashCode());
 
         BDDRoute r1 = trueBranch.getReturnValue().getRoute();
         BDDRoute r2 = falseBranch.getReturnValue().getRoute();
@@ -505,29 +505,36 @@ class TransferBuilder {
         // update return values
         BDD returnVal =
             ite(
-                guard,
-                trueBranch.getReturnValue().getFilter(),
-                falseBranch.getReturnValue().getFilter());
-
-        // p.debug("New Return Value (neg): " + returnVal.not());
+                result.getReturnAssignedValue(),
+                result.getReturnValue().getFilter(),
+                ite(
+                    guard,
+                    trueBranch.getReturnValue().getFilter(),
+                    falseBranch.getReturnValue().getFilter()));
 
         BDD returnAss =
-            ite(guard, trueBranch.getReturnAssignedValue(), falseBranch.getReturnAssignedValue());
-
-        // p.debug("New Return Assigned: " + returnAss);
+            result
+                .getReturnAssignedValue()
+                .or(
+                    ite(
+                        guard,
+                        trueBranch.getReturnAssignedValue(),
+                        falseBranch.getReturnAssignedValue()));
 
         BDD fallThrough =
-            ite(guard, trueBranch.getFallthroughValue(), falseBranch.getFallthroughValue());
-
-        // p.debug("New fallthrough: " + fallThrough);
+            result
+                .getFallthroughValue()
+                .or(
+                    ite(
+                        guard,
+                        trueBranch.getFallthroughValue(),
+                        falseBranch.getFallthroughValue()));
 
         result =
             result
                 .setReturnValue(new BDDTransferFunction(recordVal, returnVal))
                 .setReturnAssignedValue(returnAss)
                 .setFallthroughValue(fallThrough);
-
-        p.debug("If return: " + result.getReturnValue().getRoute().hashCode());
 
       } else if (stmt instanceof SetDefaultPolicy) {
         p.debug("SetDefaultPolicy");
