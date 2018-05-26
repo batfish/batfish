@@ -52764,7 +52764,7 @@
         },
         "arista-event-handler" : { },
         "arista_acl" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "abcd" : {
               "definitionLines" : [
                 4,
@@ -52798,7 +52798,7 @@
         "arista_ip_route" : { },
         "arista_logging" : { },
         "arista_misc" : {
-          "standard ip access-list" : {
+          "standard ipv4 access-list" : {
             "sshabc" : {
               "definitionLines" : [
                 25,
@@ -52856,7 +52856,7 @@
           }
         },
         "asa_acl" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "outside" : {
               "definitionLines" : [
                 7
@@ -52870,7 +52870,7 @@
               "numReferrers" : 0
             }
           },
-          "standard ip access-list" : {
+          "standard ipv4 access-list" : {
             "Local_LAN_Access" : {
               "definitionLines" : [
                 5
@@ -52958,12 +52958,23 @@
           "extended ipv6 access-list" : {
             "ipv6-acl-foo" : {
               "definitionLines" : [
-                18
+                18,
+                19,
+                20,
+                21,
+                22,
+                23,
+                24,
+                25,
+                26,
+                27,
+                28,
+                29
               ],
               "numReferrers" : 0
             }
           },
-          "standard ip access-list" : {
+          "standard ipv4 access-list" : {
             "50" : {
               "definitionLines" : [
                 5,
@@ -52986,37 +52997,6 @@
                 14,
                 15,
                 16
-              ],
-              "numReferrers" : 0
-            },
-            "stdAcl-bar" : {
-              "definitionLines" : [
-                14
-              ],
-              "numReferrers" : 0
-            },
-            "stdAcl-foo" : {
-              "definitionLines" : [
-                5
-              ],
-              "numReferrers" : 0
-            }
-          },
-          "standard ipv6 access-list" : {
-            "ipv6-acl-foo" : {
-              "definitionLines" : [
-                18,
-                19,
-                20,
-                21,
-                22,
-                23,
-                24,
-                25,
-                26,
-                27,
-                28,
-                29
               ],
               "numReferrers" : 0
             }
@@ -53120,7 +53100,7 @@
         },
         "cisco_aaa" : { },
         "cisco_acl" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "BLAH-BLAH" : {
               "definitionLines" : [
                 4,
@@ -53398,7 +53378,7 @@
         "cisco_dspfarm" : { },
         "cisco_dynamic_access_policy_record" : { },
         "cisco_eigrp" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "bippety" : {
               "definitionLines" : [
                 21,
@@ -53425,7 +53405,7 @@
         "cisco_hardware" : { },
         "cisco_hsrp" : { },
         "cisco_interface" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "abc" : {
               "definitionLines" : [
                 4,
@@ -53470,20 +53450,6 @@
         "cisco_ipv6" : { },
         "cisco_ipv6_access_list" : {
           "extended ipv6 access-list" : {
-            "RT404888-XO" : {
-              "definitionLines" : [
-                4
-              ],
-              "numReferrers" : 0
-            },
-            "abcdefg" : {
-              "definitionLines" : [
-                19
-              ],
-              "numReferrers" : 0
-            }
-          },
-          "standard ipv6 access-list" : {
             "RT404888-XO" : {
               "definitionLines" : [
                 4,
@@ -53624,7 +53590,7 @@
               "numReferrers" : 0
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "copp-system-acl-icmp" : {
               "definitionLines" : [
                 5,
@@ -53807,7 +53773,7 @@
         "cisco_ssh" : { },
         "cisco_stcapp" : { },
         "cisco_style_acl1" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "blah" : {
               "definitionLines" : [
                 1,
@@ -53818,7 +53784,7 @@
           }
         },
         "cisco_style_acl2" : {
-          "standard ip access-list" : {
+          "standard ipv4 access-list" : {
             "1" : {
               "definitionLines" : [
                 1
@@ -53918,14 +53884,6 @@
         "community_set" : { },
         "foundry_access_list" : {
           "extended ipv6 access-list" : {
-            "RT404888-Caltech" : {
-              "definitionLines" : [
-                8
-              ],
-              "numReferrers" : 0
-            }
-          },
-          "standard ipv6 access-list" : {
             "RT404888-Caltech" : {
               "definitionLines" : [
                 8,
@@ -54393,7 +54351,7 @@
         "no_aaa_group_server" : { },
         "non_nexus_neighbor_af" : { },
         "nxos_acl" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "blah" : {
               "definitionLines" : [
                 9,
@@ -54687,7 +54645,7 @@
         "syslog_source_interface" : { },
         "taskgroup" : { },
         "tcpflags" : {
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "100" : {
               "definitionLines" : [
                 4,
@@ -54862,7 +54820,7 @@
         "cadant_route_map" : {
           "ipv4 prefix-list" : {
             "bar-prefix-list" : {
-              "route-map match ip prefix-list" : [
+              "route-map match ipv4 prefix-list" : [
                 6
               ]
             }
@@ -54876,9 +54834,9 @@
           }
         },
         "cadant_snmp" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "52" : {
-              "snmp server community acl" : [
+              "snmp server community ipv4 acl" : [
                 7
               ]
             }
@@ -54994,6 +54952,26 @@
                 121
               ]
             },
+            "310-systems" : {
+              "interface outgoing ip access-list" : [
+                124
+              ]
+            },
+            "ag1" : {
+              "interface incoming ip access-list" : [
+                54
+              ]
+            },
+            "ag2" : {
+              "interface outgoing ip access-list" : [
+                55
+              ]
+            },
+            "def" : {
+              "ip nat source dynamic access-list" : [
+                88
+              ]
+            },
             "mynatacl" : {
               "ip nat destination acl" : [
                 85
@@ -55004,16 +54982,6 @@
             "1" : {
               "interface igmp access-group acl" : [
                 75
-              ]
-            },
-            "310-systems" : {
-              "interface outgoing ip access-list" : [
-                124
-              ]
-            },
-            "ag1" : {
-              "interface incoming ip access-list" : [
-                54
               ]
             },
             "def" : {
@@ -55052,7 +55020,7 @@
           }
         },
         "cisco_line" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "40" : {
               "line access-class list" : [
                 6,
@@ -55232,30 +55200,52 @@
           }
         },
         "cisco_route_map" : {
+          "ipv4 acl" : {
+            "test" : {
+              "route-map match ipv4 access-list" : [
+                21
+              ]
+            }
+          },
           "ipv4 prefix-list" : {
             "bobble" : {
-              "route-map match ip prefix-list" : [
+              "route-map match ipv4 prefix-list" : [
                 31
               ]
             },
             "hpr-connector-subnets" : {
-              "route-map match ip prefix-list" : [
+              "route-map match ipv4 prefix-list" : [
                 5
-              ]
-            }
-          },
-          "ipv4/6 acl" : {
-            "test" : {
-              "route-map match ip access-list" : [
-                21
               ]
             }
           }
         },
         "cisco_snmp" : {
           "ipv4 acl" : {
+            "1" : {
+              "snmp server community ipv4 acl" : [
+                9
+              ]
+            },
+            "2" : {
+              "snmp server community ipv4 acl" : [
+                8,
+                10
+              ]
+            },
+            "customer-snmp" : {
+              "snmp server community ipv4 acl" : [
+                14
+              ]
+            },
+            "dummyacl" : {
+              "snmp server community ipv4 acl" : [
+                13
+              ]
+            },
             "snmp-acl" : {
               "snmp server community ipv4 acl" : [
+                7,
                 11
               ]
             },
@@ -55263,46 +55253,20 @@
               "snmp server community ipv4 acl" : [
                 12
               ]
+            },
+            "to-VTY" : {
+              "snmp server community ipv4 acl" : [
+                16
+              ]
             }
           },
           "ipv4/6 acl" : {
-            "1" : {
-              "snmp server community acl" : [
-                9
-              ]
-            },
-            "2" : {
-              "snmp server community acl" : [
-                8,
-                10
-              ]
-            },
             "8" : {
               "snmp server file transfer acl" : [
                 67
               ],
               "snmp server tftp-server list" : [
                 92
-              ]
-            },
-            "customer-snmp" : {
-              "snmp server community acl" : [
-                14
-              ]
-            },
-            "dummyacl" : {
-              "snmp server community acl" : [
-                13
-              ]
-            },
-            "snmp-acl" : {
-              "snmp server community acl" : [
-                7
-              ]
-            },
-            "to-VTY" : {
-              "snmp server community acl" : [
-                16
               ]
             }
           },
@@ -55352,9 +55316,9 @@
           }
         },
         "foundry_misc" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "blib" : {
-              "ssh acl" : [
+              "ssh ipv4 access-list" : [
                 31
               ]
             }
@@ -55475,44 +55439,44 @@
           }
         },
         "named_and_numbered_lists" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "1" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             },
             "2" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             },
             "4" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             },
             "456def" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             },
             "5" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             },
             "95qrs5" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             },
             "a4" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             },
             "abc123" : {
-              "route-map match ip access-list" : [
+              "route-map match ipv4 access-list" : [
                 5
               ]
             }
@@ -55697,19 +55661,19 @@
         "underscore_variable" : {
           "ipv4 prefix-list" : {
             "ABC_DEF" : {
-              "route-map match ip prefix-list" : [
+              "route-map match ipv4 prefix-list" : [
                 5
               ]
             },
             "_GHI" : {
-              "route-map match ip prefix-list" : [
+              "route-map match ipv4 prefix-list" : [
                 5
               ]
             }
           }
         },
         "variables" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "ABC_def.gh_vlan789_out_20000101" : {
               "interface outgoing ip access-list" : [
                 5
@@ -55718,7 +55682,7 @@
           }
         },
         "variables_dos" : {
-          "ipv4/6 acl" : {
+          "ipv4 acl" : {
             "ABC_def.gh_vlan789_out_20000101" : {
               "interface outgoing ip access-list" : [
                 5
