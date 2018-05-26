@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -xe
-
 if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
    GNU_FIND=gfind
 else
@@ -14,39 +12,38 @@ trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
 
 # Build batfish and run the Maven unit tests.
-batfish_test_all
+batfish_test_all || exit 1
 
 # Configure arguments for allinone throughout later runs.
 export ALLINONE_JAVA_ARGS="-enableassertions -DbatfishCoordinatorPropertiesPath=${BATFISH_ROOT}/.travis/travis_coordinator.properties"
 
-exit_code=0
 echo -e "\n  ..... Running parsing tests"
-allinone -cmdfile tests/parsing-tests/commands || exit_code=$?
+allinone -cmdfile tests/parsing-tests/commands || exit 1
 
 echo -e "\n  ..... Running parsing tests with error"
-allinone -cmdfile tests/parsing-errors-tests/commands || exit_code=$?
+allinone -cmdfile tests/parsing-errors-tests/commands || exit 1
 
 echo -e "\n  ..... Running basic client tests"
-allinone -cmdfile tests/basic/commands || exit_code=$?
+allinone -cmdfile tests/basic/commands || exit 1
 
 echo -e "\n  ..... Running role functionality tests"
-allinone -cmdfile tests/roles/commands || exit_code=$?
+allinone -cmdfile tests/roles/commands || exit 1
 
 echo -e "\n  ..... Running jsonpath tests"
-allinone -cmdfile tests/jsonpath-addons/commands || exit_code=$?
-allinone -cmdfile tests/jsonpathtotable/commands || exit_code=$?
+allinone -cmdfile tests/jsonpath-addons/commands || exit 1
+allinone -cmdfile tests/jsonpathtotable/commands || exit 1
 
 echo -e "\n  ..... Running ui-focused client tests"
-allinone -cmdfile tests/ui-focused/commands || exit_code=$?
+allinone -cmdfile tests/ui-focused/commands || exit 1
 
 echo -e "\n  ..... Running aws client tests"
-allinone -cmdfile tests/aws/commands || exit_code=$?
+allinone -cmdfile tests/aws/commands || exit 1
 
 echo -e "\n  ..... Running java-smt client tests"
-allinone -cmdfile tests/java-smt/commands || exit_code=$?
+allinone -cmdfile tests/java-smt/commands || exit 1
 
 echo -e "\n  ..... Running watchdog tests"
-allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
+allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit 1
 sleep 5
 
 #Test running separately
@@ -56,7 +53,6 @@ batfish -runmode workservice -register -coordinatorhost localhost -loglevel outp
 echo -e "\n  ..... Running java demo tests"
 if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then
    echo "DEMO FAILED!" 1>&2
-   exit_code=1
 else
    rm demos/example/commands.ref.testout
 fi
@@ -69,4 +65,9 @@ for i in $($GNU_FIND -name *.testout); do
    echo -e "\n $i"; diff -u ${i%.testout} $i
 done
 
-exit $exit_code
+#exit with exit code 1 if any test failed
+if [ -n "$($GNU_FIND -name '*.testout')" ]; then
+   exit 1
+fi
+
+echo 'Success!'
