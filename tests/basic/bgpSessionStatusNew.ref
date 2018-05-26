@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.question.bgpsessionstatus.BgpSessionStatusAnswerElement",
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
     "metadata" : {
       "columnMetadata" : [
         {
