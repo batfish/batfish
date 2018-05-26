@@ -11,23 +11,19 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.Main;
 
 /**
- * The {@link ContainerResource} is a resource for servicing client API calls at container level.
+ * The {@link NodeRolesResource} is a resource for servicing client API calls for node roles. It is
+ * a subresource of {@link ContainerResource}.
  *
- * <p>The ContainerResource provides information about a specified container, and provides the
- * ability to delete a specified container for authenticated clients.
- *
- * <p>The ContainerResource also provides the access entry for other subResources.
+ * <p>This resource provides information about a specified container using GET.
  */
 @Produces(MediaType.APPLICATION_JSON)
 public class NodeRolesResource {
 
   private BatfishLogger _logger = Main.getLogger();
 
-  private String _apiKey;
   private String _container;
 
-  public NodeRolesResource(UriInfo uriInfo, String apiKey, String container) {
-    _apiKey = apiKey;
+  public NodeRolesResource(UriInfo uriInfo, String container) {
     _container = container;
   }
 
@@ -35,7 +31,6 @@ public class NodeRolesResource {
   @GET
   public Response getNodeRoles() {
     _logger.infof("WMS2: getNodeRoles '%s'\n", _container);
-    ContainerResource.checkAccessToContainer(_apiKey, _container);
     try {
       return Response.ok(Main.getWorkMgr().getNodeRolesData(_container)).build();
     } catch (IOException e) {

@@ -108,7 +108,7 @@ public class WorkMgrServiceV2Test extends JerseyTest {
   }
 
   private WebTarget getNodeRolesTarget(String container) {
-    return getContainersTarget().path(container).path("noderoles");
+    return getContainersTarget().path(container).path(CoordConstsV2.RSC_NODE_ROLES);
   }
 
   @Test

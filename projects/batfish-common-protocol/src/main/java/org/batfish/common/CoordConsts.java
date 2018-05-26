@@ -91,6 +91,7 @@ public class CoordConsts {
   public static final String SVC_KEY_FORCE = "force";
   public static final String SVC_KEY_MAX_SUGGESTIONS = "maxsuggestions";
   public static final String SVC_KEY_NEW_ANALYSIS = "newanalysis";
+  public static final String SVC_KEY_NODE_ROLES = "/noderoles";
   public static final String SVC_KEY_OBJECT_NAME = "objectname";
   public static final String SVC_KEY_PLUGIN_ID = "pluginid";
   public static final String SVC_KEY_QUERY = "query";
