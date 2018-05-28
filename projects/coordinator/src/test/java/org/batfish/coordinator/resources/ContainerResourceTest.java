@@ -11,6 +11,7 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.CoordConstsV2;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
@@ -29,11 +30,7 @@ public class ContainerResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   private WebTarget getContainerTarget(String container) {
-    return getContainersTarget().path(container);
-  }
-
-  private WebTarget getContainersTarget() {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConsts.SVC_KEY_CONTAINERS);
+    return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_CONTAINERS).path(container);
   }
 
   @Test

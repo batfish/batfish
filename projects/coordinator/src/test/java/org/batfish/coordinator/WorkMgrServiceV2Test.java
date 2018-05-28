@@ -34,7 +34,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   }
 
   private WebTarget getContainersTarget() {
-    return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConsts.SVC_KEY_CONTAINERS);
+    return target(CoordConsts.SVC_CFG_WORK_MGR2).path(CoordConstsV2.RSC_CONTAINERS);
   }
 
   @Test
@@ -53,7 +53,7 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
   public void redirectContainer() {
     Response response =
         target(CoordConsts.SVC_CFG_WORK_MGR2)
-            .path(CoordConsts.SVC_KEY_CONTAINER_NAME)
+            .path(CoordConstsV2.RSC_CONTAINER)
             .property(FOLLOW_REDIRECTS, false)
             .request()
             .get();
