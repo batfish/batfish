@@ -29,7 +29,7 @@ public class Table2<K1, K2, V> {
     return inner.get(key2);
   }
 
-  public void put(K1 key1, K2 key2, V val) {
+  public void put(K1 key1, K2 key2, @Nullable V val) {
     Map<K2, V> inner = _map.computeIfAbsent(key1, k -> new HashMap<>());
     inner.put(key2, val);
   }

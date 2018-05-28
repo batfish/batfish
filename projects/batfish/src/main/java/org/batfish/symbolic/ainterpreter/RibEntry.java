@@ -71,6 +71,9 @@ public class RibEntry implements Comparable<RibEntry> {
       case CONNECTED:
         route = "ConnectedRoute";
         break;
+      case AGGREGATE:
+        route = "AggregateRoute";
+        break;
       default:
         throw new BatfishException("Unsupported protocol");
     }

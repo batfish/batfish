@@ -85,8 +85,6 @@ class TransferBuilder {
 
   private BDDNetFactory _netFactory;
 
-  private Set<CommunityVar> _comms;
-
   private Configuration _conf;
 
   private GraphEdge _edge;
@@ -105,7 +103,7 @@ class TransferBuilder {
       BDDNetwork network,
       Graph g,
       Configuration conf,
-      GraphEdge edge,
+      @Nullable GraphEdge edge,
       EdgeType edgeType,
       @Nullable List<Statement> statements,
       PolicyQuotient pq) {
@@ -752,9 +750,10 @@ class TransferBuilder {
 
   private BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
     BDDRoute ret = _netFactory.createRoute();
-
     BDDInteger x;
     BDDInteger y;
+
+    // Only modify fields that can actually change
 
     if (_netFactory.getConfig().getKeepAd()) {
       x = r1.getAdminDist();
@@ -788,10 +787,6 @@ class TransferBuilder {
                 ret.getCommunities().put(c, ite(guard, var1, var2));
               });
     }
-
-    // BDDInteger i =
-    //    ite(guard, r1.getProtocolHistory().getInteger(), r2.getProtocolHistory().getInteger());
-    // ret.getProtocolHistory().setInteger(i);
 
     return ret;
   }
@@ -1042,7 +1037,6 @@ class TransferBuilder {
   public TransferResult<BDDTransferFunction, BDD> compute(Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
-    _comms = _graph.getAllCommunities();
     BDDRoute o = _netFactory.createRoute();
     // addCommunityAssumptions(o);
     TransferResult<BDDTransferFunction, BDD> result = null;
@@ -1054,13 +1048,16 @@ class TransferBuilder {
               .setReturnValue(t)
               .setReturnAssignedValue(_netFactory.one())
               .setFallthroughValue(_netFactory.one());
-      addBatfishImplicitPolicy(result);
-    }
-    if (_statements != null) {
+    } else if (_statements != null) {
       // System.out.println("POLICY FOR: " + _edge);
       // System.out.println("IMPORT?: " + (_edgeType == EdgeType.IMPORT));
       TransferParam<BDDRoute> p = new TransferParam<>(o, false);
       result = compute(_statements, p);
+    } else {
+      return null;
+    }
+
+    if (_edge != null) {
       addBatfishImplicitPolicy(result);
     }
     return result;

@@ -1,7 +1,5 @@
 package org.batfish.symbolic.ainterpreter;
 
-import java.util.BitSet;
-
 public class AbstractRib<T> {
 
   private T _bgpRib;
@@ -14,15 +12,12 @@ public class AbstractRib<T> {
 
   private T _mainRib;
 
-  private BitSet _aclIds;
-
-  public AbstractRib(T bgpRib, T ospfRib, T staticRib, T connectedRib, T mainRib, BitSet acls) {
+  public AbstractRib(T bgpRib, T ospfRib, T staticRib, T connectedRib, T mainRib) {
     this._bgpRib = bgpRib;
     this._ospfRib = ospfRib;
     this._staticRib = staticRib;
     this._connectedRib = connectedRib;
     this._mainRib = mainRib;
-    this._aclIds = acls;
   }
 
   public T getBgpRib() {
@@ -43,9 +38,5 @@ public class AbstractRib<T> {
 
   public T getMainRib() {
     return _mainRib;
-  }
-
-  public BitSet getAclIds() {
-    return _aclIds;
   }
 }

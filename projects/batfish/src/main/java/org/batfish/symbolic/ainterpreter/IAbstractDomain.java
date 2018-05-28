@@ -8,7 +8,6 @@ import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.symbolic.bdd.BDDAcl;
 
 public interface IAbstractDomain<T> {
 
@@ -22,16 +21,13 @@ public interface IAbstractDomain<T> {
 
   T selectBest(T x);
 
+  T aggregate(String router, List<AggregateTransformer> aggregates, T x);
+
   List<RibEntry> toRoutes(AbstractRib<T> value);
 
-  BDD toFib(Map<String, AbstractRib<T>> ribs, FiniteIndexMap<BDDAcl> acls);
+  BDD toFib(Map<String, AbstractRib<T>> ribs);
 
-  boolean reachable(
-      Map<String, AbstractRib<T>> ribs,
-      FiniteIndexMap<BDDAcl> acls,
-      String src,
-      String dst,
-      Flow flow);
+  boolean reachable(Map<String, AbstractRib<T>> ribs, String src, String dst, Flow flow);
 
   String debug(T x);
 }

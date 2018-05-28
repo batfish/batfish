@@ -1,7 +1,6 @@
 package org.batfish.symbolic.ainterpreter;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,10 +10,10 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
-import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetFactory;
@@ -22,9 +21,8 @@ import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
-import org.batfish.symbolic.utils.Tuple;
 
-public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
+public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainElement> {
 
   private enum Transformation {
     UNDER_APPROXIMATION,
@@ -37,6 +35,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   // A substitution pairing that we will reuse
   private BDDPairing _pairing;
 
+  // Reference to BDD Route variables
   private BDDRoute _variables;
 
   // A cache of BDDs representing a prefix length exact match
@@ -118,8 +117,9 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   @Override
-  public Tuple<BDD, BDD> bot() {
-    return new Tuple<>(_netFactory.zero(), _netFactory.zero());
+  public ReachabilityDomainElement bot() {
+    BDD zero = _netFactory.zero();
+    return new ReachabilityDomainElement(zero, zero, zero);
   }
 
   private BDD valueAux(String router, RoutingProtocol proto, Set<Prefix> prefixes) {
@@ -138,16 +138,22 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   @Override
-  public Tuple<BDD, BDD> value(String router, RoutingProtocol proto, Set<Prefix> prefixes) {
-    BDD ret = valueAux(router, proto, prefixes);
-    return new Tuple<>(ret, ret);
+  public ReachabilityDomainElement value(String router, RoutingProtocol proto, Set<Prefix> pfxs) {
+    BDD ret = valueAux(router, proto, pfxs);
+    return new ReachabilityDomainElement(ret, ret, _netFactory.zero());
   }
 
   @Override
-  public Tuple<BDD, BDD> transform(Tuple<BDD, BDD> input, EdgeTransformer t) {
-    BDD under = transformAux(input.getFirst(), t, Transformation.UNDER_APPROXIMATION);
-    BDD over = transformAux(input.getSecond(), t, Transformation.OVER_APPROXIMATION);
-    return new Tuple<>(under, over);
+  public ReachabilityDomainElement transform(ReachabilityDomainElement input, EdgeTransformer t) {
+    BDD under = transformAux(input.getUnderApproximation(), t, Transformation.UNDER_APPROXIMATION);
+    BDD over = transformAux(input.getOverApproximation(), t, Transformation.OVER_APPROXIMATION);
+    BDD blocked = input.getBlockedAcls();
+    if (t.getBddAcl() != null) {
+      BDD h = headerspace(over);
+      BDD toBlock = h.andWith(t.getBddAcl().getBdd().not());
+      blocked = blocked.orWith(toBlock);
+    }
+    return new ReachabilityDomainElement(under, over, blocked);
   }
 
   private BDD transformAux(BDD input, EdgeTransformer t, Transformation type) {
@@ -171,15 +177,9 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
     _pairing.reset();
     _modifiedBits = _netFactory.one();
     // reverse order of BDD order is the best
-    if (_netFactory.getConfig().getKeepRRClient()) {
-      input = modifyFromRRClient(input, mods);
-    }
-    if (_netFactory.getConfig().getKeepCommunities()) {
-      input = modifyCommunities(input, mods);
-    }
-    if (_netFactory.getConfig().getKeepProtocol()) {
-      input = modifyProtocol(input, mods, t.getProtocol());
-    }
+    input = modifyFromRRClient(input, mods.getFromRRClient());
+    input = modifyCommunities(input, mods);
+    input = modifyProtocol(input, t.getProtocol());
     input = input.exist(_modifiedBits);
     input = input.replaceWith(_pairing);
     return input;
@@ -191,8 +191,8 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
    * appropriate substitution. This has a side-effect, which is used
    * to be able to batch modifications and only apply them all once.
    */
-  private BDD modifyProtocol(BDD input, BDDRoute mods, RoutingProtocol proto) {
-    if (mods.getConfig().getKeepProtocol()) {
+  private BDD modifyProtocol(BDD input, RoutingProtocol proto) {
+    if (_netFactory.getConfig().getKeepProtocol()) {
       BDDFiniteDomain<RoutingProtocol> var = _variables.getProtocolHistory();
       BDDFiniteDomain<RoutingProtocol> prot = new BDDFiniteDomain<>(var);
       prot.setValue(proto);
@@ -210,7 +210,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   private BDD modifyCommunities(BDD input, BDDRoute mods) {
-    if (mods.getConfig().getKeepCommunities()) {
+    if (_netFactory.getConfig().getKeepCommunities()) {
       for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
         CommunityVar cvar = e.getKey();
         BDD expr = mods.getCommunities().get(cvar);
@@ -228,13 +228,12 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
     return input;
   }
 
-  private BDD modifyFromRRClient(BDD input, BDDRoute mods) {
-    if (mods.getConfig().getKeepRRClient()) {
-      BDD expr = mods.getFromRRClient();
-      if (notIdentity(expr, _netFactory.getIndexRRClient())) {
+  private BDD modifyFromRRClient(BDD input, BDD modFromRRClient) {
+    if (_netFactory.getConfig().getKeepRRClient()) {
+      if (notIdentity(modFromRRClient, _netFactory.getIndexRRClient())) {
         BDD x = _variables.getFromRRClient();
         BDD temp = _variables.getFromRRClientTemp();
-        input = input.andWith(temp.biimp(expr));
+        input = input.andWith(temp.biimp(modFromRRClient));
         _pairing.set(temp.var(), x.var());
         _modifiedBits = _modifiedBits.and(x);
       }
@@ -251,26 +250,56 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   @Override
-  public Tuple<BDD, BDD> merge(Tuple<BDD, BDD> x, Tuple<BDD, BDD> y) {
-    BDD newFirst = x.getFirst().or(y.getFirst());
-    BDD newSecond = x.getSecond().or(y.getSecond());
-    return new Tuple<>(newFirst, newSecond);
+  public ReachabilityDomainElement merge(ReachabilityDomainElement x, ReachabilityDomainElement y) {
+    BDD newFirst = x.getUnderApproximation().or(y.getUnderApproximation());
+    BDD newSecond = x.getOverApproximation().or(y.getOverApproximation());
+    BDD newAcls = x.getBlockedAcls().or(y.getBlockedAcls());
+    return new ReachabilityDomainElement(newFirst, newSecond, newAcls);
   }
 
   @Override
-  public Tuple<BDD, BDD> selectBest(Tuple<BDD, BDD> x) {
+  public ReachabilityDomainElement selectBest(ReachabilityDomainElement x) {
     return x;
+  }
+
+  @Override
+  public ReachabilityDomainElement aggregate(
+      String router, List<AggregateTransformer> aggregates, ReachabilityDomainElement x) {
+    BDD under = aggregateAux(router, x.getUnderApproximation(), aggregates);
+    BDD over = aggregateAux(router, x.getOverApproximation(), aggregates);
+    return new ReachabilityDomainElement(under, over, x.getBlockedAcls());
+  }
+
+  private BDD aggregateAux(String router, BDD x, List<AggregateTransformer> aggregates) {
+    BDD acc = x;
+    for (AggregateTransformer t : aggregates) {
+      BDD aggregated = x.and(t.getTransferFunction().getFilter());
+      if (!aggregated.isZero()) {
+        GeneratedRoute r = t.getGeneratedRoute();
+        // Create a new aggregate route
+        BDD prefix = BDDUtils.prefixToBdd(_netFactory.getFactory(), _variables, r.getNetwork());
+        BDD proto = _variables.getProtocolHistory().value(RoutingProtocol.AGGREGATE);
+        BDD ad =
+            (_netFactory.getConfig().getKeepAd()
+                ? _variables.getAdminDist().value(r.getAdministrativeCost())
+                : _netFactory.one());
+        BDD dstRouter = _variables.getDstRouter().value(router);
+        BDD route = dstRouter.and(ad).andWith(prefix).andWith(proto);
+        acc = acc.orWith(route);
+      }
+    }
+    return acc;
   }
 
   // TODO: same thing, take away the ones that over approximated
   @Override
-  public List<RibEntry> toRoutes(AbstractRib<Tuple<BDD, BDD>> value) {
+  public List<RibEntry> toRoutes(AbstractRib<ReachabilityDomainElement> value) {
     return toRoutesAux(value.getMainRib());
   }
 
-  private List<RibEntry> toRoutesAux(Tuple<BDD, BDD> value) {
+  private List<RibEntry> toRoutesAux(ReachabilityDomainElement value) {
     List<RibEntry> ribEntries = new ArrayList<>();
-    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, value.getFirst());
+    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, value.getUnderApproximation());
     for (SatAssignment entry : entries) {
       Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
       RibEntry r =
@@ -282,12 +311,12 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
 
   // TODO: ensure unique reachability (i.e., no other destinations)
   @Override
-  public BDD toFib(Map<String, AbstractRib<Tuple<BDD, BDD>>> ribs, FiniteIndexMap<BDDAcl> acls) {
-    Map<String, AbstractFib<Tuple<BDD, BDD>>> ret = new HashMap<>();
-    for (Entry<String, AbstractRib<Tuple<BDD, BDD>>> e : ribs.entrySet()) {
+  public BDD toFib(Map<String, AbstractRib<ReachabilityDomainElement>> ribs) {
+    Map<String, AbstractFib<ReachabilityDomainElement>> ret = new HashMap<>();
+    for (Entry<String, AbstractRib<ReachabilityDomainElement>> e : ribs.entrySet()) {
       String router = e.getKey();
-      AbstractRib<Tuple<BDD, BDD>> rib = e.getValue();
-      AbstractFib<Tuple<BDD, BDD>> fib = new AbstractFib<>(rib, toFibAux(rib, acls));
+      AbstractRib<ReachabilityDomainElement> rib = e.getValue();
+      AbstractFib<ReachabilityDomainElement> fib = new AbstractFib<>(rib, toFibSingleRouter(rib));
       ret.put(router, fib);
     }
     return transitiveClosure(ret);
@@ -316,12 +345,12 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
    * destinations matched by the /24 but not the /32 to go to A
    *
    */
-  private BDD toFibAux(AbstractRib<Tuple<BDD, BDD>> value, FiniteIndexMap<BDDAcl> aclMap) {
-    Tuple<BDD, BDD> tup = value.getMainRib();
+  private BDD toFibSingleRouter(AbstractRib<ReachabilityDomainElement> value) {
+    ReachabilityDomainElement elt = value.getMainRib();
 
     // Get the prefixes only by removing communities, protocol tag etc.
-    BDD underPfxOnly = tup.getFirst().exist(_allQuantifyBits);
-    BDD overPfxOnly = tup.getSecond().exist(_allQuantifyBits);
+    BDD underPfxOnly = elt.getUnderApproximation().exist(_allQuantifyBits);
+    BDD overPfxOnly = elt.getOverApproximation().exist(_allQuantifyBits);
 
     // Early return if there is nothing in the rib
     if (underPfxOnly.isZero()) {
@@ -365,7 +394,32 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
     }
 
     reachablePackets = reachablePackets.exist(_lenBits);
-    reachablePackets = reachablePackets.andWith(notBlockedByAcl(aclMap, value.getAclIds()));
+    reachablePackets = reachablePackets.andWith(elt.getBlockedAcls().not());
+    return reachablePackets;
+  }
+
+  private BDD headerspace(BDD rib) {
+    BDD pfxOnly = rib.exist(_allQuantifyBits);
+    if (pfxOnly.isZero()) {
+      return pfxOnly;
+    }
+    BDD reachablePackets = _netFactory.zero();
+    for (int i = 32; i >= 0; i--) {
+      BDD len = makeLength(i);
+      // Get the must reach prefixes for this length
+      BDD withLen = pfxOnly.and(len);
+      if (withLen.isZero()) {
+        continue;
+      }
+      // quantify out bits i+1 to 32
+      BDD removeBits = removeBits(i);
+      if (!removeBits.isOne()) {
+        withLen = withLen.exist(removeBits);
+      }
+      // accumulate resulting headers
+      reachablePackets = reachablePackets.orWith(withLen);
+    }
+    reachablePackets = reachablePackets.exist(_lenBits);
     return reachablePackets;
   }
 
@@ -412,20 +466,6 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   /*
-   * BDD representing those packets not blocked by an ACL
-   */
-  private BDD notBlockedByAcl(FiniteIndexMap<BDDAcl> aclMap, BitSet aclIds) {
-    BDD allow = _netFactory.one();
-    for (int i = aclIds.nextSetBit(0); i != -1; i = aclIds.nextSetBit(i + 1)) {
-      BDDAcl acl = aclMap.value(i);
-      // System.out.println("    ACL: " + acl.getAcl().getName());
-      // System.out.println(BDDUtils.dot(_netFactory, acl.getBdd()));
-      allow = allow.and(acl.getBdd());
-    }
-    return allow;
-  }
-
-  /*
    * Computes the transitive closure of a fib
    */
   private BDD transitiveClosure(BDD fibs) {
@@ -456,12 +496,10 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   // TODO: cache the flows
   @Override
   public boolean reachable(
-      Map<String, AbstractRib<Tuple<BDD, BDD>>> ribs,
-      FiniteIndexMap<BDDAcl> acls,
-      String src,
-      String dst,
-      Flow flow) {
+      Map<String, AbstractRib<ReachabilityDomainElement>> ribs, String src, String dst, Flow flow) {
     BDD f = BDDUtils.flowToBdd(_netFactory, flow);
+
+    AbstractRib<ReachabilityDomainElement> x = ribs.get(src);
 
     /* System.out.println("Flow:");
     for (SatAssignment assignment : BDDUtils.allSat(_netFactory, f)) {
@@ -476,8 +514,8 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
 
     String current = src;
     while (true) {
-      AbstractRib<Tuple<BDD, BDD>> rib = ribs.get(current);
-      BDD fib = toFibAux(rib, acls);
+      AbstractRib<ReachabilityDomainElement> rib = ribs.get(current);
+      BDD fib = toFibSingleRouter(rib);
 
       /* System.out.println("   Fib for " + current);
       for (SatAssignment assignment : BDDUtils.allSat(_netFactory, fib)) {
@@ -497,7 +535,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   @Override
-  public String debug(Tuple<BDD, BDD> value) {
+  public String debug(ReachabilityDomainElement value) {
     List<RibEntry> ribs = toRoutesAux(value);
     return ribs.toString();
   }

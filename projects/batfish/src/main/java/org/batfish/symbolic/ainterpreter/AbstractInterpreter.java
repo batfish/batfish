@@ -2,7 +2,6 @@ package org.batfish.symbolic.ainterpreter;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,6 +18,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
@@ -44,7 +44,6 @@ import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
 import org.batfish.symbolic.smt.EdgeType;
-import org.batfish.symbolic.utils.Tuple;
 
 // TODO: only recompute reachability for iBGP if something has changed
 // For example, when processing multiple edges on the same router
@@ -64,9 +63,6 @@ public class AbstractInterpreter {
   // BDD _factory
   private BDDNetFactory _netFactory;
 
-  // Convert acls to a unique identifier
-  private FiniteIndexMap<BDDAcl> _aclIndexes;
-
   // A collection of single node BDDs representing the individual routeVariables
   private BDDRoute _variables;
 
@@ -82,10 +78,6 @@ public class AbstractInterpreter {
     _network = BDDNetwork.create(_graph, ns, config, false);
     _netFactory = _network.getNetFactory();
     _variables = _netFactory.routeVariables();
-    Set<BDDAcl> acls = new HashSet<>();
-    acls.addAll(_network.getInAcls().values());
-    acls.addAll(_network.getOutAcls().values());
-    _aclIndexes = new FiniteIndexMap<>(acls);
   }
 
   /*
@@ -171,7 +163,7 @@ public class AbstractInterpreter {
       }
 
       T rib = domain.merge(domain.merge(domain.merge(bgp, ospf), stat), conn);
-      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib, new BitSet());
+      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib);
       reachable.put(router, abstractRib);
     }
 
@@ -195,7 +187,6 @@ public class AbstractInterpreter {
       AbstractRib<T> r = reachable.get(router);
       T routerOspf = r.getOspfRib();
       T routerMainRib = r.getMainRib();
-      BitSet routerAclsSoFar = r.getAclIds();
 
       // System.out.println("");
       // System.out.println("At: " + router);
@@ -207,19 +198,22 @@ public class AbstractInterpreter {
           String neighbor = ge.getPeer();
           Configuration neighborConf = _graph.getConfigurations().get(neighbor);
 
+          BDDAcl aclOut = _network.getOutAcls().get(ge);
+          BDDAcl aclIn = _network.getOutAcls().get(rev);
+
           AbstractRib<T> nr = reachable.get(neighbor);
           T neighborConn = nr.getConnectedRib();
           T neighborStat = nr.getStaticRib();
           T neighborBgp = nr.getBgpRib();
           T neighborOspf = nr.getOspfRib();
           T neighborMainRib = nr.getMainRib();
-          BitSet neighborAclsSoFar = nr.getAclIds();
 
           T newNeighborOspf = neighborOspf;
           T newNeighborBgp = neighborBgp;
 
           // System.out.println("");
           // System.out.println("  neighbor: " + neighbor);
+          // System.out.println("  edge: " + ge);
           // System.out.println("  neighbor RIB: " + domain.debug(neighborMainRib));
 
           // Update OSPF
@@ -229,14 +223,15 @@ public class AbstractInterpreter {
             BDDTransferFunction exportFilter = _network.getExportOspfPolicies().get(ge);
             BDDTransferFunction importFilter = _network.getImportOspfPolicies().get(rev);
 
+            RoutingProtocol ospf = RoutingProtocol.OSPF;
             if (exportFilter != null) {
               EdgeTransformer exp =
-                  new EdgeTransformer(ge, EdgeType.EXPORT, RoutingProtocol.OSPF, exportFilter);
+                  new EdgeTransformer(ge, EdgeType.EXPORT, ospf, exportFilter, aclOut);
               tmpOspf = domain.transform(tmpOspf, exp);
             }
             if (importFilter != null) {
               EdgeTransformer imp =
-                  new EdgeTransformer(ge, EdgeType.IMPORT, RoutingProtocol.OSPF, importFilter);
+                  new EdgeTransformer(rev, EdgeType.IMPORT, ospf, importFilter, aclIn);
               tmpOspf = domain.transform(tmpOspf, imp);
             }
 
@@ -286,8 +281,8 @@ public class AbstractInterpreter {
               Flow flow2 = fb.build();
 
               doUpdate =
-                  domain.reachable(reachable, _aclIndexes, router, neighbor, flow1)
-                      && domain.reachable(reachable, _aclIndexes, neighbor, router, flow2);
+                  domain.reachable(reachable, router, neighbor, flow1)
+                      && domain.reachable(reachable, neighbor, router, flow2);
 
               // System.out.println("    Both are reachable? " + doUpdate);
 
@@ -299,38 +294,35 @@ public class AbstractInterpreter {
 
             if (doUpdate) {
               if (exportFilter != null) {
-                EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, proto, exportFilter);
+                EdgeTransformer exp =
+                    new EdgeTransformer(ge, EdgeType.EXPORT, proto, exportFilter, aclOut);
                 tmpBgp = domain.transform(tmpBgp, exp);
 
                 // System.out.println("  tmpBgp after export: " + domain.debug(tmpBgp));
-                // System.out.println("  export filter: ");
-                // System.out.println(BDDUtils.dot(_netFactory, exp.getBddTransfer().getFilter()));
               }
               if (importFilter != null) {
-                EdgeTransformer imp = new EdgeTransformer(ge, EdgeType.IMPORT, proto, importFilter);
+                EdgeTransformer imp =
+                    new EdgeTransformer(rev, EdgeType.IMPORT, proto, importFilter, aclIn);
                 tmpBgp = domain.transform(tmpBgp, imp);
 
                 // System.out.println("  tmpBgp after import: " + domain.debug(tmpBgp));
               }
 
+              // Apply BGP aggregates if needed
+              List<AggregateTransformer> transformers = new ArrayList<>();
+              for (GeneratedRoute gr : neighborConf.getDefaultVrf().getGeneratedRoutes()) {
+                String policyName = gr.getGenerationPolicy();
+                BDDTransferFunction f = _network.getGeneratedRoutes().get(neighbor, policyName);
+                assert (f != null);
+                AggregateTransformer at = new AggregateTransformer(f, gr);
+                transformers.add(at);
+              }
+              tmpBgp = domain.aggregate(neighbor, transformers, tmpBgp);
+
               newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
             }
 
             // System.out.println("  now neighbor is: " + domain.debug(newNeighborBgp));
-          }
-
-          // Update set of relevant ACLs so far
-          BitSet newNeighborAclsSoFar = (BitSet) neighborAclsSoFar.clone();
-          newNeighborAclsSoFar.or(routerAclsSoFar);
-          BDDAcl out = _network.getOutAcls().get(rev);
-          if (out != null) {
-            int idx = _aclIndexes.index(out);
-            newNeighborAclsSoFar.set(idx);
-          }
-          BDDAcl in = _network.getInAcls().get(ge);
-          if (in != null) {
-            int idx = _aclIndexes.index(in);
-            newNeighborAclsSoFar.set(idx);
           }
 
           // Update RIB and apply decision process (if any)
@@ -345,12 +337,7 @@ public class AbstractInterpreter {
           if (!newNeighborRib.equals(neighborMainRib) || !newNeighborOspf.equals(neighborOspf)) {
             AbstractRib<T> newAbstractRib =
                 new AbstractRib<>(
-                    newNeighborBgp,
-                    newNeighborOspf,
-                    neighborStat,
-                    neighborConn,
-                    newNeighborRib,
-                    newNeighborAclsSoFar);
+                    newNeighborBgp, newNeighborOspf, neighborStat, neighborConn, newNeighborRib);
             reachable.put(neighbor, newAbstractRib);
             if (!updateSet.contains(neighbor)) {
               updateSet.add(neighbor);
@@ -370,12 +357,12 @@ public class AbstractInterpreter {
    */
   public AnswerElement routes(NodesSpecifier ns) {
     ReachabilityDomain domain = new ReachabilityDomain(_netFactory);
-    Map<String, AbstractRib<Tuple<BDD, BDD>>> reachable = computeFixedPoint(domain);
+    Map<String, AbstractRib<ReachabilityDomainElement>> reachable = computeFixedPoint(domain);
     SortedSet<RibEntry> routes = new TreeSet<>();
     SortedMap<String, SortedSet<RibEntry>> routesByHostname = new TreeMap<>();
     Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
     for (String router : routers) {
-      AbstractRib<Tuple<BDD, BDD>> rib = reachable.get(router);
+      AbstractRib<ReachabilityDomainElement> rib = reachable.get(router);
       SortedSet<RibEntry> ribEntries = new TreeSet<>(domain.toRoutes(rib));
       routesByHostname.put(router, ribEntries);
       routes.addAll(ribEntries);
@@ -406,9 +393,9 @@ public class AbstractInterpreter {
 
   public AnswerElement reachability(HeaderLocationQuestion question) {
     ReachabilityDomain domain = new ReachabilityDomain(_netFactory);
-    Map<String, AbstractRib<Tuple<BDD, BDD>>> reachable = computeFixedPoint(domain);
+    Map<String, AbstractRib<ReachabilityDomainElement>> reachable = computeFixedPoint(domain);
     long t = System.currentTimeMillis();
-    BDD fibs = domain.toFib(reachable, _aclIndexes);
+    BDD fibs = domain.toFib(reachable);
     System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
     BDD query = query(question);
     BDD subset = query.and(fibs);

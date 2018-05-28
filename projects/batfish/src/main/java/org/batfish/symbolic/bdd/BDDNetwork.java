@@ -12,9 +12,11 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -56,6 +58,8 @@ public class BDDNetwork {
 
   private Map<GraphEdge, BDDAcl> _outAcls;
 
+  private Table2<String, String, BDDTransferFunction> _generatedRoutes;
+
   private BDDNetwork(
       Graph graph,
       NodesSpecifier nodesSpecifier,
@@ -76,6 +80,7 @@ public class BDDNetwork {
     _exportOspfPolicies = new HashMap<>();
     _inAcls = new HashMap<>();
     _outAcls = new HashMap<>();
+    _generatedRoutes = new Table2<>();
   }
 
   public static BDDNetwork create(Graph g, BDDNetConfig config, boolean ignoreNetworks) {
@@ -94,12 +99,15 @@ public class BDDNetwork {
    * Compute a BDD representation of a routing policy.
    */
   private @Nullable BDDTransferFunction computeBDD(
-      Configuration conf, GraphEdge ge, EdgeType et, @Nullable RoutingPolicy pol) {
+      Configuration conf,
+      @Nullable GraphEdge ge,
+      EdgeType et,
+      @Nullable RoutingPolicy routingPolicy) {
     Set<Prefix> networks = new HashSet<>();
     if (_ignoreNetworks) {
       networks = Graph.getOriginatedNetworks(conf);
     }
-    List<Statement> statements = (pol == null ? null : pol.getStatements());
+    List<Statement> statements = (routingPolicy == null ? null : routingPolicy.getStatements());
     TransferBuilder t =
         new TransferBuilder(this, _graph, conf, ge, et, statements, _policyQuotient);
     TransferResult<BDDTransferFunction, BDD> result = t.compute(networks);
@@ -120,7 +128,19 @@ public class BDDNetwork {
       if (!includeNodes.contains(router)) { // skip if we don't care about this node
         continue;
       }
+
       Configuration conf = entry.getValue();
+
+      // Aggregate policies
+      for (Vrf vrf : conf.getVrfs().values()) {
+        for (GeneratedRoute generatedRoute : vrf.getGeneratedRoutes()) {
+          String policyName = generatedRoute.getGenerationPolicy();
+          RoutingPolicy pol = conf.getRoutingPolicies().get(policyName);
+          BDDTransferFunction t = computeBDD(conf, null, EdgeType.IMPORT, pol);
+          _generatedRoutes.put(router, policyName, t);
+        }
+      }
+
       List<GraphEdge> edges = _graph.getEdgeMap().get(router);
       for (GraphEdge ge : edges) {
 
@@ -217,6 +237,10 @@ public class BDDNetwork {
 
   public Map<GraphEdge, BDDAcl> getOutAcls() {
     return _outAcls;
+  }
+
+  public Table2<String, String, BDDTransferFunction> getGeneratedRoutes() {
+    return _generatedRoutes;
   }
 
   public BDDNetFactory getNetFactory() {

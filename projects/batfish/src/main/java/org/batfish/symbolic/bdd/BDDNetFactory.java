@@ -172,6 +172,7 @@ public class BDDNetFactory {
     _allProtos.add(RoutingProtocol.OSPF);
     _allProtos.add(RoutingProtocol.BGP);
     _allProtos.add(RoutingProtocol.IBGP);
+    _allProtos.add(RoutingProtocol.AGGREGATE);
 
     int numNodes;
     int cacheSize;
