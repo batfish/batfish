@@ -59,6 +59,9 @@ public class RibEntry implements Comparable<RibEntry> {
       case OSPF:
         route = "OspfRoute";
         break;
+      case IBGP:
+        route = "IbgpRoute";
+        break;
       case BGP:
         route = "BgpRoute";
         break;

@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.CommunityList;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
@@ -67,10 +69,11 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
+import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.OspfType;
-import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.TransferParam;
 import org.batfish.symbolic.TransferResult;
+import org.batfish.symbolic.smt.EdgeType;
 import org.batfish.symbolic.utils.PrefixUtils;
 
 class TransferBuilder {
@@ -85,24 +88,32 @@ class TransferBuilder {
 
   private Configuration _conf;
 
+  private GraphEdge _edge;
+
+  private EdgeType _edgeType;
+
   private Graph _graph;
 
   private PolicyQuotient _policyQuotient;
 
   private Set<Prefix> _ignoredNetworks;
 
-  private List<Statement> _statements;
+  @Nullable private List<Statement> _statements;
 
   TransferBuilder(
       BDDNetwork network,
       Graph g,
       Configuration conf,
-      List<Statement> statements,
+      GraphEdge edge,
+      EdgeType edgeType,
+      @Nullable List<Statement> statements,
       PolicyQuotient pq) {
     _network = network;
     _netFactory = network.getNetFactory();
     _graph = g;
     _conf = conf;
+    _edge = edge;
+    _edgeType = edgeType;
     _policyQuotient = pq;
     _statements = statements;
   }
@@ -291,15 +302,14 @@ class TransferBuilder {
 
     if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
-      Protocol proto = Protocol.fromRoutingProtocol(mp.getProtocol());
-      if (proto == null) {
+      if (!_netFactory.getAllProtos().contains(mp.getProtocol())) {
         p.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): false");
         BDDTransferFunction ret = new BDDTransferFunction(p.getData(), _netFactory.zero());
         return fromExpr(ret);
       }
       BDD protoMatch = _netFactory.one();
       if (_netFactory.getConfig().getKeepProtocol()) {
-        protoMatch = p.getData().getProtocolHistory().value(proto);
+        protoMatch = p.getData().getProtocolHistory().value(mp.getProtocol());
       }
       p.debug("MatchProtocol(" + mp.getProtocol().protocolName() + "): " + protoMatch);
       BDDTransferFunction ret = new BDDTransferFunction(p.getData(), protoMatch);
@@ -545,7 +555,7 @@ class TransferBuilder {
         if (p.getData().getConfig().getKeepMetric()) {
           SetMetric sm = (SetMetric) stmt;
           LongExpr ie = sm.getMetric();
-          BDD isBGP = p.getData().getProtocolHistory().value(Protocol.BGP);
+          BDD isBGP = p.getData().getProtocolHistory().value(RoutingProtocol.BGP);
           BDD updateMed = isBGP.and(result.getReturnAssignedValue());
           BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
           BDDInteger newValue = applyLongExprModification(p.indent(), p.getData().getMetric(), ie);
@@ -970,16 +980,75 @@ class TransferBuilder {
   }
 
   /*
+   * Batfish does not include all the protocol logic in the RoutingPolicy object,
+   * so we need to add this implicit logic explicitly. For instance, IBGP will
+   * not re-export to other IBGP neighbors as part of the export function.
+   */
+  private void addBatfishImplicitPolicy(TransferResult<BDDTransferFunction, BDD> result) {
+    // System.out.println("Edge: " + _edge);
+    // System.out.println("Import: " + (_edgeType == EdgeType.IMPORT));
+    // System.out.println(BDDUtils.dot(_netFactory, result.getReturnValue().getFilter()));
+
+    BDDRoute route =
+        result
+            .getReturnValue()
+            .getRoute();
+    String router = _edge.getRouter();
+    String neighbor = _edge.getPeer();
+    Set<String> clients = _graph.getRouteReflectorClients().get(router);
+    boolean neighborIsClient = neighbor != null && clients != null && clients.contains(neighbor);
+
+    // If it is from an RR client, then we mark it as such on import
+    if (_edgeType == EdgeType.IMPORT && _edge.isAbstract()) {
+      boolean fromClient = false;
+      if (neighborIsClient) {
+        fromClient = true;
+      }
+      BDD client = mkBDD(fromClient);
+      result.getReturnValue().getRoute().setFromRRClient(client);
+    }
+
+    // If learned in the Ibgp protocol, then export should allow when either
+    // (1) learned from client --> to everyone
+    // (2) learned from nonclient --> to client
+    if (_edgeType == EdgeType.EXPORT && _edge.isAbstract()) {
+      BDD oldFilterAllow = result.getReturnValue().getFilter();
+      BDD ibgp = route.getProtocolHistory().value(RoutingProtocol.IBGP);
+      BDD fromNonClient = route.getFromRRClient().not();
+      BDD toNonClient = mkBDD(!neighborIsClient);
+      BDD toBlock = ibgp.andWith(fromNonClient).andWith(toNonClient);
+      BDD toAllow = toBlock.not();
+      toBlock.free();
+      BDD newFilterAllow = oldFilterAllow.andWith(toAllow);
+      result.getReturnValue().setFilter(newFilterAllow);
+    }
+  }
+
+  /*
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input routeVariables.
    */
-  public TransferResult<BDDTransferFunction, BDD> compute(Set<Prefix> ignoredNetworks) {
+  @Nullable public TransferResult<BDDTransferFunction, BDD> compute(Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.getAllCommunities();
     BDDRoute o = _netFactory.createRoute();
     addCommunityAssumptions(o);
-    TransferParam<BDDRoute> p = new TransferParam<>(o, false);
-    return compute(_statements, p);
+    TransferResult<BDDTransferFunction, BDD> result = null;
+    if (_statements == null && _edge.isAbstract()) {
+      BDDTransferFunction t = new BDDTransferFunction(o, _netFactory.one());
+      result = new TransferResult<>();
+      result = result
+          .setReturnValue(t)
+          .setReturnAssignedValue(_netFactory.one())
+          .setFallthroughValue(_netFactory.one());
+      addBatfishImplicitPolicy(result);
+    }
+    if (_statements != null) {
+      TransferParam<BDDRoute> p = new TransferParam<>(o, false);
+      result = compute(_statements, p);
+      addBatfishImplicitPolicy(result);
+    }
+    return result;
   }
 }

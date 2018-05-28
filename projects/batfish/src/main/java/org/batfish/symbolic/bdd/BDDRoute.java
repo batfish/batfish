@@ -12,11 +12,11 @@ import net.sf.javabdd.BDDPairing;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.IDeepCopy;
 import org.batfish.symbolic.OspfType;
-import org.batfish.symbolic.Protocol;
 
 /*
  * BDD encoding of a route message. This includes things like
@@ -40,6 +40,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private BDDNetFactory _factory;
 
   private Map<Integer, String> _bitNames;
+
+  private Map<CommunityVar, Integer> _communityIndexOffset;
 
   private BDDInteger _adminDist;
 
@@ -65,9 +67,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDDFiniteDomain<OspfType> _ospfMetricTemp;
 
-  private final BDDFiniteDomain<Protocol> _protocolHistory;
+  private final BDDFiniteDomain<RoutingProtocol> _protocolHistory;
 
-  private final BDDFiniteDomain<Protocol> _protocolHistoryTemp;
+  private final BDDFiniteDomain<RoutingProtocol> _protocolHistoryTemp;
 
   private BDDFiniteDomain<String> _dstRouter;
 
@@ -79,6 +81,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private final BDDInteger _prefixLength;
 
+  private BDD _fromRRClient;
+
+  private BDD _fromRRClientTemp;
+
   private int _hcode = 0;
 
   /*
@@ -88,6 +94,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDDNetFactory netFactory) {
     _factory = netFactory;
     _bitNames = new HashMap<>();
+    _communityIndexOffset = new HashMap<>();
+
     BDDFactory factory = _factory.getFactory();
 
     if (_factory.getConfig().getKeepProtocol()) {
@@ -162,6 +170,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _communities = new TreeMap<>();
       int i = 0;
       for (CommunityVar comm : _factory.getAllCommunities()) {
+        _communityIndexOffset.put(comm, i);
         if (comm.getType() != Type.REGEX) {
           _communities.put(comm, factory.ithVar(_factory.getIndexCommunities() + i));
           _bitNames.put(_factory.getIndexCommunities() + i, comm.getValue());
@@ -202,6 +211,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       addBitNames("srcRouter", _srcRouter.numBits(), _factory.getIndexSrcRouter(), false);
       addBitNames("tempRouter", _routerTemp.numBits(), _factory.getIndexRouterTemp(), false);
     }
+
+    if (_factory.getConfig().getKeepRRClient()) {
+      _fromRRClient = _factory.getFactory().ithVar(_factory.getIndexRRClient());
+      _fromRRClientTemp = _factory.getFactory().ithVar(_factory.getIndexRRClientTemp());
+      addBitNames(
+          "fromRRClient", _factory.getNumBitsRRClient(), _factory.getIndexRRClient(), false);
+      addBitNames(
+          "fromRRClient'", _factory.getNumBitsRRClient(), _factory.getIndexRRClientTemp(), false);
+    }
   }
 
   /*
@@ -210,6 +228,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDDRoute(BDDRoute other) {
     _factory = other._factory;
+    _communityIndexOffset = other._communityIndexOffset;
     _prefixLength = new BDDInteger(other._prefixLength);
     _prefix = new BDDInteger(other._prefix);
     if (_factory.getConfig().getKeepCommunities()) {
@@ -247,6 +266,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _dstRouter = new BDDFiniteDomain<>(other._dstRouter);
       _srcRouter = new BDDFiniteDomain<>(other._srcRouter);
       _routerTemp = new BDDFiniteDomain<>(other._routerTemp);
+    }
+    if (_factory.getConfig().getKeepRRClient()) {
+      _fromRRClient = other._fromRRClient;
+      _fromRRClientTemp = other._fromRRClientTemp;
     }
     _bitNames = other._bitNames;
   }
@@ -330,7 +353,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _prefixLength;
   }
 
-  public BDDFiniteDomain<Protocol> getProtocolHistory() {
+  public BDDFiniteDomain<RoutingProtocol> getProtocolHistory() {
     return _protocolHistory;
   }
 
@@ -374,12 +397,32 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _ospfMetricTemp;
   }
 
-  public BDDFiniteDomain<Protocol> getProtocolHistoryTemp() {
+  public BDDFiniteDomain<RoutingProtocol> getProtocolHistoryTemp() {
     return _protocolHistoryTemp;
+  }
+
+  public BDD getFromRRClient() {
+    return _fromRRClient;
+  }
+
+  public void setFromRRClient(BDD x) {
+    this._fromRRClient = x;
+  }
+
+  public BDD getFromRRClientTemp() {
+    return _fromRRClientTemp;
+  }
+
+  public void setFromRRClientTemp(BDD x) {
+    this._fromRRClientTemp = x;
   }
 
   public Map<Integer, String> getBitNames() {
     return _bitNames;
+  }
+
+  public Map<CommunityVar, Integer> getCommunityIndexOffset() {
+    return _communityIndexOffset;
   }
 
   @Override
@@ -391,6 +434,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       result = 31 * result + (_med != null ? _med.hashCode() : 0);
       result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
       result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
+      result = 31 * result + (_prefix != null ? _prefix.hashCode() : 0);
+      result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
+      result = 31 * result + (_dstRouter != null ? _dstRouter.hashCode() : 0);
+      result = 31 * result + (_srcRouter != null ? _srcRouter.hashCode() : 0);
+      result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
+      result = 31 * result + (_fromRRClient != null ? _fromRRClient.hashCode() : 0);
       _hcode = result;
     }
     return _hcode;
@@ -407,7 +456,13 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_localPref, other._localPref)
         && Objects.equals(_communities, other._communities)
         && Objects.equals(_med, other._med)
-        && Objects.equals(_adminDist, other._adminDist);
+        && Objects.equals(_adminDist, other._adminDist)
+        && Objects.equals(_prefix, other._prefix)
+        && Objects.equals(_prefixLength, other._prefixLength)
+        && Objects.equals(_dstRouter, other._dstRouter)
+        && Objects.equals(_srcRouter, other._srcRouter)
+        && Objects.equals(_protocolHistory, other._protocolHistory)
+        && Objects.equals(_fromRRClient, other._fromRRClient);
   }
 
   public void orWith(BDDRoute other) {
@@ -450,6 +505,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       for (int i = 0; i < ospfMet.length; i++) {
         ospfMet[i].orWith(ospfMet2[i]);
       }
+    }
+
+    if (_factory.getConfig().getKeepRRClient()) {
+      _fromRRClient.orWith(other._fromRRClient);
     }
 
     if (_factory.getConfig().getKeepCommunities()) {
@@ -514,6 +573,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       for (int i = 0; i < ospfMet.length; i++) {
         ospfMet[i] = ospfMet[i].veccompose(pairing);
       }
+    }
+
+    if (_factory.getConfig().getKeepRRClient()) {
+      rec.setFromRRClient(rec.getFromRRClient().veccompose(pairing));
     }
 
     if (_factory.getConfig().getKeepCommunities()) {

@@ -23,7 +23,6 @@ import org.batfish.symbolic.AstVisitor;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.OspfType;
-import org.batfish.symbolic.Protocol;
 
 public class BDDUtils {
 
@@ -310,7 +309,7 @@ public class BDDUtils {
     assignment.setTcpFlags(tcpFlags.build());
     assignment.setDstRouter(nf.getAllRouters().isEmpty() ? null : nf.getRouter(dstRouter));
     assignment.setSrcRouter(nf.getAllRouters().isEmpty() ? null : nf.getRouter(srcRouter));
-    assignment.setRoutingProtocol(Protocol.toRoutingProtocol(nf.getAllProtos().get(proto)));
+    assignment.setRoutingProtocol(nf.getAllProtos().get(proto));
     assignment.setPrefixLen(prefixLen);
     assignment.setAdminDist(adminDist);
     assignment.setLocalPref(
@@ -331,21 +330,21 @@ public class BDDUtils {
     BDD proto = pkt.getIpProtocol().value(flow.getIpProtocol().number());
     BDD icmpCode = pkt.getIcmpCode().value(flow.getIcmpCode());
     BDD icmpType = pkt.getIcmpType().value(flow.getIcmpType());
-    BDD tcpAck = flow.getTcpFlagsAck() == 0 ? factory.zero() : factory.one();
-    BDD tcpCwr = flow.getTcpFlagsCwr() == 0 ? factory.zero() : factory.one();
-    BDD tcpEce = flow.getTcpFlagsEce() == 0 ? factory.zero() : factory.one();
-    BDD tcpPsh = flow.getTcpFlagsPsh() == 0 ? factory.zero() : factory.one();
-    BDD tcpRst = flow.getTcpFlagsRst() == 0 ? factory.zero() : factory.one();
-    BDD tcpSyn = flow.getTcpFlagsSyn() == 0 ? factory.zero() : factory.one();
-    BDD tcpUrg = flow.getTcpFlagsUrg() == 0 ? factory.zero() : factory.one();
-    BDD tcpFin = flow.getTcpFlagsFin() == 0 ? factory.zero() : factory.one();
+    BDD tcpAck = flow.getTcpFlagsAck() == 0 ? pkt.getTcpAck().not() : pkt.getTcpAck();
+    BDD tcpCwr = flow.getTcpFlagsCwr() == 0 ? pkt.getTcpCwr().not() : pkt.getTcpCwr();
+    BDD tcpEce = flow.getTcpFlagsEce() == 0 ? pkt.getTcpEce().not() : pkt.getTcpEce();
+    BDD tcpPsh = flow.getTcpFlagsPsh() == 0 ? pkt.getTcpPsh().not() : pkt.getTcpPsh();
+    BDD tcpRst = flow.getTcpFlagsRst() == 0 ? pkt.getTcpRst().not() : pkt.getTcpRst();
+    BDD tcpSyn = flow.getTcpFlagsSyn() == 0 ? pkt.getTcpSyn().not() : pkt.getTcpSyn();
+    BDD tcpUrg = flow.getTcpFlagsUrg() == 0 ? pkt.getTcpUrg().not() : pkt.getTcpUrg();
+    BDD tcpFin = flow.getTcpFlagsFin() == 0 ? pkt.getTcpFin().not() : pkt.getTcpFin();
     return dstIp
         .andWith(srcIp)
         .andWith(dstPort)
         .andWith(srcPort)
         .andWith(proto)
         .andWith(icmpCode)
-        .and(icmpType)
+        .andWith(icmpType)
         .andWith(tcpAck)
         .andWith(tcpCwr)
         .andWith(tcpEce)

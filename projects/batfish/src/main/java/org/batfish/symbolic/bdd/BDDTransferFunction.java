@@ -22,6 +22,14 @@ public class BDDTransferFunction {
     return _filter;
   }
 
+  public void setRoute(BDDRoute route) {
+    this._route = route;
+  }
+
+  public void setFilter(BDD filter) {
+    this._filter = filter;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {

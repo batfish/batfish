@@ -18,6 +18,8 @@ public class BDDNetConfig {
 
   private boolean _keepRouters;
 
+  private boolean _keepRRClient;
+
   public BDDNetConfig(boolean abstraction) {
     if (abstraction) {
       _keepAd = false;
@@ -28,6 +30,7 @@ public class BDDNetConfig {
       _keepCommunities = true;
       _keepMetric = false;
       _keepRouters = true;
+      _keepRRClient = true;
     } else {
       _keepAd = true;
       _keepCommunities = true;
@@ -37,6 +40,7 @@ public class BDDNetConfig {
       _keepMetric = true;
       _keepOspfMetric = true;
       _keepRouters = false;
+      _keepRRClient = true;
     }
   }
 
@@ -70,5 +74,9 @@ public class BDDNetConfig {
 
   public boolean getKeepRouters() {
     return _keepRouters;
+  }
+
+  public boolean getKeepRRClient() {
+    return _keepRRClient;
   }
 }

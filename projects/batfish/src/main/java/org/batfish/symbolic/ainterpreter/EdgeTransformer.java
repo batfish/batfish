@@ -1,7 +1,7 @@
 package org.batfish.symbolic.ainterpreter;
 
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.GraphEdge;
-import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.smt.EdgeType;
 
@@ -11,12 +11,12 @@ public class EdgeTransformer {
 
   private EdgeType _edgeType;
 
-  private Protocol _protocol;
+  private RoutingProtocol _protocol;
 
   private BDDTransferFunction _bddTransfer;
 
   public EdgeTransformer(
-      GraphEdge edge, EdgeType edgeType, Protocol proto, BDDTransferFunction bgpTransfer) {
+      GraphEdge edge, EdgeType edgeType, RoutingProtocol proto, BDDTransferFunction bgpTransfer) {
     this._edge = edge;
     this._edgeType = edgeType;
     this._protocol = proto;
@@ -31,7 +31,7 @@ public class EdgeTransformer {
     return _edgeType;
   }
 
-  public Protocol getProtocol() {
+  public RoutingProtocol getProtocol() {
     return _protocol;
   }
 

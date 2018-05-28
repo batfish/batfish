@@ -7,10 +7,10 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.OspfType;
-import org.batfish.symbolic.Protocol;
 
 /*
  * Class to manage the various BDD indexes and operations. This is useful
@@ -26,7 +26,7 @@ public class BDDNetFactory {
 
   private BDDFactory _factory;
 
-  private List<Protocol> _allProtos;
+  private List<RoutingProtocol> _allProtos;
 
   private List<OspfType> _allMetricTypes;
 
@@ -77,6 +77,8 @@ public class BDDNetFactory {
   private int _numBitsOspfMetric;
 
   private int _numBitsRouters;
+
+  private int _numBitsRRClient;
 
   private int _indexIpProto;
 
@@ -130,6 +132,10 @@ public class BDDNetFactory {
 
   private int _indexRouterTemp;
 
+  private int _indexRRClient;
+
+  private int _indexRRClientTemp;
+
   public BDDNetFactory(Graph g, BDDNetConfig config) {
     this(
         new ArrayList<>(g.getRouters()),
@@ -155,10 +161,11 @@ public class BDDNetFactory {
     _allMetricTypes.add(OspfType.E2);
 
     _allProtos = new ArrayList<>();
-    _allProtos.add(Protocol.CONNECTED);
-    _allProtos.add(Protocol.STATIC);
-    _allProtos.add(Protocol.OSPF);
-    _allProtos.add(Protocol.BGP);
+    _allProtos.add(RoutingProtocol.CONNECTED);
+    _allProtos.add(RoutingProtocol.STATIC);
+    _allProtos.add(RoutingProtocol.OSPF);
+    _allProtos.add(RoutingProtocol.BGP);
+    _allProtos.add(RoutingProtocol.IBGP);
 
     int numNodes;
     int cacheSize;
@@ -205,6 +212,7 @@ public class BDDNetFactory {
     _numBitsIcmpCode = 8;
     _numBitsIcmpType = 8;
     _numBitsTcpFlags = 8;
+    _numBitsRRClient = 1;
 
     // BDD Route routeVariables
     _numBitsPrefixLen = 6;
@@ -216,6 +224,7 @@ public class BDDNetFactory {
     _numBitsOspfMetric = (config.getKeepOspfMetric() ? 2 : 0);
     _numBitsRoutingProtocol = (config.getKeepProtocol() ? BDDUtils.numBits(_allProtos.size()) : 0);
     _numBitsRouters = (config.getKeepRouters() ? BDDUtils.numBits(_allRouters.size()) : 0);
+
     int numNeeded =
         _numBitsIpProto
             + _numBitsDstIp
@@ -233,7 +242,8 @@ public class BDDNetFactory {
             + 2 * _numBitsMetric
             + 2 * _numBitsOspfMetric
             + 2 * _numBitsRoutingProtocol
-            + 3 * _numBitsRouters;
+            + 3 * _numBitsRouters
+            + 2 * _numBitsRRClient;
 
     _factory.setVarNum(numNeeded);
 
@@ -263,6 +273,8 @@ public class BDDNetFactory {
     _indexDstRouter = _indexCommunitiesTemp + _numBitsCommunities;
     _indexSrcRouter = _indexDstRouter + _numBitsRouters;
     _indexRouterTemp = _indexSrcRouter + _numBitsRouters;
+    _indexRRClient = _indexRouterTemp + _numBitsRouters;
+    _indexRRClientTemp = _indexRRClient + _numBitsRRClient;
 
     _routeVariables = createRoute();
     _packetVariables = createPacket();
@@ -312,7 +324,7 @@ public class BDDNetFactory {
     return _allRouters.get(i);
   }
 
-  public List<Protocol> getAllProtos() {
+  public List<RoutingProtocol> getAllProtos() {
     return _allProtos;
   }
 
@@ -386,6 +398,10 @@ public class BDDNetFactory {
 
   public int getNumBitsRouters() {
     return _numBitsRouters;
+  }
+
+  public int getNumBitsRRClient() {
+    return _numBitsRRClient;
   }
 
   public int getIndexIpProto() {
@@ -492,6 +508,14 @@ public class BDDNetFactory {
     return _indexRouterTemp;
   }
 
+  public int getIndexRRClient() {
+    return _indexRRClient;
+  }
+
+  public int getIndexRRClientTemp() {
+    return _indexRRClientTemp;
+  }
+
   public BDDPairing getPairing() {
     return _pairing;
   }
@@ -511,4 +535,6 @@ public class BDDNetFactory {
   public List<Integer> getAllLocalPrefs() {
     return _allLocalPrefs;
   }
+
+
 }

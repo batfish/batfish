@@ -12,8 +12,8 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
-import org.batfish.symbolic.Protocol;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDInteger;
@@ -51,8 +51,11 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   // The destination router bits that we will quantify away
   private BDD _dstRouterBits;
 
-  // The set of community and protocol BDD routeVariables that we will quantify away
-  private BDD _communityAndProtocolBits;
+  // The set of all modifed variables that we will quantify away
+  private BDD _allQuantifyBits;
+
+  // The set of all modifed variables that we will quantify away
+  private BDD _modifiedBits;
 
   // The source router bits that we will quantify away
   private BDD _tempRouterBits;
@@ -96,14 +99,21 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
       _lenBits = _lenBits.and(x);
     }
 
-    _communityAndProtocolBits = _netFactory.one();
-    BDD[] protoHistory = _variables.getProtocolHistory().getInteger().getBitvec();
-    for (BDD x : protoHistory) {
-      _communityAndProtocolBits = _communityAndProtocolBits.and(x);
+    _allQuantifyBits = _netFactory.one();
+    if (_netFactory.getConfig().getKeepProtocol()) {
+      BDD[] protoHistory = _variables.getProtocolHistory().getInteger().getBitvec();
+      for (BDD x : protoHistory) {
+        _allQuantifyBits = _allQuantifyBits.and(x);
+      }
     }
-    for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
-      BDD c = e.getValue();
-      _communityAndProtocolBits = _communityAndProtocolBits.and(c);
+    if (_netFactory.getConfig().getKeepCommunities()) {
+      for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
+        BDD c = e.getValue();
+        _allQuantifyBits = _allQuantifyBits.and(c);
+      }
+    }
+    if (_netFactory.getConfig().getKeepRRClient()) {
+      _allQuantifyBits = _allQuantifyBits.and(_variables.getFromRRClient());
     }
   }
 
@@ -112,7 +122,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
     return new Tuple<>(_netFactory.zero(), _netFactory.zero());
   }
 
-  private BDD valueAux(String router, Protocol proto, Set<Prefix> prefixes) {
+  private BDD valueAux(String router, RoutingProtocol proto, Set<Prefix> prefixes) {
     BDD acc = _netFactory.zero();
     if (prefixes != null) {
       for (Prefix prefix : prefixes) {
@@ -128,7 +138,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   }
 
   @Override
-  public Tuple<BDD, BDD> value(String router, Protocol proto, Set<Prefix> prefixes) {
+  public Tuple<BDD, BDD> value(String router, RoutingProtocol proto, Set<Prefix> prefixes) {
     BDD ret = valueAux(router, proto, prefixes);
     return new Tuple<>(ret, ret);
   }
@@ -150,7 +160,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
     } else {
       BDD block = allow.not();
       BDD blockedInputs = input.and(block);
-      BDD blockedPrefixes = blockedInputs.exist(_communityAndProtocolBits);
+      BDD blockedPrefixes = blockedInputs.exist(_allQuantifyBits);
       BDD notBlockedPrefixes = blockedPrefixes.not();
       // Not sure why, but andWith does not work here (JavaBDD bug?)
       input = input.and(notBlockedPrefixes);
@@ -159,20 +169,18 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
     // Modify the result
     BDDRoute mods = f.getRoute();
     _pairing.reset();
-    if (mods.getConfig().getKeepCommunities()) {
-      for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
-        CommunityVar cvar = e.getKey();
-        BDD x = e.getValue();
-        BDD temp = _variables.getCommunitiesTemp().get(cvar);
-        BDD expr = mods.getCommunities().get(cvar);
-        BDD equal = temp.biimp(expr);
-        input = input.andWith(equal);
-        _pairing.set(temp.var(), x.var());
-      }
+    _modifiedBits = _netFactory.one();
+    // reverse order of BDD order is the best
+    if (_netFactory.getConfig().getKeepRRClient()) {
+      input = modifyFromRRClient(input, mods);
     }
-
-    input = modifyProtocol(input, mods, t.getProtocol());
-    input = input.exist(_communityAndProtocolBits);
+    if (_netFactory.getConfig().getKeepCommunities()) {
+      input = modifyCommunities(input, mods);
+    }
+    if (_netFactory.getConfig().getKeepProtocol()) {
+      input = modifyProtocol(input, mods, t.getProtocol());
+    }
+    input = input.exist(_modifiedBits);
     input = input.replaceWith(_pairing);
     return input;
   }
@@ -183,22 +191,63 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
    * appropriate substitution. This has a side-effect, which is used
    * to be able to batch modifications and only apply them all once.
    */
-  private BDD modifyProtocol(BDD input, BDDRoute mods, Protocol proto) {
+  private BDD modifyProtocol(BDD input, BDDRoute mods, RoutingProtocol proto) {
     if (mods.getConfig().getKeepProtocol()) {
-      BDDFiniteDomain<Protocol> var = _variables.getProtocolHistory();
-      BDDFiniteDomain<Protocol> prot = new BDDFiniteDomain<>(var);
+      BDDFiniteDomain<RoutingProtocol> var = _variables.getProtocolHistory();
+      BDDFiniteDomain<RoutingProtocol> prot = new BDDFiniteDomain<>(var);
       prot.setValue(proto);
       BDD[] vec = _variables.getProtocolHistory().getInteger().getBitvec();
       for (int i = 0; i < vec.length; i++) {
+        BDD expr = prot.getInteger().getBitvec()[i];
         BDD x = vec[i];
         BDD temp = _variables.getProtocolHistoryTemp().getInteger().getBitvec()[i];
-        BDD expr = prot.getInteger().getBitvec()[i];
-        BDD equal = temp.biimp(expr);
-        input.andWith(equal);
+        input.andWith(temp.biimp(expr));
         _pairing.set(temp.var(), x.var());
+        _modifiedBits = _modifiedBits.and(x);
       }
     }
     return input;
+  }
+
+  private BDD modifyCommunities(BDD input, BDDRoute mods) {
+    if (mods.getConfig().getKeepCommunities()) {
+      for (Entry<CommunityVar, BDD> e : _variables.getCommunities().entrySet()) {
+        CommunityVar cvar = e.getKey();
+        BDD expr = mods.getCommunities().get(cvar);
+        int index =
+            _netFactory.getIndexCommunities() + _variables.getCommunityIndexOffset().get(cvar);
+        if (notIdentity(expr, index)) {
+          BDD x = e.getValue();
+          BDD temp = _variables.getCommunitiesTemp().get(cvar);
+          input = input.andWith(temp.biimp(expr));
+          _pairing.set(temp.var(), x.var());
+          _modifiedBits = _modifiedBits.and(x);
+        }
+      }
+    }
+    return input;
+  }
+
+  private BDD modifyFromRRClient(BDD input, BDDRoute mods) {
+    if (mods.getConfig().getKeepRRClient()) {
+      BDD expr = mods.getFromRRClient();
+      if (notIdentity(expr, _netFactory.getIndexRRClient())) {
+        BDD x = _variables.getFromRRClient();
+        BDD temp = _variables.getFromRRClientTemp();
+        input = input.andWith(temp.biimp(expr));
+        _pairing.set(temp.var(), x.var());
+        _modifiedBits = _modifiedBits.and(x);
+      }
+    }
+    return input;
+  }
+
+  // Used as an optimization to avoid substitution for variables that are not modified
+  private boolean notIdentity(BDD x, int index) {
+    if (x.isOne() || x.isZero()) {
+      return true;
+    }
+    return !x.low().isZero() || !x.high().isOne() || x.var() != index;
   }
 
   @Override
@@ -216,8 +265,12 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
   // TODO: same thing, take away the ones that over approximated
   @Override
   public List<RibEntry> toRoutes(AbstractRib<Tuple<BDD, BDD>> value) {
+    return toRoutesAux(value.getMainRib());
+  }
+
+  private List<RibEntry> toRoutesAux(Tuple<BDD, BDD> value) {
     List<RibEntry> ribEntries = new ArrayList<>();
-    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, value.getMainRib().getFirst());
+    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, value.getFirst());
     for (SatAssignment entry : entries) {
       Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
       RibEntry r =
@@ -267,8 +320,8 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
     Tuple<BDD, BDD> tup = value.getMainRib();
 
     // Get the prefixes only by removing communities, protocol tag etc.
-    BDD underPfxOnly = tup.getFirst().exist(_communityAndProtocolBits);
-    BDD overPfxOnly = tup.getSecond().exist(_communityAndProtocolBits);
+    BDD underPfxOnly = tup.getFirst().exist(_allQuantifyBits);
+    BDD overPfxOnly = tup.getSecond().exist(_allQuantifyBits);
 
     // Early return if there is nothing in the rib
     if (underPfxOnly.isZero()) {
@@ -407,10 +460,28 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
       String dst,
       Flow flow) {
     BDD f = BDDUtils.flowToBdd(_netFactory, flow);
+
+    /* System.out.println("Flow:");
+    for (SatAssignment assignment : BDDUtils.allSat(_netFactory, f)) {
+      System.out.println(
+          "   "
+              + assignment.getDstIp()
+              + ","
+              + assignment.getSrcIp()
+              + " --> "
+              + assignment.getDstRouter());
+    } */
+
     String current = src;
     while (true) {
       AbstractRib<Tuple<BDD, BDD>> rib = ribs.get(current);
       BDD fib = toFibAux(rib, acls);
+
+      /* System.out.println("   Fib for " + current);
+      for (SatAssignment assignment : BDDUtils.allSat(_netFactory, fib)) {
+        System.out.println("   " + assignment.getDstIp() + " --> " + assignment.getDstRouter());
+      } */
+
       BDD fibForFlow = fib.and(f);
       SatAssignment assignment = BDDUtils.satOne(_netFactory, fibForFlow);
       if (assignment == null) {
@@ -425,6 +496,7 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
 
   @Override
   public String debug(Tuple<BDD, BDD> value) {
-    return BDDUtils.dot(_netFactory, value.getFirst());
+    List<RibEntry> ribs = toRoutesAux(value);
+    return ribs.toString();
   }
 }
