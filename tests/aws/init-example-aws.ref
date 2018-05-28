@@ -115,7 +115,7 @@
             "numReferrers" : 1
           }
         },
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "2001" : {
             "definitionLines" : [
               248,
@@ -136,7 +136,7 @@
               242,
               243
             ],
-            "numReferrers" : 2
+            "numReferrers" : 1
           }
         },
         "ipv4 prefix-list" : {

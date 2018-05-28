@@ -73,8 +73,8 @@
                   ]
                 }
               },
-              "unused:extended ip access-list:102" : {
-                "description" : "Unused structure of type: 'extended ip access-list' with name: '102'",
+              "unused:extended ipv4 access-list:102" : {
+                "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '102'",
                 "files" : {
                   "as2dist1.cfg" : [
                     116
@@ -84,8 +84,8 @@
                   ]
                 }
               },
-              "unused:extended ip access-list:105" : {
-                "description" : "Unused structure of type: 'extended ip access-list' with name: '105'",
+              "unused:extended ipv4 access-list:105" : {
+                "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '105'",
                 "files" : {
                   "as2dept1.cfg" : [
                     121,
@@ -95,8 +95,8 @@
                   ]
                 }
               },
-              "unused:extended ip access-list:RESTRICT_HOST_TRAFFIC_OUT" : {
-                "description" : "Unused structure of type: 'extended ip access-list' with name: 'RESTRICT_HOST_TRAFFIC_OUT'",
+              "unused:extended ipv4 access-list:RESTRICT_HOST_TRAFFIC_OUT" : {
+                "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'RESTRICT_HOST_TRAFFIC_OUT'",
                 "files" : {
                   "as2dept1.cfg" : [
                     114,
@@ -215,7 +215,7 @@
                 }
               },
               "as2dept1" : {
-                "extended ip access-list" : {
+                "extended ipv4 access-list" : {
                   "105" : [
                     121,
                     122,
@@ -231,14 +231,14 @@
                 }
               },
               "as2dist1" : {
-                "extended ip access-list" : {
+                "extended ipv4 access-list" : {
                   "102" : [
                     116
                   ]
                 }
               },
               "as2dist2" : {
-                "extended ip access-list" : {
+                "extended ipv4 access-list" : {
                   "102" : [
                     116
                   ]

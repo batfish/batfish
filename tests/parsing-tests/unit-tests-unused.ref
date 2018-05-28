@@ -424,8 +424,8 @@
           ]
         }
       },
-      "unused:extended ip access-list:100" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: '100'",
+      "unused:extended ipv4 access-list:100" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: '100'",
         "files" : {
           "tcpflags" : [
             4,
@@ -437,8 +437,8 @@
           ]
         }
       },
-      "unused:extended ip access-list:BLAH-BLAH" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'BLAH-BLAH'",
+      "unused:extended ipv4 access-list:BLAH-BLAH" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'BLAH-BLAH'",
         "files" : {
           "cisco_acl" : [
             4,
@@ -464,8 +464,8 @@
           ]
         }
       },
-      "unused:extended ip access-list:abcd" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'abcd'",
+      "unused:extended ipv4 access-list:abcd" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'abcd'",
         "files" : {
           "arista_acl" : [
             4,
@@ -474,8 +474,8 @@
           ]
         }
       },
-      "unused:extended ip access-list:bippety" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'bippety'",
+      "unused:extended ipv4 access-list:bippety" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'bippety'",
         "files" : {
           "cisco_eigrp" : [
             21,
@@ -488,8 +488,8 @@
           ]
         }
       },
-      "unused:extended ip access-list:blah" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'blah'",
+      "unused:extended ipv4 access-list:blah" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'blah'",
         "files" : {
           "cisco_acl" : [
             30,
@@ -505,8 +505,8 @@
           ]
         }
       },
-      "unused:extended ip access-list:bloop_blop" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'bloop_blop'",
+      "unused:extended ipv4 access-list:bloop_blop" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'bloop_blop'",
         "files" : {
           "cisco_eigrp" : [
             90,
@@ -514,8 +514,8 @@
           ]
         }
       },
-      "unused:extended ip access-list:extended" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'extended'",
+      "unused:extended ipv4 access-list:extended" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'extended'",
         "files" : {
           "cisco_acl" : [
             26
@@ -525,24 +525,24 @@
           ]
         }
       },
-      "unused:extended ip access-list:outside" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'outside'",
+      "unused:extended ipv4 access-list:outside" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'outside'",
         "files" : {
           "asa_acl" : [
             7
           ]
         }
       },
-      "unused:extended ip access-list:outside_in" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'outside_in'",
+      "unused:extended ipv4 access-list:outside_in" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'outside_in'",
         "files" : {
           "asa_acl" : [
             4
           ]
         }
       },
-      "unused:extended ip access-list:standard" : {
-        "description" : "Unused structure of type: 'extended ip access-list' with name: 'standard'",
+      "unused:extended ipv4 access-list:standard" : {
+        "description" : "Unused structure of type: 'extended ipv4 access-list' with name: 'standard'",
         "files" : {
           "cisco_acl" : [
             28
@@ -556,7 +556,16 @@
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-Caltech'",
         "files" : {
           "foundry_access_list" : [
-            8
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17
           ]
         }
       },
@@ -564,7 +573,19 @@
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'RT404888-XO'",
         "files" : {
           "cisco_ipv6_access_list" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
           ]
         }
       },
@@ -572,7 +593,11 @@
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'abcdefg'",
         "files" : {
           "cisco_ipv6_access_list" : [
-            19
+            19,
+            20,
+            21,
+            22,
+            23
           ]
         }
       },
@@ -580,7 +605,18 @@
         "description" : "Unused structure of type: 'extended ipv6 access-list' with name: 'ipv6-acl-foo'",
         "files" : {
           "cadant_acl" : [
-            18
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
           ]
         }
       },
@@ -1239,16 +1275,16 @@
           ]
         }
       },
-      "unused:standard ip access-list:1" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: '1'",
+      "unused:standard ipv4 access-list:1" : {
+        "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '1'",
         "files" : {
           "cisco_style_acl2" : [
             1
           ]
         }
       },
-      "unused:standard ip access-list:50" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: '50'",
+      "unused:standard ipv4 access-list:50" : {
+        "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '50'",
         "files" : {
           "cadant_acl" : [
             5,
@@ -1258,8 +1294,8 @@
           ]
         }
       },
-      "unused:standard ip access-list:51" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: '51'",
+      "unused:standard ipv4 access-list:51" : {
+        "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '51'",
         "files" : {
           "cadant_acl" : [
             10,
@@ -1268,8 +1304,8 @@
           ]
         }
       },
-      "unused:standard ip access-list:99" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: '99'",
+      "unused:standard ipv4 access-list:99" : {
+        "description" : "Unused structure of type: 'standard ipv4 access-list' with name: '99'",
         "files" : {
           "cadant_acl" : [
             14,
@@ -1278,95 +1314,11 @@
           ]
         }
       },
-      "unused:standard ip access-list:Local_LAN_Access" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: 'Local_LAN_Access'",
+      "unused:standard ipv4 access-list:Local_LAN_Access" : {
+        "description" : "Unused structure of type: 'standard ipv4 access-list' with name: 'Local_LAN_Access'",
         "files" : {
           "asa_acl" : [
             5
-          ]
-        }
-      },
-      "unused:standard ip access-list:stdAcl-bar" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: 'stdAcl-bar'",
-        "files" : {
-          "cadant_acl" : [
-            14
-          ]
-        }
-      },
-      "unused:standard ip access-list:stdAcl-foo" : {
-        "description" : "Unused structure of type: 'standard ip access-list' with name: 'stdAcl-foo'",
-        "files" : {
-          "cadant_acl" : [
-            5
-          ]
-        }
-      },
-      "unused:standard ipv6 access-list:RT404888-Caltech" : {
-        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'RT404888-Caltech'",
-        "files" : {
-          "foundry_access_list" : [
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16,
-            17
-          ]
-        }
-      },
-      "unused:standard ipv6 access-list:RT404888-XO" : {
-        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'RT404888-XO'",
-        "files" : {
-          "cisco_ipv6_access_list" : [
-            4,
-            5,
-            6,
-            7,
-            8,
-            9,
-            10,
-            11,
-            12,
-            13,
-            14,
-            15,
-            16
-          ]
-        }
-      },
-      "unused:standard ipv6 access-list:abcdefg" : {
-        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'abcdefg'",
-        "files" : {
-          "cisco_ipv6_access_list" : [
-            19,
-            20,
-            21,
-            22,
-            23
-          ]
-        }
-      },
-      "unused:standard ipv6 access-list:ipv6-acl-foo" : {
-        "description" : "Unused structure of type: 'standard ipv6 access-list' with name: 'ipv6-acl-foo'",
-        "files" : {
-          "cadant_acl" : [
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29
           ]
         }
       }
@@ -1374,7 +1326,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 136
+      "numResults" : 130
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1391,7 +1343,7 @@
         }
       },
       "arista_acl" : {
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "abcd" : [
             4,
             5,
@@ -1415,7 +1367,7 @@
         }
       },
       "asa_acl" : {
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "outside" : [
             7
           ],
@@ -1423,7 +1375,7 @@
             4
           ]
         },
-        "standard ip access-list" : {
+        "standard ipv4 access-list" : {
           "Local_LAN_Access" : [
             5
           ]
@@ -1456,10 +1408,21 @@
       "cadant_acl" : {
         "extended ipv6 access-list" : {
           "ipv6-acl-foo" : [
-            18
+            18,
+            19,
+            20,
+            21,
+            22,
+            23,
+            24,
+            25,
+            26,
+            27,
+            28,
+            29
           ]
         },
-        "standard ip access-list" : {
+        "standard ipv4 access-list" : {
           "50" : [
             5,
             6,
@@ -1475,28 +1438,6 @@
             14,
             15,
             16
-          ],
-          "stdAcl-bar" : [
-            14
-          ],
-          "stdAcl-foo" : [
-            5
-          ]
-        },
-        "standard ipv6 access-list" : {
-          "ipv6-acl-foo" : [
-            18,
-            19,
-            20,
-            21,
-            22,
-            23,
-            24,
-            25,
-            26,
-            27,
-            28,
-            29
           ]
         }
       },
@@ -1539,7 +1480,7 @@
         }
       },
       "cisco_acl" : {
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "BLAH-BLAH" : [
             4,
             5,
@@ -1666,7 +1607,7 @@
         }
       },
       "cisco_eigrp" : {
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "bippety" : [
             21,
             22,
@@ -1701,14 +1642,6 @@
       },
       "cisco_ipv6_access_list" : {
         "extended ipv6 access-list" : {
-          "RT404888-XO" : [
-            4
-          ],
-          "abcdefg" : [
-            19
-          ]
-        },
-        "standard ipv6 access-list" : {
           "RT404888-XO" : [
             4,
             5,
@@ -1909,7 +1842,7 @@
         }
       },
       "cisco_style_acl1" : {
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "blah" : [
             1,
             2
@@ -1917,7 +1850,7 @@
         }
       },
       "cisco_style_acl2" : {
-        "standard ip access-list" : {
+        "standard ipv4 access-list" : {
           "1" : [
             1
           ]
@@ -1961,11 +1894,6 @@
       },
       "foundry_access_list" : {
         "extended ipv6 access-list" : {
-          "RT404888-Caltech" : [
-            8
-          ]
-        },
-        "standard ipv6 access-list" : {
           "RT404888-Caltech" : [
             8,
             9,
@@ -2182,7 +2110,7 @@
         }
       },
       "nxos_acl" : {
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "blah" : [
             9,
             10
@@ -2361,7 +2289,7 @@
         }
       },
       "tcpflags" : {
-        "extended ip access-list" : {
+        "extended ipv4 access-list" : {
           "100" : [
             4,
             5,

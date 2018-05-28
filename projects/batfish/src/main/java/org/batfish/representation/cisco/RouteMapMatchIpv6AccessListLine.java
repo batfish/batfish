@@ -21,11 +21,8 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
 
   private boolean _routing;
 
-  private final int _statementLine;
-
-  public RouteMapMatchIpv6AccessListLine(Set<String> names, int statementLine) {
+  public RouteMapMatchIpv6AccessListLine(Set<String> names) {
     _listNames = names;
-    _statementLine = statementLine;
   }
 
   public Set<String> getListNames() {
@@ -55,22 +52,7 @@ public class RouteMapMatchIpv6AccessListLine extends RouteMapMatchLine {
         ipAccessList = c.getIp6AccessLists().get(listName);
         list = ipAccessList;
       }
-      if (list == null) {
-        cc.undefined(
-            CiscoStructureType.IPV6_ACCESS_LIST,
-            listName,
-            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
-            _statementLine);
-      } else {
-        String msg = "route-map match ipv6 access-list line";
-        ExtendedIpv6AccessList extendedAccessList = cc.getExtendedIpv6Acls().get(listName);
-        if (extendedAccessList != null) {
-          extendedAccessList.getReferers().put(this, msg);
-        }
-        StandardIpv6AccessList standardAccessList = cc.getStandardIpv6Acls().get(listName);
-        if (standardAccessList != null) {
-          standardAccessList.getReferers().put(this, msg);
-        }
+      if (list != null) {
         if (_routing) {
           disjuncts.add(
               new MatchPrefix6Set(new DestinationNetwork6(), new NamedPrefix6Set(listName)));
