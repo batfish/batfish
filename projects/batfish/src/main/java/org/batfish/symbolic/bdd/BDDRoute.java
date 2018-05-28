@@ -173,7 +173,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         _communityIndexOffset.put(comm, i);
         if (comm.getType() != Type.REGEX) {
           _communities.put(comm, factory.ithVar(_factory.getIndexCommunities() + i));
-          _bitNames.put(_factory.getIndexCommunities() + i, comm.getValue());
+          _bitNames.put(_factory.getIndexCommunities() + i, comm.toString());
           i++;
         }
       }
@@ -182,7 +182,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       for (CommunityVar comm : _factory.getAllCommunities()) {
         if (comm.getType() != Type.REGEX) {
           _communitiesTemp.put(comm, factory.ithVar(_factory.getIndexCommunitiesTemp() + i));
-          _bitNames.put(_factory.getIndexCommunitiesTemp() + i, comm.getValue());
+          _bitNames.put(_factory.getIndexCommunitiesTemp() + i, comm.toString());
           i++;
         }
       }

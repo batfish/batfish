@@ -130,7 +130,7 @@ public class BDDNetwork {
 
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
-        _exportBgpPolicies.put(ge, computeBDD(conf, ge,  EdgeType.EXPORT, exportBgp));
+        _exportBgpPolicies.put(ge, computeBDD(conf, ge, EdgeType.EXPORT, exportBgp));
 
         // Import OSPF policy
         RoutingPolicy importOspf = _graph.findImportRoutingPolicy(router, Protocol.OSPF, ge);

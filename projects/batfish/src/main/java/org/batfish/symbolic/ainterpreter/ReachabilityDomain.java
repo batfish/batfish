@@ -415,12 +415,14 @@ public class ReachabilityDomain implements IAbstractDomain<Tuple<BDD, BDD>> {
    * BDD representing those packets not blocked by an ACL
    */
   private BDD notBlockedByAcl(FiniteIndexMap<BDDAcl> aclMap, BitSet aclIds) {
-    BDD blocked = _netFactory.zero();
+    BDD allow = _netFactory.one();
     for (int i = aclIds.nextSetBit(0); i != -1; i = aclIds.nextSetBit(i + 1)) {
       BDDAcl acl = aclMap.value(i);
-      blocked = blocked.or(acl.getBdd());
+      // System.out.println("    ACL: " + acl.getAcl().getName());
+      // System.out.println(BDDUtils.dot(_netFactory, acl.getBdd()));
+      allow = allow.and(acl.getBdd());
     }
-    return blocked.not();
+    return allow;
   }
 
   /*

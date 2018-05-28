@@ -197,8 +197,9 @@ public class AbstractInterpreter {
       T routerMainRib = r.getMainRib();
       BitSet routerAclsSoFar = r.getAclIds();
 
-      System.out.println("At: " + router);
-      System.out.println("Current RIB: " + domain.debug(routerMainRib));
+      // System.out.println("");
+      // System.out.println("At: " + router);
+      // System.out.println("Current RIB: " + domain.debug(routerMainRib));
 
       for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
         GraphEdge rev = _graph.getOtherEnd().get(ge);
@@ -217,8 +218,9 @@ public class AbstractInterpreter {
           T newNeighborOspf = neighborOspf;
           T newNeighborBgp = neighborBgp;
 
-          System.out.println("  neighbor: " + neighbor);
-          System.out.println("  neighbor RIB: " + domain.debug(neighborMainRib));
+          // System.out.println("");
+          // System.out.println("  neighbor: " + neighbor);
+          // System.out.println("  neighbor RIB: " + domain.debug(neighborMainRib));
 
           // Update OSPF
           if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)
@@ -230,14 +232,7 @@ public class AbstractInterpreter {
             if (exportFilter != null) {
               EdgeTransformer exp =
                   new EdgeTransformer(ge, EdgeType.EXPORT, RoutingProtocol.OSPF, exportFilter);
-
-              // System.out.println("  OSPF export policy: ");
-              // System.out.println(BDDUtils.dot(_netFactory, exportFilter.getFilter()));
-
               tmpOspf = domain.transform(tmpOspf, exp);
-
-              // System.out.println("  After export: ");
-              // System.out.println(domain.debug(tmpOspf));
             }
             if (importFilter != null) {
               EdgeTransformer imp =
@@ -265,8 +260,8 @@ public class AbstractInterpreter {
               Ip loopbackRouter = nRouter.getLocalIp();
               Ip loopbackNeighbor = nNeighbor.getLocalIp();
 
-              // System.out.println("loopback for router: " + loopbackRouter);
-              // System.out.println("loopback for neighbor: " + loopbackNeighbor);
+              // System.out.println("    loopback for router: " + loopbackRouter);
+              // System.out.println("    loopback for neighbor: " + loopbackNeighbor);
 
               // Make the first flow
               Flow.Builder fb = new Flow.Builder();
@@ -294,7 +289,7 @@ public class AbstractInterpreter {
                   domain.reachable(reachable, _aclIndexes, router, neighbor, flow1)
                       && domain.reachable(reachable, _aclIndexes, neighbor, router, flow2);
 
-              // System.out.println("Both are reachable? " + doUpdate);
+              // System.out.println("    Both are reachable? " + doUpdate);
 
             } else {
               proto = RoutingProtocol.BGP;
@@ -304,28 +299,24 @@ public class AbstractInterpreter {
 
             if (doUpdate) {
               if (exportFilter != null) {
-                EdgeTransformer exp =
-                    new EdgeTransformer(ge, EdgeType.EXPORT, proto, exportFilter);
+                EdgeTransformer exp = new EdgeTransformer(ge, EdgeType.EXPORT, proto, exportFilter);
                 tmpBgp = domain.transform(tmpBgp, exp);
 
-                System.out.println("  tmpBgp after export: " + domain.debug(tmpBgp));
-
+                // System.out.println("  tmpBgp after export: " + domain.debug(tmpBgp));
+                // System.out.println("  export filter: ");
+                // System.out.println(BDDUtils.dot(_netFactory, exp.getBddTransfer().getFilter()));
               }
               if (importFilter != null) {
-                EdgeTransformer imp =
-                    new EdgeTransformer(ge, EdgeType.IMPORT, proto, importFilter);
+                EdgeTransformer imp = new EdgeTransformer(ge, EdgeType.IMPORT, proto, importFilter);
                 tmpBgp = domain.transform(tmpBgp, imp);
 
-                System.out.println("  import policy is:");
-                System.out.println(BDDUtils.dot(_netFactory, imp.getBddTransfer().getFilter()));
-
-                System.out.println("  tmpBgp after import: " + domain.debug(tmpBgp));
+                // System.out.println("  tmpBgp after import: " + domain.debug(tmpBgp));
               }
 
               newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
             }
 
-            System.out.println("  now neighbor is: " + domain.debug(newNeighborBgp));
+            // System.out.println("  now neighbor is: " + domain.debug(newNeighborBgp));
           }
 
           // Update set of relevant ACLs so far

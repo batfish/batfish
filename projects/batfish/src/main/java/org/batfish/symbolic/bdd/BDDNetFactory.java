@@ -9,6 +9,7 @@ import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.CommunityVar.Type;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.OspfType;
 
@@ -150,9 +151,14 @@ public class BDDNetFactory {
       List<Integer> localPrefs,
       BDDNetConfig config) {
 
-    _allCommunities = comms;
     _allRouters = routers;
     _allLocalPrefs = localPrefs;
+    _allCommunities = new ArrayList<>();
+    for (CommunityVar cvar : comms) {
+      if (cvar.getType() != Type.REGEX) {
+        _allCommunities.add(cvar);
+      }
+    }
 
     _allMetricTypes = new ArrayList<>();
     _allMetricTypes.add(OspfType.O);
@@ -535,6 +541,4 @@ public class BDDNetFactory {
   public List<Integer> getAllLocalPrefs() {
     return _allLocalPrefs;
   }
-
-
 }

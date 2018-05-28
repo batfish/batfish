@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nullable;
@@ -204,11 +205,14 @@ class TransferBuilder {
       Conjunction c = (Conjunction) expr;
       BDD acc = _netFactory.one();
       TransferResult<BDDTransferFunction, BDD> result = new TransferResult<>();
+      TransferParam<BDDRoute> record = p;
       for (BooleanExpr be : c.getConjuncts()) {
-        TransferResult<BDDTransferFunction, BDD> r = compute(be, p.indent());
+        TransferParam<BDDRoute> param = record.indent();
+        TransferResult<BDDTransferFunction, BDD> r = compute(be, param);
+        record = record.setData(r.getReturnValue().getRoute());
         acc = acc.and(r.getReturnValue().getFilter());
       }
-      BDDTransferFunction ret = new BDDTransferFunction(p.getData(), acc);
+      BDDTransferFunction ret = new BDDTransferFunction(record.getData(), acc);
       p.debug("Conjunction return: " + acc);
       return result.setReturnValue(ret);
     }
@@ -218,12 +222,14 @@ class TransferBuilder {
       Disjunction d = (Disjunction) expr;
       BDD acc = _netFactory.zero();
       TransferResult<BDDTransferFunction, BDD> result = new TransferResult<>();
+      TransferParam<BDDRoute> record = p;
       for (BooleanExpr be : d.getDisjuncts()) {
-        TransferResult<BDDTransferFunction, BDD> r = compute(be, p.indent());
-        result = result.addChangedVariables(r);
+        TransferParam<BDDRoute> param = record.indent();
+        TransferResult<BDDTransferFunction, BDD> r = compute(be, param);
+        record = record.setData(r.getReturnValue().getRoute());
         acc = acc.or(r.getReturnValue().getFilter());
       }
-      BDDTransferFunction ret = new BDDTransferFunction(p.getData(), acc);
+      BDDTransferFunction ret = new BDDTransferFunction(record.getData(), acc);
       p.debug("Disjunction return: " + acc);
       return result.setReturnValue(ret);
     }
@@ -496,7 +502,7 @@ class TransferBuilder {
         BDD guard = r.getReturnValue().getFilter();
         p.debug("guard: ");
 
-        BDDRoute current = result.getReturnValue().getRoute();
+        BDDRoute current = r.getReturnValue().getRoute();
 
         TransferParam<BDDRoute> pTrue = p.indent().setData(current.deepCopy());
         TransferParam<BDDRoute> pFalse = p.indent().setData(current.deepCopy());
@@ -604,7 +610,7 @@ class TransferBuilder {
               p.indent().debug("Value: " + cvar);
               BDD comm = p.getData().getCommunities().get(cvar);
               BDD newValue = ite(result.getReturnAssignedValue(), comm, _netFactory.one());
-              p.indent().debug("New Value: " + newValue);
+              p.indent().debug("New Value is true?: " + newValue.isOne());
               p.getData().getCommunities().put(cvar, newValue);
             }
           }
@@ -698,9 +704,9 @@ class TransferBuilder {
       }
 
       // Set all the values to 0 if the return is not true;
-      BDDTransferFunction ret = result.getReturnValue();
-      BDDRoute retVal = ite(ret.getFilter(), ret.getRoute(), zeroedRecord());
-      result = result.setReturnValue(new BDDTransferFunction(retVal, ret.getFilter()));
+      // BDDTransferFunction ret = result.getReturnValue();
+      // BDDRoute retVal = ite(ret.getFilter(), ret.getRoute(), zeroedRecord());
+      // result = result.setReturnValue(new BDDTransferFunction(retVal, ret.getFilter()));
     }
     return result;
   }
@@ -940,7 +946,7 @@ class TransferBuilder {
   /*
    * A record of default values that represent the value of the
    * outputs if the route is filtered / dropped in the policy
-   */
+
   private BDDRoute zeroedRecord() {
     BDDRoute rec = _netFactory.createRoute();
     if (_netFactory.getConfig().getKeepMetric()) {
@@ -966,18 +972,18 @@ class TransferBuilder {
     rec.getPrefixLength().setValue(0);
     rec.getPrefix().setValue(0);
     return rec;
-  }
+  } */
 
   /*
    * Communities assumed to not be attached
-   */
+   *
   private void addCommunityAssumptions(BDDRoute route) {
     for (CommunityVar comm : _comms) {
       if (_policyQuotient.getCommsUsedOnlyLocally().contains(comm)) {
         route.getCommunities().put(comm, _netFactory.zero());
       }
     }
-  }
+  } */
 
   /*
    * Batfish does not include all the protocol logic in the RoutingPolicy object,
@@ -988,11 +994,15 @@ class TransferBuilder {
     // System.out.println("Edge: " + _edge);
     // System.out.println("Import: " + (_edgeType == EdgeType.IMPORT));
     // System.out.println(BDDUtils.dot(_netFactory, result.getReturnValue().getFilter()));
+    for (Entry<CommunityVar, BDD> e :
+        result.getReturnValue().getRoute().getCommunities().entrySet()) {
+      CommunityVar cvar = e.getKey();
+      BDD mod = e.getValue();
+      // System.out.println("Modification for community: " + cvar);
+      // System.out.println(BDDUtils.dot(_netFactory, mod));
+    }
 
-    BDDRoute route =
-        result
-            .getReturnValue()
-            .getRoute();
+    BDDRoute route = result.getReturnValue().getRoute();
     String router = _edge.getRouter();
     String neighbor = _edge.getPeer();
     Set<String> clients = _graph.getRouteReflectorClients().get(router);
@@ -1028,23 +1038,27 @@ class TransferBuilder {
    * Create a BDDRecord representing the symbolic output of
    * the RoutingPolicy given the input routeVariables.
    */
-  @Nullable public TransferResult<BDDTransferFunction, BDD> compute(Set<Prefix> ignoredNetworks) {
+  @Nullable
+  public TransferResult<BDDTransferFunction, BDD> compute(Set<Prefix> ignoredNetworks) {
     _ignoredNetworks = ignoredNetworks;
     _commDeps = _graph.getCommunityDependencies();
     _comms = _graph.getAllCommunities();
     BDDRoute o = _netFactory.createRoute();
-    addCommunityAssumptions(o);
+    // addCommunityAssumptions(o);
     TransferResult<BDDTransferFunction, BDD> result = null;
     if (_statements == null && _edge.isAbstract()) {
       BDDTransferFunction t = new BDDTransferFunction(o, _netFactory.one());
       result = new TransferResult<>();
-      result = result
-          .setReturnValue(t)
-          .setReturnAssignedValue(_netFactory.one())
-          .setFallthroughValue(_netFactory.one());
+      result =
+          result
+              .setReturnValue(t)
+              .setReturnAssignedValue(_netFactory.one())
+              .setFallthroughValue(_netFactory.one());
       addBatfishImplicitPolicy(result);
     }
     if (_statements != null) {
+      // System.out.println("POLICY FOR: " + _edge);
+      // System.out.println("IMPORT?: " + (_edgeType == EdgeType.IMPORT));
       TransferParam<BDDRoute> p = new TransferParam<>(o, false);
       result = compute(_statements, p);
       addBatfishImplicitPolicy(result);
