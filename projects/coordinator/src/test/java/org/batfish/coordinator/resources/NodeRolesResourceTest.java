@@ -5,7 +5,6 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
@@ -22,7 +21,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.Main;
 import org.batfish.coordinator.TestrigMetadataMgr;
-import org.batfish.coordinator.WorkMgrServiceV2TestUtils;
+import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.TestrigMetadata;
 import org.batfish.datamodel.pojo.Node;
@@ -35,7 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-public class NodeRolesResourceTest extends WorkMgrServiceV2TestUtils {
+public class NodeRolesResourceTest extends WorkMgrServiceV2TestBase {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -100,10 +99,8 @@ public class NodeRolesResourceTest extends WorkMgrServiceV2TestUtils {
 
     // got OK and what we got back equalled what we wrote
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    // TODO: we shouldn't need to explicitly invoke BatfishObjectMapper
-    NodeRolesData responseData =
-        BatfishObjectMapper.mapper()
-            .treeToValue(response.readEntity(new GenericType<JsonNode>() {}), NodeRolesData.class);
-    assertThat(responseData.getNodeRoleDimensions(), equalTo(ImmutableSet.of()));
+    assertThat(
+        response.readEntity(NodeRolesData.class).getNodeRoleDimensions(),
+        equalTo(ImmutableSet.of()));
   }
 }

@@ -9,7 +9,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import org.batfish.common.BatfishLogger;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.coordinator.Main;
 import org.batfish.role.NodeRolesData;
 
@@ -40,9 +39,7 @@ public class NodeRolesResource {
       nodeRolesData
           .getNodeRoleDimensions()
           .forEach(dim -> dim.getRoles().forEach(role -> role.resetNodes(nodes)));
-      // TODO: we shouldn't have to explicitly go through BatfishObjectMapper here. The service is
-      // not properly set up to use our custom mapper
-      return Response.ok(BatfishObjectMapper.mapper().valueToTree(nodeRolesData)).build();
+      return Response.ok(nodeRolesData).build();
     } catch (IOException e) {
       throw new InternalServerErrorException("Node roles resource is corrupted");
     }

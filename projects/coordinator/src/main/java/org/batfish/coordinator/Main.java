@@ -285,6 +285,7 @@ public class Main {
     startWorkManagerService(
         WorkMgrServiceV2.class,
         Lists.newArrayList(
+            ServiceObjectMapper.class,
             JacksonFeature.class,
             ApiKeyAuthenticationFilter.class,
             VersionCompatibilityFilter.class),
