@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import javax.annotation.Nullable;
@@ -211,7 +210,7 @@ class TransferBuilder {
         acc = acc.and(r.getReturnValue().getFilter());
       }
       BDDTransferFunction ret = new BDDTransferFunction(record.getData(), acc);
-      p.debug("Conjunction return: " + acc);
+      p.debug("Conjunction return: " + record.getData().hashCode() + "," + acc.hashCode());
       return result.setReturnValue(ret);
     }
 
@@ -228,7 +227,7 @@ class TransferBuilder {
         acc = acc.or(r.getReturnValue().getFilter());
       }
       BDDTransferFunction ret = new BDDTransferFunction(record.getData(), acc);
-      p.debug("Disjunction return: " + acc);
+      p.debug("Disjunction return: " + record.getData().hashCode() + "," + acc.hashCode());
       return result.setReturnValue(ret);
     }
 
@@ -339,14 +338,14 @@ class TransferBuilder {
       CallExpr c = (CallExpr) expr;
       String router = _conf.getName();
       String name = c.getCalledPolicyName();
-      TransferResult<BDDTransferFunction, BDD> r = _network.getTransferCache().get(router, name);
+      TransferResult<BDDTransferFunction, BDD> r = _network.getTransferCache().get(router, name, p);
       if (r != null) {
         return r;
       }
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
       p = p.setCallContext(TransferParam.CallContext.EXPR_CALL);
       r = compute(pol.getStatements(), p.indent().enterScope(name));
-      _network.getTransferCache().put(router, name, r);
+      _network.getTransferCache().put(router, name, p, r);
       return r;
 
     } else if (expr instanceof WithEnvironmentExpr) {
@@ -494,23 +493,19 @@ class TransferBuilder {
         }
 
       } else if (stmt instanceof If) {
-        p.debug("If");
+        p.debug("If: " + result.getReturnValue().getRoute().hashCode());
         If i = (If) stmt;
         TransferResult<BDDTransferFunction, BDD> r = compute(i.getGuard(), p.indent());
         BDD guard = r.getReturnValue().getFilter();
-        p.debug("guard: ");
-
         BDDRoute current = r.getReturnValue().getRoute();
 
         TransferParam<BDDRoute> pTrue = p.indent().setData(current.deepCopy());
         TransferParam<BDDRoute> pFalse = p.indent().setData(current.deepCopy());
-        p.debug("True Branch");
+        p.debug("True Branch: " + p.getData().hashCode());
         TransferResult<BDDTransferFunction, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
-        // p.debug("True Branch: " + trueBranch.getReturnValue().getRoute().hashCode());
-        p.debug("False Branch");
+        p.debug("False Branch: " + p.getData().hashCode());
         TransferResult<BDDTransferFunction, BDD> falseBranch =
             compute(i.getFalseStatements(), pFalse);
-        // p.debug("False Branch: " + trueBranch.getReturnValue().getRoute().hashCode());
 
         BDDRoute r1 = trueBranch.getReturnValue().getRoute();
         BDDRoute r2 = falseBranch.getReturnValue().getRoute();
@@ -550,6 +545,8 @@ class TransferBuilder {
                 .setReturnAssignedValue(returnAss)
                 .setFallthroughValue(fallThrough);
 
+        p.debug("If Return: " + result.getReturnValue().getRoute().hashCode());
+
       } else if (stmt instanceof SetDefaultPolicy) {
         p.debug("SetDefaultPolicy");
         p = p.setDefaultPolicy((SetDefaultPolicy) stmt);
@@ -559,14 +556,16 @@ class TransferBuilder {
         if (p.getData().getConfig().getKeepMetric()) {
           SetMetric sm = (SetMetric) stmt;
           LongExpr ie = sm.getMetric();
-          BDD isBGP = p.getData().getProtocolHistory().value(RoutingProtocol.BGP);
+          BDDRoute route = result.getReturnValue().getRoute();
+          BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
           BDD updateMed = isBGP.and(result.getReturnAssignedValue());
           BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
-          BDDInteger newValue = applyLongExprModification(p.indent(), p.getData().getMetric(), ie);
-          BDDInteger med = ite(updateMed, p.getData().getMed(), newValue);
-          BDDInteger met = ite(updateMet, p.getData().getMetric(), newValue);
-          p.getData().setMetric(met);
-          p.getData().setMetric(med);
+          BDDInteger newValue = applyLongExprModification(p.indent(), route.getMetric(), ie);
+          BDDInteger med = ite(updateMed, route.getMed(), newValue);
+          BDDInteger met = ite(updateMet, route.getMetric(), newValue);
+          route.setMetric(met);
+          route.setMed(med);
+          p = p.setData(route);
         }
 
       } else if (stmt instanceof SetOspfMetricType) {
@@ -583,8 +582,10 @@ class TransferBuilder {
             p.indent().debug("Value: E2");
             newValue.setValue(OspfType.E1);
           }
-          newValue = ite(result.getReturnAssignedValue(), p.getData().getOspfMetric(), newValue);
-          p.getData().setOspfMetric(newValue);
+          BDDRoute route = result.getReturnValue().getRoute();
+          newValue = ite(result.getReturnAssignedValue(), route.getOspfMetric(), newValue);
+          route.setOspfMetric(newValue);
+          p = p.setData(route);
         }
 
       } else if (stmt instanceof SetLocalPreference) {
@@ -592,10 +593,13 @@ class TransferBuilder {
         if (p.getData().getConfig().getKeepLp()) {
           SetLocalPreference slp = (SetLocalPreference) stmt;
           IntExpr ie = slp.getLocalPreference();
+          BDDRoute route = result.getReturnValue().getRoute();
           BDDFiniteDomain<Integer> newValue =
-              applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
-          newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
-          p.getData().setLocalPref(newValue);
+              applyIntExprModification(p.indent(), route.getLocalPref(), ie);
+          newValue = ite(result.getReturnAssignedValue(), route.getLocalPref(), newValue);
+          route.setLocalPref(newValue);
+          p = p.setData(route);
+          p.debug("SetLocalPreference Done: " + p.getData().hashCode());
         }
 
       } else if (stmt instanceof AddCommunity) {
@@ -606,10 +610,12 @@ class TransferBuilder {
           for (CommunityVar cvar : comms) {
             if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
               p.indent().debug("Value: " + cvar);
-              BDD comm = p.getData().getCommunities().get(cvar);
+              BDDRoute route = result.getReturnValue().getRoute();
+              BDD comm = route.getCommunities().get(cvar);
               BDD newValue = ite(result.getReturnAssignedValue(), comm, _netFactory.one());
               p.indent().debug("New Value is true?: " + newValue.isOne());
-              p.getData().getCommunities().put(cvar, newValue);
+              route.getCommunities().put(cvar, newValue);
+              p = p.setData(route);
             }
           }
         }
@@ -622,10 +628,12 @@ class TransferBuilder {
           for (CommunityVar cvar : comms) {
             if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
               p.indent().debug("Value: " + cvar);
-              BDD comm = p.getData().getCommunities().get(cvar);
+              BDDRoute route = result.getReturnValue().getRoute();
+              BDD comm = route.getCommunities().get(cvar);
               BDD newValue = ite(result.getReturnAssignedValue(), comm, _netFactory.one());
               p.indent().debug("New Value: " + newValue);
-              p.getData().getCommunities().put(cvar, newValue);
+              route.getCommunities().put(cvar, newValue);
+              p = p.setData(route);
             }
           }
         }
@@ -648,10 +656,12 @@ class TransferBuilder {
           for (CommunityVar cvar : toDelete) {
             if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
               p.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
-              BDD comm = p.getData().getCommunities().get(cvar);
+              BDDRoute route = result.getReturnValue().getRoute();
+              BDD comm = route.getCommunities().get(cvar);
               BDD newValue = ite(result.getReturnAssignedValue(), comm, _netFactory.zero());
               p.indent().debug("New Value: " + newValue);
-              p.getData().getCommunities().put(cvar, newValue);
+              route.getCommunities().put(cvar, newValue);
+              p = p.setData(route);
             }
           }
         }
@@ -666,11 +676,13 @@ class TransferBuilder {
           PrependAsPath pap = (PrependAsPath) stmt;
           Integer prependCost = prependLength(pap.getExpr());
           p.indent().debug("Cost: " + prependCost);
-          BDDInteger met = p.getData().getMetric();
+          BDDRoute route = result.getReturnValue().getRoute();
+          BDDInteger met = route.getMetric();
           BDDInteger newValue =
               met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
-          newValue = ite(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
-          p.getData().setMetric(newValue);
+          newValue = ite(result.getReturnAssignedValue(), route.getMetric(), newValue);
+          route.setMetric(newValue);
+          p = p.setData(route);
         }
 
       } else if (stmt instanceof SetOrigin) {
@@ -706,6 +718,8 @@ class TransferBuilder {
       // BDDRoute retVal = ite(ret.getFilter(), ret.getRoute(), zeroedRecord());
       // result = result.setReturnValue(new BDDTransferFunction(retVal, ret.getFilter()));
     }
+    BDDTransferFunction tf = result.getReturnValue();
+    p.debug("Final result: " + tf.getRoute().hashCode() + "," + tf.getFilter().hashCode());
     return result;
   }
 
@@ -803,10 +817,6 @@ class TransferBuilder {
       CommunityVar cvar = new CommunityVar(CommunityVar.Type.REGEX, line.getRegex(), null);
       p.debug("Match Line: " + cvar);
       p.debug("Action: " + line.getAction());
-      // Skip this match if it is irrelevant
-      if (_policyQuotient.getCommsMatchedButNotAssigned().contains(cvar)) {
-        continue;
-      }
       List<CommunityVar> deps = _commDeps.get(cvar);
       for (CommunityVar dep : deps) {
         p.debug("Test for: " + dep);
@@ -986,17 +996,6 @@ class TransferBuilder {
    * not re-export to other IBGP neighbors as part of the export function.
    */
   private void addBatfishImplicitPolicy(TransferResult<BDDTransferFunction, BDD> result) {
-    // System.out.println("Edge: " + _edge);
-    // System.out.println("Import: " + (_edgeType == EdgeType.IMPORT));
-    // System.out.println(BDDUtils.dot(_netFactory, result.getReturnValue().getFilter()));
-    for (Entry<CommunityVar, BDD> e :
-        result.getReturnValue().getRoute().getCommunities().entrySet()) {
-      CommunityVar cvar = e.getKey();
-      BDD mod = e.getValue();
-      // System.out.println("Modification for community: " + cvar);
-      // System.out.println(BDDUtils.dot(_netFactory, mod));
-    }
-
     BDDRoute route = result.getReturnValue().getRoute();
     String router = _edge.getRouter();
     String neighbor = _edge.getPeer();

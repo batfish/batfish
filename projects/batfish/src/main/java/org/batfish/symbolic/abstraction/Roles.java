@@ -23,7 +23,7 @@ import org.batfish.symbolic.answers.RoleAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetConfig;
 import org.batfish.symbolic.bdd.BDDNetwork;
-import org.batfish.symbolic.bdd.BDDRoute;
+import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.utils.Tuple;
 
 public class Roles {
@@ -87,8 +87,8 @@ public class Roles {
    * equivalent policies.
    */
   private void computeRoles(List<Prefix> prefixes) {
-    Map<BDDRoute, SortedSet<String>> importBgpEcs = new HashMap<>();
-    Map<BDDRoute, SortedSet<String>> exportBgpEcs = new HashMap<>();
+    Map<BDDTransferFunction, SortedSet<String>> importBgpEcs = new HashMap<>();
+    Map<BDDTransferFunction, SortedSet<String>> exportBgpEcs = new HashMap<>();
     Map<BDD, SortedSet<String>> incomingAclEcs = new HashMap<>();
     Map<BDD, SortedSet<String>> outgoingAclEcs = new HashMap<>();
     Map<Tuple<InterfacePolicy, InterfacePolicy>, SortedSet<String>> interfaceEcs = new HashMap<>();
@@ -113,20 +113,18 @@ public class Roles {
       for (GraphEdge ge : ges) {
         String s = ge.toString();
 
-        BDDRoute x1 = _network.getImportBgpPolicies().get(ge).getRoute();
+        BDDTransferFunction x1 = _network.getImportBgpPolicies().get(ge);
         if (x1 == null) {
           importBgpNull.add(s);
         } else {
-          x1 = (prefixes == null ? x1 : x1.restrict(prefixes));
           SortedSet<String> ec = importBgpEcs.computeIfAbsent(x1, k -> new TreeSet<>());
           ec.add(s);
         }
 
-        BDDRoute x2 = _network.getExportBgpPolicies().get(ge).getRoute();
+        BDDTransferFunction x2 = _network.getExportBgpPolicies().get(ge);
         if (x2 == null) {
           exportBgpNull.add(s);
         } else {
-          x2 = (prefixes == null ? x2 : x2.restrict(prefixes));
           SortedSet<String> ec = exportBgpEcs.computeIfAbsent(x2, k -> new TreeSet<>());
           ec.add(s);
         }

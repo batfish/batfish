@@ -85,8 +85,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDD _fromRRClientTemp;
 
-  private int _hcode = 0;
-
   /*
    * Creates a collection of BDD routeVariables representing the
    * various attributes of a control plane advertisement.
@@ -427,22 +425,19 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   @Override
   public int hashCode() {
-    if (_hcode == 0) {
-      int result = _adminDist != null ? _adminDist.hashCode() : 0;
-      result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
-      result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
-      result = 31 * result + (_med != null ? _med.hashCode() : 0);
-      result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
-      result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
-      result = 31 * result + (_prefix != null ? _prefix.hashCode() : 0);
-      result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
-      result = 31 * result + (_dstRouter != null ? _dstRouter.hashCode() : 0);
-      result = 31 * result + (_srcRouter != null ? _srcRouter.hashCode() : 0);
-      result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
-      result = 31 * result + (_fromRRClient != null ? _fromRRClient.hashCode() : 0);
-      _hcode = result;
-    }
-    return _hcode;
+    int result = _adminDist != null ? _adminDist.hashCode() : 0;
+    result = 31 * result + (_metric != null ? _metric.hashCode() : 0);
+    result = 31 * result + (_ospfMetric != null ? _ospfMetric.hashCode() : 0);
+    result = 31 * result + (_med != null ? _med.hashCode() : 0);
+    result = 31 * result + (_localPref != null ? _localPref.hashCode() : 0);
+    result = 31 * result + (_communities != null ? _communities.hashCode() : 0);
+    result = 31 * result + (_prefix != null ? _prefix.hashCode() : 0);
+    result = 31 * result + (_prefixLength != null ? _prefixLength.hashCode() : 0);
+    result = 31 * result + (_dstRouter != null ? _dstRouter.hashCode() : 0);
+    result = 31 * result + (_srcRouter != null ? _srcRouter.hashCode() : 0);
+    result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
+    result = 31 * result + (_fromRRClient != null ? _fromRRClient.hashCode() : 0);
+    return result;
   }
 
   @Override

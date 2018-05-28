@@ -23,14 +23,17 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
+import org.batfish.symbolic.TransferParam;
 import org.batfish.symbolic.TransferResult;
 import org.batfish.symbolic.abstraction.InterfacePolicy;
 import org.batfish.symbolic.collections.Table2;
+import org.batfish.symbolic.collections.Table3;
 import org.batfish.symbolic.smt.EdgeType;
 
 public class BDDNetwork {
 
-  private Table2<String, String, TransferResult<BDDTransferFunction, BDD>> _transferCache;
+  private Table3<String, String, TransferParam<BDDRoute>, TransferResult<BDDTransferFunction, BDD>>
+      _transferCache;
 
   private Graph _graph;
 
@@ -66,7 +69,7 @@ public class BDDNetwork {
       BDDNetConfig config,
       PolicyQuotient pq,
       boolean ignoreNetworks) {
-    _transferCache = new Table2<>();
+    _transferCache = new Table3<>();
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
     _ignoreNetworks = ignoreNetworks;
@@ -247,7 +250,8 @@ public class BDDNetwork {
     return _netFactory;
   }
 
-  public Table2<String, String, TransferResult<BDDTransferFunction, BDD>> getTransferCache() {
+  public Table3<String, String, TransferParam<BDDRoute>, TransferResult<BDDTransferFunction, BDD>>
+      getTransferCache() {
     return _transferCache;
   }
 }

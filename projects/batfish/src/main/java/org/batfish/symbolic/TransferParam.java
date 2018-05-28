@@ -1,5 +1,6 @@
 package org.batfish.symbolic;
 
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.symbolic.collections.PList;
@@ -160,5 +161,40 @@ public class TransferParam<T extends IDeepCopy<T>> {
       sb.append(str);
       System.out.println(sb);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    TransferParam<?> that = (TransferParam<?>) o;
+    return _indent == that._indent
+        && _defaultAccept == that._defaultAccept
+        && _defaultAcceptLocal == that._defaultAcceptLocal
+        && _debug == that._debug
+        && Objects.equals(_data, that._data)
+        && Objects.equals(_scopes, that._scopes)
+        && _callContext == that._callContext
+        && _chainContext == that._chainContext
+        && Objects.equals(_defaultPolicy, that._defaultPolicy);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(
+        _data,
+        _indent,
+        _scopes,
+        _callContext.ordinal(),
+        _chainContext.ordinal(),
+        _defaultAccept,
+        _defaultAcceptLocal,
+        _defaultPolicy,
+        _debug);
   }
 }

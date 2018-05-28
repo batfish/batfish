@@ -499,8 +499,6 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
       Map<String, AbstractRib<ReachabilityDomainElement>> ribs, String src, String dst, Flow flow) {
     BDD f = BDDUtils.flowToBdd(_netFactory, flow);
 
-    AbstractRib<ReachabilityDomainElement> x = ribs.get(src);
-
     /* System.out.println("Flow:");
     for (SatAssignment assignment : BDDUtils.allSat(_netFactory, f)) {
       System.out.println(
