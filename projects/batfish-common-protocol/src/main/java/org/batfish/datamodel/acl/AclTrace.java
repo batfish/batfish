@@ -1,12 +1,13 @@
 package org.batfish.datamodel.acl;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import org.batfish.datamodel.FilterResult;
 
 public final class AclTrace implements Serializable {
 
@@ -16,8 +17,7 @@ public final class AclTrace implements Serializable {
 
   private final List<TraceEvent> _events;
 
-  @JsonCreator
-  public AclTrace(@JsonProperty(PROP_EVENTS) @Nonnull Iterable<TraceEvent> events) {
+  public AclTrace(@JsonProperty(PROP_EVENTS) @Nullable Iterable<TraceEvent> events) {
     _events = events != null ? ImmutableList.copyOf(events) : ImmutableList.of();
   }
 
@@ -32,14 +32,18 @@ public final class AclTrace implements Serializable {
     return _events.equals(((AclTrace) obj)._events);
   }
 
-  @Override
-  public int hashCode() {
-    return _events.hashCode();
-  }
-
   @JsonProperty(PROP_EVENTS)
   public @Nonnull List<TraceEvent> getEvents() {
     return _events;
+  }
+
+  public FilterResult computeFilterResult() {
+    return ((TerminalTraceEvent) (_events.get(_events.size() - 1))).toFilterResult();
+  }
+
+  @Override
+  public int hashCode() {
+    return _events.hashCode();
   }
 
   @Override

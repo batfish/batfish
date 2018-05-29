@@ -2,10 +2,11 @@ package org.batfish.datamodel.acl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.FilterResult;
+import org.batfish.datamodel.LineAction;
 
-public final class DefaultDeniedByIpAccessList implements TraceEvent {
+public final class DefaultDeniedByIpAccessList implements TerminalTraceEvent {
 
   private static final String PROP_NAME = "name";
 
@@ -41,7 +42,12 @@ public final class DefaultDeniedByIpAccessList implements TraceEvent {
   }
 
   @Override
+  public FilterResult toFilterResult() {
+    return new FilterResult(null, LineAction.REJECT);
+  }
+
+  @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).add(PROP_NAME, _name).toString();
+    return String.format("Did not match ACL '%s'", _name);
   }
 }

@@ -1,5 +1,7 @@
 package org.batfish.question.tracefilters;
 
+import static org.batfish.question.tracefilters.TraceFiltersAnswerElement.createRow;
+
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.Answerer;
@@ -9,7 +11,8 @@ import org.batfish.datamodel.FilterResult;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.acl.AclTrace;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.Row;
@@ -21,7 +24,7 @@ public class TraceFiltersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public TraceFiltersAnswerElement answer() {
     TraceFiltersQuestion question = (TraceFiltersQuestion) _question;
 
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
@@ -37,9 +40,14 @@ public class TraceFiltersAnswerer extends Answerer {
           continue;
         }
         Flow flow = getFlow(c.getHostname(), question, configurations);
-        FilterResult result =
-            filter.filter(
-                flow, question.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
+        AclTrace trace =
+            AclTracer.trace(
+                filter,
+                flow,
+                question.getIngressInterface(),
+                c.getIpAccessLists(),
+                c.getIpSpaces());
+        FilterResult result = trace.computeFilterResult();
         Integer matchLine = result.getMatchLine();
         String lineDesc = "no-match";
         if (matchLine != null) {
@@ -49,8 +57,14 @@ public class TraceFiltersAnswerer extends Answerer {
           }
         }
         Row row =
-            answer.getRow(
-                c.getHostname(), filter.getName(), flow, result.getAction(), matchLine, lineDesc);
+            createRow(
+                c.getHostname(),
+                filter.getName(),
+                flow,
+                result.getAction(),
+                matchLine,
+                lineDesc,
+                trace);
 
         // exclude or not?
         Exclusion exclusion = Exclusion.covered(row, question.getExclusions());

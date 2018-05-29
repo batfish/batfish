@@ -56,6 +56,15 @@ import org.hamcrest.Matcher;
 
 public final class DataModelMatchers {
 
+  /**
+   * Provides a matcher for a collection that matches if each element matched by {@code
+   * identifiedBy} is matched by {@code conformsTo}
+   */
+  public static <E> Matcher<Iterable<? extends E>> forAll(
+      Matcher<? super E> identifiedBy, Matcher<? super E> conformsTo) {
+    return new ForAll<>(identifiedBy, conformsTo);
+  }
+
   /** Provides a matcher that matches if the RouteFilterList permits the given {@code prefix}. */
   public static RouteFilterListMatchersImpl.Permits permits(@Nonnull Prefix prefix) {
     return new RouteFilterListMatchersImpl.Permits(prefix);
