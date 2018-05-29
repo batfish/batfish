@@ -19,18 +19,11 @@ public class TableAnswerElementTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  private class TableAnswerElementChild extends TableAnswerElement {
-
-    public TableAnswerElementChild(TableMetadata metadata) {
-      super(metadata);
-    }
-  }
-
   /** Does computerSummary compute the correct summary? */
   @Test
   public void testComputeSummary() {
     // generate an answer with two rows
-    TableAnswerElement answer = new TableAnswerElementChild(new TableMetadata());
+    TableAnswerElement answer = new TableAnswerElement(new TableMetadata());
     answer.addRow(Row.builder().build());
     answer.addRow(Row.builder().build());
 
@@ -47,10 +40,10 @@ public class TableAnswerElementTest {
   public void testEvaluateAssertionCount() throws IOException {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
-    TableAnswerElement oneRow = new TableAnswerElementChild(new TableMetadata());
+    TableAnswerElement oneRow = new TableAnswerElement(new TableMetadata());
     oneRow.addRow(Row.builder().build());
 
-    TableAnswerElement twoRows = new TableAnswerElementChild(new TableMetadata());
+    TableAnswerElement twoRows = new TableAnswerElement(new TableMetadata());
     twoRows.addRow(Row.builder().build());
     twoRows.addRow(Row.builder().build());
 
@@ -68,7 +61,7 @@ public class TableAnswerElementTest {
                 .readValue("[{\"key1\": \"value1\"}, {\"key2\": \"value2\"}]", JsonNode.class));
 
     // adding rows in different order shouldn't matter
-    TableAnswerElement otherRows = new TableAnswerElementChild(new TableMetadata());
+    TableAnswerElement otherRows = new TableAnswerElement(new TableMetadata());
     otherRows.addRow(Row.builder().put("key2", "value2").build());
     otherRows.addRow(Row.builder().put("key1", "value1").build());
 

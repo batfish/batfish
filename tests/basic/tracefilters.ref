@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.question.tracefilters.TraceFiltersAnswerElement",
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
     "metadata" : {
       "columnMetadata" : [
         {
