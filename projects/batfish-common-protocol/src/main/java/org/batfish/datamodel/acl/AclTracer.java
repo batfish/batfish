@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.google.common.collect.ImmutableList;
@@ -70,11 +71,11 @@ public final class AclTracer extends Evaluator {
   }
 
   public void recordAction(IpAccessList ipAccessList, int index, IpAccessListLine line) {
+    String description = firstNonNull(line.getName(), line.toString());
     if (line.getAction() == LineAction.ACCEPT) {
-      _traceEvents.add(
-          new PermittedByIpAccessListLine(ipAccessList.getName(), index, line.getName()));
+      _traceEvents.add(new PermittedByIpAccessListLine(ipAccessList.getName(), index, description));
     } else {
-      _traceEvents.add(new DeniedByIpAccessListLine(ipAccessList.getName(), index, line.getName()));
+      _traceEvents.add(new DeniedByIpAccessListLine(ipAccessList.getName(), index, description));
     }
   }
 
