@@ -82,7 +82,7 @@ public class NodeRole implements Comparable<NodeRole> {
   }
 
   /**
-   * Is the provided node name belong to this role?
+   * Does the provided node name belong to this role?
    *
    * @param nodeName The nodeName to test
    * @return The results of the test
