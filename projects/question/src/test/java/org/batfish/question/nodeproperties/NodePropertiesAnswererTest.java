@@ -81,7 +81,7 @@ public class NodePropertiesAnswererTest {
     NodePropertiesAnswerer.fillProperty(configuration, property, row);
 
     // the row should be filled out with the String value
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromProperty(property);
+    String columnName = property;
     assertThat(
         row.build(), equalTo(Row.builder().put(columnName, LineAction.ACCEPT.toString()).build()));
   }
@@ -95,7 +95,7 @@ public class NodePropertiesAnswererTest {
     NodePropertiesAnswerer.fillProperty(configuration, property, row);
 
     // the row should be filled out with an empty list
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromProperty(property);
+    String columnName = property;
     assertThat(
         row.build(), equalTo(Row.builder().put(columnName, new LinkedList<String>()).build()));
   }
@@ -110,7 +110,7 @@ public class NodePropertiesAnswererTest {
     NodePropertiesAnswerer.fillProperty(configuration, property, row);
 
     // the row should be filled out with the right list and the schemas map should be List<String>
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromProperty(property);
+    String columnName = property;
     assertThat(
         row.build(), equalTo(Row.builder().put(columnName, ImmutableList.of("sa", "sb")).build()));
   }
@@ -125,7 +125,7 @@ public class NodePropertiesAnswererTest {
     NodePropertiesAnswerer.fillProperty(configuration, property, row);
 
     // the row should be filled out with the right list and the schemas map should be List<String>
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromProperty(property);
+    String columnName = property;
     assertThat(row.build(), equalTo(Row.builder().put(columnName, ImmutableList.of("i1")).build()));
   }
 
@@ -138,7 +138,7 @@ public class NodePropertiesAnswererTest {
     NodePropertiesAnswerer.fillProperty(configuration, property, row);
 
     // the row should be filled out with null and the schemas shouldn't be
-    String columnName = NodePropertiesAnswerElement.getColumnNameFromProperty(property);
+    String columnName = property;
     assertThat(row.build(), equalTo(Row.builder().put(columnName, null).build()));
   }
 
@@ -159,17 +159,17 @@ public class NodePropertiesAnswererTest {
     Multiset<Row> propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes);
 
     // we should have exactly these two rows
-    String colName1 = NodePropertiesAnswerElement.getColumnNameFromProperty(property1);
-    String colName2 = NodePropertiesAnswerElement.getColumnNameFromProperty(property2);
+    String colName1 = property1;
+    String colName2 = property2;
     Row row1 =
         Row.builder()
-            .put(NodePropertiesAnswerElement.COL_NODE, new Node("node1"))
+            .put(NodePropertiesAnswerer.COL_NODE, new Node("node1"))
             .put(colName1, ConfigurationFormat.CISCO_IOS)
             .put(colName2, ImmutableList.of())
             .build();
     Row row2 =
         Row.builder()
-            .put(NodePropertiesAnswerElement.COL_NODE, new Node("node2"))
+            .put(NodePropertiesAnswerer.COL_NODE, new Node("node2"))
             .put(colName1, ConfigurationFormat.HOST)
             .put(colName2, ImmutableList.of("sa"))
             .build();
