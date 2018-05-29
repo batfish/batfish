@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.collect.ImmutableMap;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.JFactory;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
@@ -15,6 +14,7 @@ import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.symbolic.bdd.BDDInteger;
+import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,10 +24,7 @@ public class BDDIpSpaceSpecializerTest {
 
   @Before
   public void init() {
-    BDDFactory factory = JFactory.init(10000, 1000);
-    factory.disableReorder();
-    factory.setCacheRatio(64);
-    factory.setVarNum(32); // reserve 32 1-bit variables
+    BDDFactory factory = BDDUtils.bddFactory(32);
     BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, 32, 0, true);
     _toBdd = new IpSpaceToBDD(factory, ipAddrBdd);
   }

@@ -5,13 +5,13 @@ import java.util.Optional;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.JFactory;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.symbolic.bdd.BDDInteger;
+import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
@@ -21,13 +21,8 @@ public final class BDDIpSpaceSpecializer extends IpSpaceSpecializer {
   public BDDIpSpaceSpecializer(IpSpace ipSpace, Map<String, IpSpace> namedIpSpaces) {
     super(namedIpSpaces);
 
-    BDDFactory factory = JFactory.init(10000, 1000);
-    factory.disableReorder();
-    factory.setCacheRatio(64);
-    factory.setVarNum(32); // reserve 32 1-bit variables
-
+    BDDFactory factory = BDDUtils.bddFactory(32);
     BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, 32, 0, true);
-
     _ipSpaceToBDD = new IpSpaceToBDD(factory, ipAddrBdd, namedIpSpaces);
     _bdd = ipSpace.accept(_ipSpaceToBDD);
   }

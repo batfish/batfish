@@ -25,6 +25,13 @@ import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
+/**
+ * Abstract class for specializing an {@link IpSpace} to some other {@link IpSpace}. The result of
+ * specialization is never larger than the original space. The universe of specialized spaces is the
+ * space we're specializing to, not the full IP space universe.
+ *
+ * <p>A subclass need only implement methods to specialize {@link Ip}s and {@link IpWildcard}s.
+ */
 public abstract class IpSpaceSpecializer implements GenericIpSpaceVisitor<IpSpace> {
   private final IpSpaceSimplifier _simplifier;
   protected final Map<String, IpSpace> _namedIpSpaces;
