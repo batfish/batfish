@@ -2849,10 +2849,7 @@ public class Client extends AbstractClient implements IClient {
   private void runBatchFile() {
     Path batchCommandFilePath = Paths.get(_settings.getBatchCommandFile());
     List<String> commands = readCommands(batchCommandFilePath);
-    boolean result = processCommands(commands);
-    if (!result) {
-      System.exit(1);
-    }
+    processCommands(commands);
   }
 
   private void runInteractive() {
