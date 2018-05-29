@@ -78,7 +78,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
                 _srcInterface,
                 _availableAcls,
                 _namedIpSpaces,
-                permittedByAcl.getDefaultAccept())
+                permittedByAcl.getDefaultAccept() ? LineAction.ACCEPT : LineAction.REJECT)
             .getAction()
         == LineAction.ACCEPT;
   }

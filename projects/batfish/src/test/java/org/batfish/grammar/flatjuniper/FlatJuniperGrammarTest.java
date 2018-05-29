@@ -2,8 +2,6 @@ package org.batfish.grammar.flatjuniper;
 
 import static java.util.Collections.emptyMap;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
@@ -25,15 +23,11 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
-import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
-import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
@@ -101,9 +95,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
@@ -797,52 +788,6 @@ public class FlatJuniperGrammarTest {
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
 
-    IpAccessListLine aclGlobalPolicyLine =
-        Iterables.getOnlyElement(c.getIpAccessLists().get(ACL_NAME_GLOBAL_POLICY).getLines());
-
-    /* Global policy should permit the specific src address defined in the config */
-    assertThat(
-        aclGlobalPolicyLine,
-        hasMatchCondition(equalTo(new MatchHeaderSpace(HeaderSpace.builder().build()))));
-    assertThat(aclGlobalPolicyLine, hasAction(equalTo(LineAction.ACCEPT)));
-
-    List<IpAccessListLine> aclTrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
-    List<IpAccessListLine> aclUntrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
-
-    /* Security policy ACLs should have two lines, one for specific policies and one for default */
-    assertThat(aclTrustSPLines, iterableWithSize(3));
-    assertThat(aclUntrustSPLines, iterableWithSize(3));
-
-    /* First line should be specific security policy (existing connection in this case) */
-    assertThat(
-        aclTrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-    assertThat(
-        aclUntrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-
-    /* Second line should be global policy */
-    assertThat(
-        aclTrustSPLines.get(1),
-        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
-    assertThat(
-        aclUntrustSPLines.get(1),
-        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
-
-    /* Third line should be default policy (reject all traffic) */
-    assertThat(aclTrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclTrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
-    assertThat(aclUntrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclUntrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
-
     /* Flows in either direction should be permitted by the global policy */
     assertThat(
         aclUntrustOut,
@@ -928,55 +873,6 @@ public class FlatJuniperGrammarTest {
     List<IpAccessListLine> aclUntrustSPLines =
         c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
 
-    /*
-     * The interface security policies should have two lines each: one for the actual
-     * security policy (allow established connections here), and one for the default action
-     */
-    assertThat(aclTrustSPLines, iterableWithSize(2));
-    assertThat(aclUntrustSPLines, iterableWithSize(2));
-
-    IpAccessListLine aclTrustOutLine = Iterables.getOnlyElement(aclTrustOut.getLines());
-    IpAccessListLine aclUntrustOutLine = Iterables.getOnlyElement(aclUntrustOut.getLines());
-
-    /* Each interface's outgoing ACL line should reference its security policy */
-    assertThat(
-        aclTrustOutLine,
-        hasMatchCondition(
-            isAndMatchExprThat(
-                hasConjuncts(
-                    containsInAnyOrder(
-                        new PermittedByAcl(ACL_NAME_SECURITY_POLICY + interfaceNameTrust))))));
-    assertThat(
-        aclUntrustOutLine,
-        hasMatchCondition(
-            isAndMatchExprThat(
-                hasConjuncts(
-                    containsInAnyOrder(
-                        new PermittedByAcl(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust))))));
-
-    /*
-     * Since no policies are defined in either direction, should default to allowing only
-     * established connections
-     */
-    assertThat(
-        aclTrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-    assertThat(
-        aclUntrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-
-    /* Default line should be reject all traffic */
-    assertThat(aclTrustSPLines.get(1), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclTrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
-    assertThat(aclUntrustSPLines.get(1), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclUntrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
-
     /* Simple flow in either direction should be blocked */
     assertThat(
         aclUntrustOut,
@@ -1023,52 +919,6 @@ public class FlatJuniperGrammarTest {
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
-
-    List<IpAccessListLine> aclTrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
-    List<IpAccessListLine> aclUntrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
-
-    /* Security policy ACLs should have two lines, one for specific policies and one for default */
-    assertThat(aclTrustSPLines, iterableWithSize(2));
-    assertThat(aclUntrustSPLines, iterableWithSize(2));
-
-    /* Extract the lines for content testing */
-    IpAccessListLine aclTrustSecurityPolicyLine = aclTrustSPLines.get(0);
-    IpAccessListLine aclUntrustSecurityPolicyLine = aclUntrustSPLines.get(0);
-    IpAccessListLine aclSecurityPolicyLine =
-        Iterables.getOnlyElement(c.getIpAccessLists().get(securityPolicyName).getLines());
-
-    /* Security policy for traffic to trust zone should just allow existing connections */
-    assertThat(
-        aclTrustSecurityPolicyLine,
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-
-    /*
-     * Security policy for traffic to untrust zone should allow existing connections OR matching
-     * the security policy
-     */
-    assertThat(
-        aclUntrustSecurityPolicyLine,
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(
-                        new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION),
-                        new PermittedByAcl(securityPolicyName))))));
-
-    /* Confirm the security policy acl contains logical AND of srcInterface and headerSpace match */
-    assertThat(
-        aclSecurityPolicyLine,
-        hasMatchCondition(
-            isAndMatchExprThat(
-                hasConjuncts(
-                    containsInAnyOrder(
-                        new MatchSrcInterface(ImmutableList.of(interfaceNameTrust)),
-                        new MatchHeaderSpace(HeaderSpace.builder().build()))))));
 
     /* Simple flow from trust to untrust should be permitted */
     assertThat(
