@@ -868,11 +868,6 @@ public class FlatJuniperGrammarTest {
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
 
-    List<IpAccessListLine> aclTrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
-    List<IpAccessListLine> aclUntrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
-
     /* Simple flow in either direction should be blocked */
     assertThat(
         aclUntrustOut,
