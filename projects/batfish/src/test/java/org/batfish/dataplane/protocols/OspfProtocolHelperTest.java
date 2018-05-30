@@ -10,7 +10,10 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.junit.Test;
 
+/** Tests for {@link OspfProtocolHelper} */
 public class OspfProtocolHelperTest {
+
+  /** Tests for proper handling of RFC 2328 */
   @Test
   public void testGetBetterOspfRouteMetric() {
     Prefix ospfInterAreaRoutePrefix = Prefix.parse("1.1.1.1/24");

@@ -48,6 +48,15 @@ public class OspfProtocolHelper {
     return Math.max(currentMetric, contributingRouteMetric);
   }
 
+  /**
+   * Decide whether an inter-area OSPF route can be sent from neighbor's area to given area.
+   *
+   * @param areaNum "Our" area number
+   * @param neighbor an adjacent {@link Node} with which route exchange is happening
+   * @param neighborRoute {@link OspfInternalRoute} in questions
+   * @param neighborArea neighbor's area number
+   * @return true if the route should considered for installation into the OSPF RIB
+   */
   public static boolean isOspfInterAreaFromInterAreaPropagationAllowed(
       long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
     long neighborRouteAreaNum = neighborRoute.getArea();
@@ -69,6 +78,15 @@ public class OspfProtocolHelper {
     return allowed;
   }
 
+  /**
+   * Decide whether an intra-area OSPF route can be sent from neighbor's area to given area.
+   *
+   * @param areaNum "Our" area number
+   * @param neighbor an adjacent {@link Node} with which route exchange is happening
+   * @param neighborRoute {@link OspfInternalRoute} in questions
+   * @param neighborArea neighbor's area number
+   * @return true if the route should considered for installation into the OSPF RIB
+   */
   public static boolean isOspfInterAreaFromIntraAreaPropagationAllowed(
       long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
     long neighborRouteAreaNum = neighborRoute.getArea();
