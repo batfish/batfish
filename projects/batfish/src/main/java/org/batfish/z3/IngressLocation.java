@@ -6,7 +6,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 /** Location where reachability analysis begins. */
-public class IngressLocation implements Comparable<IngressLocation> {
+public final class IngressLocation implements Comparable<IngressLocation> {
   public enum Type {
     INTERFACE_LINK,
     VRF

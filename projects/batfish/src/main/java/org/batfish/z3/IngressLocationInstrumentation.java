@@ -29,7 +29,7 @@ import org.batfish.z3.state.OriginateVrf;
  * A NOD instrumentation that tracks which of several possible {@link IngressLocation ingress
  * locations} was used to derive each solution.
  */
-public class IngressLocationInstrumentation implements GenericStatementVisitor<Statement> {
+public final class IngressLocationInstrumentation implements GenericStatementVisitor<Statement> {
 
   private final int _fieldBits;
 

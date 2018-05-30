@@ -5,7 +5,8 @@ import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.state.visitors.GenericStateExprVisitor;
 import org.batfish.z3.state.visitors.StateVisitor;
 
-public class OriginateInterfaceLink extends StateExpr {
+/** A {@link StateExpr Nod program state} for traffic originating from the link of an interface. */
+public final class OriginateInterfaceLink extends StateExpr {
   public static class State extends StateExpr.State {
 
     public static final State INSTANCE = new State();
