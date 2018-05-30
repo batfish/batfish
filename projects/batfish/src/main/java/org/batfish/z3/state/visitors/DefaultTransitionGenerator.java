@@ -54,7 +54,7 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable;
 import org.batfish.z3.state.NumberedQuery;
-import org.batfish.z3.state.OriginateInterface;
+import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
@@ -617,7 +617,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
   public void visitNumberedQuery(NumberedQuery.State numberedQuery) {}
 
   @Override
-  public void visitOriginateInterface(OriginateInterface.State originateInterface) {}
+  public void visitOriginateInterfaceLink(OriginateInterfaceLink.State originateInterface) {}
 
   @Override
   public void visitOriginateVrf(OriginateVrf.State originateVrf) {}
@@ -767,7 +767,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
 
   @Override
   public void visitPreInInterface(PreInInterface.State preInInterface) {
-    // OriginateInterface
+    // OriginateInterfaceLink
     _input
         .getEnabledInterfaces()
         .entrySet()
@@ -785,7 +785,7 @@ public class DefaultTransitionGenerator implements StateVisitor {
                                   ImmutableList.of(
                                       srcInterfaceConstraint(hostname, iface),
                                       transitNodesNotTransitedConstraint())),
-                              new OriginateInterface(hostname, iface),
+                              new OriginateInterfaceLink(hostname, iface),
                               new PreInInterface(hostname, iface)));
             })
         .forEach(_rules::add);
