@@ -15,7 +15,7 @@ import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 
-/** A base class for tabular answers */
+/** Holds tabular answers. */
 public final class TableAnswerElement extends AnswerElement {
 
   private static final String PROP_EXCLUDED_ROWS = "excludedRows";
