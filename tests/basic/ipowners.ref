@@ -1,6 +1,6 @@
 [
   {
-    "class" : "org.batfish.question.ipowners.IpOwnersAnswerElement",
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
     "metadata" : {
       "columnMetadata" : [
         {

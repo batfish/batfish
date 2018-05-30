@@ -3,8 +3,10 @@ package org.batfish.datamodel.answers;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 
+@ParametersAreNonnullByDefault
 public interface AclLinesAnswerElementInterface {
 
   class AclSpecs {
