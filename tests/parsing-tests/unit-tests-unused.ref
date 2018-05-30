@@ -881,8 +881,8 @@
         "description" : "Unused structure of type: 'object-group service' with name: 'SVCGRP-ICMP'",
         "files" : {
           "cisco_misc" : [
-            176,
-            177
+            177,
+            178
           ]
         }
       },
@@ -903,7 +903,6 @@
         "description" : "Unused structure of type: 'policy-map' with name: 'global_policy'",
         "files" : {
           "cisco_misc" : [
-            193,
             194,
             195,
             196,
@@ -920,7 +919,8 @@
             207,
             208,
             209,
-            210
+            210,
+            211
           ]
         }
       },
@@ -1706,13 +1706,12 @@
       "cisco_misc" : {
         "object-group service" : {
           "SVCGRP-ICMP" : [
-            176,
-            177
+            177,
+            178
           ]
         },
         "policy-map" : {
           "global_policy" : [
-            193,
             194,
             195,
             196,
@@ -1729,7 +1728,8 @@
             207,
             208,
             209,
-            210
+            210,
+            211
           ]
         }
       },
