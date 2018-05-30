@@ -1,26 +1,19 @@
 package org.batfish.datamodel.answers;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.table.Row;
-import org.batfish.datamodel.table.Rows;
-import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.datamodel.table.TableMetadata;
 
 @ParametersAreNonnullByDefault
-public class AclLines2AnswerElement extends TableAnswerElement
-    implements AclLinesAnswerElementInterface {
+public class AclLines2Rows implements AclLinesAnswerElementInterface {
   public static final String COL_NODES = "nodes";
   public static final String COL_ACL = "acl";
   public static final String COL_LINES = "lines";
@@ -30,12 +23,7 @@ public class AclLines2AnswerElement extends TableAnswerElement
   public static final String COL_MESSAGE = "message";
 
   private SortedMap<String, SortedMap<String, AclSpecs>> _equivalenceClasses = new TreeMap<>();
-  private Rows _initialRows = new Rows(null);
-
-  @JsonCreator
-  public AclLines2AnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
-    super(tableMetadata);
-  }
+  private Multiset<Row> _rows = ConcurrentHashMultiset.create();
 
   @Override
   public void addEquivalenceClass(
@@ -56,13 +44,13 @@ public class AclLines2AnswerElement extends TableAnswerElement
       int lineNumber,
       String line,
       boolean unmatchable,
-      @Nullable SortedMap<Integer, String> blockingLines,
+      SortedMap<Integer, String> blockingLines,
       boolean diffAction) {
 
     String aclName = acl.getName();
     AclSpecs specs = _equivalenceClasses.get(aclName).get(hostname);
 
-    _initialRows.add(
+    _rows.add(
         Row.builder()
             .put(COL_NODES, specs.nodes)
             .put(COL_ACL, aclName)
@@ -76,7 +64,7 @@ public class AclLines2AnswerElement extends TableAnswerElement
             .build());
   }
 
-  private String buildMessage(
+  private static String buildMessage(
       String aclName,
       SortedSet<String> nodes,
       int lineNumber,
@@ -107,8 +95,7 @@ public class AclLines2AnswerElement extends TableAnswerElement
     return sb.toString();
   }
 
-  @JsonIgnore
-  public Rows getInitialRows() {
-    return _initialRows;
+  public Multiset<Row> getRows() {
+    return _rows;
   }
 }
