@@ -7,7 +7,9 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.dataplane.ibdp.Node;
 
+/** Helper class with functions that implement various bits of OSPF protocol logic. */
 public class OspfProtocolHelper {
+
   /**
    * Decides whether the current OSPF summary route metric needs to be changed based on the given
    * route's metric.
