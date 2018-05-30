@@ -11,7 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
+import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.specifier.IpSpaceAssignment;
 
 /**
@@ -45,7 +45,7 @@ public final class ResolvedReachabilityParameters {
 
     private boolean _useCompression;
 
-    public ResolvedReachabilityParameters build() throws InvalidReachabilitySettingsException {
+    public ResolvedReachabilityParameters build() throws InvalidReachabilityParametersException {
       return new ResolvedReachabilityParameters(this);
     }
 
@@ -135,7 +135,7 @@ public final class ResolvedReachabilityParameters {
   private final boolean _useCompression;
 
   private ResolvedReachabilityParameters(Builder builder)
-      throws InvalidReachabilitySettingsException {
+      throws InvalidReachabilityParametersException {
     _actions = builder._actions;
     _configurations = builder._configurations;
     _dataPlane = builder._dataPlane;
@@ -151,22 +151,22 @@ public final class ResolvedReachabilityParameters {
 
     // validate actions
     if (_actions.isEmpty()) {
-      throw new InvalidReachabilitySettingsException("No actions");
+      throw new InvalidReachabilityParametersException("No actions");
     }
     // validate source IP assignment
     if (_sourceIpSpaceByLocations.getEntries().isEmpty()) {
-      throw new InvalidReachabilitySettingsException("No source locations");
+      throw new InvalidReachabilityParametersException("No source locations");
     }
 
     // validate final nodes
     if (_finalNodes.isEmpty()) {
-      throw new InvalidReachabilitySettingsException("No final nodes");
+      throw new InvalidReachabilityParametersException("No final nodes");
     }
 
     // validate transit nodes
     Set<String> commonNodes = Sets.intersection(_requiredTransitNodes, _forbiddenTransitNodes);
     if (!commonNodes.isEmpty()) {
-      throw new InvalidReachabilitySettingsException(
+      throw new InvalidReachabilityParametersException(
           "Required and forbidden transit nodes overlap: " + commonNodes);
     }
   }

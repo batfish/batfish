@@ -5,7 +5,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.Snapshot;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
+import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.main.Batfish.CompressDataPlaneResult;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.question.ResolvedReachabilityParameters;
@@ -38,7 +38,7 @@ final class ReachabilityParametersResolver {
 
   public static ResolvedReachabilityParameters resolveReachabilityParameters(
       Batfish batfish, ReachabilityParameters params, Snapshot snapshot)
-      throws InvalidReachabilitySettingsException {
+      throws InvalidReachabilityParametersException {
 
     ReachabilityParametersResolver resolver =
         new ReachabilityParametersResolver(batfish, params, snapshot);

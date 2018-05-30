@@ -145,7 +145,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
-import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
+import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilitySettings;
@@ -3483,10 +3483,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     checkDifferentialDataPlaneQuestionDependencies();
     pushBaseEnvironment();
     ResolvedReachabilityParameters baseParams;
-    Snapshot snapshot = getSnapshot();
     try {
-      baseParams = resolveReachabilityParameters(this, params, snapshot);
-    } catch (InvalidReachabilitySettingsException e) {
+      baseParams = resolveReachabilityParameters(this, params, getSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidSettingsAnswer();
     }
     popEnvironment();
@@ -3494,8 +3493,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushDeltaEnvironment();
     ResolvedReachabilityParameters deltaParams;
     try {
-      deltaParams = resolveReachabilityParameters(this, params, snapshot);
-    } catch (InvalidReachabilitySettingsException e) {
+      deltaParams = resolveReachabilityParameters(this, params, getSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidSettingsAnswer();
     }
     popEnvironment();
@@ -4206,7 +4205,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       parameters =
           resolveReachabilityParameters(
               this, reachabilitySettings.toReachabilityParameters(), getSnapshot());
-    } catch (InvalidReachabilitySettingsException e) {
+    } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidSettingsAnswer();
     }
 
@@ -4252,7 +4251,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             .stream()
             .map(
                 chunkSrcIpConstraints -> {
-                  // TODO: pass in srcIp constraint with source locations!
                   ReachabilityQuerySynthesizer query =
                       builder
                           .setActions(actions)
