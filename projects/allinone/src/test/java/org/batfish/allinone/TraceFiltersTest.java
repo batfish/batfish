@@ -9,7 +9,7 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByIpAc
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
 import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
-import static org.batfish.question.tracefilters.TraceFiltersAnswerElement.COLUMN_FILTER_NAME;
+import static org.batfish.question.tracefilters.TraceFiltersAnswerer.COLUMN_FILTER_NAME;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -32,9 +32,9 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchers;
 import org.batfish.datamodel.questions.FiltersSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.question.tracefilters.TraceFiltersAnswerElement;
 import org.batfish.question.tracefilters.TraceFiltersAnswerer;
 import org.batfish.question.tracefilters.TraceFiltersQuestion;
 import org.junit.Before;
@@ -102,7 +102,7 @@ public class TraceFiltersTest {
         new TraceFiltersQuestion(NodesSpecifier.ALL, FiltersSpecifier.ALL);
     question.setSrcIp(new Ip("1.0.0.4"));
     TraceFiltersAnswerer answerer = new TraceFiltersAnswerer(question, batfish);
-    TraceFiltersAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer();
 
     /* Trace should be present for referencing acl with two events: being denied by referenced acl, and permited by referencing acl in later line */
     assertThat(
@@ -112,7 +112,7 @@ public class TraceFiltersTest {
                 hasColumn(
                     COLUMN_FILTER_NAME, equalTo(acl.getName()), new TypeReference<String>() {}),
                 hasColumn(
-                    TraceFiltersAnswerElement.COLUMN_TRACE,
+                    TraceFiltersAnswerer.COLUMN_TRACE,
                     hasEvents(
                         contains(
                             isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()),
@@ -129,7 +129,7 @@ public class TraceFiltersTest {
                     equalTo(referencedAcl.getName()),
                     new TypeReference<String>() {}),
                 hasColumn(
-                    TraceFiltersAnswerElement.COLUMN_TRACE,
+                    TraceFiltersAnswerer.COLUMN_TRACE,
                     hasEvents(
                         contains(isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()))),
                     new TypeReference<AclTrace>() {}))));
@@ -157,7 +157,7 @@ public class TraceFiltersTest {
     TraceFiltersQuestion question =
         new TraceFiltersQuestion(NodesSpecifier.ALL, FiltersSpecifier.ALL);
     TraceFiltersAnswerer answerer = new TraceFiltersAnswerer(question, batfish);
-    TraceFiltersAnswerElement answer = answerer.answer();
+    TableAnswerElement answer = answerer.answer();
 
     // There should be 6 rows
     assertThat(answer.getRows(), hasSize(6));

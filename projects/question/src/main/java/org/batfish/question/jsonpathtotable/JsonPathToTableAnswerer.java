@@ -21,15 +21,50 @@ import org.batfish.common.util.JsonPathUtils;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
+import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 
 public class JsonPathToTableAnswerer extends Answerer {
 
+  static final String PROP_DEBUG = "debug";
+
   public JsonPathToTableAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
+  }
+
+  public static TableMetadata create(JsonPathToTableQuestion question) {
+    List<ColumnMetadata> columnMetadata = new LinkedList<>();
+    for (Entry<String, JsonPathToTableExtraction> entry :
+        question.getPathQuery().getExtractions().entrySet()) {
+      JsonPathToTableExtraction extraction = entry.getValue();
+      if (extraction.getInclude()) {
+        columnMetadata.add(
+            new ColumnMetadata(
+                entry.getKey(),
+                extraction.getSchema(),
+                extraction.getDescription(),
+                extraction.getIsKey(),
+                extraction.getIsValue()));
+      }
+    }
+    for (Entry<String, JsonPathToTableComposition> entry :
+        question.getPathQuery().getCompositions().entrySet()) {
+      JsonPathToTableComposition composition = entry.getValue();
+      if (composition.getInclude()) {
+        columnMetadata.add(
+            new ColumnMetadata(
+                entry.getKey(),
+                composition.getSchema(),
+                composition.getDescription(),
+                composition.getIsKey(),
+                composition.getIsValue()));
+      }
+    }
+    return new TableMetadata(columnMetadata, question.getDisplayHints());
   }
 
   /**
@@ -42,7 +77,7 @@ public class JsonPathToTableAnswerer extends Answerer {
    * </ul>
    */
   @Override
-  public JsonPathToTableAnswerElement answer() {
+  public TableAnswerElement answer() {
     JsonPathToTableQuestion question = (JsonPathToTableQuestion) _question;
 
     Question innerQuestion = question.getInnerQuestion();
@@ -59,12 +94,7 @@ public class JsonPathToTableAnswerer extends Answerer {
       throw new BatfishException("Could not get JSON string from inner answer", e);
     }
 
-    JsonPathToTableAnswerElement answer = computeAnswerTable(innerAnswerStr, question);
-
-    // 4. add debug info
-    if (question.getDebug()) {
-      answer.addDebugInfo("innerAnswer", innerAnswer);
-    }
+    TableAnswerElement answer = computeAnswerTable(innerAnswerStr, question);
 
     return answer;
   }
@@ -77,12 +107,12 @@ public class JsonPathToTableAnswerer extends Answerer {
    * @param question The JsonPathToTableQuestion object
    * @return The resulting answer table
    */
-  public static JsonPathToTableAnswerElement computeAnswerTable(
+  public static TableAnswerElement computeAnswerTable(
       String innerAnswer, JsonPathToTableQuestion question) {
 
     JsonPathToTableQuery query = question.getPathQuery();
-    TableMetadata tableMetadata = JsonPathToTableAnswerElement.create(question);
-    JsonPathToTableAnswerElement answer = new JsonPathToTableAnswerElement(tableMetadata);
+    TableMetadata tableMetadata = create(question);
+    TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     // 1. get all the results
     List<JsonPathResult> jsonPathResults =
