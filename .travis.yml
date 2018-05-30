@@ -43,6 +43,7 @@ script:
       test \
       --jobs=4 \
       --curses=no \
+      --test_output=errors \
       --verbose_failures \
       --experimental_repository_cache="$HOME/.bazel_repository_cache" \
       //...
