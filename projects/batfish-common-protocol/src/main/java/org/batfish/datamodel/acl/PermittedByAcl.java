@@ -18,7 +18,6 @@ public class PermittedByAcl extends AclLineMatchExpr {
     this(aclName, defaultAccept, null);
   }
 
-  // TODO remove these to see what else may need to be updated
   public PermittedByAcl(String aclName) {
     this(aclName, false, null);
   }
