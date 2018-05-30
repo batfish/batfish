@@ -1031,6 +1031,11 @@ AUTH_SERVER
    'auth-server'
 ;
 
+AUTH_TYPE
+:
+   'auth-type'
+;
+
 AUTHENTICATE
 :
    'authenticate'
@@ -3487,6 +3492,11 @@ DYNAMIC_ACCESS_POLICY_RECORD
    'dynamic-access-policy-record'
 ;
 
+DYNAMIC_AUTHOR
+:
+   'dynamic-author'
+;
+
 DYNAMIC_CAPABILITY
 :
    'dynamic-capability'
@@ -3815,6 +3825,11 @@ EOF_LITERAL
 EOU
 :
    'eou'
+;
+
+EPM
+:
+   'epm'
 ;
 
 EQ
@@ -10148,9 +10163,9 @@ SERVER_GROUP
    'server-group'
 ;
 
-SERVERFARM
+SERVER_KEY
 :
-   'serverfarm'
+   'server-key'
 ;
 
 SERVER_PRIVATE
@@ -10161,6 +10176,11 @@ SERVER_PRIVATE
 SERVER_TYPE
 :
    'server-type'
+;
+
+SERVERFARM
+:
+   'serverfarm'
 ;
 
 SERVICE
@@ -10226,6 +10246,11 @@ SESSION_GROUP
 SESSION_ID
 :
    'session-id'
+;
+
+SESSION_KEY
+:
+   'session-key'
 ;
 
 SESSION_LIMIT

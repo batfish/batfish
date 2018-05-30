@@ -53,6 +53,7 @@ dialer watch-list 76 ip 1.2.3.128 255.255.255.192
 downlink delay disable timeout 20
 no dual-mode-default-vlan
 no environment-monitor shutdown temperature
+epm logging
 ethernet lmi ce
 event manager applet Interface_Load
  action 1.0 syslog msg "Interface Status Saved - Check disk1:1.txt"
