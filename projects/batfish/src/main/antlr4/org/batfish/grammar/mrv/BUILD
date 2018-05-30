@@ -10,7 +10,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
-        "@antlr4//:compile",
+        "@antlr4_runtime//:compile",
     ],
 )
 
