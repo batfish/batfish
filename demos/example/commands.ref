@@ -237,25 +237,39 @@ Question: {
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 1.0.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "1.0.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "255.255.255.0"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "1.0.1.0"
+                  }
+                }
+              },
+              "name" : "permit ip host 1.0.1.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 1.0.2.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "1.0.2.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "255.255.255.0"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "1.0.2.0"
+                  }
+                }
+              },
+              "name" : "permit ip host 1.0.2.0 host 255.255.255.0"
             }
           ]
         },
@@ -264,25 +278,39 @@ Question: {
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 3.0.1.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "3.0.1.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "255.255.255.0"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "3.0.1.0"
+                  }
+                }
+              },
+              "name" : "permit ip host 3.0.1.0 host 255.255.255.0"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "255.255.255.0"
-              ],
-              "name" : "permit ip host 3.0.2.0 host 255.255.255.0",
-              "negate" : false,
-              "srcIps" : [
-                "3.0.2.0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "255.255.255.0"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "3.0.2.0"
+                  }
+                }
+              },
+              "name" : "permit ip host 3.0.2.0 host 255.255.255.0"
             }
           ]
         },
@@ -291,25 +319,57 @@ Question: {
           "lines" : [
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "1.0.0.0/8"
-              ],
-              "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255",
-              "negate" : false,
-              "srcIps" : [
-                "2.0.0.0/8"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "1.0.0.0/8"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "2.0.0.0/8"
+                  }
+                }
+              },
+              "name" : "permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255"
+            },
+            {
+              "action" : "ACCEPT",
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "10.12.11.1"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "10.12.11.2"
+                  }
+                }
+              },
+              "name" : "permit ip 10.12.11.2 0.0.0.0 10.12.11.1 0.0.0.0"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "0.0.0.0/0"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "0.0.0.0/0"
+                  }
+                }
+              },
+              "name" : "deny   ip any any"
             }
           ]
         },
@@ -318,36 +378,57 @@ Question: {
           "lines" : [
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "deny   ip 2.0.0.0 0.255.255.255 any",
-              "negate" : false,
-              "srcIps" : [
-                "2.0.0.0/8"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "0.0.0.0/0"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "2.0.0.0/8"
+                  }
+                }
+              },
+              "name" : "deny   ip 2.0.0.0 0.255.255.255 any"
             },
             {
               "action" : "REJECT",
-              "dstIps" : [
-                "2.128.1.101"
-              ],
-              "name" : "deny   ip any host 2.128.1.101",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "2.128.1.101"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "0.0.0.0/0"
+                  }
+                }
+              },
+              "name" : "deny   ip any host 2.128.1.101"
             },
             {
               "action" : "ACCEPT",
-              "dstIps" : [
-                "0.0.0.0/0"
-              ],
-              "name" : "permit ip any any",
-              "negate" : false,
-              "srcIps" : [
-                "0.0.0.0/0"
-              ]
+              "matchCondition" : {
+                "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                "headerSpace" : {
+                  "dstIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "0.0.0.0/0"
+                  },
+                  "negate" : false,
+                  "srcIps" : {
+                    "class" : "org.batfish.datamodel.IpWildcardIpSpace",
+                    "ipWildcard" : "0.0.0.0/0"
+                  }
+                }
+              },
+              "name" : "permit ip any any"
             }
           ]
         }
@@ -356,30 +437,19 @@ Question: {
         "18.18.18.18",
         "23.23.23.23"
       ],
-      "roleDimensions" : {
-        "0" : "as"
-      },
-      "roles" : [
-        "border"
-      ],
-      "route6FilterLists" : {
-        "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-          "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-        }
-      },
       "routeFilterLists" : {
         "101" : {
           "name" : "101",
           "lines" : [
             {
               "action" : "ACCEPT",
-              "lengthRange" : "24-24",
-              "prefix" : "1.0.1.0/24"
+              "ipWildcard" : "1.0.1.0/24",
+              "lengthRange" : "24-24"
             },
             {
               "action" : "ACCEPT",
-              "lengthRange" : "24-24",
-              "prefix" : "1.0.2.0/24"
+              "ipWildcard" : "1.0.2.0/24",
+              "lengthRange" : "24-24"
             }
           ]
         },
@@ -388,13 +458,13 @@ Question: {
           "lines" : [
             {
               "action" : "ACCEPT",
-              "lengthRange" : "24-24",
-              "prefix" : "3.0.1.0/24"
+              "ipWildcard" : "3.0.1.0/24",
+              "lengthRange" : "24-24"
             },
             {
               "action" : "ACCEPT",
-              "lengthRange" : "24-24",
-              "prefix" : "3.0.2.0/24"
+              "ipWildcard" : "3.0.2.0/24",
+              "lengthRange" : "24-24"
             }
           ]
         },
@@ -403,13 +473,13 @@ Question: {
           "lines" : [
             {
               "action" : "REJECT",
-              "lengthRange" : "8-32",
-              "prefix" : "2.0.0.0/8"
+              "ipWildcard" : "2.0.0.0/8",
+              "lengthRange" : "8-32"
             },
             {
               "action" : "ACCEPT",
-              "lengthRange" : "0-32",
-              "prefix" : "0.0.0.0/0"
+              "ipWildcard" : "0.0.0.0/0",
+              "lengthRange" : "0-32"
             }
           ]
         },
@@ -418,8 +488,8 @@ Question: {
           "lines" : [
             {
               "action" : "ACCEPT",
-              "lengthRange" : "16-32",
-              "prefix" : "2.128.0.0/9"
+              "ipWildcard" : "2.128.0.0/9",
+              "lengthRange" : "16-32"
             }
           ]
         },
@@ -428,8 +498,8 @@ Question: {
           "lines" : [
             {
               "action" : "ACCEPT",
-              "lengthRange" : "17-32",
-              "prefix" : "2.128.0.0/16"
+              "ipWildcard" : "2.128.0.0/16",
+              "lengthRange" : "17-32"
             }
           ]
         }
@@ -778,7 +848,7 @@ Question: {
           "statements" : [
             {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "comment" : "Suppress summarized of summary-only aggregate-address networks",
+              "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
               "guard" : {
                 "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                 "prefix" : {
@@ -965,23 +1035,44 @@ Question: {
           "name" : "~OSPF_EXPORT_POLICY:default~",
           "statements" : [
             {
-              "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
-              "metric" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
-                "value" : 20
-              }
-            },
-            {
               "class" : "org.batfish.datamodel.routing_policy.statement.If",
-              "comment" : "OSPF export connected routes",
+              "comment" : "OSPF export routes for connected",
               "guard" : {
-                "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
-                "protocol" : "connected"
+                "class" : "org.batfish.datamodel.routing_policy.expr.Conjunction",
+                "conjuncts" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.MatchProtocol",
+                    "protocol" : "connected"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.Not",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                      "comment" : "match default route",
+                      "prefix" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
+                      },
+                      "prefixSet" : {
+                        "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet",
+                        "prefixSpace" : [
+                          "0.0.0.0/0"
+                        ]
+                      }
+                    }
+                  }
+                ]
               },
               "trueStatements" : [
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
                   "metricType" : "E2"
+                },
+                {
+                  "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                  "metric" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                    "value" : 20
+                  }
                 },
                 {
                   "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
@@ -1118,6 +1209,7 @@ Question: {
                 "defaultMetric" : 0,
                 "dynamic" : false,
                 "ebgpMultihop" : false,
+                "enforceFirstAs" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.1~",
                 "group" : "as2",
                 "localAs" : 2,
@@ -1142,6 +1234,7 @@ Question: {
                 "defaultMetric" : 0,
                 "dynamic" : false,
                 "ebgpMultihop" : false,
+                "enforceFirstAs" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.1.2.2~",
                 "group" : "as2",
                 "localAs" : 2,
@@ -1166,6 +1259,7 @@ Question: {
                 "defaultMetric" : 0,
                 "dynamic" : false,
                 "ebgpMultihop" : false,
+                "enforceFirstAs" : false,
                 "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.12.11.1~",
                 "exportPolicySources" : [
                   "as2_to_as1"
@@ -1231,37 +1325,6 @@ Results for JsonPath
     'nodes'->'as2core2'->'interfaces'->'GigabitEthernet2/0'->'mtu' : 1700
 
 Summary: 3 (non-assertion) results; 
-# We can also do checks on the data model using our more powerful assertion language:
-# Check that
-# 1. There are 15 nodes
-# 2. Every node mentioning aaa new-model has it set to true ('aaa new-model' vs. 'no aaa new-model')
-Status: SUCCESS
-Question: assert assertions="[{
-  "asPathList" : false,
-  "assertion" : "(eq 15 (pathsize '$.nodes[*]'))",
-  "summary" : false
-}, {
-  "asPathList" : false,
-  "assertion" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))",
-  "summary" : false
-}]"
-{
-  "class" : "org.batfish.question.assertion.AssertQuestionPlugin$AssertAnswerElement",
-  "fail" : false,
-  "passing" : {
-    "0" : {
-      "asPathList" : false,
-      "assertion" : "(eq 15 (pathsize '$.nodes[*]'))",
-      "summary" : false
-    },
-    "1" : {
-      "asPathList" : false,
-      "assertion" : "(eq (pathsize '$.nodes[*].aaaSettings.newModel') (pathsize '$.nodes[*].aaaSettings[?(@.newModel == true)]'))",
-      "summary" : false
-    }
-  }
-}
-Summary: 0 (non-assertion) results; 
 #####################
 # our logical representation of the network that can be queried in various ways.
 # we have many queries and can write more
@@ -1342,7 +1405,7 @@ Results for unique IP assignment check
       as2border2:Loopback0
       as2dept1:Loopback0
 
-Summary: 0 (non-assertion) results; 
+Summary: 1 (non-assertion) results; 
 # this will check if all loopbacks are being correctly announced within OSPF
 Status: SUCCESS
 Question: ospfStatus nodeRegex=".*", interfaceSpecifier=".*", statuses=".*"
@@ -1413,40 +1476,40 @@ Summary: 0 (non-assertion) results;
 # for example, we can see how host1 reaches a particular IP address
 # the query will take time if the dataplane has not been computed before
 Status: SUCCESS
-Question: traceroute ingressNode=host1, dst=1.0.2.2
+Question: traceroute ingressNode=host1TracerouteQuestion{dst=1.0.2.2}
 
 Flow: ingress:host1 vrf:default 2.128.0.101->1.0.2.2 IP packetLength:0 state:NEW
   environment:BASE
 Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
-    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1]
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
     Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
-    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2]
+    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
     Hop 4: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
-    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
     Hop 6: as1border1:GigabitEthernet0/0 -> as1core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<1.0.2.0/24,nhip:1.0.1.2,nhint:dynamic>_fnhip:1.0.1.2]
     ACCEPTED
 
-    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1]
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
     Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
     Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
     Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
-    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
     Hop 6: as1border1:GigabitEthernet0/0 -> as1core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<1.0.2.0/24,nhip:1.0.1.2,nhint:dynamic>_fnhip:1.0.1.2]
     ACCEPTED
 
-    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1]
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
     Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
-    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2]
+    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
     Hop 4: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
-    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
     Hop 6: as1border1:GigabitEthernet0/0 -> as1core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<1.0.2.0/24,nhip:1.0.1.2,nhint:dynamic>_fnhip:1.0.1.2]
     ACCEPTED
 
-    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1]
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
     Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
     Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
     Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
-    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
     Hop 6: as1border1:GigabitEthernet0/0 -> as1core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<1.0.2.0/24,nhip:1.0.1.2,nhint:dynamic>_fnhip:1.0.1.2]
     ACCEPTED
 
@@ -1456,7 +1519,7 @@ Summary: 0 (non-assertion) results;
 # suppose host1 (2.128.0.101) is running DNS and we want to ensure that the server is reachable
 # can easily do this using protocol-specific traceroutes
 Status: SUCCESS
-Question: traceroute ingressNode=as2border1, dst=2.128.0.101, dstProtocol=DNS
+Question: traceroute ingressNode=as2border1TracerouteQuestion{dst=2.128.0.101, dstProtocol=DNS}
 
 Flow: ingress:as2border1 vrf:default 2.1.1.1->2.128.0.101 UDP sport:0 dport:DOMAIN(53) packetLength:0 state:NEW
   environment:BASE
@@ -1464,25 +1527,25 @@ Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interf
     Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
     Hop 2: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
     Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
-    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
     ACCEPTED
 
     Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
     Hop 2: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
     Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
-    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
     ACCEPTED
 
     Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
     Hop 2: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
     Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
-    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
     ACCEPTED
 
     Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
     Hop 2: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
     Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
-    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
     ACCEPTED
 
 
@@ -1535,7 +1598,7 @@ Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interf
     Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
     DENIED_IN{OUTSIDE_TO_INSIDE}{deny   ip 2.0.0.0 0.255.255.255 any}
 
-Flow: ingress:host2 vrf:default 0.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) packetLength:0 state:NEW
+Flow: ingress:host2 vrf:default 0.4.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) packetLength:0 state:NEW
   environment:BASE
 Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
     Hop 1: host2:eth0 -> (none):null_interface --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1]
@@ -1550,7 +1613,7 @@ Summary: 0 (non-assertion) results;
 Status: SUCCESS
 Question: reachability actions=[ACCEPT], dstIps=[2.128.1.101], notDstProtocols=[SSH]
 
-Flow: ingress:host2 vrf:default 0.3.0.164->2.128.1.101 TCP sport:0 dport:0 packetLength:0 state:NEW tcpFlags:00000000
+Flow: ingress:host2 vrf:default 0.0.0.8->2.128.1.101 UDP sport:0 dport:0 packetLength:0 state:NEW
   environment:BASE
 Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
     ACCEPTED
@@ -1566,32 +1629,32 @@ Question: reachability actions=[ACCEPT], dstIps=[2.128.1.101], dstProtocols=[SSH
 Flow: ingress:as3border1 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
   environment:BASE
 Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
-    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
     Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
     Hop 3: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
     Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
-    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
     ACCEPTED
 
-    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
     Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
     Hop 3: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
     Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
-    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
     ACCEPTED
 
-    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
     Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
     Hop 3: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
     Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
-    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
     ACCEPTED
 
-    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2]
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
     Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
     Hop 3: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
     Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
-    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
     ACCEPTED
 
 
@@ -1616,3 +1679,1240 @@ Difference between base and delta
 
 Summary: 0 (non-assertion) results; 
 # a particularly powerful query: reachability diff between the two environments
+Status: SUCCESS
+Question: reachability differential=true, actions=[ACCEPT], type=REDUCED_REACHABILITY
+
+Flow: ingress:as1border1 vrf:default 0.0.0.0->2.128.0.0 ICMP icmpType:255 icmpCode:255 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 3: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 3: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 3: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 3: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 3: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 3: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 3: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 3: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+Flow: ingress:as1border2 vrf:default 0.0.0.0->2.128.0.0 ICMP icmpType:255 icmpCode:255 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 5: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 5: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 5: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 5: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 5: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 5: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 5: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 2: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 3: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 5: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+Flow: ingress:as1core1 vrf:default 0.0.0.0->2.128.0.0 UDP sport:0 dport:0 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 4: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 4: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 4: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 4: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 4: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 4: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 4: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 2: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 4: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+Flow: ingress:as2border1 vrf:default 4.0.64.0->2.128.0.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 2: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 2: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 2: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 2: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 2: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.11.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 2: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 2: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.12.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 2: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as2border2 vrf:default 4.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 2: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 2: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 2: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 2: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 2: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 2: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 2: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 3: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 2: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 3: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 4: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as2core1 vrf:default 132.0.0.64->2.128.0.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 2: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 2: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 2: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 2: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as2core2 vrf:default 0.0.136.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 2: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 2: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 2: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 2: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 3: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as2dept1 vrf:default 0.0.0.0->2.128.0.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as2dist1 vrf:default 0.0.128.17->2.128.0.101 UDP sport:0 dport:DOMAIN(53) packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 2: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 2: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as2dist2 vrf:default 64.0.128.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 2: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 2: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as3border1 vrf:default 0.0.0.0->2.128.0.101 UDP sport:0 dport:DOMAIN(53) packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> host1:eth0 --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null] -- [in: {filter::INPUT}{-p udp --dport 53 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    DENIED_OUT{RESTRICT_HOST_TRAFFIC_IN}{deny   ip any any}
+
+Flow: ingress:as3border2 vrf:default 0.0.0.0->2.128.0.0 ICMP icmpType:255 icmpCode:255 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 5: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 5: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 5: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 5: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 5: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 5: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 5: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 5: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+Flow: ingress:as3core1 vrf:default 0.0.0.0->2.128.0.154 UNNAMED_198 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 4: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 4: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 4: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 4: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_default, testrigName=tr-delta, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 4: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 4: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 4: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.0.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 4: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet2/0 -> (none):null_interface --- [ConnectedRoute<2.128.0.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet2/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+
+Summary: 0 (non-assertion) results; 
+# --> any collateral damage is easy to see
+#############
+# fault-tolerance can be ensured in a similar manner by studying the impact of failures
+# this command creates a network view after an interface failure
+Active delta testrig->environment is set
+Status: SUCCESS
+Results of environment processing and validation:
+
+Summary: 0 (non-assertion) results; 
+# we can see if reachability changes at all after this failure
+Status: SUCCESS
+Question: reachability differential=true, actions=[ACCEPT], type=REDUCED_REACHABILITY
+
+Flow: ingress:as2border1 vrf:default 2.8.0.0->3.0.1.252 UDP sport:0 dport:0 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border1:GigabitEthernet2/0 -> as2core2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.12.2]
+    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 4: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.11.2]
+    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 4: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+Flow: ingress:as2border2 vrf:default 2.0.8.0->3.0.1.253 TCP sport:0 dport:0 packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 2: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 2: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+Flow: ingress:as2core1 vrf:default 2.0.160.0->3.0.1.254 UDP sport:0 dport:0 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 2: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 3: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 2: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+Flow: ingress:as2core2 vrf:default 2.0.0.0->3.0.1.253 ICMP icmpType:255 icmpCode:255 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 2: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 3: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 2: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+Flow: ingress:as2dept1 vrf:default 2.129.33.66->3.0.1.254 TCP sport:0 dport:65482 packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 2: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 3: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 5: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 2: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 3: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 5: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 2: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 3: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 5: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 2: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 3: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 4: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 5: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 2: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 3: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 4: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 2: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 3: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 4: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 2: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 3: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 4: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 2: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 3: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 4: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+Flow: ingress:as2dist1 vrf:default 2.128.0.2->3.0.1.253 UDP sport:0 dport:0 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 4: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 4: as3border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 2: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+Flow: ingress:as2dist2 vrf:default 10.23.21.2->10.23.21.3 UDP sport:0 dport:0 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [OspfExternalType2Route<10.23.21.0/24,nhip:2.23.12.2,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 2: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [OspfExternalType2Route<10.23.21.0/24,nhip:2.12.21.1,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [ConnectedRoute<10.23.21.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null] -- [out: {INSIDE_TO_AS3}{permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0}]
+    ACCEPTED
+
+    Hop 1: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [OspfExternalType2Route<10.23.21.0/24,nhip:2.23.22.2,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 2: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [OspfExternalType2Route<10.23.21.0/24,nhip:2.12.22.1,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 3: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [ConnectedRoute<10.23.21.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null] -- [out: {INSIDE_TO_AS3}{permit ip 10.23.21.2 0.0.0.0 10.23.21.3 0.0.0.0}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    NO_ROUTE
+
+Flow: ingress:as3border1 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 3: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 4: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 3: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 4: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 5: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/16,nhip:10.13.22.1,nhint:dynamic>_fnhip:3.0.1.2]
+    Hop 2: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/16,nhip:10.13.22.1,nhint:dynamic>_fnhip:3.0.2.1]
+    Hop 3: as3border2:GigabitEthernet0/0 -> as1border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.13.22.1,nhint:dynamic>_fnhip:10.13.22.1]
+    Hop 4: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 5: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 6: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2]
+    DENIED_IN{OUTSIDE_TO_INSIDE}{deny   ip any host 2.128.1.101}
+
+Flow: ingress:as3border2 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 5: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 5: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 5: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 6: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 7: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3border2:GigabitEthernet1/0 -> as3core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.2.2]
+    Hop 2: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 3: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 4: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 5: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 6: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 7: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3border2:GigabitEthernet0/0 -> as1border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.13.22.1,nhint:dynamic>_fnhip:10.13.22.1]
+    Hop 2: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 3: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 4: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2]
+    DENIED_IN{OUTSIDE_TO_INSIDE}{deny   ip any host 2.128.1.101}
+
+Flow: ingress:as3core1 vrf:default 0.0.0.0->2.128.1.101 TCP sport:0 dport:SSH(22) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 4: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 4: as2core1:GigabitEthernet3/0 -> as2dist2:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.23.12.3]
+    Hop 5: as2dist2:GigabitEthernet2/0 -> as2dept1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.34.201.4]
+    Hop 6: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.21.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.21.2]
+    Hop 4: as2core1:GigabitEthernet2/0 -> as2dist1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.11.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+    Hop 1: as3core1:GigabitEthernet1/0 -> as3border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:3.0.1.1]
+    Hop 2: as3border1:GigabitEthernet1/0 -> as2border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.23.21.2,nhint:dynamic>_fnhip:10.23.21.2] -- [in: {OUTSIDE_TO_INSIDE}{permit ip any any}]
+    Hop 3: as2border2:GigabitEthernet1/0 -> as2core2:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.12.22.2, BgpRoute<2.128.1.0/24,nhip:2.34.201.4,nhint:dynamic>_fnhip:2.12.22.2]
+    Hop 4: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 5: as2dist1:GigabitEthernet2/0 -> as2dept1:GigabitEthernet0/0 --- [BgpRoute<2.128.1.0/24,nhip:2.34.101.4,nhint:dynamic>_fnhip:2.34.101.4]
+    Hop 6: as2dept1:GigabitEthernet3/0 -> host2:eth0 --- [ConnectedRoute<2.128.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet3/0>_fnhip:null] -- [in: {filter::INPUT}{-p tcp --dport 22 -j ACCEPT}]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [BgpRoute<2.128.0.0/16,nhip:10.13.22.1,nhint:dynamic>_fnhip:3.0.2.1]
+    Hop 2: as3border2:GigabitEthernet0/0 -> as1border2:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.13.22.1,nhint:dynamic>_fnhip:10.13.22.1]
+    Hop 3: as1border2:GigabitEthernet1/0 -> as1core1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.2.2]
+    Hop 4: as1core1:GigabitEthernet1/0 -> as1border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:1.0.1.1]
+    Hop 5: as1border1:GigabitEthernet1/0 -> as2border1:GigabitEthernet0/0 --- [BgpRoute<2.128.0.0/16,nhip:10.12.11.2,nhint:dynamic>_fnhip:10.12.11.2]
+    DENIED_IN{OUTSIDE_TO_INSIDE}{deny   ip any host 2.128.1.101}
+
+Flow: ingress:host1 vrf:default 2.128.0.0->3.0.1.2 UDP sport:0 dport:32745 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [ConnectedRoute<3.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+Flow: ingress:host2 vrf:default 2.128.0.64->3.0.2.1 ICMP icmpType:255 icmpCode:255 packetLength:0 state:NEW
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
+    Hop 7: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet1/0 -> as2border2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.21.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
+    Hop 7: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
+    Hop 7: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 4: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 5: as2border2:GigabitEthernet0/0 -> as3border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.23.21.3,nhint:dynamic>_fnhip:10.23.21.3] -- [out: {INSIDE_TO_AS3}{permit ip 2.0.0.0 0.255.255.255 3.0.0.0 0.255.255.255}]
+    Hop 6: as3border1:GigabitEthernet0/0 -> as3core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<3.0.2.0/24,nhip:3.0.1.2,nhint:dynamic>_fnhip:3.0.1.2]
+    Hop 7: as3core1:GigabitEthernet0/0 -> as3border2:GigabitEthernet1/0 --- [ConnectedRoute<3.0.2.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    ACCEPTED
+
+  environment:DELTA
+Environment{envName=env_7c6b8ea1-f20f-4f65-b6f1-06e9c9ff20cc, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=[as2border2:GigabitEthernet0/0], nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2] -- [in: {blocktelnet}{permit ip any any}]
+    Hop 4: as2core1:GigabitEthernet0/0 -> as2border1:GigabitEthernet1/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.11.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> (none):null_interface --- [BgpRoute<3.0.2.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1]
+    DENIED_OUT{INSIDE_TO_AS1}{deny   ip any any}
+
+
+Summary: 0 (non-assertion) results; 
+# --> any lack of fault tolerance is easy to see
+"##############"
+"# heuristics to uncover bugs"
+Status: SUCCESS
+Question: aclreachability aclNameRegex=".*" nodeRegex="as2.*"
+Results for unreachable ACL lines
+
+  as2dept1 :: RESTRICT_HOST_TRAFFIC_IN
+    [index 2] permit icmp any any
+      Earliest covering line: [index 1] deny   ip any any
+      Is different action: true
+
+  as2dept1 :: RESTRICT_HOST_TRAFFIC_OUT
+    [index 1] deny   ip 1.128.0.0 0.0.255.255 2.128.0.0 0.0.255.255
+      Earliest covering line: [index 0] permit ip any 2.128.0.0 0.0.255.255
+      Is different action: true
+
+Summary: 0 (non-assertion) results; 
+Status: SUCCESS
+Question: {
+  "class" : "org.batfish.question.CompareSameNameQuestionPlugin$CompareSameNameQuestion",
+  "compareGenerated" : false,
+  "excludedNamedStructTypes" : [
+    "interface",
+    "vrf"
+  ],
+  "missing" : false,
+  "nodeRegex" : "as2.*",
+  "singletons" : false,
+  "differential" : false
+}
+Results for comparing same name structure
+  IpAccessList
+    102
+        as2dept1
+        as2dist1 as2dist2
+    OUTSIDE_TO_INSIDE
+        as2border1
+        as2border2
+
+Summary: 0 (non-assertion) results; 
+##############
+# finally, sanity checking can be done in the data plane too (e.g., valley-free routing in the DC, number of hops)
+# a powerful example: multipath consistency.
+Status: SUCCESS
+Question: reachability actions=[ACCEPT], type=MULTIPATH
+
+Flow: ingress:as2core2 vrf:default 0.0.0.0->2.1.2.1 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2core2:GigabitEthernet0/0 -> as2border2:GigabitEthernet1/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.12.22.1,nhint:dynamic>_fnhip:2.12.22.1]
+    Hop 2: as2border2:GigabitEthernet2/0 -> as2core1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.12.21.2,nhint:dynamic>_fnhip:2.12.21.2]
+    ACCEPTED
+
+    Hop 1: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.12.12.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 2: as2border1:GigabitEthernet1/0 -> as2core1:GigabitEthernet0/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.12.11.2,nhint:dynamic>_fnhip:2.12.11.2]
+    ACCEPTED
+
+    Hop 1: as2core2:GigabitEthernet3/0 -> as2dist1:GigabitEthernet1/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.23.21.3,nhint:dynamic>_fnhip:2.23.21.3]
+    Hop 2: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.23.11.2,nhint:dynamic>_fnhip:2.23.11.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+    Hop 1: as2core2:GigabitEthernet2/0 -> as2dist2:GigabitEthernet0/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.23.22.3,nhint:dynamic>_fnhip:2.23.22.3]
+    Hop 2: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [OspfIntraAreaRoute<2.1.2.1/32,nhip:2.23.12.2,nhint:dynamic>_fnhip:2.23.12.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+Flow: ingress:as2dept1 vrf:default 2.0.0.16->1.0.1.254 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 2: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+    Hop 1: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 2: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 3: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 4: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 5: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 2: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 3: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 4: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 5: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 2: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+Flow: ingress:as2dist1 vrf:default 2.128.0.136->1.0.1.254 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 4: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+Flow: ingress:as2dist2 vrf:default 2.128.0.136->1.0.1.254 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 2: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 3: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 4: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+Flow: ingress:host1 vrf:default 2.128.0.0->1.0.1.254 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 6: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 6: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: host1:eth0 -> as2dept1:GigabitEthernet2/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.0.1,nhint:eth0>_fnhip:2.128.0.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+Flow: ingress:host2 vrf:default 2.128.0.0->1.0.1.254 TCP sport:0 dport:TELNET(23) packetLength:0 state:NEW tcpFlags:00000000
+  environment:BASE
+Environment{envName=env_default, testrigName=tr-base, edgeBlacklist=null, interfaceBlacklist=null, nodeBlacklist=null, bgpTables=null, routingTables=null, externalBgpAnnouncements=null}
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet0/0 -> as2core1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.11.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet0/0 -> as2core2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.22.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 6: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet0/0 -> as2dist1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.101.3,nhint:dynamic>_fnhip:2.34.101.3]
+    Hop 3: as2dist1:GigabitEthernet1/0 -> as2core2:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.21.2]
+    Hop 4: as2core2:GigabitEthernet1/0 -> as2border1:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.12.12.1]
+    Hop 5: as2border1:GigabitEthernet0/0 -> as1border1:GigabitEthernet1/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:10.12.11.1] -- [out: {INSIDE_TO_AS1}{permit ip 2.0.0.0 0.255.255.255 1.0.0.0 0.255.255.255}]
+    Hop 6: as1border1:GigabitEthernet0/0 -> (none):null_interface --- [ConnectedRoute<1.0.1.0/24,nhip:AUTO/NONE(-1l),nhint:GigabitEthernet0/0>_fnhip:null]
+    NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK
+
+    Hop 1: host2:eth0 -> as2dept1:GigabitEthernet3/0 --- [StaticRoute<0.0.0.0/0,nhip:2.128.1.1,nhint:eth0>_fnhip:2.128.1.1] -- [out: {filter::OUTPUT}{default}] -- [in: {RESTRICT_HOST_TRAFFIC_IN}{permit ip 2.128.0.0 0.0.255.255 any}]
+    Hop 2: as2dept1:GigabitEthernet1/0 -> as2dist2:GigabitEthernet2/0 --- [BgpRoute<1.0.1.0/24,nhip:2.34.201.3,nhint:dynamic>_fnhip:2.34.201.3]
+    Hop 3: as2dist2:GigabitEthernet1/0 -> as2core1:GigabitEthernet3/0 --- [BgpRoute<1.0.1.0/24,nhip:10.12.11.1,nhint:dynamic>_fnhip:2.23.12.2]
+    DENIED_IN{blocktelnet}{deny   tcp any any eq telnet}
+
+
+Summary: 0 (non-assertion) results; 
+# --> will catch hard-to-debug, bad interactions between routing and ACLs
