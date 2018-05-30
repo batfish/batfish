@@ -60,7 +60,7 @@ maven_repository(
     force = [
         'com.google.guava:guava:25.1-jre',
     ],
-		transitive_deps = [
+    transitive_deps = [
         '4073ab16ab4aceb9a217273da6442166bf51ae16:com.google.auto:auto-common:0.3',
         '35c5d43b0332b8f94d473f9fee5fb1d74b5e0056:com.google.auto.service:auto-service:1.0-rc3',
         '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
