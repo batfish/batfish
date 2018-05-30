@@ -1414,7 +1414,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else {
       aclConjunctList =
           ImmutableSet.of(
-              new PermittedByAcl(outAcl.getName(), false),
+              new PermittedByAcl(outAcl.getName(), true),
               new PermittedByAcl(securityPolicyAcl.getName(), false));
     }
 

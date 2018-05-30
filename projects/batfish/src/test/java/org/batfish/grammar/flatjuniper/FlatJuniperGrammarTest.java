@@ -663,12 +663,14 @@ public class FlatJuniperGrammarTest {
     String addrPermitted = "1.2.3.1";
     String addrDeniedByZonePolicy = "1.2.3.3";
     String addrDeniedByGlobalPolicy = "1.2.3.7";
+    String addrDeniedByFilter = "2.2.2.2";
     String addrDefaultPolicy = "1.2.3.15";
     String untrustIpAddr = "1.2.4.5";
 
     Flow flowPermitted = createFlow(addrPermitted, untrustIpAddr);
     Flow flowDeniedByZonePolicy = createFlow(addrDeniedByZonePolicy, untrustIpAddr);
     Flow flowDeniedByGlobalPolicy = createFlow(addrDeniedByGlobalPolicy, untrustIpAddr);
+    Flow flowDeniedByFilter = createFlow(addrDeniedByFilter, untrustIpAddr);
     Flow flowDefaultPolicy = createFlow(addrDefaultPolicy, untrustIpAddr);
 
     IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
@@ -685,6 +687,10 @@ public class FlatJuniperGrammarTest {
     assertThat(
         aclUntrustOut,
         rejects(flowDeniedByZonePolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow blocked by the outgoing filter is rejected */
+    assertThat(
+        aclUntrustOut,
+        rejects(flowDeniedByFilter, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
     /* Confirm flow matching global policy deny is rejected */
     assertThat(
         aclUntrustOut,
