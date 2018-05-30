@@ -13134,6 +13134,22 @@
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_accounting",
             "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
+            "        (aaa_accounting_identity",
+            "          IDENTITY:'identity'  <== mode:DEFAULT_MODE",
+            "          DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "          (aaa_accounting_method",
+            "            (aaa_accounting_method_start_stop",
+            "              START_STOP:'start-stop'  <== mode:DEFAULT_MODE",
+            "              (aaa_accounting_method_target",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  VARIABLE:'MEE'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_accounting",
+            "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
             "        (aaa_accounting_nested",
             "          NESTED:'nested'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
@@ -13522,6 +13538,18 @@
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_authorization",
             "        AUTHORIZATION:'authorization'  <== mode:DEFAULT_MODE",
+            "        (aaa_authorization_auth_proxy",
+            "          AUTH_PROXY:'auth-proxy'  <== mode:DEFAULT_MODE",
+            "          DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "          (aaa_authorization_method",
+            "            GROUP:'group'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'MEE'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_authorization",
+            "        AUTHORIZATION:'authorization'  <== mode:DEFAULT_MODE",
             "        (aaa_authorization_commands",
             "          COMMANDS:'commands'  <== mode:DEFAULT_MODE",
             "          level = DEC:'0'  <== mode:DEFAULT_MODE",
@@ -13660,6 +13688,47 @@
             "  (stanza",
             "    (s_aaa",
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_server",
+            "        SERVER:'server'  <== mode:DEFAULT_MODE",
+            "        RADIUS:'radius'  <== mode:DEFAULT_MODE",
+            "        DYNAMIC_AUTHOR:'dynamic-author'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (aaa_server_client",
+            "          CLIENT:'client'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'12.5.1.61'  <== mode:DEFAULT_MODE",
+            "          SERVER_KEY:'server-key'  <== mode:DEFAULT_MODE",
+            "          DEC:'7'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'KKKKAAA'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_client",
+            "          CLIENT:'client'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'nameMe'  <== mode:DEFAULT_MODE)",
+            "          SERVER_KEY:'server-key'  <== mode:DEFAULT_MODE",
+            "          DEC:'0'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'KKKKAAA'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_port",
+            "          PORT:'port'  <== mode:DEFAULT_MODE",
+            "          port_num = DEC:'12'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_auth_type",
+            "          AUTH_TYPE:'auth-type'  <== mode:DEFAULT_MODE",
+            "          ALL:'all'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_ignore",
+            "          IGNORE:'ignore'  <== mode:DEFAULT_MODE",
+            "          SESSION_KEY:'session-key'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_ignore",
+            "          IGNORE:'ignore'  <== mode:DEFAULT_MODE",
+            "          SERVER_KEY:'server-key'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_group",
             "        GROUP:'group'  <== mode:DEFAULT_MODE",
             "        SERVER:'server'  <== mode:DEFAULT_MODE",
@@ -13674,6 +13743,12 @@
             "          auth_port = DEC:'1812'  <== mode:DEFAULT_MODE",
             "          ACCT_PORT:'acct-port'  <== mode:DEFAULT_MODE",
             "          acct_port = DEC:'1813'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_group_server",
+            "          SERVER:'server'  <== mode:DEFAULT_MODE",
+            "          NAME:'name'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'somename'  <== mode:M_Name)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (aaa_group_no_source_interface",
             "          NO:'no'  <== mode:DEFAULT_MODE",
@@ -26705,6 +26780,12 @@
             "        ENVIRONMENT_MONITOR:'environment-monitor'  <== mode:DEFAULT_MODE",
             "        SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'temperature'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        EPM:'epm'  <== mode:DEFAULT_MODE",
+            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
@@ -53536,7 +53617,7 @@
           "class-map" : {
             "class-default" : {
               "definitionLines" : [
-                209
+                210
               ],
               "numReferrers" : 1
             }
@@ -53544,8 +53625,8 @@
           "object-group service" : {
             "SVCGRP-ICMP" : {
               "definitionLines" : [
-                176,
-                177
+                177,
+                178
               ],
               "numReferrers" : 0
             }
@@ -53553,7 +53634,6 @@
           "policy-map" : {
             "global_policy" : {
               "definitionLines" : [
-                193,
                 194,
                 195,
                 196,
@@ -53570,7 +53650,8 @@
                 207,
                 208,
                 209,
-                210
+                210,
+                211
               ],
               "numReferrers" : 0
             }
@@ -55050,17 +55131,17 @@
           "class-map" : {
             "ICMP-cmap" : {
               "policy-map class" : [
-                205
+                206
               ]
             },
             "TCP-cmap" : {
               "policy-map class" : [
-                207
+                208
               ]
             },
             "inspection_default" : {
               "policy-map class" : [
-                194
+                195
               ]
             }
           },
