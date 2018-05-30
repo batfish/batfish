@@ -244,13 +244,26 @@
           ]
         }
       },
-      "unused:class-map:bippety" : {
-        "description" : "Unused structure of type: 'class-map' with name: 'bippety'",
+      "unused:class-map:ABC" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'ABC'",
         "files" : {
           "cisco_qos" : [
             5,
             6,
-            7
+            7,
+            8,
+            9,
+            10
+          ]
+        }
+      },
+      "unused:class-map:bippety" : {
+        "description" : "Unused structure of type: 'class-map' with name: 'bippety'",
+        "files" : {
+          "cisco_qos" : [
+            11,
+            12,
+            13
           ]
         }
       },
@@ -258,8 +271,8 @@
         "description" : "Unused structure of type: 'class-map' with name: 'boop'",
         "files" : {
           "cisco_qos" : [
-            13,
-            14
+            19,
+            20
           ]
         }
       },
@@ -267,10 +280,10 @@
         "description" : "Unused structure of type: 'class-map' with name: 'boppety'",
         "files" : {
           "cisco_qos" : [
-            8,
-            9,
-            10,
-            11
+            14,
+            15,
+            16,
+            17
           ]
         }
       },
@@ -287,9 +300,9 @@
         "description" : "Unused structure of type: 'class-map' with name: 'cos_all'",
         "files" : {
           "cisco_qos" : [
-            16,
-            17,
-            18
+            22,
+            23,
+            24
           ]
         }
       },
@@ -851,8 +864,8 @@
         "description" : "Unused structure of type: 'object-group network' with name: '1.2.3.4-24'",
         "files" : {
           "cisco_qos" : [
-            26,
-            27
+            32,
+            33
           ]
         }
       },
@@ -860,9 +873,9 @@
         "description" : "Unused structure of type: 'object-group network' with name: 'dns_servers'",
         "files" : {
           "cisco_qos" : [
-            28,
-            29,
-            30
+            34,
+            35,
+            36
           ]
         }
       },
@@ -870,10 +883,10 @@
         "description" : "Unused structure of type: 'object-group network' with name: 'ntp_servers'",
         "files" : {
           "cisco_qos" : [
-            31,
-            32,
-            33,
-            34
+            37,
+            38,
+            39,
+            40
           ]
         }
       },
@@ -890,12 +903,12 @@
         "description" : "Unused structure of type: 'policy-map type inspect' with name: 'pminspect'",
         "files" : {
           "cisco_qos" : [
-            35,
-            36,
-            37,
-            38,
-            39,
-            40
+            41,
+            42,
+            43,
+            44,
+            45,
+            46
           ]
         }
       },
@@ -1326,7 +1339,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 130
+      "numResults" : 131
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1743,52 +1756,60 @@
       },
       "cisco_qos" : {
         "class-map" : {
-          "bippety" : [
+          "ABC" : [
             5,
             6,
-            7
-          ],
-          "boop" : [
-            13,
-            14
-          ],
-          "boppety" : [
+            7,
             8,
             9,
-            10,
-            11
+            10
+          ],
+          "bippety" : [
+            11,
+            12,
+            13
+          ],
+          "boop" : [
+            19,
+            20
+          ],
+          "boppety" : [
+            14,
+            15,
+            16,
+            17
           ],
           "cos_all" : [
-            16,
-            17,
-            18
+            22,
+            23,
+            24
           ]
         },
         "object-group network" : {
           "1.2.3.4-24" : [
-            26,
-            27
+            32,
+            33
           ],
           "dns_servers" : [
-            28,
-            29,
-            30
+            34,
+            35,
+            36
           ],
           "ntp_servers" : [
-            31,
-            32,
-            33,
-            34
-          ]
-        },
-        "policy-map type inspect" : {
-          "pminspect" : [
-            35,
-            36,
             37,
             38,
             39,
             40
+          ]
+        },
+        "policy-map type inspect" : {
+          "pminspect" : [
+            41,
+            42,
+            43,
+            44,
+            45,
+            46
           ]
         }
       },

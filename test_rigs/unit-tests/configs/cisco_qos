@@ -2,6 +2,12 @@
 !
 hostname cisco_qos
 !
+class-map type control subscriber match-all ABC
+ match result-type aaa-timeout
+ match authorization-status authorized
+ match method dot1x
+ match activated-service-template DEF
+ match service-template GHI
 class-map type network-qos match-any bippety
   description dum dee dum
   match cos 0,5-7
