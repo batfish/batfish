@@ -15,20 +15,20 @@ import org.batfish.datamodel.questions.Assertion;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 
-/** A base class for tabular answers */
-public class TableAnswerElement extends AnswerElement {
+/** Holds tabular answers. */
+public final class TableAnswerElement extends AnswerElement {
 
-  protected static final String PROP_EXCLUDED_ROWS = "excludedRows";
+  private static final String PROP_EXCLUDED_ROWS = "excludedRows";
 
-  protected static final String PROP_METADATA = "metadata";
+  private static final String PROP_METADATA = "metadata";
 
-  protected static final String PROP_ROWS = "rows";
+  private static final String PROP_ROWS = "rows";
 
-  List<ExcludedRows> _excludedRows;
+  private List<ExcludedRows> _excludedRows;
 
-  Rows _rows;
+  private Rows _rows;
 
-  TableMetadata _tableMetadata;
+  private TableMetadata _tableMetadata;
 
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
