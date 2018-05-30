@@ -28,11 +28,12 @@ public final class BatfishObjectMapper {
   private static final ObjectWriter PRETTY_WRITER =
       baseMapper().enable(SerializationFeature.INDENT_OUTPUT).writer(PRETTY_PRINTER);
 
-  private static final ObjectWriter VERBOSE_WRITER =
+  private static final ObjectMapper VERBOSE_MAPPER =
       baseMapper()
           .enable(SerializationFeature.INDENT_OUTPUT)
-          .setSerializationInclusion(Include.ALWAYS)
-          .writer(PRETTY_PRINTER);
+          .setSerializationInclusion(Include.ALWAYS);
+
+  private static final ObjectWriter VERBOSE_WRITER = VERBOSE_MAPPER.writer(PRETTY_PRINTER);
 
   /**
    * Returns a {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced is not
@@ -66,6 +67,11 @@ public final class BatfishObjectMapper {
    */
   public static ObjectWriter prettyWriter() {
     return PRETTY_WRITER;
+  }
+
+  /** Returns a {@link ObjectMapper} configured to Batfish JSON standards. It */
+  public static ObjectMapper verboseMapper() {
+    return VERBOSE_MAPPER;
   }
 
   /**

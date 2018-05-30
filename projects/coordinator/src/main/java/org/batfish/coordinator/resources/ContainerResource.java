@@ -61,8 +61,8 @@ public class ContainerResource {
     }
   }
 
-  /** Check is {@code container} exists and {@code apiKey} has access to it. */
-  static void checkAccessToContainer(String apiKey, String container) {
+  /** Check if {@code container} exists and {@code apiKey} has access to it. */
+  private static void checkAccessToContainer(String apiKey, String container) {
     if (!Main.getWorkMgr().checkContainerExists(container)) {
       throw new NotFoundException(String.format("Container '%s' does not exist", container));
     }

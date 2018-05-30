@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
@@ -872,8 +871,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @returns An {@link Optional} object with the latest testrig or empty if no testrigs exist
    */
-  @VisibleForTesting
-  Optional<String> getLatestTestrig(String container) {
+  public Optional<String> getLatestTestrig(String container) {
     Function<String, Instant> toTestrigTimestamp =
         t -> TestrigMetadataMgr.getTestrigCreationTimeOrMin(container, t);
     return listTestrigs(container)
@@ -894,20 +892,6 @@ public class WorkMgr extends AbstractCoordinator {
   public NodeRolesData getNodeRolesData(String container) throws IOException {
     Path nodeRolesPath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     return NodeRolesData.read(nodeRolesPath);
-  }
-
-  /**
-   * Gets the set of nodes in this container. Uses the latest testrig in the container as the
-   * reference.
-   *
-   * @param container The container
-   * @return The set of nodes
-   * @throws IOException If the contents of the topology file cannot be mapped to the topology
-   *     object
-   */
-  public Set<String> getNodes(String container) throws IOException {
-    Optional<String> testrig = getLatestTestrig(container);
-    return testrig.isPresent() ? getNodes(container, testrig.get()) : ImmutableSet.of();
   }
 
   /**

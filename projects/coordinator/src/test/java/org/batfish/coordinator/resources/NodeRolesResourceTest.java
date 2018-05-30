@@ -11,8 +11,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Date;
+import java.util.Optional;
 import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.Response;
 import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
@@ -54,19 +54,22 @@ public class NodeRolesResourceTest extends WorkMgrServiceV2TestBase {
   public void getNodeRolesWithTestrig() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initContainer(container, null);
+
+    // create a testrig with a topology file
     Path containerDir =
         Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
     Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig"));
     TestrigMetadataMgr.writeMetadata(
         new TestrigMetadata(new Date().toInstant(), "env"), container, "testrig");
-    Topology topology = new Topology("testrig1");
+    Topology topology = new Topology("testrig");
     topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
     CommonUtil.writeFile(
         Main.getWorkMgr()
-            .getdirTestrig("someContainer", "testrig")
+            .getdirTestrig(container, "testrig")
             .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
         BatfishObjectMapper.mapper().writeValueAsString(topology));
 
+    // write node roles data to in the right place
     NodeRolesData data =
         new NodeRolesData(
             null,
@@ -77,18 +80,14 @@ public class NodeRolesResourceTest extends WorkMgrServiceV2TestBase {
                     ImmutableSortedSet.of(new NodeRole("someRole", "a.*")),
                     null,
                     null)));
-    NodeRolesData.write(
-        data,
-        Main.getWorkMgr().getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
-    Response response = getNodeRolesTarget(container).request().get();
+    NodeRolesData.write(data, containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
 
-    // got OK, what we got back equalled what we wrote, and the right set nodes were included
+    // we should get OK and the expected bean
+    Response response = getNodeRolesTarget(container).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    NodeRolesData responseData = response.readEntity(new GenericType<NodeRolesData>() {});
-    assertThat(responseData, equalTo(data)); // this equality does not consider nodes
     assertThat(
-        responseData.getNodeRoleDimensions().first().getRoles().first().getNodes(),
-        equalTo(ImmutableSet.of("a1")));
+        response.readEntity(NodeRolesDataBean.class),
+        equalTo(new NodeRolesDataBean(data, Optional.of("testrig"), ImmutableSet.of("a1", "b1"))));
   }
 
   @Test
@@ -100,7 +99,9 @@ public class NodeRolesResourceTest extends WorkMgrServiceV2TestBase {
     // got OK and what we got back equalled what we wrote
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
-        response.readEntity(NodeRolesData.class).getNodeRoleDimensions(),
-        equalTo(ImmutableSet.of()));
+        response.readEntity(NodeRolesDataBean.class),
+        equalTo(
+            new NodeRolesDataBean(
+                new NodeRolesData(null, null, null), Optional.empty(), ImmutableSet.of())));
   }
 }

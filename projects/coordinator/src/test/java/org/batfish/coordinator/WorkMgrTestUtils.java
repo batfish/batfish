@@ -4,7 +4,9 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.coordinator.config.Settings;
 import org.junit.rules.TemporaryFolder;
 
-public class WorkMgrTestUtils {
+public final class WorkMgrTestUtils {
+
+  private WorkMgrTestUtils() {}
 
   public static void initWorkManager(TemporaryFolder folder) throws Exception {
     BatfishLogger logger = new BatfishLogger("debug", false);

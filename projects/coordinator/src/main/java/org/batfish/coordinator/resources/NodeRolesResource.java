@@ -1,7 +1,9 @@
 package org.batfish.coordinator.resources;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Set;
+import java.util.TreeSet;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Produces;
@@ -35,11 +37,13 @@ public class NodeRolesResource {
     _logger.infof("WMS2: getNodeRoles '%s'\n", _container);
     try {
       NodeRolesData nodeRolesData = Main.getWorkMgr().getNodeRolesData(_container);
-      Set<String> nodes = Main.getWorkMgr().getNodes(_container);
-      nodeRolesData
-          .getNodeRoleDimensions()
-          .forEach(dim -> dim.getRoles().forEach(role -> role.resetNodes(nodes)));
-      return Response.ok(nodeRolesData).build();
+      Optional<String> latestSnapshot = Main.getWorkMgr().getLatestTestrig(_container);
+      Set<String> nodes =
+          latestSnapshot.isPresent()
+              ? Main.getWorkMgr().getNodes(_container, latestSnapshot.get())
+              : new TreeSet<>();
+      NodeRolesDataBean bean = new NodeRolesDataBean(nodeRolesData, latestSnapshot, nodes);
+      return Response.ok(bean).build();
     } catch (IOException e) {
       throw new InternalServerErrorException("Node roles resource is corrupted");
     }

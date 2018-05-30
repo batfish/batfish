@@ -172,9 +172,6 @@ public class WorkMgrTest {
   public void getNodes() throws IOException {
     _manager.initContainer("container", null);
 
-    // should get an empty set if the container is empty
-    assertThat(_manager.getNodes("container"), equalTo(ImmutableSet.of()));
-
     // create a testrig and write a topology object for it
     createTestrigWithMetadata("container", "testrig1");
     Topology topology = new Topology("testrig1");
@@ -187,19 +184,6 @@ public class WorkMgrTest {
 
     // should get the nodes of the topology when we ask for it
     assertThat(_manager.getNodes("container", "testrig1"), equalTo(ImmutableSet.of("a1", "b1")));
-
-    // create another testrig and write a topology object for it
-    createTestrigWithMetadata("container", "testrig2");
-    Topology topology2 = new Topology("testrig2");
-    topology2.setNodes(ImmutableSet.of(new Node("a2"), new Node("b2")));
-    CommonUtil.writeFile(
-        _manager
-            .getdirTestrig("container", "testrig2")
-            .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
-        BatfishObjectMapper.mapper().writeValueAsString(topology2));
-
-    // should get the nodes for the later testrig if testrig is not specified
-    assertThat(_manager.getNodes("container"), equalTo(ImmutableSet.of("a2", "b2")));
   }
 
   @Test
