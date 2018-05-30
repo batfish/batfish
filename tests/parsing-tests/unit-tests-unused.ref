@@ -1280,6 +1280,22 @@
           ]
         }
       },
+      "unused:service-template:template_name" : {
+        "description" : "Unused structure of type: 'service-template' with name: 'template_name'",
+        "files" : {
+          "cisco_qos" : [
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131
+          ]
+        }
+      },
       "unused:standard community-list:COMM_LIST_NAME" : {
         "description" : "Unused structure of type: 'standard community-list' with name: 'COMM_LIST_NAME'",
         "files" : {
@@ -1339,7 +1355,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 131
+      "numResults" : 132
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1810,6 +1826,19 @@
             44,
             45,
             46
+          ]
+        },
+        "service-template" : {
+          "template_name" : [
+            123,
+            124,
+            125,
+            126,
+            127,
+            128,
+            129,
+            130,
+            131
           ]
         }
       },
