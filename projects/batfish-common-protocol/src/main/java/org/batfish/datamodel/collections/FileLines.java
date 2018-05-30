@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
@@ -22,7 +23,7 @@ public class FileLines {
   @JsonCreator
   public FileLines(
       @JsonProperty(PROP_FILENAME) String filename,
-      @JsonProperty(PROP_LINES) SortedSet<Integer> lines) {
+      @Nullable @JsonProperty(PROP_LINES) SortedSet<Integer> lines) {
     _filename = filename;
     _lines = firstNonNull(lines, ImmutableSortedSet.of());
   }
