@@ -134,7 +134,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'ICMP-cmap'",
         "files" : {
           "cisco_misc" : [
-            205
+            206
           ]
         }
       },
@@ -142,7 +142,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'TCP-cmap'",
         "files" : {
           "cisco_misc" : [
-            207
+            208
           ]
         }
       },
@@ -254,7 +254,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'inspection_default'",
         "files" : {
           "cisco_misc" : [
-            194
+            195
           ]
         }
       },
@@ -1576,17 +1576,17 @@
         "class-map" : {
           "ICMP-cmap" : {
             "policy-map class" : [
-              205
+              206
             ]
           },
           "TCP-cmap" : {
             "policy-map class" : [
-              207
+              208
             ]
           },
           "inspection_default" : {
             "policy-map class" : [
-              194
+              195
             ]
           }
         },
