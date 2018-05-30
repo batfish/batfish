@@ -3670,6 +3670,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
         CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
+    markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     // record references to defined structures
     recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     recordCommunityLists();
@@ -3682,7 +3683,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
     recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
-    recordStructure(_natPools, CiscoStructureType.NAT_POOL);
     recordPeerGroups();
     recordPeerSessions();
     recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);

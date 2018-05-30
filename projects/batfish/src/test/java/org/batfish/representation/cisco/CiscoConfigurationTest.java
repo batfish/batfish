@@ -131,7 +131,7 @@ public class CiscoConfigurationTest {
     CiscoSourceNat nat = new CiscoSourceNat();
     nat.setAclName(ACL);
     nat.setNatPool(POOL);
-    NatPool pool = new NatPool(POOL, 5);
+    NatPool pool = new NatPool(POOL);
     pool.setFirst(IP);
     pool.setLast(IP);
     _config.getNatPools().put(POOL, pool);

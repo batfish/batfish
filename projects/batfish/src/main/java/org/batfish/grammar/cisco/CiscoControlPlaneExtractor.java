@@ -1906,8 +1906,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIp_nat_pool(Ip_nat_poolContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    NatPool natPool = new NatPool(name, definitionLine);
+    NatPool natPool = new NatPool(name);
     _configuration.getNatPools().put(name, natPool);
     _currentNatPool = natPool;
     defineStructure(NAT_POOL, name, ctx);
