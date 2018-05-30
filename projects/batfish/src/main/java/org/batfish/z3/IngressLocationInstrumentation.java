@@ -26,8 +26,8 @@ import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 
 /**
- * A NOD instrumentation that tracks which of several possible IngressPoints was used to derive each
- * solution.
+ * A NOD instrumentation that tracks which of several possible {@link IngressLocation ingress
+ * locations} was used to derive each solution.
  */
 public class IngressLocationInstrumentation implements GenericStatementVisitor<Statement> {
 

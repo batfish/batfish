@@ -199,6 +199,7 @@ import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -3026,6 +3027,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String outInterface = edge.getInt1();
       String vrf =
           diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
+      Map<IngressLocation, BooleanExpr> srcIpConstraint =
+          ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
       ReachEdgeQuerySynthesizer reachQuery =
           new ReachEdgeQuerySynthesizer(
               ingressNode, vrf, edge, true, reachabilitySettings.getHeaderSpace());
@@ -3033,7 +3036,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
-      CompositeNodJob job = new CompositeNodJob(settings, commonEdgeSynthesizers, queries, tag);
+      CompositeNodJob job =
+          new CompositeNodJob(settings, commonEdgeSynthesizers, queries, srcIpConstraint, tag);
       jobs.add(job);
     }
 
@@ -3059,7 +3063,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new ReachEdgeQuerySynthesizer(
                 ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
-        CompositeNodJob job = new CompositeNodJob(settings, missingEdgeSynthesizers, queries, tag);
+        Map<IngressLocation, BooleanExpr> srcIpConstraint =
+            ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
+        CompositeNodJob job =
+            new CompositeNodJob(settings, missingEdgeSynthesizers, queries, srcIpConstraint, tag);
         jobs.add(job);
       }
     }
@@ -3579,7 +3586,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   notAcceptQuery.setNegate(true);
                   List<QuerySynthesizer> queries =
                       ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
-                  return new CompositeNodJob(settings, synthesizers, queries, tag);
+                  return new CompositeNodJob(settings, synthesizers, queries, srcIpConstraint, tag);
                 })
             .collect(Collectors.toList());
 

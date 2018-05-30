@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.config.Settings;
+import org.batfish.z3.expr.BooleanExpr;
 
 public class CompositeNodJob extends AbstractNodJob {
 
@@ -21,8 +22,9 @@ public class CompositeNodJob extends AbstractNodJob {
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
+      Map<IngressLocation, BooleanExpr> srcIpConstraints,
       String tag) {
-    super(settings, null, tag);
+    super(settings, srcIpConstraints, tag);
     _numPrograms = dataPlaneSynthesizer.size();
     if (_numPrograms != querySynthesizer.size()) {
       throw new BatfishException("mismatch between number of programs and number of queries");
