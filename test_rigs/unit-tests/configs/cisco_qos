@@ -2,7 +2,7 @@
 !
 hostname cisco_qos
 !
-class-map type control subscriber match-all ABC
+class-map type control subscriber match-none ABC
  match result-type aaa-timeout
  match authorization-status authorized
  match method dot1x
@@ -120,6 +120,15 @@ policy-map type network-qos default-fleep-policy
     congestion-control tail-drop
     no congestion-control random-detect
     mtu 1500
+service-template template_name
+ access-group ACL_NAME
+ description Service template for Fail open mode
+ inactivity-timer 3600 
+ linksec policy must-secure
+ linksec policy should-secure
+ vlan 313
+ voice vlan
+ tag USER_DEFINED_TAG
 table-map tablemap1
  default copy
  from 10,12 to 14

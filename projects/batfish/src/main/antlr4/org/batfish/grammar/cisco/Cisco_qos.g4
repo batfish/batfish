@@ -728,6 +728,7 @@ s_class_map
    (
       MATCH_ALL
       | MATCH_ANY
+      | MATCH_NONE
    )? name = variable NEWLINE
    (
       DESCRIPTION ~NEWLINE+ NEWLINE
@@ -843,7 +844,7 @@ st_description
 
 st_inactivity_timer
 :
-    INACTIVITY_TIMER DEC
+    INACTIVITY_TIMER DEC NEWLINE
 ;
 
 st_linksec

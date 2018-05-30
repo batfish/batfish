@@ -6613,6 +6613,11 @@ MATCH_ANY
    'match-any'
 ;
 
+MATCH_NONE
+:
+   'match-none'
+;
+
 MATCHES_ANY
 :
    'matches-any'
