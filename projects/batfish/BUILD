@@ -36,7 +36,7 @@ java_library(
         "//projects/lib/bdd",
         "//projects/lib/z3",
         "//projects/question",
-        "@antlr4//:compile",
+        "@antlr4_runtime//:compile",
         "@auto_service//:compile",
         "@commons_collections4//:compile",
         "@commons_configuration2//:compile",
