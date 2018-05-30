@@ -4452,13 +4452,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       boolean specialize) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
 
-    /* TODO preprocess IpSpaceAssignment
-     * Convert Locations to IngressLocation, aggregate by vrf.
-     */
-
+    // convert Locations to IngressLocations
     Map<IngressLocation, IpSpace> ipSpacePerLocation = new HashMap<>();
     LocationToIngressLocation toIngressLocation = new LocationToIngressLocation(configurations);
-
     ipSpaceAssignment
         .getEntries()
         .forEach(
