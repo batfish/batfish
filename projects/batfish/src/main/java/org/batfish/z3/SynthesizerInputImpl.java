@@ -259,7 +259,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             _namedIpSpaces,
             Entry::getKey,
             namedIpSpacesEntry ->
-                new IpSpaceSpecializer(_specializationIpSpace, namedIpSpacesEntry.getValue()));
+                new IpSpaceIpSpaceSpecializer(
+                    _specializationIpSpace, namedIpSpacesEntry.getValue()));
     _ipAccessListSpecializers =
         builder._specialize
             ? toImmutableMap(
