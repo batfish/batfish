@@ -1,6 +1,7 @@
 package org.batfish.symbolic.bdd;
 
 import java.util.List;
+import java.util.Objects;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -34,6 +35,7 @@ public class SatAssignment {
   private String _srcRouter;
   private String _dstRouter;
   private RoutingProtocol _routingProtocol;
+  private Ip _nextHopIp;
 
   public IpProtocol getIpProtocol() {
     return _ipProtocol;
@@ -179,6 +181,14 @@ public class SatAssignment {
     this._routingProtocol = protocol;
   }
 
+  public Ip getNextHopIp() {
+    return _nextHopIp;
+  }
+
+  public void setNextHopIp(Ip x) {
+    this._nextHopIp = x;
+  }
+
   public Flow toFlow() {
     Flow.Builder builder = Flow.builder();
     builder.setTag("AI");
@@ -199,5 +209,60 @@ public class SatAssignment {
     builder.setTcpFlagsRst(getTcpFlags().getRst() ? 1 : 0);
     builder.setTcpFlagsUrg(getTcpFlags().getUrg() ? 1 : 0);
     return builder.build();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    SatAssignment that = (SatAssignment) o;
+    return _dstPort == that._dstPort
+        && _srcPort == that._srcPort
+        && _icmpCode == that._icmpCode
+        && _icmpType == that._icmpType
+        && _prefixLen == that._prefixLen
+        && _adminDist == that._adminDist
+        && _localPref == that._localPref
+        && _med == that._med
+        && _metric == that._metric
+        && _ipProtocol == that._ipProtocol
+        && Objects.equals(_dstIp, that._dstIp)
+        && Objects.equals(_srcIp, that._srcIp)
+        && _ospfMetric == that._ospfMetric
+        && Objects.equals(_communities, that._communities)
+        && Objects.equals(_tcpFlags, that._tcpFlags)
+        && Objects.equals(_srcRouter, that._srcRouter)
+        && Objects.equals(_dstRouter, that._dstRouter)
+        && _routingProtocol == that._routingProtocol
+        && Objects.equals(_nextHopIp, that._nextHopIp);
+  }
+
+  @Override
+  public int hashCode() {
+
+    return Objects.hash(
+        _ipProtocol,
+        _dstIp,
+        _srcIp,
+        _dstPort,
+        _srcPort,
+        _icmpCode,
+        _icmpType,
+        _prefixLen,
+        _adminDist,
+        _localPref,
+        _med,
+        _metric,
+        _ospfMetric,
+        _communities,
+        _tcpFlags,
+        _srcRouter,
+        _dstRouter,
+        _routingProtocol,
+        _nextHopIp);
   }
 }

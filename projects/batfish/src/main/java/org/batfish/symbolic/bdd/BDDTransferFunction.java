@@ -9,7 +9,7 @@ public class BDDTransferFunction {
 
   private BDD _filter;
 
-  BDDTransferFunction(BDDRoute r, BDD b) {
+  public BDDTransferFunction(BDDRoute r, BDD b) {
     _route = r;
     _filter = b;
   }

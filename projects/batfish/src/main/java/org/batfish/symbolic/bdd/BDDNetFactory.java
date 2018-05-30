@@ -2,11 +2,13 @@ package org.batfish.symbolic.bdd;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.CommunityVar.Type;
@@ -29,17 +31,23 @@ public class BDDNetFactory {
 
   private List<RoutingProtocol> _allProtos;
 
-  private List<OspfType> _allMetricTypes;
-
   private BDDPairing _pairing;
 
   private BDDNetConfig _config;
+
+  private List<OspfType> _allMetricTypes;
 
   private List<CommunityVar> _allCommunities;
 
   private List<String> _allRouters;
 
   private List<Integer> _allLocalPrefs;
+
+  private List<Long> _allMeds;
+
+  private List<Long> _allAds;
+
+  private List<Ip> _allIps;
 
   private BDDRoute _routeVariables;
 
@@ -80,6 +88,8 @@ public class BDDNetFactory {
   private int _numBitsRouters;
 
   private int _numBitsRRClient;
+
+  private int _numBitsNextHopIp;
 
   private int _indexIpProto;
 
@@ -137,11 +147,18 @@ public class BDDNetFactory {
 
   private int _indexRRClientTemp;
 
+  private int _indexNextHopIp;
+
+  private int _indexNextHopIpTemp;
+
   public BDDNetFactory(Graph g, BDDNetConfig config) {
     this(
         new ArrayList<>(g.getRouters()),
         new ArrayList<>(g.getAllCommunities()),
         new ArrayList<>(BDDUtils.findAllLocalPrefs(g)),
+        new ArrayList<>(BDDUtils.findAllMeds(g)),
+        new ArrayList<>(BDDUtils.findAllAdminDistances(g)),
+        new ArrayList<>(BDDUtils.findAllNextHopIps(g)),
         config);
   }
 
@@ -149,10 +166,30 @@ public class BDDNetFactory {
       List<String> routers,
       List<CommunityVar> comms,
       List<Integer> localPrefs,
+      List<Long> meds,
+      List<Long> adminDistances,
+      List<Ip> ips,
       BDDNetConfig config) {
 
     _allRouters = routers;
+    _allAds = adminDistances;
+
+    _allIps = ips;
+    Ip ip = new Ip(0);
+    if (!_allIps.contains(ip)) {
+      _allIps.add(ip);
+    }
+
     _allLocalPrefs = localPrefs;
+    if (!_allLocalPrefs.contains(100)) {
+      _allLocalPrefs.add(100);
+    }
+
+    _allMeds = meds;
+    if (!_allMeds.contains(80L)) {
+      _allMeds.add(80L);
+    }
+
     _allCommunities = new ArrayList<>();
     for (CommunityVar cvar : comms) {
       if (cvar.getType() != Type.REGEX) {
@@ -169,10 +206,17 @@ public class BDDNetFactory {
     _allProtos = new ArrayList<>();
     _allProtos.add(RoutingProtocol.CONNECTED);
     _allProtos.add(RoutingProtocol.STATIC);
-    _allProtos.add(RoutingProtocol.OSPF);
     _allProtos.add(RoutingProtocol.BGP);
+    _allProtos.add(RoutingProtocol.OSPF);
     _allProtos.add(RoutingProtocol.IBGP);
     _allProtos.add(RoutingProtocol.AGGREGATE);
+
+    Collections.sort(_allAds);
+    Collections.sort(_allMeds);
+    Collections.sort(_allLocalPrefs);
+    Collections.sort(_allRouters);
+    // invert local preference order so lower is better
+    Collections.reverse(_allLocalPrefs);
 
     int numNodes;
     int cacheSize;
@@ -219,18 +263,20 @@ public class BDDNetFactory {
     _numBitsIcmpCode = 8;
     _numBitsIcmpType = 8;
     _numBitsTcpFlags = 8;
-    _numBitsRRClient = 1;
 
     // BDD Route routeVariables
     _numBitsPrefixLen = 6;
-    _numBitsAdminDist = (config.getKeepAd() ? 32 : 0);
+    _numBitsAdminDist = (config.getKeepAd() ? BDDUtils.numBits(_allAds.size()) : 0);
     _numBitsCommunities = (config.getKeepCommunities() ? _allCommunities.size() : 0);
     _numBitsLocalPref = (config.getKeepLp() ? BDDUtils.numBits(_allLocalPrefs.size()) : 0);
-    _numBitsMed = (config.getKeepMed() ? 32 : 0);
+    _numBitsMed = (config.getKeepMed() ? BDDUtils.numBits(_allMeds.size()) : 0);
     _numBitsMetric = (config.getKeepMetric() ? 32 : 0);
-    _numBitsOspfMetric = (config.getKeepOspfMetric() ? 2 : 0);
+    _numBitsOspfMetric =
+        (config.getKeepOspfMetric() ? BDDUtils.numBits(_allMetricTypes.size()) : 0);
     _numBitsRoutingProtocol = (config.getKeepProtocol() ? BDDUtils.numBits(_allProtos.size()) : 0);
     _numBitsRouters = (config.getKeepRouters() ? BDDUtils.numBits(_allRouters.size()) : 0);
+    _numBitsRRClient = 1;
+    _numBitsNextHopIp = (config.getKeepNextHopIp() ? BDDUtils.numBits(_allIps.size()) : 0);
 
     int numNeeded =
         _numBitsIpProto
@@ -250,7 +296,8 @@ public class BDDNetFactory {
             + 2 * _numBitsOspfMetric
             + 2 * _numBitsRoutingProtocol
             + 3 * _numBitsRouters
-            + 2 * _numBitsRRClient;
+            + 2 * _numBitsRRClient
+            + 2 * _numBitsNextHopIp;
 
     _factory.setVarNum(numNeeded);
 
@@ -265,17 +312,23 @@ public class BDDNetFactory {
     _indexIcmpCode = _indexSrcPort + _numBitsSrcPort;
     _indexIcmpType = _indexIcmpCode + _numBitsIcmpCode;
     _indexTcpFlags = _indexIcmpType + _numBitsIcmpType;
-    _indexMetric = _indexTcpFlags + _numBitsTcpFlags;
+
+    _indexNextHopIp = _indexTcpFlags + _numBitsTcpFlags;
+    _indexNextHopIpTemp = _indexNextHopIp + _numBitsNextHopIp;
+
+    // order decision variables by highest priority
+    _indexAdminDist = _indexNextHopIpTemp + _numBitsNextHopIp;
+    _indexAdminDistTemp = _indexAdminDist + _numBitsAdminDist;
+    _indexLocalPref = _indexAdminDistTemp + _numBitsAdminDist;
+    _indexLocalPrefTemp = _indexLocalPref + _numBitsLocalPref;
+    _indexMetric = _indexLocalPrefTemp + _numBitsLocalPref;
     _indexMetricTemp = _indexMetric + _numBitsMetric;
     _indexOspfMetric = _indexMetricTemp + _numBitsMetric;
     _indexOspfMetricTemp = _indexOspfMetric + _numBitsOspfMetric;
     _indexMed = _indexOspfMetricTemp + _numBitsOspfMetric;
     _indexMedTemp = _indexMed + _numBitsMed;
-    _indexAdminDist = _indexMedTemp + _numBitsMed;
-    _indexAdminDistTemp = _indexAdminDist + _numBitsAdminDist;
-    _indexLocalPref = _indexAdminDistTemp + _numBitsAdminDist;
-    _indexLocalPrefTemp = _indexLocalPref + _numBitsLocalPref;
-    _indexCommunities = _indexLocalPrefTemp + _numBitsLocalPref;
+
+    _indexCommunities = _indexMedTemp + _numBitsMed;
     _indexCommunitiesTemp = _indexCommunities + _numBitsCommunities;
     _indexDstRouter = _indexCommunitiesTemp + _numBitsCommunities;
     _indexSrcRouter = _indexDstRouter + _numBitsRouters;
@@ -411,6 +464,10 @@ public class BDDNetFactory {
     return _numBitsRRClient;
   }
 
+  public int getNumBitsNextHopIp() {
+    return _numBitsNextHopIp;
+  }
+
   public int getIndexIpProto() {
     return _indexIpProto;
   }
@@ -523,6 +580,14 @@ public class BDDNetFactory {
     return _indexRRClientTemp;
   }
 
+  public int getIndexNextHopIp() {
+    return _indexNextHopIp;
+  }
+
+  public int getIndexNextHopIpTemp() {
+    return _indexNextHopIpTemp;
+  }
+
   public BDDPairing getPairing() {
     return _pairing;
   }
@@ -541,5 +606,17 @@ public class BDDNetFactory {
 
   public List<Integer> getAllLocalPrefs() {
     return _allLocalPrefs;
+  }
+
+  public List<Long> getAllMeds() {
+    return _allMeds;
+  }
+
+  public List<Long> getAllAdminDistances() {
+    return _allAds;
+  }
+
+  public List<Ip> getAllIps() {
+    return _allIps;
   }
 }

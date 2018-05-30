@@ -84,13 +84,15 @@ class TransferBuilder {
 
   private BDDNetFactory _netFactory;
 
+  private Graph _graph;
+
   private Configuration _conf;
 
   private GraphEdge _edge;
 
   private EdgeType _edgeType;
 
-  private Graph _graph;
+  private RoutingProtocol _protocol;
 
   private PolicyQuotient _policyQuotient;
 
@@ -104,6 +106,7 @@ class TransferBuilder {
       Configuration conf,
       @Nullable GraphEdge edge,
       EdgeType edgeType,
+      RoutingProtocol proto,
       @Nullable List<Statement> statements,
       PolicyQuotient pq) {
     _network = network;
@@ -112,6 +115,7 @@ class TransferBuilder {
     _conf = conf;
     _edge = edge;
     _edgeType = edgeType;
+    _protocol = proto;
     _policyQuotient = pq;
     _statements = statements;
   }
@@ -558,13 +562,10 @@ class TransferBuilder {
           LongExpr ie = sm.getMetric();
           BDDRoute route = result.getReturnValue().getRoute();
           BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
-          BDD updateMed = isBGP.and(result.getReturnAssignedValue());
           BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
           BDDInteger newValue = applyLongExprModification(p.indent(), route.getMetric(), ie);
-          BDDInteger med = ite(updateMed, route.getMed(), newValue);
           BDDInteger met = ite(updateMet, route.getMetric(), newValue);
           route.setMetric(met);
-          route.setMed(med);
           p = p.setData(route);
         }
 
@@ -764,15 +765,14 @@ class TransferBuilder {
 
   private BDDRoute ite(BDD guard, BDDRoute r1, BDDRoute r2) {
     BDDRoute ret = _netFactory.createRoute();
-    BDDInteger x;
-    BDDInteger y;
 
     // Only modify fields that can actually change
 
     if (_netFactory.getConfig().getKeepAd()) {
-      x = r1.getAdminDist();
-      y = r2.getAdminDist();
-      ret.getAdminDist().setValue(ite(guard, x, y));
+      BDDFiniteDomain<Long> x = r1.getAdminDist();
+      BDDFiniteDomain<Long> y = r2.getAdminDist();
+      BDDFiniteDomain<Long> z = ite(guard, x, y);
+      ret.getAdminDist().setInteger(z.getInteger());
     }
 
     if (_netFactory.getConfig().getKeepLp()) {
@@ -782,15 +782,16 @@ class TransferBuilder {
     }
 
     if (_netFactory.getConfig().getKeepMetric()) {
-      x = r1.getMetric();
-      y = r2.getMetric();
+      BDDInteger x = r1.getMetric();
+      BDDInteger y = r2.getMetric();
       ret.getMetric().setValue(ite(guard, x, y));
     }
 
     if (_netFactory.getConfig().getKeepMed()) {
-      x = r1.getMed();
-      y = r2.getMed();
-      ret.getMed().setValue(ite(guard, x, y));
+      BDDFiniteDomain<Long> x = r1.getMed();
+      BDDFiniteDomain<Long> y = r2.getMed();
+      BDDFiniteDomain<Long> z = ite(guard, x, y);
+      ret.getMed().setInteger(z.getInteger());
     }
 
     if (_netFactory.getConfig().getKeepCommunities()) {
@@ -997,6 +998,7 @@ class TransferBuilder {
    */
   private void addBatfishImplicitPolicy(TransferResult<BDDTransferFunction, BDD> result) {
     BDDRoute route = result.getReturnValue().getRoute();
+
     String router = _edge.getRouter();
     String neighbor = _edge.getPeer();
     Set<String> clients = _graph.getRouteReflectorClients().get(router);
@@ -1009,7 +1011,7 @@ class TransferBuilder {
         fromClient = true;
       }
       BDD client = mkBDD(fromClient);
-      result.getReturnValue().getRoute().setFromRRClient(client);
+      route.setFromRRClient(client);
     }
 
     // If learned in the Ibgp protocol, then export should allow when either
@@ -1038,8 +1040,13 @@ class TransferBuilder {
     _commDeps = _graph.getCommunityDependencies();
     BDDRoute o = _netFactory.createRoute();
     // addCommunityAssumptions(o);
+
+    // We need a policy no matter what when iBGP or OSPF import (to update cost)
+    boolean needPolicyWhenNull =
+        _edge.isAbstract() || (_protocol == RoutingProtocol.OSPF && _edgeType == EdgeType.IMPORT);
+
     TransferResult<BDDTransferFunction, BDD> result = null;
-    if (_statements == null && _edge.isAbstract()) {
+    if (_statements == null && needPolicyWhenNull) {
       BDDTransferFunction t = new BDDTransferFunction(o, _netFactory.one());
       result = new TransferResult<>();
       result =
@@ -1059,6 +1066,10 @@ class TransferBuilder {
     if (_edge != null) {
       addBatfishImplicitPolicy(result);
     }
+
+    // System.out.println("RESULT FOR: " + _edge + "," + (_edgeType == EdgeType.IMPORT));
+    // System.out.println(BDDUtils.dot(_netFactory, result.getReturnValue().getFilter()));
+
     return result;
   }
 }

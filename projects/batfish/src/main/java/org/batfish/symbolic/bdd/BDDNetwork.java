@@ -15,6 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -105,6 +106,7 @@ public class BDDNetwork {
       Configuration conf,
       @Nullable GraphEdge ge,
       EdgeType et,
+      RoutingProtocol proto,
       @Nullable RoutingPolicy routingPolicy) {
     Set<Prefix> networks = new HashSet<>();
     if (_ignoreNetworks) {
@@ -112,7 +114,7 @@ public class BDDNetwork {
     }
     List<Statement> statements = (routingPolicy == null ? null : routingPolicy.getStatements());
     TransferBuilder t =
-        new TransferBuilder(this, _graph, conf, ge, et, statements, _policyQuotient);
+        new TransferBuilder(this, _graph, conf, ge, et, proto, statements, _policyQuotient);
     TransferResult<BDDTransferFunction, BDD> result = t.compute(networks);
     if (result == null) {
       return null;
@@ -139,7 +141,8 @@ public class BDDNetwork {
         for (GeneratedRoute generatedRoute : vrf.getGeneratedRoutes()) {
           String policyName = generatedRoute.getGenerationPolicy();
           RoutingPolicy pol = conf.getRoutingPolicies().get(policyName);
-          BDDTransferFunction t = computeBDD(conf, null, EdgeType.IMPORT, pol);
+          BDDTransferFunction t =
+              computeBDD(conf, null, EdgeType.IMPORT, RoutingProtocol.AGGREGATE, pol);
           _generatedRoutes.put(router, policyName, t);
         }
       }
@@ -149,19 +152,23 @@ public class BDDNetwork {
 
         // Import BGP policy
         RoutingPolicy importBgp = _graph.findImportRoutingPolicy(router, Protocol.BGP, ge);
-        _importBgpPolicies.put(ge, computeBDD(conf, ge, EdgeType.IMPORT, importBgp));
+        _importBgpPolicies.put(
+            ge, computeBDD(conf, ge, EdgeType.IMPORT, RoutingProtocol.BGP, importBgp));
 
         // Export BGP policy
         RoutingPolicy exportBgp = _graph.findExportRoutingPolicy(router, Protocol.BGP, ge);
-        _exportBgpPolicies.put(ge, computeBDD(conf, ge, EdgeType.EXPORT, exportBgp));
+        _exportBgpPolicies.put(
+            ge, computeBDD(conf, ge, EdgeType.EXPORT, RoutingProtocol.BGP, exportBgp));
 
         // Import OSPF policy
         RoutingPolicy importOspf = _graph.findImportRoutingPolicy(router, Protocol.OSPF, ge);
-        _importOspfPolicies.put(ge, computeBDD(conf, ge, EdgeType.IMPORT, importOspf));
+        _importOspfPolicies.put(
+            ge, computeBDD(conf, ge, EdgeType.IMPORT, RoutingProtocol.OSPF, importOspf));
 
         // Export OSPF policy
         RoutingPolicy exportOspf = _graph.findExportRoutingPolicy(router, Protocol.OSPF, ge);
-        _exportOspfPolicies.put(ge, computeBDD(conf, ge, EdgeType.EXPORT, exportOspf));
+        _exportOspfPolicies.put(
+            ge, computeBDD(conf, ge, EdgeType.EXPORT, RoutingProtocol.OSPF, exportOspf));
 
         IpAccessList in = ge.getStart().getIncomingFilter();
         IpAccessList out = ge.getStart().getOutgoingFilter();

@@ -1,24 +1,37 @@
 package org.batfish.symbolic.bdd;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LongExpr;
+import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
+import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.symbolic.AstVisitor;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.Graph;
@@ -43,6 +56,71 @@ public class BDDUtils {
         },
         expr -> {});
     return prefs;
+  }
+
+  public static Set<Long> findAllSetMetrics(Graph g) {
+    Set<Long> meds = new HashSet<>();
+    AstVisitor v = new AstVisitor();
+    v.visit(
+        g.getConfigurations().values(),
+        stmt -> {
+          if (stmt instanceof SetMetric) {
+            SetMetric sm = (SetMetric) stmt;
+            LongExpr le = sm.getMetric();
+            if (le instanceof LiteralLong) {
+              LiteralLong ll = (LiteralLong) le;
+              meds.add(ll.getValue());
+            }
+          }
+        },
+        expr -> {});
+    return meds;
+  }
+
+  public static Set<Long> findAllMeds(Graph g) {
+    return findAllSetMetrics(g);
+  }
+
+  public static Set<Long> findAllAdminDistances(Graph g) {
+    Set<Long> ads = findAllSetMetrics(g);
+    for (Configuration conf : g.getConfigurations().values()) {
+      ConfigurationFormat format = conf.getConfigurationFormat();
+      ads.add((long) RoutingProtocol.CONNECTED.getDefaultAdministrativeCost(format));
+      ads.add((long) RoutingProtocol.STATIC.getDefaultAdministrativeCost(format));
+      ads.add((long) RoutingProtocol.OSPF.getDefaultAdministrativeCost(format));
+      ads.add((long) RoutingProtocol.BGP.getDefaultAdministrativeCost(format));
+      ads.add((long) RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
+      for (Vrf vrf : conf.getVrfs().values()) {
+        for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {
+          ads.add((long) gr.getAdministrativeCost());
+        }
+      }
+    }
+    return ads;
+  }
+
+  public static Set<Ip> findAllNextHopIps(Graph g) {
+    Set<Ip> ips = new HashSet<>();
+    AstVisitor v = new AstVisitor();
+    v.visit(
+        g.getConfigurations().values(),
+        stmt -> {
+          if (stmt instanceof SetNextHop) {
+            SetNextHop s = (SetNextHop) stmt;
+            NextHopExpr e = s.getExpr();
+            if (e instanceof IpNextHop) {
+              IpNextHop x = (IpNextHop) e;
+              ips.addAll(x.getIps());
+            }
+          }
+        },
+        expr -> {});
+    for (Configuration conf : g.getConfigurations().values()) {
+      for (Interface iface : conf.getInterfaces().values()) {
+        ips.add(iface.getAddress().getIp());
+      }
+    }
+    return ips;
   }
 
   public static int numBits(int size) {
@@ -157,17 +235,51 @@ public class BDDUtils {
    * Returns many satisfying assignments (examples) for the given BDD.
    * Specifically, it returns one assignment per path through the BDD
    * to the "true" terminal node. If there are "don't care" bits, it
-   * will currently set them to false for each example.
+   * will currently set them to false for each example, unless the
+   * expand flag is true.
    */
-  public static List<SatAssignment> allSat(BDDNetFactory netFactory, BDD x) {
+  public static List<SatAssignment> allSat(BDDNetFactory netFactory, BDD x, boolean expandPrefix) {
     List<SatAssignment> entries = new ArrayList<>();
     @SuppressWarnings("unchecked")
     List<byte[]> assignments = (List<byte[]>) x.allsat();
     for (byte[] variables : assignments) {
-      SatAssignment entry = sat(netFactory, variables);
-      entries.add(entry);
+      List<byte[]> concreteAssignments = new ArrayList<>();
+
+      if (expandPrefix) {
+        List<Integer> dontCare = new ArrayList<>();
+        int start = netFactory.getIndexDstIp();
+        int end = start + netFactory.getNumBitsDstIp();
+        for (int i = start; i < end; i++) {
+          byte b = variables[i];
+          if (b == -1) {
+            dontCare.add(i);
+          }
+        }
+        expand(dontCare, 0, variables, concreteAssignments);
+      } else {
+        concreteAssignments.add(variables);
+      }
+
+      for (byte[] concreteAssignment : concreteAssignments) {
+        SatAssignment entry = sat(netFactory, concreteAssignment);
+        entries.add(entry);
+      }
     }
     return entries;
+  }
+
+  private static void expand(List<Integer> dontCareBits, int i, byte[] input, List<byte[]> output) {
+    if (i >= dontCareBits.size()) {
+      output.add(input);
+      return;
+    }
+    int idx = dontCareBits.get(i);
+    byte[] newInput1 = Arrays.copyOf(input, input.length);
+    byte[] newInput2 = Arrays.copyOf(input, input.length);
+    newInput1[idx] = 0;
+    newInput2[idx] = 1;
+    expand(dontCareBits, i + 1, newInput1, output);
+    expand(dontCareBits, i + 1, newInput2, output);
   }
 
   /*
@@ -177,7 +289,7 @@ public class BDDUtils {
    */
   @Nullable
   public static SatAssignment satOne(BDDNetFactory netFactory, BDD x) {
-    List<SatAssignment> assigments = allSat(netFactory, x.satOne());
+    List<SatAssignment> assigments = allSat(netFactory, x.satOne(), false);
     if (assigments.isEmpty()) {
       return null;
     }
@@ -209,6 +321,7 @@ public class BDDUtils {
     int med = 0;
     int metric = 0;
     int ospfMetric = 0;
+    int nextHop = 0;
     List<CommunityVar> cvars = new ArrayList<>();
     TcpFlags.Builder tcpFlags = TcpFlags.builder();
     for (int i = 0; i < variables.length; i++) {
@@ -241,6 +354,9 @@ public class BDDUtils {
             && i < nf.getIndexCommunities() + nf.getNumBitsCommunities()) {
           int j = i - nf.getIndexCommunities();
           cvars.add(nf.getAllCommunities().get(j));
+        } else if (i >= nf.getIndexNextHopIp()
+            && i < nf.getIndexNextHopIp() + nf.getNumBitsNextHopIp()) {
+          nextHop += byIndex(nf.getIndexNextHopIp(), nf.getNumBitsNextHopIp(), i);
         } else if (i >= nf.getIndexDstIp() && i < nf.getIndexDstIp() + nf.getNumBitsDstIp()) {
           dstIp += byIndexL(nf.getIndexDstIp(), nf.getNumBitsDstIp(), i);
         } else if (i >= nf.getIndexSrcIp() && i < nf.getIndexSrcIp() + nf.getNumBitsSrcIp()) {
@@ -311,14 +427,84 @@ public class BDDUtils {
     assignment.setSrcRouter(nf.getAllRouters().isEmpty() ? null : nf.getRouter(srcRouter));
     assignment.setRoutingProtocol(nf.getAllProtos().get(proto));
     assignment.setPrefixLen(prefixLen);
-    assignment.setAdminDist(adminDist);
-    assignment.setLocalPref(
-        nf.getAllLocalPrefs().isEmpty() ? 100 : nf.getAllLocalPrefs().get(localPref));
-    assignment.setMed(med);
+    assignment.setAdminDist((nf.getAllAdminDistances().get(adminDist)).intValue());
+    assignment.setLocalPref(nf.getAllLocalPrefs().get(localPref));
+    assignment.setMed((nf.getAllMeds().get(med)).intValue());
     assignment.setMetric(metric);
     assignment.setOspfMetric(OspfType.values()[ospfMetric]);
     assignment.setCommunities(cvars);
+    assignment.setNextHopIp(nf.getAllIps().get(nextHop));
     return assignment;
+  }
+
+  // TODO: this is very inefficient without access to the BDD library
+  public static List<SatAssignment> bestRoutes(BDDNetFactory nf, BDD input) {
+    Set<BDD> processed = new HashSet<>();
+    List<SatAssignment> result = new ArrayList<>();
+    bestRoutesAux(nf, input, 0, 0, 0, 0, 0, processed, result);
+    return result;
+  }
+
+  private static void bestRoutesAux(
+      BDDNetFactory nf,
+      BDD x,
+      int adminDist,
+      int localPref,
+      int med,
+      int metric,
+      int ospfMetric,
+      Set<BDD> processed,
+      List<SatAssignment> result) {
+
+    if (x.isZero()) {
+      return;
+    }
+
+    int var = x.var();
+    boolean beforeDecisionBits = (var < nf.getIndexAdminDist());
+    boolean afterDecisionBits = (var > nf.getIndexOspfMetric() + nf.getNumBitsOspfMetric());
+    if (x.isOne() || afterDecisionBits) {
+      SatAssignment assignment = new SatAssignment();
+      assignment.setAdminDist((nf.getAllAdminDistances().get(adminDist)).intValue());
+      assignment.setLocalPref(nf.getAllLocalPrefs().get(localPref));
+      assignment.setMetric(metric);
+      assignment.setMed((nf.getAllMeds().get(med)).intValue());
+      assignment.setOspfMetric(OspfType.values()[ospfMetric]);
+      result.add(assignment);
+      return;
+    }
+
+    if (processed.contains(x)) {
+      return;
+    }
+
+    BDD low = x.low();
+    bestRoutesAux(nf, low, adminDist, localPref, med, metric, ospfMetric, processed, result);
+    if (low.isZero() || beforeDecisionBits) {
+      BDD high = x.high();
+      if (!beforeDecisionBits) {
+        if (var >= nf.getIndexAdminDist()
+            && var < nf.getIndexAdminDist() + nf.getNumBitsAdminDist()) {
+          adminDist += byIndex(nf.getIndexAdminDist(), nf.getNumBitsAdminDist(), var);
+        } else if (var >= nf.getIndexLocalPref()
+            && var < nf.getIndexLocalPref() + nf.getNumBitsLocalPref()) {
+          localPref += byIndex(nf.getIndexLocalPref(), nf.getNumBitsLocalPref(), var);
+        } else if (var >= nf.getIndexMed() && var < nf.getIndexMed() + nf.getNumBitsMed()) {
+          med += byIndex(nf.getIndexMed(), nf.getNumBitsMed(), var);
+        } else if (var >= nf.getIndexMetric()
+            && var < nf.getIndexMetric() + nf.getNumBitsMetric()) {
+          metric += byIndex(nf.getIndexMetric(), nf.getNumBitsMetric(), var);
+        } else if (var >= nf.getIndexOspfMetric()
+            && var < nf.getIndexOspfMetric() + nf.getNumBitsOspfMetric()) {
+          ospfMetric += byIndex(nf.getIndexOspfMetric(), nf.getNumBitsOspfMetric(), var);
+        }
+      }
+      bestRoutesAux(nf, high, adminDist, localPref, med, metric, ospfMetric, processed, result);
+    }
+
+    if (beforeDecisionBits) {
+      processed.add(x);
+    }
   }
 
   public static BDD flowToBdd(BDDNetFactory factory, Flow flow) {

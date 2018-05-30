@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -13,7 +14,7 @@ public interface IAbstractDomain<T> {
 
   T bot();
 
-  T value(String router, RoutingProtocol proto, @Nullable Set<Prefix> prefixes);
+  T value(Configuration conf, RoutingProtocol proto, @Nullable Set<Prefix> prefixes);
 
   T transform(T input, EdgeTransformer f);
 
@@ -21,7 +22,7 @@ public interface IAbstractDomain<T> {
 
   T selectBest(T x);
 
-  T aggregate(String router, List<AggregateTransformer> aggregates, T x);
+  T aggregate(Configuration conf, List<AggregateTransformer> aggregates, T x);
 
   List<RibEntry> toRoutes(AbstractRib<T> value);
 

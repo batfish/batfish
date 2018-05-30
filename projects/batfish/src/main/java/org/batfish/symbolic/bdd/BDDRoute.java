@@ -43,9 +43,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private Map<CommunityVar, Integer> _communityIndexOffset;
 
-  private BDDInteger _adminDist;
+  private BDDFiniteDomain<Long> _adminDist;
 
-  private BDDInteger _adminDistTemp;
+  private BDDFiniteDomain<Long> _adminDistTemp;
 
   private SortedMap<CommunityVar, BDD> _communities;
 
@@ -55,9 +55,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private BDDFiniteDomain<Integer> _localPrefTemp;
 
-  private BDDInteger _med;
+  private BDDFiniteDomain<Long> _med;
 
-  private BDDInteger _medTemp;
+  private BDDFiniteDomain<Long> _medTemp;
 
   private BDDInteger _metric;
 
@@ -84,6 +84,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private BDD _fromRRClient;
 
   private BDD _fromRRClientTemp;
+
+  private BDDFiniteDomain<Ip> _nextHopIp;
+
+  private BDDFiniteDomain<Ip> _nextHopIpTemp;
 
   /*
    * Creates a collection of BDD routeVariables representing the
@@ -123,23 +127,19 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
 
     if (_factory.getConfig().getKeepMed()) {
-      _med =
-          BDDInteger.makeFromIndex(
-              factory, _factory.getNumBitsMed(), _factory.getIndexMed(), false);
-      _medTemp =
-          BDDInteger.makeFromIndex(
-              factory, _factory.getNumBitsMed(), _factory.getIndexMedTemp(), false);
+      _med = new BDDFiniteDomain<>(factory, _factory.getAllMeds(), _factory.getIndexMed());
+      _medTemp = new BDDFiniteDomain<>(factory, _factory.getAllMeds(), _factory.getIndexMedTemp());
       addBitNames("med", _factory.getNumBitsMed(), _factory.getIndexMed(), false);
       addBitNames("med'", _factory.getNumBitsMed(), _factory.getIndexMedTemp(), false);
     }
 
     if (_factory.getConfig().getKeepAd()) {
       _adminDist =
-          BDDInteger.makeFromIndex(
-              factory, _factory.getNumBitsAdminDist(), _factory.getIndexAdminDist(), false);
+          new BDDFiniteDomain<>(
+              factory, _factory.getAllAdminDistances(), _factory.getIndexAdminDist());
       _adminDistTemp =
-          BDDInteger.makeFromIndex(
-              factory, _factory.getNumBitsAdminDist(), _factory.getIndexAdminDistTemp(), false);
+          new BDDFiniteDomain<>(
+              factory, _factory.getAllAdminDistances(), _factory.getIndexAdminDistTemp());
       addBitNames("ad", _factory.getNumBitsAdminDist(), _factory.getIndexAdminDist(), false);
       addBitNames("ad'", _factory.getNumBitsAdminDist(), _factory.getIndexAdminDistTemp(), false);
     }
@@ -218,6 +218,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       addBitNames(
           "fromRRClient'", _factory.getNumBitsRRClient(), _factory.getIndexRRClientTemp(), false);
     }
+
+    if (_factory.getConfig().getKeepNextHopIp()) {
+      _nextHopIp =
+          new BDDFiniteDomain<>(factory, _factory.getAllIps(), _factory.getIndexNextHopIp());
+      _nextHopIpTemp =
+          new BDDFiniteDomain<>(factory, _factory.getAllIps(), _factory.getIndexNextHopIpTemp());
+      addBitNames("nextHop", _factory.getNumBitsNextHopIp(), _factory.getIndexNextHopIp(), false);
+      addBitNames(
+          "nextHop'", _factory.getNumBitsNextHopIp(), _factory.getIndexNextHopIpTemp(), false);
+    }
   }
 
   /*
@@ -238,12 +248,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _metricTemp = new BDDInteger(other._metricTemp);
     }
     if (_factory.getConfig().getKeepAd()) {
-      _adminDist = new BDDInteger(other._adminDist);
-      _adminDistTemp = new BDDInteger(other._adminDistTemp);
+      _adminDist = new BDDFiniteDomain<>(other._adminDist);
+      _adminDistTemp = new BDDFiniteDomain<>(other._adminDistTemp);
     }
     if (_factory.getConfig().getKeepMed()) {
-      _med = new BDDInteger(other._med);
-      _medTemp = new BDDInteger(other._medTemp);
+      _med = new BDDFiniteDomain<>(other._med);
+      _medTemp = new BDDFiniteDomain<>(other._medTemp);
     }
     if (_factory.getConfig().getKeepLp()) {
       _localPref = new BDDFiniteDomain<>(other._localPref);
@@ -268,6 +278,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     if (_factory.getConfig().getKeepRRClient()) {
       _fromRRClient = other._fromRRClient;
       _fromRRClientTemp = other._fromRRClientTemp;
+    }
+    if (_factory.getConfig().getKeepNextHopIp()) {
+      _nextHopIp = other._nextHopIp;
+      _nextHopIpTemp = other._nextHopIpTemp;
     }
     _bitNames = other._bitNames;
   }
@@ -295,11 +309,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _factory.getConfig();
   }
 
-  public BDDInteger getAdminDist() {
+  public BDDFiniteDomain<Long> getAdminDist() {
     return _adminDist;
   }
 
-  public void setAdminDist(BDDInteger adminDist) {
+  public void setAdminDist(BDDFiniteDomain<Long> adminDist) {
     this._adminDist = adminDist;
   }
 
@@ -319,11 +333,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     this._localPref = localPref;
   }
 
-  public BDDInteger getMed() {
+  public BDDFiniteDomain<Long> getMed() {
     return _med;
   }
 
-  public void setMed(BDDInteger med) {
+  public void setMed(BDDFiniteDomain<Long> med) {
     this._med = med;
   }
 
@@ -371,7 +385,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     this._dstRouter = dstRouter;
   }
 
-  public BDDInteger getAdminDistTemp() {
+  public BDDFiniteDomain<Long> getAdminDistTemp() {
     return _adminDistTemp;
   }
 
@@ -383,7 +397,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _localPrefTemp;
   }
 
-  public BDDInteger getMedTemp() {
+  public BDDFiniteDomain<Long> getMedTemp() {
     return _medTemp;
   }
 
@@ -409,6 +423,18 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public BDD getFromRRClientTemp() {
     return _fromRRClientTemp;
+  }
+
+  public BDDFiniteDomain<Ip> getNextHopIp() {
+    return _nextHopIp;
+  }
+
+  public void setNextHopIp(BDDFiniteDomain<Ip> x) {
+    _nextHopIp = x;
+  }
+
+  public BDDFiniteDomain<Ip> getNextHopIpTemp() {
+    return _nextHopIpTemp;
   }
 
   public void setFromRRClientTemp(BDD x) {
@@ -471,16 +497,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
 
     if (_factory.getConfig().getKeepAd()) {
-      BDD[] adminDist = getAdminDist().getBitvec();
-      BDD[] adminDist2 = other.getAdminDist().getBitvec();
+      BDD[] adminDist = getAdminDist().getInteger().getBitvec();
+      BDD[] adminDist2 = other.getAdminDist().getInteger().getBitvec();
       for (int i = 0; i < 32; i++) {
         adminDist[i].orWith(adminDist2[i]);
       }
     }
 
     if (_factory.getConfig().getKeepMed()) {
-      BDD[] med = getMed().getBitvec();
-      BDD[] med2 = other.getMed().getBitvec();
+      BDD[] med = getMed().getInteger().getBitvec();
+      BDD[] med2 = other.getMed().getInteger().getBitvec();
       for (int i = 0; i < 32; i++) {
         med[i].orWith(med2[i]);
       }
@@ -543,14 +569,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
 
     if (_factory.getConfig().getKeepAd()) {
-      BDD[] adminDist = rec.getAdminDist().getBitvec();
+      BDD[] adminDist = rec.getAdminDist().getInteger().getBitvec();
       for (int i = 0; i < 32; i++) {
         adminDist[i] = adminDist[i].veccompose(pairing);
       }
     }
 
     if (_factory.getConfig().getKeepMed()) {
-      BDD[] med = rec.getMed().getBitvec();
+      BDD[] med = rec.getMed().getInteger().getBitvec();
       for (int i = 0; i < 32; i++) {
         med[i] = med[i].veccompose(pairing);
       }
