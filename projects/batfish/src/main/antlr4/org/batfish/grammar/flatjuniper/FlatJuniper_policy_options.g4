@@ -145,6 +145,7 @@ pops_from
    (
       popsf_area
       | popsf_as_path
+      | popsf_as_path_group
       | popsf_color
       | popsf_community
       | popsf_family
@@ -201,6 +202,11 @@ popsf_as_path
    (
       name = variable
    )?
+;
+
+popsf_as_path_group
+:
+   AS_PATH_GROUP name = variable
 ;
 
 popsf_color

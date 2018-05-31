@@ -2069,11 +2069,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
       GeneratedRoute.Builder defaultRoute = null;
       GeneratedRoute6.Builder defaultRoute6 = null;
       if (lpg.getDefaultOriginate()) {
-        if (ipv4) {
-          localOrCommonOrigination.getDisjuncts().add(MATCH_DEFAULT_ROUTE);
-        } else {
-          localOrCommonOrigination.getDisjuncts().add(MATCH_DEFAULT_ROUTE6);
-        }
+        String defaultRouteExportPolicyName;
+        defaultRouteExportPolicyName =
+            String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~", vrfName, lpg.getName());
+        RoutingPolicy defaultRouteExportPolicy = new RoutingPolicy(defaultRouteExportPolicyName, c);
+        c.getRoutingPolicies().put(defaultRouteExportPolicyName, defaultRouteExportPolicy);
+        defaultRouteExportPolicy
+            .getStatements()
+            .add(
+                new If(
+                    ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                    ImmutableList.of(
+                        new SetOrigin(
+                            new LiteralOrigin(
+                                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
+                                    ? OriginType.IGP
+                                    : OriginType.INCOMPLETE,
+                                null)),
+                        Statements.ReturnTrue.toStaticStatement())));
+        defaultRouteExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
+        localOrCommonOrigination
+            .getDisjuncts()
+            .add(new CallExpr(defaultRouteExportPolicy.getName()));
+
         defaultRoute = new GeneratedRoute.Builder();
         defaultRoute.setNetwork(Prefix.ZERO);
         defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
@@ -2103,7 +2121,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           If defaultRouteGenerationConditional =
               new If(
                   ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
+                  ImmutableList.of(
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      Statements.ReturnTrue.toStaticStatement()));
           RoutingPolicy defaultRouteGenerationPolicy =
               new RoutingPolicy(
                   "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
