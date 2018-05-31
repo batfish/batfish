@@ -330,6 +330,11 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _weight = weight;
   }
 
+  /** Return a new {@link org.batfish.datamodel.BgpAdvertisement.Builder} */
+  public static Builder builder() {
+    return new Builder();
+  }
+
   @Override
   public int compareTo(BgpAdvertisement rhs) {
     int ret;
