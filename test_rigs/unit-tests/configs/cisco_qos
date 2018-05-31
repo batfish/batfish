@@ -121,6 +121,24 @@ policy-map type network-qos default-fleep-policy
     congestion-control tail-drop
     no congestion-control random-detect
     mtu 1500
+policy-map type control subscriber my-bogus-policy
+ event session-started match-all
+  10 class always do-until-failure
+   20 authenticate using dot1x priority 10
+ event authentication-failure match-first
+  5 class MY_CLASS_1 do-until-failure
+   10 activate service-template my_TEMPLATE_NAME
+  10 class MY_CLASS_2 do-until-failure
+   10 pause reauthentication
+   20 authorize
+   30 terminate dot1x
+   40 authenticate using mab priority 10
+   50 authentication-restart 60
+   60 terminate mab
+   70 authentication-restart 60
+   80 clear-session
+   90 resume reauthentication
+!
 service-template template_name
  access-group ACL_NAME
  description Service template for Fail open mode

@@ -309,12 +309,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final CiscoFamily _cf;
 
-  /**
-   * These can be either ipv4 or ipv6, so we must check both protocols for access-lists when doing
-   * undefined references check
-   */
-  private final Set<String> _classMapAccessGroups;
-
   private final Set<String> _controlPlaneAccessGroups;
 
   private final Set<String> _cryptoAcls;
@@ -464,7 +458,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _asPathSets = new TreeMap<>();
     _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
     _cf = new CiscoFamily();
-    _classMapAccessGroups = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
     _dhcpRelayServers = new ArrayList<>();
@@ -686,10 +679,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public CiscoFamily getCf() {
     return _cf;
-  }
-
-  public Set<String> getClassMapAccessGroups() {
-    return _classMapAccessGroups;
   }
 
   public Set<String> getControlPlaneAccessGroups() {
@@ -3666,7 +3655,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // class-map
     markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
-    markConcreteStructure(CiscoStructureType.CLASS_MAP, CiscoStructureUsage.POLICY_MAP_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.CLASS_MAP,
+        CiscoStructureUsage.POLICY_MAP_CLASS,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
     markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
@@ -3688,7 +3680,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.SERVICE_TEMPLATE,
         CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
-        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE);
+        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
     // zone
     markConcreteStructure(
         CiscoStructureType.SECURITY_ZONE,
