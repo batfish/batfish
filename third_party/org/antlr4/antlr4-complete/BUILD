@@ -4,5 +4,5 @@ licenses(["notice"])  # BSD
 
 java_import(
     name = "antlr4-complete",
-    jars = ["antlr-4.7.1-complete.jar"],
+    jars = ["antlr4-4.7.1-batfish-internal-complete.jar"],
 )
