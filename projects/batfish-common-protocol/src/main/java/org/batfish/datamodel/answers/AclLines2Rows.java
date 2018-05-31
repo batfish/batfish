@@ -1,6 +1,7 @@
 package org.batfish.datamodel.answers;
 
 import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,23 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .put(
                 COL_MESSAGE,
                 buildMessage(aclName, specs.nodes, lineNumber, line, unmatchable, blockingLines))
+            .build());
+  }
+
+  public void addCycle(String hostname, List<String> aclsInCycle) {
+    _rows.add(
+        Row.builder()
+            .put(COL_NODES, ImmutableList.of(hostname))
+            .put(COL_ACL, null)
+            .put(COL_LINES, null)
+            .put(COL_BLOCKED_LINE_NUM, null)
+            .put(COL_BLOCKING_LINE_NUMS, null)
+            .put(COL_DIFF_ACTION, null)
+            .put(
+                COL_MESSAGE,
+                String.format(
+                    "Cyclic ACL references in node '%s': %s -> %s",
+                    hostname, String.join(" -> ", aclsInCycle), aclsInCycle.get(0)))
             .build());
   }
 

@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -91,9 +92,13 @@ public final class IpAccessListLine implements Serializable {
 
   private final LineAction _action;
 
-  private final AclLineMatchExpr _matchCondition;
+  private boolean _inCycle = false;
+
+  private AclLineMatchExpr _matchCondition;
 
   private final String _name;
+
+  private boolean _undefinedReference = false;
 
   @JsonCreator
   public IpAccessListLine(
@@ -103,6 +108,16 @@ public final class IpAccessListLine implements Serializable {
     _action = Objects.requireNonNull(action);
     _matchCondition = Objects.requireNonNull(matchCondition);
     _name = name;
+  }
+
+  public void makeUnmatchableDueToCycle() {
+    _matchCondition = FalseExpr.INSTANCE;
+    _inCycle = true;
+  }
+
+  public void makeUnmatchableDueToUndefinedReference() {
+    _matchCondition = FalseExpr.INSTANCE;
+    _undefinedReference = true;
   }
 
   @Override
