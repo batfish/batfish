@@ -228,6 +228,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_exactContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_longerContext;
@@ -456,6 +457,7 @@ import org.batfish.representation.juniper.PsFromPrefixListFilterLonger;
 import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
+import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
@@ -3664,6 +3666,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentRouteFilter = null;
     _currentRouteFilterLine = null;
     _currentRoute6FilterLine = null;
+  }
+
+  @Override
+  public void exitPopsf_tag(Popsf_tagContext ctx) {
+    int tag = toInt(ctx.DEC());
+    _currentPsTerm.getFroms().add(new PsFromTag(tag));
   }
 
   @Override
