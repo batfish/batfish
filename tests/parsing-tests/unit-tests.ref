@@ -21343,6 +21343,17 @@
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        DISABLE:'disable'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'pae'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'authenticator'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "        TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'tx-period'  <== mode:DEFAULT_MODE",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        DSL:'dsl'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'operating-mode'  <== mode:DEFAULT_MODE",
@@ -21977,6 +21988,9 @@
             "        LACP:'lacp'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'min-links'  <== mode:DEFAULT_MODE",
             "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        MAB:'mab'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        MPLS:'mpls'  <== mode:DEFAULT_MODE",
@@ -30226,6 +30240,49 @@
             "    (s_class_map",
             "      CLASS_MAP:'class-map'  <== mode:DEFAULT_MODE",
             "      TYPE:'type'  <== mode:DEFAULT_MODE",
+            "      CONTROL:'control'  <== mode:DEFAULT_MODE",
+            "      SUBSCRIBER:'subscriber'  <== mode:DEFAULT_MODE",
+            "      MATCH_NONE:'match-none'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'ABC'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_result_type",
+            "          RESULT_TYPE:'result-type'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'aaa-timeout'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_authorization_status",
+            "          AUTHORIZATION_STATUS:'authorization-status'  <== mode:DEFAULT_MODE",
+            "          AUTHORIZED:'authorized'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_method",
+            "          METHOD:'method'  <== mode:DEFAULT_MODE",
+            "          DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_activated_service_template",
+            "          ACTIVATED_SERVICE_TEMPLATE:'activated-service-template'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'DEF'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_service_template",
+            "          SERVICE_TEMPLATE:'service-template'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'GHI'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_class_map",
+            "      CLASS_MAP:'class-map'  <== mode:DEFAULT_MODE",
+            "      TYPE:'type'  <== mode:DEFAULT_MODE",
             "      NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
             "      MATCH_ANY:'match-any'  <== mode:DEFAULT_MODE",
             "      name = (variable",
@@ -30301,6 +30358,14 @@
             "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
             "          name = (variable",
             "            VARIABLE:'boop'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        num = DEC:'20'  <== mode:DEFAULT_MODE",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_access_list",
+            "          ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'boop2'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_class_map",
@@ -30910,6 +30975,49 @@
             "          (null_rest_of_line",
             "            DEC:'1500'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_service_template",
+            "      SERVICE_TEMPLATE:'service-template'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'template_name'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (st_access_group",
+            "        ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'ACL_NAME'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_description",
+            "        DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          RAW_TEXT:' Service template for Fail open mode'  <== mode:M_Description",
+            "          NEWLINE:'\\n'  <== mode:M_Description))",
+            "      (st_inactivity_timer",
+            "        INACTIVITY_TIMER:'inactivity-timer'  <== mode:DEFAULT_MODE",
+            "        DEC:'3600'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_linksec",
+            "        LINKSEC:'linksec'  <== mode:DEFAULT_MODE",
+            "        POLICY:'policy'  <== mode:DEFAULT_MODE",
+            "        MUST_SECURE:'must-secure'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_linksec",
+            "        LINKSEC:'linksec'  <== mode:DEFAULT_MODE",
+            "        POLICY:'policy'  <== mode:DEFAULT_MODE",
+            "        SHOULD_SECURE:'should-secure'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_vlan",
+            "        VLAN:'vlan'  <== mode:DEFAULT_MODE",
+            "        DEC:'313'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_voice_vlan",
+            "        VOICE:'voice'  <== mode:DEFAULT_MODE",
+            "        VLAN:'vlan'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_tag",
+            "        TAG:'tag'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'USER_DEFINED_TAG'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_table_map",
             "      TABLE_MAP:'table-map'  <== mode:DEFAULT_MODE",
@@ -35011,7 +35119,7 @@
             "      (null_rest_of_line",
             "        SIP:'sip'  <== mode:DEFAULT_MODE",
             "        BIND:'bind'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'control'  <== mode:DEFAULT_MODE",
+            "        CONTROL:'control'  <== mode:DEFAULT_MODE",
             "        SOURCE_INTERFACE:'source-interface'  <== mode:DEFAULT_MODE",
             "        M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
             "        DEC:'0'  <== mode:M_Interface",
@@ -35457,7 +35565,7 @@
             "            (voice_service_voip_sip_null",
             "              BIND:'bind'  <== mode:DEFAULT_MODE",
             "              (null_rest_of_line",
-            "                VARIABLE:'control'  <== mode:DEFAULT_MODE",
+            "                CONTROL:'control'  <== mode:DEFAULT_MODE",
             "                SOURCE_INTERFACE:'source-interface'  <== mode:DEFAULT_MODE",
             "                M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
             "                DEC:'0'  <== mode:M_Interface",
@@ -47425,7 +47533,7 @@
             "        (ntp_null",
             "          ALLOW:'allow'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
-            "            VARIABLE:'control'  <== mode:DEFAULT_MODE",
+            "            CONTROL:'control'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_ntp",
@@ -53698,35 +53806,47 @@
         "cisco_privilege" : { },
         "cisco_qos" : {
           "class-map" : {
-            "bippety" : {
+            "ABC" : {
               "definitionLines" : [
                 5,
                 6,
-                7
+                7,
+                8,
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            },
+            "bippety" : {
+              "definitionLines" : [
+                11,
+                12,
+                13
               ],
               "numReferrers" : 0
             },
             "boop" : {
               "definitionLines" : [
-                13,
-                14
+                19,
+                20,
+                21
               ],
               "numReferrers" : 0
             },
             "boppety" : {
               "definitionLines" : [
-                8,
-                9,
-                10,
-                11
+                14,
+                15,
+                16,
+                17
               ],
               "numReferrers" : 0
             },
             "cos_all" : {
               "definitionLines" : [
-                16,
-                17,
-                18
+                23,
+                24,
+                25
               ],
               "numReferrers" : 0
             }
@@ -53734,25 +53854,25 @@
           "object-group network" : {
             "1.2.3.4-24" : {
               "definitionLines" : [
-                26,
-                27
+                33,
+                34
               ],
               "numReferrers" : 0
             },
             "dns_servers" : {
               "definitionLines" : [
-                28,
-                29,
-                30
+                35,
+                36,
+                37
               ],
               "numReferrers" : 0
             },
             "ntp_servers" : {
               "definitionLines" : [
-                31,
-                32,
-                33,
-                34
+                38,
+                39,
+                40,
+                41
               ],
               "numReferrers" : 0
             }
@@ -53760,12 +53880,28 @@
           "policy-map type inspect" : {
             "pminspect" : {
               "definitionLines" : [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "service-template" : {
+            "template_name" : {
+              "definitionLines" : [
+                124,
+                125,
+                126,
+                127,
+                128,
+                129,
+                130,
+                131,
+                132
               ],
               "numReferrers" : 0
             }
@@ -55030,58 +55166,58 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                121
+                123
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                124
+                126
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                54
+                56
               ]
             },
             "ag2" : {
               "interface outgoing ip access-list" : [
-                55
+                57
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                88
+                90
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                85
+                87
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                75
+                77
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                88
+                90
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                89
+                91
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                274
+                277
               ]
             }
           }
@@ -55189,81 +55325,98 @@
           "acl" : {
             "boop" : {
               "class-map access-group" : [
-                14
+                20
+              ]
+            },
+            "boop2" : {
+              "class-map access-list" : [
+                21
               ]
             }
           },
           "class-map" : {
             "bippetyboo-drop" : {
               "policy-map class" : [
-                43
+                50
               ]
             },
             "bippetyboo-ndrop" : {
               "policy-map class" : [
-                59
+                66
               ]
             },
             "bippetyboo-ndrop-fcoe" : {
               "policy-map class" : [
-                55
+                62
               ]
             },
             "bleefee" : {
               "policy-map class" : [
-                95
+                102
               ]
             },
             "bleefee2" : {
               "policy-map class" : [
-                100
+                107
               ]
             },
             "blerf" : {
               "policy-map class" : [
-                91
+                98
               ]
             },
             "c-bleeb-drop" : {
               "policy-map class" : [
-                102
+                109
               ]
             },
             "c-bleeb-ndrop-fcoe" : {
               "policy-map class" : [
-                107
+                114
               ]
             },
             "c-foob-drop" : {
               "policy-map class" : [
-                74
+                81
               ]
             },
             "c-foob-ndrop" : {
               "policy-map class" : [
-                86
+                93
               ]
             },
             "c-foob-ndrop-fcoe" : {
               "policy-map class" : [
-                82
+                89
               ]
             },
             "fffoooddd" : {
               "policy-map class" : [
-                65
+                72
               ]
             },
             "floop" : {
               "policy-map class" : [
-                112
+                119
               ]
             }
           },
           "class-map type inspect" : {
             "cinspect" : {
               "policy-map type inspect class type inspect" : [
-                36
+                43
+              ]
+            }
+          },
+          "service-template" : {
+            "DEF" : {
+              "class-map activate-service-template" : [
+                9
+              ]
+            },
+            "GHI" : {
+              "class-map service-template" : [
+                10
               ]
             }
           }
