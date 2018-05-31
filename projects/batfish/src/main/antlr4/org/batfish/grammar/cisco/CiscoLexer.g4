@@ -244,6 +244,11 @@ ACTIVATE_SERVICE_WHITELIST
    'activate-service-whitelist'
 ;
 
+ACTIVATED_SERVICE_TEMPLATE
+:
+   'activated-service-template'
+;
+
 ACTIVATION_CHARACTER
 :
    'activation-character'
@@ -1096,9 +1101,19 @@ AUTHORIZATION_REQUIRED
    'authorization-required'
 ;
 
+AUTHORIZATION_STATUS
+:
+   'authorization-status'
+;
+
 AUTHORIZATION_SERVER_GROUP
 :
    'authorization-server-group'
+;
+
+AUTHORIZED
+:
+   'authorized'
 ;
 
 AUTO
@@ -2235,6 +2250,11 @@ CONTINUE
 CONTRACT_ID
 :
    'contract-id'
+;
+
+CONTROL
+:
+   'control'
 ;
 
 CONTROL_APPS_USE_MGMT_PORT
@@ -6058,6 +6078,11 @@ LINK_TYPE
    'link-type'
 ;
 
+LINKSEC
+:
+   'linksec'
+;
+
 LINKDEBOUNCE
 :
    'linkdebounce'
@@ -6428,6 +6453,11 @@ M15_DOT
   'm15.'
 ;
 
+MAB
+:
+   'mab'
+;
+
 MAC
 :
    'mac'
@@ -6581,6 +6611,11 @@ MATCH_ALL
 MATCH_ANY
 :
    'match-any'
+;
+
+MATCH_NONE
+:
+   'match-none'
 ;
 
 MATCHES_ANY
@@ -7251,6 +7286,11 @@ MULTI_CONFIG
 MULTI_TOPOLOGY
 :
    'multi-topology'
+;
+
+MUST_SECURE
+:
+    'must-secure'
 ;
 
 MVPN
@@ -9488,6 +9528,11 @@ RESTRICTED
    'restricted'
 ;
 
+RESULT_TYPE
+:
+   'result-type'
+;
+
 RETRANSMIT
 :
    'retransmit'
@@ -10218,6 +10263,11 @@ SERVICE_QUEUE
    'service-queue'
 ;
 
+SERVICE_TEMPLATE
+:
+   'service-template'
+;
+
 SERVICE_TYPE
 :
    'service-type'
@@ -10371,6 +10421,11 @@ SHELL
 SHORT_TXT
 :
    'short-txt'
+;
+
+SHOULD_SECURE
+:
+    'should-secure'
 ;
 
 SHOW
@@ -11915,6 +11970,11 @@ UNABLE
    'Unable'
 ;
 
+UNAUTHORIZED
+:
+   'unauthorized'
+;
+
 UNAUTHORIZED_DEVICE_PROFILE
 :
    'unauthorized-device-profile'
@@ -12585,6 +12645,11 @@ WEB_MAX_CLIENTS
 WEB_SERVER
 :
    'web-server'
+;
+
+WEBAUTH
+:
+   'webauth'
 ;
 
 WEBVPN

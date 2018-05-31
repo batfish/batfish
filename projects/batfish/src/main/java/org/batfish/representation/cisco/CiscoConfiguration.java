@@ -315,6 +315,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
    */
   private final Set<String> _classMapAccessGroups;
 
+  private final Set<String> _classMapAccessLists;
+
   private final Set<String> _controlPlaneAccessGroups;
 
   private final Set<String> _cryptoAcls;
@@ -465,6 +467,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
     _cf = new CiscoFamily();
     _classMapAccessGroups = new TreeSet<>();
+    _classMapAccessLists = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
     _dhcpRelayServers = new ArrayList<>();
@@ -690,6 +693,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Set<String> getClassMapAccessGroups() {
     return _classMapAccessGroups;
+  }
+
+  public Set<String> getClassMapAccessLists() {
+    return _classMapAccessLists;
   }
 
   public Set<String> getControlPlaneAccessGroups() {
@@ -3518,6 +3525,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // mark references to IPv4/6 ACLs that may not appear in data model
     markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
+    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
@@ -3663,6 +3671,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ImmutableList.of(
             CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
 
+    // service template
+    markConcreteStructure(
+        CiscoStructureType.SERVICE_TEMPLATE,
+        CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
+        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE);
     // zone
     markConcreteStructure(
         CiscoStructureType.SECURITY_ZONE,
