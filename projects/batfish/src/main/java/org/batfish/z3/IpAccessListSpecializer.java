@@ -35,40 +35,47 @@ import org.batfish.datamodel.acl.TrueExpr;
  */
 public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<AclLineMatchExpr> {
   private final boolean _canSpecialize;
-  private final HeaderSpace _headerSpace;
   private final IpSpaceSpecializer _dstIpSpaceSpecializer;
   private final IpSpaceSpecializer _srcIpSpaceSpecializer;
   private final IpSpaceSpecializer _srcOrDstIpSpaceSpecializer;
 
-  public IpAccessListSpecializer(HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
-    _headerSpace = headerSpace;
+  IpAccessListSpecializer(HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
+    IpSpace dstIps = headerSpace.getDstIps();
+    IpSpace srcIps = headerSpace.getSrcIps();
+    IpSpace srcOrDstIps = headerSpace.getSrcOrDstIps();
 
-    IpSpace dstIps = _headerSpace.getDstIps();
-    IpSpace srcIps = _headerSpace.getSrcIps();
-    IpSpace srcOrDstIps = _headerSpace.getSrcOrDstIps();
+    IpSpace notDstIps = headerSpace.getNotDstIps();
+    IpSpace notSrcIps = headerSpace.getNotSrcIps();
 
-    IpSpace notDstIps = _headerSpace.getNotDstIps();
-    IpSpace notSrcIps = _headerSpace.getNotSrcIps();
+    _dstIpSpaceSpecializer =
+        (dstIps == null && srcOrDstIps == null && notDstIps == null)
+            ? null
+            : new IpSpaceIpSpaceSpecializer(
+                difference(union(dstIps, srcOrDstIps), notDstIps), namedIpSpaces);
+    _srcIpSpaceSpecializer =
+        (srcIps == null && srcOrDstIps == null && notSrcIps == null)
+            ? null
+            : new IpSpaceIpSpaceSpecializer(
+                difference(union(srcIps, srcOrDstIps), notSrcIps), namedIpSpaces);
+    _srcOrDstIpSpaceSpecializer =
+        (srcIps == null
+                && dstIps == null
+                && srcOrDstIps == null
+                && notSrcIps == null
+                && notDstIps == null)
+            ? null
+            : new IpSpaceIpSpaceSpecializer(
+                difference(union(srcIps, dstIps, srcOrDstIps), union(notSrcIps, notDstIps)),
+                namedIpSpaces);
 
     /*
      * Currently, specialization is based on srcIp and dstIp only. We can specialize only
-     * if we have a meaningful constraint on srcIp or on dstIp.
+     * if we have at least one IpSpace specializer.
      */
     _canSpecialize =
-        dstIps != null
-            || srcIps != null
-            || srcOrDstIps != null
-            || notDstIps != null
-            || notSrcIps != null;
-
-    _dstIpSpaceSpecializer =
-        new IpSpaceSpecializer(difference(union(dstIps, srcOrDstIps), notDstIps), namedIpSpaces);
-    _srcIpSpaceSpecializer =
-        new IpSpaceSpecializer(difference(union(srcIps, srcOrDstIps), notSrcIps), namedIpSpaces);
-    _srcOrDstIpSpaceSpecializer =
-        new IpSpaceSpecializer(
-            difference(union(srcIps, dstIps, srcOrDstIps), union(notSrcIps, notDstIps)),
-            namedIpSpaces);
+        _dstIpSpaceSpecializer != null
+            || _srcIpSpaceSpecializer != null
+            || _srcOrDstIpSpaceSpecializer != null;
   }
 
   public IpAccessList specialize(IpAccessList ipAccessList) {
@@ -124,6 +131,12 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
     return falseExpr;
   }
 
+  private IpSpace specializeWith(IpSpace dstIpSpace, IpSpaceSpecializer specializer) {
+    return dstIpSpace != null && specializer != null
+        ? specializer.specialize(dstIpSpace)
+        : dstIpSpace;
+  }
+
   @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     HeaderSpace headerSpace = matchHeaderSpace.getHeaderspace();
@@ -133,21 +146,11 @@ public class IpAccessListSpecializer implements GenericAclLineMatchExprVisitor<A
     IpSpace srcIps = headerSpace.getSrcIps();
     IpSpace srcOrDstIps = headerSpace.getSrcOrDstIps();
 
-    if (dstIps != null) {
-      dstIps = _dstIpSpaceSpecializer.specialize(dstIps);
-    }
-    if (notDstIps != null) {
-      notDstIps = _dstIpSpaceSpecializer.specialize(notDstIps);
-    }
-    if (notSrcIps != null) {
-      notSrcIps = _srcIpSpaceSpecializer.specialize(notSrcIps);
-    }
-    if (srcIps != null) {
-      srcIps = _srcIpSpaceSpecializer.specialize(srcIps);
-    }
-    if (srcOrDstIps != null) {
-      srcOrDstIps = _srcOrDstIpSpaceSpecializer.specialize(srcOrDstIps);
-    }
+    dstIps = specializeWith(dstIps, _dstIpSpaceSpecializer);
+    notDstIps = specializeWith(notDstIps, _dstIpSpaceSpecializer);
+    notSrcIps = specializeWith(notSrcIps, _srcIpSpaceSpecializer);
+    srcIps = specializeWith(srcIps, _srcIpSpaceSpecializer);
+    srcOrDstIps = specializeWith(srcOrDstIps, _srcOrDstIpSpaceSpecializer);
 
     if (constraintUnionEmpty(dstIps, srcOrDstIps)) {
       return FalseExpr.INSTANCE;

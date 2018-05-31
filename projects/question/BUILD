@@ -1,7 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//skylark:junit.bzl", "junit_tests")
-#load("//skylark:cmdfile_test.bzl", "cmdfile_test")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_library(
     name = "question",

@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_library(
     name = "common",
@@ -18,7 +18,7 @@ java_library(
         "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "//projects/lib/jsonpath",
         "//projects/lib/z3",
-        "@antlr4//:compile",
+        "@antlr4_runtime//:compile",
         "@commons_cli//:compile",
         "@commons_configuration2//:compile",
         "@commons_io//:compile",
@@ -104,7 +104,7 @@ java_library(
     ],
     deps = [
         ":common",
-        "@antlr4//:compile",
+        "@antlr4_runtime//:compile",
     ],
 )
 

@@ -33,7 +33,7 @@ import org.junit.rules.TemporaryFolder;
 public class BatfishTestUtils {
 
   private static Cache<Snapshot, SortedMap<String, Configuration>> makeTestrigCache() {
-    return CacheBuilder.newBuilder().maximumSize(5).weakValues().build();
+    return CacheBuilder.newBuilder().maximumSize(5).build();
   }
 
   private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
@@ -46,7 +46,7 @@ public class BatfishTestUtils {
   }
 
   private static Cache<TestrigSettings, DataPlane> makeDataPlaneCache() {
-    return CacheBuilder.newBuilder().maximumSize(2).weakValues().build();
+    return CacheBuilder.newBuilder().maximumSize(2).build();
   }
 
   private static Cache<TestrigSettings, ForwardingAnalysis> makeForwardingAnalysisCache() {

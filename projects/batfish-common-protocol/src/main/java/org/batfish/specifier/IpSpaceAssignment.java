@@ -65,11 +65,15 @@ public final class IpSpaceAssignment {
     _entries = ImmutableList.copyOf(entries);
   }
 
+  public static IpSpaceAssignment empty() {
+    return new IpSpaceAssignment(ImmutableList.of());
+  }
+
   public static Builder builder() {
     return new Builder();
   }
 
-  Collection<Entry> getEntries() {
+  public Collection<Entry> getEntries() {
     return _entries;
   }
 }

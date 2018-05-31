@@ -244,6 +244,11 @@ ACTIVATE_SERVICE_WHITELIST
    'activate-service-whitelist'
 ;
 
+ACTIVATED_SERVICE_TEMPLATE
+:
+   'activated-service-template'
+;
+
 ACTIVATION_CHARACTER
 :
    'activation-character'
@@ -1031,6 +1036,11 @@ AUTH_SERVER
    'auth-server'
 ;
 
+AUTH_TYPE
+:
+   'auth-type'
+;
+
 AUTHENTICATE
 :
    'authenticate'
@@ -1091,9 +1101,19 @@ AUTHORIZATION_REQUIRED
    'authorization-required'
 ;
 
+AUTHORIZATION_STATUS
+:
+   'authorization-status'
+;
+
 AUTHORIZATION_SERVER_GROUP
 :
    'authorization-server-group'
+;
+
+AUTHORIZED
+:
+   'authorized'
 ;
 
 AUTO
@@ -2230,6 +2250,11 @@ CONTINUE
 CONTRACT_ID
 :
    'contract-id'
+;
+
+CONTROL
+:
+   'control'
 ;
 
 CONTROL_APPS_USE_MGMT_PORT
@@ -3487,6 +3512,11 @@ DYNAMIC_ACCESS_POLICY_RECORD
    'dynamic-access-policy-record'
 ;
 
+DYNAMIC_AUTHOR
+:
+   'dynamic-author'
+;
+
 DYNAMIC_CAPABILITY
 :
    'dynamic-capability'
@@ -3815,6 +3845,11 @@ EOF_LITERAL
 EOU
 :
    'eou'
+;
+
+EPM
+:
+   'epm'
 ;
 
 EQ
@@ -6043,6 +6078,11 @@ LINK_TYPE
    'link-type'
 ;
 
+LINKSEC
+:
+   'linksec'
+;
+
 LINKDEBOUNCE
 :
    'linkdebounce'
@@ -6413,6 +6453,11 @@ M15_DOT
   'm15.'
 ;
 
+MAB
+:
+   'mab'
+;
+
 MAC
 :
    'mac'
@@ -6566,6 +6611,11 @@ MATCH_ALL
 MATCH_ANY
 :
    'match-any'
+;
+
+MATCH_NONE
+:
+   'match-none'
 ;
 
 MATCHES_ANY
@@ -7236,6 +7286,11 @@ MULTI_CONFIG
 MULTI_TOPOLOGY
 :
    'multi-topology'
+;
+
+MUST_SECURE
+:
+    'must-secure'
 ;
 
 MVPN
@@ -9473,6 +9528,11 @@ RESTRICTED
    'restricted'
 ;
 
+RESULT_TYPE
+:
+   'result-type'
+;
+
 RETRANSMIT
 :
    'retransmit'
@@ -10148,9 +10208,9 @@ SERVER_GROUP
    'server-group'
 ;
 
-SERVERFARM
+SERVER_KEY
 :
-   'serverfarm'
+   'server-key'
 ;
 
 SERVER_PRIVATE
@@ -10161,6 +10221,11 @@ SERVER_PRIVATE
 SERVER_TYPE
 :
    'server-type'
+;
+
+SERVERFARM
+:
+   'serverfarm'
 ;
 
 SERVICE
@@ -10198,6 +10263,11 @@ SERVICE_QUEUE
    'service-queue'
 ;
 
+SERVICE_TEMPLATE
+:
+   'service-template'
+;
+
 SERVICE_TYPE
 :
    'service-type'
@@ -10226,6 +10296,11 @@ SESSION_GROUP
 SESSION_ID
 :
    'session-id'
+;
+
+SESSION_KEY
+:
+   'session-key'
 ;
 
 SESSION_LIMIT
@@ -10346,6 +10421,11 @@ SHELL
 SHORT_TXT
 :
    'short-txt'
+;
+
+SHOULD_SECURE
+:
+    'should-secure'
 ;
 
 SHOW
@@ -11890,6 +11970,11 @@ UNABLE
    'Unable'
 ;
 
+UNAUTHORIZED
+:
+   'unauthorized'
+;
+
 UNAUTHORIZED_DEVICE_PROFILE
 :
    'unauthorized-device-profile'
@@ -12560,6 +12645,11 @@ WEB_MAX_CLIENTS
 WEB_SERVER
 :
    'web-server'
+;
+
+WEBAUTH
+:
+   'webauth'
 ;
 
 WEBVPN

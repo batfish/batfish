@@ -71,7 +71,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -80,6 +79,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
+import org.batfish.dataplane.protocols.OspfProtocolHelper;
 import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.ConnectedRib;
@@ -236,88 +236,6 @@ public class VirtualRouter extends ComparableStructure<String> {
     _receivedBgpRoutes = new TreeMap<>();
     _bgpIncomingRoutes = new TreeMap<>();
     _prefixTracer = new PrefixTracer();
-  }
-
-  /**
-   * Decides whether the current OSPF summary route metric needs to be changed based on the given
-   * route's metric.
-   *
-   * <p>Routes from the same area or outside of areaPrefix have no effect on the summary metric.
-   *
-   * @param route The route in question, whose metric is considered
-   * @param areaPrefix The Ip prefix of the OSPF area
-   * @param currentMetric The current summary metric for the area
-   * @param areaNum Area number.
-   * @param useMin Whether to use the older RFC 1583 computation, which takes the minimum of metrics
-   *     as opposed to the newer RFC 2328, which uses the maximum
-   * @return the newly computed summary metric.
-   */
-  @Nullable
-  static Long computeUpdatedOspfSummaryMetric(
-      OspfInternalRoute route,
-      Prefix areaPrefix,
-      @Nullable Long currentMetric,
-      long areaNum,
-      boolean useMin) {
-    Prefix contributingRoutePrefix = route.getNetwork();
-    // Only update metric for different areas and if the area prefix contains the route prefix
-    if (areaNum == route.getArea() || !areaPrefix.containsPrefix(contributingRoutePrefix)) {
-      return currentMetric;
-    }
-    long contributingRouteMetric = route.getMetric();
-    // Definitely update if we have no previous metric
-    if (currentMetric == null) {
-      return contributingRouteMetric;
-    }
-    // Take the best metric between the route's and current available.
-    // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
-    // RFC1583 compatibility explicitly disabled, in which case they default to max.
-    if (useMin) {
-      return Math.min(currentMetric, contributingRouteMetric);
-    }
-    return Math.max(currentMetric, contributingRouteMetric);
-  }
-
-  private static boolean isOspfInterAreaFromInterAreaPropagationAllowed(
-      long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
-    long neighborRouteAreaNum = neighborRoute.getArea();
-    // May only propagate to or from area 0
-    if (areaNum != neighborRouteAreaNum && areaNum != 0L && neighborRouteAreaNum != 0L) {
-      return false;
-    }
-    Prefix neighborRouteNetwork = neighborRoute.getNetwork();
-    String neighborSummaryFilterName = neighborArea.getSummaryFilter();
-    boolean hasSummaryFilter = neighborSummaryFilterName != null;
-    boolean allowed = !hasSummaryFilter;
-
-    // If there is a summary filter, run the route through it
-    if (hasSummaryFilter) {
-      RouteFilterList neighborSummaryFilter =
-          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
-      allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
-    }
-    return allowed;
-  }
-
-  private static boolean isOspfInterAreaFromIntraAreaPropagationAllowed(
-      long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
-    long neighborRouteAreaNum = neighborRoute.getArea();
-    // May only propagate to or from area 0
-    if (areaNum == neighborRouteAreaNum || (areaNum != 0L && neighborRouteAreaNum != 0L)) {
-      return false;
-    }
-    Prefix neighborRouteNetwork = neighborRoute.getNetwork();
-    String neighborSummaryFilterName = neighborArea.getSummaryFilter();
-    boolean hasSummaryFilter = neighborSummaryFilterName != null;
-    boolean allowed = !hasSummaryFilter;
-
-    // If there is a summary filter, run the route through it
-    if (hasSummaryFilter) {
-      RouteFilterList neighborSummaryFilter =
-          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
-      allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
-    }
-    return allowed;
   }
 
   /**
@@ -644,11 +562,13 @@ public class VirtualRouter extends ComparableStructure<String> {
           // No metric was configured; compute it from any possible contributing routes.
           for (OspfIntraAreaRoute contributingRoute : _ospfIntraAreaRib.getRoutes()) {
             metric =
-                computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+                OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
+                    contributingRoute, prefix, metric, areaNum, useMin);
           }
           for (OspfInterAreaRoute contributingRoute : _ospfInterAreaRib.getRoutes()) {
             metric =
-                computeUpdatedOspfSummaryMetric(contributingRoute, prefix, metric, areaNum, useMin);
+                OspfProtocolHelper.computeUpdatedOspfSummaryMetric(
+                    contributingRoute, prefix, metric, areaNum, useMin);
           }
         }
 
@@ -1933,7 +1853,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       Interface neighborInterface,
       int adminCost,
       long areaNum) {
-    return isOspfInterAreaFromIntraAreaPropagationAllowed(
+    return OspfProtocolHelper.isOspfInterAreaFromIntraAreaPropagationAllowed(
             areaNum, neighbor, neighborRoute, neighborInterface.getOspfArea())
         && stageOspfInterAreaRoute(
             neighborRoute,
@@ -2010,7 +1930,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       Interface neighborInterface,
       int adminCost,
       long areaNum) {
-    return isOspfInterAreaFromInterAreaPropagationAllowed(
+    return OspfProtocolHelper.isOspfInterAreaFromInterAreaPropagationAllowed(
             areaNum, neighbor, neighborRoute, neighborInterface.getOspfArea())
         && stageOspfInterAreaRoute(
             neighborRoute,
