@@ -11,6 +11,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -37,6 +38,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -118,7 +124,11 @@ import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IkeAuthenticationAlgorithm;
+import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -1540,6 +1550,49 @@ public class CiscoGrammarTest {
     assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
     assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
     assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+  }
+
+  @Test
+  public void testCryptoAruba() throws IOException {
+    Configuration c = parseConfig("arubaCrypto");
+    assertThat(
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
+                hasLifeTimeSeconds(86400))));
+  }
+
+  @Test
+  public void testCryptoIos() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+
+    assertThat(
+        c,
+        hasIkeProposal(
+            "010",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(14400))));
+
+    // asserting the default values being set
+    assertThat(
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                hasLifeTimeSeconds(86400))));
   }
 
   private static String getCLRegex(
