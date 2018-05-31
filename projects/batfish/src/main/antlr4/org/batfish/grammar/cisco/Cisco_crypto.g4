@@ -376,6 +376,7 @@ cispol_hash
    HASH
    (
       MD5
+      | SHA
       | SHA2_256_128
    ) NEWLINE
 ;
@@ -754,6 +755,7 @@ ike_encryption
    (
       AES strength = DEC?
    )
+   | DES
    | THREE_DES
 ;
 
@@ -762,6 +764,8 @@ ike_encryption_aruba
    AES128
    | AES192
    | AES256
+   | DES
+   | THREE_DES
 ;
 
 ipsec_authentication
