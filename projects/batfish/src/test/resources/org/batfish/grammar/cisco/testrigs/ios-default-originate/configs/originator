@@ -1,0 +1,18 @@
+!
+! Real GNS3 config, trimmed
+!
+hostname originator
+!
+interface FastEthernet0/0
+ ip address 1.1.1.2 255.255.255.254
+ speed auto
+ duplex half
+!
+router bgp 1
+ bgp router-id 1.1.1.2
+ neighbor 1.1.1.3 remote-as 2
+ ! Inject default route
+ neighbor 1.1.1.3 default-originate
+!
+ip route 0.0.0.0 0.0.0.0 Null0
+!
