@@ -335,6 +335,7 @@ final class CiscoNxConversions {
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     List<BooleanExpr> localOrCommonOrigination = new LinkedList<>();
     localOrCommonOrigination.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
+
     // If `default-originate [route-map NAME]` is configured for this neighbor, generate the
     // default route and inject it.
     if (naf4 != null && firstNonNull(naf4.getDefaultOriginate(), Boolean.FALSE)) {
@@ -346,12 +347,11 @@ final class CiscoNxConversions {
               vrf.getName(), dynamic ? prefix : prefix.getStartIp());
       RoutingPolicy defaultRouteExportPolicy = new RoutingPolicy(defaultRouteExportPolicyName, c);
       c.getRoutingPolicies().put(defaultRouteExportPolicyName, defaultRouteExportPolicy);
-      Disjunction matchDefaultRoute = new Disjunction();
       defaultRouteExportPolicy
           .getStatements()
           .add(
               new If(
-                  matchDefaultRoute,
+                  MATCH_DEFAULT_ROUTE,
                   ImmutableList.of(
                       new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
                       Statements.ReturnTrue.toStaticStatement())));
@@ -365,7 +365,6 @@ final class CiscoNxConversions {
               .setGenerationPolicy(naf4.getDefaultOriginateMap())
               .build();
       newNeighbor.getGeneratedRoutes().add(defaultRoute);
-      matchDefaultRoute.getDisjuncts().add(MATCH_DEFAULT_ROUTE);
     }
     peerExportConditions.add(new Disjunction(localOrCommonOrigination));
 
