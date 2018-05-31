@@ -217,9 +217,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_commonContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_pathContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_familyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metricContext;
@@ -228,6 +230,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_exactContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_longerContext;
@@ -456,6 +459,7 @@ import org.batfish.representation.juniper.PsFromPrefixListFilterLonger;
 import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
+import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
@@ -2511,7 +2515,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFilter =
         _configuration
             .getFirewallFilters()
-            .computeIfAbsent(ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET, -1));
+            .computeIfAbsent(
+                ACL_NAME_GLOBAL_POLICY,
+                n -> new FirewallFilter(n, Family.INET, ctx.start.getLine()));
   }
 
   @Override
@@ -3541,6 +3547,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitPopsf_as_path_group(Popsf_as_path_groupContext ctx) {
+    _w.redFlag(
+        String.format(
+            "unimplemented 'policy-options policy-statement term' from clause: %s",
+            getFullText(ctx)));
+  }
+
+  @Override
   public void exitPopsf_color(Popsf_colorContext ctx) {
     int color = toInt(ctx.color);
     PsFromColor fromColor = new PsFromColor(color);
@@ -3565,6 +3579,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       throw new BatfishException("Unsupported family: " + ctx.getText());
     }
     _currentPsTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitPopsf_instance(Popsf_instanceContext ctx) {
+    _w.redFlag(
+        String.format(
+            "unimplemented 'policy-options policy-statement term' from clause: %s",
+            getFullText(ctx)));
   }
 
   @Override
@@ -3662,6 +3684,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentRouteFilter = null;
     _currentRouteFilterLine = null;
     _currentRoute6FilterLine = null;
+  }
+
+  @Override
+  public void exitPopsf_tag(Popsf_tagContext ctx) {
+    int tag = toInt(ctx.DEC());
+    _currentPsTerm.getFroms().add(new PsFromTag(tag));
   }
 
   @Override

@@ -42,7 +42,8 @@
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
 
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
-    <antlr.version>4.7.1</antlr.version>
+    <antlr4.version>4.7.1-batfish-internal</antlr4.version>
+    <antlr4-runtime.version>4.7.1</antlr4-runtime.version>
     <autoservice.version>1.0-rc3</autoservice.version>
     <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
@@ -237,6 +238,13 @@
           <configuration>
             <treatWarningsAsErrors>true</treatWarningsAsErrors>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.antlr</groupId>
+              <artifactId>antlr4</artifactId>
+              <version>${antlr4.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <plugin>
@@ -330,6 +338,21 @@
               <version>batfish-internal</version>
               <packaging>jar</packaging>
               <file>${basedir}/lib/bdd/net.sf.javabdd.jar</file>
+            </configuration>
+          </execution>
+          <!-- Batfish includes a custom version of antlr4 that supports larger lexers. -->
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <id>install-antlr4</id>
+            <configuration>
+              <groupId>org.antlr</groupId>
+              <artifactId>antlr4</artifactId>
+              <packaging>jar</packaging>
+              <pomFile>${basedir}/lib/antlr4/antlr4-${antlr4.version}.pom</pomFile>
+              <file>${basedir}/lib/antlr4/antlr4-${antlr4.version}.jar</file>
             </configuration>
           </execution>
           <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
@@ -685,13 +708,13 @@
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4</artifactId>
-        <version>${antlr.version}</version>
+        <version>${antlr4.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
-        <version>${antlr.version}</version>
+        <version>${antlr4-runtime.version}</version>
       </dependency>
 
       <dependency>

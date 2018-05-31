@@ -3543,6 +3543,7 @@ stanza
    | s_router_vrrp
    | s_sccp
    | s_service
+   | s_service_template
    | s_sip_ua
    | s_snmp_server
    | s_sntp
