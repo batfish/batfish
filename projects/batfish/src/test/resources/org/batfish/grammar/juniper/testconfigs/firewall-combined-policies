@@ -26,6 +26,8 @@ set security address-book global address PERMIT_ADDR 1.2.3.1/32
 set security address-book global address ZONE_POLICY_DENY_ADDR 1.2.3.1/30
 set security address-book global address GLOBAL_POLICY_DENY_ADDR 1.2.3.1/29
 #
-set firewall filter FILTER1 term TERM from source-address 2.2.2.2
-set firewall filter FILTER1 term TERM then reject
+set firewall filter FILTER1 term TERM1 from source-address 2.2.2.2
+set firewall filter FILTER1 term TERM1 then reject
+set firewall filter FILTER1 term TERM2 from source-address 0.0.0.0/0
+set firewall filter FILTER1 term TERM2 then accept
 set interfaces ge-0/0/1 unit 0 family inet filter output FILTER1

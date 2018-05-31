@@ -73,6 +73,7 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1343,6 +1344,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION, false),
             "EXISTING_CONNECTION"));
 
+    /* Default policy allows traffic originating from the device to be accepted */
+    zoneAclLines.add(
+        new IpAccessListLine(LineAction.ACCEPT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND"));
+
     /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
@@ -1414,7 +1419,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else {
       aclConjunctList =
           ImmutableSet.of(
-              new PermittedByAcl(outAcl.getName(), true),
+              new PermittedByAcl(outAcl.getName(), false),
               new PermittedByAcl(securityPolicyAcl.getName(), false));
     }
 

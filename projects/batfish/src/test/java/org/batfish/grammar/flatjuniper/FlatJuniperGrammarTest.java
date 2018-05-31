@@ -696,6 +696,17 @@ public class FlatJuniperGrammarTest {
         aclUntrustOut,
         rejects(
             flowDeniedByGlobalPolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /* Confirm traffic originating from the device is not blocked by policies */
+    assertThat(
+        aclUntrustOut,
+        accepts(flowDeniedByZonePolicy, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclUntrustOut,
+        accepts(flowDeniedByGlobalPolicy, null, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm traffic originating from the device is still blocked by an outgoing filter */
+    assertThat(
+        aclUntrustOut, rejects(flowDeniedByFilter, null, c.getIpAccessLists(), c.getIpSpaces()));
   }
 
   @Test
