@@ -1214,7 +1214,8 @@
             "authenticationAlgorithm" : "SHA_256",
             "authenticationMethod" : "RSA_SIGNATURES",
             "diffieHellmanGroup" : "GROUP20",
-            "encryptionAlgorithm" : "AES_256_CBC"
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "lifetimeSeconds" : 86400
           }
         },
         "vendorFamily" : {

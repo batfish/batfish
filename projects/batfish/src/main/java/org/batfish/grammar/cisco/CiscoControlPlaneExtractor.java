@@ -1597,6 +1597,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String priority = String.format("%03d", toInteger(ctx.priority));
     _currentIsakmpPolicy = new IsakmpPolicy(priority, ctx.getStart().getLine());
     _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
+    _currentIsakmpPolicy.getProposal().setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
+    _currentIsakmpPolicy
+        .getProposal()
+        .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+    // TODO: group 1 should be the default DH group for aruba
+    _currentIsakmpPolicy.getProposal().setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+    _currentIsakmpPolicy.getProposal().setLifetimeSeconds(86400);
     defineStructure(ISAKMP_POLICY, priority, ctx);
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
     here */
@@ -1667,6 +1674,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitCispol_hash(Cispol_hashContext ctx) {
     if (ctx.MD5() != null) {
       _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5);
+    } else if (ctx.SHA() != null) {
+      _currentIsakmpPolicy
+          .getProposal()
+          .setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
     } else if (ctx.SHA2_256_128() != null) {
       _currentIsakmpPolicy
           .getProposal()
@@ -8057,6 +8068,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         default:
           throw convError(EncryptionAlgorithm.class, ctx);
       }
+    } else if (ctx.DES() != null) {
+      return EncryptionAlgorithm.DES_CBC;
     } else if (ctx.THREE_DES() != null) {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {
@@ -8071,6 +8084,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return EncryptionAlgorithm.AES_192_CBC;
     } else if (ctx.AES256() != null) {
       return EncryptionAlgorithm.AES_256_CBC;
+    } else if (ctx.DES() != null) {
+      return EncryptionAlgorithm.DES_CBC;
+    } else if (ctx.THREE_DES() != null) {
+      return EncryptionAlgorithm.THREEDES_CBC;
     } else {
       throw convError(EncryptionAlgorithm.class, ctx);
     }

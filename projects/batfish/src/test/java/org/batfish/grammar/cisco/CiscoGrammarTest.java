@@ -10,6 +10,7 @@ import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -36,6 +37,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -116,7 +122,11 @@ import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IkeAuthenticationAlgorithm;
+import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -1518,6 +1528,39 @@ public class CiscoGrammarTest {
     assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
     assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
     assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+  }
+
+  @Test
+  public void testCryptoAruba() throws IOException {
+    Configuration c = parseConfig("arubaCrypto");
+    assertThat(c, hasIkeProposal("020", hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)));
+    assertThat(
+        c, hasIkeProposal("020", hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES)));
+    assertThat(
+        c, hasIkeProposal("020", hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256)));
+    assertThat(c, hasIkeProposal("020", hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19)));
+    assertThat(c, hasIkeProposal("020", hasLifeTimeSeconds(86400)));
+  }
+
+  @Test
+  public void testCryptoIos() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+    assertThat(c, hasIkeProposal("010", hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)));
+    assertThat(
+        c, hasIkeProposal("010", hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES)));
+    assertThat(
+        c, hasIkeProposal("010", hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5)));
+    assertThat(c, hasIkeProposal("010", hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1)));
+    assertThat(c, hasIkeProposal("010", hasLifeTimeSeconds(14400)));
+
+    // asserting the default values being sets
+    assertThat(c, hasIkeProposal("020", hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)));
+    assertThat(
+        c, hasIkeProposal("020", hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)));
+    assertThat(
+        c, hasIkeProposal("020", hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1)));
+    assertThat(c, hasIkeProposal("020", hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)));
+    assertThat(c, hasIkeProposal("020", hasLifeTimeSeconds(86400)));
   }
 
   private static String getCLRegex(
