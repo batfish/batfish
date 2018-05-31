@@ -1533,34 +1533,44 @@ public class CiscoGrammarTest {
   @Test
   public void testCryptoAruba() throws IOException {
     Configuration c = parseConfig("arubaCrypto");
-    assertThat(c, hasIkeProposal("020", hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)));
     assertThat(
-        c, hasIkeProposal("020", hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES)));
-    assertThat(
-        c, hasIkeProposal("020", hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256)));
-    assertThat(c, hasIkeProposal("020", hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19)));
-    assertThat(c, hasIkeProposal("020", hasLifeTimeSeconds(86400)));
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
+                hasLifeTimeSeconds(86400))));
   }
 
   @Test
   public void testCryptoIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
-    assertThat(c, hasIkeProposal("010", hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)));
-    assertThat(
-        c, hasIkeProposal("010", hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES)));
-    assertThat(
-        c, hasIkeProposal("010", hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5)));
-    assertThat(c, hasIkeProposal("010", hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1)));
-    assertThat(c, hasIkeProposal("010", hasLifeTimeSeconds(14400)));
 
-    // asserting the default values being sets
-    assertThat(c, hasIkeProposal("020", hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)));
     assertThat(
-        c, hasIkeProposal("020", hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)));
+        c,
+        hasIkeProposal(
+            "010",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(14400))));
+
+    // asserting the default values being set
     assertThat(
-        c, hasIkeProposal("020", hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1)));
-    assertThat(c, hasIkeProposal("020", hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)));
-    assertThat(c, hasIkeProposal("020", hasLifeTimeSeconds(86400)));
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                hasLifeTimeSeconds(86400))));
   }
 
   private static String getCLRegex(

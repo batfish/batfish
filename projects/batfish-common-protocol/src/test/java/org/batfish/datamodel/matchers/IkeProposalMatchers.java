@@ -12,7 +12,7 @@ import org.batfish.datamodel.matchers.IkeProposalMatchersImpl.HasDiffieHellmanGr
 import org.batfish.datamodel.matchers.IkeProposalMatchersImpl.HasEncryptionAlgorithm;
 import org.batfish.datamodel.matchers.IkeProposalMatchersImpl.HasLifeTimeSeconds;
 
-public class IkeProposalMatchers {
+public final class IkeProposalMatchers {
 
   /**
    * Provides a matcher that matches if the IKE Proposal's value of {@code encryptionAlgorithm}
@@ -56,4 +56,6 @@ public class IkeProposalMatchers {
   public static HasLifeTimeSeconds hasLifeTimeSeconds(Integer lifeTimeSeconds) {
     return new HasLifeTimeSeconds(equalTo(lifeTimeSeconds));
   }
+
+  private IkeProposalMatchers() {}
 }

@@ -41,7 +41,7 @@ public class ConfigurationMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
-   * ikeProposal with specified name.
+   * IKE proposal with specified name.
    */
   public static HasIkeProposal hasIkeProposal(
       @Nonnull String name, @Nonnull Matcher<? super IkeProposal> subMatcher) {
