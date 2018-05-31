@@ -50,7 +50,7 @@ final class RowMatchersImpl {
       String columnName = columnNameOption.get();
       V value;
       try {
-        value = (V) item.get(columnName, _valueTypeReference);
+        value = item.get(columnName, _valueTypeReference);
       } catch (Exception e) {
         mismatchDescription.appendText(
             String.format(
