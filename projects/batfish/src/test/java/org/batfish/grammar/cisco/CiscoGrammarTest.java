@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
@@ -122,6 +123,7 @@ import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
@@ -625,6 +627,26 @@ public class CiscoGrammarTest {
             CiscoStructureType.KEYRING,
             "kundefined",
             CiscoStructureUsage.ISAKMP_PROFILE_KEYRING));
+  }
+
+  @Test
+  public void testIosNeighborDefaultOriginate() throws IOException {
+    String testrigName = "ios-default-originate";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of("originator", "listener"))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> routesOnListener =
+        dp.getRibs().get("listener").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+
+    // Ensure that default route is advertised to and installed on listener
+    assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
   }
 
   @Test

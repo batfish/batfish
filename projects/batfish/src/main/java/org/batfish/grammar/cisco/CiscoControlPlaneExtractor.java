@@ -797,6 +797,7 @@ import org.batfish.grammar.cisco.CiscoParser.Set_metric_type_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_next_hop_peer_address_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_next_hop_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_next_hop_rp_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Set_next_hop_self_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_origin_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_origin_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_rp_stanzaContext;
@@ -9022,11 +9023,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       hop = new RoutePolicyNextHopIP6(toIp6(ctx.IPV6_ADDRESS()));
     } else if (ctx.PEER_ADDRESS() != null) {
       hop = new RoutePolicyNextHopPeerAddress();
-    } else if (ctx.SELF() != null) {
-      hop = new RoutePolicyNextHopSelf();
     }
     boolean destVrf = (ctx.DESTINATION_VRF() != null);
+    if (destVrf) {
+      _w.redFlag("Unimplemented 'destination-vrf' directive in: " + getFullText(ctx));
+    }
     return new RoutePolicySetNextHop(hop, destVrf);
+  }
+
+  private RoutePolicyStatement toRoutePolicyStatement(Set_next_hop_self_rp_stanzaContext ctx) {
+    return new RoutePolicySetNextHop(new RoutePolicyNextHopSelf(), false);
   }
 
   private RoutePolicyStatement toRoutePolicyStatement(Set_origin_rp_stanzaContext ctx) {
@@ -9073,6 +9079,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Set_next_hop_rp_stanzaContext nhctx = ctx.set_next_hop_rp_stanza();
     if (nhctx != null) {
       return toRoutePolicyStatement(nhctx);
+    }
+
+    Set_next_hop_self_rp_stanzaContext nhsctx = ctx.set_next_hop_self_rp_stanza();
+    if (nhsctx != null) {
+      return toRoutePolicyStatement(nhsctx);
     }
 
     Set_origin_rp_stanzaContext octx = ctx.set_origin_rp_stanza();

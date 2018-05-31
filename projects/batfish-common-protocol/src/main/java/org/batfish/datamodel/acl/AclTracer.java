@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.google.common.collect.ImmutableList;
@@ -28,11 +29,11 @@ import org.batfish.datamodel.visitors.IpSpaceTracer;
 public final class AclTracer extends Evaluator {
 
   public static AclTrace trace(
-      IpAccessList ipAccessList,
-      Flow flow,
-      String srcInterface,
-      Map<String, IpAccessList> availableAcls,
-      Map<String, IpSpace> namedIpSpaces) {
+      @Nonnull IpAccessList ipAccessList,
+      @Nonnull Flow flow,
+      @Nullable String srcInterface,
+      @Nonnull Map<String, IpAccessList> availableAcls,
+      @Nonnull Map<String, IpSpace> namedIpSpaces) {
     AclTracer tracer = new AclTracer(flow, srcInterface, availableAcls, namedIpSpaces);
     tracer.trace(ipAccessList);
     return tracer.getTrace();
@@ -57,28 +58,30 @@ public final class AclTracer extends Evaluator {
     return _flow;
   }
 
-  public Map<IpSpace, String> getIpSpaceNames() {
+  public @Nonnull Map<IpSpace, String> getIpSpaceNames() {
     return _ipSpaceNames;
   }
 
-  public Map<String, IpSpace> getNamedIpSpaces() {
+  public @Nonnull Map<String, IpSpace> getNamedIpSpaces() {
     return _namedIpSpaces;
   }
 
-  public AclTrace getTrace() {
+  public @Nonnull AclTrace getTrace() {
     return new AclTrace(_traceEvents.build());
   }
 
-  public void recordAction(IpAccessList ipAccessList, int index, IpAccessListLine line) {
+  public void recordAction(
+      @Nonnull IpAccessList ipAccessList, int index, @Nonnull IpAccessListLine line) {
+    String description = firstNonNull(line.getName(), line.toString());
     if (line.getAction() == LineAction.ACCEPT) {
-      _traceEvents.add(
-          new PermittedByIpAccessListLine(ipAccessList.getName(), index, line.getName()));
+      _traceEvents.add(new PermittedByIpAccessListLine(ipAccessList.getName(), index, description));
     } else {
-      _traceEvents.add(new DeniedByIpAccessListLine(ipAccessList.getName(), index, line.getName()));
+      _traceEvents.add(new DeniedByIpAccessListLine(ipAccessList.getName(), index, description));
     }
   }
 
-  public void recordAction(String aclIpSpaceName, int index, AclIpSpaceLine line) {
+  public void recordAction(
+      @Nonnull String aclIpSpaceName, int index, @Nonnull AclIpSpaceLine line) {
     if (line.getAction() == LineAction.ACCEPT) {
       _traceEvents.add(
           new PermittedByAclIpSpaceLine(aclIpSpaceName, index, line.getIpSpace().toString()));
@@ -88,15 +91,16 @@ public final class AclTracer extends Evaluator {
     }
   }
 
-  public void recordDefaultDeny(IpAccessList ipAccessList) {
+  public void recordDefaultDeny(@Nonnull IpAccessList ipAccessList) {
     _traceEvents.add(new DefaultDeniedByIpAccessList(ipAccessList.getName()));
   }
 
-  public void recordDefaultDeny(String aclIpSpaceName) {
+  public void recordDefaultDeny(@Nonnull String aclIpSpaceName) {
     _traceEvents.add(new DefaultDeniedByAclIpSpace(aclIpSpaceName));
   }
 
-  public void recordNamedIpSpaceAction(String name, String description, boolean permit) {
+  public void recordNamedIpSpaceAction(
+      @Nonnull String name, @Nonnull String description, boolean permit) {
     if (permit) {
       _traceEvents.add(new PermittedByNamedIpSpace(name, description));
     } else {
@@ -104,7 +108,7 @@ public final class AclTracer extends Evaluator {
     }
   }
 
-  private boolean trace(HeaderSpace headerSpace) {
+  private boolean trace(@Nonnull HeaderSpace headerSpace) {
     if (!headerSpace.getDscps().isEmpty() && !headerSpace.getDscps().contains(_flow.getDscp())) {
       return false;
     }
@@ -286,7 +290,7 @@ public final class AclTracer extends Evaluator {
     return true;
   }
 
-  private boolean trace(IpAccessList ipAccessList) {
+  private boolean trace(@Nonnull IpAccessList ipAccessList) {
     List<IpAccessListLine> lines = ipAccessList.getLines();
     for (int i = 0; i < lines.size(); i++) {
       IpAccessListLine line = lines.get(i);
@@ -299,7 +303,7 @@ public final class AclTracer extends Evaluator {
     return false;
   }
 
-  public boolean trace(IpSpace ipSpace, Ip ip) {
+  public boolean trace(@Nonnull IpSpace ipSpace, @Nonnull Ip ip) {
     return ipSpace.accept(new IpSpaceTracer(this, ip));
   }
 
