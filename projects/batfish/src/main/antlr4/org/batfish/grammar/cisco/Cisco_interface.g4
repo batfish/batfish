@@ -783,8 +783,10 @@ if_null_single
    NO?
    (
       BCMC_OPTIMIZATION
+      | DOT1X
       | JUMBO
       | LINKDEBOUNCE
+      | MAB
       | PHY
       | SWITCHPORT CAPTURE
       | SUPPRESS_ARP

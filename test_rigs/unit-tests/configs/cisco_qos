@@ -2,6 +2,12 @@
 !
 hostname cisco_qos
 !
+class-map type control subscriber match-none ABC
+ match result-type aaa-timeout
+ match authorization-status authorized
+ match method dot1x
+ match activated-service-template DEF
+ match service-template GHI
 class-map type network-qos match-any bippety
   description dum dee dum
   match cos 0,5-7
@@ -12,6 +18,7 @@ class-map type network-qos match-any boppety
 !
 class-map type pbr match-any boop
  10 match ip access-group boop
+ 20 match access-list boop2
 !
 class-map match-any cos_all
   match class-map blip
@@ -114,6 +121,15 @@ policy-map type network-qos default-fleep-policy
     congestion-control tail-drop
     no congestion-control random-detect
     mtu 1500
+service-template template_name
+ access-group ACL_NAME
+ description Service template for Fail open mode
+ inactivity-timer 3600 
+ linksec policy must-secure
+ linksec policy should-secure
+ vlan 313
+ voice vlan
+ tag USER_DEFINED_TAG
 table-map tablemap1
  default copy
  from 10,12 to 14
