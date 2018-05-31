@@ -272,7 +272,8 @@
         "files" : {
           "cisco_qos" : [
             19,
-            20
+            20,
+            21
           ]
         }
       },
@@ -300,9 +301,9 @@
         "description" : "Unused structure of type: 'class-map' with name: 'cos_all'",
         "files" : {
           "cisco_qos" : [
-            22,
             23,
-            24
+            24,
+            25
           ]
         }
       },
@@ -864,8 +865,8 @@
         "description" : "Unused structure of type: 'object-group network' with name: '1.2.3.4-24'",
         "files" : {
           "cisco_qos" : [
-            32,
-            33
+            33,
+            34
           ]
         }
       },
@@ -873,9 +874,9 @@
         "description" : "Unused structure of type: 'object-group network' with name: 'dns_servers'",
         "files" : {
           "cisco_qos" : [
-            34,
             35,
-            36
+            36,
+            37
           ]
         }
       },
@@ -883,10 +884,10 @@
         "description" : "Unused structure of type: 'object-group network' with name: 'ntp_servers'",
         "files" : {
           "cisco_qos" : [
-            37,
             38,
             39,
-            40
+            40,
+            41
           ]
         }
       },
@@ -903,12 +904,12 @@
         "description" : "Unused structure of type: 'policy-map type inspect' with name: 'pminspect'",
         "files" : {
           "cisco_qos" : [
-            41,
             42,
             43,
             44,
             45,
-            46
+            46,
+            47
           ]
         }
       },
@@ -1284,7 +1285,6 @@
         "description" : "Unused structure of type: 'service-template' with name: 'template_name'",
         "files" : {
           "cisco_qos" : [
-            123,
             124,
             125,
             126,
@@ -1292,7 +1292,8 @@
             128,
             129,
             130,
-            131
+            131,
+            132
           ]
         }
       },
@@ -1787,7 +1788,8 @@
           ],
           "boop" : [
             19,
-            20
+            20,
+            21
           ],
           "boppety" : [
             14,
@@ -1796,41 +1798,40 @@
             17
           ],
           "cos_all" : [
-            22,
             23,
-            24
+            24,
+            25
           ]
         },
         "object-group network" : {
           "1.2.3.4-24" : [
-            32,
-            33
+            33,
+            34
           ],
           "dns_servers" : [
-            34,
             35,
-            36
+            36,
+            37
           ],
           "ntp_servers" : [
-            37,
             38,
             39,
-            40
+            40,
+            41
           ]
         },
         "policy-map type inspect" : {
           "pminspect" : [
-            41,
             42,
             43,
             44,
             45,
-            46
+            46,
+            47
           ]
         },
         "service-template" : {
           "template_name" : [
-            123,
             124,
             125,
             126,
@@ -1838,7 +1839,8 @@
             128,
             129,
             130,
-            131
+            131,
+            132
           ]
         }
       },
