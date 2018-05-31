@@ -274,6 +274,14 @@
           ]
         }
       },
+      "undefined:class-map:usage:policy-map event class:MY_CLASS_2" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map event class' named 'MY_CLASS_2'",
+        "files" : {
+          "cisco_qos" : [
+            131
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:mytransformset" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
         "files" : {
@@ -1241,7 +1249,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 153
+      "numResults" : 154
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1687,6 +1695,11 @@
           "MY_CLASS_1" : {
             "policy-map event class" : [
               129
+            ]
+          },
+          "MY_CLASS_2" : {
+            "policy-map event class" : [
+              131
             ]
           },
           "bippetyboo-drop" : {
