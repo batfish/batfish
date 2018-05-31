@@ -232,6 +232,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
@@ -3692,6 +3693,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     RoutingProtocol protocol = toRoutingProtocol(ctx.protocol);
     PsFromProtocol fromProtocol = new PsFromProtocol(protocol);
     _currentPsTerm.getFroms().add(fromProtocol);
+  }
+
+  @Override
+  public void exitPopsf_rib(Popsf_ribContext ctx) {
+    _w.redFlag(
+        String.format(
+            "unimplemented 'policy-options policy-statement term' from clause: %s",
+            getFullText(ctx)));
   }
 
   @Override
