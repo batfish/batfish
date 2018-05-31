@@ -70,6 +70,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
+import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
@@ -481,6 +482,7 @@ import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenDefaultActionAccept;
 import org.batfish.representation.juniper.PsThenDefaultActionReject;
+import org.batfish.representation.juniper.PsThenExternal;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetricAdd;
@@ -3779,10 +3781,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_external(Popst_externalContext ctx) {
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' then clause: %s",
-            getFullText(ctx)));
+    int type = toInt(ctx.DEC());
+    if (type == 1) {
+      _currentPsThens.add(new PsThenExternal(OspfMetricType.E1));
+    } else if (type == 2) {
+      _currentPsThens.add(new PsThenExternal(OspfMetricType.E2));
+    } else {
+      _w.redFlag(String.format("unimplemented: then %s", getFullText(ctx)));
+    }
   }
 
   @Override
