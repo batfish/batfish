@@ -258,6 +258,14 @@
           ]
         }
       },
+      "undefined:class-map:usage:policy-map event class:MY_CLASS_1" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map event class' named 'MY_CLASS_1'",
+        "files" : {
+          "cisco_qos" : [
+            128
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:mytransformset" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
         "files" : {
@@ -1197,6 +1205,14 @@
           ]
         }
       },
+      "undefined:service-template:usage:policy-map event class activate:my_TEMPLATE_NAME" : {
+        "description" : "Undefined reference to structure of type: 'service-template' with usage: 'policy-map event class activate' named 'my_TEMPLATE_NAME'",
+        "files" : {
+          "cisco_qos" : [
+            129
+          ]
+        }
+      },
       "undefined:vlan:usage:interface vlan:bippetyboppety" : {
         "description" : "Undefined reference to structure of type: 'vlan' with usage: 'interface vlan' named 'bippetyboppety'",
         "files" : {
@@ -1217,7 +1233,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 150
+      "numResults" : 152
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1655,6 +1671,11 @@
           }
         },
         "class-map" : {
+          "MY_CLASS_1" : {
+            "policy-map event class" : [
+              128
+            ]
+          },
           "bippetyboo-drop" : {
             "policy-map class" : [
               49
@@ -1737,6 +1758,11 @@
           "GHI" : {
             "class-map service-template" : [
               10
+            ]
+          },
+          "my_TEMPLATE_NAME" : {
+            "policy-map event class activate" : [
+              129
             ]
           }
         }

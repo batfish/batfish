@@ -14467,11 +14467,12 @@
             "          limit = DEC:'50'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
-            "        (bgp_scan_time_rb_stanza",
-            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
-            "          SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
-            "          secs = DEC:'5'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (bgp_tail",
+            "          (bgp_scan_time_bgp_tail",
+            "            BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "            SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
+            "            secs = DEC:'5'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_connected_bgp_tail",
@@ -14574,6 +14575,12 @@
             "              IPV6:'ipv6'  <== mode:DEFAULT_MODE",
             "              UNICAST:'unicast'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (bgp_tail",
+            "            (bgp_scan_time_bgp_tail",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
+            "              secs = DEC:'5'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (bgp_tail",
             "            (redistribute_ospfv3_bgp_tail",
             "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
@@ -30968,6 +30975,122 @@
             "            DEC:'1500'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
+            "    (s_policy_map",
+            "      POLICY_MAP:'policy-map'  <== mode:DEFAULT_MODE",
+            "      TYPE:'type'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        CONTROL:'control'  <== mode:DEFAULT_MODE)",
+            "      (variable",
+            "        SUBSCRIBER:'subscriber'  <== mode:DEFAULT_MODE)",
+            "      (variable",
+            "        VARIABLE:'my-bogus-policy'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (pm_event",
+            "        EVENT:'event'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'session-started'  <== mode:DEFAULT_MODE",
+            "          MATCH_ALL:'match-all'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (pm_event_class",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          CLASS:'class'  <== mode:DEFAULT_MODE",
+            "          ALWAYS:'always'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'do-until-failure'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          DEC:'20'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            AUTHENTICATE:'authenticate'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            VARIABLE:'using'  <== mode:DEFAULT_MODE",
+            "            DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "            PRIORITY:'priority'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (pm_event",
+            "        EVENT:'event'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'authentication-failure'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'match-first'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (pm_event_class",
+            "          DEC:'5'  <== mode:DEFAULT_MODE",
+            "          CLASS:'class'  <== mode:DEFAULT_MODE",
+            "          classname = (variable",
+            "            VARIABLE:'MY_CLASS_1'  <== mode:DEFAULT_MODE)",
+            "          (variable",
+            "            VARIABLE:'do-until-failure'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
+            "          SERVICE_TEMPLATE:'service-template'  <== mode:DEFAULT_MODE",
+            "          stname = (variable",
+            "            VARIABLE:'my_TEMPLATE_NAME'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            CLASS:'class'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            VARIABLE:'MY_CLASS_2'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'do-until-failure'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            PAUSE:'pause'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            REAUTHENTICATION:'reauthentication'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'20'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'authorize'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'30'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'terminate'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'40'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            AUTHENTICATE:'authenticate'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            VARIABLE:'using'  <== mode:DEFAULT_MODE",
+            "            MAB:'mab'  <== mode:DEFAULT_MODE",
+            "            PRIORITY:'priority'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'50'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'authentication-restart'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            DEC:'60'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'60'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'terminate'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            MAB:'mab'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'70'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'authentication-restart'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            DEC:'60'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'80'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'clear-session'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'90'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'resume'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            REAUTHENTICATION:'reauthentication'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
             "    (s_service_template",
             "      SERVICE_TEMPLATE:'service-template'  <== mode:DEFAULT_MODE",
             "      name = (variable",
@@ -31304,7 +31427,17 @@
             "        VERSION:'version'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          DEC:'2'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (rr_distance",
+            "        DISTANCE:'distance'  <== mode:DEFAULT_MODE",
+            "        distance = DEC:'12'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (rr_distance",
+            "        DISTANCE:'distance'  <== mode:DEFAULT_MODE",
+            "        distance = DEC:'123'  <== mode:DEFAULT_MODE",
+            "        prefix = IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
+            "        mask = IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -53358,25 +53491,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                33
+                34
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                31
+                32
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                35
+                36
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                29
+                30
               ],
               "numReferrers" : 1
             }
@@ -53884,15 +54017,15 @@
           "service-template" : {
             "template_name" : {
               "definitionLines" : [
-                123,
-                124,
-                125,
-                126,
-                127,
-                128,
-                129,
-                130,
-                131
+                141,
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149
               ],
               "numReferrers" : 0
             }
@@ -55321,6 +55454,11 @@
             }
           },
           "class-map" : {
+            "MY_CLASS_1" : {
+              "policy-map event class" : [
+                128
+              ]
+            },
             "bippetyboo-drop" : {
               "policy-map class" : [
                 49
@@ -55403,6 +55541,11 @@
             "GHI" : {
               "class-map service-template" : [
                 10
+              ]
+            },
+            "my_TEMPLATE_NAME" : {
+              "policy-map event class activate" : [
+                129
               ]
             }
           }
