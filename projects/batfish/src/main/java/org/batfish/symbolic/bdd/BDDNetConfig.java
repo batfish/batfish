@@ -2,21 +2,21 @@ package org.batfish.symbolic.bdd;
 
 public class BDDNetConfig {
 
-  private boolean _keepLp;
+  private final boolean _keepLp;
 
-  private boolean _keepAd;
+  private final boolean _keepAd;
 
-  private boolean _keepMetric;
+  private final boolean _keepMetric;
 
-  private boolean _keepMed;
+  private final boolean _keepMed;
 
-  private boolean _keepOspfMetric;
+  private final boolean _keepOspfMetric;
 
-  private boolean _keepProtocol;
+  private final boolean _keepProtocol;
 
-  private boolean _keepCommunities;
+  private final boolean _keepCommunities;
 
-  private boolean _keepRouters;
+  private final boolean _keepRouters;
 
   /*
    * A configuration object that lets us tweak the behavior of a BDDNetFactory.

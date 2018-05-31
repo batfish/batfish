@@ -219,7 +219,7 @@ public class BDDUtils {
         } else if (nf.getConfig().getKeepProtocol()
             && i >= nf.getIndexRoutingProtocol()
             && i < nf.getIndexRoutingProtocol() + nf.getNumBitsRoutingProtocol()) {
-          proto += (1 << i - nf.getIndexRoutingProtocol());
+          proto += byIndex(nf.getIndexRoutingProtocol(), nf.getNumBitsRoutingProtocol(), i);
         } else if (i >= nf.getIndexPrefixLen()
             && i < nf.getIndexPrefixLen() + nf.getNumBitsPrefixLen()) {
           prefixLen += byIndex(nf.getIndexPrefixLen(), nf.getNumBitsPrefixLen(), i);
