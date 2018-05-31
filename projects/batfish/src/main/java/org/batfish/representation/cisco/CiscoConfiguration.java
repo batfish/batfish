@@ -309,14 +309,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final CiscoFamily _cf;
 
-  /**
-   * These can be either ipv4 or ipv6, so we must check both protocols for access-lists when doing
-   * undefined references check
-   */
-  private final Set<String> _classMapAccessGroups;
-
-  private final Set<String> _classMapAccessLists;
-
   private final Set<String> _controlPlaneAccessGroups;
 
   private final Set<String> _cryptoAcls;
@@ -466,8 +458,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _asPathSets = new TreeMap<>();
     _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
     _cf = new CiscoFamily();
-    _classMapAccessGroups = new TreeSet<>();
-    _classMapAccessLists = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
     _dhcpRelayServers = new ArrayList<>();
@@ -689,14 +679,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public CiscoFamily getCf() {
     return _cf;
-  }
-
-  public Set<String> getClassMapAccessGroups() {
-    return _classMapAccessGroups;
-  }
-
-  public Set<String> getClassMapAccessLists() {
-    return _classMapAccessLists;
   }
 
   public Set<String> getControlPlaneAccessGroups() {

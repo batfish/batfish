@@ -589,14 +589,19 @@ pm_event_class
    ( ALWAYS
      | classname = variable
    )
-   // TODO: after we solve token overload, change variable to do-until-failure
-   variable NEWLINE
+   DO_UNTIL_FAILURE NEWLINE
    (
       DEC
       (
           ACTIVATE SERVICE_TEMPLATE stname = variable
-          // TODO: after we solve token overload, change variable to one of authenticate, authorize, clear-session, pause, restrict, resume, terminate
-          | variable
+          | AUTHENTICATE
+          | AUTHENTICATION_RESTART
+          | AUTHORIZE
+          | CLEAR_SESSION
+          | PAUSE
+          | RESTRICT
+          | RESUME
+          | TERMINATE
       ) null_rest_of_line
    )*
 ;
