@@ -123,7 +123,7 @@ public class BDDUtils {
     return ips;
   }
 
-  public static int numBits(int size) {
+  public static int numBits(long size) {
     double log = Math.log((double) size);
     double base = Math.log((double) 2);
     if (size == 0) {

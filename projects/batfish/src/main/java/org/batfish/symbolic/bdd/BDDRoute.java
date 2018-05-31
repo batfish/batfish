@@ -463,6 +463,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     result = 31 * result + (_srcRouter != null ? _srcRouter.hashCode() : 0);
     result = 31 * result + (_protocolHistory != null ? _protocolHistory.hashCode() : 0);
     result = 31 * result + (_fromRRClient != null ? _fromRRClient.hashCode() : 0);
+    result = 31 * result + (_nextHopIp != null ? _nextHopIp.hashCode() : 0);
     return result;
   }
 
@@ -483,7 +484,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_dstRouter, other._dstRouter)
         && Objects.equals(_srcRouter, other._srcRouter)
         && Objects.equals(_protocolHistory, other._protocolHistory)
-        && Objects.equals(_fromRRClient, other._fromRRClient);
+        && Objects.equals(_fromRRClient, other._fromRRClient)
+        && Objects.equals(_nextHopIp, other._nextHopIp);
   }
 
   public void orWith(BDDRoute other) {
@@ -530,6 +532,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     if (_factory.getConfig().getKeepRRClient()) {
       _fromRRClient.orWith(other._fromRRClient);
+    }
+
+    if (_factory.getConfig().getKeepNextHopIp()) {
+      BDD[] nh = getNextHopIp().getInteger().getBitvec();
+      BDD[] nh2 = other.getNextHopIp().getInteger().getBitvec();
+      for (int i = 0; i < nh.length; i++) {
+        nh[i].orWith(nh2[i]);
+      }
     }
 
     if (_factory.getConfig().getKeepCommunities()) {

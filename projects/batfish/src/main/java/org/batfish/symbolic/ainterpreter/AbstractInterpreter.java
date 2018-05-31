@@ -14,6 +14,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import net.sf.javabdd.BDD;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
@@ -44,16 +45,24 @@ import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
+import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.smt.EdgeType;
 
-// TODO: only recompute reachability for iBGP if something has changed
-// For example, when processing multiple edges on the same router
+// TODO: only recompute reachability for iBGP if something has changed?
+// TODO: have separate update and withdraw advertisements?
 
 /*
  * Computes an overapproximation of some concrete set of states in the
  * network using abstract interpretation
  */
 public class AbstractInterpreter {
+
+  public enum DomainType {
+    EXACT,
+    REACHABILITY
+  }
+
+  private static final DomainType domainType = DomainType.EXACT;
 
   // The network topology graph
   private Graph _graph;
@@ -66,7 +75,6 @@ public class AbstractInterpreter {
 
   // A collection of single node BDDs representing the individual routeVariables
   private BDDRoute _variables;
-
   /*
    * Construct an abstract ainterpreter the answer a particular question.
    * This could be done more in a fashion like Batfish, where we run
@@ -75,7 +83,17 @@ public class AbstractInterpreter {
   public AbstractInterpreter(IBatfish batfish) {
     _graph = new Graph(batfish);
     NodesSpecifier ns = new NodesSpecifier(".*");
-    BDDNetConfig config = new BDDNetConfig(true);
+    BDDNetConfig config;
+    switch (domainType) {
+      case EXACT:
+        config = new BDDNetConfig(false);
+        break;
+      case REACHABILITY:
+        config = new BDDNetConfig(true);
+        break;
+      default:
+        throw new BatfishException("Invalid domain type: " + domainType);
+    }
     _network = BDDNetwork.create(_graph, ns, config, false);
     _netFactory = _network.getNetFactory();
     _variables = _netFactory.routeVariables();
@@ -120,18 +138,38 @@ public class AbstractInterpreter {
    * Creates a modification that increments the metric by 'cost'.
    */
   private BDDTransferFunction implicitTransfer(int cost, Ip nextHop) {
-    // update metric
     BDDRoute route = _netFactory.routeVariables().deepCopy();
-    BDDInteger met = route.getMetric();
-    BDDInteger addedCost = new BDDInteger(met);
-    addedCost.setValue(cost);
-    route.setMetric(met.add(addedCost));
-    // update next hop
-    BDDFiniteDomain<Ip> nh = route.getNextHopIp();
-    BDDFiniteDomain<Ip> value = new BDDFiniteDomain<>(nh);
-    value.setValue(nextHop);
-    route.setNextHopIp(value);
+    if (_netFactory.getConfig().getKeepMetric()) {
+      // update metric
+      BDDInteger met = route.getMetric();
+      BDDInteger addedCost = new BDDInteger(met);
+      addedCost.setValue(cost);
+      route.setMetric(met.add(addedCost));
+    }
+    if (_netFactory.getConfig().getKeepNextHopIp()) {
+      // update next hop
+      BDDFiniteDomain<Ip> nh = route.getNextHopIp();
+      BDDFiniteDomain<Ip> value = new BDDFiniteDomain<>(nh);
+      value.setValue(nextHop);
+      route.setNextHopIp(value);
+    }
     return new BDDTransferFunction(route, _netFactory.one());
+  }
+
+  private <T> boolean withdrawn(
+      IAbstractDomain<T> domain,
+      Table2<String, GraphEdge, T> perNeighbor,
+      String router,
+      GraphEdge edge,
+      T newValue) {
+
+    T existing = perNeighbor.get(router, edge);
+    perNeighbor.put(router, edge, newValue);
+    if (existing == null) {
+      return false;
+    }
+    T both = domain.merge(existing, newValue);
+    return (!both.equals(newValue));
   }
 
   /*
@@ -147,9 +185,16 @@ public class AbstractInterpreter {
     Map<String, Map<String, Set<Prefix>>> origStatic = new HashMap<>();
     initializeOriginatedPrefixes(origBgp, origOspf, origConn, origStatic);
 
+    // The up-to-date collection of messages from each protocol
     Map<String, AbstractRib<T>> reachable = new HashMap<>();
-    Set<String> initialRouters = new HashSet<>();
 
+    // Cache of all messages that can't change, so we don't have to recompute
+    Map<String, T> nonDynamic = new HashMap<>();
+
+    // Per-neighbor rib information
+    Table2<String, GraphEdge, T> perNeighbor = new Table2<>();
+
+    Set<String> initialRouters = new HashSet<>();
     long t = System.currentTimeMillis();
     for (String router : _graph.getRouters()) {
       Configuration conf = _graph.getConfigurations().get(router);
@@ -183,7 +228,10 @@ public class AbstractInterpreter {
         }
       }
 
-      T rib = domain.selectBest(domain.merge(domain.merge(domain.merge(bgp, ospf), stat), conn));
+      T ndyn = domain.merge(stat, conn);
+      nonDynamic.put(router, ndyn);
+
+      T rib = domain.selectBest(domain.merge(domain.merge(bgp, ospf), ndyn));
       AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib);
       reachable.put(router, abstractRib);
     }
@@ -198,7 +246,12 @@ public class AbstractInterpreter {
       update.add(router);
     }
 
+    long totalTimeSelectBest = 0;
+    long totalTimeTransfer = 0;
+    long tempTime;
+
     t = System.currentTimeMillis();
+
     while (!update.isEmpty()) {
       String router = update.poll();
       assert (router != null);
@@ -248,12 +301,17 @@ public class AbstractInterpreter {
             if (exportFilter != null) {
               EdgeTransformer exp =
                   new EdgeTransformer(ge, EdgeType.EXPORT, ospf, exportFilter, aclOut);
+              tempTime = System.currentTimeMillis();
               tmpOspf = domain.transform(tmpOspf, exp);
+              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
             }
             if (importFilter != null) {
               EdgeTransformer imp =
                   new EdgeTransformer(rev, EdgeType.IMPORT, ospf, importFilter, aclIn);
+
+              tempTime = System.currentTimeMillis();
               tmpOspf = domain.transform(tmpOspf, imp);
+              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
             }
 
             // Update the cost if we keep that around. This is not part of the transfer function
@@ -264,13 +322,19 @@ public class AbstractInterpreter {
               EdgeTransformer et =
                   new EdgeTransformer(
                       rev, EdgeType.IMPORT, ospf, implicitTransfer(cost, nextHop), aclIn);
+
+              tempTime = System.currentTimeMillis();
               tmpOspf = domain.transform(tmpOspf, et);
               fromRouter = domain.transform(fromRouter, et);
+              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
             }
 
             newNeighborOspf = domain.merge(fromRouter, tmpOspf);
+
             newNeighborOspf = domain.merge(neighborOspf, newNeighborOspf);
+            tempTime = System.currentTimeMillis();
             newNeighborOspf = domain.selectBest(newNeighborOspf);
+            totalTimeSelectBest += (System.currentTimeMillis() - tempTime);
           }
 
           // Update BGP
@@ -347,14 +411,19 @@ public class AbstractInterpreter {
                 EdgeTransformer exp =
                     new EdgeTransformer(ge, EdgeType.EXPORT, proto, exportFilter, aclOut);
 
+                tempTime = System.currentTimeMillis();
                 tmpBgp = domain.transform(tmpBgp, exp);
+                totalTimeTransfer += (System.currentTimeMillis() - tempTime);
                 // System.out.println("  tmpBgp after export: " + domain.debug(tmpBgp));
               }
 
               if (importFilter != null) {
                 EdgeTransformer imp =
                     new EdgeTransformer(rev, EdgeType.IMPORT, proto, importFilter, aclIn);
+
+                tempTime = System.currentTimeMillis();
                 tmpBgp = domain.transform(tmpBgp, imp);
+                totalTimeTransfer += (System.currentTimeMillis() - tempTime);
                 // System.out.println("  tmpBgp after import: " + domain.debug(tmpBgp));
               }
 
@@ -369,16 +438,25 @@ public class AbstractInterpreter {
               }
               tmpBgp = domain.aggregate(neighborConf, transformers, tmpBgp);
 
+              boolean anyWithdraw = withdrawn(domain, perNeighbor, neighbor, rev, tmpBgp);
+              assert (!anyWithdraw);
+              // TODO: if withdraw, recompute rib from all neighbors rather than just this one
               newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
-              newNeighborBgp = domain.selectBest(newNeighborBgp);
+
+              // tempTime = System.currentTimeMillis();
+              // newNeighborBgp = domain.selectBest(newNeighborBgp);
+              // totalTimeSelectBest += (System.currentTimeMillis() - tempTime);
             }
           }
 
           // Update RIB and apply decision process (if any)
+          T ndyn = nonDynamic.get(neighbor);
           T newNeighborRib = domain.merge(newNeighborBgp, newNeighborOspf);
-          newNeighborRib = domain.merge(newNeighborRib, neighborStat);
-          newNeighborRib = domain.merge(newNeighborRib, neighborConn);
+          newNeighborRib = domain.merge(newNeighborRib, ndyn);
+
+          tempTime = System.currentTimeMillis();
           newNeighborRib = domain.selectBest(newNeighborRib);
+          totalTimeSelectBest += (System.currentTimeMillis() - tempTime);
 
           // System.out.println("  neighbor RIB now: " + domain.debug(newNeighborRib));
 
@@ -398,21 +476,29 @@ public class AbstractInterpreter {
     }
 
     System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
+    System.out.println("Time in select best: " + totalTimeSelectBest);
+    System.out.println("Time in transfer: " + totalTimeTransfer);
     return reachable;
   }
 
-  /*
-   * Compute an underapproximation of all-pairs reachability
-   */
-  public AnswerElement routes(NodesSpecifier ns) {
-    ReachabilityDomain domain = new ReachabilityDomain(_netFactory);
-    // ConcreteDomain domain = new ConcreteDomain(_netFactory);
-    Map<String, AbstractRib<ReachabilityDomainElement>> reachable = computeFixedPoint(domain);
+  private IAbstractDomain<?> createDomain() {
+    switch (domainType) {
+      case EXACT:
+        return new ConcreteDomain(_netFactory);
+      case REACHABILITY:
+        return new ReachabilityDomain(_netFactory);
+      default:
+        throw new BatfishException("Invalid domain type: " + domainType);
+    }
+  }
+
+  private <T> AnswerElement routes(NodesSpecifier ns, IAbstractDomain<T> domain) {
+    Map<String, AbstractRib<T>> reachable = computeFixedPoint(domain);
     SortedSet<RibEntry> routes = new TreeSet<>();
     SortedMap<String, SortedSet<RibEntry>> routesByHostname = new TreeMap<>();
     Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
     for (String router : routers) {
-      AbstractRib<ReachabilityDomainElement> rib = reachable.get(router);
+      AbstractRib<T> rib = reachable.get(router);
       SortedSet<RibEntry> ribEntries = new TreeSet<>(domain.toRoutes(rib));
       routesByHostname.put(router, ribEntries);
       routes.addAll(ribEntries);
@@ -421,6 +507,20 @@ public class AbstractInterpreter {
     answer.setRoutes(routes);
     answer.setRoutesByHostname(routesByHostname);
     return answer;
+  }
+
+  /*
+   * Compute an underapproximation of all-pairs reachability
+   */
+  public AnswerElement routes(NodesSpecifier ns) {
+    switch (domainType) {
+      case EXACT:
+        return routes(ns, new ConcreteDomain(_netFactory));
+      case REACHABILITY:
+        return routes(ns, new ReachabilityDomain(_netFactory));
+      default:
+        throw new BatfishException("Invalid domain type: " + domainType);
+    }
   }
 
   private BDD isRouter(BDDFiniteDomain<String> fdom, NodesSpecifier ns) {

@@ -4,10 +4,13 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
@@ -48,6 +51,8 @@ public class BDDNetFactory {
   private List<Long> _allAds;
 
   private List<Ip> _allIps;
+
+  private Long _maxCost;
 
   private BDDRoute _routeVariables;
 
@@ -159,6 +164,7 @@ public class BDDNetFactory {
         new ArrayList<>(BDDUtils.findAllMeds(g)),
         new ArrayList<>(BDDUtils.findAllAdminDistances(g)),
         new ArrayList<>(BDDUtils.findAllNextHopIps(g)),
+        conservativeMaxCost(g),
         config);
   }
 
@@ -169,10 +175,12 @@ public class BDDNetFactory {
       List<Long> meds,
       List<Long> adminDistances,
       List<Ip> ips,
+      long maxCost,
       BDDNetConfig config) {
 
     _allRouters = routers;
     _allAds = adminDistances;
+    _maxCost = maxCost;
 
     _allIps = ips;
     Ip ip = new Ip(0);
@@ -215,6 +223,7 @@ public class BDDNetFactory {
     Collections.sort(_allMeds);
     Collections.sort(_allLocalPrefs);
     Collections.sort(_allRouters);
+    Collections.sort(_allIps);
     // invert local preference order so lower is better
     Collections.reverse(_allLocalPrefs);
 
@@ -270,7 +279,7 @@ public class BDDNetFactory {
     _numBitsCommunities = (config.getKeepCommunities() ? _allCommunities.size() : 0);
     _numBitsLocalPref = (config.getKeepLp() ? BDDUtils.numBits(_allLocalPrefs.size()) : 0);
     _numBitsMed = (config.getKeepMed() ? BDDUtils.numBits(_allMeds.size()) : 0);
-    _numBitsMetric = (config.getKeepMetric() ? 32 : 0);
+    _numBitsMetric = (config.getKeepMetric() ? BDDUtils.numBits(_maxCost) : 0);
     _numBitsOspfMetric =
         (config.getKeepOspfMetric() ? BDDUtils.numBits(_allMetricTypes.size()) : 0);
     _numBitsRoutingProtocol = (config.getKeepProtocol() ? BDDUtils.numBits(_allProtos.size()) : 0);
@@ -338,6 +347,26 @@ public class BDDNetFactory {
 
     _routeVariables = createRoute();
     _packetVariables = createPacket();
+  }
+
+  private static long conservativeMaxCost(Graph g) {
+    Set<Long> metrics = BDDUtils.findAllSetMetrics(g);
+    long maxCost = 0;
+    for (Long metric : metrics) {
+      if (metric > maxCost) {
+        maxCost = metric;
+      }
+    }
+    for (Configuration conf : g.getConfigurations().values()) {
+      for (Interface iface : conf.getInterfaces().values()) {
+        int cost = 1;
+        if (iface.getOspfCost() != null) {
+          cost = Math.max(cost, iface.getOspfCost());
+        }
+        maxCost += cost;
+      }
+    }
+    return maxCost;
   }
 
   public BDD one() {
@@ -618,5 +647,9 @@ public class BDDNetFactory {
 
   public List<Ip> getAllIps() {
     return _allIps;
+  }
+
+  public Long getMaxCost() {
+    return _maxCost;
   }
 }

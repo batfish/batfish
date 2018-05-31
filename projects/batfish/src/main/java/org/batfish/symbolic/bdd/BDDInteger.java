@@ -77,7 +77,7 @@ public class BDDInteger {
       if ((val & 1) != 0) {
         bdd = bdd.and(b);
       } else {
-        bdd = bdd.and(b.not());
+        bdd = bdd.andWith(b.not());
       }
       val >>= 1;
     }

@@ -54,6 +54,9 @@ public class DomainHelper {
   // The source router bits that we will quantify away
   private BDD _tempRouterBits;
 
+  // Bits for attributes that are transient (not transitive)
+  private BDD _transientBits;
+
   // Substitution of dst router bits for src router bits used to compute transitive closure
   private BDDPairing _dstToTempRouterSubstitution;
 
@@ -67,6 +70,7 @@ public class DomainHelper {
     _lengthCache = new HashMap<>();
     _dstBitsCache = new HashMap<>();
     _lenBits = _netFactory.one();
+    _transientBits = _netFactory.one();
 
     if (_netFactory.getConfig().getKeepRouters()) {
       BDD[] srcRouterBits = _variables.getSrcRouter().getInteger().getBitvec();
@@ -93,6 +97,12 @@ public class DomainHelper {
     BDD[] pfxLen = _variables.getPrefixLength().getBitvec();
     for (BDD x : pfxLen) {
       _lenBits = _lenBits.and(x);
+    }
+
+    if (_netFactory.getConfig().getKeepNextHopIp()) {
+      for (BDD x : _variables.getNextHopIp().getInteger().getBitvec()) {
+        _transientBits = _transientBits.and(x);
+      }
     }
 
     _allQuantifyBits = _netFactory.one();
@@ -154,14 +164,15 @@ public class DomainHelper {
     BDDRoute mods = f.getRoute();
     _pairing.reset();
     _modifiedBits = _netFactory.one();
-    input = modifyNextHop(input, mods);
+    // reverse order from BDD order is the best
     input = modifyFromRRClient(input, mods.getFromRRClient());
+    input = modifyCommunities(input, mods);
     input = modifyMed(input, mods);
     input = modifyMetric(input, mods);
     input = modifyOspfMetric(input, mods);
     input = modifyLocalPref(input, mods);
     input = modifyAdminDist(input, mods);
-    input = modifyCommunities(input, mods);
+    input = modifyNextHop(input, mods);
     input = modifyProtocol(input, t.getProtocol());
     input = input.exist(_modifiedBits);
     input = input.replaceWith(_pairing);
@@ -171,7 +182,7 @@ public class DomainHelper {
   private BDD modifyInteger(
       BDD input, BDDInteger vars, BDDInteger tempVars, BDDInteger mods, int modIndex) {
     BDD[] vec = vars.getBitvec();
-    for (int i = 0; i < vec.length; i++) {
+    for (int i = vec.length - 1; i >= 0; i--) {
       BDD modBit = mods.getBitvec()[i];
       if (notIdentity(modBit, modIndex)) {
         BDD oldBit = vec[i];
@@ -190,9 +201,13 @@ public class DomainHelper {
       BDDFiniteDomain<T> tempVars,
       BDDFiniteDomain<T> mods,
       int modIndex) {
+    // System.out.println("-----------------------");
+    Map<BDD, Set<Integer>> map = new HashMap<>();
     BDD[] vec = vars.getInteger().getBitvec();
-    for (int i = 0; i < vec.length; i++) {
+    for (int i = vec.length - 1; i >= 0; i--) {
       BDD modBit = mods.getInteger().getBitvec()[i];
+      // Set<Integer> is = map.computeIfAbsent(modBit, k -> new HashSet<>());
+      // is.add(i);
       if (notIdentity(modBit, modIndex)) {
         BDD oldBit = vec[i];
         BDD newBit = tempVars.getInteger().getBitvec()[i];
@@ -201,6 +216,8 @@ public class DomainHelper {
         _modifiedBits = _modifiedBits.and(oldBit);
       }
     }
+    // System.out.println("Unique: " + map.size() + " out of " + vec.length);
+    // System.out.println("-----------------------");
     return input;
   }
 
@@ -435,7 +452,7 @@ public class DomainHelper {
     BDD removeBits = _dstBitsCache.get(len);
     if (removeBits == null) {
       removeBits = _netFactory.one();
-      for (int i = len; i < 32; i++) {
+      for (int i = 31; i >= len; i--) {
         BDD x = _variables.getPrefix().getBitvec()[i];
         removeBits = removeBits.and(x);
       }
@@ -455,7 +472,7 @@ public class DomainHelper {
       BDDInteger newVal = new BDDInteger(pfxLen);
       newVal.setValue(i);
       len = _netFactory.one();
-      for (int j = 0; j < pfxLen.getBitvec().length; j++) {
+      for (int j = pfxLen.getBitvec().length; j >= 0; j--) {
         BDD var = pfxLen.getBitvec()[j];
         BDD val = newVal.getBitvec()[j];
         if (val.isOne()) {
@@ -566,5 +583,9 @@ public class DomainHelper {
 
   public BDDPairing getSrcToTempRouterSubstitution() {
     return _srcToTempRouterSubstitution;
+  }
+
+  public BDD getTransientBits() {
+    return _transientBits;
   }
 }

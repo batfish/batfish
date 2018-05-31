@@ -64,13 +64,13 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
       acc = acc.andWith(c.not());
     }
     acc =
-        acc.andWith(nhip)
-            .andWith(fromRRClient)
+        acc.andWith(fromRRClient)
             .andWith(metric)
             .andWith(ospfMetric)
             .andWith(med)
             .andWith(localPref)
             .andWith(adminDist)
+            .andWith(nhip)
             .andWith(prot);
     return acc;
   }
@@ -79,6 +79,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
   public BDD transform(BDD input, EdgeTransformer t) {
     BDDTransferFunction f = t.getBddTransfer();
     input = input.and(f.getFilter());
+    input = input.exist(_domainHelper.getTransientBits());
     return _domainHelper.applyTransformerMods(input, t);
   }
 
