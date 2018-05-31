@@ -14093,6 +14093,10 @@
                     }
                   },
                   {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                    "metricType" : "E1"
+                  },
+                  {
                     "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
                     "expr" : {
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
