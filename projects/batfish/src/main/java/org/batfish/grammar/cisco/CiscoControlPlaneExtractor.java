@@ -3880,7 +3880,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       line = ctx.num.getLine();
     }
     _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_GROUP, line);
-    _configuration.getClassMapAccessGroups().add(name);
   }
 
   @Override
@@ -3888,7 +3887,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _configuration.referenceStructure(ACCESS_LIST, name, CLASS_MAP_ACCESS_LIST, line);
-    _configuration.getClassMapAccessLists().add(name);
   }
 
   @Override

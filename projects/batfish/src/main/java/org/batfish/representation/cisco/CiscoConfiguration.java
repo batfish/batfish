@@ -315,8 +315,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
    */
   private final Set<String> _classMapAccessGroups;
 
-  private final Set<String> _classMapAccessLists;
-
   private final Set<String> _controlPlaneAccessGroups;
 
   private final Set<String> _cryptoAcls;
@@ -467,7 +465,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
     _cf = new CiscoFamily();
     _classMapAccessGroups = new TreeSet<>();
-    _classMapAccessLists = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
     _dhcpRelayServers = new ArrayList<>();
@@ -693,10 +690,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Set<String> getClassMapAccessGroups() {
     return _classMapAccessGroups;
-  }
-
-  public Set<String> getClassMapAccessLists() {
-    return _classMapAccessLists;
   }
 
   public Set<String> getControlPlaneAccessGroups() {
