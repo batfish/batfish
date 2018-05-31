@@ -44,6 +44,7 @@ junit_tests(
         "//projects/question",
         "@guava//:compile",
         "@hamcrest//:compile",
+        "@jackson_core//:compile",
         "@junit//:compile",
     ],
 )
