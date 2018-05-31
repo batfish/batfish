@@ -55,7 +55,7 @@ public class Row implements Comparable<Row> {
       Set<String> columnsInMetadata =
           columnMetadata.stream().map(cm -> cm.getName()).collect(Collectors.toSet());
       Set<String> columnsInData = Row.getColumnNames(_data);
-      if (!columnMetadata.equals(columnsInMetadata)) {
+      if (!columnsInData.equals(columnsInMetadata)) {
         throw new InputMismatchException(
             "Set of columns in the row do not match those in the metadata");
       }
