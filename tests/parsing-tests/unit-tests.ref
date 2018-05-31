@@ -30365,6 +30365,14 @@
             "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
             "          name = (variable",
             "            VARIABLE:'boop'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        num = DEC:'20'  <== mode:DEFAULT_MODE",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_access_list",
+            "          ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'boop2'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_class_map",
@@ -53953,7 +53961,8 @@
             "boop" : {
               "definitionLines" : [
                 19,
-                20
+                20,
+                21
               ],
               "numReferrers" : 0
             },
@@ -53968,9 +53977,9 @@
             },
             "cos_all" : {
               "definitionLines" : [
-                22,
                 23,
-                24
+                24,
+                25
               ],
               "numReferrers" : 0
             }
@@ -53978,25 +53987,25 @@
           "object-group network" : {
             "1.2.3.4-24" : {
               "definitionLines" : [
-                32,
-                33
+                33,
+                34
               ],
               "numReferrers" : 0
             },
             "dns_servers" : {
               "definitionLines" : [
-                34,
                 35,
-                36
+                36,
+                37
               ],
               "numReferrers" : 0
             },
             "ntp_servers" : {
               "definitionLines" : [
-                37,
                 38,
                 39,
-                40
+                40,
+                41
               ],
               "numReferrers" : 0
             }
@@ -54004,12 +54013,12 @@
           "policy-map type inspect" : {
             "pminspect" : {
               "definitionLines" : [
-                41,
                 42,
                 43,
                 44,
                 45,
-                46
+                46,
+                47
               ],
               "numReferrers" : 0
             }
@@ -54017,7 +54026,6 @@
           "service-template" : {
             "template_name" : {
               "definitionLines" : [
-                141,
                 142,
                 143,
                 144,
@@ -54025,7 +54033,8 @@
                 146,
                 147,
                 148,
-                149
+                149,
+                150
               ],
               "numReferrers" : 0
             }
@@ -55451,84 +55460,89 @@
               "class-map access-group" : [
                 20
               ]
+            },
+            "boop2" : {
+              "class-map access-list" : [
+                21
+              ]
             }
           },
           "class-map" : {
             "MY_CLASS_1" : {
               "policy-map event class" : [
-                128
+                129
               ]
             },
             "bippetyboo-drop" : {
               "policy-map class" : [
-                49
+                50
               ]
             },
             "bippetyboo-ndrop" : {
               "policy-map class" : [
-                65
+                66
               ]
             },
             "bippetyboo-ndrop-fcoe" : {
               "policy-map class" : [
-                61
+                62
               ]
             },
             "bleefee" : {
               "policy-map class" : [
-                101
+                102
               ]
             },
             "bleefee2" : {
               "policy-map class" : [
-                106
+                107
               ]
             },
             "blerf" : {
               "policy-map class" : [
-                97
+                98
               ]
             },
             "c-bleeb-drop" : {
               "policy-map class" : [
-                108
+                109
               ]
             },
             "c-bleeb-ndrop-fcoe" : {
               "policy-map class" : [
-                113
+                114
               ]
             },
             "c-foob-drop" : {
               "policy-map class" : [
-                80
+                81
               ]
             },
             "c-foob-ndrop" : {
               "policy-map class" : [
-                92
+                93
               ]
             },
             "c-foob-ndrop-fcoe" : {
               "policy-map class" : [
-                88
+                89
               ]
             },
             "fffoooddd" : {
               "policy-map class" : [
-                71
+                72
               ]
             },
             "floop" : {
               "policy-map class" : [
-                118
+                119
               ]
             }
           },
           "class-map type inspect" : {
             "cinspect" : {
               "policy-map type inspect class type inspect" : [
-                42
+                43
               ]
             }
           },
@@ -55545,7 +55559,7 @@
             },
             "my_TEMPLATE_NAME" : {
               "policy-map event class activate" : [
-                129
+                130
               ]
             }
           }

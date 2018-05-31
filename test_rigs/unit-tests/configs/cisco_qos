@@ -18,6 +18,7 @@ class-map type network-qos match-any boppety
 !
 class-map type pbr match-any boop
  10 match ip access-group boop
+ 20 match access-list boop2
 !
 class-map match-any cos_all
   match class-map blip
