@@ -79,6 +79,8 @@
     <sqlite-jdbc.version>3.21.0</sqlite-jdbc.version>
     <xstream.version>1.4.7</xstream.version>
     <z3.version>2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae</z3.version>
+    <jacoco.append>true</jacoco.append>
+    <jacoco.destFile>${project.basedir}/../target/jacoco.exec</jacoco.destFile>
   </properties>
 
 
@@ -293,6 +295,20 @@
     </pluginManagement>
 
     <plugins>
+      <plugin>
+	<groupId>org.jacoco</groupId>
+	<artifactId>jacoco-maven-plugin</artifactId>
+	<version>0.8.1</version>
+	<executions>
+	  <execution>
+	    <id>prepare-agent</id>
+	    <goals>
+	      <goal>prepare-agent</goal>
+	    </goals>
+	  </execution>
+	</executions>
+      </plugin>	
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
