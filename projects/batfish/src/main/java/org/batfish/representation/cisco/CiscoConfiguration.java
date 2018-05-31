@@ -3653,7 +3653,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // class-map
     markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
-    markConcreteStructure(CiscoStructureType.CLASS_MAP, CiscoStructureUsage.POLICY_MAP_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.CLASS_MAP,
+        CiscoStructureUsage.POLICY_MAP_CLASS,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
     markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
@@ -3675,7 +3678,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.SERVICE_TEMPLATE,
         CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
-        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE);
+        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
     // zone
     markConcreteStructure(
         CiscoStructureType.SECURITY_ZONE,

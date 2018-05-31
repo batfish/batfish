@@ -20,9 +20,14 @@ rr_default_information
    )? NEWLINE
 ;
 
+// TODO: this information is not plumbed in currently
 rr_distance
 :
-   DISTANCE distance = DEC NEWLINE
+   DISTANCE distance = DEC
+   (
+      prefix = IP_ADDRESS mask = IP_ADDRESS
+   )?
+   NEWLINE
 ;
 
 rr_distribute_list

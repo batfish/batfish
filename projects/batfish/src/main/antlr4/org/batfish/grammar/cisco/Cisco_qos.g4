@@ -575,6 +575,32 @@ pm_end_policy_map
    END_POLICY_MAP NEWLINE
 ;
 
+pm_event
+:
+   EVENT null_rest_of_line
+   (
+      pm_event_class
+   )*
+;
+
+pm_event_class
+:
+   DEC CLASS
+   ( ALWAYS
+     | classname = variable
+   )
+   // TODO: after we solve token overload, change variable to do-until-failure
+   variable NEWLINE
+   (
+      DEC
+      (
+          ACTIVATE SERVICE_TEMPLATE stname = variable
+          // TODO: after we solve token overload, change variable to one of authenticate, authorize, clear-session, pause, restrict, resume, terminate
+          | variable
+      ) null_rest_of_line
+   )*
+;
+
 pm_ios_inspect
 :
    INSPECT name = variable_permissive NEWLINE
@@ -792,6 +818,7 @@ s_policy_map
    (
       pm_class
       | pm_end_policy_map
+      | pm_event
       | pm_null
       | pm_parameters
    )*

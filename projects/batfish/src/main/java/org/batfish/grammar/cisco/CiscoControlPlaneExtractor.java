@@ -143,6 +143,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_CANDID
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
@@ -603,6 +604,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pim_rp_candidateContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_send_rp_announceContext;
 import org.batfish.grammar.cisco.CiscoParser.Pim_spt_thresholdContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_classContext;
+import org.batfish.grammar.cisco.CiscoParser.Pm_event_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_ios_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosi_class_type_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_dropContext;
@@ -6145,6 +6147,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitPm_class(Pm_classContext ctx) {
     // TODO: do something with this.
     // should be something like _currentPolicyMapClass = null.
+  }
+
+  @Override
+  public void exitPm_event_class(Pm_event_classContext ctx) {
+    if (ctx.classname != null) {
+      _configuration.referenceStructure(
+          CLASS_MAP, ctx.classname.getText(), POLICY_MAP_EVENT_CLASS, ctx.getStart().getLine());
+    }
+    if (ctx.stname != null) {
+      _configuration.referenceStructure(
+          SERVICE_TEMPLATE,
+          ctx.stname.getText(),
+          POLICY_MAP_EVENT_CLASS_ACTIVATE,
+          ctx.stname.getStart().getLine());
+    }
   }
 
   @Override
