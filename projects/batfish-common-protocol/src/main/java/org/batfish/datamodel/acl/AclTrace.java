@@ -37,7 +37,8 @@ public final class AclTrace implements Serializable {
     return _events;
   }
 
-  public FilterResult computeFilterResult() {
+  /** Computes the {@link FilterResult} based on the action implied by the final trace event. */
+  public @Nonnull FilterResult computeFilterResult() {
     return ((TerminalTraceEvent) (_events.get(_events.size() - 1))).toFilterResult();
   }
 
