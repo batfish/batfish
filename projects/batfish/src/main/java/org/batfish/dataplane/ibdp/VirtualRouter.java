@@ -2532,7 +2532,6 @@ public class VirtualRouter extends ComparableStructure<String> {
             .sum();
   }
 
-  /** Return the {@link PrefixTracer} for this router */
   PrefixTracer getPrefixTracer() {
     return _prefixTracer;
   }
