@@ -6,6 +6,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 public enum ConfigurationFormat {
   ALCATEL_AOS("alcatel_aos"),
   ARISTA("arista"),
+  ARUBA("aruba"),
   AWS("aws"),
   BLADENETWORK("bladenetwork"),
   CADANT("cadant"),
