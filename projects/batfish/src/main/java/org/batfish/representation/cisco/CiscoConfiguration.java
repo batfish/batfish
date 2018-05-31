@@ -4132,16 +4132,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private void recordIpAccessLists() {
-    recordStructure(_extendedAccessLists, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED);
-    recordStructure(_standardAccessLists, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD);
-  }
-
-  private void recordIpv6AccessLists() {
-    recordStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
-    recordStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
-  }
-
   private void recordPeerGroups() {
     for (Vrf vrf : getVrfs().values()) {
       BgpProcess proc = vrf.getBgpProcess();
