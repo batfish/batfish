@@ -247,6 +247,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_deleteContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metricContext;
@@ -476,6 +478,8 @@ import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
+import org.batfish.representation.juniper.PsThenDefaultActionAccept;
+import org.batfish.representation.juniper.PsThenDefaultActionReject;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetricAdd;
@@ -3752,6 +3756,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String name = ctx.name.getText();
     PsThenCommunitySet then = new PsThenCommunitySet(name, _configuration);
     _currentPsThens.add(then);
+  }
+
+  @Override
+  public void exitPopst_default_action_accept(Popst_default_action_acceptContext ctx) {
+    _currentPsThens.add(new PsThenDefaultActionAccept());
+  }
+
+  @Override
+  public void exitPopst_default_action_reject(Popst_default_action_rejectContext ctx) {
+    _currentPsThens.add(new PsThenDefaultActionReject());
   }
 
   @Override

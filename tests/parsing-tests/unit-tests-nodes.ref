@@ -14119,6 +14119,14 @@
                         }
                       ]
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetDefaultActionAccept"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetDefaultActionReject"
                   }
                 ]
               },
