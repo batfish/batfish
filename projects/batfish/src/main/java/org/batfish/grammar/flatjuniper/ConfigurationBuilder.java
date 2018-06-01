@@ -162,6 +162,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
@@ -3201,6 +3202,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       String interfaceName = iface.getName();
       _currentDhcpRelayGroup.getInterfaces().add(interfaceName);
     }
+  }
+
+  @Override
+  public void exitI_description(I_descriptionContext ctx) {
+    String text = unquote(ctx.description().text.getText());
+    _currentInterface.setDescription(text);
   }
 
   @Override
