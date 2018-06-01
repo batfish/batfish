@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.answers.Schema;
@@ -181,6 +182,21 @@ public class DisplayHints {
   @JsonProperty(PROP_TEXT_DESC)
   public String getTextDesc() {
     return _textDesc;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof DisplayHints)) {
+      return false;
+    }
+    // ignore extactions and compositions -- we will remove those soon from this class
+    return Objects.equals(_textDesc, ((DisplayHints) o)._textDesc);
+  }
+
+  @Override
+  public int hashCode() {
+    // ignore extactions and compositions -- we will remove those soon from this class
+    return Objects.hash(_textDesc);
   }
 
   @JsonProperty(PROP_COMPOSITIONS)

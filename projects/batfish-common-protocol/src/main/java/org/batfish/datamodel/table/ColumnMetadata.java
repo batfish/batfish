@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.answers.Schema;
@@ -58,8 +59,16 @@ public class ColumnMetadata {
     _isValue = firstNonNull(isValue, true);
   }
 
-  public static boolean isLegalColumnName(String name) {
-    return _COLUMN_NAME_PATTERN.matcher(name).matches();
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof ColumnMetadata)) {
+      return false;
+    }
+    return Objects.equals(_description, ((ColumnMetadata) o)._description)
+        && Objects.equals(_isKey, ((ColumnMetadata) o)._isKey)
+        && Objects.equals(_isValue, ((ColumnMetadata) o)._isValue)
+        && Objects.equals(_name, ((ColumnMetadata) o)._name)
+        && Objects.equals(_schema, ((ColumnMetadata) o)._schema);
   }
 
   @JsonProperty(PROP_DESCRIPTION)
@@ -85,5 +94,21 @@ public class ColumnMetadata {
   @JsonProperty(PROP_SCHEMA)
   public Schema getSchema() {
     return _schema;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_description, _isKey, _isValue, _name, _schema);
+  }
+
+  /** Checks if the column name is legal, per the declared pattern */
+  public static boolean isLegalColumnName(String name) {
+    return _COLUMN_NAME_PATTERN.matcher(name).matches();
+  }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "[%s, %s, %s, isKey:%s, isValue:%s]", _name, _schema, _description, _isKey, _isValue);
   }
 }
