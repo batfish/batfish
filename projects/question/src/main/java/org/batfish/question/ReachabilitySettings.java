@@ -1,4 +1,4 @@
-package org.batfish.datamodel.questions;
+package org.batfish.question;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
@@ -8,8 +8,8 @@ import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.SrcNattedConstraint;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DifferenceLocationSpecifier;
@@ -19,9 +19,9 @@ import org.batfish.specifier.LocationSpecifiers;
 import org.batfish.specifier.NodeSpecifiers;
 import org.batfish.specifier.UnionLocationSpecifier;
 
-public class ReachabilitySettings {
+public final class ReachabilitySettings {
 
-  public static class Builder {
+  public static final class Builder {
 
     private SortedSet<ForwardingAction> _actions;
 
@@ -347,25 +347,20 @@ public class ReachabilitySettings {
           new ConstantIpSpaceSpecifier(AclIpSpace.difference(UniverseIpSpace.INSTANCE, notSrcIps));
     }
 
-    // remove src IPs from headerspace since they're specified via an IpSpaceSpecifier
-    IpSpace nullIpSpace = null;
-    HeaderSpace headerSpace =
-        _headerSpace.toBuilder().setNotSrcIps(nullIpSpace).setSrcIps(nullIpSpace).build();
-
     return ReachabilityParameters.builder()
-        .setActions(getActions())
+        .setActions(_actions)
         .setFinalNodesSpecifier(
             NodeSpecifiers.difference(
                 NodeSpecifiers.from(_finalNodes), NodeSpecifiers.from(_notFinalNodes)))
-        .setForbiddenTransitNodesSpecifier(NodeSpecifiers.from(getNonTransitNodes()))
-        .setHeaderSpace(headerSpace)
-        .setMaxChunkSize(getMaxChunkSize())
-        .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(getTransitNodes()))
+        .setForbiddenTransitNodesSpecifier(NodeSpecifiers.from(_nonTransitNodes))
+        .setHeaderSpace(_headerSpace)
+        .setMaxChunkSize(_maxChunkSize)
+        .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(_transitNodes))
         .setSourceIpSpaceSpecifier(sourceIpSpace)
         .setSourceSpecifier(sourceLocations)
-        .setSrcNatted(SrcNattedConstraint.fromBoolean(getSrcNatted()))
-        .setSpecialize(getSpecialize())
-        .setUseCompression(getUseCompression())
+        .setSrcNatted(SrcNattedConstraint.fromBoolean(_srcNatted))
+        .setSpecialize(_specialize)
+        .setUseCompression(_useCompression)
         .build();
   }
 }
