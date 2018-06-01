@@ -62,14 +62,28 @@ public class VendorConfigurationFormatDetectorTest {
 
   @Test
   public void recognizePaloAlto() {
-    String rancid = "!RANCID-CONTENT-TYPE: paloalto\n!\n";
+    String rancid = "!RANCID-CONTENT-TYPE: paloalto\n!\nstructure {";
     String panorama = "deviceconfig {\n  system {\n    panorama-server 1.2.3.4;\n  }\n}";
     String sendPanorama = "alarm {\n  informational {\n    send-to-panorama yes;\n  }\n}";
+    String deviceConfig = "deviceconfig {\n  system {\n    blah;\n  }\n}";
 
-    for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama)) {
+    String flatRancid = "!RANCID-CONTENT-TYPE: paloalto\n!\n";
+    String flatPanorama = "set deviceconfig system panorama-server 1.2.3.4\n}";
+    String flatSendPanorama = "set alarm informational send-to-panorama yes\n";
+    String flatDeviceConfig = "set deviceconfig system blah\n";
+    String flattened = "####BATFISH FLATTENED PALO ALTO CONFIG####\n";
+
+    for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama, deviceConfig)) {
       assertThat(
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
           equalTo(ConfigurationFormat.PALO_ALTO));
+    }
+
+    for (String fileText :
+        ImmutableList.of(flatRancid, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
+      assertThat(
+          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
+          equalTo(ConfigurationFormat.FLAT_PALO_ALTO));
     }
   }
 }
