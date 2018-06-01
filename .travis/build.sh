@@ -47,18 +47,6 @@ echo -e "\n  ..... Running watchdog tests"
 allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
 sleep 5
 
-#Test running separately
-coordinator &
-batfish -runmode workservice -register -coordinatorhost localhost -loglevel output &
-
-echo -e "\n  ..... Running java demo tests"
-if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then
-   echo "DEMO FAILED!" 1>&2
-   exit_code=1
-else
-   rm demos/example/commands.ref.testout
-fi
-
 echo -e "\n .... Failed tests: "
 $GNU_FIND -name *.testout
 
