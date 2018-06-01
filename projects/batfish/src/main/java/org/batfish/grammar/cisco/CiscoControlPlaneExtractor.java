@@ -1597,7 +1597,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCis_policy(Cis_policyContext ctx) {
     /* Pad priority number with zeros, so string sorting sorts in numerical order too */
     String priority = String.format("%03d", toInteger(ctx.priority));
-    _currentIsakmpPolicy = new IsakmpPolicy(priority, ctx.getStart().getLine());
+    _currentIsakmpPolicy = new IsakmpPolicy(priority);
     _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
     _currentIsakmpPolicy.getProposal().setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     _currentIsakmpPolicy
