@@ -66,6 +66,8 @@ public enum RoutingProtocol {
             break;
           case ARISTA:
             break;
+          case ARUBAOS:
+            break;
           case AWS:
             break;
           case CADANT:
@@ -125,6 +127,7 @@ public enum RoutingProtocol {
           case FLAT_VYOS:
           case VYOS:
             return 20;
+          case ARUBAOS: // aruba controllers don't support BGP
           case EMPTY:
           case IGNORED:
           case BLADENETWORK:
@@ -169,6 +172,7 @@ public enum RoutingProtocol {
           case FLAT_VYOS:
           case VYOS:
             return 200;
+          case ARUBAOS: // aruba controllers don't support bgp
           case EMPTY:
           case IGNORED:
           case BLADENETWORK:
@@ -196,6 +200,7 @@ public enum RoutingProtocol {
             return 115;
           case CADANT:
             return 117;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -237,6 +242,7 @@ public enum RoutingProtocol {
             return 115;
           case CADANT:
             return 118;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -278,6 +284,7 @@ public enum RoutingProtocol {
             return 115;
           case CADANT:
             return 115;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -319,6 +326,7 @@ public enum RoutingProtocol {
             return 115;
           case CADANT:
             return 116;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -361,6 +369,7 @@ public enum RoutingProtocol {
           case CADANT:
             // TODO: verify. assumption due to missing information in manual.
             return 110;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -403,6 +412,7 @@ public enum RoutingProtocol {
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
             return 112;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -445,6 +455,7 @@ public enum RoutingProtocol {
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
             return 113;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -487,6 +498,7 @@ public enum RoutingProtocol {
           case CADANT:
             // TODO: verify. assumption based on incrementing IS-IS costs in manual.
             return 111;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -528,6 +540,7 @@ public enum RoutingProtocol {
             return 120;
           case CADANT:
             return 120;
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
           case CISCO_IOS_XR:
@@ -586,6 +599,7 @@ public enum RoutingProtocol {
       case OSPF_IA:
         switch (vendor) {
           case ARISTA:
+          case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CADANT:
           case CISCO_ASA:
           case CISCO_IOS:
