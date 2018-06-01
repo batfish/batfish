@@ -87,6 +87,51 @@ tokens {
    WISPR
 } // Cisco Keywords
 
+AAA1
+:
+   'aaa1'
+;
+
+AAA2
+:
+   'aaa2'
+;
+
+AAA3
+:
+   'aaa3'
+;
+
+AAA4
+:
+   'aaa4'
+;
+
+AAA5
+:
+   'aaa5'
+;
+
+AAA6
+:
+   'aaa6'
+;
+
+AAA7
+:
+   'aaa7'
+;
+
+AAA8
+:
+   'aaa8'
+;
+
+AAA9
+:
+   'aaa9'
+;
+
 AAA
 :
    'aaa'
