@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OspfArea;
@@ -39,6 +40,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasAllAddresses extends FeatureMatcher<Interface, Set<InterfaceAddress>> {
+    HasAllAddresses(@Nonnull Matcher<? super Set<InterfaceAddress>> subMatcher) {
+      super(subMatcher, "An Interface with allAddresses:", "allAddresses");
+    }
+
+    @Override
+    protected Set<InterfaceAddress> featureValueOf(Interface actual) {
+      return actual.getAllAddresses();
+    }
+  }
+
   static final class HasAllowedVlans extends FeatureMatcher<Interface, List<SubRange>> {
     HasAllowedVlans(@Nonnull Matcher<? super List<SubRange>> subMatcher) {
       super(subMatcher, "an Interface with allowedVlans:", "allowedVlans");
@@ -69,6 +81,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected Set<String> featureValueOf(Interface actual) {
       return actual.getDeclaredNames();
+    }
+  }
+
+  static final class HasDescription extends FeatureMatcher<Interface, String> {
+    HasDescription(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Interface with description:", "description");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getDescription();
     }
   }
 

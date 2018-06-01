@@ -11,7 +11,7 @@ o_area
    AREA
    (
       area = IP_ADDRESS
-      | WILDCARD
+      | wildcard
    )
    (
       apply
@@ -102,7 +102,11 @@ oa_area_range
    )
    (
       apply
-      | (oaa_override_metric | oaa_restrict)+
+      |
+      (
+         oaa_override_metric
+         | oaa_restrict
+      )+
    )
 ;
 
@@ -113,7 +117,7 @@ oa_interface
       ALL
       | id = interface_id
       | ip = IP_ADDRESS
-      | WILDCARD
+      | wildcard
    )
    (
       apply
@@ -133,11 +137,7 @@ oa_interface
 
 oa_label_switched_path
 :
-   LABEL_SWITCHED_PATH
-   (
-      name = variable
-      | WILDCARD
-   )
+   LABEL_SWITCHED_PATH name = variable
    (
       apply
       | oal_metric

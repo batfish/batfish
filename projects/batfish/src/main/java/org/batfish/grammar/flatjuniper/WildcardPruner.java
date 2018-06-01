@@ -54,7 +54,7 @@ public class WildcardPruner extends FlatJuniperParserBaseListener {
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
       String text = node.getText();
-      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
+      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD_ARTIFACT) {
         _currentPath.addWildcardNode(text);
       } else {
         _currentPath.addNode(text);
