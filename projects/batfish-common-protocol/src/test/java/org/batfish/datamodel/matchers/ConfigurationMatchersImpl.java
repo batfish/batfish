@@ -18,7 +18,8 @@ import org.hamcrest.Matcher;
 
 final class ConfigurationMatchersImpl {
 
-  static final class HasConfigurationFormat extends FeatureMatcher<Configuration, ConfigurationFormat> {
+  static final class HasConfigurationFormat
+      extends FeatureMatcher<Configuration, ConfigurationFormat> {
     HasConfigurationFormat(@Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
       super(subMatcher, "a configuration with configurationFormat", "configurationFormat");
     }
