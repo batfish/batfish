@@ -1266,8 +1266,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private PrefixList _currentPrefixList;
 
-  private int _currentPrefixSetDefinitionLine;
-
   private String _currentPrefixSetName;
 
   private RipProcess _currentRipProcess;
@@ -1928,11 +1926,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIp_prefix_list_stanza(Ip_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    PrefixList list =
-        _configuration
-            .getPrefixLists()
-            .computeIfAbsent(name, n -> new PrefixList(n, definitionLine));
+    PrefixList list = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
     _currentPrefixList = list;
     defineStructure(PREFIX_LIST, name, ctx);
   }
@@ -1950,11 +1944,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIpv6_prefix_list_stanza(Ipv6_prefix_list_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    Prefix6List list =
-        _configuration
-            .getPrefix6Lists()
-            .computeIfAbsent(name, n -> new Prefix6List(n, definitionLine));
+    Prefix6List list = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
     _currentPrefix6List = list;
     defineStructure(PREFIX6_LIST, name, ctx);
   }
@@ -2283,7 +2273,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterPrefix_set_stanza(Prefix_set_stanzaContext ctx) {
     _currentPrefixSetName = ctx.name.getText();
-    _currentPrefixSetDefinitionLine = ctx.name.getStart().getLine();
     defineStructure(PREFIX_SET, _currentPrefixSetName, ctx);
   }
 
@@ -6227,10 +6216,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = _currentPrefixSetName;
     if (name != null) {
       if (ctx.ipa != null || ctx.prefix != null) {
-        PrefixList pl =
-            _configuration
-                .getPrefixLists()
-                .computeIfAbsent(name, n -> new PrefixList(n, _currentPrefixSetDefinitionLine));
+        PrefixList pl = _configuration.getPrefixLists().computeIfAbsent(name, PrefixList::new);
         Prefix prefix;
         if (ctx.ipa != null) {
           prefix = new Prefix(toIp(ctx.ipa), Prefix.MAX_PREFIX_LENGTH);
@@ -6255,10 +6241,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         PrefixListLine line = new PrefixListLine(LineAction.ACCEPT, prefix, lengthRange);
         pl.addLine(line);
       } else {
-        Prefix6List pl =
-            _configuration
-                .getPrefix6Lists()
-                .computeIfAbsent(name, n -> new Prefix6List(n, _currentPrefixSetDefinitionLine));
+        Prefix6List pl = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
         Prefix6 prefix6;
         if (ctx.ipv6a != null) {
           prefix6 = new Prefix6(toIp6(ctx.ipv6a), Prefix6.MAX_PREFIX_LENGTH);
