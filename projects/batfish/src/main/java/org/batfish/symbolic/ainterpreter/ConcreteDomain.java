@@ -51,7 +51,10 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
         acc = acc.orWith(pfx);
       }
     }
-    int defaultAd = proto.getDefaultAdministrativeCost(conf.getConfigurationFormat());
+    int defaultAd = 0;
+    if (proto != RoutingProtocol.LOCAL) {
+      defaultAd = proto.getDefaultAdministrativeCost(conf.getConfigurationFormat());
+    }
     BDD fromRRClient = _variables.getFromRRClient().not();
     BDD localPref = _variables.getLocalPref().value(100);
     BDD adminDist = _variables.getAdminDist().value((long) defaultAd);

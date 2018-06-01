@@ -203,6 +203,13 @@ public class AbstractInterpreter {
       Set<Prefix> ospfPrefixes = origOspf.get(router);
       Set<Prefix> connPrefixes = origConn.get(router);
       Map<String, Set<Prefix>> staticPrefixes = origStatic.get(router);
+      Set<Prefix> localPrefixes = new HashSet<>();
+      for (Prefix pfx : connPrefixes) {
+        if (pfx.getPrefixLength() != 32) {
+          Prefix local = new Prefix(pfx.getStartIp(), 32);
+          localPrefixes.add(local);
+        }
+      }
 
       if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
         initialRouters.add(router);
@@ -217,6 +224,7 @@ public class AbstractInterpreter {
       T bgp = domain.bot();
       T ospf = domain.selectBest(domain.value(conf, RoutingProtocol.OSPF, ospfPrefixes));
       T conn = domain.selectBest(domain.value(conf, RoutingProtocol.CONNECTED, connPrefixes));
+      T local = domain.selectBest(domain.value(conf, RoutingProtocol.LOCAL, localPrefixes));
       T stat = domain.bot();
       if (staticPrefixes != null) {
         for (Entry<String, Set<Prefix>> e : staticPrefixes.entrySet()) {
@@ -229,7 +237,7 @@ public class AbstractInterpreter {
         }
       }
 
-      T ndyn = domain.merge(stat, conn);
+      T ndyn = domain.merge(domain.merge(stat, conn), local);
       nonDynamic.put(router, ndyn);
 
       T rib = domain.selectBest(domain.merge(domain.merge(bgp, ospf), ndyn));
@@ -488,24 +496,40 @@ public class AbstractInterpreter {
     Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
 
     for (String router : routers) {
-
-      System.out.println("Router: " + router);
+      // create interface prefix map
+      Map<Ip, String> nhipMap = new HashMap<>();
       Map<Prefix, String> nhintMap = new HashMap<>();
-      Configuration conf = _graph.getConfigurations().get(router);
-      for (Interface iface : conf.getInterfaces().values()) {
-        Prefix p = iface.getAddress().getPrefix();
-        nhintMap.put(p, iface.getName());
+      Map<Ip, String> nhopMap = new HashMap<>();
+      for (GraphEdge edge : _graph.getEdgeMap().get(router)) {
+        if (!edge.isAbstract()) {
+          Interface iface = edge.getStart();
+          Prefix p = iface.getAddress().getPrefix();
+          nhipMap.put(p.getStartIp(), iface.getName());
+          nhintMap.put(p, iface.getName());
+          Interface peerIface = edge.getEnd();
+          if (peerIface != null) {
+            Ip peerIp = peerIface.getAddress().getIp();
+            nhopMap.put(peerIp, edge.getPeer());
+          }
+        }
       }
-
+      // build new rib to match Batfish output
       AbstractRib<T> rib = reachable.get(router);
       SortedSet<Route> entries = new TreeSet<>(domain.toRoutes(rib));
       for (Route r : entries) {
         Ip nhopIp = (r.getNextHopIp().asLong() == 0 ? new Ip(-1) : r.getNextHopIp());
         String nhint = "dynamic";
+        if (r.getProtocol() == RoutingProtocol.LOCAL) {
+          nhint = nhipMap.get(r.getNetwork().getStartIp());
+        }
         if (r.getProtocol() == RoutingProtocol.CONNECTED
             || r.getProtocol() == RoutingProtocol.STATIC) {
           nhint = nhintMap.get(r.getNetwork());
-          System.out.println("   looking up: " + r.getNextHopIp());
+        }
+        String nhop = "N/A";
+        if (r.getProtocol() != RoutingProtocol.CONNECTED
+            && r.getProtocol() != RoutingProtocol.LOCAL) {
+          nhop = nhopMap.get(r.getNextHopIp());
         }
 
         Route route =
@@ -514,7 +538,7 @@ public class AbstractInterpreter {
                 r.getVrf(),
                 r.getNetwork(),
                 nhopIp,
-                r.getNextHop(),
+                nhop,
                 nhint,
                 r.getAdministrativeCost(),
                 r.getMetric(),

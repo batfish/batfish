@@ -92,15 +92,15 @@ public class SymbolicRoute implements IDeepCopy<SymbolicRoute> {
   }
 
   /*
-   * Copy constructor used to create the SSA form.
-<<<<<<< HEAD
-   * To avoid changing values along different mkIf branches,
-   * we must create a new copy of several routeVariables that can change.
-=======
-   * To avoid changing values along different If branches,
-   * we must create a new copy of several variables that can change.
->>>>>>> master
-   */
+     * Copy constructor used to create the SSA form.
+  <<<<<<< HEAD
+     * To avoid changing values along different mkIf branches,
+     * we must create a new copy of several routeVariables that can change.
+  =======
+     * To avoid changing values along different If branches,
+     * we must create a new copy of several variables that can change.
+  >>>>>>> master
+     */
   SymbolicRoute(SymbolicRoute other) {
     _name = other._name;
     _proto = other._proto;

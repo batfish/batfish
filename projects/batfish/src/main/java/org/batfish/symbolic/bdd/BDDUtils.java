@@ -540,7 +540,7 @@ public class BDDUtils {
         .andWith(tcpSyn)
         .andWith(tcpUrg)
         .andWith(tcpFin);
-    }
+  }
 
   /** Create a new {@link BDDFactory} object with {@param numVariables} boolean variables. */
   public static BDDFactory bddFactory(int numVariables) {
@@ -550,5 +550,4 @@ public class BDDUtils {
     factory.setVarNum(numVariables); // reserve 32 1-bit variables
     return factory;
   }
-
 }

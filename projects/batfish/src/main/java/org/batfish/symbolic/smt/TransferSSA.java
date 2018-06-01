@@ -883,14 +883,14 @@ class TransferSSA {
   }
 
   /*
-<<<<<<< HEAD
-   * The [phi] function from SSA that merges routeVariables that may differ across
-   * different branches of an mkIf statement.
-=======
-   * The [phi] function from SSA that merges variables that may differ across
-   * different branches of an If statement.
->>>>>>> master
-   */
+  <<<<<<< HEAD
+     * The [phi] function from SSA that merges routeVariables that may differ across
+     * different branches of an mkIf statement.
+  =======
+     * The [phi] function from SSA that merges variables that may differ across
+     * different branches of an If statement.
+  >>>>>>> master
+     */
   private Pair<Expr, Expr> joinPoint(
       TransferParam<SymbolicRoute> p,
       TransferResult<BoolExpr, BoolExpr> r,

@@ -218,6 +218,7 @@ public class BDDNetFactory {
     _allProtos.add(RoutingProtocol.OSPF);
     _allProtos.add(RoutingProtocol.IBGP);
     _allProtos.add(RoutingProtocol.AGGREGATE);
+    _allProtos.add(RoutingProtocol.LOCAL);
 
     Collections.sort(_allAds);
     Collections.sort(_allMeds);
