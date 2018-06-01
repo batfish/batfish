@@ -30,6 +30,7 @@ public class CiscoCombinedParser extends BatfishCombinedParser<CiscoParser, Cisc
       case CISCO_ASA:
       case CISCO_IOS:
       case FORCE10:
+      case ARUBAOS: // aruba controllers don't support bgp so can't define multiline bgp neighbors
         multilineBgpNeighbors = false;
         break;
 

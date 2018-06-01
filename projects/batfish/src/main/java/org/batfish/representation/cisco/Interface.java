@@ -51,6 +51,7 @@ public class Interface extends ComparableStructure<String> {
           return ARISTA_ETHERNET_BANDWIDTH;
 
         case ALCATEL_AOS:
+        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
         case CADANT:
         case CISCO_ASA:
         case CISCO_IOS:
@@ -210,6 +211,7 @@ public class Interface extends ComparableStructure<String> {
           break;
 
         case ALCATEL_AOS:
+        case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
         case AWS:
         case CADANT:
         case CISCO_ASA:
