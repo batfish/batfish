@@ -2913,9 +2913,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterRoute_map_stanza(Route_map_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    RouteMap routeMap =
-        _configuration.getRouteMaps().computeIfAbsent(name, n -> new RouteMap(n, definitionLine));
+    RouteMap routeMap = _configuration.getRouteMaps().computeIfAbsent(name, RouteMap::new);
     _currentRouteMap = routeMap;
     int num = toInteger(ctx.num);
     LineAction action = toLineAction(ctx.rmt);
