@@ -21,19 +21,17 @@ public class RowTest {
     return Row.builder().put("col1", "value1").put("col2", "value2").put("col3", "value3").build();
   }
 
-  TableMetadata initMetadataThree(
+  List<ColumnMetadata> initMetadataThree(
       boolean keyCol1,
       boolean keyCol2,
       boolean keyCol3,
       boolean valueCol1,
       boolean valueCol2,
       boolean valueCol3) {
-    List<ColumnMetadata> columns =
-        ImmutableList.of(
-            new ColumnMetadata("col1", Schema.STRING, "desc", keyCol1, valueCol1),
-            new ColumnMetadata("col2", Schema.STRING, "desc", keyCol2, valueCol2),
-            new ColumnMetadata("col3", Schema.STRING, "desc", keyCol3, valueCol3));
-    return new TableMetadata(columns, null);
+    return ImmutableList.of(
+        new ColumnMetadata("col1", Schema.STRING, "desc", keyCol1, valueCol1),
+        new ColumnMetadata("col2", Schema.STRING, "desc", keyCol2, valueCol2),
+        new ColumnMetadata("col3", Schema.STRING, "desc", keyCol3, valueCol3));
   }
 
   @Test
@@ -62,9 +60,12 @@ public class RowTest {
   @Test
   public void getKey() {
     Row row = initRowThree();
-    TableMetadata metadataNoKeys = initMetadataThree(false, false, false, false, false, false);
-    TableMetadata metadataOneKey = initMetadataThree(false, true, false, false, false, false);
-    TableMetadata metadataTwoKeys = initMetadataThree(true, false, true, false, false, false);
+    List<ColumnMetadata> metadataNoKeys =
+        initMetadataThree(false, false, false, false, false, false);
+    List<ColumnMetadata> metadataOneKey =
+        initMetadataThree(false, true, false, false, false, false);
+    List<ColumnMetadata> metadataTwoKeys =
+        initMetadataThree(true, false, true, false, false, false);
 
     assertThat(row.getKey(metadataNoKeys), equalTo(ImmutableList.of()));
     assertThat(row.getKey(metadataOneKey), equalTo(ImmutableList.of("value2")));
@@ -74,9 +75,12 @@ public class RowTest {
   @Test
   public void getValue() {
     Row row = initRowThree();
-    TableMetadata metadataNoValues = initMetadataThree(false, false, false, false, false, false);
-    TableMetadata metadataOneValue = initMetadataThree(false, false, false, false, true, false);
-    TableMetadata metadataTwoValues = initMetadataThree(true, false, true, true, false, true);
+    List<ColumnMetadata> metadataNoValues =
+        initMetadataThree(false, false, false, false, false, false);
+    List<ColumnMetadata> metadataOneValue =
+        initMetadataThree(false, false, false, false, true, false);
+    List<ColumnMetadata> metadataTwoValues =
+        initMetadataThree(true, false, true, true, false, true);
 
     assertThat(row.getValue(metadataNoValues), equalTo(ImmutableList.of()));
     assertThat(row.getValue(metadataOneValue), equalTo(ImmutableList.of("value2")));

@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -57,6 +58,15 @@ public class TableMetadata {
     return _columnMetadata.stream().anyMatch(cm -> columnName.equals(cm.getName()));
   }
 
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof TableMetadata)) {
+      return false;
+    }
+    return Objects.equals(_columnMetadata, ((TableMetadata) o)._columnMetadata)
+        && Objects.equals(_displayHints, ((TableMetadata) o)._displayHints);
+  }
+
   @JsonProperty(PROP_COLUMN_METADATA)
   public List<ColumnMetadata> getColumnMetadata() {
     return _columnMetadata;
@@ -65,5 +75,15 @@ public class TableMetadata {
   @JsonProperty(PROP_DISPLAY_HINTS)
   public DisplayHints getDisplayHints() {
     return _displayHints;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_columnMetadata, _displayHints);
+  }
+
+  @Override
+  public String toString() {
+    return _columnMetadata.toString() + " " + Objects.toString(_displayHints);
   }
 }

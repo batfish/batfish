@@ -7,6 +7,8 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
 
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
@@ -62,5 +64,28 @@ public class Rows implements Serializable {
 
   public int size() {
     return _data.size();
+  }
+
+  /**
+   * Returns a Row with the specified {@code key} if one exists; otherwise returns null. {@code
+   * metadata} is used to extract keys from rows.
+   *
+   * <p>TODO: This is highly inefficient currently; need data structure that can help look up rows
+   * by key
+   */
+  public Row getRow(Object key, List<ColumnMetadata> metadata) {
+    Iterator<Row> iterator = iterator();
+    while (iterator.hasNext()) {
+      Row row = iterator.next();
+      if (key.equals(row.getKey(metadata))) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toString(_data);
   }
 }

@@ -10,6 +10,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -36,9 +37,9 @@ public class Row implements Comparable<Row> {
       _data = BatfishObjectMapper.mapper().createObjectNode();
     }
 
-    private RowBuilder(Row row) {
+    private RowBuilder(Row row, Collection<String> columns) {
       this();
-      row.getColumnNames().forEach(col -> _data.set(col, row.get(col)));
+      columns.forEach(col -> _data.set(col, row.get(col)));
     }
 
     public Row build() {
@@ -91,7 +92,12 @@ public class Row implements Comparable<Row> {
 
   /** Returns a builder object for Row seeded by the contents of {@code otheRow} */
   public static RowBuilder builder(Row otherRow) {
-    return new RowBuilder(otherRow);
+    return new RowBuilder(otherRow, otherRow.getColumnNames());
+  }
+
+  /** Returns a {@link RowBuilder} object seeded by {@code keyColumns} from {@code otherRow} */
+  public static RowBuilder builder(Row otherRow, Collection<String> keyColumns) {
+    return new RowBuilder(otherRow, keyColumns);
   }
 
   /**
@@ -204,13 +210,22 @@ public class Row implements Comparable<Row> {
     if (_data.get(columnName) == null) {
       return null;
     }
-    if (columnSchema.isList()) {
-      List<JsonNode> list = get(columnName, new TypeReference<List<JsonNode>>() {});
-      return list.stream()
-          .map(in -> convertType(in, columnSchema.getBaseType()))
-          .collect(Collectors.toList());
-    } else {
-      return convertType(_data.get(columnName), columnSchema.getBaseType());
+    switch (columnSchema.getType()) {
+      case BASE:
+        return convertType(_data.get(columnName), columnSchema.getBaseType());
+      case LIST:
+        List<JsonNode> list = get(columnName, new TypeReference<List<JsonNode>>() {});
+        return list.stream()
+            .map(in -> convertType(in, columnSchema.getBaseType()))
+            .collect(Collectors.toList());
+      case SET:
+        Set<JsonNode> set = get(columnName, new TypeReference<Set<JsonNode>>() {});
+        return set.stream()
+            .map(in -> convertType(in, columnSchema.getBaseType()))
+            .collect(Collectors.toSet());
+      default:
+        throw new IllegalArgumentException(
+            "Cannot handle Schema of type: " + columnSchema.getType());
     }
   }
 
@@ -236,9 +251,9 @@ public class Row implements Comparable<Row> {
    * @param metadata Provides information on which columns are key and their {@link Schema}
    * @return The list
    */
-  public List<Object> getKey(TableMetadata metadata) {
+  public List<Object> getKey(List<ColumnMetadata> metadata) {
     List<Object> keyList = new LinkedList<>();
-    for (ColumnMetadata column : metadata.getColumnMetadata()) {
+    for (ColumnMetadata column : metadata) {
       if (column.getIsKey()) {
         keyList.add(get(column.getName(), column.getSchema()));
       }
@@ -257,9 +272,9 @@ public class Row implements Comparable<Row> {
    * @param metadata Provides information on which columns are key and their {@link Schema}
    * @return The list
    */
-  public List<Object> getValue(TableMetadata metadata) {
+  public List<Object> getValue(List<ColumnMetadata> metadata) {
     List<Object> valueList = new LinkedList<>();
-    for (ColumnMetadata column : metadata.getColumnMetadata()) {
+    for (ColumnMetadata column : metadata) {
       if (column.getIsValue()) {
         valueList.add(get(column.getName(), column.getSchema()));
       }

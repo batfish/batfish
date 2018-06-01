@@ -21,6 +21,16 @@ import org.batfish.datamodel.pojo.Node;
 
 public class Schema {
 
+  public enum Type {
+    BASE,
+    LIST,
+    SET
+  }
+
+  private static final Pattern LIST_PATTERN = Pattern.compile("List<(.+)>");
+
+  private static final Pattern SET_PATTERN = Pattern.compile("Set<(.+)>");
+
   private static String getClassString(Class<?> cls) {
     return String.format("class:%s", cls.getCanonicalName());
   }
@@ -64,23 +74,33 @@ public class Schema {
     return new Schema("List<" + baseSchema._schemaStr + ">");
   }
 
+  public static final Schema set(Schema baseSchema) {
+    return new Schema("Set<" + baseSchema._schemaStr + ">");
+  }
+
   private Class<?> _baseType;
 
-  private boolean _isListType;
+  private Type _type;
 
   private String _schemaStr;
 
   @JsonCreator
-  private Schema(String schema) {
+  Schema(String schema) {
     _schemaStr = schema;
 
     String baseTypeName = schema;
-    _isListType = false;
+    _type = Type.BASE;
 
-    Matcher matcher = Pattern.compile("List<(.+)>").matcher(schema);
-    if (matcher.find()) {
-      baseTypeName = matcher.group(1);
-      _isListType = true;
+    Matcher listMatcher = LIST_PATTERN.matcher(schema);
+    if (listMatcher.find()) {
+      baseTypeName = listMatcher.group(1);
+      _type = Type.LIST;
+    }
+
+    Matcher setMatcher = SET_PATTERN.matcher(schema);
+    if (setMatcher.find()) {
+      baseTypeName = setMatcher.group(1);
+      _type = Type.SET;
     }
 
     if (!schemaAliases.containsKey(baseTypeName)) {
@@ -108,24 +128,24 @@ public class Schema {
       return false;
     }
     return Objects.equals(_baseType, ((Schema) o)._baseType)
-        && Objects.equals(_isListType, ((Schema) o)._isListType);
+        && Objects.equals(_type, ((Schema) o)._type);
   }
 
   public Class<?> getBaseType() {
     return _baseType;
   }
 
+  public Type getType() {
+    return _type;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_baseType, _isListType);
+    return Objects.hash(_baseType, _type);
   }
 
-  public boolean isIntOrIntList() {
+  public boolean isIntBased() {
     return _baseType.equals(Integer.class);
-  }
-
-  public boolean isList() {
-    return _isListType;
   }
 
   @Override
