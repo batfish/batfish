@@ -1,8 +1,6 @@
 package org.batfish.grammar;
 
-import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -75,8 +73,6 @@ public class VendorConfigurationFormatDetectorTest {
     String flatDeviceConfig = "set deviceconfig system blah\n";
     String flattened = "####BATFISH FLATTENED PALO ALTO CONFIG####\n";
 
-    String notPaloAlto = "other config line\n";
-
     /* Confirm hierarchical PAN configs are correctly identified */
     for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama, deviceConfig)) {
       assertThat(
@@ -91,14 +87,6 @@ public class VendorConfigurationFormatDetectorTest {
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
           equalTo(ConfigurationFormat.FLAT_PALO_ALTO));
     }
-
-    /* Make sure non-Palo Alto config line is not misidentified */
-    assertThat(
-        VendorConfigurationFormatDetector.identifyConfigurationFormat(notPaloAlto),
-        not(
-            anyOf(
-                equalTo(ConfigurationFormat.FLAT_PALO_ALTO),
-                equalTo(ConfigurationFormat.PALO_ALTO))));
   }
 
   @Test
