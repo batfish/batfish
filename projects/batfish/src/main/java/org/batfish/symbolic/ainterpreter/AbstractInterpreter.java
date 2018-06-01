@@ -9,9 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
@@ -20,10 +18,12 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
@@ -75,6 +75,7 @@ public class AbstractInterpreter {
 
   // A collection of single node BDDs representing the individual routeVariables
   private BDDRoute _variables;
+
   /*
    * Construct an abstract ainterpreter the answer a particular question.
    * This could be done more in a fashion like Batfish, where we run
@@ -481,31 +482,49 @@ public class AbstractInterpreter {
     return reachable;
   }
 
-  private IAbstractDomain<?> createDomain() {
-    switch (domainType) {
-      case EXACT:
-        return new ConcreteDomain(_netFactory);
-      case REACHABILITY:
-        return new ReachabilityDomain(_netFactory);
-      default:
-        throw new BatfishException("Invalid domain type: " + domainType);
-    }
-  }
-
   private <T> AnswerElement routes(NodesSpecifier ns, IAbstractDomain<T> domain) {
     Map<String, AbstractRib<T>> reachable = computeFixedPoint(domain);
-    SortedSet<RibEntry> routes = new TreeSet<>();
-    SortedMap<String, SortedSet<RibEntry>> routesByHostname = new TreeMap<>();
+    SortedSet<Route> routes = new TreeSet<>();
     Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
+
     for (String router : routers) {
+
+      System.out.println("Router: " + router);
+      Map<Prefix, String> nhintMap = new HashMap<>();
+      Configuration conf = _graph.getConfigurations().get(router);
+      for (Interface iface : conf.getInterfaces().values()) {
+        Prefix p = iface.getAddress().getPrefix();
+        nhintMap.put(p, iface.getName());
+      }
+
       AbstractRib<T> rib = reachable.get(router);
-      SortedSet<RibEntry> ribEntries = new TreeSet<>(domain.toRoutes(rib));
-      routesByHostname.put(router, ribEntries);
-      routes.addAll(ribEntries);
+      SortedSet<Route> entries = new TreeSet<>(domain.toRoutes(rib));
+      for (Route r : entries) {
+        Ip nhopIp = (r.getNextHopIp().asLong() == 0 ? new Ip(-1) : r.getNextHopIp());
+        String nhint = "dynamic";
+        if (r.getProtocol() == RoutingProtocol.CONNECTED
+            || r.getProtocol() == RoutingProtocol.STATIC) {
+          nhint = nhintMap.get(r.getNetwork());
+          System.out.println("   looking up: " + r.getNextHopIp());
+        }
+
+        Route route =
+            new Route(
+                router,
+                r.getVrf(),
+                r.getNetwork(),
+                nhopIp,
+                r.getNextHop(),
+                nhint,
+                r.getAdministrativeCost(),
+                r.getMetric(),
+                r.getProtocol(),
+                r.getTag());
+        routes.add(route);
+      }
     }
     AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
-    answer.setRoutesByHostname(routesByHostname);
     return answer;
   }
 

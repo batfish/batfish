@@ -8,6 +8,7 @@ import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 
 public interface IAbstractDomain<T> {
@@ -24,7 +25,7 @@ public interface IAbstractDomain<T> {
 
   T aggregate(Configuration conf, List<AggregateTransformer> aggregates, T x);
 
-  List<RibEntry> toRoutes(AbstractRib<T> value);
+  List<Route> toRoutes(AbstractRib<T> value);
 
   BDD toFib(Map<String, AbstractRib<T>> ribs);
 

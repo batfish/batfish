@@ -1,6 +1,5 @@
 package org.batfish.symbolic.ainterpreter;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,6 +10,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.bdd.BDDNetFactory;
 import org.batfish.symbolic.bdd.BDDRoute;
@@ -155,27 +155,8 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
 
   // TODO: same thing, take away the ones that over approximated
   @Override
-  public List<RibEntry> toRoutes(AbstractRib<ReachabilityDomainElement> value) {
-    return toRoutesAux(value.getMainRib());
-  }
-
-  private List<RibEntry> toRoutesAux(ReachabilityDomainElement value) {
-    List<RibEntry> ribEntries = new ArrayList<>();
-    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, value.getUnderApproximation(), true);
-    for (SatAssignment entry : entries) {
-      Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
-      RibEntry r =
-          new RibEntry(
-              entry.getSrcRouter(),
-              p,
-              entry.getRoutingProtocol(),
-              entry.getMetric(),
-              entry.getAdminDist(),
-              entry.getNextHopIp().toString(),
-              entry.getDstRouter());
-      ribEntries.add(r);
-    }
-    return ribEntries;
+  public List<Route> toRoutes(AbstractRib<ReachabilityDomainElement> value) {
+    return _domainHelper.toRoutes(value.getMainRib().getUnderApproximation());
   }
 
   // TODO: ensure unique reachability (i.e., no other destinations)
@@ -223,7 +204,7 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
 
   @Override
   public String debug(ReachabilityDomainElement value) {
-    List<RibEntry> ribs = toRoutesAux(value);
+    List<Route> ribs = _domainHelper.toRoutes(value.getUnderApproximation());
     return ribs.toString();
   }
 }

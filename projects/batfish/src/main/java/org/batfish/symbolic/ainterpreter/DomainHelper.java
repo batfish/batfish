@@ -11,6 +11,7 @@ import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
 import org.batfish.symbolic.OspfType;
@@ -514,20 +515,23 @@ public class DomainHelper {
     return transitiveClosure(allFibs);
   }
 
-  public List<RibEntry> toRoutes(BDD rib) {
-    List<RibEntry> ribEntries = new ArrayList<>();
+  public List<Route> toRoutes(BDD rib) {
+    List<Route> ribEntries = new ArrayList<>();
     List<SatAssignment> entries = BDDUtils.allSat(_netFactory, rib, true);
     for (SatAssignment entry : entries) {
       Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
-      RibEntry r =
-          new RibEntry(
+      Route r =
+          new Route(
               entry.getSrcRouter(),
+              "default",
               p,
-              entry.getRoutingProtocol(),
-              entry.getMetric(),
+              entry.getNextHopIp(),
+              "unknown",
+              "unknown",
               entry.getAdminDist(),
-              entry.getNextHopIp().toString(),
-              entry.getDstRouter());
+              entry.getMetric(),
+              entry.getRoutingProtocol(),
+              0);
       ribEntries.add(r);
     }
     return ribEntries;

@@ -12,6 +12,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.bdd.BDDNetFactory;
@@ -148,7 +149,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public List<RibEntry> toRoutes(AbstractRib<BDD> value) {
+  public List<Route> toRoutes(AbstractRib<BDD> value) {
     return _domainHelper.toRoutes(value.getMainRib());
   }
 
@@ -173,7 +174,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
 
   @Override
   public String debug(BDD x) {
-    List<RibEntry> ribs = _domainHelper.toRoutes(x);
+    List<Route> ribs = _domainHelper.toRoutes(x);
     return ribs.toString();
   }
 }
