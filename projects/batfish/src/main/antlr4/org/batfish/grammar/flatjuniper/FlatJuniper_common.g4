@@ -571,6 +571,11 @@ variable_policy
    text = ~( DESCRIPTION | MATCH | THEN )+
 ;
 
+wildcard
+:
+   WILDCARD | WILDCARD_ARTIFACT
+;
+
 wildcard_address
 :
    ip_address = IP_ADDRESS FORWARD_SLASH wildcard_mask = IP_ADDRESS

@@ -228,7 +228,7 @@ i_unit
 :
    UNIT
    (
-      WILDCARD
+      wildcard
       | num = DEC
    )
    (
@@ -387,7 +387,7 @@ ifi_address
    (
       IP_ADDRESS
       | IP_PREFIX
-      | WILDCARD
+      | wildcard
    )
    (
       ifia_arp
@@ -574,7 +574,7 @@ int_interface_range
 int_named
 :
    (
-      WILDCARD
+      wildcard
       | interface_id
    )
    (

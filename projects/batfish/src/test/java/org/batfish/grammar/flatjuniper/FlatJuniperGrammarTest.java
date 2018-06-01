@@ -70,7 +70,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -1326,12 +1325,7 @@ public class FlatJuniperGrammarTest {
     String prefixList2 = "p2";
     Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
 
-    Batfish b = getBatfishForConfigurationNames(hostname);
-    b.getSettings().setPrintParseTree(true);
-    Configuration c = b.loadConfigurations().get(hostname);
-
-    System.out.println(
-        BatfishObjectMapper.verboseWriter().writeValueAsString(b.initInfo(false, true)));
+    Configuration c = parseConfig(hostname);
 
     /* apply-groups using group containing interface wildcard should function as expected. */
     assertThat(

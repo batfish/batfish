@@ -183,7 +183,7 @@ b_neighbor
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-      | WILDCARD
+      | wildcard
    ) b_common
 ;
 

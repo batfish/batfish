@@ -39,10 +39,7 @@ ri_interface
 
 ri_named_routing_instance
 :
-   (
-      WILDCARD
-      | name = variable
-   )
+   name = variable
    (
       ri_common
       | ri_instance_type

@@ -6,8 +6,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_apply_pathContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
@@ -25,8 +23,6 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
   private List<ParseTree> _newConfigurationLines;
 
   private boolean _reenablePathRecording;
-
-  private boolean _wildcardsEnabled;
 
   public WildcardApplicator(Hierarchy hierarchy) {
     _hierarchy = hierarchy;
@@ -50,16 +46,6 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterPoplt_apply_path(Poplt_apply_pathContext ctx) {
-    _wildcardsEnabled = true;
-  }
-
-  @Override
-  public void enterS_groups(S_groupsContext ctx) {
-    _wildcardsEnabled = true;
-  }
-
-  @Override
   public void enterSet_line_tail(Set_line_tailContext ctx) {
     _enablePathRecording = true;
     _currentPath = new HierarchyPath();
@@ -76,16 +62,6 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
       _enablePathRecording = true;
       _reenablePathRecording = false;
     }
-  }
-
-  @Override
-  public void exitPoplt_apply_path(Poplt_apply_pathContext ctx) {
-    _wildcardsEnabled = false;
-  }
-
-  @Override
-  public void exitS_groups(S_groupsContext ctx) {
-    _wildcardsEnabled = false;
   }
 
   @Override
@@ -108,7 +84,7 @@ public class WildcardApplicator extends FlatJuniperParserBaseListener {
   public void visitTerminal(TerminalNode node) {
     if (_enablePathRecording) {
       String text = node.getText();
-      if (_wildcardsEnabled && node.getSymbol().getType() == FlatJuniperLexer.WILDCARD) {
+      if (node.getSymbol().getType() == FlatJuniperLexer.WILDCARD_ARTIFACT) {
         _currentPath.addWildcardNode(text);
       } else {
         _currentPath.addNode(text);

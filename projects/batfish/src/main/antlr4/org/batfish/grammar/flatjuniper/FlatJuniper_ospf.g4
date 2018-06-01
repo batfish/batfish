@@ -11,7 +11,7 @@ o_area
    AREA
    (
       area = IP_ADDRESS
-      | WILDCARD
+      | wildcard
    )
    (
       apply
@@ -117,7 +117,7 @@ oa_interface
       ALL
       | id = interface_id
       | ip = IP_ADDRESS
-      | WILDCARD
+      | wildcard
    )
    (
       apply
