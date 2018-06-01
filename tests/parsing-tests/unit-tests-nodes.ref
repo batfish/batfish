@@ -1369,7 +1369,7 @@
         }
       },
       "aruba_net" : {
-        "configurationFormat" : "ARUBA",
+        "configurationFormat" : "ARUBAOS",
         "name" : "aruba_net",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",

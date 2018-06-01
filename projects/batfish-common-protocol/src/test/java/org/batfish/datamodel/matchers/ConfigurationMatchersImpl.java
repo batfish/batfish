@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
@@ -15,6 +16,17 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class ConfigurationMatchersImpl {
+
+  static final class HasConfigurationFormat extends FeatureMatcher<Configuration, ConfigurationFormat> {
+    HasConfigurationFormat(@Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
+      super(subMatcher, "a configuration with configurationFormat", "configurationFormat");
+    }
+
+    @Override
+    protected ConfigurationFormat featureValueOf(Configuration actual) {
+      return actual.getConfigurationFormat();
+    }
+  }
 
   static final class HasDefaultVrf extends FeatureMatcher<Configuration, Vrf> {
     HasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {

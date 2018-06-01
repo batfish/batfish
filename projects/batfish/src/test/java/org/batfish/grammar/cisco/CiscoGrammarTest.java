@@ -9,6 +9,7 @@ import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExpr
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -324,6 +325,17 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
+  }
+
+  @Test
+  public void testArubaConfigurationFormat() throws IOException {
+    Configuration arubaConfig = parseConfig("arubaConfiguration");
+
+    assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
+
+    Configuration nonArubaConfig = parseConfig("nonArubaConfiguration");
+
+    assertThat(nonArubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.CISCO_IOS)));
   }
 
   @Test

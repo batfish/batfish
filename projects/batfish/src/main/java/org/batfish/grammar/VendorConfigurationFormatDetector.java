@@ -19,7 +19,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern BANNER_PATTERN = Pattern.compile("(?m)^banner ");
   private static final Pattern ALCATEL_AOS_PATTERN = Pattern.compile("(?m)^system name");
   private static final Pattern ARISTA_PATTERN = Pattern.compile("(?m)^.*boot system flash.*\\.swi");
-  private static final Pattern ARUBA_PATTERN = Pattern.compile("(?m)^netservice.*$");
+  private static final Pattern ARUBAOS_PATTERN = Pattern.compile("(?m)^netservice.*$");
   private static final Pattern BLADE_NETWORK_PATTERN = Pattern.compile("(?m)^switch-type");
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
   private static final Pattern F5_HOSTNAME_PATTERN = Pattern.compile("(?m)^tmsh .*$");
@@ -106,9 +106,9 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
-  private ConfigurationFormat checkAruba() {
-    if (fileTextMatches(ARUBA_PATTERN)) {
-      return ConfigurationFormat.ARUBA;
+  private ConfigurationFormat checkArubaOS() {
+    if (fileTextMatches(ARUBAOS_PATTERN)) {
+      return ConfigurationFormat.ARUBAOS;
     }
     return null;
   }
@@ -381,7 +381,7 @@ public final class VendorConfigurationFormatDetector {
     if (format != null) {
       return format;
     }
-    format = checkAruba();
+    format = checkArubaOS();
     if (format != null) {
       return format;
     }

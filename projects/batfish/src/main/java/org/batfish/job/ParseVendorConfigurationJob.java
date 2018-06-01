@@ -125,7 +125,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
             elapsedTime, _logger.getHistory(), _file, _warnings, ParseStatus.IGNORED);
 
       case ARISTA:
-      case ARUBA:
+      case ARUBAOS:
       case CADANT:
       case CISCO_ASA:
       case CISCO_IOS:
