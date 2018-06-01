@@ -957,30 +957,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
   }
 
-  private void markDepiClasses(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DEPI_CLASS, usage);
-  }
-
-  private void markDepiTunnels(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DEPI_TUNNEL, usage);
-  }
-
-  private void markDocsisPolicies(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY, usage);
-  }
-
-  private void markDocsisPolicyRules(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY_RULE, usage);
-  }
-
-  private void markInspectClassMaps(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.INSPECT_CLASS_MAP, usage);
-  }
-
-  private void markInspectPolicyMaps(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.INSPECT_POLICY_MAP, usage);
-  }
-
   private void markIpOrMacAcls(CiscoStructureUsage usage) {
     markAbstractStructure(
         CiscoStructureType.ACCESS_LIST,
@@ -1009,26 +985,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ImmutableList.of(
             CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
             CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
-  }
-
-  private void markKeyrings(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.KEYRING, usage);
-  }
-
-  private void markL2tpClasses(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.L2TP_CLASS, usage);
-  }
-
-  private void markNetworkObjectGroups(CiscoStructureUsage... usages) {
-    markConcreteStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usages);
-  }
-
-  private void markPrefixSets(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.PREFIX_SET, usage);
-  }
-
-  private void markServiceClasses(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.SERVICE_CLASS, usage);
   }
 
   private void processFailoverSettings() {
@@ -3451,7 +3407,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
-    markPrefixSets(CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
+    markConcreteStructure(
+        CiscoStructureType.PREFIX_SET, CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
 
     // mark references to route-maps
     markConcreteStructure(
@@ -3494,15 +3451,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
 
     // Cable
-    markDepiClasses(CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
-    markDepiTunnels(CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL);
-    markDepiTunnels(CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
-    markDocsisPolicies(CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
-    markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
-    markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.DEPI_CLASS, CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.DEPI_TUNNEL,
+        CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL,
+        CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
+    markConcreteStructure(
+        CiscoStructureType.DOCSIS_POLICY, CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.DOCSIS_POLICY_RULE,
+        CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
+    markConcreteStructure(
+        CiscoStructureType.SERVICE_CLASS, CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
     // L2tp
-    markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.L2TP_CLASS, CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
     // Crypto, Isakmp, and Ipsec
     markConcreteStructure(
@@ -3518,22 +3483,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.IPSEC_TRANSFORM_SET,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
         CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
-    markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
+    markConcreteStructure(CiscoStructureType.KEYRING, CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
     // class-map
-    markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.INSPECT_CLASS_MAP, CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
     markConcreteStructure(
         CiscoStructureType.CLASS_MAP,
         CiscoStructureUsage.POLICY_MAP_CLASS,
         CiscoStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
-    markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.INSPECT_POLICY_MAP,
+        CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
     markConcreteStructure(
         CiscoStructureType.POLICY_MAP, CiscoStructureUsage.INTERFACE_SERVICE_POLICY);
 
     // object-group
-    markNetworkObjectGroups(
+    markConcreteStructure(
+        CiscoStructureType.NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
