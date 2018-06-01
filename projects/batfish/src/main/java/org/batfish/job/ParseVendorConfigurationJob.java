@@ -267,6 +267,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case AWS:
       case BLADENETWORK:
       case F5:
+      case FLAT_PALO_ALTO:
       case JUNIPER_SWITCH:
       case METAMAKO:
       case MRV_COMMANDS:
