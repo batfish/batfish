@@ -49,7 +49,7 @@ public class CiscoOspfTest {
     rp.setOnlyClassfulRoutes(true);
     rp.setOspfMetricType(OspfMetricType.E2);
     rp.setRouteMap("some-map");
-    _config.getRouteMaps().put("some-map", new RouteMap("some-map", 10));
+    _config.getRouteMaps().put("some-map", new RouteMap("some-map"));
 
     If policy = _config.convertOspfRedistributionPolicy(rp, _proc, OSPF_REDISTRIBUTE_BGP_MAP);
     List<BooleanExpr> guard = ((Conjunction) policy.getGuard()).getConjuncts();

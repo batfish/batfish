@@ -13,8 +13,8 @@ public class ServiceObjectGroup extends ObjectGroup {
 
   private final List<ServiceObjectGroupLine> _lines;
 
-  public ServiceObjectGroup(String name, int definitionLine) {
-    super(name, definitionLine);
+  public ServiceObjectGroup(String name) {
+    super(name);
     _lines = new LinkedList<>();
   }
 

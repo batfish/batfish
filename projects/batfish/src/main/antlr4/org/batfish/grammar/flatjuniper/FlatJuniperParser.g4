@@ -80,11 +80,7 @@ s_groups_tail
 
 s_logical_systems
 :
-   LOGICAL_SYSTEMS
-   (
-      name = variable
-      | WILDCARD
-   ) s_logical_systems_tail
+   LOGICAL_SYSTEMS name = variable s_logical_systems_tail
 ;
 
 s_logical_systems_tail

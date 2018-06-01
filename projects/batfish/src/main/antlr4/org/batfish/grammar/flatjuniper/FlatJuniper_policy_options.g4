@@ -68,11 +68,7 @@ po_condition
 
 po_policy_statement
 :
-   POLICY_STATEMENT
-   (
-      WILDCARD
-      | name = variable
-   )
+   POLICY_STATEMENT name = variable
    (
       pops_term
       | pops_common
@@ -170,11 +166,7 @@ pops_from
 
 pops_term
 :
-   TERM
-   (
-      WILDCARD
-      | name = variable
-   ) pops_common
+   TERM name = variable pops_common
 ;
 
 pops_then
@@ -605,7 +597,12 @@ popst_null
 
 popst_origin
 :
-   ORIGIN (EGP | IGP | INCOMPLETE)
+   ORIGIN
+   (
+      EGP
+      | IGP
+      | INCOMPLETE
+   )
 ;
 
 popst_preference
