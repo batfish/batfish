@@ -3753,7 +3753,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_zone_pair(S_zone_pairContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     String srcName = ctx.source.getText();
     int srcLine = ctx.source.getStart().getLine();
     _configuration.referenceStructure(SECURITY_ZONE, srcName, ZONE_PAIR_SOURCE_ZONE, srcLine);
@@ -3764,8 +3763,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         _configuration
             .getSecurityZonePairs()
             .computeIfAbsent(dstName, n -> new TreeMap<>())
-            .computeIfAbsent(
-                srcName, n -> new SecurityZonePair(name, definitionLine, srcName, dstName));
+            .computeIfAbsent(srcName, n -> new SecurityZonePair(name, srcName, dstName));
   }
 
   @Override
