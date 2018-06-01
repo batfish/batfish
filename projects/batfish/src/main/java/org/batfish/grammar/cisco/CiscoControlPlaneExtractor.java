@@ -3577,7 +3577,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     } else if (ctx.mapname != null) {
       String map = ctx.mapname.getText();
-      _configuration.getBgpVrfAggregateAddressRouteMaps().add(map);
       _configuration.referenceStructure(
           ROUTE_MAP, map, BGP_VRF_AGGREGATE_ROUTE_MAP, ctx.mapname.getStart().getLine());
     }
@@ -3912,7 +3911,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitCp_ip_access_group(Cp_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getControlPlaneAccessGroups().add(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, CONTROL_PLANE_ACCESS_GROUP, line);
   }
 
@@ -3933,7 +3931,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitCrypto_map_ii_match_address(Crypto_map_ii_match_addressContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getCryptoAcls().add(name);
     _configuration.referenceStructure(IP_ACCESS_LIST, name, CRYPTO_MAP_IPSEC_ISAKMP_ACL, line);
   }
 
@@ -4643,7 +4640,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_nat_destination(If_ip_nat_destinationContext ctx) {
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
-    _configuration.getIpNatDestinationAccessLists().add(acl);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
   }
 
@@ -4725,7 +4721,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIf_ip_pim_neighbor_filter(If_ip_pim_neighbor_filterContext ctx) {
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
-    _configuration.getIpPimNeighborFilters().add(acl);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, INTERFACE_PIM_NEIGHBOR_FILTER, line);
   }
 
@@ -4769,7 +4764,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.acl != null) {
       String acl = ctx.acl.getText();
       int line = ctx.acl.getLine();
-      _configuration.getVerifyAccessLists().add(acl);
       _configuration.referenceStructure(
           IPV4_ACCESS_LIST, acl, INTERFACE_IP_VERIFY_ACCESS_LIST, line);
     }
@@ -4980,7 +4974,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIfigmpsg_acl(Ifigmpsg_aclContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getIgmpAcls().add(name);
     _configuration.referenceStructure(
         IPV4_ACCESS_LIST, name, INTERFACE_IGMP_STATIC_GROUP_ACL, line);
   }
@@ -5372,12 +5365,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         setter = Line::setOutputIpv6AccessList;
         structureType = IPV6_ACCESS_LIST;
         structureUsage = LINE_ACCESS_CLASS_LIST6;
-        _configuration.getLineIpv6AccessClassLists().add(name);
       } else {
         setter = Line::setOutputAccessList;
         structureType = IPV4_ACCESS_LIST;
         structureUsage = LINE_ACCESS_CLASS_LIST;
-        _configuration.getLineAccessClassLists().add(name);
       }
 
     } else {
@@ -5385,12 +5376,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         setter = Line::setInputIpv6AccessList;
         structureType = IPV6_ACCESS_LIST;
         structureUsage = LINE_ACCESS_CLASS_LIST6;
-        _configuration.getLineIpv6AccessClassLists().add(name);
       } else {
         setter = Line::setInputAccessList;
         structureType = IPV4_ACCESS_LIST;
         structureUsage = LINE_ACCESS_CLASS_LIST;
-        _configuration.getLineAccessClassLists().add(name);
       }
     }
     _configuration.referenceStructure(structureType, name, structureUsage, nameLine);
@@ -5575,7 +5564,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitManagement_ssh_ip_access_group(Management_ssh_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getManagementAccessGroups().add(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, MANAGEMENT_SSH_ACCESS_GROUP, line);
   }
 
@@ -5583,7 +5571,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitManagement_telnet_ip_access_group(Management_telnet_ip_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getManagementAccessGroups().add(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, MANAGEMENT_TELNET_ACCESS_GROUP, line);
   }
 
@@ -5901,7 +5888,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitNtp_access_group(Ntp_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getNtpAccessGroups().add(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
   }
 
@@ -6005,7 +5991,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitPeer_sa_filter(Peer_sa_filterContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getMsdpPeerSaLists().add(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, MSDP_PEER_SA_LIST, line);
   }
 
@@ -6014,10 +5999,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     if (ctx.LIST() != null) {
-      _configuration.getPimAcls().add(name);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_ACCEPT_REGISTER_ACL, line);
     } else if (ctx.ROUTE_MAP() != null) {
-      _configuration.getPimRouteMaps().add(name);
       _configuration.referenceStructure(ROUTE_MAP, name, PIM_ACCEPT_REGISTER_ROUTE_MAP, line);
     }
   }
@@ -6027,7 +6010,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_ACCEPT_RP_ACL, line);
     }
   }
@@ -6037,7 +6019,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!_no && ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
       _configuration.referenceStructure(
           IPV4_ACCESS_LIST, name,
           PIM_RP_ADDRESS_ACL, line);
@@ -6048,7 +6029,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitPim_rp_announce_filter(Pim_rp_announce_filterContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getPimAcls().add(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_ANNOUNCE_FILTER, line);
   }
 
@@ -6057,7 +6037,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_RP_CANDIDATE_ACL, line);
     }
   }
@@ -6067,7 +6046,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_SEND_RP_ANNOUNCE_ACL, line);
     }
   }
@@ -6077,7 +6055,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.name != null) {
       String name = ctx.name.getText();
       int line = ctx.name.getStart().getLine();
-      _configuration.getPimAcls().add(name);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, PIM_SPT_THRESHOLD_ACL, line);
     }
   }
@@ -7285,7 +7262,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSs_file_transfer(Ss_file_transferContext ctx) {
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
-    _configuration.getSnmpAccessLists().add(acl);
     _configuration.referenceStructure(IP_ACCESS_LIST, acl, SNMP_SERVER_FILE_TRANSFER_ACL, line);
   }
 
@@ -7305,7 +7281,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSs_tftp_server_list(Ss_tftp_server_listContext ctx) {
     String acl = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getSnmpAccessLists().add(acl);
     _configuration.referenceStructure(IP_ACCESS_LIST, acl, SNMP_SERVER_TFTP_SERVER_LIST, line);
   }
 
@@ -7322,14 +7297,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.acl4 != null) {
       String name = ctx.acl4.getText();
       line = ctx.acl4.getStart().getLine();
-      _configuration.getSnmpAccessLists().add(name);
       _currentSnmpCommunity.setAccessList(name);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, name, SNMP_SERVER_COMMUNITY_ACL4, line);
     }
     if (ctx.acl6 != null) {
       String name = ctx.acl6.getText();
       line = ctx.acl6.getStart().getLine();
-      _configuration.getSnmpAccessLists().add(name);
       _currentSnmpCommunity.setAccessList6(name);
       _configuration.referenceStructure(IPV6_ACCESS_LIST, name, SNMP_SERVER_COMMUNITY_ACL6, line);
     }
@@ -7345,7 +7318,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSsc_use_ipv4_acl(Ssc_use_ipv4_aclContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.getSnmpAccessLists().add(name);
     _currentSnmpCommunity.setAccessList(name);
     _configuration.referenceStructure(IPV4_ACCESS_LIST, name, SNMP_SERVER_COMMUNITY_ACL4, line);
   }
@@ -7355,10 +7327,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String acl = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     if (ctx.IPV6() != null) {
-      _configuration.getSshIpv6Acls().add(acl);
       _configuration.referenceStructure(IPV6_ACCESS_LIST, acl, SSH_IPV6_ACL, line);
     } else {
-      _configuration.getSshAcls().add(acl);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, SSH_IPV4_ACL, line);
     }
   }
@@ -7368,13 +7338,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.acl != null) {
       String acl = ctx.acl.getText();
       int line = ctx.acl.getStart().getLine();
-      _configuration.getSshAcls().add(acl);
       _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, SSH_IPV4_ACL, line);
     }
     if (ctx.acl6 != null) {
       String acl6 = ctx.acl6.getText();
       int line = ctx.acl6.getStart().getLine();
-      _configuration.getSshIpv6Acls().add(acl6);
       _configuration.referenceStructure(IPV6_ACCESS_LIST, acl6, SSH_IPV6_ACL, line);
     }
   }
@@ -7665,19 +7633,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.group_list != null) {
       String name = ctx.group_list.getText();
       int line = ctx.group_list.getStart().getLine();
-      _configuration.getWccpAcls().add(name);
       _configuration.referenceStructure(IP_ACCESS_LIST, name, WCCP_GROUP_LIST, line);
     }
     if (ctx.redirect_list != null) {
       String name = ctx.redirect_list.getText();
       int line = ctx.redirect_list.getStart().getLine();
-      _configuration.getWccpAcls().add(name);
       _configuration.referenceStructure(IP_ACCESS_LIST, name, WCCP_REDIRECT_LIST, line);
     }
     if (ctx.service_list != null) {
       String name = ctx.service_list.getText();
       int line = ctx.service_list.getStart().getLine();
-      _configuration.getWccpAcls().add(name);
       _configuration.referenceStructure(IP_ACCESS_LIST, name, WCCP_SERVICE_LIST, line);
     }
   }

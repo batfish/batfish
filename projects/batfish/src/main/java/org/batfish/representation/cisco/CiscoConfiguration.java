@@ -305,13 +305,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, AsPathSet> _asPathSets;
 
-  private final Set<String> _bgpVrfAggregateAddressRouteMaps;
-
   private final CiscoFamily _cf;
-
-  private final Set<String> _controlPlaneAccessGroups;
-
-  private final Set<String> _cryptoAcls;
 
   private final List<Ip> _dhcpRelayServers;
 
@@ -347,17 +341,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
-  private final Set<String> _igmpAcls;
-
   private final Map<String, InspectClassMap> _inspectClassMaps;
 
   private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
 
   private final Map<String, Interface> _interfaces;
-
-  private final Set<String> _ipNatDestinationAccessLists;
-
-  private final Set<String> _ipPimNeighborFilters;
 
   private final Map<String, IpsecProfile> _ipsecProfiles;
 
@@ -369,21 +357,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, Keyring> _keyrings;
 
-  private final Set<String> _lineAccessClassLists;
-
-  private final Set<String> _lineIpv6AccessClassLists;
-
   private final Map<String, MacAccessList> _macAccessLists;
-
-  private final Set<String> _managementAccessGroups;
-
-  private final Set<String> _msdpPeerSaLists;
 
   private final Map<String, NatPool> _natPools;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
-
-  private final Set<String> _ntpAccessGroups;
 
   private String _ntpSourceInterface;
 
@@ -391,33 +369,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, ObjectGroup> _objectGroups;
 
-  private final Set<String> _pimAcls;
-
-  private final Set<String> _pimRouteMaps;
-
   private final Map<String, Prefix6List> _prefix6Lists;
 
   private final Map<String, PrefixList> _prefixLists;
 
   private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
 
-  private final Set<String> _referencedRouteMaps;
-
   private final Map<String, RouteMap> _routeMaps;
 
   private final Map<String, RoutePolicy> _routePolicies;
-
-  private final Set<String> _snmpAccessLists;
 
   private SnmpServer _snmpServer;
 
   private String _snmpSourceInterface;
 
   private boolean _spanningTreePortfastDefault;
-
-  private final Set<String> _sshAcls;
-
-  private final Set<String> _sshIpv6Acls;
 
   private final Map<String, StandardAccessList> _standardAccessLists;
 
@@ -439,13 +405,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
-  private final Set<String> _verifyAccessLists;
-
   private final Map<String, Vrf> _vrfs;
 
   private final SortedMap<String, VrrpInterface> _vrrpGroups;
-
-  private final Set<String> _wccpAcls;
 
   private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
@@ -456,10 +418,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
-    _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
     _cf = new CiscoFamily();
-    _controlPlaneAccessGroups = new TreeSet<>();
-    _cryptoAcls = new TreeSet<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
     _expandedCommunityLists = new TreeMap<>();
@@ -468,52 +427,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _failoverInterfaces = new TreeMap<>();
     _failoverPrimaryAddresses = new TreeMap<>();
     _failoverStandbyAddresses = new TreeMap<>();
-    _igmpAcls = new TreeSet<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
     _inspectClassMaps = new TreeMap<>();
     _inspectPolicyMaps = new TreeMap<>();
     _interfaces = new TreeMap<>();
-    _ipNatDestinationAccessLists = new TreeSet<>();
-    _ipPimNeighborFilters = new TreeSet<>();
     _ipsecTransformSets = new TreeMap<>();
     _ipsecProfiles = new TreeMap<>();
     _keyrings = new TreeMap<>();
-    _lineAccessClassLists = new TreeSet<>();
-    _lineIpv6AccessClassLists = new TreeSet<>();
     _macAccessLists = new TreeMap<>();
-    _managementAccessGroups = new TreeSet<>();
-    _msdpPeerSaLists = new TreeSet<>();
     _natPools = new TreeMap<>();
     _networkObjectGroups = new TreeMap<>();
-    _ntpAccessGroups = new TreeSet<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
     _objectGroups = new TreeMap<>();
-    _pimAcls = new TreeSet<>();
-    _pimRouteMaps = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
     _protocolObjectGroups = new TreeMap<>();
-    _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
     _securityZonePairs = new TreeMap<>();
     _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
-    _snmpAccessLists = new TreeSet<>();
-    _sshAcls = new TreeSet<>();
-    _sshIpv6Acls = new TreeSet<>();
     _standardAccessLists = new TreeMap<>();
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _undefinedPeerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
-    _verifyAccessLists = new HashSet<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
-    _wccpAcls = new TreeSet<>();
   }
 
   private void applyVrrp(Configuration c) {
@@ -673,20 +616,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return routerId;
   }
 
-  public Set<String> getBgpVrfAggregateAddressRouteMaps() {
-    return _bgpVrfAggregateAddressRouteMaps;
-  }
-
   public CiscoFamily getCf() {
     return _cf;
-  }
-
-  public Set<String> getControlPlaneAccessGroups() {
-    return _controlPlaneAccessGroups;
-  }
-
-  public Set<String> getCryptoAcls() {
-    return _cryptoAcls;
   }
 
   public Vrf getDefaultVrf() {
@@ -758,10 +689,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  public Set<String> getIgmpAcls() {
-    return _igmpAcls;
-  }
-
   private @Nullable Interface getInterfaceByTunnelAddresses(Ip sourceAddress, Prefix destPrefix) {
     for (Interface iface : _interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
@@ -790,14 +717,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
-  public Set<String> getIpNatDestinationAccessLists() {
-    return _ipNatDestinationAccessLists;
-  }
-
-  public Set<String> getIpPimNeighborFilters() {
-    return _ipPimNeighborFilters;
-  }
-
   public Map<String, IpsecProfile> getIpsecProfiles() {
     return _ipsecProfiles;
   }
@@ -818,32 +737,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _keyrings;
   }
 
-  public Set<String> getLineAccessClassLists() {
-    return _lineAccessClassLists;
-  }
-
-  public Set<String> getLineIpv6AccessClassLists() {
-    return _lineIpv6AccessClassLists;
-  }
-
   public Map<String, MacAccessList> getMacAccessLists() {
     return _macAccessLists;
   }
 
-  public Set<String> getManagementAccessGroups() {
-    return _managementAccessGroups;
-  }
-
-  public Set<String> getMsdpPeerSaLists() {
-    return _msdpPeerSaLists;
-  }
-
   public Map<String, NatPool> getNatPools() {
     return _natPools;
-  }
-
-  public Set<String> getNtpAccessGroups() {
-    return _ntpAccessGroups;
   }
 
   public String getNtpSourceInterface() {
@@ -854,24 +753,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _nxBgpGlobalConfiguration;
   }
 
-  public Set<String> getPimAcls() {
-    return _pimAcls;
-  }
-
-  public Set<String> getPimRouteMaps() {
-    return _pimRouteMaps;
-  }
-
   public Map<String, Prefix6List> getPrefix6Lists() {
     return _prefix6Lists;
   }
 
   public Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
-  }
-
-  public Set<String> getReferencedRouteMaps() {
-    return _referencedRouteMaps;
   }
 
   public Map<String, RouteMap> getRouteMaps() {
@@ -954,10 +841,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return maps;
   }
 
-  public Set<String> getSnmpAccessLists() {
-    return _snmpAccessLists;
-  }
-
   public SnmpServer getSnmpServer() {
     return _snmpServer;
   }
@@ -968,14 +851,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public boolean getSpanningTreePortfastDefault() {
     return _spanningTreePortfastDefault;
-  }
-
-  public Set<String> getSshAcls() {
-    return _sshAcls;
-  }
-
-  public Set<String> getSshIpv6Acls() {
-    return _sshIpv6Acls;
   }
 
   public Map<String, StandardAccessList> getStandardAcls() {
@@ -1063,20 +938,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _vendor;
   }
 
-  public Set<String> getVerifyAccessLists() {
-    return _verifyAccessLists;
-  }
-
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
 
   public SortedMap<String, VrrpInterface> getVrrpGroups() {
     return _vrrpGroups;
-  }
-
-  public Set<String> getWccpAcls() {
-    return _wccpAcls;
   }
 
   private void markAcls(CiscoStructureUsage usage) {
