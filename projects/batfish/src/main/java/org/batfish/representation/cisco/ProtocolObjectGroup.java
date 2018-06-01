@@ -13,8 +13,8 @@ public class ProtocolObjectGroup extends ObjectGroup {
 
   private final List<ProtocolObjectGroupLine> _lines;
 
-  public ProtocolObjectGroup(String name, int definitionLine) {
-    super(name, definitionLine);
+  public ProtocolObjectGroup(String name) {
+    super(name);
     _lines = new LinkedList<>();
   }
 

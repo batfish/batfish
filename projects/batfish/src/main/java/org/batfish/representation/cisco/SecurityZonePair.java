@@ -1,8 +1,8 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.DefinedStructure;
+import org.batfish.common.util.ComparableStructure;
 
-public class SecurityZonePair extends DefinedStructure<String> {
+public class SecurityZonePair extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
@@ -12,8 +12,8 @@ public class SecurityZonePair extends DefinedStructure<String> {
 
   private final String _srcZone;
 
-  public SecurityZonePair(String name, int definitionLine, String srcZone, String dstZone) {
-    super(name, definitionLine);
+  public SecurityZonePair(String name, String srcZone, String dstZone) {
+    super(name);
     _srcZone = srcZone;
     _dstZone = dstZone;
   }
