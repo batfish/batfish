@@ -2134,16 +2134,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterOg_network(Og_networkContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
-      _currentNetworkObjectGroup = new NetworkObjectGroup(name, definitionLine);
+      _currentNetworkObjectGroup = new NetworkObjectGroup(name);
       warnObjectGroupRedefinition(name);
     } else {
       _currentNetworkObjectGroup =
-          _configuration
-              .getNetworkObjectGroups()
-              .computeIfAbsent(name, n -> new NetworkObjectGroup(n, definitionLine));
+          _configuration.getNetworkObjectGroups().computeIfAbsent(name, NetworkObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
       defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
     }
@@ -2157,16 +2154,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterOg_service(Og_serviceContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
-      _currentServiceObjectGroup = new ServiceObjectGroup(name, definitionLine);
+      _currentServiceObjectGroup = new ServiceObjectGroup(name);
       warnObjectGroupRedefinition(name);
     } else {
       _currentServiceObjectGroup =
-          _configuration
-              .getServiceObjectGroups()
-              .computeIfAbsent(name, n -> new ServiceObjectGroup(n, definitionLine));
+          _configuration.getServiceObjectGroups().computeIfAbsent(name, ServiceObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
       defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
@@ -2180,16 +2174,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterOg_protocol(Og_protocolContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     // If there is a conflict, create a dummy object group
     if (_configuration.getObjectGroups().get(name) != null) {
-      _currentProtocolObjectGroup = new ProtocolObjectGroup(name, definitionLine);
+      _currentProtocolObjectGroup = new ProtocolObjectGroup(name);
       warnObjectGroupRedefinition(name);
     } else {
       _currentProtocolObjectGroup =
-          _configuration
-              .getProtocolObjectGroups()
-              .computeIfAbsent(name, n -> new ProtocolObjectGroup(n, definitionLine));
+          _configuration.getProtocolObjectGroups().computeIfAbsent(name, ProtocolObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
       defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
     }
