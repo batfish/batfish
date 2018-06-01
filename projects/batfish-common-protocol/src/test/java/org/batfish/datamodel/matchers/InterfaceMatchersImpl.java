@@ -106,6 +106,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasName extends FeatureMatcher<Interface, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "an Interface with name:", "name");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getName();
+    }
+  }
+
   static final class HasOspfArea extends FeatureMatcher<Interface, OspfArea> {
     HasOspfArea(@Nonnull Matcher<? super OspfArea> subMatcher) {
       super(subMatcher, "an Interface with ospfArea:", "ospfArea");
