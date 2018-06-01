@@ -1,6 +1,8 @@
 package org.batfish.grammar;
 
+import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -12,7 +14,7 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class VendorConfigurationFormatDetectorTest {
   @Test
-  public void recognizeCadant() {
+  public void testCadant() {
     String fileText =
         "# ChassisType=<E6000> shelfName=<Arris CER CMTS> shelfSwVersion=<CER_V03.05.02.0008> \n"
             + "configure\n"
@@ -23,7 +25,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void recognizeIos() {
+  public void testIos() {
     String asr1000 =
         "boot system flash bootflash:asr1000rp1-adventerprisek9.03.03.01.S.151-2.S1.bin \n";
     String catalyst =
@@ -37,7 +39,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void recognizeIosXr() {
+  public void testIosXr() {
     String xr = "!! IOS XR Configuration 5.2.4\n";
     String xrRancid = "!RANCID-CONTENT-TYPE: cisco\n" + xr;
 
@@ -49,7 +51,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void recognizeNxos() {
+  public void testNxos() {
     String n7000 = "boot system bootflash:n7000-s2-dk9.7.2.1.D1.1.bin sup-2 \n";
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";
 
@@ -61,7 +63,7 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
-  public void recognizePaloAlto() {
+  public void testPaloAlto() {
     String rancid = "!RANCID-CONTENT-TYPE: paloalto\n!\nstructure {";
     String panorama = "deviceconfig {\n  system {\n    panorama-server 1.2.3.4;\n  }\n}";
     String sendPanorama = "alarm {\n  informational {\n    send-to-panorama yes;\n  }\n}";
@@ -73,17 +75,39 @@ public class VendorConfigurationFormatDetectorTest {
     String flatDeviceConfig = "set deviceconfig system blah\n";
     String flattened = "####BATFISH FLATTENED PALO ALTO CONFIG####\n";
 
+    String notPaloAlto = "other config line\n";
+
+    /* Identify hierarchical PAN configs */
     for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama, deviceConfig)) {
       assertThat(
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
           equalTo(ConfigurationFormat.PALO_ALTO));
     }
 
+    /* Identify flat (set-style) PAN configs */
     for (String fileText :
         ImmutableList.of(flatRancid, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
       assertThat(
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
           equalTo(ConfigurationFormat.FLAT_PALO_ALTO));
     }
+
+    /* Make sure non-Palo Alto config line is not mis-identified */
+    assertThat(
+        VendorConfigurationFormatDetector.identifyConfigurationFormat(notPaloAlto),
+        not(
+            anyOf(
+                equalTo(ConfigurationFormat.FLAT_PALO_ALTO),
+                equalTo(ConfigurationFormat.PALO_ALTO))));
+  }
+
+  @Test
+  public void testUnknown() {
+    String unknownConfig = "unknown config line\n";
+
+    /* Make sure bogus config is not misidentified */
+    assertThat(
+        VendorConfigurationFormatDetector.identifyConfigurationFormat(unknownConfig),
+        equalTo(ConfigurationFormat.UNKNOWN));
   }
 }
