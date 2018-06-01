@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -250,6 +251,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeBgpCommonExportPolicyName(String vrf) {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
+  }
+
+  /**
+   * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
+   * Filters out the interfaces having no primary {@link InterfaceAddress}
+   */
+  private static Map<String, Ip> computeInterfaceOwnedPrimaryIp(Map<String, Interface> interfaces) {
+    return interfaces
+        .entrySet()
+        .stream()
+        .filter(e -> Objects.nonNull(e.getValue().getAddress()))
+        .collect(
+            ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
   }
 
   public static String computeProtocolObjectGroupAclName(String name) {
@@ -693,8 +707,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Interface iface : _interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
       if (tunnel != null
-          && tunnel.getSource() != null
-          && tunnel.getSource().equals(sourceAddress)
+          && tunnel.getSourceAddress() != null
+          && tunnel.getSourceAddress().equals(sourceAddress)
           && tunnel.getDestination() != null
           && destPrefix.containsIp(tunnel.getDestination())) {
         /*
@@ -3235,7 +3249,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
       c.getIkeProposals().put(e.getKey(), e.getValue().getProposal());
     }
-
+    resolveKeyringIsakmpProfileAddresses();
+    resolveTunnelSourceInterfaces();
     addIkePoliciesAndGateways(c);
 
     // ipsec proposals
@@ -3270,7 +3285,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         IpsecVpn ipsecVpn = new IpsecVpn(name, c);
         ipsecVpn.setBindInterface(c.getInterfaces().get(name));
         ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
-        Ip source = tunnel.getSource();
+        Ip source = tunnel.getSourceAddress();
         Ip destination = tunnel.getDestination();
         if (source == null || destination == null) {
           _w.redFlag("Can't match IkeGateway: tunnel source or destination is not set for " + name);
@@ -3801,21 +3816,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, IsakmpProfile> e : _isakmpProfiles.entrySet()) {
       String name = e.getKey();
       IsakmpProfile isakmpProfile = e.getValue();
-
       IkePolicy ikePolicy = new IkePolicy(name);
       c.getIkePolicies().put(name, ikePolicy);
       ikePolicy.setProposals(c.getIkeProposals());
 
       String keyringName = isakmpProfile.getKeyring();
       if (keyringName == null) {
-        _w.redFlag("Cannot get PSK hash since keyring not configured for isakmpProfile " + name);
+        _w.redFlag(
+            String.format(
+                "Cannot get PSK hash since keyring not configured for isakmpProfile %s", name));
       } else if (_keyrings.containsKey(keyringName)) {
         Keyring keyring = _keyrings.get(keyringName);
-        if (keyring.match(isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
+        // LocalAddress can only be Ip.AUTO if LocalInterfaceName contains an invalid interface
+        if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
+          _w.redFlag(
+              String.format(
+                  "Invalid local address interface configured for ISAKMP profile %s", name));
+        } else if (keyring.match(
+            isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
           ikePolicy.setPreSharedKeyHash(keyring.getKey());
         } else {
           _w.redFlag(
-              "The addresses of keyring " + keyringName + " do not match isakmpProfile " + name);
+              String.format(
+                  "The addresses of keyring %s do not match isakmpProfile %s", keyringName, name));
         }
       }
 
@@ -3823,7 +3846,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Prefix remotePrefix = isakmpProfile.getMatchIdentity();
       if (localAddress == null || remotePrefix == null) {
         _w.redFlag(
-            "Can't get IkeGateway: Local or remote address is not set for isakmpProfile " + name);
+            String.format(
+                "Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
+                name));
       } else {
         IkeGateway ikeGateway = new IkeGateway(e.getKey());
         c.getIkeGateways().put(name, ikeGateway);
@@ -3832,7 +3857,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (oldIface != null) {
           ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
         } else {
-          _w.redFlag("External interface not found for ikeGateway for isakmpProfile " + name);
+          _w.redFlag(
+              String.format(
+                  "External interface not found for ikeGateway for isakmpProfile %s", name));
         }
         ikeGateway.setIkePolicy(ikePolicy);
         ikeGateway.setLocalIp(isakmpProfile.getLocalAddress());
@@ -4023,6 +4050,47 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void recordServiceClasses() {
     if (_cf.getCable() != null) {
       recordStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
+    }
+  }
+
+  /**
+   * Resolves the addresses of the interfaces used in localInterfaceName of IsaKmpProfiles and
+   * Keyrings
+   */
+  private void resolveKeyringIsakmpProfileAddresses() {
+    Map<String, Ip> ifaceNameToPrimaryIp = computeInterfaceOwnedPrimaryIp(_interfaces);
+
+    _keyrings
+        .values()
+        .stream()
+        .filter(keyring -> keyring.getLocalInterfaceName() != null)
+        .forEach(
+            keyring -> {
+              keyring.setLocalAddress(
+                  firstNonNull(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName()), Ip.AUTO));
+            });
+
+    _isakmpProfiles
+        .values()
+        .stream()
+        .filter(isakmpProfile -> isakmpProfile.getLocalInterfaceName() != null)
+        .forEach(
+            isakmpProfile -> {
+              isakmpProfile.setLocalAddress(
+                  firstNonNull(
+                      ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName()), Ip.AUTO));
+            });
+  }
+
+  /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */
+  private void resolveTunnelSourceInterfaces() {
+    Map<String, Ip> ifaceNameToPrimaryIp = computeInterfaceOwnedPrimaryIp(_interfaces);
+
+    for (Interface iface : _interfaces.values()) {
+      Tunnel tunnel = iface.getTunnel();
+      if (tunnel != null && tunnel.getSourceInterfaceName() != null) {
+        tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
+      }
     }
   }
 

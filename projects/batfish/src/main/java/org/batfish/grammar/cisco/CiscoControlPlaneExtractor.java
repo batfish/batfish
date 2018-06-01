@@ -1709,12 +1709,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCisprf_local_address(Cisprf_local_addressContext ctx) {
-    _currentIsakmpProfile.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    if (ctx.IP_ADDRESS() != null) {
+      _currentIsakmpProfile.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    } else {
+      _currentIsakmpProfile.setLocalInterfaceName(ctx.interface_name().getText());
+    }
   }
 
   @Override
   public void exitCkr_local_address(Ckr_local_addressContext ctx) {
-    _currentKeyring.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    if (ctx.IP_ADDRESS() != null) {
+      _currentKeyring.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    } else {
+      _currentKeyring.setLocalInterfaceName(ctx.interface_name().getText());
+    }
   }
 
   @Override
@@ -5019,18 +5027,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
+    Ip sourceAddress = null;
+    String sourceInterfaceName = null;
     if (ctx.IP_ADDRESS() != null) {
-      Ip source = toIp(ctx.IP_ADDRESS());
-      for (Interface iface : _currentInterfaces) {
-        iface.getTunnelInitIfNull().setSource(source);
-      }
+      sourceAddress = toIp(ctx.IP_ADDRESS());
     } else {
+      sourceInterfaceName = ctx.interface_name().getText();
       _configuration.referenceStructure(
-          INTERFACE,
-          ctx.interface_name().getText(),
-          TUNNEL_SOURCE,
-          ctx.interface_name().getStart().getLine());
-      todo(ctx, "tunnel source [interface]");
+          INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.interface_name().getStart().getLine());
+    }
+    for (Interface iface : _currentInterfaces) {
+      if (sourceAddress != null) {
+        iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
+      } else {
+        iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
+      }
     }
   }
 
