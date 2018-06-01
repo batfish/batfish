@@ -309,12 +309,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final CiscoFamily _cf;
 
-  /**
-   * These can be either ipv4 or ipv6, so we must check both protocols for access-lists when doing
-   * undefined references check
-   */
-  private final Set<String> _classMapAccessGroups;
-
   private final Set<String> _controlPlaneAccessGroups;
 
   private final Set<String> _cryptoAcls;
@@ -464,7 +458,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _asPathSets = new TreeMap<>();
     _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
     _cf = new CiscoFamily();
-    _classMapAccessGroups = new TreeSet<>();
     _controlPlaneAccessGroups = new TreeSet<>();
     _cryptoAcls = new TreeSet<>();
     _dhcpRelayServers = new ArrayList<>();
@@ -686,10 +679,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public CiscoFamily getCf() {
     return _cf;
-  }
-
-  public Set<String> getClassMapAccessGroups() {
-    return _classMapAccessGroups;
   }
 
   public Set<String> getControlPlaneAccessGroups() {
@@ -1095,8 +1084,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.IP_ACCESS_LIST,
         usage,
         ImmutableList.of(
-            CiscoStructureType.IP_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IP_ACCESS_LIST_EXTENDED,
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
             CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
             CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
   }
@@ -1130,8 +1119,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.ACCESS_LIST,
         usage,
         Arrays.asList(
-            CiscoStructureType.IP_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IP_ACCESS_LIST_STANDARD,
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
             CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
             CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
             CiscoStructureType.MAC_ACCESS_LIST));
@@ -1142,8 +1131,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.IPV4_ACCESS_LIST,
         usage,
         ImmutableList.of(
-            CiscoStructureType.IP_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IP_ACCESS_LIST_EXTENDED));
+            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
   }
 
   private void markIpv6Acls(CiscoStructureUsage usage) {
@@ -1469,11 +1458,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .getIpNetworks()
           .forEach(
               (prefix, routeMapOrEmpty) -> {
+                PrefixSpace exportSpace = new PrefixSpace(PrefixRange.fromPrefix(prefix));
                 List<BooleanExpr> exportNetworkConditions =
                     ImmutableList.of(
                         new MatchPrefixSet(
-                            new DestinationNetwork(),
-                            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(prefix)))),
+                            new DestinationNetwork(), new ExplicitPrefixSet(exportSpace)),
                         new Not(new MatchProtocol(RoutingProtocol.BGP)),
                         new Not(new MatchProtocol(RoutingProtocol.IBGP)),
                         new Not(new MatchProtocol(RoutingProtocol.AGGREGATE)),
@@ -1482,6 +1471,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                                 ? new CallExpr(routeMapOrEmpty)
                                 : BooleanExprs.TRUE,
                             OriginType.IGP));
+                newBgpProcess.addToOriginationSpace(exportSpace);
                 exportConditions.add(new Conjunction(exportNetworkConditions));
               });
     }
@@ -1895,6 +1885,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               Conjunction exportNetworkConditions = new Conjunction();
               PrefixSpace space = new PrefixSpace();
               space.addPrefix(prefix);
+              newBgpProcess.addToOriginationSpace(space);
               exportNetworkConditions
                   .getConjuncts()
                   .add(new MatchPrefixSet(new DestinationNetwork(), new ExplicitPrefixSet(space)));
@@ -2060,11 +2051,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
       GeneratedRoute.Builder defaultRoute = null;
       GeneratedRoute6.Builder defaultRoute6 = null;
       if (lpg.getDefaultOriginate()) {
-        if (ipv4) {
-          localOrCommonOrigination.getDisjuncts().add(MATCH_DEFAULT_ROUTE);
-        } else {
-          localOrCommonOrigination.getDisjuncts().add(MATCH_DEFAULT_ROUTE6);
-        }
+        String defaultRouteExportPolicyName;
+        defaultRouteExportPolicyName =
+            String.format("~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~", vrfName, lpg.getName());
+        RoutingPolicy defaultRouteExportPolicy = new RoutingPolicy(defaultRouteExportPolicyName, c);
+        c.getRoutingPolicies().put(defaultRouteExportPolicyName, defaultRouteExportPolicy);
+        defaultRouteExportPolicy
+            .getStatements()
+            .add(
+                new If(
+                    ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
+                    ImmutableList.of(
+                        new SetOrigin(
+                            new LiteralOrigin(
+                                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
+                                    ? OriginType.IGP
+                                    : OriginType.INCOMPLETE,
+                                null)),
+                        Statements.ReturnTrue.toStaticStatement())));
+        defaultRouteExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
+        localOrCommonOrigination
+            .getDisjuncts()
+            .add(new CallExpr(defaultRouteExportPolicy.getName()));
+
         defaultRoute = new GeneratedRoute.Builder();
         defaultRoute.setNetwork(Prefix.ZERO);
         defaultRoute.setAdmin(MAX_ADMINISTRATIVE_COST);
@@ -2094,7 +2103,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
           If defaultRouteGenerationConditional =
               new If(
                   ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
+                  ImmutableList.of(
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      Statements.ReturnTrue.toStaticStatement()));
           RoutingPolicy defaultRouteGenerationPolicy =
               new RoutingPolicy(
                   "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
@@ -2420,51 +2431,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     String incomingFilterName = iface.getIncomingFilter();
     if (incomingFilterName != null) {
-      IpAccessList incomingFilter = ipAccessLists.get(incomingFilterName);
-      if (incomingFilter == null) {
-        undefined(
-            CiscoStructureType.IP_ACCESS_LIST,
-            incomingFilterName,
-            CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
-            iface.getIncomingFilterLine());
-      } else {
-        String msg = "incoming acl for interface: " + iface.getName();
-        ExtendedAccessList incomingExtendedAccessList =
-            _extendedAccessLists.get(incomingFilterName);
-        if (incomingExtendedAccessList != null) {
-          incomingExtendedAccessList.getReferers().put(iface, msg);
-        }
-        StandardAccessList incomingStandardAccessList =
-            _standardAccessLists.get(incomingFilterName);
-        if (incomingStandardAccessList != null) {
-          incomingStandardAccessList.getReferers().put(iface, msg);
-        }
-      }
-      newIface.setIncomingFilter(incomingFilter);
+      newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
     }
     String outgoingFilterName = iface.getOutgoingFilter();
     if (outgoingFilterName != null) {
-      IpAccessList outgoingFilter = ipAccessLists.get(outgoingFilterName);
-      if (outgoingFilter == null) {
-        undefined(
-            CiscoStructureType.IP_ACCESS_LIST,
-            outgoingFilterName,
-            CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
-            iface.getOutgoingFilterLine());
-      } else {
-        String msg = "outgoing acl for interface: " + iface.getName();
-        ExtendedAccessList outgoingExtendedAccessList =
-            _extendedAccessLists.get(outgoingFilterName);
-        if (outgoingExtendedAccessList != null) {
-          outgoingExtendedAccessList.getReferers().put(iface, msg);
-        }
-        StandardAccessList outgoingStandardAccessList =
-            _standardAccessLists.get(outgoingFilterName);
-        if (outgoingStandardAccessList != null) {
-          outgoingStandardAccessList.getReferers().put(iface, msg);
-        }
-      }
-      newIface.setOutgoingFilter(outgoingFilter);
+      newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
     }
     // Apply zone outgoing filter if necessary
     applyZoneFilter(iface, newIface, c);
@@ -3556,18 +3527,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // mark references to IPv4/6 ACLs that may not appear in data model
     markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
+    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
     markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
     markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
     markAcls(CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP);
     markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL);
+    markIpv4Acls(CiscoStructureUsage.INTERFACE_INCOMING_FILTER);
     markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST);
+    markIpv4Acls(CiscoStructureUsage.INTERFACE_OUTGOING_FILTER);
     markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER);
     markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST);
     markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST);
-    markAcls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
+    markIpv4Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
     markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6);
     markIpv4Acls(CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP);
     markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP);
@@ -3581,6 +3555,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL);
     markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL);
     markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST);
+    markIpv4Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST);
+    markIpv6Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST);
     markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
     markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL);
     markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST);
@@ -3601,7 +3577,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.PREFIX_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IP_PREFIX_LIST);
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST);
     markConcreteStructure(
         CiscoStructureType.PREFIX6_LIST,
         CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
@@ -3679,7 +3655,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // class-map
     markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
-    markConcreteStructure(CiscoStructureType.CLASS_MAP, CiscoStructureUsage.POLICY_MAP_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.CLASS_MAP,
+        CiscoStructureUsage.POLICY_MAP_CLASS,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
     markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
@@ -3697,6 +3676,13 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ImmutableList.of(
             CiscoStructureType.PROTOCOL_OBJECT_GROUP, CiscoStructureType.SERVICE_OBJECT_GROUP));
 
+    // service template
+    markConcreteStructure(
+        CiscoStructureType.SERVICE_TEMPLATE,
+        CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
+        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
     // zone
     markConcreteStructure(
         CiscoStructureType.SECURITY_ZONE,
@@ -3704,6 +3690,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
         CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
+    markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     // record references to defined structures
     recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     recordCommunityLists();
@@ -3712,13 +3699,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordDocsisPolicies();
     recordDocsisPolicyRules();
     recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
-    recordIpAccessLists();
     recordStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
     recordStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
     recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
-    recordIpv6AccessLists();
-    recordStructure(_natPools, CiscoStructureType.NAT_POOL);
     recordPeerGroups();
     recordPeerSessions();
     recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
@@ -4146,16 +4130,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (_cf.getCable() != null) {
       recordStructure(_cf.getCable().getDocsisPolicyRules(), CiscoStructureType.DOCSIS_POLICY_RULE);
     }
-  }
-
-  private void recordIpAccessLists() {
-    recordStructure(_extendedAccessLists, CiscoStructureType.IP_ACCESS_LIST_EXTENDED);
-    recordStructure(_standardAccessLists, CiscoStructureType.IP_ACCESS_LIST_STANDARD);
-  }
-
-  private void recordIpv6AccessLists() {
-    recordStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
-    recordStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
   }
 
   private void recordPeerGroups() {

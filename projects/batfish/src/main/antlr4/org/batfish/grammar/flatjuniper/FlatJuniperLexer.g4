@@ -351,6 +351,11 @@ AS_PATH_EXPAND
    'as-path-expand'
 ;
 
+AS_PATH_GROUP
+:
+   'as-path-group'
+;
+
 AS_PATH_PREPEND
 :
    'as-path-prepend'

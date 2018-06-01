@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static java.util.Comparator.naturalOrder;
 import static java.util.Comparator.nullsFirst;
 import static org.batfish.common.util.CommonUtil.nullIfEmpty;
+import static org.batfish.common.util.CommonUtil.rangesContain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
@@ -10,7 +11,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -558,15 +558,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
 
   public static Builder builder() {
     return new Builder();
-  }
-
-  private static boolean rangesContain(Collection<SubRange> ranges, int num) {
-    for (SubRange range : ranges) {
-      if (range.getStart() <= num && num <= range.getEnd()) {
-        return true;
-      }
-    }
-    return false;
   }
 
   private SortedSet<Integer> _dscps;
@@ -1137,42 +1128,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return true;
   }
 
-  public Builder rebuild() {
-    return builder()
-        .setDscps(_dscps)
-        .setDstIps(_dstIps)
-        .setDstPorts(_dstPorts)
-        .setDstProtocols(_dstProtocols)
-        .setEcns(_ecns)
-        .setFragmentOffsets(_fragmentOffsets)
-        .setIcmpCodes(_icmpCodes)
-        .setIcmpTypes(_icmpTypes)
-        .setIpProtocols(_ipProtocols)
-        .setNegate(_negate)
-        .setNotDscps(_notDscps)
-        .setNotDstIps(_notDstIps)
-        .setNotDstPorts(_notDstPorts)
-        .setNotDstProtocols(_notDstProtocols)
-        .setNotEcns(_notEcns)
-        .setNotFragmentOffsets(_notFragmentOffsets)
-        .setNotIcmpCodes(_notIcmpCodes)
-        .setNotIcmpTypes(_notIcmpTypes)
-        .setNotIpProtocols(_notIpProtocols)
-        .setNotPacketLengths(_notPacketLengths)
-        .setNotSrcIps(_notSrcIps)
-        .setNotSrcPorts(_notSrcPorts)
-        .setNotSrcProtocols(_notSrcProtocols)
-        .setPacketLengths(_packetLengths)
-        .setSrcIps(_srcIps)
-        .setSrcOrDstIps(_srcOrDstIps)
-        .setSrcOrDstPorts(_srcOrDstPorts)
-        .setSrcOrDstProtocols(_srcOrDstProtocols)
-        .setSrcPorts(_srcPorts)
-        .setSrcProtocols(_srcProtocols)
-        .setStates(_states)
-        .setTcpFlags(_tcpFlags);
-  }
-
   @JsonProperty(PROP_DSCPS)
   public void setDscps(Iterable<Integer> dscps) {
     _dscps = ImmutableSortedSet.copyOf(dscps);
@@ -1351,6 +1306,42 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   @JsonProperty(PROP_TCP_FLAGS)
   public void setTcpFlags(Iterable<TcpFlags> tcpFlags) {
     _tcpFlags = ImmutableList.copyOf(tcpFlags);
+  }
+
+  public Builder toBuilder() {
+    return builder()
+        .setDscps(_dscps)
+        .setDstIps(_dstIps)
+        .setDstPorts(_dstPorts)
+        .setDstProtocols(_dstProtocols)
+        .setEcns(_ecns)
+        .setFragmentOffsets(_fragmentOffsets)
+        .setIcmpCodes(_icmpCodes)
+        .setIcmpTypes(_icmpTypes)
+        .setIpProtocols(_ipProtocols)
+        .setNegate(_negate)
+        .setNotDscps(_notDscps)
+        .setNotDstIps(_notDstIps)
+        .setNotDstPorts(_notDstPorts)
+        .setNotDstProtocols(_notDstProtocols)
+        .setNotEcns(_notEcns)
+        .setNotFragmentOffsets(_notFragmentOffsets)
+        .setNotIcmpCodes(_notIcmpCodes)
+        .setNotIcmpTypes(_notIcmpTypes)
+        .setNotIpProtocols(_notIpProtocols)
+        .setNotPacketLengths(_notPacketLengths)
+        .setNotSrcIps(_notSrcIps)
+        .setNotSrcPorts(_notSrcPorts)
+        .setNotSrcProtocols(_notSrcProtocols)
+        .setPacketLengths(_packetLengths)
+        .setSrcIps(_srcIps)
+        .setSrcOrDstIps(_srcOrDstIps)
+        .setSrcOrDstPorts(_srcOrDstPorts)
+        .setSrcOrDstProtocols(_srcOrDstProtocols)
+        .setSrcPorts(_srcPorts)
+        .setSrcProtocols(_srcProtocols)
+        .setStates(_states)
+        .setTcpFlags(_tcpFlags);
   }
 
   @Override

@@ -145,6 +145,7 @@ pops_from
    (
       popsf_area
       | popsf_as_path
+      | popsf_as_path_group
       | popsf_color
       | popsf_community
       | popsf_family
@@ -201,6 +202,11 @@ popsf_as_path
    (
       name = variable
    )?
+;
+
+popsf_as_path_group
+:
+   AS_PATH_GROUP name = variable
 ;
 
 popsf_color
@@ -468,6 +474,7 @@ popst_common
    | popst_metric2
    | popst_metric2_expression
    | popst_next_hop
+   | popst_next_hop_self
    | popst_next_policy
    | popst_next_term
    | popst_null
@@ -573,8 +580,12 @@ popst_next_hop
       IP_ADDRESS
       | IPV6_ADDRESS
       | PEER_ADDRESS
-      | SELF
    )
+;
+
+popst_next_hop_self
+:
+   NEXT_HOP SELF
 ;
 
 popst_next_policy
@@ -594,7 +605,7 @@ popst_null
 
 popst_origin
 :
-   ORIGIN IGP
+   ORIGIN (EGP | IGP | INCOMPLETE)
 ;
 
 popst_preference

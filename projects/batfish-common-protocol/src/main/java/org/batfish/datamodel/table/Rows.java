@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
+import java.util.Iterator;
 
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
@@ -23,8 +24,9 @@ public class Rows implements Serializable {
     _data = data == null ? TreeMultiset.create() : data;
   }
 
-  public void add(Row row) {
+  public Rows add(Row row) {
     _data.add(row);
+    return this;
   }
 
   public boolean contains(Row row) {
@@ -47,6 +49,10 @@ public class Rows implements Serializable {
   @JsonValue
   public Multiset<Row> getData() {
     return ImmutableMultiset.copyOf(_data);
+  }
+
+  public Iterator<Row> iterator() {
+    return _data.iterator();
   }
 
   @Override

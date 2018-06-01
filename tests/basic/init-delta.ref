@@ -98,27 +98,27 @@
               "numReferrers" : 1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "101" : {
               "definitionLines" : [
                 131,
                 132
               ],
-              "numReferrers" : 3
+              "numReferrers" : 2
             },
             "102" : {
               "definitionLines" : [
                 133,
                 134
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "103" : {
               "definitionLines" : [
                 135,
                 136
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           },
           "ipv4 prefix-list" : {
@@ -238,27 +238,27 @@
               "numReferrers" : 1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "101" : {
               "definitionLines" : [
                 133,
                 134
               ],
-              "numReferrers" : 3
+              "numReferrers" : 2
             },
             "102" : {
               "definitionLines" : [
                 135,
                 136
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "103" : {
               "definitionLines" : [
                 137,
                 138
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           },
           "ipv4 prefix-list" : {
@@ -389,20 +389,20 @@
               "numReferrers" : 1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "101" : {
               "definitionLines" : [
                 141,
                 142
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "103" : {
               "definitionLines" : [
                 143,
                 144
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "INSIDE_TO_AS1" : {
               "definitionLines" : [
@@ -526,20 +526,20 @@
               "numReferrers" : 1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "101" : {
               "definitionLines" : [
                 138,
                 139
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "103" : {
               "definitionLines" : [
                 140,
                 141
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "INSIDE_TO_AS3" : {
               "definitionLines" : [
@@ -630,7 +630,7 @@
               "numReferrers" : -1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "blocktelnet" : {
               "definitionLines" : [
                 118,
@@ -668,13 +668,13 @@
               "numReferrers" : 1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "102" : {
               "definitionLines" : [
                 121,
                 122
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "105" : {
               "definitionLines" : [
@@ -692,7 +692,7 @@
                 114,
                 115
               ],
-              "numReferrers" : 2
+              "numReferrers" : 3
             },
             "RESTRICT_HOST_TRAFFIC_OUT" : {
               "definitionLines" : [
@@ -747,7 +747,7 @@
               "numReferrers" : 1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "102" : {
               "definitionLines" : [
                 116
@@ -761,7 +761,7 @@
                 119,
                 120
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           },
           "route-map" : {
@@ -807,7 +807,7 @@
               "numReferrers" : 1
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "102" : {
               "definitionLines" : [
                 116
@@ -821,7 +821,7 @@
                 119,
                 120
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             }
           },
           "route-map" : {
@@ -885,27 +885,27 @@
               "numReferrers" : 0
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "101" : {
               "definitionLines" : [
                 122,
                 123
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "102" : {
               "definitionLines" : [
                 124,
                 125
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "103" : {
               "definitionLines" : [
                 126,
                 127
               ],
-              "numReferrers" : 3
+              "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {
@@ -1013,27 +1013,27 @@
               "numReferrers" : 0
             }
           },
-          "extended ip access-list" : {
+          "extended ipv4 access-list" : {
             "101" : {
               "definitionLines" : [
                 120,
                 121
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "102" : {
               "definitionLines" : [
                 122,
                 123
               ],
-              "numReferrers" : 2
+              "numReferrers" : 1
             },
             "103" : {
               "definitionLines" : [
                 124,
                 125
               ],
-              "numReferrers" : 3
+              "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {

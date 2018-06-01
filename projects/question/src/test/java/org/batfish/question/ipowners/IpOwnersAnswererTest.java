@@ -1,6 +1,5 @@
 package org.batfish.question.ipowners;
 
-import static org.batfish.question.ipowners.IpOwnersAnswerElement.COL_IP;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -75,7 +74,7 @@ public class IpOwnersAnswererTest {
     assertThat(rows, hasSize(3));
     Map<Ip, Long> counts =
         rows.stream()
-            .map(r -> r.get(COL_IP, Ip.class))
+            .map(r -> r.get(IpOwnersAnswerer.COL_IP, Ip.class))
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     assertThat(counts, hasEntry(_uniqueIp, 1L));
     assertThat(counts, hasEntry(_duplicateIp, 2L));
@@ -88,7 +87,7 @@ public class IpOwnersAnswererTest {
     Multiset<Row> rows = IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, true);
     assertThat(rows, hasSize(2));
     for (Row row : rows) {
-      assertThat(row.get(COL_IP, Ip.class), equalTo(_duplicateIp));
+      assertThat(row.get(IpOwnersAnswerer.COL_IP, Ip.class), equalTo(_duplicateIp));
     }
   }
 }

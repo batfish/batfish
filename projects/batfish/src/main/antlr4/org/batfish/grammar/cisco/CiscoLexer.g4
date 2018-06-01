@@ -244,6 +244,11 @@ ACTIVATE_SERVICE_WHITELIST
    'activate-service-whitelist'
 ;
 
+ACTIVATED_SERVICE_TEMPLATE
+:
+   'activated-service-template'
+;
+
 ACTIVATION_CHARACTER
 :
    'activation-character'
@@ -1031,6 +1036,11 @@ AUTH_SERVER
    'auth-server'
 ;
 
+AUTH_TYPE
+:
+   'auth-type'
+;
+
 AUTHENTICATE
 :
    'authenticate'
@@ -1059,6 +1069,11 @@ AUTHENTICATION_MAC
 AUTHENTICATION_PORT
 :
    'authentication-port'
+;
+
+AUTHENTICATION_RESTART
+:
+   'authentication-restart'
 ;
 
 AUTHENTICATION_RETRIES
@@ -1091,9 +1106,24 @@ AUTHORIZATION_REQUIRED
    'authorization-required'
 ;
 
+AUTHORIZATION_STATUS
+:
+   'authorization-status'
+;
+
 AUTHORIZATION_SERVER_GROUP
 :
    'authorization-server-group'
+;
+
+AUTHORIZE
+:
+   'authorize'
+;
+
+AUTHORIZED
+:
+   'authorized'
 ;
 
 AUTO
@@ -1906,6 +1936,11 @@ CLEAR
    'clear'
 ;
 
+CLEAR_SESSION
+:
+   'clear-session'
+;
+
 CLI
 :
    'cli'
@@ -2230,6 +2265,11 @@ CONTINUE
 CONTRACT_ID
 :
    'contract-id'
+;
+
+CONTROL
+:
+   'control'
 ;
 
 CONTROL_APPS_USE_MGMT_PORT
@@ -3222,6 +3262,11 @@ DO
    'do'
 ;
 
+DO_UNTIL_FAILURE
+:
+   'do-until-failure'
+;
+
 DOCSIS_ENABLE
 :
    'docsis-enable'
@@ -3485,6 +3530,11 @@ DYNAMIC
 DYNAMIC_ACCESS_POLICY_RECORD
 :
    'dynamic-access-policy-record'
+;
+
+DYNAMIC_AUTHOR
+:
+   'dynamic-author'
 ;
 
 DYNAMIC_CAPABILITY
@@ -3815,6 +3865,11 @@ EOF_LITERAL
 EOU
 :
    'eou'
+;
+
+EPM
+:
+   'epm'
 ;
 
 EQ
@@ -6043,6 +6098,11 @@ LINK_TYPE
    'link-type'
 ;
 
+LINKSEC
+:
+   'linksec'
+;
+
 LINKDEBOUNCE
 :
    'linkdebounce'
@@ -6413,6 +6473,11 @@ M15_DOT
   'm15.'
 ;
 
+MAB
+:
+   'mab'
+;
+
 MAC
 :
    'mac'
@@ -6566,6 +6631,11 @@ MATCH_ALL
 MATCH_ANY
 :
    'match-any'
+;
+
+MATCH_NONE
+:
+   'match-none'
 ;
 
 MATCHES_ANY
@@ -7236,6 +7306,11 @@ MULTI_CONFIG
 MULTI_TOPOLOGY
 :
    'multi-topology'
+;
+
+MUST_SECURE
+:
+    'must-secure'
 ;
 
 MVPN
@@ -9468,9 +9543,24 @@ RESTART_TIME
    'restart-time'
 ;
 
+RESTRICT
+:
+   'restrict'
+;
+
 RESTRICTED
 :
    'restricted'
+;
+
+RESULT_TYPE
+:
+   'result-type'
+;
+
+RESUME
+:
+   'resume'
 ;
 
 RETRANSMIT
@@ -10148,9 +10238,9 @@ SERVER_GROUP
    'server-group'
 ;
 
-SERVERFARM
+SERVER_KEY
 :
-   'serverfarm'
+   'server-key'
 ;
 
 SERVER_PRIVATE
@@ -10161,6 +10251,11 @@ SERVER_PRIVATE
 SERVER_TYPE
 :
    'server-type'
+;
+
+SERVERFARM
+:
+   'serverfarm'
 ;
 
 SERVICE
@@ -10198,6 +10293,11 @@ SERVICE_QUEUE
    'service-queue'
 ;
 
+SERVICE_TEMPLATE
+:
+   'service-template'
+;
+
 SERVICE_TYPE
 :
    'service-type'
@@ -10226,6 +10326,11 @@ SESSION_GROUP
 SESSION_ID
 :
    'session-id'
+;
+
+SESSION_KEY
+:
+   'session-key'
 ;
 
 SESSION_LIMIT
@@ -10346,6 +10451,11 @@ SHELL
 SHORT_TXT
 :
    'short-txt'
+;
+
+SHOULD_SECURE
+:
+    'should-secure'
 ;
 
 SHOW
@@ -11405,6 +11515,11 @@ TERMINAL_TYPE
    'terminal-type'
 ;
 
+TERMINATE
+:
+   'terminate'
+;
+
 TERMINATION
 :
    'termination'
@@ -11888,6 +12003,11 @@ UID
 UNABLE
 :
    'Unable'
+;
+
+UNAUTHORIZED
+:
+   'unauthorized'
 ;
 
 UNAUTHORIZED_DEVICE_PROFILE
@@ -12560,6 +12680,11 @@ WEB_MAX_CLIENTS
 WEB_SERVER
 :
    'web-server'
+;
+
+WEBAUTH
+:
+   'webauth'
 ;
 
 WEBVPN

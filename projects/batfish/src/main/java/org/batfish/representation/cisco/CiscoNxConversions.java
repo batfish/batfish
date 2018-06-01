@@ -27,6 +27,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -34,9 +35,11 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.representation.cisco.nx.CiscoNxBgpGlobalConfiguration;
@@ -332,9 +335,29 @@ final class CiscoNxConversions {
             ImmutableList.of(Statements.ExitReject.toStaticStatement())));
     List<BooleanExpr> localOrCommonOrigination = new LinkedList<>();
     localOrCommonOrigination.add(new CallExpr(computeBgpCommonExportPolicyName(vrf.getName())));
+
     // If `default-originate [route-map NAME]` is configured for this neighbor, generate the
     // default route and inject it.
     if (naf4 != null && firstNonNull(naf4.getDefaultOriginate(), Boolean.FALSE)) {
+
+      String defaultRouteExportPolicyName;
+      defaultRouteExportPolicyName =
+          String.format(
+              "~BGP_DEFAULT_ROUTE_PEER_EXPORT_POLICY:%s:%s~",
+              vrf.getName(), dynamic ? prefix : prefix.getStartIp());
+      RoutingPolicy defaultRouteExportPolicy = new RoutingPolicy(defaultRouteExportPolicyName, c);
+      c.getRoutingPolicies().put(defaultRouteExportPolicyName, defaultRouteExportPolicy);
+      defaultRouteExportPolicy
+          .getStatements()
+          .add(
+              new If(
+                  MATCH_DEFAULT_ROUTE,
+                  ImmutableList.of(
+                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
+                      Statements.ReturnTrue.toStaticStatement())));
+      defaultRouteExportPolicy.getStatements().add(Statements.ReturnFalse.toStaticStatement());
+      localOrCommonOrigination.add(new CallExpr(defaultRouteExportPolicy.getName()));
+
       GeneratedRoute defaultRoute =
           new GeneratedRoute.Builder()
               .setNetwork(Prefix.ZERO)
@@ -342,7 +365,6 @@ final class CiscoNxConversions {
               .setGenerationPolicy(naf4.getDefaultOriginateMap())
               .build();
       newNeighbor.getGeneratedRoutes().add(defaultRoute);
-      localOrCommonOrigination.add(MATCH_DEFAULT_ROUTE);
     }
     peerExportConditions.add(new Disjunction(localOrCommonOrigination));
 

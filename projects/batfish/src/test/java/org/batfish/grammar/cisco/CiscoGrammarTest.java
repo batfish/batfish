@@ -4,6 +4,7 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
@@ -11,6 +12,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -37,6 +39,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -117,7 +124,12 @@ import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IkeAuthenticationAlgorithm;
+import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -130,6 +142,8 @@ import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
+import org.batfish.datamodel.PrefixRange;
+import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
@@ -281,9 +295,10 @@ public class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(hostName, CiscoStructureType.MAC_ACCESS_LIST, "mac_acl", 1));
     assertThat(
         ccae,
-        hasNumReferrers(hostName, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "ip_acl_unused", 0));
+        hasNumReferrers(
+            hostName, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "ip_acl_unused", 0));
     assertThat(
-        ccae, hasNumReferrers(hostName, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "ip_acl", 1));
+        ccae, hasNumReferrers(hostName, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "ip_acl", 1));
   }
 
   @Test
@@ -436,6 +451,64 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosAclReferences() throws IOException {
+    String hostname = "ios-acl";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference counts are correct for ACLs
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "AL_IF", 3));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD, "10", 0));
+    assertThat(
+        ccae, hasNumReferrers(hostname, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED, "AL6", 1));
+    assertThat(
+        ccae,
+        hasNumReferrers(hostname, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD, "AL6_UNUSED", 0));
+
+    // Confirm undefined references are detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_UNDEF",
+            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV6_ACCESS_LIST,
+            "AL6_UNDEF",
+            CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_IF_UNDEF",
+            CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_IF_UNDEF",
+            CiscoStructureUsage.INTERFACE_INCOMING_FILTER));
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            CiscoStructureType.IPV4_ACCESS_LIST,
+            "AL_IF_UNDEF",
+            CiscoStructureUsage.INTERFACE_OUTGOING_FILTER));
+  }
+
+  @Test
   public void testIosInspection() throws IOException {
     Configuration c = parseConfig("ios-inspection");
 
@@ -566,6 +639,26 @@ public class CiscoGrammarTest {
             CiscoStructureType.KEYRING,
             "kundefined",
             CiscoStructureUsage.ISAKMP_PROFILE_KEYRING));
+  }
+
+  @Test
+  public void testIosNeighborDefaultOriginate() throws IOException {
+    String testrigName = "ios-default-originate";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of("originator", "listener"))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> routesOnListener =
+        dp.getRibs().get("listener").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+
+    // Ensure that default route is advertised to and installed on listener
+    assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
   }
 
   @Test
@@ -924,10 +1017,10 @@ public class CiscoGrammarTest {
      */
     assertThat(
         ccae,
-        hasNumReferrers(hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "acldefined", 1));
+        hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "acldefined", 1));
     assertThat(
         ccae,
-        hasNumReferrers(hostname, CiscoStructureType.IP_ACCESS_LIST_EXTENDED, "aclunused", 0));
+        hasNumReferrers(hostname, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED, "aclunused", 0));
 
     /*
      * We expect an undefined reference only to aclundefined
@@ -1301,6 +1394,18 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testBgpOriginationSpace() throws IOException {
+    Configuration c = parseConfig("ios-bgp-origination-space");
+
+    assertThat(
+        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+        equalTo(
+            new PrefixSpace(
+                PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
+                PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
+  }
+
+  @Test
   public void testBgpRemovePrivateAs() throws IOException {
     String testrigName = "bgp-remove-private-as";
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
@@ -1457,6 +1562,49 @@ public class CiscoGrammarTest {
     assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
     assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
     assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+  }
+
+  @Test
+  public void testCryptoAruba() throws IOException {
+    Configuration c = parseConfig("arubaCrypto");
+    assertThat(
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
+                hasLifeTimeSeconds(86400))));
+  }
+
+  @Test
+  public void testCryptoIos() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+
+    assertThat(
+        c,
+        hasIkeProposal(
+            "010",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(14400))));
+
+    // asserting the default values being set
+    assertThat(
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                hasLifeTimeSeconds(86400))));
   }
 
   private static String getCLRegex(

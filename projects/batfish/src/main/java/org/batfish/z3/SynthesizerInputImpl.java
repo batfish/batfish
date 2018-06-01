@@ -53,6 +53,7 @@ import org.batfish.z3.state.StateParameter.Type;
 public final class SynthesizerInputImpl implements SynthesizerInput {
 
   static final String SRC_INTERFACE_FIELD_NAME = "SRC_INTERFACE";
+  private final Map<IngressLocation, BooleanExpr> _srcIpConstraints;
 
   public static class Builder {
     private Map<String, Configuration> _configurations;
@@ -68,6 +69,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     private ForwardingAnalysis _forwardingAnalysis;
 
     @Nullable private HeaderSpace _headerSpace;
+
+    private Map<IngressLocation, IpSpace> _srcIpConstraints = ImmutableMap.of();
 
     private Set<String> _nonTransitNodes = ImmutableSortedSet.of();
 
@@ -149,6 +152,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     public Builder setNonTransitNodes(Set<String> nonTransitNodes) {
       _nonTransitNodes = ImmutableSet.copyOf(nonTransitNodes);
+      return this;
+    }
+
+    public Builder setSrcIpConstraints(Map<IngressLocation, IpSpace> srcIpConstraints) {
+      _srcIpConstraints = ImmutableMap.copyOf(srcIpConstraints);
       return this;
     }
   }
@@ -251,7 +259,8 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
             _namedIpSpaces,
             Entry::getKey,
             namedIpSpacesEntry ->
-                new IpSpaceSpecializer(_specializationIpSpace, namedIpSpacesEntry.getValue()));
+                new IpSpaceIpSpaceSpecializer(
+                    _specializationIpSpace, namedIpSpacesEntry.getValue()));
     _ipAccessListSpecializers =
         builder._specialize
             ? toImmutableMap(
@@ -269,6 +278,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _enabledInterfacesByNodeVrf = computeEnabledInterfacesByNodeVrf();
     _enabledInterfaces = computeEnabledInterfaces();
     _incomingAcls = computeIncomingAcls();
+    _srcIpConstraints = computeSrcIpConstraints(builder._srcIpConstraints);
     _outgoingAcls = computeOutgoingAcls();
     _simplify = builder._simplify;
     _vectorizedParameters = builder._vectorizedParameters;
@@ -307,6 +317,15 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
     _nonTransitNodes = ImmutableSortedSet.copyOf(builder._nonTransitNodes);
     _transitNodes = ImmutableSortedSet.copyOf(builder._transitNodes);
     _aclConditions = computeAclConditions();
+  }
+
+  private static Map<IngressLocation, BooleanExpr> computeSrcIpConstraints(
+      Map<IngressLocation, IpSpace> ipSpaceAssignment) {
+    // Named IP spaces are not allowed here. TODO do we need them?
+    IpSpaceBooleanExprTransformer toBooleanExpr =
+        new IpSpaceBooleanExprTransformer(ImmutableMap.of(), Field.ORIG_SRC_IP);
+    return toImmutableMap(
+        ipSpaceAssignment, Entry::getKey, entry -> entry.getValue().accept(toBooleanExpr));
   }
 
   private Set<String> computeNodesWithSrcInterfaceConstraints() {
@@ -839,6 +858,11 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
   @Override
   public Map<String, Map<String, String>> getIncomingAcls() {
     return _incomingAcls;
+  }
+
+  @Override
+  public Map<IngressLocation, BooleanExpr> getSrcIpConstraints() {
+    return _srcIpConstraints;
   }
 
   @Override

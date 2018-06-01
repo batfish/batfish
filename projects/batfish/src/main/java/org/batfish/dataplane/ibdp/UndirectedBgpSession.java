@@ -13,6 +13,7 @@ import org.batfish.datamodel.BgpSession;
 public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
   @Nonnull private final BgpNeighbor _first;
   @Nonnull private final BgpNeighbor _second;
+
   /**
    * Compare BGP neighbors using prefix and hostname. This comparator is **NOT** consistent with
    * equals
@@ -58,6 +59,11 @@ public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
   @Override
   public int hashCode() {
     return Objects.hash(getFirst(), getFirst().getOwner(), getSecond(), getSecond().getOwner());
+  }
+
+  /** Check if this session is eBGP. */
+  public boolean isEbgpSession() {
+    return !Objects.equals(_first.getLocalAs(), _second.getLocalAs());
   }
 
   @Override

@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_binary(
     name = "allinone_main",
@@ -44,6 +44,7 @@ junit_tests(
         "//projects/question",
         "@guava//:compile",
         "@hamcrest//:compile",
+        "@jackson_core//:compile",
         "@junit//:compile",
     ],
 )

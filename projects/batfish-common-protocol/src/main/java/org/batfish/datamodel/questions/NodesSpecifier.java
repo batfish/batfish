@@ -2,7 +2,6 @@ package org.batfish.datamodel.questions;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.annotations.VisibleForTesting;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -247,12 +246,10 @@ public class NodesSpecifier {
     }
   }
 
-  @VisibleForTesting
   public Set<String> getMatchingNodesByName(Set<String> nodes) {
     return nodes.stream().filter(n -> _regex.matcher(n).matches()).collect(Collectors.toSet());
   }
 
-  @VisibleForTesting
   public Set<String> getMatchingNodesByRole(NodeRoleDimension roleDimension, Set<String> nodes) {
     return nodes
         .stream()
@@ -261,8 +258,7 @@ public class NodesSpecifier {
   }
 
   @JsonIgnore
-  @VisibleForTesting
-  Pattern getRegex() {
+  public Pattern getRegex() {
     return _regex;
   }
 

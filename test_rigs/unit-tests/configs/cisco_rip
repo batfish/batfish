@@ -16,5 +16,7 @@ router rip
  no passive-interface Bundle1.23
  timers basic 10 20 30 40
  version 2
+ distance 12
+ distance 123 1.1.1.1 0.0.0.0
 !
 !

@@ -13,6 +13,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 import org.junit.Test;
 
@@ -51,8 +52,7 @@ public class JsonPathToTableAnswererTest {
     JsonPathToTableQuestion question = new JsonPathToTableQuestion(null, query, null);
     question.setExclusions(Collections.singletonList(exclusion));
 
-    JsonPathToTableAnswerElement answer =
-        JsonPathToTableAnswerer.computeAnswerTable(innerAnswer, question);
+    TableAnswerElement answer = JsonPathToTableAnswerer.computeAnswerTable(innerAnswer, question);
 
     // there should be one row and one excludedRow
     assertThat(answer.getRows().size(), equalTo(1));

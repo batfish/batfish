@@ -72,7 +72,8 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
+import org.batfish.datamodel.acl.NotMatchExpr;
+import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1334,39 +1335,55 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   /** Generate IpAccessList from the specified to-zone's security policies. */
   IpAccessList buildSecurityPolicyAcl(String name, Zone zone) {
-    List<AclLineMatchExpr> zonePolicies = new TreeList<>();
-    List<IpAccessListLine> zoneAclLines;
+    List<IpAccessListLine> zoneAclLines = new TreeList<>();
 
-    // Default ACL that allows existing connections should be added to any security policy
-    AclLineMatchExpr allowEstablishedConnections = new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION);
+    /* Default ACL that allows existing connections should be added to all security policies */
+    zoneAclLines.add(
+        new IpAccessListLine(
+            LineAction.ACCEPT,
+            new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION, false),
+            "EXISTING_CONNECTION"));
 
+    /* Default policy allows traffic originating from the device to be accepted */
+    zoneAclLines.add(
+        new IpAccessListLine(LineAction.ACCEPT, OriginatingFromDevice.INSTANCE, "HOST_OUTBOUND"));
+
+    /* Zone specific policies */
     if (zone != null && !zone.getFromZonePolicies().isEmpty()) {
       for (Entry<String, FirewallFilter> e : zone.getFromZonePolicies().entrySet()) {
-        zonePolicies.add(new PermittedByAcl(e.getKey()));
+        /* Handle explicit accept lines from this policy */
+        zoneAclLines.add(
+            new IpAccessListLine(
+                LineAction.ACCEPT, new PermittedByAcl(e.getKey(), false), e.getKey() + "ACCEPT"));
+        /* Handle explicit deny lines from this policy, this is needed so only unmatched lines fall-through to the next lines */
+        zoneAclLines.add(
+            new IpAccessListLine(
+                LineAction.REJECT,
+                new NotMatchExpr(new PermittedByAcl(e.getKey(), true)),
+                e.getKey() + "REJECT"));
       }
-      zonePolicies.add(allowEstablishedConnections);
-    } else {
-      // If a security policy is to be built but there are no applicable policies,
-      // allow only established connections (default firewall behavior)
-      zonePolicies = ImmutableList.of(allowEstablishedConnections);
     }
 
-    // Zone, global, and default policies need to be checked in order
-    // So they will be added as lines in the security policy ACL
-    IpAccessListLine zonePoliciesLine =
-        new IpAccessListLine(LineAction.ACCEPT, new OrMatchExpr(zonePolicies), "ZONE_POLICIES");
-    IpAccessListLine defaultActionLine =
-        new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY");
+    /* Global policy if applicable */
     if (_filters.get(ACL_NAME_GLOBAL_POLICY) != null) {
-      zoneAclLines =
-          ImmutableList.of(
-              zonePoliciesLine,
-              new IpAccessListLine(
-                  LineAction.ACCEPT, new PermittedByAcl(ACL_NAME_GLOBAL_POLICY), "GLOBAL_POLICY"),
-              defaultActionLine);
-    } else {
-      zoneAclLines = ImmutableList.of(zonePoliciesLine, defaultActionLine);
+      /* Handle explicit accept lines for global policy */
+      zoneAclLines.add(
+          new IpAccessListLine(
+              LineAction.ACCEPT,
+              new PermittedByAcl(ACL_NAME_GLOBAL_POLICY, false),
+              "GLOBAL_POLICY_ACCEPT"));
+      /* Handle explicit deny lines for global policy, this is needed so only unmatched lines fall-through to the next lines */
+      zoneAclLines.add(
+          new IpAccessListLine(
+              LineAction.REJECT,
+              new NotMatchExpr(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY, true)),
+              "GLOBAL_POLICY_REJECT"));
     }
+
+    /* Add catch-all line with default action */
+    zoneAclLines.add(
+        new IpAccessListLine(_defaultCrossZoneAction, TrueExpr.INSTANCE, "DEFAULT_POLICY"));
+
     IpAccessList zoneAcl = new IpAccessList(name, zoneAclLines);
     _c.getIpAccessLists().put(name, zoneAcl);
     return zoneAcl;
@@ -1398,12 +1415,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (securityPolicyAcl == null) {
       return outAcl;
     } else if (outAcl == null) {
-      aclConjunctList = ImmutableSet.of(new PermittedByAcl(securityPolicyAcl.getName()));
+      aclConjunctList = ImmutableSet.of(new PermittedByAcl(securityPolicyAcl.getName(), false));
     } else {
       aclConjunctList =
           ImmutableSet.of(
-              new PermittedByAcl(outAcl.getName()),
-              new PermittedByAcl(securityPolicyAcl.getName()));
+              new PermittedByAcl(outAcl.getName(), false),
+              new PermittedByAcl(securityPolicyAcl.getName(), false));
     }
 
     String combinedAclName = ACL_NAME_COMBINED_OUTGOING + iface.getName();
@@ -1842,7 +1859,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private org.batfish.datamodel.StaticRoute toStaticRoute(StaticRoute route) {
-    Prefix prefix = route.getPrefix();
     Ip nextHopIp = route.getNextHopIp();
     if (nextHopIp == null) {
       nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -1851,18 +1867,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
         route.getDrop()
             ? org.batfish.datamodel.Interface.NULL_INTERFACE_NAME
             : route.getNextHopInterface();
-    int administrativeCost = route.getMetric();
-    Integer oldTag = route.getTag();
-    int tag;
-    tag = oldTag != null ? oldTag : -1;
+    int tag = route.getTag() != null ? route.getTag() : -1;
+
     org.batfish.datamodel.StaticRoute newStaticRoute =
         org.batfish.datamodel.StaticRoute.builder()
-            .setNetwork(prefix)
+            .setNetwork(route.getPrefix())
             .setNextHopIp(nextHopIp)
             .setNextHopInterface(nextHopInterface)
-            .setAdministrativeCost(administrativeCost)
+            .setAdministrativeCost(route.getDistance())
+            .setMetric(route.getMetric())
             .setTag(tag)
             .build();
+
     return newStaticRoute;
   }
 
@@ -2469,15 +2485,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       PolicyStatement ps = e.getValue();
       recordStructure(ps, JuniperStructureType.POLICY_STATEMENT, name, ps.getDefinitionLine());
-    }
-  }
-
-  private void recordPrefixLists() {
-    for (Entry<String, PrefixList> e : _prefixLists.entrySet()) {
-      String name = e.getKey();
-      PrefixList prefixList = e.getValue();
-      recordStructure(
-          prefixList, JuniperStructureType.PREFIX_LIST, name, prefixList.getDefinitionLine());
     }
   }
 

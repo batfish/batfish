@@ -297,7 +297,7 @@ class CiscoConversions {
           new MatchHeaderSpace(
               ((MatchHeaderSpace) matchService)
                   .getHeaderspace()
-                  .rebuild()
+                  .toBuilder()
                   .setSrcIps(srcIpSpace)
                   .setDstIps(dstIpSpace)
                   .build());

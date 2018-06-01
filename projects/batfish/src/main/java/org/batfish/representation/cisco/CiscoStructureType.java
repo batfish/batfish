@@ -24,11 +24,11 @@ public enum CiscoStructureType implements StructureType {
   INSPECT_POLICY_MAP("policy-map type inspect"),
   INTERFACE("interface"),
   IP_ACCESS_LIST("ipv4/6 acl"),
-  IP_ACCESS_LIST_EXTENDED("extended ip access-list"),
-  IP_ACCESS_LIST_STANDARD("standard ip access-list"),
   IPSEC_PROFILE("crypto ipsec profile"),
   IPSEC_TRANSFORM_SET("crypto ipsec transform-set"),
   IPV4_ACCESS_LIST("ipv4 acl"),
+  IPV4_ACCESS_LIST_EXTENDED("extended ipv4 access-list"),
+  IPV4_ACCESS_LIST_STANDARD("standard ipv4 access-list"),
   IPV6_ACCESS_LIST("ipv6 acl"),
   IPV6_ACCESS_LIST_EXTENDED("extended ipv6 access-list"),
   IPV6_ACCESS_LIST_STANDARD("standard ipv6 access-list"),
@@ -49,7 +49,8 @@ public enum CiscoStructureType implements StructureType {
   ROUTE_MAP_CLAUSE("route-map-clause"),
   SECURITY_ZONE("zone security"),
   SERVICE_CLASS("cable service-class"),
-  SERVICE_OBJECT_GROUP("object-group service");
+  SERVICE_OBJECT_GROUP("object-group service"),
+  SERVICE_TEMPLATE("service-template");
 
   private final String _description;
 
