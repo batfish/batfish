@@ -173,7 +173,9 @@ import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.specifier.Location;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -198,7 +200,6 @@ import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
 import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.OrExpr;
-import org.batfish.z3.expr.TrueExpr;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -2984,25 +2985,36 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement pathDiff(ReachabilityParameters reachabilityParameters) {
-    /* TODO pathDiff deserves its own parameter set type.
-     * Sources are ignored, since we always originate from vrfs that have missing or removed
-     * edges. So the user-facing question shouldn't include a source parameter.
-     */
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
 
+    ResolvedReachabilityParameters baseParameters;
+
     // load base configurations and generate base data plane
     pushBaseEnvironment();
-    Map<String, Configuration> baseConfigurations = loadConfigurations();
-    Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
     Topology baseTopology = getEnvironmentTopology();
+    try {
+      baseParameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
+    }
+
+    Map<String, Configuration> baseConfigurations = baseParameters.getConfigurations();
+    Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParameters);
     popEnvironment();
 
-    // load diff configurations and generate diff data plane
+    // load delta configurations and generate delta data plane
+    ResolvedReachabilityParameters deltaParameters;
     pushDeltaEnvironment();
-    Map<String, Configuration> diffConfigurations = loadConfigurations();
-    Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
+    try {
+      deltaParameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
+    }
+
+    Map<String, Configuration> diffConfigurations = deltaParameters.getConfigurations();
+    Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParameters);
     Topology diffTopology = getEnvironmentTopology();
     popEnvironment();
 
@@ -3023,15 +3035,33 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     List<CompositeNodJob> jobs = new ArrayList<>();
 
+    Map<IngressLocation, BooleanExpr> srcIpConstraints =
+        baseDataPlaneSynthesizer.getInput().getSrcIpConstraints();
+
+    Set<Location> sourceLocations =
+        baseParameters
+            .getSourceIpAssignment()
+            .getEntries()
+            .stream()
+            .flatMap(entry -> entry.getLocations().stream())
+            .collect(ImmutableSet.toImmutableSet());
+
     // generate local edge reachability and black hole queries
     SortedSet<Edge> diffEdges = diffTopology.getEdges();
     for (Edge edge : diffEdges) {
       String ingressNode = edge.getNode1();
       String outInterface = edge.getInt1();
+
+      // skip if the source interface is not specified by the user
+      if (!sourceLocations.contains(new InterfaceLocation(ingressNode, outInterface))) {
+        continue;
+      }
+
       String vrf =
           diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
-      Map<IngressLocation, BooleanExpr> srcIpConstraint =
-          ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
+      IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
+      BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
+
       ReachEdgeQuerySynthesizer reachQuery =
           new ReachEdgeQuerySynthesizer(
               ingressNode, vrf, edge, true, reachabilityParameters.getHeaderSpace());
@@ -3040,7 +3070,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
       CompositeNodJob job =
-          new CompositeNodJob(settings, commonEdgeSynthesizers, queries, srcIpConstraint, tag);
+          new CompositeNodJob(
+              settings,
+              commonEdgeSynthesizers,
+              queries,
+              ImmutableMap.of(ingressLocation, srcIpConstraint),
+              tag);
       jobs.add(job);
     }
 
@@ -3053,25 +3088,35 @@ public class Batfish extends PluginConsumer implements IBatfish {
     for (Edge missingEdge : missingEdges) {
       String ingressNode = missingEdge.getNode1();
       String outInterface = missingEdge.getInt1();
-      if (diffConfigurations.containsKey(ingressNode)
-          && diffConfigurations.get(ingressNode).getInterfaces().containsKey(outInterface)) {
-        String vrf =
-            diffConfigurations
-                .get(ingressNode)
-                .getInterfaces()
-                .get(outInterface)
-                .getVrf()
-                .getName();
-        ReachEdgeQuerySynthesizer reachQuery =
-            new ReachEdgeQuerySynthesizer(
-                ingressNode, vrf, missingEdge, true, reachabilityParameters.getHeaderSpace());
-        List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
-        Map<IngressLocation, BooleanExpr> srcIpConstraint =
-            ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
-        CompositeNodJob job =
-            new CompositeNodJob(settings, missingEdgeSynthesizers, queries, srcIpConstraint, tag);
-        jobs.add(job);
+
+      // skip if the source interface is not specified by the user
+      if (!sourceLocations.contains(new InterfaceLocation(ingressNode, outInterface))) {
+        continue;
       }
+
+      // skip if the source node or interface has been removed
+      if (!diffConfigurations.containsKey(ingressNode)
+          || !diffConfigurations.get(ingressNode).getInterfaces().containsKey(outInterface)) {
+        continue;
+      }
+
+      String vrf =
+          diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
+      IngressLocation ingressLocation = IngressLocation.vrf(ingressNode, vrf);
+      BooleanExpr srcIpConstraint = srcIpConstraints.get(ingressLocation);
+
+      ReachEdgeQuerySynthesizer reachQuery =
+          new ReachEdgeQuerySynthesizer(
+              ingressNode, vrf, missingEdge, true, reachabilityParameters.getHeaderSpace());
+      List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
+      CompositeNodJob job =
+          new CompositeNodJob(
+              settings,
+              missingEdgeSynthesizers,
+              queries,
+              ImmutableMap.of(ingressLocation, srcIpConstraint),
+              tag);
+      jobs.add(job);
     }
 
     // TODO: maybe do something with nod answer element
@@ -4405,6 +4450,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
         ImmutableSet.of(),
         IpSpaceAssignment.empty(),
         false);
+  }
+
+  @Nonnull
+  private Synthesizer synthesizeDataPlane(ResolvedReachabilityParameters parameters) {
+    Map<String, Configuration> configs = parameters.getConfigurations();
+    DataPlane dataPlane = parameters.getDataPlane();
+    return synthesizeDataPlane(
+        configs,
+        dataPlane,
+        loadForwardingAnalysis(configs, dataPlane),
+        parameters.getHeaderSpace(),
+        parameters.getForbiddenTransitNodes(),
+        parameters.getRequiredTransitNodes(),
+        parameters.getSourceIpAssignment(),
+        parameters.getSpecialize());
   }
 
   @Nonnull

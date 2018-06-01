@@ -347,13 +347,18 @@ public final class ReachabilitySettings {
           new ConstantIpSpaceSpecifier(AclIpSpace.difference(UniverseIpSpace.INSTANCE, notSrcIps));
     }
 
+    // remove src IPs from headerspace since they're specified via an IpSpaceSpecifier
+    IpSpace nullIpSpace = null;
+    HeaderSpace headerSpace =
+        _headerSpace.toBuilder().setNotSrcIps(nullIpSpace).setSrcIps(nullIpSpace).build();
+
     return ReachabilityParameters.builder()
         .setActions(_actions)
         .setFinalNodesSpecifier(
             NodeSpecifiers.difference(
                 NodeSpecifiers.from(_finalNodes), NodeSpecifiers.from(_notFinalNodes)))
         .setForbiddenTransitNodesSpecifier(NodeSpecifiers.from(_nonTransitNodes))
-        .setHeaderSpace(_headerSpace)
+        .setHeaderSpace(headerSpace)
         .setMaxChunkSize(_maxChunkSize)
         .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(_transitNodes))
         .setSourceIpSpaceSpecifier(sourceIpSpace)
