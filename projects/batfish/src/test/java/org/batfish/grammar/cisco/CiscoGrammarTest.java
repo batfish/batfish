@@ -347,10 +347,6 @@ public class CiscoGrammarTest {
     Configuration arubaConfig = parseConfig("arubaConfiguration");
 
     assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
-
-    Configuration nonArubaConfig = parseConfig("nonArubaConfiguration");
-
-    assertThat(nonArubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.CISCO_IOS)));
   }
 
   @Test

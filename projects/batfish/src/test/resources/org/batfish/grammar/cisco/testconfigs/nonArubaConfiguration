@@ -1,6 +1,0 @@
-!
-hostname nonArubaConfiguration
-!
-ip access-list eth netservice
-  permit any
-!
