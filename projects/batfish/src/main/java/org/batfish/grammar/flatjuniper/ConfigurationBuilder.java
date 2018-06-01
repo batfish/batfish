@@ -1654,9 +1654,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication(n, line));
+        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
     _currentApplicationTerm = _currentApplication.getMainTerm();
     defineStructure(APPLICATION, name, ctx);
   }

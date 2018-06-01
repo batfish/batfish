@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.function.Supplier;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IpAccessListLine;
@@ -239,8 +238,7 @@ public enum JunosApplication implements Application {
   }
 
   private BaseApplication init() {
-    BaseApplication baseApplication =
-        new BaseApplication(name(), DefinedStructure.IGNORED_DEFINITION_LINE);
+    BaseApplication baseApplication = new BaseApplication(name());
     Map<String, Term> terms = baseApplication.getTerms();
 
     Integer portRangeStart = null;
