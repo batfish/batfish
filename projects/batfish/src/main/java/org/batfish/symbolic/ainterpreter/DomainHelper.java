@@ -183,16 +183,24 @@ public class DomainHelper {
   private BDD modifyInteger(
       BDD input, BDDInteger vars, BDDInteger tempVars, BDDInteger mods, int modIndex) {
     BDD[] vec = vars.getBitvec();
+    BDD acc = _netFactory.one();
     for (int i = vec.length - 1; i >= 0; i--) {
       BDD modBit = mods.getBitvec()[i];
       if (notIdentity(modBit, modIndex)) {
         BDD oldBit = vec[i];
         BDD newBit = tempVars.getBitvec()[i];
-        input.andWith(newBit.biimp(modBit));
+        BDD update = newBit.biimp(modBit);
+        // optimization: delay the expensive and op when a constant
+        if (modBit.isOne() || modBit.isZero()) {
+          acc = acc.andWith(update);
+        } else {
+          input.andWith(update);
+        }
         _pairing.set(newBit.var(), oldBit.var());
         _modifiedBits = _modifiedBits.and(oldBit);
       }
     }
+    input.andWith(acc);
     return input;
   }
 
@@ -202,23 +210,25 @@ public class DomainHelper {
       BDDFiniteDomain<T> tempVars,
       BDDFiniteDomain<T> mods,
       int modIndex) {
-    // System.out.println("-----------------------");
-    Map<BDD, Set<Integer>> map = new HashMap<>();
     BDD[] vec = vars.getInteger().getBitvec();
+    BDD acc = _netFactory.one();
     for (int i = vec.length - 1; i >= 0; i--) {
       BDD modBit = mods.getInteger().getBitvec()[i];
-      // Set<Integer> is = map.computeIfAbsent(modBit, k -> new HashSet<>());
-      // is.add(i);
       if (notIdentity(modBit, modIndex)) {
         BDD oldBit = vec[i];
         BDD newBit = tempVars.getInteger().getBitvec()[i];
-        input.andWith(newBit.biimp(modBit));
+        BDD update = newBit.biimp(modBit);
+        // optimization: delay the expensive and op when a constant
+        if (modBit.isOne() || modBit.isZero()) {
+          acc = acc.andWith(update);
+        } else {
+          input.andWith(update);
+        }
         _pairing.set(newBit.var(), oldBit.var());
         _modifiedBits = _modifiedBits.and(oldBit);
       }
     }
-    // System.out.println("Unique: " + map.size() + " out of " + vec.length);
-    // System.out.println("-----------------------");
+    input.andWith(acc);
     return input;
   }
 

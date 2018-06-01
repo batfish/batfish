@@ -1031,6 +1031,15 @@ class TransferBuilder {
       BDD newFilterAllow = oldFilterAllow.andWith(toAllow);
       result.getReturnValue().setFilter(newFilterAllow);
     }
+
+    // Set administrative distance for protocol
+    if ((_protocol == RoutingProtocol.BGP || _protocol == RoutingProtocol.OSPF)
+        && _edgeType == EdgeType.EXPORT) {
+      BDDFiniteDomain<Long> ad = route.getAdminDist();
+      BDDFiniteDomain<Long> newAd = new BDDFiniteDomain<>(ad);
+      newAd.setValue((long) _protocol.getDefaultAdministrativeCost(_conf.getConfigurationFormat()));
+      route.setAdminDist(newAd);
+    }
   }
 
   /*

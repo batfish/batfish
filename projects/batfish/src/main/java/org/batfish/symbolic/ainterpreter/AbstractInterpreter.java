@@ -19,6 +19,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
@@ -47,6 +48,7 @@ import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
 import org.batfish.symbolic.collections.Table2;
 import org.batfish.symbolic.smt.EdgeType;
+import org.batfish.symbolic.utils.Tuple;
 
 // TODO: only recompute reachability for iBGP if something has changed?
 // TODO: have separate update and withdraw advertisements?
@@ -75,6 +77,10 @@ public class AbstractInterpreter {
 
   // A collection of single node BDDs representing the individual routeVariables
   private BDDRoute _variables;
+
+  private Table2<String, Prefix, String> _localPrefixesMap;
+
+  private Table2<String, Prefix, String> _connectedPrefixesMap;
 
   /*
    * Construct an abstract ainterpreter the answer a particular question.
@@ -108,7 +114,7 @@ public class AbstractInterpreter {
   private void initializeOriginatedPrefixes(
       Map<String, Set<Prefix>> originatedBGP,
       Map<String, Set<Prefix>> originatedOSPF,
-      Map<String, Set<Prefix>> originatedConnected,
+      Map<String, Set<Tuple<Prefix, String>>> originatedConnected,
       Map<String, Map<String, Set<Prefix>>> originatedStatic) {
 
     for (String router : _graph.getRouters()) {
@@ -131,7 +137,16 @@ public class AbstractInterpreter {
           }
         }
       }
-      originatedConnected.put(router, Graph.getOriginatedNetworks(conf, Protocol.CONNECTED));
+
+      // connected
+      Set<Tuple<Prefix, String>> conn = new HashSet<>();
+      for (Interface iface : conf.getInterfaces().values()) {
+        InterfaceAddress address = iface.getAddress();
+        if (address != null) {
+          conn.add(new Tuple<>(address.getPrefix(), iface.getName()));
+        }
+      }
+      originatedConnected.put(router, conn);
     }
   }
 
@@ -180,9 +195,12 @@ public class AbstractInterpreter {
    * reachable sets at each router for every iteration.
    */
   private <T> Map<String, AbstractRib<T>> computeFixedPoint(IAbstractDomain<T> domain) {
+    _localPrefixesMap = new Table2<>();
+    _connectedPrefixesMap = new Table2<>();
+
     Map<String, Set<Prefix>> origBgp = new HashMap<>();
     Map<String, Set<Prefix>> origOspf = new HashMap<>();
-    Map<String, Set<Prefix>> origConn = new HashMap<>();
+    Map<String, Set<Tuple<Prefix, String>>> origConn = new HashMap<>();
     Map<String, Map<String, Set<Prefix>>> origStatic = new HashMap<>();
     initializeOriginatedPrefixes(origBgp, origOspf, origConn, origStatic);
 
@@ -201,14 +219,24 @@ public class AbstractInterpreter {
       Configuration conf = _graph.getConfigurations().get(router);
       Set<Prefix> bgpPrefixes = origBgp.get(router);
       Set<Prefix> ospfPrefixes = origOspf.get(router);
-      Set<Prefix> connPrefixes = origConn.get(router);
+      Set<Tuple<Prefix, String>> connPrefixes = origConn.get(router);
       Map<String, Set<Prefix>> staticPrefixes = origStatic.get(router);
       Set<Prefix> localPrefixes = new HashSet<>();
-      for (Prefix pfx : connPrefixes) {
-        if (pfx.getPrefixLength() != 32) {
-          Prefix local = new Prefix(pfx.getStartIp(), 32);
-          localPrefixes.add(local);
+
+      for (Interface iface : _graph.getConfigurations().get(router).getInterfaces().values()) {
+        Ip ip = iface.getAddress().getIp();
+        Prefix pfx = new Prefix(ip, 32);
+        Tuple<Prefix, String> tup = new Tuple<>(pfx, iface.getName());
+        if (!connPrefixes.contains(tup)) {
+          localPrefixes.add(pfx);
+          _localPrefixesMap.put(router, pfx, tup.getSecond());
         }
+      }
+
+      Set<Prefix> connectedPrefixes = new HashSet<>();
+      for (Tuple<Prefix, String> tup : connPrefixes) {
+        _connectedPrefixesMap.put(router, tup.getFirst(), tup.getSecond());
+        connectedPrefixes.add(tup.getFirst());
       }
 
       if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
@@ -223,7 +251,7 @@ public class AbstractInterpreter {
 
       T bgp = domain.bot();
       T ospf = domain.selectBest(domain.value(conf, RoutingProtocol.OSPF, ospfPrefixes));
-      T conn = domain.selectBest(domain.value(conf, RoutingProtocol.CONNECTED, connPrefixes));
+      T conn = domain.selectBest(domain.value(conf, RoutingProtocol.CONNECTED, connectedPrefixes));
       T local = domain.selectBest(domain.value(conf, RoutingProtocol.LOCAL, localPrefixes));
       T stat = domain.bot();
       if (staticPrefixes != null) {
@@ -498,14 +526,12 @@ public class AbstractInterpreter {
     for (String router : routers) {
       // create interface prefix map
       Map<Ip, String> nhipMap = new HashMap<>();
-      Map<Prefix, String> nhintMap = new HashMap<>();
       Map<Ip, String> nhopMap = new HashMap<>();
       for (GraphEdge edge : _graph.getEdgeMap().get(router)) {
         if (!edge.isAbstract()) {
           Interface iface = edge.getStart();
           Prefix p = iface.getAddress().getPrefix();
           nhipMap.put(p.getStartIp(), iface.getName());
-          nhintMap.put(p, iface.getName());
           Interface peerIface = edge.getEnd();
           if (peerIface != null) {
             Ip peerIp = peerIface.getAddress().getIp();
@@ -513,6 +539,20 @@ public class AbstractInterpreter {
           }
         }
       }
+
+      Map<Prefix, String> staticNhintMap = new HashMap<>();
+      Map<Prefix, String> staticNhop = new HashMap<>();
+
+      _graph
+          .getStaticRoutes()
+          .forEach(
+              (r, iface, srs) -> {
+                for (StaticRoute sr : srs) {
+                  staticNhintMap.put(sr.getNetwork(), sr.getNextHopInterface());
+                  staticNhop.put(sr.getNetwork(), sr.getNextHop());
+                }
+              });
+
       // build new rib to match Batfish output
       AbstractRib<T> rib = reachable.get(router);
       SortedSet<Route> entries = new TreeSet<>(domain.toRoutes(rib));
@@ -522,14 +562,31 @@ public class AbstractInterpreter {
         if (r.getProtocol() == RoutingProtocol.LOCAL) {
           nhint = nhipMap.get(r.getNetwork().getStartIp());
         }
-        if (r.getProtocol() == RoutingProtocol.CONNECTED
-            || r.getProtocol() == RoutingProtocol.STATIC) {
-          nhint = nhintMap.get(r.getNetwork());
+
+        if (r.getProtocol() == RoutingProtocol.CONNECTED) {
+          nhint = _connectedPrefixesMap.get(router, r.getNetwork());
         }
-        String nhop = "N/A";
-        if (r.getProtocol() != RoutingProtocol.CONNECTED
-            && r.getProtocol() != RoutingProtocol.LOCAL) {
+        if (r.getProtocol() == RoutingProtocol.LOCAL) {
+          nhint = _localPrefixesMap.get(router, r.getNetwork());
+        }
+        if (r.getProtocol() == RoutingProtocol.STATIC) {
+          nhint = staticNhintMap.get(r.getNetwork());
+        }
+
+        String nhop;
+        if (r.getProtocol() == RoutingProtocol.CONNECTED
+            || r.getProtocol() == RoutingProtocol.LOCAL) {
+          nhop = "N/A";
+        } else {
           nhop = nhopMap.get(r.getNextHopIp());
+        }
+        if (r.getProtocol() == RoutingProtocol.STATIC) {
+          nhop = staticNhop.get(r.getNetwork());
+          nhop = (nhop == null || nhop.equals("(none)") ? "N/A" : nhop);
+        }
+        long cost = 0;
+        if (r.getProtocol() == RoutingProtocol.OSPF) {
+          cost = r.getMetric();
         }
 
         Route route =
@@ -541,7 +598,7 @@ public class AbstractInterpreter {
                 nhop,
                 nhint,
                 r.getAdministrativeCost(),
-                r.getMetric(),
+                cost,
                 r.getProtocol(),
                 r.getTag());
         routes.add(route);

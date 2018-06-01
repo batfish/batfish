@@ -58,7 +58,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
     BDD fromRRClient = _variables.getFromRRClient().not();
     BDD localPref = _variables.getLocalPref().value(100);
     BDD adminDist = _variables.getAdminDist().value((long) defaultAd);
-    BDD metric = _variables.getMetric().value(0);
+    BDD metric = _variables.getMetric().value(1);
     BDD ospfMetric = _variables.getOspfMetric().value(OspfType.O);
     BDD med = _variables.getMed().value((long) 80);
     BDD prot = _variables.getProtocolHistory().value(proto);
@@ -136,7 +136,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
       BDD met = _variables.getMetric().value(a.getMetric());
       BDD med = _variables.getMed().value((long) a.getMed());
       BDD all = med.andWith(met).andWith(lp).andWith(ad);
-      BDD withBest = x.and(all);
+      BDD withBest = acc.and(all);
       all.free();
       BDD prefixes = withBest.exist(_domainHelper.getAllQuantifyBits());
       best = best.orWith(withBest);
