@@ -4551,7 +4551,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    Vlan vlan = new Vlan(_currentVlanName, ctx.id.getLine(), toInt(ctx.id));
+    Vlan vlan = new Vlan(_currentVlanName, toInt(ctx.id));
     _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
   }
 
