@@ -28,4 +28,8 @@ public class FlatJuniperCombinedParser
   public Flat_juniper_configurationContext parse() {
     return _parser.flat_juniper_configuration();
   }
+
+  public void setMarkWildcards(boolean markWildcards) {
+    _lexer.setMarkWildcards(markWildcards);
+  }
 }

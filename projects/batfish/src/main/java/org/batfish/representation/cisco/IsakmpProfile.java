@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -11,7 +12,9 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   private String _keyring;
 
-  private Ip _localAddress;
+  @Nullable private Ip _localAddress;
+
+  @Nullable private String _localInterfaceName;
 
   private Prefix _matchIdentity;
 
@@ -23,8 +26,14 @@ public class IsakmpProfile extends ComparableStructure<String> {
     return _keyring;
   }
 
+  @Nullable
   public Ip getLocalAddress() {
     return _localAddress;
+  }
+
+  @Nullable
+  public String getLocalInterfaceName() {
+    return _localInterfaceName;
   }
 
   public Prefix getMatchIdentity() {
@@ -37,6 +46,10 @@ public class IsakmpProfile extends ComparableStructure<String> {
 
   public void setLocalAddress(Ip address) {
     _localAddress = address;
+  }
+
+  public void setLocalInterfaceName(String localInterfaceName) {
+    _localInterfaceName = localInterfaceName;
   }
 
   public void setMatchIdentity(Ip address, Ip mask) {

@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
+import java.util.NavigableMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.matchers.AclTraceMatchers.HasEvents;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.IsDynamic;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRoute6FilterList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterList;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasRouteFilterLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasZone;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasNumReferrers;
 import org.batfish.datamodel.matchers.ConvertConfigurationAnswerElementMatchers.HasRedFlagWarning;
@@ -126,6 +128,15 @@ public final class DataModelMatchers {
   public static Matcher<Configuration> hasRouteFilterList(
       @Nonnull String name, @Nonnull Matcher<? super RouteFilterList> subMatcher) {
     return new HasRouteFilterList(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * routeFilterLists.
+   */
+  public static Matcher<Configuration> hasRouteFilterLists(
+      @Nonnull Matcher<? super NavigableMap<String, RouteFilterList>> subMatcher) {
+    return new HasRouteFilterLists(subMatcher);
   }
 
   /**
