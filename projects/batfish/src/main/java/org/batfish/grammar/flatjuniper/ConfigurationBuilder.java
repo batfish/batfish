@@ -3836,10 +3836,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_next_term(Popst_next_termContext ctx) {
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' then clause: %s",
-            getFullText(ctx)));
+    // The next-term action itself is a no-op in Batfish, so we do not model this behavior.
+    //
+    // TODO(https://github.com/batfish/batfish/issues/1551): need to implement next_term replacing
+    // any existing flow control action.
   }
 
   @Override
