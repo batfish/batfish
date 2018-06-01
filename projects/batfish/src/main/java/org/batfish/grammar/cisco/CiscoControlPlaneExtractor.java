@@ -3169,9 +3169,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_mac_access_list(S_mac_access_listContext ctx) {
     String name = ctx.num.getText();
-    int line = ctx.num.getLine();
     MacAccessList list =
-        _configuration.getMacAccessLists().computeIfAbsent(name, n -> new MacAccessList(n, line));
+        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
     _currentMacAccessList = list;
     defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
@@ -3179,19 +3178,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_mac_access_list_extended(S_mac_access_list_extendedContext ctx) {
     String name;
-    int line;
     if (ctx.num != null) {
       name = ctx.num.getText();
-      line = ctx.num.getLine();
 
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-      line = ctx.name.getStart().getLine();
     } else {
       throw new BatfishException("Could not determine name of extended mac access-list");
     }
     MacAccessList list =
-        _configuration.getMacAccessLists().computeIfAbsent(name, n -> new MacAccessList(n, line));
+        _configuration.getMacAccessLists().computeIfAbsent(name, MacAccessList::new);
     _currentMacAccessList = list;
     defineStructure(MAC_ACCESS_LIST, name, ctx);
   }
