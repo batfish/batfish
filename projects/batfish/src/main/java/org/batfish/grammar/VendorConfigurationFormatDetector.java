@@ -243,6 +243,14 @@ public final class VendorConfigurationFormatDetector {
   }
 
   @Nullable
+  private ConfigurationFormat checkMss() {
+    if (fileTextMatches(MSS_PATTERN)) {
+      return ConfigurationFormat.MSS;
+    }
+    return null;
+  }
+
+  @Nullable
   private ConfigurationFormat checkPaloAlto() {
     if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
       return ConfigurationFormat.FLAT_PALO_ALTO;
@@ -253,14 +261,6 @@ public final class VendorConfigurationFormatDetector {
         return ConfigurationFormat.PALO_ALTO;
       }
       return ConfigurationFormat.FLAT_PALO_ALTO;
-    }
-    return null;
-  }
-
-  @Nullable
-  private ConfigurationFormat checkMss() {
-    if (fileTextMatches(MSS_PATTERN)) {
-      return ConfigurationFormat.MSS;
     }
     return null;
   }
