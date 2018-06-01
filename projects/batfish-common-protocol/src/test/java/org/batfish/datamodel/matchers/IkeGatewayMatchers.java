@@ -11,7 +11,7 @@ import org.batfish.datamodel.matchers.IkeGatewayMatchersImpl.HasIkePolicy;
 import org.batfish.datamodel.matchers.IkeGatewayMatchersImpl.HasLocalIp;
 import org.hamcrest.Matcher;
 
-public final class IkeGatewaylMatchers {
+public final class IkeGatewayMatchers {
 
   /**
    * Provides a matcher that matches if the IKE Gateway's value of {@code address} matches specified
@@ -45,5 +45,5 @@ public final class IkeGatewaylMatchers {
     return new HasLocalIp(equalTo(localIp));
   }
 
-  private IkeGatewaylMatchers() {}
+  private IkeGatewayMatchers() {}
 }

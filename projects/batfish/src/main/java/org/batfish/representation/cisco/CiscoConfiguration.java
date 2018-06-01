@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -250,6 +251,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public static String computeBgpCommonExportPolicyName(String vrf) {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
+  }
+
+  /**
+   * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
+   * Filters out the interfaces having no primary {@link InterfaceAddress}
+   */
+  private static Map<String, Ip> computeInterfaceOwnedPrimaryIp(Map<String, Interface> interfaces) {
+    return interfaces
+        .entrySet()
+        .stream()
+        .filter(e -> Objects.nonNull(e.getValue().getAddress()))
+        .collect(
+            ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
   }
 
   public static String computeProtocolObjectGroupAclName(String name) {
@@ -3969,9 +3983,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 "Cannot get PSK hash since keyring not configured for isakmpProfile %s", name));
       } else if (_keyrings.containsKey(keyringName)) {
         Keyring keyring = _keyrings.get(keyringName);
-        // LocalAddress value will be Ip.Auto(-1) if it contained an invalid interface name
-        if (isakmpProfile.getLocalAddress() != null
-            && isakmpProfile.getLocalAddress().equals(Ip.AUTO)) {
+        // LocalAddress can only be Ip.AUTO if LocalInterfaceName contains an invalid interface
+        if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
           _w.redFlag(
               String.format(
                   "Invalid local address interface configured for ISAKMP profile %s", name));
@@ -4196,14 +4209,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Resolves the addresses of the interfaces used in localInterfaceName of IsaKmpProfiles and
+   * Keyrings
+   */
   private void resolveKeyringIsakmpProfileAddresses() {
-    Map<String, Ip> ifcNameIpAddress =
-        _interfaces
-            .entrySet()
-            .stream()
-            .filter(e -> Objects.nonNull(e.getValue().getAddress()))
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
+    Map<String, Ip> ifaceNameToPrimaryIp = computeInterfaceOwnedPrimaryIp(_interfaces);
 
     _keyrings
         .values()
@@ -4211,12 +4222,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(keyring -> keyring.getLocalInterfaceName() != null)
         .forEach(
             keyring -> {
-              Ip localAddress = ifcNameIpAddress.get(keyring.getLocalInterfaceName());
-              if (localAddress != null) {
-                keyring.setLocalAddress(localAddress);
-              } else {
-                keyring.setLocalAddress(Ip.AUTO);
-              }
+              keyring.setLocalAddress(
+                  firstNonNull(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName()), Ip.AUTO));
             });
 
     _isakmpProfiles
@@ -4225,28 +4232,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(isakmpProfile -> isakmpProfile.getLocalInterfaceName() != null)
         .forEach(
             isakmpProfile -> {
-              Ip localAddress = ifcNameIpAddress.get(isakmpProfile.getLocalInterfaceName());
-              if (localAddress != null) {
-                isakmpProfile.setLocalAddress(localAddress);
-              } else {
-                isakmpProfile.setLocalAddress(Ip.AUTO);
-              }
+              isakmpProfile.setLocalAddress(
+                  firstNonNull(
+                      ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName()), Ip.AUTO));
             });
   }
 
+  /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */
   private void resolveTunnelSourceInterfaces() {
-    Map<String, Ip> ifcNameIpAddress =
-        _interfaces
-            .entrySet()
-            .stream()
-            .filter(e -> Objects.nonNull(e.getValue().getAddress()))
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
+    Map<String, Ip> ifaceNameToPrimaryIp = computeInterfaceOwnedPrimaryIp(_interfaces);
 
     for (Interface iface : _interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
       if (tunnel != null && tunnel.getSourceInterfaceName() != null) {
-        tunnel.setSourceAddress(ifcNameIpAddress.get(tunnel.getSourceInterfaceName()));
+        tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
       }
     }
   }

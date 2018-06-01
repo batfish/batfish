@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
@@ -17,10 +16,10 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
-import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAddress;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
@@ -46,14 +45,6 @@ public final class InterfaceMatchers {
    */
   public static HasAccessVlan hasAccessVlan(Matcher<? super Integer> subMatcher) {
     return new HasAccessVlan(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
-   * address.
-   */
-  public static HasAddress hasAddress(Matcher<? super InterfaceAddress> subMatcher) {
-    return new HasAddress(subMatcher);
   }
 
   /**
@@ -117,6 +108,11 @@ public final class InterfaceMatchers {
    */
   public static HasMtu hasMtu(Matcher<? super Integer> subMatcher) {
     return new HasMtu(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the provided name matches the interface's name. */
+  public static HasName hasName(String expectedName) {
+    return new HasName(equalTo(expectedName));
   }
 
   /**

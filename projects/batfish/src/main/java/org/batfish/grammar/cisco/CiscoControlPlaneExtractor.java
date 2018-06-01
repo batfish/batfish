@@ -5064,18 +5064,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
     Ip sourceAddress = null;
     String sourceInterfaceName = null;
-    int line = -1;
     if (ctx.IP_ADDRESS() != null) {
       sourceAddress = toIp(ctx.IP_ADDRESS());
     } else {
       sourceInterfaceName = ctx.interface_name().getText();
-      line = ctx.interface_name().getStart().getLine();
+      _configuration.referenceStructure(
+          INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.interface_name().getStart().getLine());
     }
     for (Interface iface : _currentInterfaces) {
       if (sourceAddress != null) {
         iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
       } else {
-        _configuration.referenceStructure(INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, line);
         iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
       }
     }

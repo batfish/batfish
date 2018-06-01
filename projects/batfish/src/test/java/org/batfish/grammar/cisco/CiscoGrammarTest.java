@@ -39,17 +39,16 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
-import static org.batfish.datamodel.matchers.IkeGatewaylMatchers.hasAddress;
-import static org.batfish.datamodel.matchers.IkeGatewaylMatchers.hasExternalInterface;
-import static org.batfish.datamodel.matchers.IkeGatewaylMatchers.hasIkePolicy;
-import static org.batfish.datamodel.matchers.IkeGatewaylMatchers.hasLocalIp;
-import static org.batfish.datamodel.matchers.IkePolicylMatchers.hasPresharedKeyHash;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasLocalIp;
+import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
-import static org.batfish.datamodel.matchers.InterfaceAddressMatchers.hasIp;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -1612,7 +1611,7 @@ public class CiscoGrammarTest {
             "ISAKMP-PROFILE-ADDRESS",
             allOf(
                 hasAddress(new Ip("1.2.3.4")),
-                hasExternalInterface(InterfaceMatchers.hasAddress(hasIp(new Ip("2.3.4.6")))),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
                 hasLocalIp(new Ip("2.3.4.6")),
                 hasIkePolicy(
                     hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
@@ -1624,7 +1623,7 @@ public class CiscoGrammarTest {
             "ISAKMP-PROFILE-INTERFACE",
             allOf(
                 hasAddress(new Ip("1.2.3.4")),
-                hasExternalInterface(InterfaceMatchers.hasAddress(hasIp(new Ip("2.3.4.6")))),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
                 hasLocalIp(new Ip("2.3.4.6")),
                 hasIkePolicy(
                     hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));

@@ -9,7 +9,7 @@ final class IkePolicyMatchersImpl {
 
   static final class HasPresharedKeyHash extends FeatureMatcher<IkePolicy, String> {
     HasPresharedKeyHash(@Nonnull Matcher<? super String> subMatcher) {
-      super(subMatcher, "An IKE policy with pre-shared key hash:", "preSharedKeyHash");
+      super(subMatcher, "An IKE policy with preSharedKeyHash:", "preSharedKeyHash");
     }
 
     @Override
