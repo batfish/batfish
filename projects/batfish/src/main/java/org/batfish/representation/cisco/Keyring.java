@@ -1,30 +1,39 @@
 package org.batfish.representation.cisco;
 
 import java.util.Objects;
-import org.batfish.common.util.DefinedStructure;
+import javax.annotation.Nullable;
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 
-public class Keyring extends DefinedStructure<String> {
+public class Keyring extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
-  private Ip _localAddress;
+  @Nullable private Ip _localAddress;
+
+  @Nullable private String _localInterfaceName;
 
   private Ip _remoteAddress;
 
   private String _key;
 
-  public Keyring(String name, int definitionLine) {
-    super(name, definitionLine);
+  public Keyring(String name) {
+    super(name);
   }
 
   public String getKey() {
     return _key;
   }
 
+  @Nullable
   public Ip getLocalAddress() {
     return _localAddress;
+  }
+
+  @Nullable
+  public String getLocalInterfaceName() {
+    return _localInterfaceName;
   }
 
   public Ip getRemoteAddress() {
@@ -41,6 +50,10 @@ public class Keyring extends DefinedStructure<String> {
 
   public void setLocalAddress(Ip address) {
     _localAddress = address;
+  }
+
+  public void setLocalInterfaceName(String localInterfaceName) {
+    _localInterfaceName = localInterfaceName;
   }
 
   public void setRemoteAddress(Ip address) {

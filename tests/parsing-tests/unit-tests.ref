@@ -53351,8 +53351,7 @@
           "Red flags" : {
             "1" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: as-path-group AS_PATH_GROUP",
             "2" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING",
-            "3" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: rib inet6.0",
-            "4" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' then clause: next term"
+            "3" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
           }
         },
         "juniper_tacplus" : {

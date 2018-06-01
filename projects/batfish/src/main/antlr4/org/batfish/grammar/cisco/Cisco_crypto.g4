@@ -402,7 +402,11 @@ cisprf_keyring
 
 cisprf_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS NEWLINE
+    LOCAL_ADDRESS
+    (
+       IP_ADDRESS
+       | interface_name
+    ) NEWLINE
 ;
 
 cisprf_match
@@ -457,7 +461,11 @@ ckpn_null
 
 ckr_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS NEWLINE
+   LOCAL_ADDRESS
+   (
+      IP_ADDRESS
+      | interface_name
+   ) NEWLINE
 ;
 
 ckr_psk
