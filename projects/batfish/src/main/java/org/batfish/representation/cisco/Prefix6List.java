@@ -2,16 +2,16 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
+import org.batfish.common.util.ComparableStructure;
 
-public class Prefix6List extends DefinedStructure<String> {
+public class Prefix6List extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
   private List<Prefix6ListLine> _lines;
 
-  public Prefix6List(String name, int definitionLine) {
-    super(name, definitionLine);
+  public Prefix6List(String name) {
+    super(name);
     _lines = new ArrayList<>();
   }
 
