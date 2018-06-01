@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -21,6 +22,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -35,6 +37,7 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -102,8 +105,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
-import org.batfish.datamodel.matchers.ConfigurationMatchers;
-import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
@@ -1328,27 +1329,19 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig(hostname);
 
     /* apply-groups using group containing interface wildcard should function as expected. */
-    assertThat(
-        c,
-        ConfigurationMatchers.hasInterface(
-            loopback, hasAllAddresses(contains(new InterfaceAddress(prefix1)))));
+    assertThat(c, hasInterface(loopback, hasAllAddresses(contains(new InterfaceAddress(prefix1)))));
 
     /* The wildcard copied out of groups should disappear and not be treated as an actual interface */
-    assertThat(c, ConfigurationMatchers.hasInterfaces(not(hasKey("*.*"))));
+    assertThat(c, hasInterfaces(not(hasKey("*.*"))));
 
     /* The wildcard-looking interface description should not be pruned since its parse-tree node was not created via preprocessor. */
-    assertThat(
-        c,
-        ConfigurationMatchers.hasInterface(
-            loopback, InterfaceMatchers.hasDescription("<SCRUBBED>")));
+    assertThat(c, hasInterface(loopback, hasDescription("<SCRUBBED>")));
 
     /* apply-path should work with wildcard. Its line should not be pruned since its parse-tree node was not created via preprocessor. */
-    assertThat(
-        c, hasRouteFilterList(prefixList1, RouteFilterListMatchers.permits(Prefix.parse(prefix1))));
+    assertThat(c, hasRouteFilterList(prefixList1, permits(Prefix.parse(prefix1))));
 
     /* prefix-list p2 should get content from g2, but no prefix-list named "<*>" should be created */
-    assertThat(
-        c, hasRouteFilterList(prefixList2, RouteFilterListMatchers.permits(Prefix.parse(prefix2))));
+    assertThat(c, hasRouteFilterList(prefixList2, permits(Prefix.parse(prefix2))));
     assertThat(c, hasRouteFilterLists(not(hasKey("<*>"))));
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
