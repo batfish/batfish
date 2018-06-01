@@ -1615,7 +1615,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCis_profile(Cis_profileContext ctx) {
-    _currentIsakmpProfile = new IsakmpProfile(ctx.name.getText(), ctx.getStart().getLine());
+    _currentIsakmpProfile = new IsakmpProfile(ctx.name.getText());
     defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx);
     /* Isakmp profiles are checked against for matches not explicitly referenced, so add a
     self-reference here */
