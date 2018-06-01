@@ -55,7 +55,7 @@ echo -e "\n  ..... Running java demo tests"
 if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then
    echo "DEMO FAILED!" 1>&2
    exit_code=1
-else
+elif diff -q demos/example/commands.ref{,testout} &> /dev/null; then
    rm demos/example/commands.ref.testout
 fi
 
