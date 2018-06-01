@@ -1763,7 +1763,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentKeyring != null) {
       throw new BatfishException("Keyring should be null!");
     }
-    _currentKeyring = new Keyring(ctx.name.getText(), ctx.getStart().getLine());
+    _currentKeyring = new Keyring(ctx.name.getText());
     defineStructure(KEYRING, ctx.name.getText(), ctx);
   }
 
