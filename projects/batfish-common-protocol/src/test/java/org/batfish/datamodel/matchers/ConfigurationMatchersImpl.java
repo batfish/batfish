@@ -158,7 +158,7 @@ final class ConfigurationMatchersImpl {
       extends FeatureMatcher<Configuration, NavigableMap<String, RouteFilterList>> {
     HasRouteFilterLists(
         @Nonnull Matcher<? super NavigableMap<String, RouteFilterList>> subMatcher) {
-      super(subMatcher, "A Configuration with RouteFilterLists:", "routeFilterLists");
+      super(subMatcher, "A Configuration with routeFilterLists:", "routeFilterLists");
     }
 
     @Override
