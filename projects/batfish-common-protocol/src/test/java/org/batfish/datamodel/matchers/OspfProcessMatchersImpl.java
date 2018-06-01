@@ -2,6 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfNeighbor;
@@ -45,6 +46,28 @@ final class OspfProcessMatchersImpl {
     @Override
     protected Map<IpLink, OspfNeighbor> featureValueOf(OspfProcess actual) {
       return actual.getOspfNeighbors();
+    }
+  }
+
+  static final class HasReferenceBandwidth extends FeatureMatcher<OspfProcess, Double> {
+    HasReferenceBandwidth(@Nonnull Matcher<? super Double> subMatcher) {
+      super(subMatcher, "An OspfProcess with referenceBandwidth:", "referenceBandwidth");
+    }
+
+    @Override
+    protected Double featureValueOf(OspfProcess actual) {
+      return actual.getReferenceBandwidth();
+    }
+  }
+
+  static final class HasRouterId extends FeatureMatcher<OspfProcess, Ip> {
+    HasRouterId(@Nonnull Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "A OSPF process with router id:", "router id");
+    }
+
+    @Override
+    protected Ip featureValueOf(OspfProcess actual) {
+      return actual.getRouterId();
     }
   }
 }

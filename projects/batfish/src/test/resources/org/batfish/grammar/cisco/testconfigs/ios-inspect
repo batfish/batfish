@@ -1,0 +1,25 @@
+!
+hostname ios-inspect
+!
+policy-map type inspect pmi1
+ class type inspect paic1
+  inspect
+ class class-default
+  drop log
+!
+class-map type inspect match-all paic1
+ match access-group name acl1
+ match protocol tcp
+!
+object-group service ogs1
+ tcp 65000
+!
+object-group network ogn1
+ host 1.2.3.4
+!
+object-group network ogn2
+ host 2.3.4.5
+!
+ip access-list extended acl1
+ permit object-group ogs1 object-group ogn1 ogn2
+!

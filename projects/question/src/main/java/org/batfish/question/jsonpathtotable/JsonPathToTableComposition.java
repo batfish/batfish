@@ -13,40 +13,31 @@ import org.batfish.datamodel.answers.Schema;
  * Describes how to compose a column in {@link JsonPathToTableQuery} using values extracted per
  * {@link JsonPathToTableExtraction}.
  */
-public class JsonPathToTableComposition {
-
-  private static final String PROP_SCHEMA = "schema";
+public class JsonPathToTableComposition extends JsonPathToTableColumn {
 
   private static final String PROP_DICTIONARY = "dictionary";
 
   @Nonnull private Map<String, String> _dictionary;
 
-  @Nonnull private Schema _schema;
-
   @JsonCreator
   public JsonPathToTableComposition(
       @JsonProperty(PROP_SCHEMA) Schema schema,
-      @JsonProperty(PROP_DICTIONARY) Map<String, String> dictionary) {
+      @JsonProperty(PROP_DICTIONARY) Map<String, String> dictionary,
+      @JsonProperty(PROP_DESCRIPTION) String description,
+      @JsonProperty(PROP_INCLUDE) Boolean include,
+      @JsonProperty(PROP_IS_KEY) Boolean isKey,
+      @JsonProperty(PROP_IS_VALUE) Boolean isValue) {
+    super(schema, description, include, isKey, isValue);
 
-    if (schema == null) {
-      throw new IllegalArgumentException("Schema not specified in the composition");
-    }
     if (dictionary == null || dictionary.isEmpty()) {
       throw new IllegalArgumentException("Dictionary not specified or empty in the composition");
     }
-
-    _schema = schema;
     _dictionary = dictionary;
   }
 
   @JsonProperty(PROP_DICTIONARY)
   public Map<String, String> getDictionary() {
     return _dictionary;
-  }
-
-  @JsonProperty(PROP_SCHEMA)
-  public Schema getSchema() {
-    return _schema;
   }
 
   /**

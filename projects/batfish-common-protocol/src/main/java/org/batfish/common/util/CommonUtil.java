@@ -3,9 +3,12 @@ package org.batfish.common.util;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
@@ -50,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -80,7 +84,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
-import org.batfish.common.plugin.FlowProcessor;
+import org.batfish.common.plugin.ITracerouteEngine;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSession;
@@ -108,6 +113,7 @@ import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
@@ -273,77 +279,137 @@ public class CommonUtil {
     return 0;
   }
 
+  /** Compute the {@link Ip}s owned by each interface. hostname -> interface name -> {@link Ip}s. */
+  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+      Map<String, Configuration> configurations, boolean excludeInactive) {
+    return computeInterfaceOwnedIps(
+        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive));
+  }
+
   /**
-   * Compute ip owners. See {@link #computeIpOwners(boolean, Map)} for detailed description.
+   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) to
+   * (hostname -> interface name -> Ip).
+   */
+  public static Map<String, Map<String, Set<Ip>>> computeInterfaceOwnedIps(
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
+    Map<String, Map<String, Set<Ip>>> ownedIps = new HashMap<>();
+
+    ipInterfaceOwners.forEach(
+        (ip, owners) ->
+            owners.forEach(
+                (host, ifaces) ->
+                    ifaces.forEach(
+                        iface ->
+                            ownedIps
+                                .computeIfAbsent(host, k -> new HashMap<>())
+                                .computeIfAbsent(iface, k -> new HashSet<>())
+                                .add(ip))));
+
+    // freeze
+    return toImmutableMap(
+        ownedIps,
+        Entry::getKey, /* host */
+        hostEntry ->
+            toImmutableMap(
+                hostEntry.getValue(),
+                Entry::getKey, /* interface */
+                ifaceEntry -> ImmutableSet.copyOf(ifaceEntry.getValue())));
+  }
+
+  /**
+   * Invert a mapping from {@link Ip} to owner interfaces (Ip -> hostname -> interface name) and
+   * convert the set of owned Ips into an IpSpace.
+   */
+  public static Map<String, Map<String, IpSpace>> computeInterfaceOwnedIpSpaces(
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners) {
+    return toImmutableMap(
+        computeInterfaceOwnedIps(ipInterfaceOwners),
+        Entry::getKey, /* host */
+        hostEntry ->
+            toImmutableMap(
+                hostEntry.getValue(),
+                Entry::getKey, /* interface */
+                ifaceEntry ->
+                    AclIpSpace.union(
+                        ifaceEntry
+                            .getValue()
+                            .stream()
+                            .map(Ip::toIpSpace)
+                            .collect(Collectors.toList()))));
+  }
+
+  /**
+   * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as a network
+   * interface address)
    *
    * @param configurations {@link Configurations} keyed by hostname
    * @param excludeInactive Whether to exclude inactive interfaces
    * @return A map of {@link Ip}s to a set of hostnames that own this IP
    */
-  public static Map<Ip, Set<String>> computeIpOwners(
+  public static Map<Ip, Set<String>> computeIpNodeOwners(
       Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeIpOwners(
-        excludeInactive,
-        configurations
-            .entrySet()
-            .stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getInterfaces())));
+    return toImmutableMap(
+        computeIpInterfaceOwners(computeNodeInterfaces(configurations), excludeInactive),
+        Entry::getKey, /* Ip */
+        ipInterfaceOwnersEntry ->
+            /* project away interfaces */
+            ipInterfaceOwnersEntry.getValue().keySet());
   }
 
   /**
-   * Compute a mapping of IP addresses to a set of hostnames that "own" this IP (e.g., as an network
+   * Compute a mapping from IP address to the interfaces that "own" that IP (e.g., as an network
    * interface address)
    *
-   * @param excludeInactive whether to ignore inactive interfaces
    * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
    *     Interface}
-   * @return A map of {@link Ip}s to a set of hostnames that own this IP
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @return A map from {@link Ip}s to the {@link Interface}s that own them
    */
-  public static Map<Ip, Set<String>> computeIpOwners(
-      boolean excludeInactive, Map<String, Map<String, Interface>> enabledInterfaces) {
-    // TODO: confirm VRFs are handled correctly
-    Map<Ip, Set<String>> ipOwners = new HashMap<>();
+  public static Map<Ip, Map<String, Set<String>>> computeIpInterfaceOwners(
+      Map<String, Set<Interface>> enabledInterfaces, boolean excludeInactive) {
+    Map<Ip, Map<String, Set<String>>> ipOwners = new HashMap<>();
     Map<Pair<InterfaceAddress, Integer>, Set<Interface>> vrrpGroups = new HashMap<>();
     enabledInterfaces.forEach(
-        (hostname, currentEnabledInterfaces) -> {
-          for (Interface i : currentEnabledInterfaces.values()) {
-            if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
-              continue;
-            }
-            // collect vrrp info
-            i.getVrrpGroups()
-                .forEach(
-                    (groupNum, vrrpGroup) -> {
-                      InterfaceAddress address = vrrpGroup.getVirtualAddress();
-                      if (address == null) {
-                        // This Vlan Interface has invalid configuration. The VRRP has no source
-                        // IP address that would be used for VRRP election. This interface could
-                        // never win the election, so is not a candidate.
-                        return;
-                      }
-                      Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
-                      Set<Interface> candidates =
-                          vrrpGroups.computeIfAbsent(
-                              key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
-                      candidates.add(i);
-                    });
-            // collect prefixes
-            i.getAllAddresses()
-                .stream()
-                .map(InterfaceAddress::getIp)
-                .forEach(
-                    ip -> {
-                      Set<String> owners = ipOwners.computeIfAbsent(ip, k -> new HashSet<>());
-                      owners.add(hostname);
-                    });
-          }
-        });
+        (hostname, interfaces) ->
+            interfaces.forEach(
+                i -> {
+                  if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+                    return;
+                  }
+                  // collect vrrp info
+                  i.getVrrpGroups()
+                      .forEach(
+                          (groupNum, vrrpGroup) -> {
+                            InterfaceAddress address = vrrpGroup.getVirtualAddress();
+                            if (address == null) {
+                              /*
+                               * Invalid VRRP configuration. The VRRP has no source IP address that
+                               * would be used for VRRP election. This interface could never win the
+                               * election, so is not a candidate.
+                               */
+                              return;
+                            }
+                            Pair<InterfaceAddress, Integer> key = new Pair<>(address, groupNum);
+                            Set<Interface> candidates =
+                                vrrpGroups.computeIfAbsent(
+                                    key, k -> Collections.newSetFromMap(new IdentityHashMap<>()));
+                            candidates.add(i);
+                          });
+                  // collect prefixes
+                  i.getAllAddresses()
+                      .stream()
+                      .map(InterfaceAddress::getIp)
+                      .forEach(
+                          ip ->
+                              ipOwners
+                                  .computeIfAbsent(ip, k -> new HashMap<>())
+                                  .computeIfAbsent(hostname, k -> new HashSet<>())
+                                  .add(i.getName()));
+                }));
     vrrpGroups.forEach(
         (p, candidates) -> {
           InterfaceAddress address = p.getFirst();
           int groupNum = p.getSecond();
-          Set<String> owners = ipOwners.computeIfAbsent(address.getIp(), k -> new HashSet<>());
           /*
            * Compare priorities first. If tied, break tie based on highest interface IP.
            */
@@ -353,9 +419,112 @@ public class CommonUtil {
                   Comparator.comparingInt(
                           (Interface o) -> o.getVrrpGroups().get(groupNum).getPriority())
                       .thenComparing(o -> o.getAddress().getIp()));
-          owners.add(vrrpMaster.getOwner().getHostname());
+          ipOwners
+              .computeIfAbsent(address.getIp(), k -> new HashMap<>())
+              .computeIfAbsent(vrrpMaster.getOwner().getHostname(), k -> new HashSet<>())
+              .add(vrrpMaster.getName());
         });
-    return ipOwners;
+
+    // freeze
+    return toImmutableMap(
+        ipOwners,
+        Entry::getKey,
+        ipOwnersEntry ->
+            toImmutableMap(
+                ipOwnersEntry.getValue(),
+                Entry::getKey, // hostname
+                hostIpOwnersEntry -> ImmutableSet.copyOf(hostIpOwnersEntry.getValue())));
+  }
+
+  /**
+   * Compute a mapping of IP addresses to the VRFs that "own" this IP (e.g., as a network interface
+   * address).
+   *
+   * @param excludeInactive whether to ignore inactive interfaces
+   * @param enabledInterfaces A mapping of enabled interfaces hostname -> interface name -> {@link
+   *     Interface}
+   * @return A map of {@link Ip}s to a map of hostnames to vrfs that own the Ip.
+   */
+  public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
+      boolean excludeInactive, Map<String, Set<Interface>> enabledInterfaces) {
+
+    Map<String, Map<String, String>> interfaceVrfs =
+        toImmutableMap(
+            enabledInterfaces,
+            Entry::getKey, /* hostname */
+            nodeInterfaces ->
+                nodeInterfaces
+                    .getValue()
+                    .stream()
+                    .collect(
+                        ImmutableMap.toImmutableMap(Interface::getName, Interface::getVrfName)));
+
+    return toImmutableMap(
+        computeIpInterfaceOwners(enabledInterfaces, excludeInactive),
+        Entry::getKey, /* Ip */
+        ipInterfaceOwnersEntry ->
+            toImmutableMap(
+                ipInterfaceOwnersEntry.getValue(),
+                Entry::getKey, /* Hostname */
+                ipNodeInterfaceOwnersEntry ->
+                    ipNodeInterfaceOwnersEntry
+                        .getValue()
+                        .stream()
+                        .map(interfaceVrfs.get(ipNodeInterfaceOwnersEntry.getKey())::get)
+                        .collect(ImmutableSet.toImmutableSet())));
+  }
+
+  /** Aggregate a mapping (Ip -> host name -> interface name) to (Ip -> host name -> vrf name) */
+  public static Map<Ip, Map<String, Set<String>>> computeIpVrfOwners(
+      Map<Ip, Map<String, Set<String>>> ipInterfaceOwners, Map<String, Configuration> configs) {
+    return toImmutableMap(
+        ipInterfaceOwners,
+        Entry::getKey, /* ip */
+        ipEntry ->
+            toImmutableMap(
+                ipEntry.getValue(),
+                Entry::getKey, /* node */
+                nodeEntry ->
+                    ImmutableSet.copyOf(
+                        nodeEntry
+                            .getValue()
+                            .stream()
+                            .map(
+                                iface ->
+                                    configs
+                                        .get(nodeEntry.getKey())
+                                        .getInterfaces()
+                                        .get(iface)
+                                        .getVrfName())
+                            .collect(Collectors.toList()))));
+  }
+
+  /**
+   * Invert a mapping from Ip to VRF owners (Ip -> host name -> VRF name) and combine all IPs owned
+   * by each VRF into an IpSpace.
+   */
+  public static Map<String, Map<String, IpSpace>> computeVrfOwnedIpSpaces(
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    Map<String, Map<String, AclIpSpace.Builder>> builders = new HashMap<>();
+    ipVrfOwners.forEach(
+        (ip, ipNodeVrfs) ->
+            ipNodeVrfs.forEach(
+                (node, vrfs) ->
+                    vrfs.forEach(
+                        vrf ->
+                            builders
+                                .computeIfAbsent(node, k -> new HashMap<>())
+                                .computeIfAbsent(vrf, k -> AclIpSpace.builder())
+                                .thenPermitting(ip.toIpSpace()))));
+
+    return toImmutableMap(
+        builders,
+        Entry::getKey, /* node */
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue(),
+                Entry::getKey, /* vrf */
+                vrfEntry -> vrfEntry.getValue().build()));
   }
 
   public static Map<Ip, String> computeIpOwnersSimple(Map<Ip, Set<String>> ipOwners) {
@@ -371,7 +540,21 @@ public class CommonUtil {
 
   public static Map<Ip, String> computeIpOwnersSimple(
       Map<String, Configuration> configurations, boolean excludeInactive) {
-    return computeIpOwnersSimple(computeIpOwners(configurations, excludeInactive));
+    return computeIpOwnersSimple(computeIpNodeOwners(configurations, excludeInactive));
+  }
+
+  /**
+   * Compute the interfaces of each node.
+   *
+   * @param configurations The {@link Configuration}s for the network
+   * @return A map from hostname to the interfaces of that node.
+   */
+  public static Map<String, Set<Interface>> computeNodeInterfaces(
+      Map<String, Configuration> configurations) {
+    return toImmutableMap(
+        configurations,
+        Entry::getKey,
+        e -> ImmutableSet.copyOf(e.getValue().getInterfaces().values()));
   }
 
   public static void copy(Path srcPath, Path dstPath) {
@@ -408,13 +591,27 @@ public class CommonUtil {
     }
   }
 
+  /**
+   * Returns a {@link ClientBuilder} with supplied settings
+   *
+   * @param noSsl {@link javax.ws.rs.client.Client} will use plain HTTP with no SSL if set to true
+   * @param trustAllSslCerts {@link javax.ws.rs.client.Client} will not verify URL's hostname
+   *     against server's identification hostname
+   * @param keystoreFile File to be used to load the {@link KeyStore}
+   * @param keystorePassword Password to be used with the keyStoreFile
+   * @param truststoreFile File to be used to load the {@link TrustManager}
+   * @param truststorePassword Password to be used with the data in the trustStoreFile
+   * @param registerTracing Whether to register JAX-RS tracing on the {@link ClientBuilder}
+   * @return {@link ClientBuilder} with the supplied settings
+   */
   public static ClientBuilder createHttpClientBuilder(
       boolean noSsl,
       boolean trustAllSslCerts,
       Path keystoreFile,
       String keystorePassword,
       Path truststoreFile,
-      String truststorePassword) {
+      String truststorePassword,
+      boolean registerTracing) {
     ClientBuilder clientBuilder = ClientBuilder.newBuilder();
     try {
       if (!noSsl) {
@@ -457,7 +654,7 @@ public class CommonUtil {
         KeyManager[] keyManagers;
         if (keystoreFile != null) {
           if (keystorePassword == null) {
-            throw new BatfishException("Keystore file supplied but keystore password");
+            throw new BatfishException("Keystore file supplied but keystore password missing");
           }
           char[] ksPass = keystorePassword.toCharArray();
           try (FileInputStream keystoreStream = new FileInputStream(keystoreFile.toFile())) {
@@ -471,7 +668,9 @@ public class CommonUtil {
         sslcontext.init(keyManagers, trustManagers, new java.security.SecureRandom());
         clientBuilder.sslContext(sslcontext);
       }
-      if (GlobalTracer.isRegistered()) {
+      /* register tracing feature if a tracer was initialized and caller wants client to
+      send tracing information */
+      if (GlobalTracer.isRegistered() && registerTracing) {
         clientBuilder.register(ClientTracingFeature.class);
       }
     } catch (Exception e) {
@@ -677,6 +876,27 @@ public class CommonUtil {
   }
 
   /**
+   * Checks if an IP address is associated with a loopback interface for the configuration.
+   *
+   * @param ipAddress The IP address to check
+   * @param c The configuration object in which to check
+   * @return The result
+   */
+  public static boolean isActiveLoopbackIp(Ip ipAddress, Configuration c) {
+    return c.getInterfaces()
+        .values()
+        .stream()
+        .anyMatch(
+            iface ->
+                iface.getActive()
+                    && iface.isLoopback(c.getConfigurationFormat())
+                    && iface
+                        .getAllAddresses()
+                        .stream()
+                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)));
+  }
+
+  /**
    * Check if a bgp peer is reachable to establish a session
    *
    * <p><b>Warning:</b> Notion of directionality is important here, we are assuming {@code src} is
@@ -686,7 +906,7 @@ public class CommonUtil {
   private static boolean isReachableBgpNeighbor(
       BgpNeighbor src,
       BgpNeighbor dst,
-      @Nullable FlowProcessor flowProcessor,
+      @Nullable ITracerouteEngine tracerouteEngine,
       @Nullable DataPlane dp) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getAddress();
@@ -694,7 +914,7 @@ public class CommonUtil {
       return false;
     }
     boolean isEbgp = !src.getLocalAs().equals(src.getRemoteAs());
-    if (flowProcessor == null || dp == null) {
+    if (tracerouteEngine == null || dp == null) {
       throw new BatfishException("Cannot compute neighbor reachability without a dataplane");
     }
 
@@ -715,7 +935,7 @@ public class CommonUtil {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, Set<FlowTrace>> traces =
-        flowProcessor.processFlows(dp, ImmutableSet.of(forwardFlow), false);
+        tracerouteEngine.processFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
 
     SortedSet<FlowTrace> acceptedFlows =
         traces
@@ -752,7 +972,7 @@ public class CommonUtil {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces = flowProcessor.processFlows(dp, ImmutableSet.of(backwardFlow), false);
+    traces = tracerouteEngine.processFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
@@ -771,11 +991,11 @@ public class CommonUtil {
 
   /**
    * Compute the BGP topology -- a network of {@link BgpNeighbor}s connected by {@link BgpSession}s.
-   * See {@link #initBgpTopology(Map, Map, boolean, boolean, FlowProcessor, DataPlane)} for more
+   * See {@link #initBgpTopology(Map, Map, boolean, boolean, ITracerouteEngine, DataPlane)} for more
    * details.
    *
    * @param configurations configuration keyed by hostname
-   * @param ipOwners Ip owners (see {@link #computeIpOwners(boolean, Map)}
+   * @param ipOwners Ip owners (see {@link #computeIpNodeOwners(boolean, Map)}
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
@@ -792,7 +1012,8 @@ public class CommonUtil {
    * Compute the BGP topology -- a network of {@link BgpNeighbor}s connected by {@link BgpSession}s.
    *
    * @param configurations node configurations, keyed by hostname
-   * @param ipOwners network Ip owners (see {@link #computeIpOwners(Map, boolean)} for reference)
+   * @param ipOwners network Ip owners (see {@link #computeIpNodeOwners(Map, boolean)} for
+   *     reference)
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.
@@ -800,7 +1021,7 @@ public class CommonUtil {
    *     reachable and sessions can be established correctly. <b>Note:</b> this is different from
    *     {@code keepInvalid=false}, which only does filters invalid neighbors at the control-plane
    *     level
-   * @param flowProcessor an instance of {@link FlowProcessor} for doing reachability checks.
+   * @param tracerouteEngine an instance of {@link ITracerouteEngine} for doing reachability checks.
    * @param dp (partially) computed dataplane.
    * @return A graph ({@link Network}) representing all BGP peerings.
    */
@@ -809,7 +1030,7 @@ public class CommonUtil {
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid,
       boolean checkReachability,
-      @Nullable FlowProcessor flowProcessor,
+      @Nullable ITracerouteEngine tracerouteEngine,
       @Nullable DataPlane dp) {
 
     // TODO: handle duplicate ips on different vrfs
@@ -879,11 +1100,11 @@ public class CommonUtil {
           continue;
         }
       }
-      int localLocalAs = neighbor.getLocalAs();
-      int localRemoteAs = neighbor.getRemoteAs();
+      long localLocalAs = neighbor.getLocalAs();
+      long localRemoteAs = neighbor.getRemoteAs();
       for (BgpNeighbor candidateNeighbor : candidates) {
-        int remoteLocalAs = candidateNeighbor.getLocalAs();
-        int remoteRemoteAs = candidateNeighbor.getRemoteAs();
+        long remoteLocalAs = candidateNeighbor.getLocalAs();
+        long remoteRemoteAs = candidateNeighbor.getRemoteAs();
         if (neighbor.getLocalIp() == null
             || !candidateNeighbor.getPrefix().containsIp(neighbor.getLocalIp())
             || localLocalAs != remoteRemoteAs
@@ -895,7 +1116,7 @@ public class CommonUtil {
          * Perform reachability checks.
          */
         if (checkReachability) {
-          if (isReachableBgpNeighbor(neighbor, candidateNeighbor, flowProcessor, dp)) {
+          if (isReachableBgpNeighbor(neighbor, candidateNeighbor, tracerouteEngine, dp)) {
             graph.addEdge(neighbor, candidateNeighbor, new BgpSession(neighbor, candidateNeighbor));
           }
         } else {
@@ -1181,6 +1402,10 @@ public class CommonUtil {
     }
   }
 
+  public static boolean rangesContain(Collection<SubRange> ranges, int num) {
+    return ranges.stream().anyMatch(sr -> sr.includes(num));
+  }
+
   public static String readFile(Path file) {
     String text = null;
     try {
@@ -1323,6 +1548,33 @@ public class CommonUtil {
   public static <E, K, V> Map<K, V> toImmutableMap(
       Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
     return set.stream().collect(ImmutableMap.toImmutableMap(keyFunction, valueFunction));
+  }
+
+  public static <K, V1, V2> Multimap<K, V2> toImmutableMultimap(
+      Multimap<K, V1> multimap, Function<Collection<V1>, Set<V2>> valuesFunction) {
+    ImmutableMultimap.Builder<K, V2> builder = ImmutableMultimap.builder();
+    multimap.asMap().forEach((k, vs) -> builder.putAll(k, valuesFunction.apply(vs)));
+    return builder.build();
+  }
+
+  public static <K1, K2 extends Comparable<? super K2>, V1, V2>
+      SortedMap<K2, V2> toImmutableSortedMap(
+          Map<K1, V1> map,
+          Function<Entry<K1, V1>, K2> keyFunction,
+          Function<Entry<K1, V1>, V2> valueFunction) {
+    return map.entrySet()
+        .stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(), keyFunction, valueFunction));
+  }
+
+  public static <E, K extends Comparable<? super K>, V> SortedMap<K, V> toImmutableSortedMap(
+      Collection<E> set, Function<E, K> keyFunction, Function<E, V> valueFunction) {
+    return set.stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(), keyFunction, valueFunction));
   }
 
   public static <S extends Set<T>, T> S union(

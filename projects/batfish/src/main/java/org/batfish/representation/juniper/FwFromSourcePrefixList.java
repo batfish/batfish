@@ -1,12 +1,11 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableList;
-import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.RouteFilterList;
 
@@ -34,18 +33,20 @@ public final class FwFromSourcePrefixList extends FwFrom {
         return;
       }
       RouteFilterList sourcePrefixList = c.getRouteFilterLists().get(_name);
-      List<IpSpace> wildcards =
-          sourcePrefixList
-              .getMatchingIps()
-              .stream()
-              .map(IpWildcard::toIpSpace)
-              .collect(ImmutableList.toImmutableList());
-      headerSpaceBuilder.setSrcIps(
+
+      // if referenced prefix list is empty, it should not match anything
+      if (sourcePrefixList.getLines().isEmpty()) {
+        headerSpaceBuilder.addSrcIp(EmptyIpSpace.INSTANCE);
+        return;
+      }
+
+      headerSpaceBuilder.addSrcIp(
           AclIpSpace.union(
-              ImmutableList.<IpSpace>builder()
-                  .add(headerSpaceBuilder.getSrcIps())
-                  .addAll(wildcards)
-                  .build()));
+              sourcePrefixList
+                  .getMatchingIps()
+                  .stream()
+                  .map(IpWildcard::toIpSpace)
+                  .collect(ImmutableList.toImmutableList())));
     } else {
       w.redFlag("Reference to undefined source prefix-list: \"" + _name + "\"");
     }

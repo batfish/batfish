@@ -5,13 +5,14 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
-public class Disjunction extends BooleanExpr {
+public final class Disjunction extends BooleanExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -19,7 +20,11 @@ public class Disjunction extends BooleanExpr {
   private List<BooleanExpr> _disjuncts;
 
   public Disjunction() {
-    _disjuncts = new ArrayList<>();
+    this(new ArrayList<>());
+  }
+
+  public Disjunction(List<BooleanExpr> disjuncts) {
+    _disjuncts = disjuncts;
   }
 
   @Override
@@ -37,21 +42,11 @@ public class Disjunction extends BooleanExpr {
     if (this == obj) {
       return true;
     }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    if (!(obj instanceof Disjunction)) {
       return false;
     }
     Disjunction other = (Disjunction) obj;
-    if (_disjuncts == null) {
-      if (other._disjuncts != null) {
-        return false;
-      }
-    } else if (!_disjuncts.equals(other._disjuncts)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_disjuncts, other._disjuncts);
   }
 
   @Override
@@ -92,26 +87,21 @@ public class Disjunction extends BooleanExpr {
       return _simplified;
     }
     ImmutableList.Builder<BooleanExpr> simpleDisjunctsBuilder = ImmutableList.builder();
-    boolean atLeastOneTrue = false;
-    boolean atLeastOneComplex = false;
     for (BooleanExpr disjunct : _disjuncts) {
       BooleanExpr simpleDisjunct = disjunct.simplify();
-      if (simpleDisjunct.equals(BooleanExprs.True.toStaticBooleanExpr())) {
-        atLeastOneTrue = true;
-        if (!atLeastOneComplex) {
-          _simplified = BooleanExprs.True.toStaticBooleanExpr();
-          return _simplified;
-        } else if (!atLeastOneTrue) {
-          simpleDisjunctsBuilder.add(simpleDisjunct);
-        }
-      } else if (!simpleDisjunct.equals(BooleanExprs.False.toStaticBooleanExpr())) {
-        atLeastOneComplex = true;
-        simpleDisjunctsBuilder.add(simpleDisjunct);
+      if (simpleDisjunct.equals(BooleanExprs.FALSE)) {
+        // Skip false.
+        continue;
+      }
+      simpleDisjunctsBuilder.add(simpleDisjunct);
+      if (simpleDisjunct.equals(BooleanExprs.TRUE)) {
+        // Short-circuit the disjunction after the last true.
+        break;
       }
     }
     List<BooleanExpr> simpleDisjuncts = simpleDisjunctsBuilder.build();
     if (simpleDisjuncts.isEmpty()) {
-      _simplified = BooleanExprs.False.toStaticBooleanExpr();
+      _simplified = BooleanExprs.FALSE;
     } else if (simpleDisjuncts.size() == 1) {
       _simplified = simpleDisjuncts.get(0);
     } else {

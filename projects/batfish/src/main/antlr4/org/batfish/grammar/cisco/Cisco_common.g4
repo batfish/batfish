@@ -396,7 +396,8 @@ prefix_set_elem
 
 protocol
 :
-   AHP
+   AH
+   | AHP
    | DEC
    | EIGRP
    | ESP
@@ -495,7 +496,7 @@ variable
 variable_aclname
 :
    (
-      ~( ETH | EXTENDED | NEWLINE | STANDARD | SESSION | WS )
+      ~( ETH | EXTENDED | NEWLINE | REMARK | STANDARD | SESSION | WS )
    )+
 ;
 

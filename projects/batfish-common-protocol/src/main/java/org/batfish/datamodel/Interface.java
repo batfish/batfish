@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -66,12 +67,15 @@ public final class Interface extends ComparableStructure<String> {
 
     private Vrf _vrf;
 
+    private SortedMap<Integer, VrrpGroup> _vrrpGroups;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, Interface.class);
       _additionalArpIps = ImmutableSortedSet.of();
       _declaredNames = ImmutableSortedSet.of();
       _secondaryAddresses = ImmutableSet.of();
       _sourceNats = ImmutableList.of();
+      _vrrpGroups = ImmutableSortedMap.of();
     }
 
     @Override
@@ -114,6 +118,7 @@ public final class Interface extends ComparableStructure<String> {
           iface.setOspfCost(proc.computeInterfaceCost(iface));
         }
       }
+      iface.setVrrpGroups(_vrrpGroups);
       return iface;
     }
 
@@ -263,6 +268,11 @@ public final class Interface extends ComparableStructure<String> {
       _vrf = vrf;
       return this;
     }
+
+    public Builder setVrrpGroups(SortedMap<Integer, VrrpGroup> vrrpGroups) {
+      _vrrpGroups = ImmutableSortedMap.copyOf(vrrpGroups);
+      return this;
+    }
   }
 
   private static final int DEFAULT_MTU = 1500;
@@ -284,6 +294,10 @@ public final class Interface extends ComparableStructure<String> {
   private static final String PROP_AUTOSTATE = "autostate";
 
   private static final String PROP_BANDWIDTH = "bandwidth";
+
+  private static final String PROP_CHANNEL_GROUP = "channelGroup";
+
+  private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
 
   private static final String PROP_DECLARED_NAMES = "declaredNames";
 
@@ -401,7 +415,7 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("HundredGigabitEthernet")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Group-Async")) {
-      return InterfaceType.AGGREGATED;
+      return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Loopback")) {
       return InterfaceType.LOOPBACK;
     } else if (name.startsWith("Management")) {
@@ -528,6 +542,10 @@ public final class Interface extends ComparableStructure<String> {
 
   private transient boolean _blacklisted;
 
+  private String _channelGroup;
+
+  private SortedSet<String> _channelGroupMembers;
+
   private SortedSet<String> _declaredNames;
 
   private String _description;
@@ -578,7 +596,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private InterfaceAddress _address;
 
-  private Boolean _proxyArp;
+  private boolean _proxyArp;
 
   private boolean _ripEnabled;
 
@@ -624,6 +642,7 @@ public final class Interface extends ComparableStructure<String> {
     _autoState = true;
     _allowedVlans = new ArrayList<>();
     _allAddresses = ImmutableSortedSet.of();
+    _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
     _interfaceType = InterfaceType.UNKNOWN;
@@ -659,19 +678,22 @@ public final class Interface extends ComparableStructure<String> {
       return false;
     }
     Interface other = (Interface) o;
-    if (this._accessVlan != other._accessVlan) {
+    if (_accessVlan != other._accessVlan) {
       return false;
     }
-    if (this._active != other._active) {
+    if (_active != other._active) {
       return false;
     }
-    if (!this._allowedVlans.equals(other._allowedVlans)) {
+    if (!Objects.equals(_address, other._address)) {
       return false;
     }
-    if (!this._allAddresses.equals(other._allAddresses)) {
+    if (!Objects.equals(_allowedVlans, other._allowedVlans)) {
       return false;
     }
-    if (this._autoState != other._autoState) {
+    if (!Objects.equals(_allAddresses, other._allAddresses)) {
+      return false;
+    }
+    if (_autoState != other._autoState) {
       return false;
     }
     if (!Objects.equals(_bandwidth, other._bandwidth)) {
@@ -682,40 +704,35 @@ public final class Interface extends ComparableStructure<String> {
     if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
       return false;
     }
-
     if (!IpAccessList.bothNullOrSameName(this.getIncomingFilter(), other.getIncomingFilter())) {
       return false;
     }
-
     if (this._interfaceType != other._interfaceType) {
       return false;
     }
-
-    // TODO: check ISIS settings for equality.
-    if (this._mtu != other._mtu) {
+    if (!Objects.equals(_key, other._key)) {
       return false;
     }
-    if (this._nativeVlan != other._nativeVlan) {
+    // TODO: check ISIS settings for equality.
+    if (_mtu != other._mtu) {
+      return false;
+    }
+    if (_nativeVlan != other._nativeVlan) {
       return false;
     }
     // TODO: check OSPF settings for equality.
-
     if (!IpAccessList.bothNullOrSameName(this._outgoingFilter, other._outgoingFilter)) {
       return false;
     }
-
-    if (!Objects.equals(this._address, other._address)) {
+    if (!_proxyArp == other._proxyArp) {
       return false;
     }
-
     if (!Objects.equals(this._routingPolicy, other._routingPolicy)) {
       return false;
     }
-
     if (!Objects.equals(this._switchportMode, other._switchportMode)) {
       return false;
     }
-
     if (!Objects.equals(this._zone, other._zone)) {
       return false;
     }
@@ -771,6 +788,16 @@ public final class Interface extends ComparableStructure<String> {
   @JsonIgnore
   public boolean getBlacklisted() {
     return _blacklisted;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP)
+  public String getChannelGroup() {
+    return _channelGroup;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
+  public SortedSet<String> getChannelGroupMembers() {
+    return _channelGroupMembers;
   }
 
   @JsonProperty(PROP_DECLARED_NAMES)
@@ -944,7 +971,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonPropertyDescription("Whether or not proxy-ARP is enabled on this interface.")
-  public Boolean getProxyArp() {
+  public boolean getProxyArp() {
     return _proxyArp;
   }
 
@@ -1115,6 +1142,16 @@ public final class Interface extends ComparableStructure<String> {
     _blacklisted = blacklisted;
   }
 
+  @JsonProperty(PROP_CHANNEL_GROUP)
+  public void setChannelGroup(String channelGroup) {
+    _channelGroup = channelGroup;
+  }
+
+  @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
+  public void setChannelGroupMembers(Iterable<String> channelGroupMembers) {
+    _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
+  }
+
   @JsonProperty(PROP_DECLARED_NAMES)
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
@@ -1240,7 +1277,7 @@ public final class Interface extends ComparableStructure<String> {
     _address = address;
   }
 
-  public void setProxyArp(Boolean proxyArp) {
+  public void setProxyArp(boolean proxyArp) {
     _proxyArp = proxyArp;
   }
 

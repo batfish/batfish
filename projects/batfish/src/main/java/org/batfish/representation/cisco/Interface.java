@@ -94,6 +94,8 @@ public class Interface extends ComparableStructure<String> {
       bandwidth = null;
     } else if (name.startsWith("Loopback")) {
       bandwidth = LOOPBACK_BANDWIDTH;
+    } else if (name.startsWith("Bundle-Ethernet") || name.startsWith("Port-Channel")) {
+      bandwidth = 0D;
     }
     if (bandwidth == null) {
       bandwidth = DEFAULT_INTERFACE_BANDWIDTH;
@@ -114,6 +116,8 @@ public class Interface extends ComparableStructure<String> {
   private boolean _autoState;
 
   private Double _bandwidth;
+
+  private String _channelGroup;
 
   private String _description;
 
@@ -180,6 +184,12 @@ public class Interface extends ComparableStructure<String> {
   private String _vrf;
 
   private SortedSet<String> _declaredNames;
+
+  private String _securityZone;
+
+  public String getSecurityZone() {
+    return _securityZone;
+  }
 
   public Interface(String name, CiscoConfiguration c) {
     super(name);
@@ -253,6 +263,10 @@ public class Interface extends ComparableStructure<String> {
 
   public Double getBandwidth() {
     return _bandwidth;
+  }
+
+  public String getChannelGroup() {
+    return _channelGroup;
   }
 
   public String getDescription() {
@@ -406,6 +420,10 @@ public class Interface extends ComparableStructure<String> {
     _bandwidth = bandwidth;
   }
 
+  public void setChannelGroup(String channelGroup) {
+    _channelGroup = channelGroup;
+  }
+
   public void setDescription(String description) {
     _description = description;
   }
@@ -540,5 +558,9 @@ public class Interface extends ComparableStructure<String> {
 
   public void setDeclaredNames(SortedSet<String> declaredNames) {
     _declaredNames = ImmutableSortedSet.copyOf(declaredNames);
+  }
+
+  public void setSecurityZone(String securityZone) {
+    _securityZone = securityZone;
   }
 }

@@ -556,7 +556,7 @@ null_single
             (
                (
                   DEC
-                  | VARIABLE
+                  | variable_aclname
                )
                (
                   EXTENDED
@@ -624,6 +624,7 @@ null_single
       | END
       | ENVIRONMENT
       | ENVIRONMENT_MONITOR
+      | EPM
       | ERRDISABLE
       | ESCAPE_CHARACTER
       | EXCEPTION

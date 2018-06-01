@@ -587,6 +587,8 @@ public class Driver {
                       .startActive()) {
                 assert runBatfishSpan != null;
                 Answer answer = null;
+                String containerName = settings.getContainerDir().getFileName().toString();
+                String testrigName = settings.getTestrig();
                 try {
                   answer = batfish.run();
                   if (answer.getStatus() == null) {
@@ -594,20 +596,26 @@ public class Driver {
                   }
                 } catch (CleanBatfishException e) {
                   String msg = "FATAL ERROR: " + e.getMessage();
-                  logger.error(msg);
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      containerName, testrigName, msg);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = Answer.failureAnswer(msg, null);
                 } catch (QuestionException e) {
                   String stackTrace = ExceptionUtils.getStackTrace(e);
-                  logger.error(stackTrace);
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      containerName, testrigName, stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = e.getAnswer();
                   answer.setStatus(AnswerStatus.FAILURE);
                 } catch (BatfishException e) {
                   String stackTrace = ExceptionUtils.getStackTrace(e);
-                  logger.error(stackTrace);
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      containerName, testrigName, stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = new Answer();
@@ -615,7 +623,9 @@ public class Driver {
                   answer.addAnswerElement(e.getBatfishStackTrace());
                 } catch (Throwable e) {
                   String stackTrace = ExceptionUtils.getStackTrace(e);
-                  logger.error(stackTrace);
+                  logger.errorf(
+                      "Exception in container:%s, testrig:%s; exception:%s",
+                      containerName, testrigName, stackTrace);
                   batfish.setTerminatingExceptionMessage(
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = new Answer();
@@ -756,7 +766,8 @@ public class Driver {
                   _mainSettings.getSslKeystoreFile(),
                   _mainSettings.getSslKeystorePassword(),
                   _mainSettings.getSslTruststoreFile(),
-                  _mainSettings.getSslTruststorePassword())
+                  _mainSettings.getSslTruststorePassword(),
+                  true)
               .build();
       WebTarget webTarget = client.target(url);
       for (Map.Entry<String, String> entry : params.entrySet()) {

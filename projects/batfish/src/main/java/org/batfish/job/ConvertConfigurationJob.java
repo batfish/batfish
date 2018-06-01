@@ -85,7 +85,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           elapsedTime, _logger.getHistory(), _name, new BatfishException(error, e));
     } finally {
       warningsByHost.forEach((hostname, warnings) -> Batfish.logWarnings(_logger, warnings));
-      ;
     }
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ConvertConfigurationResult(

@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.HeaderSpace;
@@ -31,7 +32,8 @@ public class StandardAccessListServiceSpecifier implements AccessListServiceSpec
   }
 
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  @Nonnull
+  public AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
     return new MatchHeaderSpace(HeaderSpace.builder().setDscps(_dscps).setEcns(_ecns).build());
   }
 }

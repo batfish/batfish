@@ -130,6 +130,8 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
 
   public static final int ACK = 0x10;
 
+  public static final TcpFlags ACK_TCP_FLAG = builder().setAck(true).setUseAck(true).build();
+
   private static final Comparator<TcpFlags> COMPARATOR =
       Comparator.comparing(TcpFlags::getAck)
           .thenComparing(TcpFlags::getCwr)
@@ -162,9 +164,6 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
   private static final long serialVersionUID = 1L;
 
   public static final int SYN = 0x02;
-
-  public static final TcpFlags SYN_ONLY =
-      builder().setSyn(true).setAck(false).setUseSyn(true).setUseAck(true).build();
 
   public static final int URG = 0x20;
 

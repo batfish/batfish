@@ -8,6 +8,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.JFactory;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Flow;
@@ -539,5 +540,15 @@ public class BDDUtils {
         .andWith(tcpSyn)
         .andWith(tcpUrg)
         .andWith(tcpFin);
+    }
+
+  /** Create a new {@link BDDFactory} object with {@param numVariables} boolean variables. */
+  public static BDDFactory bddFactory(int numVariables) {
+    BDDFactory factory = JFactory.init(10000, 1000);
+    factory.disableReorder();
+    factory.setCacheRatio(64);
+    factory.setVarNum(numVariables); // reserve 32 1-bit variables
+    return factory;
   }
+
 }

@@ -7,13 +7,13 @@ import org.hamcrest.Matcher;
 
 final class BgpNeighborMatchersImpl {
 
-  static final class HasLocalAs extends FeatureMatcher<BgpNeighbor, Integer> {
-    HasLocalAs(@Nonnull Matcher<? super Integer> subMatcher) {
+  static final class HasLocalAs extends FeatureMatcher<BgpNeighbor, Long> {
+    HasLocalAs(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "A BgpNeighbor with localAs:", "localAs");
     }
 
     @Override
-    protected Integer featureValueOf(BgpNeighbor actual) {
+    protected Long featureValueOf(BgpNeighbor actual) {
       return actual.getLocalAs();
     }
   }
@@ -26,6 +26,17 @@ final class BgpNeighborMatchersImpl {
     @Override
     protected Boolean featureValueOf(BgpNeighbor actual) {
       return actual.getEnforceFirstAs();
+    }
+  }
+
+  static final class HasRemoteAs extends FeatureMatcher<BgpNeighbor, Long> {
+    HasRemoteAs(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "A BgpNeighbor with remoteAs:", "remoteAs");
+    }
+
+    @Override
+    protected Long featureValueOf(BgpNeighbor actual) {
+      return actual.getRemoteAs();
     }
   }
 

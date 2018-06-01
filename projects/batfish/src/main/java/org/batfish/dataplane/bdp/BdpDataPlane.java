@@ -33,12 +33,28 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
   private Map<Ip, String> _ipOwnersSimple;
 
+  private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
+
   Map<String, Node> _nodes;
 
   Topology _topology;
 
+  @Override
+  public Map<String, Configuration> getConfigurations() {
+    return _nodes
+        .entrySet()
+        .stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
+  }
+
+  @Override
   public Map<Ip, Set<String>> getIpOwners() {
     return _ipOwners;
+  }
+
+  @Override
+  public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
+    return _ipVrfOwners;
   }
 
   public Map<Ip, String> getIpOwnersSimple() {
@@ -68,16 +84,22 @@ public class BdpDataPlane implements Serializable, DataPlane {
   }
 
   @Override
+  public Topology getTopology() {
+    return _topology;
+  }
+
+  @Override
   public SortedSet<Edge> getTopologyEdges() {
     return _topology.getEdges();
   }
 
   protected void initIpOwners(
-      Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
-      Map<Ip, String> ipOwnersSimple) {
+      Map<Ip, String> ipOwnersSimple,
+      Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
     setIpOwners(ipOwners);
     setIpOwnersSimple(ipOwnersSimple);
+    setIpVrfOwners(ipVrfOwners);
   }
 
   public void setIpOwners(Map<Ip, Set<String>> ipOwners) {
@@ -86,6 +108,10 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
   public void setIpOwnersSimple(Map<Ip, String> ipOwnersSimple) {
     _ipOwnersSimple = ipOwnersSimple;
+  }
+
+  public void setIpVrfOwners(Map<Ip, Map<String, Set<String>>> ipVrfOwners) {
+    _ipVrfOwners = ipVrfOwners;
   }
 
   public void setNodes(Map<String, Node> nodes) {

@@ -28,13 +28,13 @@ public class AutoAs extends AsExpr {
   }
 
   @Override
-  public int evaluate(Environment environment) {
+  public long evaluate(Environment environment) {
     BgpProcess proc = environment.getVrf().getBgpProcess();
     if (proc == null) {
       throw new BatfishException("Expected BGP process");
     }
     Direction direction = environment.getDirection();
-    int as;
+    long as;
     Ip peerAddress = environment.getPeerAddress();
     if (peerAddress == null) {
       throw new BatfishException("Expected a peer address");

@@ -59,14 +59,26 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> interface-> incomingAcl */
   Map<String, Map<String, String>> getIncomingAcls();
 
+  /** Ingress locations grouped by the required constraint on src IP */
+  Map<IngressLocation, BooleanExpr> getSrcIpConstraints();
+
   /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
+
+  /** Mapping: hostname -> vrf -> ipsOwnedByVrf */
+  Map<String, Map<String, Set<Ip>>> getIpsByNodeVrf();
 
   /** Mapping: hostname -> IpSpace name -> IpSpace */
   Map<String, Map<String, IpSpace>> getNamedIpSpaces();
 
   /** Mapping: hostname -> vrfName -> outInterface -> dstIpConstraintForWhichNoArpReplySent */
   Map<String, Map<String, Map<String, BooleanExpr>>> getNeighborUnreachable();
+
+  /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
+  Set<String> getNodesWithSrcInterfaceConstraints();
+
+  /** Set of nodes that should not be transited */
+  Set<String> getNonTransitNodes();
 
   /** Mapping: hostname -> vrfName -> nullRoutedIps */
   Map<String, Map<String, BooleanExpr>> getNullRoutedIps();
@@ -84,6 +96,9 @@ public interface SynthesizerInput {
    * Mapping: hostname -> interface -> [(preconditionPreTransformationState, transformationToApply)]
    */
   Map<String, Map<String, List<Entry<AclPermit, BooleanExpr>>>> getSourceNats();
+
+  /** The set of nodes for which we should track whether they are transited */
+  Set<String> getTransitNodes();
 
   /** Mapping: hostname -> interfacesAllowedToBelongToAnEdge */
   Map<String, Set<String>> getTraversableInterfaces();
@@ -106,6 +121,6 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> interface -> constraint on transformed source interface field */
   Map<String, Map<String, IntExpr>> getSourceInterfaceFieldValues();
 
-  /** Set of hostnames of nodes that have a firewall with a MatchSrcInterface AclLineMatchExpr */
-  Set<String> getNodesWithSrcInterfaceConstraints();
+  /** Whether it's synthesizing data plane rules */
+  boolean isDataPlane();
 }

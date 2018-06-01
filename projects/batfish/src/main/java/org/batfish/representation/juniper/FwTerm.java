@@ -9,7 +9,7 @@ public final class FwTerm implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final List<FwFromApplication> _fromApplications;
+  private final List<FwFromApplicationSetMember> _fromApplicationSetMembers;
 
   private final List<FwFromHostProtocol> _fromHostProtocols;
 
@@ -25,15 +25,15 @@ public final class FwTerm implements Serializable {
 
   public FwTerm(String name) {
     _froms = new ArrayList<>();
-    _fromApplications = new ArrayList<>();
+    _fromApplicationSetMembers = new ArrayList<>();
     _fromHostProtocols = new ArrayList<>();
     _fromHostServices = new ArrayList<>();
     _name = name;
     _thens = new ArrayList<>();
   }
 
-  public List<FwFromApplication> getFromApplications() {
-    return _fromApplications;
+  public List<FwFromApplicationSetMember> getFromApplicationSetMembers() {
+    return _fromApplicationSetMembers;
   }
 
   public List<FwFromHostProtocol> getFromHostProtocols() {

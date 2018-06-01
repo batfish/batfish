@@ -14,62 +14,58 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Flow;
+import org.batfish.z3.expr.AndExpr;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.state.OriginateVrf;
 
 public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
   private final String _tag;
 
-  private final OriginateVrfInstrumentation _originateVrfInstrumentation;
+  private final IngressLocationInstrumentation _ingressLocationInstrumentation;
 
-  public AbstractNodJob(Settings settings, SortedSet<Pair<String, String>> nodeVrfSet, String tag) {
+  public AbstractNodJob(
+      Settings settings, Map<IngressLocation, BooleanExpr> srcIpConstraints, String tag) {
     super(settings);
     _tag = tag;
-    _originateVrfInstrumentation =
-        new OriginateVrfInstrumentation(
-            nodeVrfSet
-                .stream()
-                .map(
-                    nodeVrfPair ->
-                        new OriginateVrf(nodeVrfPair.getFirst(), nodeVrfPair.getSecond()))
-                .collect(ImmutableList.toImmutableList()));
+    // TODO can we move _ingressLocationInstrumentation to ReachabilityQuerySynthesizer?
+    _ingressLocationInstrumentation = new IngressLocationInstrumentation(srcIpConstraints);
   }
 
   /**
    * Try to find a model for each OriginateVrf. If an OriginateVrf does not have an entry in the
    * Map, then the query is unsat when originating from there.
    */
-  protected Map<OriginateVrf, Map<String, Long>> getOriginateVrfConstraints(
+  protected Map<IngressLocation, Map<String, Long>> getSolutionPerIngressLocation(
       Context ctx, SmtInput smtInput) {
     Solver solver = ctx.mkSolver();
     solver.add(smtInput._expr);
 
-    int originateVrfBvSize = _originateVrfInstrumentation.getFieldBits();
+    int originateVrfBvSize = _ingressLocationInstrumentation.getFieldBits();
     BitVecExpr originateVrfFieldConst =
-        ctx.mkBVConst(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, originateVrfBvSize);
+        ctx.mkBVConst(
+            IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, originateVrfBvSize);
 
-    ImmutableMap.Builder<OriginateVrf, Map<String, Long>> models = ImmutableMap.builder();
+    ImmutableMap.Builder<IngressLocation, Map<String, Long>> models = ImmutableMap.builder();
     // keep refining until no new models
     while (true) {
       try {
         Map<String, Long> constraints = getSolution(solver, smtInput._variablesAsConsts);
-        int originateVrfId =
-            Math.toIntExact(constraints.get(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME));
-        OriginateVrf originateVrf =
-            _originateVrfInstrumentation.getOriginateVrfs().get(originateVrfId);
-        models.put(originateVrf, constraints);
+        int ingressLocationId =
+            Math.toIntExact(
+                constraints.get(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME));
+        IngressLocation ingressLocation =
+            _ingressLocationInstrumentation.getIngressLocations().get(ingressLocationId);
+        models.put(ingressLocation, constraints);
 
         // refine: different OriginateVrf
         solver.add(
             ctx.mkNot(
-                ctx.mkEq(originateVrfFieldConst, ctx.mkBV(originateVrfId, originateVrfBvSize))));
+                ctx.mkEq(originateVrfFieldConst, ctx.mkBV(ingressLocationId, originateVrfBvSize))));
       } catch (QueryUnsatException e) {
         break;
       }
@@ -100,9 +96,9 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
     long startTime = System.currentTimeMillis();
     try (Context ctx = new Context()) {
       SmtInput smtInput = computeSmtInput(startTime, ctx);
-      Map<OriginateVrf, Map<String, Long>> originateVrfConstraints =
-          getOriginateVrfConstraints(ctx, smtInput);
-      Set<Flow> flows = getFlows(originateVrfConstraints);
+      Map<IngressLocation, Map<String, Long>> ingressLocationConstraints =
+          getSolutionPerIngressLocation(ctx, smtInput);
+      Set<Flow> flows = getFlows(ingressLocationConstraints);
       return new NodJobResult(startTime, _logger.getHistory(), flows);
     } catch (Z3Exception e) {
       return new NodJobResult(
@@ -119,7 +115,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         program
             .getRules()
             .stream()
-            .map(_originateVrfInstrumentation::instrumentStatement)
+            .map(_ingressLocationInstrumentation::instrumentStatement)
             .map(RuleStatement.class::cast)
             .collect(ImmutableList.toImmutableList());
 
@@ -127,28 +123,26 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
         .setInput(program.getInput())
         .setQueries(program.getQueries())
         .setRules(rules)
-        .setSmtConstraint(program.getSmtConstraint())
+        .setSmtConstraint(
+            new AndExpr(
+                ImmutableList.of(
+                    program.getSmtConstraint(),
+                    _ingressLocationInstrumentation.getSrcIpConstraint())))
         .build();
   }
 
-  private Flow createFlow(String node, String vrf, Map<String, Long> constraints) {
-    return createFlow(node, vrf, constraints, _tag);
-  }
-
-  protected Set<Flow> getFlows(
-      Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf) {
-    return fieldConstraintsByOriginateVrf
+  protected Set<Flow> getFlows(Map<IngressLocation, Map<String, Long>> ingressLocationConstraints) {
+    return ingressLocationConstraints
         .entrySet()
         .stream()
         .map(
             entry ->
                 createFlow(
-                    /* hostname */
-                    entry.getKey().getHostname(),
-                    /* VRF name */
-                    entry.getKey().getVrf(),
+                    /* ingress point */
+                    entry.getKey(),
                     /* field constraints map */
-                    entry.getValue()))
+                    entry.getValue(),
+                    _tag))
         .collect(Collectors.toSet());
   }
 

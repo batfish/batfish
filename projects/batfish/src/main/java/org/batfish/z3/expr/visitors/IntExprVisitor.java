@@ -6,7 +6,6 @@ import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.VarIntExpr;
 
 public interface IntExprVisitor {
-
   void visitExtractExpr(ExtractExpr extractExpr);
 
   void visitLitIntExpr(LitIntExpr litIntExpr);

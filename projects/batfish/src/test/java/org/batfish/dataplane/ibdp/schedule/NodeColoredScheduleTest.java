@@ -1,6 +1,6 @@
 package org.batfish.dataplane.ibdp.schedule;
 
-import static org.batfish.common.util.CommonUtil.computeIpOwners;
+import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -54,7 +54,7 @@ public class NodeColoredScheduleTest {
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
     Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configs, computeIpOwners(configs, false), false);
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
 
     assertThat(schedule.hasNext(), is(true));
@@ -74,7 +74,7 @@ public class NodeColoredScheduleTest {
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
     Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configs, computeIpOwners(configs, false), false);
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
 
     // Expect both nodes to have the same color because there is no edge between them
@@ -102,8 +102,8 @@ public class NodeColoredScheduleTest {
     nb.setOwner(r1)
         .setVrf(vEdge1)
         .setBgpProcess(r1Proc)
-        .setLocalAs(1)
-        .setRemoteAs(2)
+        .setLocalAs(1L)
+        .setRemoteAs(2L)
         .setLocalIp(new Ip("1.1.1.1"))
         .setPeerAddress(new Ip("2.2.2.2"))
         .build();
@@ -116,8 +116,8 @@ public class NodeColoredScheduleTest {
     nb.setOwner(r2)
         .setVrf(vrf2)
         .setBgpProcess(r2Proc)
-        .setRemoteAs(1)
-        .setLocalAs(2)
+        .setRemoteAs(1L)
+        .setLocalAs(2L)
         .setRouteReflectorClient(true)
         .setPeerAddress(new Ip("1.1.1.1"))
         .setLocalIp(new Ip("2.2.2.2"))
@@ -130,7 +130,7 @@ public class NodeColoredScheduleTest {
             .build();
 
     Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configurations, computeIpOwners(configurations, false), false);
+        initBgpTopology(configurations, computeIpNodeOwners(configurations, false), false);
     ImmutableMap<String, Node> nodes = ImmutableMap.of("r1", new Node(r1), "r2", new Node(r2));
 
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);

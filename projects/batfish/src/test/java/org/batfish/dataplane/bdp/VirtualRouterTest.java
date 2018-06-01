@@ -39,6 +39,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfExternalType1Route;
@@ -76,9 +77,9 @@ public class VirtualRouterTest {
   private static final String NEIGHBOR_HOST_NAME = "neighbornode";
   private static final int TEST_ADMIN = 100;
   private static final Long TEST_AREA = 1L;
-  private static final int TEST_AS1 = 1;
-  private static final int TEST_AS2 = 2;
-  private static final int TEST_AS3 = 3;
+  private static final long TEST_AS1 = 1L;
+  private static final long TEST_AS2 = 2L;
+  private static final long TEST_AS3 = 3L;
   private static final Ip TEST_DEST_IP = new Ip("2.2.2.2");
   private static final ConfigurationFormat FORMAT = ConfigurationFormat.CISCO_IOS;
   private static final int TEST_METRIC = 30;
@@ -438,6 +439,30 @@ public class VirtualRouterTest {
                 .toArray(new ConnectedRoute[] {})));
   }
 
+  /** Check that initialization of Local RIB is as expected */
+  @Test
+  public void testInitLocalRib() {
+    // Setup
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr._c, exampleInterfaceAddresses);
+    vr.initRibs();
+
+    // Test
+    vr.initLocalRib();
+
+    // Assert that all interface prefixes have been processed
+    assertThat(
+        vr._localRib.getRoutes(),
+        containsInAnyOrder(
+            exampleInterfaceAddresses
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
+                .map(e -> new LocalRoute(e.getValue(), e.getKey()))
+                .collect(Collectors.toList())
+                .toArray(new LocalRoute[] {})));
+  }
+
   @Test
   public void testInitRibsEmpty() {
     VirtualRouter vr = makeIosVirtualRouter(null);
@@ -447,6 +472,7 @@ public class VirtualRouterTest {
 
     // Simple RIBs
     assertThat(vr._connectedRib.getRoutes(), is(emptyIterableOf(ConnectedRoute.class)));
+    assertThat(vr._localRib.getRoutes(), is(emptyIterableOf(LocalRoute.class)));
     assertThat(vr._staticRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._staticInterfaceRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._independentRib.getRoutes(), is(emptyIterableOf(AbstractRoute.class)));

@@ -16,7 +16,6 @@ import static org.hamcrest.Matchers.sameInstance;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Collections;
 import java.util.List;
@@ -124,8 +123,7 @@ public class OspfTest {
     exportIfMatchL2Prefix.setGuard(
         new MatchPrefixSet(
             new DestinationNetwork(),
-            new ExplicitPrefixSet(
-                new PrefixSpace(ImmutableSet.of(PrefixRange.fromPrefix(address.getPrefix()))))));
+            new ExplicitPrefixSet(new PrefixSpace(PrefixRange.fromPrefix(address.getPrefix())))));
     exportIfMatchL2Prefix.setTrueStatements(
         ImmutableList.of(
             new SetOspfMetricType(OspfMetricType.E1),
@@ -625,7 +623,7 @@ public class OspfTest {
     _ib.setOwner(c2).setVrf(v2Other).setAddress(i2Address).setOspfArea(oa2).build();
 
     Map<String, Configuration> configurations = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
 

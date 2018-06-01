@@ -292,24 +292,19 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -318,13 +313,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "8-8",
-                "prefix" : "2.0.0.0/8"
+                "ipWildcard" : "2.0.0.0/8",
+                "lengthRange" : "8-8"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "2.128.0.0/16"
+                "ipWildcard" : "2.128.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           },
@@ -333,13 +328,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
+                "ipWildcard" : "3.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -348,8 +343,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-0",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-0"
               }
             ]
           },
@@ -358,13 +353,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "8-32",
-                "prefix" : "1.0.0.0/8"
+                "ipWildcard" : "1.0.0.0/8",
+                "lengthRange" : "8-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -990,6 +985,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -1563,24 +1559,19 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -1589,13 +1580,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "8-8",
-                "prefix" : "2.0.0.0/8"
+                "ipWildcard" : "2.0.0.0/8",
+                "lengthRange" : "8-8"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "2.128.0.0/16"
+                "ipWildcard" : "2.128.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           },
@@ -1604,8 +1595,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -1614,8 +1605,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "8-32",
-                "prefix" : "4.0.0.0/8"
+                "ipWildcard" : "4.0.0.0/8",
+                "lengthRange" : "8-32"
               }
             ]
           },
@@ -1624,13 +1615,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "8-32",
-                "prefix" : "1.0.0.0/8"
+                "ipWildcard" : "1.0.0.0/8",
+                "lengthRange" : "8-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -2277,6 +2268,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -2667,11 +2659,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -3340,24 +3327,19 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -3366,13 +3348,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
+                "ipWildcard" : "3.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -3381,13 +3363,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "8-32",
-                "prefix" : "2.0.0.0/8"
+                "ipWildcard" : "2.0.0.0/8",
+                "lengthRange" : "8-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           },
@@ -3396,8 +3378,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "2.128.0.0/9"
+                "ipWildcard" : "2.128.0.0/9",
+                "lengthRange" : "16-32"
               }
             ]
           },
@@ -3406,8 +3388,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "17-32",
-                "prefix" : "2.128.0.0/16"
+                "ipWildcard" : "2.128.0.0/16",
+                "lengthRange" : "17-32"
               }
             ]
           }
@@ -3756,7 +3738,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {
@@ -3956,6 +3938,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -4601,24 +4584,19 @@
         "ntpServers" : [
           "18.18.18.18"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -4627,13 +4605,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
+                "ipWildcard" : "3.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -4642,13 +4620,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "8-32",
-                "prefix" : "2.0.0.0/8"
+                "ipWildcard" : "2.0.0.0/8",
+                "lengthRange" : "8-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           },
@@ -4657,8 +4635,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-32",
-                "prefix" : "2.128.0.0/9"
+                "ipWildcard" : "2.128.0.0/9",
+                "lengthRange" : "16-32"
               }
             ]
           },
@@ -4667,8 +4645,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "17-32",
-                "prefix" : "2.128.0.0/16"
+                "ipWildcard" : "2.128.0.0/16",
+                "lengthRange" : "17-32"
               }
             ]
           }
@@ -5017,7 +4995,7 @@
             "statements" : [
               {
                 "class" : "org.batfish.datamodel.routing_policy.statement.If",
-                "comment" : "Suppress summarized of summary-only aggregate-address networks",
+                "comment" : "Suppress more specific networks for summary-only aggregate-address networks",
                 "guard" : {
                   "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
                   "prefix" : {
@@ -5217,6 +5195,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -5727,11 +5706,6 @@
           "1.1.1.1",
           "2.1.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -6303,11 +6277,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",
@@ -7120,24 +7089,19 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "102" : {
             "name" : "102",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "2.128.0.0/24"
+                "ipWildcard" : "2.128.0.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "2.128.1.0/24"
+                "ipWildcard" : "2.128.1.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           }
@@ -7922,34 +7886,29 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "105" : {
             "name" : "105",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
+                "ipWildcard" : "3.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           }
@@ -8178,6 +8137,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -8693,34 +8653,29 @@
             ]
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "105" : {
             "name" : "105",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
+                "ipWildcard" : "3.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           }
@@ -8949,6 +8904,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -9478,24 +9434,19 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -9504,13 +9455,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "8-8",
-                "prefix" : "2.0.0.0/8"
+                "ipWildcard" : "2.0.0.0/8",
+                "lengthRange" : "8-8"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "2.128.0.0/16"
+                "ipWildcard" : "2.128.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           },
@@ -9519,13 +9470,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
+                "ipWildcard" : "3.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -9534,8 +9485,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-0",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-0"
               }
             ]
           },
@@ -9544,13 +9495,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "8-32",
-                "prefix" : "3.0.0.0/8"
+                "ipWildcard" : "3.0.0.0/8",
+                "lengthRange" : "8-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -10126,6 +10077,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -10638,24 +10590,19 @@
           "18.18.18.18",
           "23.23.23.23"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "101" : {
             "name" : "101",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.1.0/24"
+                "ipWildcard" : "1.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "1.0.2.0/24"
+                "ipWildcard" : "1.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -10664,13 +10611,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "8-8",
-                "prefix" : "2.0.0.0/8"
+                "ipWildcard" : "2.0.0.0/8",
+                "lengthRange" : "8-8"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "2.128.0.0/16"
+                "ipWildcard" : "2.128.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           },
@@ -10679,13 +10626,13 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.1.0/24"
+                "ipWildcard" : "3.0.1.0/24",
+                "lengthRange" : "24-24"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "24-24",
-                "prefix" : "3.0.2.0/24"
+                "ipWildcard" : "3.0.2.0/24",
+                "lengthRange" : "24-24"
               }
             ]
           },
@@ -10694,13 +10641,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "8-32",
-                "prefix" : "3.0.0.0/8"
+                "ipWildcard" : "3.0.0.0/8",
+                "lengthRange" : "8-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -11229,6 +11176,7 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.Not",
                       "expr" : {
                         "class" : "org.batfish.datamodel.routing_policy.expr.MatchPrefixSet",
+                        "comment" : "match default route",
                         "prefix" : {
                           "class" : "org.batfish.datamodel.routing_policy.expr.DestinationNetwork"
                         },
@@ -11648,11 +11596,6 @@
           "1.1.1.1",
           "2.2.2.2"
         ],
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routingPolicies" : {
           "~BGP_COMMON_EXPORT_POLICY:default~" : {
             "name" : "~BGP_COMMON_EXPORT_POLICY:default~",

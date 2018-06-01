@@ -5,8 +5,8 @@ add-batfish-option haltonparseerror
 add-batfish-option verboseparse
 
 ### creating, listing, deleting testrigs
-test tests/ui-focused/init0.ref init-testrig test_rigs/example testrig0
-test tests/ui-focused/init1.ref init-testrig test_rigs/example testrig1
+init-testrig test_rigs/example testrig0
+init-testrig test_rigs/example testrig1
 test -raw tests/ui-focused/del-testrig.ref del-testrig testrig0
 test -raw tests/ui-focused/list-testrigs1.ref list-testrigs -nometadata
 

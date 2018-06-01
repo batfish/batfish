@@ -2,7 +2,7 @@ package org.batfish.datamodel.table;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Multiset;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -12,21 +12,23 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.AnswerSummary;
 import org.batfish.datamodel.questions.Assertion;
+import org.batfish.datamodel.questions.Exclusion;
+import org.batfish.datamodel.questions.Question;
 
-/** A base class for tabular answers */
-public class TableAnswerElement extends AnswerElement {
+/** Holds tabular answers. */
+public final class TableAnswerElement extends AnswerElement {
 
-  protected static final String PROP_EXCLUDED_ROWS = "excludedRows";
+  private static final String PROP_EXCLUDED_ROWS = "excludedRows";
 
-  protected static final String PROP_METADATA = "metadata";
+  private static final String PROP_METADATA = "metadata";
 
-  protected static final String PROP_ROWS = "rows";
+  private static final String PROP_ROWS = "rows";
 
-  List<ExcludedRows> _excludedRows;
+  private List<ExcludedRows> _excludedRows;
 
-  Rows _rows;
+  private Rows _rows;
 
-  TableMetadata _tableMetadata;
+  private TableMetadata _tableMetadata;
 
   @JsonCreator
   public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
@@ -40,7 +42,7 @@ public class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public void addRow(ObjectNode row) {
+  public void addRow(Row row) {
     _rows.add(row);
   }
 
@@ -49,7 +51,7 @@ public class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public void addExcludedRow(ObjectNode row, String exclusionName) {
+  public void addExcludedRow(Row row, String exclusionName) {
     for (ExcludedRows exRows : _excludedRows) {
       if (exRows.getExclusionName().equals(exclusionName)) {
         exRows.addRow(row);
@@ -62,6 +64,19 @@ public class TableAnswerElement extends AnswerElement {
     _excludedRows.add(rows);
   }
 
+  public AnswerSummary computeSummary(Assertion assertion, String notes) {
+    int numPassed = 0;
+    int numFailed = 0;
+    if (assertion != null) {
+      if (evaluateAssertion(assertion)) {
+        numPassed = 1;
+      } else {
+        numFailed = 1;
+      }
+    }
+    return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
+  }
+
   public AnswerSummary computeSummary(Assertion assertion) {
     int numPassed = 0;
     int numFailed = 0;
@@ -72,7 +87,8 @@ public class TableAnswerElement extends AnswerElement {
         numFailed = 1;
       }
     }
-    return new AnswerSummary(null, numFailed, numPassed, _rows.size());
+    String notes = "Found " + _rows.size() + " results";
+    return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
   }
 
   /**
@@ -118,6 +134,28 @@ public class TableAnswerElement extends AnswerElement {
   @JsonProperty(PROP_ROWS)
   public Rows getRows() {
     return _rows;
+  }
+
+  /**
+   * Given an initial set of rows produced by an {@link org.batfish.common.Answerer}, this procedure
+   * processes exclusions, assertions, and summary to update this object.
+   *
+   * @param question The question that generated the initial set of rows
+   * @param initialSet The initial set of rows
+   */
+  public void postProcessAnswer(Question question, Multiset<Row> initialSet) {
+    initialSet.forEach(
+        initialRow -> {
+          // exclude or not?
+          Exclusion exclusion = Exclusion.covered(initialRow, question.getExclusions());
+          if (exclusion != null) {
+            addExcludedRow(initialRow, exclusion.getName());
+          } else {
+            addRow(initialRow);
+          }
+        });
+
+    setSummary(computeSummary(question.getAssertion()));
   }
 
   @JsonProperty(PROP_EXCLUDED_ROWS)

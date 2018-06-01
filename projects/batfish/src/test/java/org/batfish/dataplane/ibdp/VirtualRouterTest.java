@@ -1,6 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
-import static org.batfish.common.util.CommonUtil.computeIpOwners;
+import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.common.util.CommonUtil.synthesizeTopology;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;
@@ -27,6 +27,7 @@ import com.google.common.graph.Network;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
@@ -50,6 +51,7 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginType;
@@ -73,8 +75,12 @@ import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.batfish.dataplane.ibdp.RibDelta.Builder;
-import org.batfish.dataplane.ibdp.RouteAdvertisement.Reason;
+import org.batfish.dataplane.rib.BgpBestPathRib;
+import org.batfish.dataplane.rib.BgpMultipathRib;
+import org.batfish.dataplane.rib.RibDelta;
+import org.batfish.dataplane.rib.RibDelta.Builder;
+import org.batfish.dataplane.rib.RouteAdvertisement;
+import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -91,9 +97,9 @@ public class VirtualRouterTest {
   private static final String NEIGHBOR_HOST_NAME = "neighbornode";
   private static final int TEST_ADMIN = 100;
   private static final Long TEST_AREA = 1L;
-  private static final int TEST_AS1 = 1;
-  private static final int TEST_AS2 = 2;
-  private static final int TEST_AS3 = 3;
+  private static final long TEST_AS1 = 1;
+  private static final long TEST_AS2 = 2;
+  private static final long TEST_AS3 = 3;
   private static final Ip TEST_DEST_IP = new Ip("2.2.2.2");
   private static final ConfigurationFormat FORMAT = ConfigurationFormat.CISCO_IOS;
   private static final int TEST_METRIC = 30;
@@ -110,6 +116,44 @@ public class VirtualRouterTest {
   private Map<Ip, Set<String>> _ipOwners;
   private RoutingPolicy.Builder _routingPolicyBuilder;
   private VirtualRouter _testVirtualRouter;
+
+  private static void addInterfaces(
+      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
+    NetworkFactory nf = new NetworkFactory();
+    Interface.Builder ib =
+        nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
+    interfaceAddresses.forEach(
+        (ifaceName, address) ->
+            ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
+  }
+
+  private static Map<String, Node> makeIosRouters(String... hostnames) {
+    return Arrays.stream(hostnames)
+        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
+  }
+
+  private static VirtualRouter makeIosVirtualRouter(String hostname) {
+    Node n = TestUtils.makeIosRouter(hostname);
+    return n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME);
+  }
+
+  /**
+   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
+   * {@link Vrf}
+   *
+   * @param nodeName Node name of the owner {@link Configuration}
+   * @return new instance of {@link VirtualRouter}
+   */
+  private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
+    Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf vrf = vb.setOwner(config).build();
+    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
+    VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
+    virtualRouter.initRibs();
+    virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
+    return virtualRouter;
+  }
 
   @Before
   public void setup() {
@@ -136,27 +180,8 @@ public class VirtualRouterTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setOriginatorIp(TEST_SRC_IP);
     _ipOwners = ImmutableMap.of(TEST_SRC_IP, ImmutableSet.of(TEST_VIRTUAL_ROUTER_NAME));
-    _routingPolicyBuilder = nf.routingPolicyBuilder().setOwner(_testVirtualRouter._c);
-  }
-
-  private static void addInterfaces(
-      Configuration c, Map<String, InterfaceAddress> interfaceAddresses) {
-    NetworkFactory nf = new NetworkFactory();
-    Interface.Builder ib =
-        nf.interfaceBuilder().setActive(true).setOwner(c).setVrf(c.getDefaultVrf());
-    interfaceAddresses.forEach(
-        (ifaceName, address) ->
-            ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
-  }
-
-  private static Map<String, Node> makeIosRouters(String... hostnames) {
-    return Arrays.stream(hostnames)
-        .collect(ImmutableMap.toImmutableMap(hostname -> hostname, TestUtils::makeIosRouter));
-  }
-
-  private static VirtualRouter makeIosVirtualRouter(String hostname) {
-    Node n = TestUtils.makeIosRouter(hostname);
-    return n._virtualRouters.get(Configuration.DEFAULT_VRF_NAME);
+    _routingPolicyBuilder =
+        nf.routingPolicyBuilder().setOwner(_testVirtualRouter.getConfiguration());
   }
 
   @Test
@@ -347,74 +372,40 @@ public class VirtualRouterTest {
   }
 
   /**
-   * Creates an empty {@link VirtualRouter} along with creating owner {@link Configuration} and
-   * {@link Vrf}
-   *
-   * @param nodeName Node name of the owner {@link Configuration}
-   * @return new instance of {@link VirtualRouter}
+   * Test that {@link VirtualRouter#activateStaticRoutes()} removes a route if a route to its
+   * next-hop IP disappears.
    */
-  private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
-    Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
-    Vrf vrf = vb.setOwner(config).build();
-    config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
-    VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
-    virtualRouter.initRibs();
-    virtualRouter._sentBgpAdvertisements = new LinkedHashSet<>();
-    return virtualRouter;
-  }
-
   @Test
-  public void testGetBetterOspfRouteMetric() {
-    Prefix ospfInterAreaRoutePrefix = Prefix.parse("1.1.1.1/24");
-    long definedMetric = 5;
-    long definedArea = 1;
-    OspfInterAreaRoute route =
-        new OspfInterAreaRoute(
-            ospfInterAreaRoutePrefix,
-            Ip.MAX,
-            RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(FORMAT),
-            definedMetric,
-            0);
+  public void testActivateStaticRoutesRemoval() {
+    VirtualRouter vr = makeIosVirtualRouter("n1");
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
 
-    // The route is in the prefix and existing metric is null, so return the route's metric
-    assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, null, definedArea, true),
-        equalTo(definedMetric));
-    // Return the lower metric if the existing not null and using old RFC
-    assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 10L, definedArea, true),
-        equalTo(definedMetric));
-    // Return the higher metric if the existing metric is not null and using new RFC
-    assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 10L, definedArea, false),
-        equalTo(10L));
-    // The route is in the prefix but the existing metric is lower, so return the existing metric
-    assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 4L, definedArea, true),
-        equalTo(4L));
-    // The route is in the prefix but the existing metric is lower, so return the existing metric
-    assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(route, Prefix.ZERO, 4L, definedArea, false),
-        equalTo(definedMetric));
-    // The route is not in the area's prefix, return the current metric
-    assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(
-            route, Prefix.parse("2.0.0.0/8"), 4L, definedArea, true),
-        equalTo(4L));
+    StaticRoute baseRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHopInterface("Ethernet1")
+            .build();
+    StaticRoute dependentRoute =
+        StaticRoute.builder()
+            .setNetwork(Prefix.parse("2.2.2.2/32"))
+            .setNextHopIp(new Ip("1.1.1.1"))
+            .build();
 
-    OspfInterAreaRoute sameAreaRoute =
-        new OspfInterAreaRoute(
-            ospfInterAreaRoutePrefix,
-            Ip.MAX,
-            RoutingProtocol.OSPF_IA.getDefaultAdministrativeCost(FORMAT),
-            definedMetric,
-            1); // the area is the same as definedArea
-    // Thus the metric should remain null
-    assertThat(
-        VirtualRouter.computeUpdatedOspfSummaryMetric(
-            sameAreaRoute, Prefix.ZERO, null, definedArea, true),
-        equalTo(null));
+    vr.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setStaticRoutes(ImmutableSortedSet.of(baseRoute, dependentRoute));
+
+    // Initial activation
+    vr.initStaticRibs();
+    vr.activateStaticRoutes();
+
+    // Test: remove baseRoute, rerun activation
+    vr.getMainRib().removeRoute(baseRoute);
+    vr.activateStaticRoutes();
+
+    // Assert dependent route is not there
+    assertThat(vr.getMainRib().getRoutes(), not(containsInAnyOrder(dependentRoute)));
   }
 
   /** Check that initialization of Connected RIB is as expected */
@@ -422,7 +413,7 @@ public class VirtualRouterTest {
   public void testInitConnectedRib() {
     // Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
-    addInterfaces(vr._c, exampleInterfaceAddresses);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
     vr.initRibs();
 
     // Test
@@ -430,7 +421,7 @@ public class VirtualRouterTest {
 
     // Assert that all interface prefixes have been processed
     assertThat(
-        vr._connectedRib.getRoutes(),
+        vr.getConnectedRib().getRoutes(),
         containsInAnyOrder(
             exampleInterfaceAddresses
                 .entrySet()
@@ -438,6 +429,60 @@ public class VirtualRouterTest {
                 .map(e -> new ConnectedRoute(e.getValue().getPrefix(), e.getKey()))
                 .collect(Collectors.toList())
                 .toArray(new ConnectedRoute[] {})));
+  }
+
+  /** Check that initialization of Local RIB is as expected */
+  @Test
+  public void testInitLocalRib() {
+    // Setup
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+    vr.initRibs();
+
+    // Test
+    vr.initLocalRib();
+
+    // Assert that all interface prefixes have been processed
+    assertThat(
+        vr._localRib.getRoutes(),
+        containsInAnyOrder(
+            exampleInterfaceAddresses
+                .entrySet()
+                .stream()
+                .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
+                .map(e -> new LocalRoute(e.getValue(), e.getKey()))
+                .collect(Collectors.toList())
+                .toArray(new LocalRoute[] {})));
+  }
+
+  /** Check that VRF static routes are put into appropriate RIBs upon initialization. */
+  @Test
+  public void testInitStaticRibs() {
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+
+    List<StaticRoute> routes =
+        ImmutableList.of(
+            new StaticRoute(Prefix.parse("1.1.1.1/32"), null, "Ethernet1", 1, 1),
+            new StaticRoute(Prefix.parse("2.2.2.2/32"), new Ip("9.9.9.8"), null, 1, 1),
+            new StaticRoute(Prefix.parse("3.3.3.3/32"), new Ip("9.9.9.9"), "Ethernet1", 1, 1),
+            new StaticRoute(Prefix.parse("4.4.4.4/32"), null, Interface.NULL_INTERFACE_NAME, 1, 1),
+
+            // These do not get activated due to missing/incorrect interface names
+            new StaticRoute(Prefix.parse("5.5.5.5/32"), null, "Eth1", 1, 1),
+            new StaticRoute(Prefix.parse("6.6.6.6/32"), null, null, 1, 1));
+    vr.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setStaticRoutes(ImmutableSortedSet.copyOf(routes));
+
+    // Test
+    vr.initStaticRibs();
+
+    assertThat(
+        vr._staticInterfaceRib.getRoutes(),
+        containsInAnyOrder(routes.get(0), routes.get(2), routes.get(3)));
+    assertThat(vr._staticNextHopRib.getRoutes(), containsInAnyOrder(routes.get(1)));
   }
 
   @Test
@@ -448,8 +493,8 @@ public class VirtualRouterTest {
     vr.initRibs();
 
     // Simple RIBs
-    assertThat(vr._connectedRib.getRoutes(), is(emptyIterableOf(ConnectedRoute.class)));
-    assertThat(vr._staticRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
+    assertThat(vr.getConnectedRib().getRoutes(), is(emptyIterableOf(ConnectedRoute.class)));
+    assertThat(vr._staticNextHopRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._staticInterfaceRib.getRoutes(), is(emptyIterableOf(StaticRoute.class)));
     assertThat(vr._independentRib.getRoutes(), is(emptyIterableOf(AbstractRoute.class)));
 
@@ -510,31 +555,32 @@ public class VirtualRouterTest {
             .collect(
                 ImmutableMap.toImmutableMap(
                     Entry::getKey,
-                    e -> e.getValue()._virtualRouters.get(Configuration.DEFAULT_VRF_NAME)));
+                    e -> e.getValue().getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME)));
     VirtualRouter testRouter = routers.get(testRouterName);
     VirtualRouter exportingRouter = routers.get(exportingRouterName);
     testRouter.initRibs();
     exportingRouter.initRibs();
-    addInterfaces(testRouter._c, exampleInterfaceAddresses);
+    addInterfaces(testRouter.getConfiguration(), exampleInterfaceAddresses);
     addInterfaces(
-        exportingRouter._c,
+        exportingRouter.getConfiguration(),
         ImmutableMap.of(exportingRouterInterfaceName, new InterfaceAddress("10.4.0.0/16")));
     int adminCost =
-        RoutingProtocol.OSPF.getDefaultAdministrativeCost(testRouter._c.getConfigurationFormat());
+        RoutingProtocol.OSPF.getDefaultAdministrativeCost(
+            testRouter.getConfiguration().getConfigurationFormat());
 
     Prefix prefix = Prefix.parse("7.7.7.0/24");
     OspfIntraAreaRoute route = new OspfIntraAreaRoute(prefix, new Ip("7.7.1.1"), adminCost, 20, 1);
     exportingRouter._ospfIntraAreaRib.mergeRoute(route);
 
     // Set interaces on router 1 to be OSPF passive
-    testRouter._c.getInterfaces().forEach((name, iface) -> iface.setActive(false));
+    testRouter.getConfiguration().getInterfaces().forEach((name, iface) -> iface.setActive(false));
 
     // Test 1
     testRouter.propagateOspfInternalRoutesFromNeighbor(
         testRouter._vrf.getOspfProcess(),
         nodes.get("R2"),
-        testRouter._c.getInterfaces().firstEntry().getValue(),
-        exportingRouter._c.getInterfaces().get(exportingRouterInterfaceName),
+        testRouter.getConfiguration().getInterfaces().firstEntry().getValue(),
+        exportingRouter.getConfiguration().getInterfaces().get(exportingRouterInterfaceName),
         adminCost);
 
     assertThat(
@@ -545,15 +591,18 @@ public class VirtualRouterTest {
         is(emptyIterableOf(OspfIntraAreaRoute.class)));
 
     // Flip interfaces on router 2 to be passive now
-    testRouter._c.getInterfaces().forEach((name, iface) -> iface.setActive(true));
-    exportingRouter._c.getInterfaces().forEach((name, iface) -> iface.setActive(false));
+    testRouter.getConfiguration().getInterfaces().forEach((name, iface) -> iface.setActive(true));
+    exportingRouter
+        .getConfiguration()
+        .getInterfaces()
+        .forEach((name, iface) -> iface.setActive(false));
 
     // Test 2
     testRouter.propagateOspfInternalRoutesFromNeighbor(
         testRouter._vrf.getOspfProcess(),
         nodes.get("R2"),
-        testRouter._c.getInterfaces().firstEntry().getValue(),
-        exportingRouter._c.getInterfaces().get(exportingRouterInterfaceName),
+        testRouter.getConfiguration().getInterfaces().firstEntry().getValue(),
+        exportingRouter.getConfiguration().getInterfaces().get(exportingRouterInterfaceName),
         adminCost);
 
     assertThat(
@@ -569,7 +618,7 @@ public class VirtualRouterTest {
   public void testRipInitialization() {
     // Incomplete Setup
     VirtualRouter vr = makeIosVirtualRouter(null);
-    addInterfaces(vr._c, exampleInterfaceAddresses);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
     vr.initRibs();
     vr.initBaseRipRoutes();
 
@@ -595,7 +644,7 @@ public class VirtualRouterTest {
                             address.getPrefix(),
                             null,
                             RoutingProtocol.RIP.getDefaultAdministrativeCost(
-                                vr._c.getConfigurationFormat()),
+                                vr.getConfiguration().getConfigurationFormat()),
                             RipProcess.DEFAULT_RIP_COST))
                 .collect(Collectors.toList())
                 .toArray(new RipInternalRoute[] {})));
@@ -637,9 +686,9 @@ public class VirtualRouterTest {
     vr._vrf.setStaticRoutes(routeSet);
 
     // Test
-    vr.initStaticRib();
+    vr.initStaticRibs();
 
-    assertThat(vr._staticRib.getRoutes(), equalTo(routeSet));
+    assertThat(vr._staticNextHopRib.getRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */
@@ -693,25 +742,31 @@ public class VirtualRouterTest {
   public void testInitQueuesAndDeltaBuilders() {
     Node n1 = TestUtils.makeIosRouter("r1");
     Node n2 = TestUtils.makeIosRouter("r2");
-    addInterfaces(n1._c, ImmutableMap.of("eth1", new InterfaceAddress("1.1.1.0/24")));
-    addInterfaces(n2._c, ImmutableMap.of("eth1", new InterfaceAddress("1.1.1.0/24")));
-    Topology topology = synthesizeTopology(ImmutableMap.of("r1", n1._c, "r2", n2._c));
+    addInterfaces(
+        n1.getConfiguration(), ImmutableMap.of("eth1", new InterfaceAddress("1.1.1.0/24")));
+    addInterfaces(
+        n2.getConfiguration(), ImmutableMap.of("eth1", new InterfaceAddress("1.1.1.0/24")));
+    Topology topology =
+        synthesizeTopology(
+            ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration()));
 
     Map<String, Configuration> configs =
         ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration());
     Network<BgpNeighbor, BgpSession> bgpTopology =
-        initBgpTopology(configs, computeIpOwners(configs, false), false);
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
 
     Map<String, Node> nodes = ImmutableMap.of("r1", n1, "r2", n2);
     Map<String, VirtualRouter> vrs =
         nodes
             .values()
             .stream()
-            .map(n -> n._virtualRouters.get(Configuration.DEFAULT_VRF_NAME))
-            .collect(ImmutableMap.toImmutableMap(vr -> vr._c.getHostname(), Function.identity()));
+            .map(n -> n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME))
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    vr -> vr.getConfiguration().getHostname(), Function.identity()));
 
     for (Node n : nodes.values()) {
-      n._virtualRouters
+      n.getVirtualRouters()
           .get(Configuration.DEFAULT_VRF_NAME)
           .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology);
     }
@@ -724,12 +779,18 @@ public class VirtualRouterTest {
             });
 
     // Set bgp
-    n1._c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).setBgpProcess(new BgpProcess());
-    n2._c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).setBgpProcess(new BgpProcess());
+    n1.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setBgpProcess(new BgpProcess());
+    n2.getConfiguration()
+        .getVrfs()
+        .get(Configuration.DEFAULT_VRF_NAME)
+        .setBgpProcess(new BgpProcess());
 
     // Re-run
     for (Node n : nodes.values()) {
-      n._virtualRouters
+      n.getVirtualRouters()
           .get(Configuration.DEFAULT_VRF_NAME)
           .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology);
     }
@@ -746,8 +807,7 @@ public class VirtualRouterTest {
   /** Test that the routes are exact route matches are removed from the RIB by default */
   @Test
   public void testImportRibExactRemoval() {
-    BgpMultipathRib rib =
-        new BgpMultipathRib(_testVirtualRouter, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+    BgpMultipathRib rib = new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
     BgpRoute r1 =
         new BgpRoute.Builder()
             .setNetwork(new Prefix(new Ip("1.1.1.1"), 32))
@@ -776,9 +836,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathAddWithReplacement() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -836,9 +896,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathAddNoReplacementNoBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -883,9 +943,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathRemovalNoReplacementNoBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -931,9 +991,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMultipathReplacementBestPathChange() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();
@@ -996,9 +1056,9 @@ public class VirtualRouterTest {
 
   @Test
   public void testMutipathBestPathWithdrawalMultipathAvail() {
-    BgpBestPathRib bestPathRib = new BgpBestPathRib(null, BgpTieBreaker.CLUSTER_LIST_LENGTH, null);
+    BgpBestPathRib bestPathRib = new BgpBestPathRib(BgpTieBreaker.CLUSTER_LIST_LENGTH, null, null);
     BgpMultipathRib multipathRib =
-        new BgpMultipathRib(null, MultipathEquivalentAsPathMatchMode.EXACT_PATH);
+        new BgpMultipathRib(MultipathEquivalentAsPathMatchMode.EXACT_PATH);
 
     RibDelta<BgpRoute> staging;
     BgpRoute.Builder routeBuilder = new BgpRoute.Builder();

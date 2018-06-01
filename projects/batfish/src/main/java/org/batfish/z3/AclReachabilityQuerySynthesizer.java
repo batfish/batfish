@@ -40,9 +40,4 @@ public final class AclReachabilityQuerySynthesizer extends SatQuerySynthesizer<A
     }
     return builder.setInput(input).setQueries(queries.build()).setRules(rules.build()).build();
   }
-
-  @Override
-  public ReachabilityProgram synthesizeBaseProgram(Synthesizer synthesizer) {
-    return synthesizer.synthesizeNodAclProgram(_hostname, _aclName);
-  }
 }

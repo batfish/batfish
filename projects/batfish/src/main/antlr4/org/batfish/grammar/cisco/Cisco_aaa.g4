@@ -18,6 +18,7 @@ aaa_accounting
       | aaa_accounting_delay_start
       | aaa_accounting_exec_line
       | aaa_accounting_exec_stanza
+      | aaa_accounting_identity
       | aaa_accounting_nested
       | aaa_accounting_network_line
       | aaa_accounting_network_stanza
@@ -130,6 +131,15 @@ aaa_accounting_exec_stanza
          | GROUP
       ) null_rest_of_line
    )+
+;
+
+aaa_accounting_identity
+:
+   IDENTITY
+   (
+      DEFAULT
+      | list = variable
+   ) aaa_accounting_method NEWLINE
 ;
 
 aaa_accounting_method
@@ -275,23 +285,20 @@ aaa_authentication
 :
    AUTHENTICATION
    (
-      aaa_authentication_banner
+      aaa_authentication_asa
+      | aaa_authentication_banner
       | aaa_authentication_captive_portal
       | aaa_authentication_dot1x
       | aaa_authentication_enable
-      | aaa_authentication_http
       | aaa_authentication_include
       | aaa_authentication_login
       | aaa_authentication_mac
       | aaa_authentication_mgmt
       | aaa_authentication_policy
       | aaa_authentication_ppp
-      | aaa_authentication_serial
-      | aaa_authentication_ssh
       | aaa_authentication_stateful_dot1x
       | aaa_authentication_stateful_kerberos
       | aaa_authentication_stateful_ntlm
-      | aaa_authentication_telnet
       | aaa_authentication_username_prompt
       | aaa_authentication_vpn
       | aaa_authentication_wired
@@ -299,9 +306,26 @@ aaa_authentication
    )
 ;
 
+aaa_authentication_asa
+:
+   (
+      linetype=HTTP
+      | linetype=SERIAL
+      | linetype=SSH
+      | linetype=TELNET
+   ) aaa_authentication_asa_console
+;
+
 aaa_authentication_asa_console
 :
-   CONSOLE group = variable? TACACS_PLUS_ASA? LOCAL_ASA? NEWLINE
+   CONSOLE
+   (
+      LOCAL_ASA
+      |
+      (
+         group = variable LOCAL_ASA?
+      )
+   ) NEWLINE
 ;
 
 aaa_authentication_banner
@@ -378,11 +402,6 @@ aaa_authentication_enable
       ) NEWLINE
       | aaa_authentication_asa_console
    )
-;
-
-aaa_authentication_http
-:
-   HTTP aaa_authentication_asa_console
 ;
 
 aaa_authentication_include
@@ -580,11 +599,6 @@ aaa_authentication_ppp
    ) aaa_authentication_list_method+ NEWLINE
 ;
 
-aaa_authentication_serial
-:
-   SERIAL aaa_authentication_asa_console
-;
-
 aaa_authentication_server
 :
    AUTHENTICATION_SERVER
@@ -627,11 +641,6 @@ aaa_authentication_server_tacacs_null
    ) null_rest_of_line
 ;
 
-aaa_authentication_ssh
-:
-   SSH aaa_authentication_asa_console
-;
-
 aaa_authentication_stateful_dot1x
 :
    STATEFUL_DOT1X NEWLINE
@@ -645,11 +654,6 @@ aaa_authentication_stateful_kerberos
 aaa_authentication_stateful_ntlm
 :
    STATEFUL_NTLM double_quoted_string NEWLINE
-;
-
-aaa_authentication_telnet
-:
-   TELNET aaa_authentication_asa_console
 ;
 
 aaa_authentication_username_prompt
@@ -676,7 +680,8 @@ aaa_authorization
 :
    AUTHORIZATION
    (
-      aaa_authorization_commands
+      aaa_authorization_auth_proxy
+      | aaa_authorization_commands
       | aaa_authorization_config_commands
       | aaa_authorization_console
       | aaa_authorization_exec
@@ -686,6 +691,15 @@ aaa_authorization
       | aaa_authorization_ssh_certificate
       | aaa_authorization_ssh_publickey
    )
+;
+
+aaa_authorization_auth_proxy
+:
+   AUTH_PROXY
+   (
+      DEFAULT
+      | list = variable
+   ) aaa_authorization_method
 ;
 
 aaa_authorization_commands
@@ -852,7 +866,7 @@ aaa_group_server
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-      | name = variable
+      | NAME? name = variable
    )
    (
       (
@@ -959,6 +973,54 @@ aaa_rfc_3576_server
    RFC_3576_SERVER double_quoted_string NEWLINE
 ;
 
+aaa_server
+:
+   SERVER RADIUS DYNAMIC_AUTHOR NEWLINE
+   (
+      aaa_server_auth_type
+      | aaa_server_client
+      | aaa_server_ignore
+      | aaa_server_port
+   )*
+;
+
+aaa_server_auth_type
+:
+   AUTH_TYPE
+   (
+      ANY
+      | ALL
+      | SESSION_KEY
+   ) NEWLINE
+;
+
+aaa_server_client
+:
+   CLIENT
+   (
+      IP_ADDRESS
+      | name = variable
+   )
+   SERVER_KEY
+   DEC?
+   variable
+   NEWLINE
+;
+
+aaa_server_ignore
+:
+   IGNORE
+   (
+      SERVER_KEY
+      | SESSION_KEY
+   ) NEWLINE
+;
+
+aaa_server_port
+:
+   PORT port_num = DEC NEWLINE
+;
+
 aaa_server_group
 :
    SERVER_GROUP double_quoted_string NEWLINE
@@ -1056,6 +1118,7 @@ s_aaa
       | aaa_password_policy
       | aaa_profile
       | aaa_rfc_3576_server
+      | aaa_server
       | aaa_server_group
       | aaa_session_id
       | aaa_user

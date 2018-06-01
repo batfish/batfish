@@ -14,8 +14,6 @@ import com.microsoft.z3.Context;
 import java.io.IOException;
 import java.util.Map;
 import java.util.SortedMap;
-import java.util.SortedSet;
-import org.batfish.common.Pair;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -34,10 +32,11 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
-import org.batfish.z3.state.OriginateVrf;
+import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -56,8 +55,10 @@ public class NodJobChunkingTest {
   private Vrf _srcVrf1;
   private Vrf _srcVrf2;
   private Synthesizer _synthesizer;
-  private OriginateVrf _originateVrf1;
-  private OriginateVrf _originateVrf2;
+  private IngressLocation _ingressLocation1;
+  private IngressLocation _ingressLocation2;
+  private IngressLocation _ingressLocation3;
+  private String _ifaceName;
 
   @Before
   public void setup() throws IOException {
@@ -89,18 +90,23 @@ public class NodJobChunkingTest {
     _srcNode2 = cb.build();
     _srcVrf1 = vb.setOwner(_srcNode1).build();
     _srcVrf2 = vb.setOwner(_srcNode2).build();
-    _originateVrf1 = new OriginateVrf(_srcNode1.getHostname(), _srcVrf1.getName());
-    _originateVrf2 = new OriginateVrf(_srcNode2.getHostname(), _srcVrf2.getName());
+    _ingressLocation1 = IngressLocation.vrf(_srcNode1.getHostname(), _srcVrf1.getName());
+    _ingressLocation2 = IngressLocation.vrf(_srcNode2.getHostname(), _srcVrf2.getName());
     _dstNode = cb.build();
     Vrf dstVrf = vb.setOwner(_dstNode).build();
 
     Prefix p1 = Prefix.parse("1.0.0.0/31");
-    ib.setOwner(_srcNode1)
-        .setVrf(_srcVrf1)
-        .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
-        // require traffic srcNode1 -> dstNode to have srcIp == p1.getStartIp
-        .setOutgoingFilter(mkOutgoingFilter(_srcNode1, p1.getStartIp()))
-        .build();
+    Interface iface =
+        ib.setOwner(_srcNode1)
+            .setVrf(_srcVrf1)
+            .setAddress(new InterfaceAddress(p1.getStartIp(), p1.getPrefixLength()))
+            // require traffic srcNode1 -> dstNode to have srcIp == p1.getStartIp
+            .setOutgoingFilter(mkOutgoingFilter(_srcNode1, p1.getStartIp()))
+            .build();
+
+    _ifaceName = iface.getName();
+    _ingressLocation3 = IngressLocation.interfaceLink(_srcNode1.getHostname(), _ifaceName);
+
     ib.setOwner(_dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(p1.getEndIp(), p1.getPrefixLength()))
@@ -142,9 +148,6 @@ public class NodJobChunkingTest {
     TemporaryFolder tmp = new TemporaryFolder();
     tmp.create();
     Batfish batfish = BatfishTestUtils.getBatfish(_configs, tmp);
-    BdpDataPlanePlugin bdpDataPlanePlugin = new BdpDataPlanePlugin();
-    bdpDataPlanePlugin.initialize(batfish);
-    batfish.registerDataPlanePlugin(bdpDataPlanePlugin, "bdp");
     batfish.computeDataPlane(false);
     _dataPlane = batfish.loadDataPlane();
   }
@@ -161,28 +164,32 @@ public class NodJobChunkingTest {
                     _dataPlane.getFibs(),
                     new Topology(_dataPlane.getTopologyEdges())),
                 new HeaderSpace(),
+                IpSpaceAssignment.empty(),
+                ImmutableSortedSet.of(),
+                ImmutableSortedSet.of(),
                 true,
                 false));
   }
 
   private NodJob getNodJob() {
+    Map<IngressLocation, BooleanExpr> srcIpConstraints =
+        ImmutableMap.of(
+            IngressLocation.interfaceLink(_srcNode1.getHostname(), _ifaceName),
+            TrueExpr.INSTANCE,
+            IngressLocation.vrf(_srcNode1.getHostname(), _srcVrf1.getName()),
+            TrueExpr.INSTANCE,
+            IngressLocation.vrf(_srcNode2.getHostname(), _srcVrf2.getName()),
+            TrueExpr.INSTANCE);
     StandardReachabilityQuerySynthesizer querySynthesizer =
         StandardReachabilityQuerySynthesizer.builder()
             .setActions(ImmutableSet.of(ForwardingAction.ACCEPT))
             .setHeaderSpace(new HeaderSpace())
+            .setSrcIpConstraints(srcIpConstraints)
             .setFinalNodes(ImmutableSet.of(_dstNode.getHostname()))
-            .setIngressNodeVrfs(
-                ImmutableMap.of(
-                    _srcNode1.getHostname(), ImmutableSet.of(_srcVrf1.getName()),
-                    _srcNode2.getHostname(), ImmutableSet.of(_srcVrf2.getName())))
-            .setTransitNodes(ImmutableSet.of())
-            .setNonTransitNodes(ImmutableSet.of())
             .build();
-    SortedSet<Pair<String, String>> ingressNodes =
-        ImmutableSortedSet.of(
-            new Pair<>(_srcNode1.getHostname(), _srcVrf1.getName()),
-            new Pair<>(_srcNode2.getHostname(), _srcVrf2.getName()));
-    return new NodJob(new Settings(), _synthesizer, querySynthesizer, ingressNodes, "tag", true);
+
+    return new NodJob(
+        new Settings(), _synthesizer, querySynthesizer, srcIpConstraints, "tag", true);
   }
 
   @Test
@@ -192,21 +199,27 @@ public class NodJobChunkingTest {
     Context z3Context = new Context();
     SmtInput smtInput = nodJob.computeSmtInput(System.currentTimeMillis(), z3Context);
 
-    Map<OriginateVrf, Map<String, Long>> fieldConstraintsByOriginateVrf =
-        nodJob.getOriginateVrfConstraints(z3Context, smtInput);
-    assertThat(fieldConstraintsByOriginateVrf.entrySet(), hasSize(2));
-    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf1));
-    assertThat(fieldConstraintsByOriginateVrf, hasKey(_originateVrf2));
-    Map<String, Long> fieldConstraints1 = fieldConstraintsByOriginateVrf.get(_originateVrf1);
-    Map<String, Long> fieldConstraints2 = fieldConstraintsByOriginateVrf.get(_originateVrf2);
+    Map<IngressLocation, Map<String, Long>> fieldConstraintsByIngressPoint =
+        nodJob.getSolutionPerIngressLocation(z3Context, smtInput);
+    assertThat(fieldConstraintsByIngressPoint.entrySet(), hasSize(3));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation1));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation2));
+    assertThat(fieldConstraintsByIngressPoint, hasKey(_ingressLocation3));
+    Map<String, Long> fieldConstraints1 = fieldConstraintsByIngressPoint.get(_ingressLocation1);
+    Map<String, Long> fieldConstraints2 = fieldConstraintsByIngressPoint.get(_ingressLocation2);
+    Map<String, Long> fieldConstraints3 = fieldConstraintsByIngressPoint.get(_ingressLocation3);
 
     assertThat(
         fieldConstraints1,
-        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(1)));
     assertThat(fieldConstraints1, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
     assertThat(
         fieldConstraints2,
-        hasEntry(OriginateVrfInstrumentation.ORIGINATE_VRF_FIELD_NAME, new Long(1)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(2)));
     assertThat(fieldConstraints2, hasEntry(Field.SRC_IP.getName(), new Ip("2.0.0.0").asLong()));
+    assertThat(
+        fieldConstraints3,
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
+    assertThat(fieldConstraints3, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.0").asLong()));
   }
 }

@@ -142,7 +142,7 @@ public class BatfishTest {
                 .build(),
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     assertThat(ipOwners.get(vrrpAddress), equalTo(Collections.singleton("r2")));
   }
 
@@ -365,7 +365,7 @@ public class BatfishTest {
         configs.get("host1").getInterfaces().get("Vlan65").getVrrpGroups().keySet(), hasSize(1));
 
     // Tests that computing IP owners with such a bad interface does not crash.
-    CommonUtil.computeIpOwners(configs, false);
+    CommonUtil.computeIpNodeOwners(configs, false);
   }
 
   @Test

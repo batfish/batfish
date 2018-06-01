@@ -243,6 +243,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     rb.setNetwork(getNetwork());
     Ip nextHopIp = getNextHopIp();
     if (getProtocol() == RoutingProtocol.CONNECTED
+        || getProtocol() == RoutingProtocol.LOCAL
         || (getProtocol() == RoutingProtocol.STATIC
             && nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP))
         || Interface.NULL_INTERFACE_NAME.equals(getNextHopInterface())) {

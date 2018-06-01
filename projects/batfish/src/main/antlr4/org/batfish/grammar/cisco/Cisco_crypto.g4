@@ -243,7 +243,7 @@ cip_profile
 
 cip_transform_set
 :
-   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication NEWLINE
+   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication? NEWLINE
    (
       cipt_mode
    )*
@@ -269,16 +269,23 @@ cipprf_set
 :
    SET
    (
-      cipprf_set_null
+      cipprf_set_isakmp_profile
+      | cipprf_set_null
       | cipprf_set_pfs
       | cipprf_set_transform_set
    )
+;
+
+cipprf_set_isakmp_profile
+:
+    ISAKMP_PROFILE name = variable NEWLINE
 ;
 
 cipprf_set_null
 :
    (
       IKEV2_PROFILE
+      | SECURITY_ASSOCIATION
    ) null_rest_of_line
 ;
 
@@ -317,7 +324,7 @@ cis_null
 
 cis_policy
 :
-   POLICY name = variable NEWLINE
+   POLICY priority = DEC NEWLINE
    (
       cispol_authentication
       | cispol_encr        //cisco
@@ -406,7 +413,8 @@ cisprf_null
 :
    NO?
    (
-      REVERSE_ROUTE
+      KEEPALIVE
+      | REVERSE_ROUTE
       | VRF
    ) null_rest_of_line
 ;
@@ -531,6 +539,23 @@ crypto_ca
    )
 ;
 
+crypto_csr_params
+:
+   CSR_PARAMS name = variable_permissive NEWLINE
+   (
+      (
+         COMMON_NAME
+         | COUNTRY
+         | EMAIL
+         | LOCALITY
+         | ORGANIZATION_NAME
+         | ORGANIZATION_UNIT
+         | SERIAL_NUMBER
+         | STATE
+      ) null_rest_of_line
+   )*
+;
+
 crypto_dynamic_map
 :
    DYNAMIC_MAP name = variable num = DEC
@@ -632,8 +657,36 @@ crypto_map_ii_null
    (
       DESCRIPTION
       | REVERSE_ROUTE
-      | SET
    ) null_rest_of_line
+;
+
+crypto_map_ii_set
+:
+    SET
+    (
+       crypto_map_ii_set_isakmp_profile
+       | crypto_map_ii_set_null
+       | crypto_map_ii_set_transform_set
+    )
+;
+
+crypto_map_ii_set_isakmp_profile
+:
+    ISAKMP_PROFILE name = variable NEWLINE
+;
+
+crypto_map_ii_set_null
+:
+    (
+        PEER
+        | PFS
+        | SECURITY_ASSOCIATION
+    ) null_rest_of_line
+;
+
+crypto_map_ii_set_transform_set
+:
+    TRANSFORM_SET name = variable NEWLINE
 ;
 
 crypto_map_ipsec_isakmp
@@ -642,6 +695,7 @@ crypto_map_ipsec_isakmp
    (
       crypto_map_ii_match_address
       | crypto_map_ii_null
+      | crypto_map_ii_set
    )*
 ;
 
@@ -736,6 +790,7 @@ s_crypto
    NO? CRYPTO
    (
       crypto_ca
+      | crypto_csr_params
       | crypto_dynamic_map
       | crypto_engine
       | crypto_ikev1

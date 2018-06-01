@@ -6,10 +6,9 @@ import com.microsoft.z3.Context;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.SortedSet;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Pair;
 import org.batfish.config.Settings;
+import org.batfish.z3.expr.BooleanExpr;
 
 public class CompositeNodJob extends AbstractNodJob {
 
@@ -23,9 +22,9 @@ public class CompositeNodJob extends AbstractNodJob {
       Settings settings,
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
-      SortedSet<Pair<String, String>> nodeVrfSet,
+      Map<IngressLocation, BooleanExpr> srcIpConstraints,
       String tag) {
-    super(settings, nodeVrfSet, tag);
+    super(settings, srcIpConstraints, tag);
     _numPrograms = dataPlaneSynthesizer.size();
     if (_numPrograms != querySynthesizer.size()) {
       throw new BatfishException("mismatch between number of programs and number of queries");
@@ -42,7 +41,7 @@ public class CompositeNodJob extends AbstractNodJob {
       Synthesizer dataPlaneSynthesizer = _dataPlaneSynthesizers.get(i);
       QuerySynthesizer querySynthesizer = _querySynthesizers.get(i);
       ReachabilityProgram baseProgram =
-          instrumentReachabilityProgram(dataPlaneSynthesizer.synthesizeNodDataPlaneProgram());
+          instrumentReachabilityProgram(dataPlaneSynthesizer.synthesizeNodProgram());
       ReachabilityProgram queryProgram =
           instrumentReachabilityProgram(
               querySynthesizer.getReachabilityProgram(dataPlaneSynthesizer.getInput()));

@@ -1,6 +1,6 @@
 parser grammar Cisco_bgp;
 
-import Cisco_common;
+import Cisco_bgp_nxos, Cisco_common;
 
 options {
    tokenVocab = CiscoLexer;
@@ -170,9 +170,19 @@ bgp_listen_range_rb_stanza
    )? NEWLINE
 ;
 
+bgp_maxas_limit_rb_stanza
+:
+   BGP MAXAS_LIMIT limit = DEC NEWLINE
+;
+
 bgp_redistribute_internal_rb_stanza
 :
    BGP REDISTRIBUTE_INTERNAL NEWLINE
+;
+
+bgp_scan_time_rb_stanza
+:
+   BGP SCAN_TIME secs = DEC NEWLINE
 ;
 
 bgp_tail
@@ -213,6 +223,7 @@ bgp_tail
    | send_community_bgp_tail
    | shutdown_bgp_tail
    | subnet_bgp_tail
+   | unsuppress_map_bgp_tail
    | update_source_bgp_tail
    | weight_bgp_tail
 ;
@@ -594,7 +605,6 @@ null_bgp_tail
             | NEXTHOP
             | NON_DETERMINISTIC_MED
             | REDISTRIBUTE_INTERNAL
-            | SCAN_TIME
          )
       )
       | CAPABILITY
@@ -852,7 +862,10 @@ router_bgp_stanza
    ROUTER BGP
    (
       procnum = DEC
-   )? NEWLINE router_bgp_stanza_tail+
+   )? NEWLINE (
+      {!_nxos}? router_bgp_stanza_tail
+      | {_nxos}? router_bgp_nxos_toplevel
+   )*
 ;
 
 router_bgp_stanza_tail
@@ -867,7 +880,9 @@ router_bgp_stanza_tail
    | bgp_advertise_inactive_rb_stanza
    | bgp_confederation_rb_stanza
    | bgp_listen_range_rb_stanza
+   | bgp_maxas_limit_rb_stanza
    | bgp_redistribute_internal_rb_stanza
+   | bgp_scan_time_rb_stanza
    | bgp_tail
    | cluster_id_rb_stanza
    | compare_routerid_rb_stanza
@@ -1015,6 +1030,11 @@ template_peer_session_rb_stanza
    (
       EXIT_PEER_SESSION NEWLINE
    )?
+;
+
+unsuppress_map_bgp_tail
+:
+    UNSUPPRESS_MAP mapname = variable_permissive NEWLINE
 ;
 
 update_source_bgp_tail

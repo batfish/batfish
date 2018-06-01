@@ -83,28 +83,19 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "0.0.0.0/0"
+                        "192.168.1.3"
                       ]
                     },
-                    "negate" : false
-                  }
-                }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
                     "negate" : false,
                     "tcpFlags" : [
                       {
-                        "ack" : false,
+                        "ack" : true,
                         "cwr" : false,
                         "ece" : false,
                         "fin" : false,
                         "psh" : false,
                         "rst" : false,
-                        "syn" : true,
+                        "syn" : false,
                         "urg" : false,
                         "useAck" : true,
                         "useCwr" : false,
@@ -112,7 +103,7 @@
                         "useFin" : false,
                         "usePsh" : false,
                         "useRst" : false,
-                        "useSyn" : true,
+                        "useSyn" : false,
                         "useUrg" : false
                       }
                     ]
@@ -127,7 +118,7 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "192.168.1.3"
+                        "0.0.0.0/0"
                       ]
                     },
                     "negate" : false
@@ -148,27 +139,18 @@
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "192.168.1.3"
+                        "0.0.0.0/0"
                       ]
-                    }
-                  }
-                }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
+                    },
                     "tcpFlags" : [
                       {
-                        "ack" : false,
+                        "ack" : true,
                         "cwr" : false,
                         "ece" : false,
                         "fin" : false,
                         "psh" : false,
                         "rst" : false,
-                        "syn" : true,
+                        "syn" : false,
                         "urg" : false,
                         "useAck" : true,
                         "useCwr" : false,
@@ -176,7 +158,7 @@
                         "useFin" : false,
                         "usePsh" : false,
                         "useRst" : false,
-                        "useSyn" : true,
+                        "useSyn" : false,
                         "useUrg" : false
                       }
                     ]
@@ -192,7 +174,7 @@
                     "srcIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "0.0.0.0/0"
+                        "192.168.1.3"
                       ]
                     }
                   }
@@ -1059,19 +1041,14 @@
             "ipsecPolicy" : "ipsec-vpn-ba2e34a8-1"
           }
         },
-        "route6FilterLists" : {
-          "~BGP_NETWORK6_NETWORKS_FILTER:default~" : {
-            "name" : "~BGP_NETWORK6_NETWORKS_FILTER:default~"
-          }
-        },
         "routeFilterLists" : {
           "MATCH_ALL_BGP" : {
             "name" : "MATCH_ALL_BGP",
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           },
@@ -1080,13 +1057,13 @@
             "lines" : [
               {
                 "action" : "REJECT",
-                "lengthRange" : "28-32",
-                "prefix" : "10.10.255.0/28"
+                "ipWildcard" : "10.10.255.0/28",
+                "lengthRange" : "28-32"
               },
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "0-32",
-                "prefix" : "0.0.0.0/0"
+                "ipWildcard" : "0.0.0.0/0",
+                "lengthRange" : "0-32"
               }
             ]
           }
@@ -3410,28 +3387,29 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "0.0.0.0/0"
+                        "10.193.0.0/16",
+                        "67.170.86.87",
+                        "104.236.156.171",
+                        "107.170.243.58",
+                        "162.243.144.192"
                       ]
                     },
-                    "negate" : false
-                  }
-                }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
+                    "ipProtocols" : [
+                      "TCP"
+                    ],
                     "negate" : false,
+                    "srcPorts" : [
+                      "3306-3306"
+                    ],
                     "tcpFlags" : [
                       {
-                        "ack" : false,
+                        "ack" : true,
                         "cwr" : false,
                         "ece" : false,
                         "fin" : false,
                         "psh" : false,
                         "rst" : false,
-                        "syn" : true,
+                        "syn" : false,
                         "urg" : false,
                         "useAck" : true,
                         "useCwr" : false,
@@ -3439,7 +3417,7 @@
                         "useFin" : false,
                         "usePsh" : false,
                         "useRst" : false,
-                        "useSyn" : true,
+                        "useSyn" : false,
                         "useUrg" : false
                       }
                     ]
@@ -3454,20 +3432,10 @@
                     "dstIps" : {
                       "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
                       "whitelist" : [
-                        "10.193.0.0/16",
-                        "67.170.86.87",
-                        "104.236.156.171",
-                        "107.170.243.58",
-                        "162.243.144.192"
+                        "0.0.0.0/0"
                       ]
                     },
-                    "ipProtocols" : [
-                      "TCP"
-                    ],
-                    "negate" : false,
-                    "srcPorts" : [
-                      "3306-3306"
-                    ]
+                    "negate" : false
                   }
                 }
               }
@@ -3476,6 +3444,41 @@
           "~SECURITY_GROUP_INGRESS_ACL~" : {
             "name" : "~SECURITY_GROUP_INGRESS_ACL~",
             "lines" : [
+              {
+                "action" : "ACCEPT",
+                "matchCondition" : {
+                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                  "headerSpace" : {
+                    "negate" : false,
+                    "srcIps" : {
+                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
+                      "whitelist" : [
+                        "0.0.0.0/0"
+                      ]
+                    },
+                    "tcpFlags" : [
+                      {
+                        "ack" : true,
+                        "cwr" : false,
+                        "ece" : false,
+                        "fin" : false,
+                        "psh" : false,
+                        "rst" : false,
+                        "syn" : false,
+                        "urg" : false,
+                        "useAck" : true,
+                        "useCwr" : false,
+                        "useEce" : false,
+                        "useFin" : false,
+                        "usePsh" : false,
+                        "useRst" : false,
+                        "useSyn" : false,
+                        "useUrg" : false
+                      }
+                    ]
+                  }
+                }
+              },
               {
                 "action" : "ACCEPT",
                 "matchCondition" : {
@@ -3496,50 +3499,6 @@
                         "104.236.156.171",
                         "107.170.243.58",
                         "162.243.144.192"
-                      ]
-                    }
-                  }
-                }
-              },
-              {
-                "action" : "REJECT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "tcpFlags" : [
-                      {
-                        "ack" : false,
-                        "cwr" : false,
-                        "ece" : false,
-                        "fin" : false,
-                        "psh" : false,
-                        "rst" : false,
-                        "syn" : true,
-                        "urg" : false,
-                        "useAck" : true,
-                        "useCwr" : false,
-                        "useEce" : false,
-                        "useFin" : false,
-                        "usePsh" : false,
-                        "useRst" : false,
-                        "useSyn" : true,
-                        "useUrg" : false
-                      }
-                    ]
-                  }
-                }
-              },
-              {
-                "action" : "ACCEPT",
-                "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                  "headerSpace" : {
-                    "negate" : false,
-                    "srcIps" : {
-                      "class" : "org.batfish.datamodel.IpWildcardSetIpSpace",
-                      "whitelist" : [
-                        "0.0.0.0/0"
                       ]
                     }
                   }
@@ -3826,8 +3785,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "10.100.0.0/16"
+                "ipWildcard" : "10.100.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           },
@@ -3836,8 +3795,8 @@
             "lines" : [
               {
                 "action" : "ACCEPT",
-                "lengthRange" : "16-16",
-                "prefix" : "10.100.0.0/16"
+                "ipWildcard" : "10.100.0.0/16",
+                "lengthRange" : "16-16"
               }
             ]
           }

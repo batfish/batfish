@@ -42,7 +42,7 @@ public class LiteralAsList extends AsPathListExpr {
   }
 
   @Override
-  public List<Integer> evaluate(Environment environment) {
+  public List<Long> evaluate(Environment environment) {
     return _list
         .stream()
         .map(expr -> expr.evaluate(environment))

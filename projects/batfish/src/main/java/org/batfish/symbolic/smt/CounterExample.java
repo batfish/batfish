@@ -177,10 +177,10 @@ class CounterExample {
           Ip dstIp = n.getLocalIp();
 
           // Recover AS path
-          List<SortedSet<Integer>> asSets = new ArrayList<>();
+          List<SortedSet<Long>> asSets = new ArrayList<>();
           for (int i = 0; i < pathLength; i++) {
-            SortedSet<Integer> asSet = new TreeSet<>();
-            asSet.add(-1);
+            SortedSet<Long> asSet = new TreeSet<>();
+            asSet.add(-1L);
             asSets.add(asSet);
           }
           AsPath path = new AsPath(asSets);

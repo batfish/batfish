@@ -8,8 +8,10 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.question.SrcNattedConstraint;
 import org.batfish.z3.expr.AndExpr;
 import org.batfish.z3.expr.BasicRuleStatement;
+import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
@@ -28,7 +30,11 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
     @Override
     public MultipathInconsistencyQuerySynthesizer build() {
       return new MultipathInconsistencyQuerySynthesizer(
-          _headerSpace, _ingressNodeVrfs, _srcNatted, _transitNodes, _nonTransitNodes);
+          _headerSpace,
+          _srcIpConstraints,
+          _srcNatted,
+          _requiredTransitNodes,
+          _forbiddenTransitNodes);
     }
 
     @Override
@@ -53,11 +59,11 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
 
   private MultipathInconsistencyQuerySynthesizer(
       @Nonnull HeaderSpace headerSpace,
-      @Nonnull Map<String, Set<String>> ingressNodeVrfs,
-      Boolean srcNatted,
+      @Nonnull Map<IngressLocation, BooleanExpr> ingressLocations,
+      @Nonnull SrcNattedConstraint srcNatted,
       @Nonnull Set<String> transitNodes,
       @Nonnull Set<String> nonTransitNodes) {
-    super(headerSpace, ingressNodeVrfs, srcNatted, transitNodes, nonTransitNodes);
+    super(headerSpace, ingressLocations, srcNatted, transitNodes, nonTransitNodes);
   }
 
   @Override

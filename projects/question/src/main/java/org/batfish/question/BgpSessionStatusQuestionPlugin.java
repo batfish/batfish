@@ -41,7 +41,8 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
   public enum SessionType {
     IBGP,
     EBGP_SINGLEHOP,
-    EBGP_MULTIHOP
+    EBGP_MULTIHOP,
+    UNKNOWN
   }
 
   public enum SessionStatus {
@@ -237,15 +238,22 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
           continue;
         }
 
-        // Setup session info
-        boolean ebgp = !bgpNeighbor.getRemoteAs().equals(bgpNeighbor.getLocalAs());
         boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
         Prefix remotePrefix = bgpNeighbor.getPrefix();
         BgpSessionInfo bgpSessionInfo = new BgpSessionInfo(hostname, vrfName, remotePrefix);
-        bgpSessionInfo._sessionType =
-            ebgp
-                ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
-                : SessionType.IBGP;
+        // Setup session info
+        // TODO(https://github.com/batfish/batfish/issues/1331): Handle list of remote ASes. Until
+        // then, we can't assume remote AS will always be a single integer that is present and
+        // non-null.
+        bgpSessionInfo._sessionType = SessionType.UNKNOWN;
+        Long remoteAs = bgpNeighbor.getRemoteAs();
+        if (remoteAs != null && !remoteAs.equals(bgpNeighbor.getLocalAs())) {
+          bgpSessionInfo._sessionType =
+              ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
+        } else if (remoteAs != null) {
+          bgpSessionInfo._sessionType = SessionType.IBGP;
+        }
+
         // Skip session types we don't care about
         if (!question.matchesType(bgpSessionInfo._sessionType)) {
           continue;
@@ -266,18 +274,18 @@ public class BgpSessionStatusQuestionPlugin extends QuestionPlugin {
           } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
             bgpSessionInfo._status = SessionStatus.UNKNOWN_REMOTE_IP;
           } else {
-            if (node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
-              if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
-                bgpSessionInfo._status = SessionStatus.HALF_OPEN;
-                // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
-              } else if (bgpTopology.degree(bgpNeighbor) > 2) {
-                bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
-              } else {
-                BgpNeighbor remoteNeighbor =
-                    bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
-                bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
-                bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
-              }
+            if (!node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
+              continue;
+            }
+            if (bgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
+              bgpSessionInfo._status = SessionStatus.HALF_OPEN;
+              // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
+            } else if (bgpTopology.degree(bgpNeighbor) > 2) {
+              bgpSessionInfo._status = SessionStatus.MULTIPLE_REMOTES;
+            } else {
+              BgpNeighbor remoteNeighbor = bgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
+              bgpSessionInfo._remoteNode = remoteNeighbor.getOwner().getHostname();
+              bgpSessionInfo._status = SessionStatus.UNIQUE_MATCH;
             }
           }
         }

@@ -1,0 +1,17 @@
+#
+set system host-name firewall-filters
+#
+set firewall filter FILTER1 term TERM from source-address 1.2.3.6
+set firewall filter FILTER1 term TERM then accept
+set firewall filter FILTER2 term TERM from source-address 1.2.3.6
+set firewall filter FILTER2 term TERM from source-address 1.2.3.5
+set firewall filter FILTER2 term TERM then accept
+set firewall filter FILTER_UNUSED term TERM from source-address 1.2.3.6
+set firewall filter FILTER_UNUSED term TERM then accept
+set interfaces IF1 unit 0 family inet address 1.2.3.4/24
+set interfaces IF1 unit 0 family inet filter input FILTER1
+set interfaces IF2 unit 0 family inet address 2.2.3.4/24
+set interfaces IF2 unit 0 family inet filter input FILTER2
+set interfaces IF2 unit 0 family inet filter output FILTER2
+set interfaces IF3 unit 0 family inet address 3.2.3.4/24
+set interfaces IF3 unit 0 family inet filter output FILTER_UNDEF

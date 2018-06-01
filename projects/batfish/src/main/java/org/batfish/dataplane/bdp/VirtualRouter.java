@@ -1,7 +1,8 @@
 package org.batfish.dataplane.bdp;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
 import com.google.common.graph.Network;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -32,6 +33,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
@@ -94,6 +96,8 @@ public class VirtualRouter extends ComparableStructure<String> {
    * iterations (hence, independent).
    */
   transient Rib _independentRib;
+
+  transient LocalRib _localRib;
 
   /** The finalized RIB, a combination different protocol RIBs */
   Rib _mainRib;
@@ -167,8 +171,10 @@ public class VirtualRouter extends ComparableStructure<String> {
    */
   void initRibsForBdp(Map<Ip, Set<String>> ipOwners, Set<BgpAdvertisement> externalAdverts) {
     initConnectedRib();
+    initLocalRib();
     initStaticRib();
     importRib(_independentRib, _connectedRib);
+    importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticInterfaceRib);
     importRib(_mainRib, _independentRib);
     initIntraAreaOspfRoutes();
@@ -302,7 +308,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     // Determine whether to use min metric by default, based on RFC1583 compatibility setting.
     // Routers (at least Cisco and Juniper) default to min metric unless using RFC2328 with
     // RFC1583 compatibility explicitly disabled, in which case they default to max.
-    boolean useMin = MoreObjects.firstNonNull(proc.getRfc1583Compatible(), true);
+    boolean useMin = firstNonNull(proc.getRfc1583Compatible(), true);
 
     // Compute summaries for each area
     for (Entry<Long, OspfArea> e : proc.getAreas().entrySet()) {
@@ -727,6 +733,26 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
+  /**
+   * Initialize the local RIB -- a RIB containing non-forwarding /32 routes for exact addresses of
+   * interfaces
+   */
+  @VisibleForTesting
+  void initLocalRib() {
+    // Look at all connected interfaces
+    for (Interface i : _vrf.getInterfaces().values()) {
+      if (i.getActive()) { // Make sure the interface is active
+        // Create a route for each interface prefix
+        for (InterfaceAddress ifaceAddress : i.getAllAddresses()) {
+          if (ifaceAddress.getNetworkBits() < Prefix.MAX_PREFIX_LENGTH) {
+            LocalRoute lr = new LocalRoute(ifaceAddress, i.getName());
+            _localRib.mergeRoute(lr);
+          }
+        }
+      }
+    }
+  }
+
   @Nullable
   @VisibleForTesting
   OspfExternalRoute computeOspfExportRoute(
@@ -802,6 +828,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   void initRibs() {
     _bgpMultipathRib = new BgpMultipathRib(this);
     _connectedRib = new ConnectedRib(this);
+    _localRib = new LocalRib(this);
     _ebgpMultipathRib = new BgpMultipathRib(this);
     _ebgpStagingRib = new BgpMultipathRib(this);
     _ibgpMultipathRib = new BgpMultipathRib(this);
@@ -880,8 +907,8 @@ public class VirtualRouter extends ComparableStructure<String> {
         continue;
       }
 
-      int localAs = neighbor.getLocalAs();
-      int remoteAs = neighbor.getRemoteAs();
+      long localAs = neighbor.getLocalAs();
+      long remoteAs = neighbor.getRemoteAs();
       String remoteHostname = remoteIp.toString();
       String remoteVrfName = _vrf.getName();
       RoutingPolicy exportPolicy = _c.getRoutingPolicies().get(neighbor.getExportPolicy());
@@ -1004,7 +1031,7 @@ public class VirtualRouter extends ComparableStructure<String> {
           }
         }
         if (ebgpSession) {
-          SortedSet<Integer> newAsPathElement = new TreeSet<>();
+          SortedSet<Long> newAsPathElement = new TreeSet<>();
           newAsPathElement.add(localAs);
           transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
         }
@@ -1142,8 +1169,8 @@ public class VirtualRouter extends ComparableStructure<String> {
         if (localIp.equals(Ip.AUTO)) {
           localIp = remoteBgpNeighbor.getAddress();
         }
-        int localAs = neighbor.getLocalAs();
-        int remoteAs = neighbor.getRemoteAs();
+        long localAs = neighbor.getLocalAs();
+        long remoteAs = neighbor.getRemoteAs();
         Configuration remoteConfig = remoteBgpNeighbor.getOwner();
         String remoteHostname = remoteConfig.getHostname();
         String remoteVrfName = remoteBgpNeighbor.getVrf();
@@ -1311,7 +1338,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             }
           }
           if (ebgpSession) {
-            SortedSet<Integer> newAsPathElement = new TreeSet<>();
+            SortedSet<Long> newAsPathElement = new TreeSet<>();
             newAsPathElement.add(remoteAs);
             transformedOutgoingRouteBuilder.getAsPath().add(0, newAsPathElement);
           }

@@ -16,11 +16,8 @@ public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
 
   private Set<String> _listNames;
 
-  private final int _statementLine;
-
-  public RouteMapMatchIpPrefixListLine(Set<String> names, int statementLine) {
+  public RouteMapMatchIpPrefixListLine(Set<String> names) {
     _listNames = names;
-    _statementLine = statementLine;
   }
 
   public Set<String> getListNames() {
@@ -36,12 +33,6 @@ public class RouteMapMatchIpPrefixListLine extends RouteMapMatchLine {
       if (list != null) {
         list.getReferers().put(this, "route-map match prefix-list");
         disjuncts.add(new MatchPrefixSet(new DestinationNetwork(), new NamedPrefixSet(listName)));
-      } else {
-        cc.undefined(
-            CiscoStructureType.PREFIX_LIST,
-            listName,
-            CiscoStructureUsage.ROUTE_MAP_MATCH_IP_PREFIX_LIST,
-            _statementLine);
       }
     }
     return d.simplify();

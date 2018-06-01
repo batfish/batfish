@@ -1,0 +1,100 @@
+[
+  {
+    "class" : "org.batfish.datamodel.table.TableAnswerElement",
+    "metadata" : {
+      "columnMetadata" : [
+        {
+          "description" : "The node where this session is configured",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "node",
+          "schema" : "Node"
+        },
+        {
+          "description" : "The local IP of the session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "localIp",
+          "schema" : "Ip"
+        },
+        {
+          "description" : "The VRF in which this session is configured",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "vrfName",
+          "schema" : "String"
+        },
+        {
+          "description" : "Remote node for this session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "remoteNode",
+          "schema" : "Node"
+        },
+        {
+          "description" : "Remote prefix for this session",
+          "isKey" : true,
+          "isValue" : false,
+          "name" : "remotePrefix",
+          "schema" : "Prefix"
+        },
+        {
+          "description" : "The type of this session",
+          "isKey" : false,
+          "isValue" : false,
+          "name" : "sessionType",
+          "schema" : "String"
+        },
+        {
+          "description" : "Configured status",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "configuredStatus",
+          "schema" : "String"
+        },
+        {
+          "description" : "Number of neighbors with whom BGP session was established",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "establishedNeighbors",
+          "schema" : "Integer"
+        },
+        {
+          "description" : "Whether the session was established on loopback interface",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "onLoopback",
+          "schema" : "Boolean"
+        }
+      ],
+      "displayHints" : {
+        "textDesc" : "On ${node} session ${vrfName}:${remotePrefix} has configured status ${configuredStatus}."
+      }
+    },
+    "rows" : [
+      {
+        "configuredStatus" : "UNIQUE_MATCH",
+        "establishedNeighbors" : 1,
+        "localIp" : "10.23.21.2",
+        "node" : {
+          "id" : "node-as2border2",
+          "name" : "as2border2"
+        },
+        "onLoopback" : false,
+        "remoteNode" : {
+          "id" : "node-as3border1",
+          "name" : "as3border1"
+        },
+        "remotePrefix" : "10.23.21.3/32",
+        "sessionType" : "EBGP_SINGLEHOP",
+        "vrfName" : "default"
+      }
+    ],
+    "summary" : {
+      "notes" : "Found 1 results",
+      "numFailed" : 0,
+      "numPassed" : 0,
+      "numResults" : 1
+    }
+  }
+]

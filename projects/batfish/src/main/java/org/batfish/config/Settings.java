@@ -14,6 +14,7 @@ import org.batfish.common.CoordConsts;
 import org.batfish.common.PedanticBatfishException;
 import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.UnimplementedBatfishException;
+import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
 import org.batfish.dataplane.bdp.BdpSettings;
@@ -491,6 +492,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   private static final String ARG_TIMESTAMP = "timestamp";
 
+  private static final String ARG_VERSION = "version";
+
   private static final String ARG_Z3_TIMEOUT = "z3timeout";
 
   private static final String ARGNAME_AS = "as";
@@ -700,6 +703,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   @Override
   public boolean getDisableUnrecognized() {
     return _config.getBoolean(BfConsts.ARG_DISABLE_UNRECOGNIZED);
+  }
+
+  public boolean getEnableCiscoNxParser() {
+    return _config.getBoolean(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
   }
 
   public String getEnvironmentName() {
@@ -1011,6 +1018,9 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, null);
     setDefaultProperty(BfConsts.ARG_DIFFERENTIAL, false);
     setDefaultProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, false);
+    setDefaultProperty(
+        BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
+        true); // TODO: enable CiscoNxParser by default and remove this flag.
     setDefaultProperty(ARG_DISABLE_Z3_SIMPLIFICATION, false);
     setDefaultProperty(BfConsts.ARG_ENVIRONMENT_NAME, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     setDefaultProperty(ARG_EXIT_ON_FIRST_ERROR, false);
@@ -1073,6 +1083,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_AS_ERROR, false);
     setDefaultProperty(BfConsts.ARG_UNIMPLEMENTED_SUPPRESS, true);
     setDefaultProperty(BfConsts.ARG_VERBOSE_PARSE, false);
+    setDefaultProperty(ARG_VERSION, false);
     setDefaultProperty(BfConsts.COMMAND_ANALYZE, false);
     setDefaultProperty(BfConsts.COMMAND_ANSWER, false);
     setDefaultProperty(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT, false);
@@ -1083,7 +1094,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     setDefaultProperty(BfConsts.COMMAND_REPORT, false);
     setDefaultProperty(BfConsts.COMMAND_VALIDATE_ENVIRONMENT, false);
     setDefaultProperty(ARG_Z3_TIMEOUT, 0);
-    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "bdp");
+    setDefaultProperty(ARG_DATAPLANE_ENGINE_NAME, "ibdp");
   }
 
   private void initOptions() {
@@ -1158,6 +1169,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
         BfConsts.ARG_DISABLE_UNRECOGNIZED, "disable parser recognition of unrecognized stanzas");
 
     addBooleanOption(ARG_DISABLE_Z3_SIMPLIFICATION, "disable z3 simplification");
+
+    addBooleanOption(
+        BfConsts.ARG_ENABLE_CISCO_NX_PARSER,
+        "use the rewritten BGP parser for Cisco NX-OS devices");
 
     addOption(BfConsts.ARG_ENVIRONMENT_NAME, "name of environment to use", "name");
 
@@ -1369,6 +1384,8 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     addBooleanOption(
         BfConsts.COMMAND_VALIDATE_ENVIRONMENT, "validate an environment that has been initialized");
 
+    addBooleanOption(ARG_VERSION, "print the version number of the code and exit");
+
     addOption(ARG_Z3_TIMEOUT, "set a timeout (in milliseconds) for Z3 queries", "z3timeout");
 
     addOption(
@@ -1387,6 +1404,12 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     if (getBooleanOptionValue(ARG_HELP)) {
       _config.setProperty(CAN_EXECUTE, false);
       printHelp(EXECUTABLE_NAME);
+      return;
+    }
+
+    if (getBooleanOptionValue(ARG_VERSION)) {
+      _config.setProperty(CAN_EXECUTE, false);
+      System.out.printf(Version.getCompleteVersionString());
       return;
     }
 
@@ -1413,6 +1436,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     getBooleanOptionValue(BfConsts.ARG_DIFF_ACTIVE);
     getBooleanOptionValue(BfConsts.ARG_DIFFERENTIAL);
     getBooleanOptionValue(BfConsts.ARG_DISABLE_UNRECOGNIZED);
+    getBooleanOptionValue(BfConsts.ARG_ENABLE_CISCO_NX_PARSER);
     getStringOptionValue(BfConsts.ARG_ENVIRONMENT_NAME);
     getBooleanOptionValue(ARG_EXIT_ON_FIRST_ERROR);
     getBooleanOptionValue(ARG_FLATTEN);
@@ -1525,6 +1549,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
     _config.setProperty(BfConsts.ARG_CONTAINER_DIR, containerDir.toString());
   }
 
+  public void setDebugFlags(List<String> debugFlags) {
+    _config.setProperty(ARG_DEBUG_FLAGS, debugFlags);
+  }
+
   public void setDeltaEnvironmentName(String diffEnvironmentName) {
     _config.setProperty(BfConsts.ARG_DELTA_ENVIRONMENT_NAME, diffEnvironmentName);
   }
@@ -1544,6 +1572,10 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
   @Override
   public void setDisableUnrecognized(boolean b) {
     _config.setProperty(BfConsts.ARG_DISABLE_UNRECOGNIZED, b);
+  }
+
+  public void setEnableCiscoNxParser(boolean b) {
+    _config.setProperty(BfConsts.ARG_ENABLE_CISCO_NX_PARSER, b);
   }
 
   public void setEnvironmentName(String envName) {

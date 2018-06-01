@@ -104,7 +104,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.apache.commons.lang3.ArrayUtils;
-import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -153,22 +152,6 @@ public class ClientTest {
   public void checkTestInvalidParas() throws Exception {
     String[] parameters = new String[] {"parameter1"};
     testInvalidInput(TEST, new String[] {}, parameters);
-  }
-
-  @Test
-  public void checkTestValidParas() throws Exception {
-    Path tempFilePath = _folder.newFolder("temp").toPath();
-    String[] parameters = new String[] {tempFilePath.toString(), GET.commandName()};
-    Pair<String, String> usage = Command.getUsageMap().get(GET);
-    String expected =
-        String.format(
-            "Invalid arguments: [] []\n%s %s\n\t%s\n\n",
-            GET.commandName(), usage.getFirst(), usage.getSecond());
-    String additionalMessage =
-        String.format(
-            "Test [%s]: 'get' matches %s: Fail\nCopied output to %s.testout\n",
-            TestComparisonMode.COMPAREANSWER, tempFilePath.toString(), tempFilePath.toString());
-    testProcessCommandWithValidInput(TEST, parameters, expected + additionalMessage);
   }
 
   @Test
@@ -843,7 +826,15 @@ public class ClientTest {
         "instance",
         new JSONObject()
             .put("instanceName", "testQuestionName")
-            .put("description", "test question description"));
+            .put("description", "test question description")
+            .put(
+                "variables",
+                new JSONObject()
+                    .put(
+                        "var1",
+                        new JSONObject()
+                            .put("description", "test var1 description")
+                            .put("longDescription", "test var1 long description"))));
     JSONObject question = Client.loadQuestionFromText(testQuestion.toString(), "testquestion");
 
     // checking if actual and loaded JSONs are same
@@ -853,6 +844,20 @@ public class ClientTest {
     assertEquals(
         "test question description",
         question.getJSONObject(BfConsts.PROP_INSTANCE).getString(BfConsts.PROP_DESCRIPTION));
+    assertEquals(
+        "test var1 description",
+        question
+            .getJSONObject(BfConsts.PROP_INSTANCE)
+            .getJSONObject(BfConsts.PROP_VARIABLES)
+            .getJSONObject("var1")
+            .getString(BfConsts.PROP_DESCRIPTION));
+    assertEquals(
+        "test var1 long description",
+        question
+            .getJSONObject(BfConsts.PROP_INSTANCE)
+            .getJSONObject(BfConsts.PROP_VARIABLES)
+            .getJSONObject("var1")
+            .getString(BfConsts.PROP_LONG_DESCRIPTION));
   }
 
   @Test
@@ -1145,7 +1150,7 @@ public class ClientTest {
   }
 
   @Test
-  public void testPromtValidParas() throws Exception {
+  public void testPromptValidParas() throws Exception {
     testProcessCommandWithValidInput(PROMPT, new String[] {}, "");
   }
 

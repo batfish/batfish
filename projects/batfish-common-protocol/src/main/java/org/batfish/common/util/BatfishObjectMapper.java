@@ -18,6 +18,9 @@ import java.io.IOException;
 public final class BatfishObjectMapper {
   private static final ObjectMapper MAPPER = baseMapper();
 
+  private static final ObjectWriter ALWAYS_WRITER =
+      baseMapper().setSerializationInclusion(Include.ALWAYS).writer();
+
   private static final ObjectWriter WRITER = MAPPER.writer();
 
   private static final PrettyPrinter PRETTY_PRINTER = new PrettyPrinter();
@@ -74,6 +77,11 @@ public final class BatfishObjectMapper {
    */
   public static ObjectWriter verboseWriter() {
     return VERBOSE_WRITER;
+  }
+
+  /** Returns a JSON string representation of the given object with nulls and empties included. */
+  public static String writeStringWithNulls(Object o) throws JsonProcessingException {
+    return ALWAYS_WRITER.writeValueAsString(o);
   }
 
   /** Returns a concise JSON string representation of the given object. */

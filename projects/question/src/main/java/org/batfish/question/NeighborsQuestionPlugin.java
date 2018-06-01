@@ -444,13 +444,13 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getStyle() == EdgeStyle.ROLE) {
         NodeRoleDimension roleDimension =
-            _batfish.getNodeRoleDimension(question.getRoleDimension());
-        if (roleDimension != null) {
-          _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
-        } else {
-          throw new IllegalArgumentException(
-              "Role dimension not found: " + question.getRoleDimension());
-        }
+            _batfish
+                .getNodeRoleDimension(question.getRoleDimension())
+                .orElseThrow(
+                    () ->
+                        new BatfishException(
+                            "No role dimension found for " + question.getRoleDimension()));
+        _nodeRolesMap = roleDimension.createNodeRolesMap(configurations.keySet());
       }
 
       if (question.getNeighborTypes().contains(NeighborType.OSPF)) {
@@ -717,7 +717,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
     private void initRemoteBgpNeighbors(Map<String, Configuration> configurations) {
       if (!_remoteBgpNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         _bgpTopology =
             CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
         _remoteBgpNeighborsInitialized = true;
@@ -727,7 +727,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteOspfNeighbors(
         IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteOspfNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         CommonUtil.initRemoteOspfNeighbors(configurations, ipOwners, topology);
         _remoteOspfNeighborsInitialized = true;
       }
@@ -736,7 +736,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     private void initRemoteRipNeighbors(
         IBatfish batfish, Map<String, Configuration> configurations, Topology topology) {
       if (!_remoteRipNeighborsInitialized) {
-        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpOwners(configurations, true);
+        Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         batfish.initRemoteRipNeighbors(configurations, ipOwners, topology);
         _remoteRipNeighborsInitialized = true;
       }
@@ -824,8 +824,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       _node2Regex = nodes2 == null ? NodesSpecifier.ALL : nodes2;
       _neighborTypes = neighborTypes == null ? new TreeSet<>() : neighborTypes;
       _style = style == null ? EdgeStyle.SUMMARY : style;
-      _roleDimension =
-          roleDimension == null ? NodeRoleDimension.AUTO_DIMENSION_PRIMARY : roleDimension;
+      _roleDimension = roleDimension;
     }
 
     @Override

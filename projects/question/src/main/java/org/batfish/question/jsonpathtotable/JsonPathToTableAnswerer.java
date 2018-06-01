@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.IntNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,12 +21,50 @@ import org.batfish.common.util.JsonPathUtils;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
+import org.batfish.datamodel.table.Row.RowBuilder;
+import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.jsonpathtotable.JsonPathToTableExtraction.Method;
 
 public class JsonPathToTableAnswerer extends Answerer {
 
+  static final String PROP_DEBUG = "debug";
+
   public JsonPathToTableAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
+  }
+
+  public static TableMetadata create(JsonPathToTableQuestion question) {
+    List<ColumnMetadata> columnMetadata = new LinkedList<>();
+    for (Entry<String, JsonPathToTableExtraction> entry :
+        question.getPathQuery().getExtractions().entrySet()) {
+      JsonPathToTableExtraction extraction = entry.getValue();
+      if (extraction.getInclude()) {
+        columnMetadata.add(
+            new ColumnMetadata(
+                entry.getKey(),
+                extraction.getSchema(),
+                extraction.getDescription(),
+                extraction.getIsKey(),
+                extraction.getIsValue()));
+      }
+    }
+    for (Entry<String, JsonPathToTableComposition> entry :
+        question.getPathQuery().getCompositions().entrySet()) {
+      JsonPathToTableComposition composition = entry.getValue();
+      if (composition.getInclude()) {
+        columnMetadata.add(
+            new ColumnMetadata(
+                entry.getKey(),
+                composition.getSchema(),
+                composition.getDescription(),
+                composition.getIsKey(),
+                composition.getIsValue()));
+      }
+    }
+    return new TableMetadata(columnMetadata, question.getDisplayHints());
   }
 
   /**
@@ -38,7 +77,7 @@ public class JsonPathToTableAnswerer extends Answerer {
    * </ul>
    */
   @Override
-  public JsonPathToTableAnswerElement answer() {
+  public TableAnswerElement answer() {
     JsonPathToTableQuestion question = (JsonPathToTableQuestion) _question;
 
     Question innerQuestion = question.getInnerQuestion();
@@ -50,17 +89,12 @@ public class JsonPathToTableAnswerer extends Answerer {
 
     String innerAnswerStr = null;
     try {
-      innerAnswerStr = BatfishObjectMapper.writeString(innerAnswer);
+      innerAnswerStr = BatfishObjectMapper.writeStringWithNulls(innerAnswer);
     } catch (IOException e) {
       throw new BatfishException("Could not get JSON string from inner answer", e);
     }
 
-    JsonPathToTableAnswerElement answer = computeAnswerTable(innerAnswerStr, question);
-
-    // 4. add debug info
-    if (question.getDebug()) {
-      answer.addDebugInfo("innerAnswer", innerAnswer);
-    }
+    TableAnswerElement answer = computeAnswerTable(innerAnswerStr, question);
 
     return answer;
   }
@@ -73,12 +107,12 @@ public class JsonPathToTableAnswerer extends Answerer {
    * @param question The JsonPathToTableQuestion object
    * @return The resulting answer table
    */
-  public static JsonPathToTableAnswerElement computeAnswerTable(
+  public static TableAnswerElement computeAnswerTable(
       String innerAnswer, JsonPathToTableQuestion question) {
 
     JsonPathToTableQuery query = question.getPathQuery();
-    JsonPathToTableAnswerElement answer =
-        new JsonPathToTableAnswerElement(question.computeTableMetadata());
+    TableMetadata tableMetadata = create(question);
+    TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
     // 1. get all the results
     List<JsonPathResult> jsonPathResults =
@@ -86,8 +120,8 @@ public class JsonPathToTableAnswerer extends Answerer {
 
     // 2. Put them in the answer element based on whether they are covered by an exclusion
     for (JsonPathResult result : jsonPathResults) {
-      ObjectNode answerValues =
-          computeRowValues(query.getExtractions(), query.getCompositions(), result);
+      Row answerValues =
+          computeRowValues(query.getExtractions(), query.getCompositions(), result, tableMetadata);
       Exclusion exclusion = Exclusion.covered(answerValues, question.getExclusions());
       if (exclusion != null) {
         answer.addExcludedRow(answerValues, exclusion.getName());
@@ -102,14 +136,24 @@ public class JsonPathToTableAnswerer extends Answerer {
     return answer;
   }
 
-  private static ObjectNode computeRowValues(
+  private static Row computeRowValues(
       Map<String, JsonPathToTableExtraction> extractions,
       Map<String, JsonPathToTableComposition> compositions,
-      JsonPathResult jpResult) {
+      JsonPathResult jpResult,
+      TableMetadata tableMetadata) {
     ObjectNode answerValues = BatfishObjectMapper.mapper().createObjectNode();
     computeExtractions(extractions, jpResult, answerValues);
     doCompositions(compositions, extractions, answerValues);
-    return answerValues;
+
+    RowBuilder row = Row.builder();
+    Iterator<String> iterator = answerValues.fieldNames();
+    while (iterator.hasNext()) {
+      String columnName = iterator.next();
+      if (tableMetadata.containsColumn(columnName)) {
+        row.put(columnName, answerValues.get(columnName));
+      }
+    }
+    return row.build();
   }
 
   private static void computeExtractions(
@@ -239,69 +283,72 @@ public class JsonPathToTableAnswerer extends Answerer {
       JsonPathResult jpResult,
       ObjectNode answerValues) {
     List<JsonNode> extractedList = new LinkedList<>();
-    switch (extraction.getMethod()) {
-      case FUNCOFSUFFIX:
-        {
-          if (!extraction.getSchema().isIntOrIntList()) {
-            throw new BatfishException(
-                "schema must be INT(LIST) with funcofsuffix-based extraction hint");
-          }
-          Object result =
-              JsonPathUtils.computePathFunction(extraction.getFilter(), jpResult.getSuffix());
-          if (result != null) {
-            if (result instanceof Integer) {
-              extractedList.add(new IntNode((Integer) result));
-            } else if (result instanceof ArrayNode) {
-              for (JsonNode node : (ArrayNode) result) {
-                if (!(node instanceof IntNode)) {
-                  throw new BatfishException(
-                      "Got non-integer result from path function after filter "
-                          + extraction.getFilter());
+    if (!jpResult.isNullOrEmptySuffix()) {
+      switch (extraction.getMethod()) {
+        case FUNCOFSUFFIX:
+          {
+            if (!extraction.getSchema().isIntOrIntList()) {
+              throw new BatfishException(
+                  "schema must be INT(LIST) with funcofsuffix-based extraction hint");
+            }
+            Object result =
+                JsonPathUtils.computePathFunction(extraction.getFilter(), jpResult.getSuffix());
+            if (result != null) {
+              if (result instanceof Integer) {
+                extractedList.add(new IntNode((Integer) result));
+              } else if (result instanceof ArrayNode) {
+                for (JsonNode node : (ArrayNode) result) {
+                  if (!(node instanceof IntNode)) {
+                    throw new BatfishException(
+                        "Got non-integer result from path function after filter "
+                            + extraction.getFilter());
+                  }
+                  extractedList.add(node);
                 }
-                extractedList.add(node);
+              } else {
+                throw new BatfishException("Unknown result type from computePathFunction");
               }
-            } else {
-              throw new BatfishException("Unknown result type from computePathFunction");
             }
           }
-        }
-        break;
-      case PREFIXOFSUFFIX:
-      case SUFFIXOFSUFFIX:
-        {
-          List<JsonPathResult> filterResults =
-              JsonPathUtils.getJsonPathResults(extraction.getFilter(), jpResult.getSuffix());
-          for (JsonPathResult result : filterResults) {
-            JsonNode value =
-                (extraction.getMethod() == Method.PREFIXOFSUFFIX)
-                    ? new TextNode(result.getPrefixPart(extraction.getIndex()))
-                    : result.getSuffix();
-            confirmValueType(value, extraction.getSchema().getBaseType());
-            extractedList.add(value);
+          break;
+        case PREFIXOFSUFFIX:
+        case SUFFIXOFSUFFIX:
+          {
+            List<JsonPathResult> filterResults =
+                JsonPathUtils.getJsonPathResults(extraction.getFilter(), jpResult.getSuffix());
+            for (JsonPathResult result : filterResults) {
+              JsonNode value =
+                  (extraction.getMethod() == Method.PREFIXOFSUFFIX)
+                      ? new TextNode(result.getPrefixPart(extraction.getIndex()))
+                      : result.getSuffix();
+              confirmValueType(value, extraction.getSchema().getBaseType());
+              extractedList.add(value);
+            }
           }
-        }
-        break;
-      default:
-        throw new BatfishException("Unknown extraction method " + extraction.getMethod());
-    }
-    if (extractedList.size() == 0) {
-      throw new BatfishException(
-          "Got no results after filtering suffix values of the answer"
-              + "\nFilter: "
-              + extraction.getFilter()
-              + "\nJson: "
-              + jpResult.getSuffix());
+          break;
+        default:
+          throw new BatfishException("Unknown extraction method " + extraction.getMethod());
+      }
+      if (extractedList.size() == 0) {
+        throw new BatfishException(
+            String.format(
+                "Got no results after filtering suffix values of the answer.%nFilter: %s%nJson: %s",
+                extraction.getFilter(), jpResult.getSuffix()));
+      }
     }
 
     if (extraction.getSchema().isList()) {
       answerValues.set(varName, BatfishObjectMapper.mapper().valueToTree(extractedList));
     } else {
-      if (extractedList.size() > 1) {
+      if (extractedList.size() == 0) {
+        answerValues.set(varName, null);
+      } else if (extractedList.size() > 1) {
         throw new BatfishException(
             "Got multiple results after filtering suffix values "
                 + " of the answer, but the display type is non-list");
+      } else {
+        answerValues.set(varName, extractedList.get(0));
       }
-      answerValues.set(varName, extractedList.get(0));
     }
   }
 
