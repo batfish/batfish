@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Map;
+import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IkeProposal;
@@ -150,6 +151,19 @@ final class ConfigurationMatchersImpl {
     @Override
     protected RouteFilterList featureValueOf(Configuration actual) {
       return actual.getRouteFilterLists().get(_name);
+    }
+  }
+
+  static final class HasRouteFilterLists
+      extends FeatureMatcher<Configuration, NavigableMap<String, RouteFilterList>> {
+    HasRouteFilterLists(
+        @Nonnull Matcher<? super NavigableMap<String, RouteFilterList>> subMatcher) {
+      super(subMatcher, "A Configuration with RouteFilterLists:", "routeFilterLists");
+    }
+
+    @Override
+    protected NavigableMap<String, RouteFilterList> featureValueOf(Configuration actual) {
+      return actual.getRouteFilterLists();
     }
   }
 

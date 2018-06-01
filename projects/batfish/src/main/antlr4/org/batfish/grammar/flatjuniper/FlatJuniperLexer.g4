@@ -5979,7 +5979,12 @@ M_Members_WS
 
 mode M_PrefixListName;
 
-M_PrefixLsitName_VARIABLE
+M_PrefixListName_WILDCARD
+:
+   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
+;
+
+M_PrefixListName_VARIABLE
 :
    ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
 ;

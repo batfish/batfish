@@ -226,11 +226,7 @@ ro_null
 
 ro_rib
 :
-   RIB
-   (
-      name = VARIABLE
-      | WILDCARD
-   )
+   RIB name = VARIABLE
    (
       apply
       | ro_aggregate

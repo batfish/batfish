@@ -13,10 +13,13 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
@@ -43,6 +46,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_S
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -66,6 +70,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -98,6 +103,8 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
@@ -1307,6 +1314,51 @@ public class FlatJuniperGrammarTest {
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testJuniperWildcards() throws IOException {
+    String hostname = "juniper-wildcards";
+    String loopback = "lo0.0";
+    String prefix1 = "1.1.1.1/32";
+    String prefix2 = "3.3.3.3/32";
+    String prefixList1 = "p1";
+    String prefixList2 = "p2";
+    Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
+
+    Batfish b = getBatfishForConfigurationNames(hostname);
+    b.getSettings().setPrintParseTree(true);
+    Configuration c = b.loadConfigurations().get(hostname);
+
+    System.out.println(
+        BatfishObjectMapper.verboseWriter().writeValueAsString(b.initInfo(false, true)));
+
+    /* apply-groups using group containing interface wildcard should function as expected. */
+    assertThat(
+        c,
+        ConfigurationMatchers.hasInterface(
+            loopback, hasAllAddresses(contains(new InterfaceAddress(prefix1)))));
+
+    /* The wildcard copied out of groups should disappear and not be treated as an actual interface */
+    assertThat(c, ConfigurationMatchers.hasInterfaces(not(hasKey("*.*"))));
+
+    /* The wildcard-looking interface description should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(
+        c,
+        ConfigurationMatchers.hasInterface(
+            loopback, InterfaceMatchers.hasDescription("<SCRUBBED>")));
+
+    /* apply-path should work with wildcard. Its line should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(
+        c, hasRouteFilterList(prefixList1, RouteFilterListMatchers.permits(Prefix.parse(prefix1))));
+
+    /* prefix-list p2 should get content from g2, but no prefix-list named "<*>" should be created */
+    assertThat(
+        c, hasRouteFilterList(prefixList2, RouteFilterListMatchers.permits(Prefix.parse(prefix2))));
+    assertThat(c, hasRouteFilterLists(not(hasKey("<*>"))));
+
+    /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
   }
 
   @Test

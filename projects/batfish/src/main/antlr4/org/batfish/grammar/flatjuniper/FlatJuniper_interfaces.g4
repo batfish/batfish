@@ -461,7 +461,6 @@ ifia_vrrp_group
    VRRP_GROUP
    (
       number = DEC
-      | WILDCARD
       | name = variable
    )
    (
