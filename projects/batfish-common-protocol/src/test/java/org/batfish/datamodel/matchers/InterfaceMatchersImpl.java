@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OspfArea;
@@ -36,6 +37,18 @@ final class InterfaceMatchersImpl {
     @Override
     protected SortedSet<Ip> featureValueOf(Interface actual) {
       return actual.getAdditionalArpIps();
+    }
+  }
+
+  static class HasAddress extends FeatureMatcher<Interface, InterfaceAddress> {
+
+    public HasAddress(@Nonnull Matcher<? super InterfaceAddress> subMatcher) {
+      super(subMatcher, "An interface with address:", "address");
+    }
+
+    @Override
+    protected InterfaceAddress featureValueOf(Interface actual) {
+      return actual.getAddress();
     }
   }
 

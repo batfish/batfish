@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -25,6 +26,20 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Vrf featureValueOf(Configuration actual) {
       return actual.getDefaultVrf();
+    }
+  }
+
+  static final class HasIkeGateway extends FeatureMatcher<Configuration, IkeGateway> {
+    private final String _name;
+
+    HasIkeGateway(@Nonnull String name, @Nonnull Matcher<? super IkeGateway> subMatcher) {
+      super(subMatcher, "A Configuration with ikeGateway " + name + ":", "ikeGateway " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IkeGateway featureValueOf(Configuration actual) {
+      return actual.getIkeGateways().get(_name);
     }
   }
 
