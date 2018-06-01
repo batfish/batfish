@@ -70,15 +70,20 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
 
   @Override
   public ReachabilityDomainElement transform(ReachabilityDomainElement input, EdgeTransformer t) {
-    BDD under = transformAux(input.getUnderApproximation(), t, Transformation.UNDER_APPROXIMATION);
-    BDD over = transformAux(input.getOverApproximation(), t, Transformation.OVER_APPROXIMATION);
-    BDD blocked = input.getBlockedAcls();
-    if (t.getBddAcl() != null) {
-      BDD h = _domainHelper.headerspace(over);
-      BDD toBlock = h.andWith(t.getBddAcl().getBdd().not());
-      blocked = blocked.orWith(toBlock);
+    if (t.getBddTransfer() != null) {
+      BDD under =
+          transformAux(input.getUnderApproximation(), t, Transformation.UNDER_APPROXIMATION);
+      BDD over = transformAux(input.getOverApproximation(), t, Transformation.OVER_APPROXIMATION);
+      BDD blocked = input.getBlockedAcls();
+      if (t.getBddAcl() != null) {
+        BDD h = _domainHelper.headerspace(over);
+        BDD toBlock = h.andWith(t.getBddAcl().getBdd().not());
+        blocked = blocked.orWith(toBlock);
+      }
+      return new ReachabilityDomainElement(under, over, blocked);
+    } else {
+      return input;
     }
-    return new ReachabilityDomainElement(under, over, blocked);
   }
 
   private BDD transformAux(BDD input, EdgeTransformer t, Transformation type) {

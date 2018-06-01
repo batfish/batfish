@@ -38,7 +38,6 @@ import org.batfish.symbolic.answers.AiReachabilityAnswerElement;
 import org.batfish.symbolic.answers.AiRoutesAnswerElement;
 import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDFiniteDomain;
-import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetConfig;
 import org.batfish.symbolic.bdd.BDDNetFactory;
 import org.batfish.symbolic.bdd.BDDNetwork;
@@ -72,15 +71,13 @@ public class AbstractInterpreter {
   // BDDs representing every transfer function in the network
   private BDDNetwork _network;
 
-  // BDD _factory
+  // BDD network factory
   private BDDNetFactory _netFactory;
 
   // A collection of single node BDDs representing the individual routeVariables
   private BDDRoute _variables;
 
-  private Table2<String, Prefix, String> _localPrefixesMap;
-
-  private Table2<String, Prefix, String> _connectedPrefixesMap;
+  private DomainType _domainType;
 
   /*
    * Construct an abstract ainterpreter the answer a particular question.
@@ -146,30 +143,9 @@ public class AbstractInterpreter {
           conn.add(new Tuple<>(address.getPrefix(), iface.getName()));
         }
       }
+
       originatedConnected.put(router, conn);
     }
-  }
-
-  /*
-   * Creates a modification that increments the metric by 'cost'.
-   */
-  private BDDTransferFunction implicitTransfer(int cost, Ip nextHop) {
-    BDDRoute route = _netFactory.routeVariables().deepCopy();
-    if (_netFactory.getConfig().getKeepMetric()) {
-      // update metric
-      BDDInteger met = route.getMetric();
-      BDDInteger addedCost = new BDDInteger(met);
-      addedCost.setValue(cost);
-      route.setMetric(met.add(addedCost));
-    }
-    if (_netFactory.getConfig().getKeepNextHopIp()) {
-      // update next hop
-      BDDFiniteDomain<Ip> nh = route.getNextHopIp();
-      BDDFiniteDomain<Ip> value = new BDDFiniteDomain<>(nh);
-      value.setValue(nextHop);
-      route.setNextHopIp(value);
-    }
-    return new BDDTransferFunction(route, _netFactory.one());
   }
 
   private <T> boolean withdrawn(
@@ -195,9 +171,6 @@ public class AbstractInterpreter {
    * reachable sets at each router for every iteration.
    */
   private <T> Map<String, AbstractRib<T>> computeFixedPoint(IAbstractDomain<T> domain) {
-    _localPrefixesMap = new Table2<>();
-    _connectedPrefixesMap = new Table2<>();
-
     Map<String, Set<Prefix>> origBgp = new HashMap<>();
     Map<String, Set<Prefix>> origOspf = new HashMap<>();
     Map<String, Set<Tuple<Prefix, String>>> origConn = new HashMap<>();
@@ -229,13 +202,11 @@ public class AbstractInterpreter {
         Tuple<Prefix, String> tup = new Tuple<>(pfx, iface.getName());
         if (!connPrefixes.contains(tup)) {
           localPrefixes.add(pfx);
-          _localPrefixesMap.put(router, pfx, tup.getSecond());
         }
       }
 
       Set<Prefix> connectedPrefixes = new HashSet<>();
       for (Tuple<Prefix, String> tup : connPrefixes) {
-        _connectedPrefixesMap.put(router, tup.getFirst(), tup.getSecond());
         connectedPrefixes.add(tup.getFirst());
       }
 
@@ -289,7 +260,9 @@ public class AbstractInterpreter {
 
     t = System.currentTimeMillis();
 
+    // int i = 0;
     while (!update.isEmpty()) {
+      // i++;
       String router = update.poll();
       assert (router != null);
       updateSet.remove(router);
@@ -302,6 +275,7 @@ public class AbstractInterpreter {
       // System.out.println("");
       // System.out.println("At: " + router);
       // System.out.println("Current RIB: " + domain.debug(routerMainRib));
+      // System.out.println("Current OSPF: " + domain.debug(routerOspf));
 
       for (GraphEdge ge : _graph.getEdgeMap().get(router)) {
         GraphEdge rev = _graph.getOtherEnd().get(ge);
@@ -325,6 +299,7 @@ public class AbstractInterpreter {
           // System.out.println("");
           // System.out.println("  neighbor: " + neighbor);
           // System.out.println("  neighbor RIB old: " + domain.debug(neighborMainRib));
+          // System.out.println("  neighbor ospf old: " + domain.debug(neighborOspf));
 
           // Update OSPF
           if (_graph.isEdgeUsed(conf, Protocol.OSPF, ge)
@@ -334,41 +309,33 @@ public class AbstractInterpreter {
             BDDTransferFunction importFilter = _network.getImportOspfPolicies().get(rev);
 
             RoutingProtocol ospf = RoutingProtocol.OSPF;
+            Integer cost = rev.getStart().getOspfCost();
+            Ip nextHop = ge.getStart().getAddress().getIp();
 
-            if (exportFilter != null) {
-              EdgeTransformer exp =
-                  new EdgeTransformer(ge, EdgeType.EXPORT, ospf, exportFilter, aclOut);
-              tempTime = System.currentTimeMillis();
-              tmpOspf = domain.transform(tmpOspf, exp);
-              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
-            }
-            if (importFilter != null) {
-              EdgeTransformer imp =
-                  new EdgeTransformer(rev, EdgeType.IMPORT, ospf, importFilter, aclIn);
+            EdgeTransformer exp =
+                new EdgeTransformer(ge, EdgeType.EXPORT, ospf, exportFilter, null, null, aclOut);
+            tempTime = System.currentTimeMillis();
+            tmpOspf = domain.transform(tmpOspf, exp);
+            totalTimeTransfer += (System.currentTimeMillis() - tempTime);
 
-              tempTime = System.currentTimeMillis();
-              tmpOspf = domain.transform(tmpOspf, imp);
-              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
-            }
+            EdgeTransformer imp =
+                new EdgeTransformer(rev, EdgeType.IMPORT, ospf, importFilter, cost, nextHop, aclIn);
+            tempTime = System.currentTimeMillis();
+            tmpOspf = domain.transform(tmpOspf, imp);
+            totalTimeTransfer += (System.currentTimeMillis() - tempTime);
 
             // Update the cost if we keep that around. This is not part of the transfer function
             T fromRouter = routerOspf;
-            if (_netFactory.getConfig().getKeepMetric()) {
-              Integer cost = rev.getStart().getOspfCost();
-              Ip nextHop = ge.getStart().getAddress().getIp();
-              EdgeTransformer et =
-                  new EdgeTransformer(
-                      rev, EdgeType.IMPORT, ospf, implicitTransfer(cost, nextHop), aclIn);
-
-              tempTime = System.currentTimeMillis();
-              tmpOspf = domain.transform(tmpOspf, et);
-              fromRouter = domain.transform(fromRouter, et);
-              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
-            }
+            EdgeTransformer et =
+                new EdgeTransformer(rev, EdgeType.IMPORT, ospf, null, cost, nextHop, aclIn);
+            tempTime = System.currentTimeMillis();
+            tmpOspf = domain.transform(tmpOspf, et);
+            fromRouter = domain.transform(fromRouter, et);
+            totalTimeTransfer += (System.currentTimeMillis() - tempTime);
 
             newNeighborOspf = domain.merge(fromRouter, tmpOspf);
-
             newNeighborOspf = domain.merge(neighborOspf, newNeighborOspf);
+
             tempTime = System.currentTimeMillis();
             newNeighborOspf = domain.selectBest(newNeighborOspf);
             totalTimeSelectBest += (System.currentTimeMillis() - tempTime);
@@ -429,40 +396,27 @@ public class AbstractInterpreter {
 
             if (doUpdate) {
 
-              if (exportFilter != null) {
-
-                // Update the cost if we keep that around. This is not part of the transfer function
-                if (_netFactory.getConfig().getKeepMetric()) {
-                  Ip nextHop;
-                  if (ge.isAbstract()) {
-                    BgpNeighbor nRouter = _graph.getIbgpNeighbors().get(ge);
-                    nextHop = nRouter.getLocalIp();
-                  } else {
-                    nextHop = ge.getStart().getAddress().getIp();
-                  }
-                  BDDTransferFunction cost = implicitTransfer(1, nextHop);
-                  exportFilter.getRoute().setMetric(cost.getRoute().getMetric());
-                  exportFilter.getRoute().setNextHopIp(cost.getRoute().getNextHopIp());
-                }
-
-                EdgeTransformer exp =
-                    new EdgeTransformer(ge, EdgeType.EXPORT, proto, exportFilter, aclOut);
-
-                tempTime = System.currentTimeMillis();
-                tmpBgp = domain.transform(tmpBgp, exp);
-                totalTimeTransfer += (System.currentTimeMillis() - tempTime);
-                // System.out.println("  tmpBgp after export: " + domain.debug(tmpBgp));
+              Ip nextHop;
+              if (ge.isAbstract()) {
+                BgpNeighbor nRouter = _graph.getIbgpNeighbors().get(ge);
+                nextHop = nRouter.getLocalIp();
+              } else {
+                nextHop = ge.getStart().getAddress().getIp();
               }
 
-              if (importFilter != null) {
-                EdgeTransformer imp =
-                    new EdgeTransformer(rev, EdgeType.IMPORT, proto, importFilter, aclIn);
+              EdgeTransformer exp =
+                  new EdgeTransformer(ge, EdgeType.EXPORT, proto, exportFilter, 1, nextHop, aclOut);
+              tempTime = System.currentTimeMillis();
+              tmpBgp = domain.transform(tmpBgp, exp);
+              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
+              // System.out.println("  tmpBgp after export: " + domain.debug(tmpBgp));
 
-                tempTime = System.currentTimeMillis();
-                tmpBgp = domain.transform(tmpBgp, imp);
-                totalTimeTransfer += (System.currentTimeMillis() - tempTime);
-                // System.out.println("  tmpBgp after import: " + domain.debug(tmpBgp));
-              }
+              EdgeTransformer imp =
+                  new EdgeTransformer(rev, EdgeType.IMPORT, proto, importFilter, null, null, aclIn);
+              tempTime = System.currentTimeMillis();
+              tmpBgp = domain.transform(tmpBgp, imp);
+              totalTimeTransfer += (System.currentTimeMillis() - tempTime);
+              // System.out.println("  tmpBgp after import: " + domain.debug(tmpBgp));
 
               // Apply BGP aggregates if needed
               List<AggregateTransformer> transformers = new ArrayList<>();
@@ -524,6 +478,26 @@ public class AbstractInterpreter {
     Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
 
     for (String router : routers) {
+
+      Configuration conf = _graph.getConfigurations().get(router);
+      Map<Prefix, String> connPrefixesMap = new HashMap<>();
+      Map<Prefix, String> localPrefixesMap = new HashMap<>();
+
+      for (Interface iface : conf.getInterfaces().values()) {
+        InterfaceAddress address = iface.getAddress();
+        if (address != null) {
+          connPrefixesMap.put(address.getPrefix(), iface.getName());
+        }
+      }
+      for (Interface iface : conf.getInterfaces().values()) {
+        Ip ip = iface.getAddress().getIp();
+        Prefix pfx = new Prefix(ip, 32);
+        String x = connPrefixesMap.get(pfx);
+        if (x == null || !x.equals(iface.getName())) {
+          localPrefixesMap.put(pfx, iface.getName());
+        }
+      }
+
       // create interface prefix map
       Map<Ip, String> nhipMap = new HashMap<>();
       Map<Ip, String> nhopMap = new HashMap<>();
@@ -564,10 +538,10 @@ public class AbstractInterpreter {
         }
 
         if (r.getProtocol() == RoutingProtocol.CONNECTED) {
-          nhint = _connectedPrefixesMap.get(router, r.getNetwork());
+          nhint = connPrefixesMap.get(r.getNetwork());
         }
         if (r.getProtocol() == RoutingProtocol.LOCAL) {
-          nhint = _localPrefixesMap.get(router, r.getNetwork());
+          nhint = localPrefixesMap.get(r.getNetwork());
         }
         if (r.getProtocol() == RoutingProtocol.STATIC) {
           nhint = staticNhintMap.get(r.getNetwork());

@@ -194,13 +194,15 @@ public class DomainHelper {
         if (modBit.isOne() || modBit.isZero()) {
           acc = acc.andWith(update);
         } else {
-          input.andWith(update);
+          input = input.and(update);
+          update.free();
         }
         _pairing.set(newBit.var(), oldBit.var());
         _modifiedBits = _modifiedBits.and(oldBit);
       }
     }
-    input.andWith(acc);
+    input = input.and(acc);
+    acc.free();
     return input;
   }
 
@@ -222,13 +224,15 @@ public class DomainHelper {
         if (modBit.isOne() || modBit.isZero()) {
           acc = acc.andWith(update);
         } else {
-          input.andWith(update);
+          input = input.and(update);
+          update.free();
         }
         _pairing.set(newBit.var(), oldBit.var());
         _modifiedBits = _modifiedBits.and(oldBit);
       }
     }
-    input.andWith(acc);
+    input = input.and(acc);
+    acc.free();
     return input;
   }
 
@@ -248,7 +252,9 @@ public class DomainHelper {
 
   private BDD modifyBit(BDD input, BDD var, BDD tempVar, BDD mod, int modIndex) {
     if (notIdentity(mod, modIndex)) {
-      input.andWith(tempVar.biimp(mod));
+      BDD tmp = tempVar.biimp(mod);
+      input = input.and(tmp);
+      tmp.free();
       _pairing.set(tempVar.var(), var.var());
       _modifiedBits = _modifiedBits.and(var);
     }

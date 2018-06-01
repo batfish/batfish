@@ -1,6 +1,7 @@
 package org.batfish.symbolic.ainterpreter;
 
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.bdd.BDDAcl;
@@ -15,7 +16,11 @@ public class EdgeTransformer {
 
   private RoutingProtocol _protocol;
 
-  private BDDTransferFunction _bddTransfer;
+  @Nullable private BDDTransferFunction _bddTransfer;
+
+  @Nullable private Integer _cost;
+
+  @Nullable private Ip _nextHopIp;
 
   @Nullable private BDDAcl _bddAcl;
 
@@ -23,12 +28,16 @@ public class EdgeTransformer {
       GraphEdge edge,
       EdgeType edgeType,
       RoutingProtocol proto,
-      BDDTransferFunction bgpTransfer,
+      @Nullable BDDTransferFunction bddTransfer,
+      @Nullable Integer cost,
+      @Nullable Ip nextHopIp,
       @Nullable BDDAcl acl) {
     this._edge = edge;
     this._edgeType = edgeType;
     this._protocol = proto;
-    this._bddTransfer = bgpTransfer;
+    this._bddTransfer = bddTransfer;
+    this._cost = cost;
+    this._nextHopIp = nextHopIp;
     this._bddAcl = acl;
   }
 
@@ -44,8 +53,19 @@ public class EdgeTransformer {
     return _protocol;
   }
 
+  @Nullable
   public BDDTransferFunction getBddTransfer() {
     return _bddTransfer;
+  }
+
+  @Nullable
+  public Integer getCost() {
+    return _cost;
+  }
+
+  @Nullable
+  public Ip getNextHopIp() {
+    return _nextHopIp;
   }
 
   @Nullable

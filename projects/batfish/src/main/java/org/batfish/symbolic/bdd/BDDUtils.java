@@ -462,8 +462,8 @@ public class BDDUtils {
     }
 
     int var = x.var();
+    boolean beforeDecisionBits = (var < nf.getIndexAdminDist());
     boolean afterDecisionBits = (var > nf.getIndexOspfMetric() + nf.getNumBitsOspfMetric());
-
     if (x.isOne() || afterDecisionBits) {
       SatAssignment assignment = new SatAssignment();
       assignment.setAdminDist((nf.getAllAdminDistances().get(adminDist)).intValue());
@@ -478,8 +478,6 @@ public class BDDUtils {
     if (processed.contains(x)) {
       return;
     }
-
-    boolean beforeDecisionBits = (var < nf.getIndexAdminDist());
 
     BDD low = x.low();
     bestRoutesAux(nf, low, adminDist, localPref, med, metric, ospfMetric, processed, result);

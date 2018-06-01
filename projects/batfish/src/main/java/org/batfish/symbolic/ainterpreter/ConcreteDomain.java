@@ -15,6 +15,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.OspfType;
+import org.batfish.symbolic.bdd.BDDFiniteDomain;
+import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetFactory;
 import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
@@ -82,9 +84,48 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
   @Override
   public BDD transform(BDD input, EdgeTransformer t) {
     BDDTransferFunction f = t.getBddTransfer();
-    input = input.and(f.getFilter());
-    input = input.exist(_domainHelper.getTransientBits());
-    return _domainHelper.applyTransformerMods(input, t);
+    BDD ret = input;
+    if (f != null) {
+      ret = ret.and(f.getFilter());
+      ret = ret.exist(_domainHelper.getTransientBits());
+      ret = _domainHelper.applyTransformerMods(ret, t);
+    }
+    if (t.getCost() != null || t.getNextHopIp() != null) {
+      BDDTransferFunction addedCost = implicitTransfer(t.getCost(), t.getNextHopIp());
+      EdgeTransformer et =
+          new EdgeTransformer(
+              t.getEdge(),
+              t.getEdgeType(),
+              t.getProtocol(),
+              addedCost,
+              t.getCost(),
+              t.getNextHopIp(),
+              t.getBddAcl());
+      ret = _domainHelper.applyTransformerMods(ret, et);
+    }
+    return ret;
+  }
+
+  /*
+   * Creates a modification that increments the metric by 'cost'.
+   */
+  private BDDTransferFunction implicitTransfer(@Nullable Integer cost, @Nullable Ip nextHop) {
+    BDDRoute route = _netFactory.routeVariables().deepCopy();
+    if (cost != null) {
+      // update metric
+      BDDInteger met = route.getMetric();
+      BDDInteger addedCost = new BDDInteger(met);
+      addedCost.setValue(cost);
+      route.setMetric(met.add(addedCost));
+    }
+    if (nextHop != null) {
+      // update next hop
+      BDDFiniteDomain<Ip> nh = route.getNextHopIp();
+      BDDFiniteDomain<Ip> value = new BDDFiniteDomain<>(nh);
+      value.setValue(nextHop);
+      route.setNextHopIp(value);
+    }
+    return new BDDTransferFunction(route, _netFactory.one());
   }
 
   @Override
