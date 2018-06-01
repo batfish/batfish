@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Supplier;
-import org.batfish.common.util.DefinedStructure;
 
 public enum JunosApplicationSet {
   JUNOS_CIFS,
@@ -43,8 +42,7 @@ public enum JunosApplicationSet {
   }
 
   private ApplicationSet init() {
-    ApplicationSet applicationSet =
-        new ApplicationSet(name(), DefinedStructure.IGNORED_DEFINITION_LINE);
+    ApplicationSet applicationSet = new ApplicationSet(name());
 
     List<JunosApplication> applications;
 

@@ -558,7 +558,7 @@ subrange
 variable
 :
    text = ~( APPLY_GROUPS | APPLY_GROUPS_EXCEPT | APPLY_PATH | NEWLINE |
-   OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE | WILDCARD )
+   OPEN_PAREN | OPEN_BRACKET | OPEN_BRACE )
 ;
 
 variable_permissive
@@ -569,6 +569,11 @@ variable_permissive
 variable_policy
 :
    text = ~( DESCRIPTION | MATCH | THEN )+
+;
+
+wildcard
+:
+   WILDCARD | WILDCARD_ARTIFACT
 ;
 
 wildcard_address

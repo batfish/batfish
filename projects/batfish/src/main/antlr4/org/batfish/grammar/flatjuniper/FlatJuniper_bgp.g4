@@ -45,9 +45,9 @@ b_allow
 :
    ALLOW
    (
-       IP_PREFIX
-       | IPV6_PREFIX
-       | ALL
+      IP_PREFIX
+      | IPV6_PREFIX
+      | ALL
    )
 ;
 
@@ -135,11 +135,7 @@ b_family
 
 b_group
 :
-   GROUP
-   (
-      name = variable
-      | WILDCARD
-   )
+   GROUP name = variable
    (
       b_common
       | b_neighbor
@@ -187,7 +183,7 @@ b_neighbor
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-      | WILDCARD
+      | wildcard
    ) b_common
 ;
 
