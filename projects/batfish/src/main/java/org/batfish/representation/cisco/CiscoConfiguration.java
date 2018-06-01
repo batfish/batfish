@@ -946,45 +946,53 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _vrrpGroups;
   }
 
-  private void markAcls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.IP_ACCESS_LIST,
-        usage,
-        ImmutableList.of(
-            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+  private void markAcls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.IP_ACCESS_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+    }
   }
 
-  private void markIpOrMacAcls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.ACCESS_LIST,
-        usage,
-        Arrays.asList(
-            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-            CiscoStructureType.MAC_ACCESS_LIST));
+  private void markIpOrMacAcls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.ACCESS_LIST,
+          usage,
+          Arrays.asList(
+              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
+              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
+              CiscoStructureType.MAC_ACCESS_LIST));
+    }
   }
 
-  private void markIpv4Acls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.IPV4_ACCESS_LIST,
-        usage,
-        ImmutableList.of(
-            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
+  private void markIpv4Acls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.IPV4_ACCESS_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
+    }
   }
 
-  private void markIpv6Acls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.IPV6_ACCESS_LIST,
-        usage,
-        ImmutableList.of(
-            CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+  private void markIpv6Acls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.IPV6_ACCESS_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+    }
   }
 
   private void processFailoverSettings() {
@@ -3348,53 +3356,53 @@ public final class CiscoConfiguration extends VendorConfiguration {
           e.getValue());
     }
 
-    // mark references to IPv4/6 ACLs that may not appear in data model
-    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
-    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
-    markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
-    markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
-    markAcls(CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP);
-    markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_INCOMING_FILTER);
-    markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_OUTGOING_FILTER);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER);
-    markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
-    markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6);
-    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST);
-    markIpv4Acls(CiscoStructureUsage.NTP_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_RP_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_ADDRESS_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_CANDIDATE_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL);
-    markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST);
-    markIpv4Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST);
-    markIpv6Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST);
-    markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL);
-    markIpv4Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4);
-    markIpv6Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6);
-    markAcls(CiscoStructureUsage.SSH_ACL);
-    markIpv4Acls(CiscoStructureUsage.SSH_IPV4_ACL);
-    markIpv6Acls(CiscoStructureUsage.SSH_IPV6_ACL);
-    markAcls(CiscoStructureUsage.WCCP_GROUP_LIST);
-    markAcls(CiscoStructureUsage.WCCP_REDIRECT_LIST);
-    markAcls(CiscoStructureUsage.WCCP_SERVICE_LIST);
-
-    // mark references to mac-ACLs that may not appear in data model
-    // TODO: fill in
+    // mark references to ACLs that may not appear in data model
+    markIpOrMacAcls(
+        CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
+    markIpv4Acls(
+        CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
+        CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
+        CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
+        CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
+        CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
+        CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
+        CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
+        CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
+        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST,
+        CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
+        CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
+        CiscoStructureUsage.MSDP_PEER_SA_LIST,
+        CiscoStructureUsage.NTP_ACCESS_GROUP,
+        CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL,
+        CiscoStructureUsage.PIM_ACCEPT_RP_ACL,
+        CiscoStructureUsage.PIM_RP_ADDRESS_ACL,
+        CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER,
+        CiscoStructureUsage.PIM_RP_CANDIDATE_ACL,
+        CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
+        CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
+        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
+        CiscoStructureUsage.SSH_IPV4_ACL);
+    markIpv6Acls(
+        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
+        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
+        CiscoStructureUsage.SSH_IPV6_ACL);
+    markAcls(
+        CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
+        CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
+        CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
+        CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
+        CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
+        CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
+        CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
+        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
+        CiscoStructureUsage.SSH_ACL,
+        CiscoStructureUsage.WCCP_GROUP_LIST,
+        CiscoStructureUsage.WCCP_REDIRECT_LIST,
+        CiscoStructureUsage.WCCP_SERVICE_LIST);
 
     markConcreteStructure(
         CiscoStructureType.PREFIX_LIST,
