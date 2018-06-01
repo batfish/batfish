@@ -145,14 +145,18 @@ public class NodesSpecifierTest {
   public void constructorImplicitName() {
     NodesSpecifier specifier = new NodesSpecifier("lhr-.*");
     assertThat(specifier.getType(), equalTo(Type.NAME));
-    assertThat(specifier.getRegex().pattern(), equalTo(Pattern.compile("lhr-.*").pattern()));
+    assertThat(
+        specifier.getRegex().pattern(),
+        equalTo(Pattern.compile("lhr-.*", Pattern.CASE_INSENSITIVE).pattern()));
   }
 
   @Test
   public void constructorExplicitName() {
     NodesSpecifier specifier = new NodesSpecifier("name:lhr-.*");
     assertThat(specifier.getType(), equalTo(Type.NAME));
-    assertThat(specifier.getRegex().pattern(), equalTo(Pattern.compile("lhr-.*").pattern()));
+    assertThat(
+        specifier.getRegex().pattern(),
+        equalTo(Pattern.compile("lhr-.*", Pattern.CASE_INSENSITIVE).pattern()));
   }
 
   @Test
@@ -160,7 +164,9 @@ public class NodesSpecifierTest {
     NodesSpecifier specifier = new NodesSpecifier("role:dim:svr.*");
     assertThat(specifier.getType(), equalTo(Type.ROLE));
     assertThat(specifier.getRoleDimension(), equalTo("dim"));
-    assertThat(specifier.getRegex().pattern(), equalTo(Pattern.compile("svr.*").pattern()));
+    assertThat(
+        specifier.getRegex().pattern(),
+        equalTo(Pattern.compile("svr.*", Pattern.CASE_INSENSITIVE).pattern()));
   }
 
   @Test

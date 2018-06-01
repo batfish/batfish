@@ -69,7 +69,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
       SortedSet<NodeRoleDimension> roleDimensions =
-          new InferRoles(nodes, configurations, _batfish).call();
+          new InferRoles(nodes, configurations, _batfish, question.getCaseSensitive()).call();
       answerElement.getRoleDimensions().addAll(roleDimensions);
 
       for (NodeRoleDimension dimension : roleDimensions) {
@@ -99,10 +99,15 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
+    private static final String PROP_CASE_SENSITIVE = "caseSensitive";
+
     private NodesSpecifier _nodeRegex;
+
+    private boolean _caseSensitive;
 
     public InferRolesQuestion() {
       _nodeRegex = NodesSpecifier.ALL;
+      _caseSensitive = false;
     }
 
     @Override
@@ -123,6 +128,16 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
+    }
+
+    @JsonProperty(PROP_CASE_SENSITIVE)
+    public boolean getCaseSensitive() {
+      return _caseSensitive;
+    }
+
+    @JsonProperty(PROP_CASE_SENSITIVE)
+    public void setCaseSensitive(boolean caseSensitive) {
+      _caseSensitive = caseSensitive;
     }
   }
 

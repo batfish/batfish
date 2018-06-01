@@ -13,17 +13,29 @@ public class NodeRole implements Comparable<NodeRole> {
 
   private static final String PROP_REGEX = "regex";
 
+  private static final String PROP_CASE_SENSITIVE = "caseSensitive";
+
   @Nonnull private final String _name;
 
   @Nonnull private final String _regex;
 
+  private final boolean _caseSensitive;
+
   private final transient Pattern _compiledPattern;
 
   @JsonCreator
-  public NodeRole(@JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_REGEX) String regex) {
+  public NodeRole(
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_REGEX) String regex,
+      @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
     _name = name;
     _regex = regex;
-    _compiledPattern = Pattern.compile(regex);
+    _caseSensitive = caseSensitive;
+    _compiledPattern = Pattern.compile(regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+  }
+
+  public NodeRole(@JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_REGEX) String regex) {
+    this(name, regex, false);
   }
 
   @Override
@@ -42,6 +54,11 @@ public class NodeRole implements Comparable<NodeRole> {
   @JsonProperty(PROP_REGEX)
   public String getRegex() {
     return _regex;
+  }
+
+  @JsonProperty(PROP_CASE_SENSITIVE)
+  public boolean getCaseSensitive() {
+    return _caseSensitive;
   }
 
   @Override
