@@ -67,11 +67,16 @@ public class Rows implements Serializable {
   }
 
   /**
-   * Returns a Row with the specified {@code key} if one exists; otherwise returns null. {@code
-   * metadata} is used to extract keys from rows.
+   * Returns a Row with the specified {@code key} if one exists.
+   *
+   * <p>It will return the first such Row encountered in the iteration if multiple such rows exist.
+   * Returns null if no such row exists.
    *
    * <p>TODO: This is highly inefficient currently; need data structure that can help look up rows
    * by key
+   *
+   * @param key The key value to match on
+   * @param metadata ColumnMetadata used as reference to extract keys from rows.
    */
   public Row getRow(Object key, List<ColumnMetadata> metadata) {
     Iterator<Row> iterator = iterator();

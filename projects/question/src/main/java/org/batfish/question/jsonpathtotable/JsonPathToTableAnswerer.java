@@ -277,7 +277,7 @@ public class JsonPathToTableAnswerer extends Answerer {
       ObjectNode answerValues) {
     if (extraction.getSchema().getType() == Type.LIST
         || extraction.getSchema().getType() == Type.SET) {
-      throw new BatfishException("Prefix-based hints are incompatible with list types");
+      throw new BatfishException("Prefix-based hints are incompatible with list or set types");
     }
     answerValues.set(varName, new TextNode(jpResult.getPrefixPart(extraction.getIndex())));
   }

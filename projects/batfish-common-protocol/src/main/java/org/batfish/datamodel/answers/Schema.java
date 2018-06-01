@@ -70,10 +70,12 @@ public class Schema {
   public static final Schema PREFIX = new Schema("Prefix");
   public static final Schema STRING = new Schema("String");
 
+  /** Generates a list Schema with the give base schema */
   public static final Schema list(Schema baseSchema) {
     return new Schema("List<" + baseSchema._schemaStr + ">");
   }
 
+  /** Generates a set Schema from the give base schema */
   public static final Schema set(Schema baseSchema) {
     return new Schema("Set<" + baseSchema._schemaStr + ">");
   }
@@ -144,6 +146,7 @@ public class Schema {
     return Objects.hash(_baseType, _type);
   }
 
+  /** Whether this Schema object is Integer-based (base, list, or set) */
   public boolean isIntBased() {
     return _baseType.equals(Integer.class);
   }
