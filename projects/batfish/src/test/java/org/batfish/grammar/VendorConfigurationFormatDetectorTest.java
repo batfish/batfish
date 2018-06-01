@@ -77,14 +77,14 @@ public class VendorConfigurationFormatDetectorTest {
 
     String notPaloAlto = "other config line\n";
 
-    /* Identify hierarchical PAN configs */
+    /* Confirm hierarchical PAN configs are correctly identified */
     for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama, deviceConfig)) {
       assertThat(
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
           equalTo(ConfigurationFormat.PALO_ALTO));
     }
 
-    /* Identify flat (set-style) PAN configs */
+    /* Confirm flat (set-style) PAN configs are correctly identified */
     for (String fileText :
         ImmutableList.of(flatRancid, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
       assertThat(
@@ -92,7 +92,7 @@ public class VendorConfigurationFormatDetectorTest {
           equalTo(ConfigurationFormat.FLAT_PALO_ALTO));
     }
 
-    /* Make sure non-Palo Alto config line is not mis-identified */
+    /* Make sure non-Palo Alto config line is not misidentified */
     assertThat(
         VendorConfigurationFormatDetector.identifyConfigurationFormat(notPaloAlto),
         not(
