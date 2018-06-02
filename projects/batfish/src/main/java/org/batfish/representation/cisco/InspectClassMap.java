@@ -2,9 +2,9 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
+import org.batfish.common.util.ComparableStructure;
 
-public class InspectClassMap extends DefinedStructure<String> {
+public class InspectClassMap extends ComparableStructure<String> {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -13,8 +13,8 @@ public class InspectClassMap extends DefinedStructure<String> {
 
   private MatchSemantics _matchSemantics;
 
-  public InspectClassMap(String name, int definitionLine) {
-    super(name, definitionLine);
+  public InspectClassMap(String name) {
+    super(name);
     _matches = new ArrayList<>();
   }
 

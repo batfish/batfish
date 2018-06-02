@@ -148,7 +148,6 @@ import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.ReachabilitySettings;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
@@ -2747,9 +2746,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(ReachabilitySettings reachabilitySettings) {
+  public AnswerElement multipath(ReachabilityParameters reachabilityParameters) {
     return singleReachability(
-        reachabilitySettings, MultipathInconsistencyQuerySynthesizer.builder());
+        reachabilityParameters, MultipathInconsistencyQuerySynthesizer.builder());
   }
 
   @Override
@@ -2984,7 +2983,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings) {
+  public AnswerElement pathDiff(ReachabilityParameters reachabilityParameters) {
+    /* TODO pathDiff deserves its own parameter set type.
+     * Sources are ignored, since we always originate from vrfs that have missing or removed
+     * edges. So the user-facing question shouldn't include a source parameter.
+     */
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3031,7 +3034,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
       ReachEdgeQuerySynthesizer reachQuery =
           new ReachEdgeQuerySynthesizer(
-              ingressNode, vrf, edge, true, reachabilitySettings.getHeaderSpace());
+              ingressNode, vrf, edge, true, reachabilityParameters.getHeaderSpace());
       ReachEdgeQuerySynthesizer noReachQuery =
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
@@ -3061,7 +3064,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .getName();
         ReachEdgeQuerySynthesizer reachQuery =
             new ReachEdgeQuerySynthesizer(
-                ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
+                ingressNode, vrf, missingEdge, true, reachabilityParameters.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
         Map<IngressLocation, BooleanExpr> srcIpConstraint =
             ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
@@ -3485,15 +3488,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement reducedReachability(ReachabilitySettings reachabilitySettings) {
-    ReachabilityParameters params = reachabilitySettings.toReachabilityParameters();
+  public AnswerElement reducedReachability(ReachabilityParameters params) {
     checkDifferentialDataPlaneQuestionDependencies();
     pushBaseEnvironment();
     ResolvedReachabilityParameters baseParams;
     try {
       baseParams = resolveReachabilityParameters(this, params, getSnapshot());
     } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidSettingsAnswer();
+      return e.getInvalidParametersAnswer();
     }
     popEnvironment();
 
@@ -3502,7 +3504,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       deltaParams = resolveReachabilityParameters(this, params, getSnapshot());
     } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidSettingsAnswer();
+      return e.getInvalidParametersAnswer();
     }
     popEnvironment();
 
@@ -4202,21 +4204,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private AnswerElement singleReachability(
-      ReachabilitySettings reachabilitySettings,
+      ReachabilityParameters reachabilityParameters,
       ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
 
     ResolvedReachabilityParameters parameters;
     try {
-      parameters =
-          resolveReachabilityParameters(
-              this, reachabilitySettings.toReachabilityParameters(), getSnapshot());
+      parameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
     } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidSettingsAnswer();
+      return e.getInvalidParametersAnswer();
     }
 
-    Set<ForwardingAction> actions = reachabilitySettings.getActions();
+    Set<ForwardingAction> actions = reachabilityParameters.getActions();
 
     Map<String, Configuration> configurations = parameters.getConfigurations();
     DataPlane dataPlane = parameters.getDataPlane();
@@ -4232,7 +4232,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
             forbiddenTransitNodes,
             requiredTransitNodes,
             parameters.getSourceIpAssignment(),
-            reachabilitySettings.getSpecialize());
+            reachabilityParameters.getSpecialize());
 
     Map<IngressLocation, BooleanExpr> srcIpConstraints =
         dataPlaneSynthesizer.getInput().getSrcIpConstraints();
@@ -4358,8 +4358,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement standard(ReachabilitySettings reachabilitySettings) {
-    return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
+  public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
+    return singleReachability(
+        reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
   }
 
   private Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {

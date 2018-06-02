@@ -162,6 +162,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
@@ -1654,9 +1655,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication(n, line));
+        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
     _currentApplicationTerm = _currentApplication.getMainTerm();
     defineStructure(APPLICATION, name, ctx);
   }
@@ -1664,9 +1664,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterA_application_set(A_application_setContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentApplicationSet =
-        _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet(n, line));
+        _configuration.getApplicationSets().computeIfAbsent(name, ApplicationSet::new);
     defineStructure(APPLICATION_SET, name, ctx);
   }
 
@@ -3206,6 +3205,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitI_description(I_descriptionContext ctx) {
+    String text = unquote(ctx.description().text.getText());
+    _currentInterface.setDescription(text);
+  }
+
+  @Override
   public void exitI_disable(I_disableContext ctx) {
     _currentInterface.setActive(false);
   }
@@ -3836,10 +3841,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopst_next_term(Popst_next_termContext ctx) {
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' then clause: %s",
-            getFullText(ctx)));
+    // The next-term action itself is a no-op in Batfish, so we do not model this behavior.
+    //
+    // TODO(https://github.com/batfish/batfish/issues/1551): need to implement next_term replacing
+    // any existing flow control action.
   }
 
   @Override
@@ -4552,7 +4557,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    Vlan vlan = new Vlan(_currentVlanName, ctx.id.getLine(), toInt(ctx.id));
+    Vlan vlan = new Vlan(_currentVlanName, toInt(ctx.id));
     _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
   }
 
