@@ -14,6 +14,18 @@ import org.junit.Test;
 
 public class TableDiffTest {
 
+  private static List<ColumnMetadata> mixColumns() {
+    return ImmutableList.of(
+        new ColumnMetadata("key", Schema.STRING, "key", true, false),
+        new ColumnMetadata("both", Schema.STRING, "both", true, true),
+        new ColumnMetadata("value", Schema.STRING, "value", false, true),
+        new ColumnMetadata("neither", Schema.STRING, "neither", false, false));
+  }
+
+  private static Row mixRow(String key, String both, String value, String neither) {
+    return Row.of("key", key, "both", both, "value", value, "neither", neither);
+  }
+
   @Test
   public void diffCells() {
     /** One value is null */
@@ -43,22 +55,17 @@ public class TableDiffTest {
 
   @Test
   public void diffMetadata() {
-    List<ColumnMetadata> inputColumns =
-        ImmutableList.of(
-            new ColumnMetadata("key", Schema.INTEGER, "key", true, false),
-            new ColumnMetadata("value", Schema.INTEGER, "value", false, true),
-            new ColumnMetadata("both", Schema.INTEGER, "both", true, true),
-            new ColumnMetadata("neither", Schema.INTEGER, "neither", false, false));
+    List<ColumnMetadata> inputColumns = mixColumns();
 
     /**
      * "key" and "both" should be present as keys; three versions of "value" should be present; and
-     * "neither" should be missing
+     * two versions of "neither" should be present
      */
     TableMetadata expectedMetadata =
         new TableMetadata(
             ImmutableList.of(
-                new ColumnMetadata("key", Schema.INTEGER, "key", true, false),
-                new ColumnMetadata("both", Schema.INTEGER, "both", true, false),
+                new ColumnMetadata("key", Schema.STRING, "key", true, false),
+                new ColumnMetadata("both", Schema.STRING, "both", true, false),
                 new ColumnMetadata(
                     TableDiff.diffColumnName("value"),
                     Schema.STRING,
@@ -66,9 +73,13 @@ public class TableDiffTest {
                     false,
                     true),
                 new ColumnMetadata(
-                    TableDiff.baseColumnName("value"), Schema.INTEGER, "value", false, false),
+                    TableDiff.baseColumnName("value"), Schema.STRING, "value", false, false),
                 new ColumnMetadata(
-                    TableDiff.deltaColumnName("value"), Schema.INTEGER, "value", false, false)),
+                    TableDiff.deltaColumnName("value"), Schema.STRING, "value", false, false),
+                new ColumnMetadata(
+                    TableDiff.baseColumnName("neither"), Schema.STRING, "neither", false, false),
+                new ColumnMetadata(
+                    TableDiff.deltaColumnName("neither"), Schema.STRING, "neither", false, false)),
             new DisplayHints(null, null, "[key, both]"));
 
     assertThat(
@@ -77,44 +88,40 @@ public class TableDiffTest {
 
   @Test
   public void diffRowValues() {
-    Row baseRow = Row.builder().put("key1", "value1").put("key2", null).build();
-    Row deltaRow = Row.builder().put("key1", null).put("key2", "value2").build();
-    List<ColumnMetadata> cols =
-        ImmutableList.of(
-            new ColumnMetadata("key1", Schema.STRING, "desc1"),
-            new ColumnMetadata("key2", Schema.STRING, "desc2"));
+    Row baseRow = mixRow("key1", "both1", "value1", null);
+    Row deltaRow = mixRow(null, null, null, "neither2");
 
     RowBuilder diff = Row.builder();
-    TableDiff.diffRowValues(diff, baseRow, deltaRow, cols);
+    TableDiff.diffRowValues(diff, baseRow, deltaRow, new TableMetadata(mixColumns(), null));
     assertThat(
         diff.build(),
         equalTo(
             Row.of(
-                // key1
-                TableDiff.diffColumnName("key1"),
+                // value
+                TableDiff.diffColumnName("value"),
                 TableDiff.diffCells("value1", null, Schema.STRING),
-                TableDiff.baseColumnName("key1"),
+                TableDiff.baseColumnName("value"),
                 "value1",
-                TableDiff.deltaColumnName("key1"),
+                TableDiff.deltaColumnName("value"),
                 null,
-                // key2
-                TableDiff.diffColumnName("key2"),
-                TableDiff.diffCells(null, "value2", Schema.STRING),
-                TableDiff.baseColumnName("key2"),
+                // neither
+                TableDiff.baseColumnName("neither"),
                 null,
-                TableDiff.deltaColumnName("key2"),
-                "value2")));
+                TableDiff.deltaColumnName("neither"),
+                "neither2")));
   }
 
   /** One of the rows is null */
   @Test
   public void diffRowValuesNull() {
     Row row = Row.of("key", "value");
-    List<ColumnMetadata> cols = ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "desc"));
+    TableMetadata metadata =
+        new TableMetadata(
+            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "desc", false, true)), null);
 
     // delta is null
     RowBuilder diff1 = Row.builder();
-    TableDiff.diffRowValues(diff1, row, null, cols);
+    TableDiff.diffRowValues(diff1, row, null, metadata);
     assertThat(
         diff1.build(),
         equalTo(
@@ -128,7 +135,7 @@ public class TableDiffTest {
 
     // base is null
     RowBuilder diff2 = Row.builder();
-    TableDiff.diffRowValues(diff2, null, row, cols);
+    TableDiff.diffRowValues(diff2, null, row, metadata);
     assertThat(
         diff2.build(),
         equalTo(
@@ -181,28 +188,11 @@ public class TableDiffTest {
 
   @Test
   public void diffTablesTestRowComposition() {
-    List<ColumnMetadata> columns =
-        ImmutableList.of(
-            new ColumnMetadata("key", Schema.STRING, "key", true, false),
-            new ColumnMetadata("both", Schema.STRING, "both", true, true),
-            new ColumnMetadata("value", Schema.STRING, "value", false, true),
-            new ColumnMetadata("neither", Schema.STRING, "neither", false, false));
+    List<ColumnMetadata> columns = mixColumns();
     TableMetadata metadata = new TableMetadata(columns, null);
 
-    Row row1 =
-        Row.builder()
-            .put("key", "key1")
-            .put("both", "both1")
-            .put("value", "value1")
-            .put("neither", "neither1")
-            .build();
-    Row row2 =
-        Row.builder()
-            .put("key", "key1")
-            .put("both", "both1")
-            .put("value", "value2")
-            .put("neither", "neither2")
-            .build();
+    Row row1 = mixRow("key1", "both1", "value1", "neither1");
+    Row row2 = mixRow("key1", "both1", "value2", "neither2");
 
     TableAnswerElement table1 = new TableAnswerElement(metadata).addRow(row1);
     TableAnswerElement table2 = new TableAnswerElement(metadata).addRow(row2);
@@ -216,6 +206,8 @@ public class TableDiffTest {
                     .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
+                    .put(TableDiff.baseColumnName("neither"), "neither1")
+                    .put(TableDiff.deltaColumnName("neither"), "neither2")
                     .build());
 
     assertThat(TableDiff.diffTables(table1, table2).getRows(), equalTo(expectedRows));
