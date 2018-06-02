@@ -3744,7 +3744,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_zone(S_zoneContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _configuration.getSecurityZones().computeIfAbsent(name, n -> new SecurityZone(n));
     defineStructure(SECURITY_ZONE, name, ctx);
   }
