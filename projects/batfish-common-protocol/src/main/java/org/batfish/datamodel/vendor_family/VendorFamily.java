@@ -1,10 +1,20 @@
 package org.batfish.datamodel.vendor_family;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 
 public class VendorFamily implements Serializable {
+
+  public enum Type {
+    AWS,
+    CISCO,
+    JUNIPER,
+    UNKNOWN
+  }
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -37,5 +47,29 @@ public class VendorFamily implements Serializable {
 
   public void setJuniper(JuniperFamily juniper) {
     _juniper = juniper;
+  }
+
+
+  private static Type toFamilyType(Object family) {
+    if (family instanceof AwsFamily) {
+      return Type.AWS;
+    } else if (family instanceof CiscoFamily) {
+      return Type.CISCO;
+    } else if (family instanceof JuniperFamily) {
+      return Type.JUNIPER;
+    }
+    return Type.UNKNOWN;
+  }
+
+  /** Concatenates all non-null family pointers */
+  @Override
+  public String toString() {
+    return String.join(
+        " ",
+        Arrays.asList(_aws, _cisco, _juniper)
+            .stream()
+            .filter(f -> f != null)
+            .map(f -> Objects.toString(toFamilyType(f)))
+            .collect(Collectors.toList()));
   }
 }
