@@ -24,7 +24,7 @@ public class AiRoutesQuestionPlugin extends QuestionPlugin {
       AiRoutesQuestion q = (AiRoutesQuestion) _question;
 
       NodesSpecifier ns = new NodesSpecifier(q.getNodeRegex());
-      return _batfish.aiRoutes(ns, DomainType.EXACT);
+      return _batfish.aiRoutes(ns, q.getDomainType());
     }
   }
 
@@ -32,7 +32,11 @@ public class AiRoutesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
+    private static final String PROP_DOMAIN_TYPE = "domainType";
+
     private String _nodeRegex = ".*";
+
+    private DomainType _domainType = DomainType.REACHABILITY;
 
     @Override
     public boolean getDataPlane() {
@@ -52,6 +56,16 @@ public class AiRoutesQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(String x) {
       _nodeRegex = x;
+    }
+
+    @JsonProperty(PROP_DOMAIN_TYPE)
+    public DomainType getDomainType() {
+      return _domainType;
+    }
+
+    @JsonProperty(PROP_DOMAIN_TYPE)
+    public void setDomainType(DomainType x) {
+      this._domainType = x;
     }
   }
 

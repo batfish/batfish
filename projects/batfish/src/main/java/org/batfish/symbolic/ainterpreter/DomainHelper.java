@@ -10,6 +10,7 @@ import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
@@ -536,6 +537,42 @@ public class DomainHelper {
       _lengthCache.put(i, len);
     }
     return len;
+  }
+
+  public BDD aggregates(
+      BDDNetwork network, String router, BDD x, List<AggregateTransformer> aggregates) {
+    BDD acc = x;
+    for (AggregateTransformer t : aggregates) {
+      BDDTransferFunction f = network.getGeneratedRoutes().get(t.getRouter(), t.getPolicyName());
+      assert (f != null);
+      BDD aggregated = x.and(f.getFilter());
+      if (!aggregated.isZero()) {
+        GeneratedRoute r = t.getGeneratedRoute();
+
+        // Create a new aggregate route
+        BDD prefix = BDDUtils.prefixToBdd(_netFactory.getFactory(), _variables, r.getNetwork());
+        BDD proto = _netFactory.one();
+        BDD ad = _netFactory.one();
+        BDD lp = _netFactory.one();
+        BDD dstRouter = _netFactory.one();
+        if (_netFactory.getConfig().getKeepProtocol()) {
+          proto = _variables.getProtocolHistory().value(RoutingProtocol.AGGREGATE);
+        }
+        if (_netFactory.getConfig().getKeepAd()) {
+          ad = _variables.getAdminDist().value((long) r.getAdministrativeCost());
+        }
+        if (_netFactory.getConfig().getKeepLp()) {
+          lp = _variables.getLocalPref().value(100);
+        }
+        if (_netFactory.getConfig().getKeepRouters()) {
+          dstRouter = _variables.getDstRouter().value(router);
+        }
+
+        BDD route = dstRouter.and(ad).and(lp).and(prefix).and(proto);
+        acc = acc.orWith(route);
+      }
+    }
+    return acc;
   }
 
   /*

@@ -183,6 +183,7 @@ import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.ainterpreter.AbstractDomainFactory;
 import org.batfish.symbolic.ainterpreter.AbstractInterpreter;
 import org.batfish.symbolic.ainterpreter.IAbstractDomain;
+import org.batfish.symbolic.ainterpreter.QueryAnswerer;
 import org.batfish.symbolic.answers.AiRoutesAnswerElement;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
@@ -746,7 +747,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Graph graph = new Graph(this);
     IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
     AbstractInterpreter interpreter = new AbstractInterpreter(graph);
-    return interpreter.reachability(q, domain);
+    QueryAnswerer qa = new QueryAnswerer(graph);
+    return qa.reachability(interpreter, domain, q);
   }
 
   @Override
@@ -754,7 +756,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Graph graph = new Graph(this);
     IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
     AbstractInterpreter interpreter = new AbstractInterpreter(graph);
-    SortedSet<Route> routes = interpreter.computeRoutes(ns, domain);
+    QueryAnswerer qa = new QueryAnswerer(graph);
+    SortedSet<Route> routes = qa.computeRoutes(interpreter, domain, ns);
     AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
     answer.setRoutes(routes);
     return answer;

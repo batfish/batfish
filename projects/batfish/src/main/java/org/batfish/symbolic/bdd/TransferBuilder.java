@@ -980,8 +980,11 @@ class TransferBuilder {
     Set<String> clients = _graph.getRouteReflectorClients().get(router);
     boolean neighborIsClient = neighbor != null && clients != null && clients.contains(neighbor);
 
+    boolean keepRRClient = _netFactory.getConfig().getKeepRRClient();
+    boolean keepAdminDist = _netFactory.getConfig().getKeepAd();
+
     // If it is from an RR client, then we mark it as such on import
-    if (_edgeType == EdgeType.IMPORT && _edge.isAbstract()) {
+    if (_edgeType == EdgeType.IMPORT && _edge.isAbstract() && keepRRClient) {
       boolean fromClient = false;
       if (neighborIsClient) {
         fromClient = true;
@@ -993,7 +996,7 @@ class TransferBuilder {
     // If learned in the Ibgp protocol, then export should allow when either
     // (1) learned from client --> to everyone
     // (2) learned from nonclient --> to client
-    if (_edgeType == EdgeType.EXPORT && _edge.isAbstract()) {
+    if (_edgeType == EdgeType.EXPORT && _edge.isAbstract() && keepRRClient) {
       BDD oldFilterAllow = result.getReturnValue().getFilter();
       BDD ibgp = route.getProtocolHistory().value(RoutingProtocol.IBGP);
       BDD fromNonClient = route.getFromRRClient().not();
@@ -1007,7 +1010,8 @@ class TransferBuilder {
 
     // Set administrative distance for protocol
     if ((_protocol == RoutingProtocol.BGP || _protocol == RoutingProtocol.OSPF)
-        && _edgeType == EdgeType.EXPORT) {
+        && _edgeType == EdgeType.EXPORT
+        && keepAdminDist) {
       BDDFiniteDomain<Long> ad = route.getAdminDist();
       BDDFiniteDomain<Long> newAd = new BDDFiniteDomain<>(ad);
       newAd.setValue((long) _protocol.getDefaultAdministrativeCost(_conf.getConfigurationFormat()));

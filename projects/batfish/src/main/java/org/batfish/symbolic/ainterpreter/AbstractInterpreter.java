@@ -9,9 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
-import net.sf.javabdd.BDD;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Flow;
@@ -22,23 +19,13 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.AnswerElement;
-import org.batfish.datamodel.questions.NodesSpecifier;
-import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.Protocol;
-import org.batfish.symbolic.answers.AiReachabilityAnswerElement;
-import org.batfish.symbolic.bdd.BDDFiniteDomain;
-import org.batfish.symbolic.bdd.BDDNetFactory;
-import org.batfish.symbolic.bdd.BDDRoute;
-import org.batfish.symbolic.bdd.BDDUtils;
-import org.batfish.symbolic.bdd.SatAssignment;
-import org.batfish.symbolic.collections.Table2;
+import org.batfish.symbolic.collections.Table3;
 import org.batfish.symbolic.smt.EdgeType;
 import org.batfish.symbolic.utils.Tuple;
 
@@ -109,13 +96,14 @@ public class AbstractInterpreter {
 
   private <T> boolean withdrawn(
       IAbstractDomain<T> domain,
-      Table2<String, GraphEdge, T> perNeighbor,
+      Table3<String, String, GraphEdge, T> perNeighbor,
       String router,
+      RoutingProtocol proto,
       GraphEdge edge,
       T newValue) {
-
-    T existing = perNeighbor.get(router, edge);
-    perNeighbor.put(router, edge, newValue);
+    String protoName = proto.protocolName();
+    T existing = perNeighbor.get(router, protoName, edge);
+    perNeighbor.put(router, protoName, edge, newValue);
     if (existing == null) {
       return false;
     }
@@ -123,89 +111,9 @@ public class AbstractInterpreter {
     return (!both.equals(newValue));
   }
 
-  /*
-   * Iteratively computes a fixed point over an abstract domain.
-   * Starts with some initial advertisements that are 'originated'
-   * by different protocols and maintains an underapproximation of
-   * reachable sets at each router for every iteration.
-   */
-  private <T> Map<String, AbstractRib<T>> computeFixedPoint(IAbstractDomain<T> domain) {
-    Map<String, Set<Prefix>> origBgp = new HashMap<>();
-    Map<String, Set<Prefix>> origOspf = new HashMap<>();
-    Map<String, Set<Tuple<Prefix, String>>> origConn = new HashMap<>();
-    Map<String, Map<String, Set<Prefix>>> origStatic = new HashMap<>();
-    initializeOriginatedPrefixes(origBgp, origOspf, origConn, origStatic);
+  public <T> void computeFixedPoint(
+      IAbstractDomain<T> domain, AbstractState<T> state, Set<String> initialRouters) {
 
-    // The up-to-date collection of messages from each protocol
-    Map<String, AbstractRib<T>> reachable = new HashMap<>();
-
-    // Cache of all messages that can't change, so we don't have to recompute
-    Map<String, T> nonDynamic = new HashMap<>();
-
-    // Per-neighbor rib information
-    Table2<String, GraphEdge, T> perNeighbor = new Table2<>();
-
-    Set<String> initialRouters = new HashSet<>();
-    long t = System.currentTimeMillis();
-    for (String router : _graph.getRouters()) {
-      Configuration conf = _graph.getConfigurations().get(router);
-      Set<Prefix> bgpPrefixes = origBgp.get(router);
-      Set<Prefix> ospfPrefixes = origOspf.get(router);
-      Set<Tuple<Prefix, String>> connPrefixes = origConn.get(router);
-      Map<String, Set<Prefix>> staticPrefixes = origStatic.get(router);
-      Set<Prefix> localPrefixes = new HashSet<>();
-
-      for (Interface iface : _graph.getConfigurations().get(router).getInterfaces().values()) {
-        Ip ip = iface.getAddress().getIp();
-        Prefix pfx = new Prefix(ip, 32);
-        Tuple<Prefix, String> tup = new Tuple<>(pfx, iface.getName());
-        if (!connPrefixes.contains(tup)) {
-          localPrefixes.add(pfx);
-        }
-      }
-
-      Set<Prefix> connectedPrefixes = new HashSet<>();
-      for (Tuple<Prefix, String> tup : connPrefixes) {
-        connectedPrefixes.add(tup.getFirst());
-      }
-
-      if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
-        initialRouters.add(router);
-      }
-      if (staticPrefixes != null && !staticPrefixes.isEmpty()) {
-        initialRouters.add(router);
-      }
-      if (ospfPrefixes != null && !ospfPrefixes.isEmpty()) {
-        initialRouters.add(router);
-      }
-
-      T bgp = domain.bot();
-      T ospf = domain.selectBest(domain.value(conf, RoutingProtocol.OSPF, ospfPrefixes));
-      T conn = domain.selectBest(domain.value(conf, RoutingProtocol.CONNECTED, connectedPrefixes));
-      T local = domain.selectBest(domain.value(conf, RoutingProtocol.LOCAL, localPrefixes));
-      T stat = domain.bot();
-      if (staticPrefixes != null) {
-        for (Entry<String, Set<Prefix>> e : staticPrefixes.entrySet()) {
-          String neighbor = e.getKey();
-          Set<Prefix> prefixes = e.getValue();
-          neighbor = (neighbor == null || neighbor.equals("(none)") ? router : neighbor);
-          Configuration neighborConf = _graph.getConfigurations().get(neighbor);
-          T statForNeighbor = domain.value(neighborConf, RoutingProtocol.STATIC, prefixes);
-          stat = domain.merge(stat, statForNeighbor);
-        }
-      }
-
-      T ndyn = domain.merge(domain.merge(stat, conn), local);
-      nonDynamic.put(router, ndyn);
-
-      T rib = domain.selectBest(domain.merge(domain.merge(bgp, ospf), ndyn));
-      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib);
-      reachable.put(router, abstractRib);
-    }
-
-    System.out.println("Time for network to BDD conversion: " + (System.currentTimeMillis() - t));
-
-    // Initialize the workset
     Set<String> updateSet = new HashSet<>();
     Queue<String> update = new ArrayDeque<>();
     for (String router : initialRouters) {
@@ -216,8 +124,7 @@ public class AbstractInterpreter {
     long totalTimeSelectBest = 0;
     long totalTimeTransfer = 0;
     long tempTime;
-
-    t = System.currentTimeMillis();
+    long t = System.currentTimeMillis();
 
     while (!update.isEmpty()) {
       String router = update.poll();
@@ -225,7 +132,7 @@ public class AbstractInterpreter {
       updateSet.remove(router);
       Configuration conf = _graph.getConfigurations().get(router);
 
-      AbstractRib<T> r = reachable.get(router);
+      AbstractRib<T> r = state.getPerRouterRoutes().get(router);
       T routerOspf = r.getOspfRib();
       T routerMainRib = r.getMainRib();
 
@@ -239,7 +146,7 @@ public class AbstractInterpreter {
           String neighbor = ge.getPeer();
           Configuration neighborConf = _graph.getConfigurations().get(neighbor);
 
-          AbstractRib<T> nr = reachable.get(neighbor);
+          AbstractRib<T> nr = state.getPerRouterRoutes().get(neighbor);
           T neighborConn = nr.getConnectedRib();
           T neighborStat = nr.getStaticRib();
           T neighborBgp = nr.getBgpRib();
@@ -328,8 +235,8 @@ public class AbstractInterpreter {
               Flow flow2 = fb.build();
 
               doUpdate =
-                  domain.reachable(reachable, router, neighbor, flow1)
-                      && domain.reachable(reachable, neighbor, router, flow2);
+                  domain.reachable(state.getPerRouterRoutes(), router, neighbor, flow1)
+                      && domain.reachable(state.getPerRouterRoutes(), neighbor, router, flow2);
 
               // System.out.println("    Both are reachable? " + doUpdate);
 
@@ -370,7 +277,14 @@ public class AbstractInterpreter {
               }
               tmpBgp = domain.aggregate(neighborConf, transformers, tmpBgp);
 
-              boolean anyWithdraw = withdrawn(domain, perNeighbor, neighbor, rev, tmpBgp);
+              boolean anyWithdraw =
+                  withdrawn(
+                      domain,
+                      state.getPerNeighborRoutes(),
+                      neighbor,
+                      RoutingProtocol.BGP,
+                      rev,
+                      tmpBgp);
               assert (!anyWithdraw);
               // TODO: if withdraw, recompute rib from all neighbors rather than just this one
               newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
@@ -382,7 +296,7 @@ public class AbstractInterpreter {
           }
 
           // Update RIB and apply decision process (if any)
-          T ndyn = nonDynamic.get(neighbor);
+          T ndyn = state.getNonDynamicRoutes().get(neighbor);
           T newNeighborRib = domain.merge(newNeighborBgp, newNeighborOspf);
           newNeighborRib = domain.merge(newNeighborRib, ndyn);
 
@@ -397,7 +311,7 @@ public class AbstractInterpreter {
             AbstractRib<T> newAbstractRib =
                 new AbstractRib<>(
                     newNeighborBgp, newNeighborOspf, neighborStat, neighborConn, newNeighborRib);
-            reachable.put(neighbor, newAbstractRib);
+            state.getPerRouterRoutes().put(neighbor, newAbstractRib);
             if (!updateSet.contains(neighbor)) {
               updateSet.add(neighbor);
               update.add(neighbor);
@@ -410,168 +324,92 @@ public class AbstractInterpreter {
     System.out.println("Time to compute fixedpoint: " + (System.currentTimeMillis() - t));
     System.out.println("Time in select best: " + totalTimeSelectBest);
     System.out.println("Time in transfer: " + totalTimeTransfer);
-    return reachable;
   }
 
-  public <T> SortedSet<Route> computeRoutes(NodesSpecifier ns, IAbstractDomain<T> domain) {
-    Map<String, AbstractRib<T>> reachable = computeFixedPoint(domain);
+  /*
+   * Iteratively computes a fixed point over an abstract domain.
+   * Starts with some initial advertisements that are 'originated'
+   * by different protocols and maintains an underapproximation of
+   * reachable sets at each router for every iteration.
+   */
+  public <T> AbstractState<T> computeFixedPoint(IAbstractDomain<T> domain) {
+    Map<String, Set<Prefix>> origBgp = new HashMap<>();
+    Map<String, Set<Prefix>> origOspf = new HashMap<>();
+    Map<String, Set<Tuple<Prefix, String>>> origConn = new HashMap<>();
+    Map<String, Map<String, Set<Prefix>>> origStatic = new HashMap<>();
+    initializeOriginatedPrefixes(origBgp, origOspf, origConn, origStatic);
 
-    SortedSet<Route> routes = new TreeSet<>();
-    Set<String> routers = ns.getMatchingNodesByName(_graph.getRouters());
+    // The up-to-date collection of messages from each protocol
+    Map<String, AbstractRib<T>> reachable = new HashMap<>();
 
-    for (String router : routers) {
+    // Cache of all messages that can't change, so we don't have to recompute
+    Map<String, T> nonDynamic = new HashMap<>();
 
+    // Per-neighbor rib information
+    Table3<String, String, GraphEdge, T> perNeighbor = new Table3<>();
+
+    Set<String> initialRouters = new HashSet<>();
+    long t = System.currentTimeMillis();
+    for (String router : _graph.getRouters()) {
       Configuration conf = _graph.getConfigurations().get(router);
-      Map<Prefix, String> connPrefixesMap = new HashMap<>();
-      Map<Prefix, String> localPrefixesMap = new HashMap<>();
+      Set<Prefix> bgpPrefixes = origBgp.get(router);
+      Set<Prefix> ospfPrefixes = origOspf.get(router);
+      Set<Tuple<Prefix, String>> connPrefixes = origConn.get(router);
+      Map<String, Set<Prefix>> staticPrefixes = origStatic.get(router);
+      Set<Prefix> localPrefixes = new HashSet<>();
 
-      for (Interface iface : conf.getInterfaces().values()) {
-        InterfaceAddress address = iface.getAddress();
-        if (address != null) {
-          connPrefixesMap.put(address.getPrefix(), iface.getName());
-        }
-      }
-      for (Interface iface : conf.getInterfaces().values()) {
+      for (Interface iface : _graph.getConfigurations().get(router).getInterfaces().values()) {
         Ip ip = iface.getAddress().getIp();
         Prefix pfx = new Prefix(ip, 32);
-        String x = connPrefixesMap.get(pfx);
-        if (x == null || !x.equals(iface.getName())) {
-          localPrefixesMap.put(pfx, iface.getName());
+        Tuple<Prefix, String> tup = new Tuple<>(pfx, iface.getName());
+        if (!connPrefixes.contains(tup)) {
+          localPrefixes.add(pfx);
         }
       }
 
-      // create interface prefix map
-      Map<Ip, String> nhipMap = new HashMap<>();
-      Map<Ip, String> nhopMap = new HashMap<>();
-      for (GraphEdge edge : _graph.getEdgeMap().get(router)) {
-        if (!edge.isAbstract()) {
-          Interface iface = edge.getStart();
-          Prefix p = iface.getAddress().getPrefix();
-          nhipMap.put(p.getStartIp(), iface.getName());
-          Interface peerIface = edge.getEnd();
-          if (peerIface != null) {
-            Ip peerIp = peerIface.getAddress().getIp();
-            nhopMap.put(peerIp, edge.getPeer());
-          }
+      Set<Prefix> connectedPrefixes = new HashSet<>();
+      for (Tuple<Prefix, String> tup : connPrefixes) {
+        connectedPrefixes.add(tup.getFirst());
+      }
+
+      if (bgpPrefixes != null && !bgpPrefixes.isEmpty()) {
+        initialRouters.add(router);
+      }
+      if (staticPrefixes != null && !staticPrefixes.isEmpty()) {
+        initialRouters.add(router);
+      }
+      if (ospfPrefixes != null && !ospfPrefixes.isEmpty()) {
+        initialRouters.add(router);
+      }
+
+      T bgp = domain.bot();
+      T ospf = domain.selectBest(domain.value(conf, RoutingProtocol.OSPF, ospfPrefixes));
+      T conn = domain.selectBest(domain.value(conf, RoutingProtocol.CONNECTED, connectedPrefixes));
+      T local = domain.selectBest(domain.value(conf, RoutingProtocol.LOCAL, localPrefixes));
+      T stat = domain.bot();
+      if (staticPrefixes != null) {
+        for (Entry<String, Set<Prefix>> e : staticPrefixes.entrySet()) {
+          String neighbor = e.getKey();
+          Set<Prefix> prefixes = e.getValue();
+          neighbor = (neighbor == null || neighbor.equals("(none)") ? router : neighbor);
+          Configuration neighborConf = _graph.getConfigurations().get(neighbor);
+          T statForNeighbor = domain.value(neighborConf, RoutingProtocol.STATIC, prefixes);
+          stat = domain.merge(stat, statForNeighbor);
         }
       }
 
-      Map<Prefix, String> staticNhintMap = new HashMap<>();
-      Map<Prefix, String> staticNhop = new HashMap<>();
+      T ndyn = domain.merge(domain.merge(stat, conn), local);
+      nonDynamic.put(router, ndyn);
 
-      _graph
-          .getStaticRoutes()
-          .forEach(
-              (r, iface, srs) -> {
-                for (StaticRoute sr : srs) {
-                  staticNhintMap.put(sr.getNetwork(), sr.getNextHopInterface());
-                  staticNhop.put(sr.getNetwork(), sr.getNextHop());
-                }
-              });
-
-      // build new rib to match Batfish output
-      AbstractRib<T> rib = reachable.get(router);
-      SortedSet<Route> entries = new TreeSet<>(domain.toRoutes(rib));
-      for (Route r : entries) {
-        Ip nhopIp = (r.getNextHopIp().asLong() == 0 ? new Ip(-1) : r.getNextHopIp());
-        String nhint = "dynamic";
-        if (r.getProtocol() == RoutingProtocol.LOCAL) {
-          nhint = nhipMap.get(r.getNetwork().getStartIp());
-        }
-
-        if (r.getProtocol() == RoutingProtocol.CONNECTED) {
-          nhint = connPrefixesMap.get(r.getNetwork());
-        }
-        if (r.getProtocol() == RoutingProtocol.LOCAL) {
-          nhint = localPrefixesMap.get(r.getNetwork());
-        }
-        if (r.getProtocol() == RoutingProtocol.STATIC) {
-          nhint = staticNhintMap.get(r.getNetwork());
-        }
-
-        String nhop;
-        if (r.getProtocol() == RoutingProtocol.CONNECTED
-            || r.getProtocol() == RoutingProtocol.LOCAL) {
-          nhop = "N/A";
-        } else {
-          nhop = nhopMap.get(r.getNextHopIp());
-        }
-        if (r.getProtocol() == RoutingProtocol.STATIC) {
-          nhop = staticNhop.get(r.getNetwork());
-          nhop = (nhop == null || nhop.equals("(none)") ? "N/A" : nhop);
-        }
-        long cost = 0;
-        if (r.getProtocol() == RoutingProtocol.OSPF) {
-          cost = r.getMetric();
-        }
-
-        Route route =
-            new Route(
-                router,
-                r.getVrf(),
-                r.getNetwork(),
-                nhopIp,
-                nhop,
-                nhint,
-                r.getAdministrativeCost(),
-                cost,
-                r.getProtocol(),
-                r.getTag());
-        routes.add(route);
-      }
+      T rib = domain.selectBest(domain.merge(domain.merge(bgp, ospf), ndyn));
+      AbstractRib<T> abstractRib = new AbstractRib<>(bgp, ospf, stat, conn, rib);
+      reachable.put(router, abstractRib);
     }
 
-    return routes;
-  }
+    AbstractState<T> state = new AbstractState<>(reachable, perNeighbor, nonDynamic);
 
-  private BDD isRouter(BDDNetFactory netFactory, BDDFiniteDomain<String> fdom, NodesSpecifier ns) {
-    BDD isRouter = netFactory.zero();
-    for (String router : ns.getMatchingNodesByName(_graph.getRouters())) {
-      BDD r = fdom.value(router);
-      isRouter.orWith(r);
-    }
-    return isRouter;
-  }
-
-  private BDD query(HeaderLocationQuestion question, BDDNetFactory netFactory) {
-    NodesSpecifier ingress = new NodesSpecifier(question.getIngressNodeRegex());
-    NodesSpecifier egress = new NodesSpecifier(question.getFinalNodeRegex());
-    BDD headerspace = BDDUtils.headerspaceToBdd(netFactory, question.getHeaderSpace());
-    BDD startRouter = isRouter(netFactory, netFactory.routeVariables().getSrcRouter(), ingress);
-    BDD finalRouter = isRouter(netFactory, netFactory.routeVariables().getDstRouter(), egress);
-    return startRouter.and(finalRouter).and(headerspace);
-  }
-
-  public <T> AnswerElement reachability(
-      HeaderLocationQuestion question, IAbstractDomain<T> domain) {
-    Map<String, AbstractRib<T>> reachable = computeFixedPoint(domain);
-    long t = System.currentTimeMillis();
-    Tuple<BDDNetFactory, BDD> fibsTup = domain.toFib(reachable);
-    BDDNetFactory netFactory = fibsTup.getFirst();
-    BDDRoute variables = netFactory.routeVariables();
-    BDD fibs = fibsTup.getSecond();
-    System.out.println("Transitive closure: " + (System.currentTimeMillis() - t));
-    BDD query = query(question, netFactory);
-    BDD subset = query.and(fibs);
-    List<AbstractFlowTrace> traces = new ArrayList<>();
-    NodesSpecifier ns = new NodesSpecifier(question.getIngressNodeRegex());
-    for (String srcRouter : ns.getMatchingNodesByName(_graph.getRouters())) {
-      BDD src = variables.getSrcRouter().value(srcRouter);
-      BDD matchingFromSrc = subset.and(src);
-      if (matchingFromSrc.isZero()) {
-        continue;
-      }
-      SatAssignment assignment = BDDUtils.satOne(netFactory, matchingFromSrc);
-      assert (assignment != null);
-      Flow flow = assignment.toFlow();
-      AbstractFlowTrace trace = new AbstractFlowTrace();
-      trace.setIngressRouter(srcRouter);
-      trace.setFinalRouter(assignment.getDstRouter());
-      trace.setFlow(flow);
-      traces.add(trace);
-    }
-    AiReachabilityAnswerElement answer = new AiReachabilityAnswerElement();
-    answer.setAbstractFlowTraces(traces);
-    return answer;
+    System.out.println("Time for network to BDD conversion: " + (System.currentTimeMillis() - t));
+    computeFixedPoint(domain, state, initialRouters);
+    return state;
   }
 }

@@ -40,7 +40,7 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
 
   private BDDNetwork _network;
 
-  ReachabilityDomain(Graph graph, BDDNetFactory netFactory) {
+  public ReachabilityDomain(Graph graph, BDDNetFactory netFactory) {
     _netFactory = netFactory;
     _variables = _netFactory.routeVariables();
     _domainHelper = new DomainHelper(netFactory);
@@ -203,7 +203,6 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
     return reachablePackets;
   }
 
-  // TODO: cache the conversion from rib to fib?
   @Override
   public boolean reachable(
       Map<String, AbstractRib<ReachabilityDomainElement>> ribs, String src, String dst, Flow flow) {

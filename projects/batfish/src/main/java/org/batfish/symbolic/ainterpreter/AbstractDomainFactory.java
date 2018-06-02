@@ -1,5 +1,6 @@
 package org.batfish.symbolic.ainterpreter;
 
+import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.questions.ainterpreter.DomainType;
 import org.batfish.symbolic.Graph;
@@ -19,7 +20,11 @@ public class AbstractDomainFactory {
       case REACHABILITY:
         config = new BDDNetConfig(true);
         netFactory = new BDDNetFactory(graph, config);
-        return new ReachabilityDomain(graph, netFactory);
+        ReachabilityUnderDomain under = new ReachabilityUnderDomain(graph, netFactory);
+        ReachabilityOverDomain over = new ReachabilityOverDomain(graph, netFactory);
+        IDomainMixable<BDD, RouteAclStateSetPair> mixer =
+            new ReachabilityMixer(under.getDomainHelper());
+        return new DonutDomain<>(mixer, over, under);
       default:
         throw new BatfishException("Invalid domain type: " + dtype);
     }
