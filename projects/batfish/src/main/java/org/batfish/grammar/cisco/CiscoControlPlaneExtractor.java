@@ -3726,11 +3726,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentInspectClassMap =
-        _configuration
-            .getInspectClassMaps()
-            .computeIfAbsent(name, n -> new InspectClassMap(n, line));
+        _configuration.getInspectClassMaps().computeIfAbsent(name, n -> new InspectClassMap(n));
     defineStructure(INSPECT_CLASS_MAP, name, ctx);
     MatchSemantics matchSemantics =
         ctx.match_semantics() != null
