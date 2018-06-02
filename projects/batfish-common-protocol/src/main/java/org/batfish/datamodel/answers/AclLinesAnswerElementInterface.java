@@ -31,5 +31,7 @@ public interface AclLinesAnswerElementInterface {
       String line,
       boolean unmatchable,
       SortedMap<Integer, String> blockingLines,
-      boolean diffAction);
+      boolean diffAction,
+      boolean undefinedReference,
+      boolean cycle);
 }

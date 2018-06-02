@@ -7,6 +7,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.IpAccessList;
 
 public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnswerElementInterface {
@@ -176,10 +177,20 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
       String line,
       boolean unmatchable,
       SortedMap<Integer, String> blockingLines,
-      boolean diffAction) {
+      boolean diffAction,
+      boolean undefinedReference,
+      @Nullable boolean cycle) {
 
     AclReachabilityEntry entry = new AclReachabilityEntry(lineNumber, line);
-    if (unmatchable) {
+    if (undefinedReference) {
+      entry.setEarliestMoreGeneralLineIndex(-1);
+      entry.setEarliestMoreGeneralLineName(
+          "This line will never match any packet because it references an undefined structure.");
+    } else if (cycle) {
+      entry.setEarliestMoreGeneralLineIndex(-1);
+      entry.setEarliestMoreGeneralLineName(
+          "This line contains a reference that is part of a circular chain of references.");
+    } else if (unmatchable) {
       entry.setEarliestMoreGeneralLineIndex(-1);
       entry.setEarliestMoreGeneralLineName(
           "This line will never match any packet, independent of preceding lines.");

@@ -2,15 +2,14 @@ package org.batfish.allinone;
 
 import static org.batfish.datamodel.IpAccessListLine.acceptingHeaderSpace;
 import static org.batfish.datamodel.IpAccessListLine.rejectingHeaderSpace;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.SortedSet;
@@ -27,7 +26,6 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
-import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.AclReachabilityQuestionPlugin.AclReachabilityAnswerer;
@@ -41,23 +39,168 @@ public class AclReachabilityTest {
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
-  private NetworkFactory _nf;
-
-  private Configuration.Builder _cb;
-
   private Configuration _c;
+
+  private IpAccessList.Builder _aclb;
 
   @Before
   public void setup() {
-    _nf = new NetworkFactory();
-    _cb = _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _c = _cb.build();
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    _c = cb.build();
+    _aclb = nf.aclBuilder().setOwner(_c);
+  }
+
+  @Test
+  public void test2CircularReferences() throws IOException {
+    // acl1 permits anything acl2 permits
+    // acl2 permits anything acl1 permits
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("acl2"))
+                    .setName("reference acl2")
+                    .build()))
+        .setName("acl1")
+        .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("acl1"))
+                    .setName("reference acl1")
+                    .build()))
+        .setName("acl2")
+        .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    // Should find a cycle result for each ACL.
+    assertThat(answer.getUnreachableLines().keySet(), equalTo(ImmutableSet.of(_c.getName())));
+    assertThat(
+        answer.getUnreachableLines().get(_c.getName()).keySet(),
+        equalTo(ImmutableSet.of("acl1", "acl2")));
+
+    AclReachabilityEntry entry1 =
+        answer.getUnreachableLines().get(_c.getName()).get("acl1").first();
+    assertThat(entry1.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry1.getEarliestMoreGeneralLineName(),
+        equalTo("This line contains a reference that is part of a circular chain of references."));
+    AclReachabilityEntry entry2 =
+        answer.getUnreachableLines().get(_c.getName()).get("acl2").first();
+    assertThat(entry2.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry2.getEarliestMoreGeneralLineName(),
+        equalTo("This line contains a reference that is part of a circular chain of references."));
+  }
+
+  @Test
+  public void test3CircularReferences() throws IOException {
+    // acl0 permits anything acl1 permits
+    // acl1 permits anything acl2 permits, plus 1 other line to avoid acl0's line being unmatchable
+    // acl2 permits anything acl0 permits
+    // acl3 permits anything acl1 permits (not part of cycle)
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("acl1"))
+                    .setName("reference acl1 from acl0")
+                    .build()))
+        .setName("acl0")
+        .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("acl2"))
+                    .setName("reference acl2 from acl1")
+                    .build(),
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                        .build())))
+        .setName("acl1")
+        .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("acl0"))
+                    .setName("reference acl0 from acl2")
+                    .build()))
+        .setName("acl2")
+        .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("acl1"))
+                    .setName("reference acl1 from acl3")
+                    .build()))
+        .setName("acl3")
+        .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    // Should find 3 cycle results for ACLs 0, 1, and 2.
+    assertThat(answer.getUnreachableLines().keySet(), equalTo(ImmutableSet.of(_c.getName())));
+    assertThat(
+        answer.getUnreachableLines().get(_c.getName()).keySet(),
+        equalTo(ImmutableSet.of("acl0", "acl1", "acl2")));
+
+    AclReachabilityEntry entry0 =
+        answer.getUnreachableLines().get(_c.getName()).get("acl0").first();
+    assertThat(entry0.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry0.getEarliestMoreGeneralLineName(),
+        equalTo("This line contains a reference that is part of a circular chain of references."));
+    AclReachabilityEntry entry1 =
+        answer.getUnreachableLines().get(_c.getName()).get("acl1").first();
+    assertThat(entry1.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry1.getEarliestMoreGeneralLineName(),
+        equalTo("This line contains a reference that is part of a circular chain of references."));
+    AclReachabilityEntry entry2 =
+        answer.getUnreachableLines().get(_c.getName()).get("acl2").first();
+    assertThat(entry2.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry2.getEarliestMoreGeneralLineName(),
+        equalTo("This line contains a reference that is part of a circular chain of references."));
+  }
+
+  @Test
+  public void testUndefinedReference() throws IOException {
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new PermittedByAcl("pretend acl"))
+                        .build()))
+            .setName("acl")
+            .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    // Should find an undefined ACL result.
+    assertThat(answer.getUnreachableLines().keySet(), equalTo(ImmutableSet.of(_c.getName())));
+    assertThat(
+        answer.getUnreachableLines().get(_c.getName()).keySet(), equalTo(ImmutableSet.of("acl")));
+
+    AclReachabilityEntry entry0 = answer.getUnreachableLines().get(_c.getName()).get("acl").first();
+    assertThat(entry0.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry0.getEarliestMoreGeneralLineName(),
+        equalTo(
+            "This line will never match any packet because it references an undefined structure."));
   }
 
   @Test
   public void testIndirection() throws IOException {
-    IpAccessList.Builder aclb = _nf.aclBuilder().setOwner(_c);
-
     /*
     Reference ACL contains 1 line: Permit 1.0.0.0/24
     Main ACL contains 2 lines:
@@ -70,7 +213,8 @@ public class AclReachabilityTest {
      */
 
     IpAccessList referencedAcl =
-        aclb.setLines(
+        _aclb
+            .setLines(
                 ImmutableList.of(
                     acceptingHeaderSpace(
                         HeaderSpace.builder()
@@ -79,7 +223,8 @@ public class AclReachabilityTest {
             .setName("acl1")
             .build();
     IpAccessList acl =
-        aclb.setLines(
+        _aclb
+            .setLines(
                 ImmutableList.of(
                     IpAccessListLine.accepting()
                         .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
@@ -91,22 +236,8 @@ public class AclReachabilityTest {
             .setName("acl2")
             .build();
 
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
-
-    assertThat(_c, hasIpAccessLists(hasEntry(referencedAcl.getName(), referencedAcl)));
-    assertThat(_c, hasIpAccessLists(hasEntry(acl.getName(), acl)));
-
-    AclReachabilityQuestion question = new AclReachabilityQuestion();
-    AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
-    question.setAclNameRegex(acl.getName());
-    AclReachabilityAnswerer specificAnswerer = new AclReachabilityAnswerer(question, batfish);
-
-    AnswerElement baseClassAnswer = answerer.answer();
-    AnswerElement specificBaseClassAnswer = specificAnswerer.answer();
-    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-    assertThat(specificBaseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
-    AclLinesAnswerElement specificAnswer = (AclLinesAnswerElement) specificBaseClassAnswer;
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+    AclLinesAnswerElement specificAnswer = answer(new AclReachabilityQuestion(acl.getName(), null));
 
     // Tests for general ACL reachability answer
     assertThat(
@@ -132,8 +263,7 @@ public class AclReachabilityTest {
   public void testMultipleCoveringLines() throws IOException {
     String aclName = "acl";
     IpAccessList acl =
-        _nf.aclBuilder()
-            .setOwner(_c)
+        _aclb
             .setLines(
                 ImmutableList.of(
                     acceptingHeaderSpace(
@@ -150,17 +280,8 @@ public class AclReachabilityTest {
                             .build())))
             .setName(aclName)
             .build();
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
 
-    assertThat(_c, hasIpAccessLists(hasEntry(equalTo(aclName), equalTo(acl))));
-
-    AclReachabilityQuestion question = new AclReachabilityQuestion();
-    AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
-    AnswerElement baseClassAnswer = answerer.answer();
-
-    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-
-    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
 
     assertThat(
         answer.getUnreachableLines(),
@@ -178,8 +299,7 @@ public class AclReachabilityTest {
   public void testIndependentlyUnmatchableLines() throws IOException {
     String aclName = "acl";
     IpAccessList acl =
-        _nf.aclBuilder()
-            .setOwner(_c)
+        _aclb
             .setLines(
                 ImmutableList.of(
                     rejectingHeaderSpace(
@@ -201,17 +321,8 @@ public class AclReachabilityTest {
                             .build())))
             .setName(aclName)
             .build();
-    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
 
-    assertThat(_c, hasIpAccessLists(hasEntry(equalTo(aclName), equalTo(acl))));
-
-    AclReachabilityQuestion question = new AclReachabilityQuestion();
-    AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(question, batfish);
-    AnswerElement baseClassAnswer = answerer.answer();
-
-    assertThat(baseClassAnswer, instanceOf(AclLinesAnswerElement.class));
-
-    AclLinesAnswerElement answer = (AclLinesAnswerElement) baseClassAnswer;
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
 
     assertThat(
         answer.getUnreachableLines(),
@@ -238,5 +349,11 @@ public class AclReachabilityTest {
             equalTo("This line will never match any packet, independent of preceding lines."));
       }
     }
+  }
+
+  private AclLinesAnswerElement answer(AclReachabilityQuestion q) throws IOException {
+    Batfish batfish = BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c.getName(), _c), _folder);
+    AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(q, batfish);
+    return (AclLinesAnswerElement) answerer.answer();
   }
 }

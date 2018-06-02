@@ -140,6 +140,14 @@ public final class IpAccessListLine implements Serializable {
     return _action;
   }
 
+  public boolean inCycle() {
+    return _inCycle;
+  }
+
+  public boolean undefinedReference() {
+    return _undefinedReference;
+  }
+
   public @Nonnull AclLineMatchExpr getMatchCondition() {
     return _matchCondition;
   }

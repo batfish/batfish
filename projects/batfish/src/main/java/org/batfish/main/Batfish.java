@@ -49,7 +49,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -114,6 +113,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -137,8 +137,6 @@ import org.batfish.datamodel.answers.RunAnalysisAnswerElement;
 import org.batfish.datamodel.answers.ValidateEnvironmentAnswerElement;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.MultiSet;
-import org.batfish.datamodel.collections.NamedStructureEquivalenceSet;
-import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
@@ -728,23 +726,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void answerAclReachability(
-      String aclNameRegexStr,
-      NamedStructureEquivalenceSets<?> aclEqSets,
-      AclLinesAnswerElementInterface answerElement) {
-
-    Pattern aclNameRegex;
-    try {
-      aclNameRegex = Pattern.compile(aclNameRegexStr);
-    } catch (PatternSyntaxException e) {
-      throw new BatfishException(
-          "Supplied regex for nodes is not a valid Java regex: \"" + aclNameRegexStr + "\"", e);
-    }
-
+      List<CanonicalAcl> acls, AclLinesAnswerElementInterface answerRows) {
     Map<String, Configuration> configurations = loadConfigurations();
 
-    // Run first batch of nod jobs to find unreachable lines
-    List<NodSatJob<AclLine>> jobs =
-        generateUnreachableAclLineJobs(aclNameRegex, aclEqSets, configurations, answerElement);
+    // Find unreachable lines
+    List<NodSatJob<AclLine>> jobs = generateUnreachableAclLineJobs(acls, configurations);
+    for (CanonicalAcl acl : acls) {
+      String aclName = acl.getRepresentativeAclName();
+      String hostname = acl.getRepresentativeHostname();
+      AclReachabilityQuerySynthesizer query =
+          new AclReachabilityQuerySynthesizer(hostname, aclName, acl.getAcl().getLines().size());
+      Synthesizer aclSynthesizer = synthesizeAcls(hostname, configurations.get(hostname), aclName);
+      NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query, true);
+      jobs.add(job);
+    }
     Map<AclLine, Boolean> linesReachableMap = new TreeMap<>();
     computeNodSatOutput(jobs, linesReachableMap);
 
@@ -852,6 +847,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         aclHostPairsWithUnreachableLines.add(hostnameAclPair);
 
         boolean unmatchable = unmatchableLinesOnThisAcl.contains(lineNumber);
+        boolean undefinedReference = ipAccessListLine.undefinedReference();
+        boolean cycle = ipAccessListLine.inCycle();
         SortedMap<Integer, String> blockingLines = new TreeMap<>();
         boolean diffAction = false;
         Integer blockingLineNumber = blockingLinesMap.get(line);
@@ -860,13 +857,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
           diffAction = !blocker.getAction().equals(ipAccessListLine.getAction());
           blockingLines.put(
               blockingLineNumber, firstNonNull(blocker.getName(), blocker.toString()));
-          line.setEarliestMoreGeneralReachableLine(blockingLineNumber);
         }
-        answerElement.addUnreachableLine(
-            hostname, ipAccessList, lineNumber, lineName, unmatchable, blockingLines, diffAction);
+        answerRows.addUnreachableLine(
+            hostname,
+            ipAccessList,
+            lineNumber,
+            lineName,
+            unmatchable,
+            blockingLines,
+            diffAction,
+            undefinedReference,
+            cycle);
       } else {
         _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName, lineNumber, lineName);
-        answerElement.addReachableLine(hostname, ipAccessList, lineNumber, lineName);
+        answerRows.addReachableLine(hostname, ipAccessList, lineNumber, lineName);
       }
     }
 
@@ -890,41 +894,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private List<NodSatJob<AclLine>> generateUnreachableAclLineJobs(
-      Pattern aclNameRegex,
-      NamedStructureEquivalenceSets<?> aclEqSets,
-      Map<String, Configuration> configurations,
-      AclLinesAnswerElementInterface answerElement) {
+      List<CanonicalAcl> acls, Map<String, Configuration> configurations) {
     List<NodSatJob<AclLine>> jobs = new ArrayList<>();
-
-    for (Entry<String, ?> e : aclEqSets.getSameNamedStructures().entrySet()) {
-      String aclName = e.getKey();
-      if (!aclNameRegex.matcher(aclName).matches()) {
-        continue;
-      }
-
-      Set<?> s = (Set<?>) e.getValue();
-      for (Object o : s) {
-        NamedStructureEquivalenceSet<?> aclEqSet = (NamedStructureEquivalenceSet<?>) o;
-        String hostname = aclEqSet.getRepresentativeElement();
-        SortedSet<String> eqClassNodes = aclEqSet.getNodes();
-        Configuration c = configurations.get(hostname);
-        List<IpAccessListLine> aclLines = c.getIpAccessLists().get(aclName).getLines();
-        answerElement.addEquivalenceClass(
-            aclName,
-            hostname,
-            eqClassNodes,
-            aclLines.stream().map(l -> l.getName()).collect(Collectors.toList()));
-        int numLines = aclLines.size();
-        if (numLines == 0) {
-          _logger.redflag("RED_FLAG: Acl \"" + hostname + ":" + aclName + "\" contains no lines\n");
-          continue;
-        }
-        AclReachabilityQuerySynthesizer query =
-            new AclReachabilityQuerySynthesizer(hostname, aclName, numLines);
-        Synthesizer aclSynthesizer = synthesizeAcls(hostname, c, aclName);
-        NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query, true);
-        jobs.add(job);
-      }
+    for (CanonicalAcl acl : acls) {
+      String aclName = acl.getRepresentativeAclName();
+      String hostname = acl.getRepresentativeHostname();
+      AclReachabilityQuerySynthesizer query =
+          new AclReachabilityQuerySynthesizer(hostname, aclName, acl.getAcl().getLines().size());
+      Synthesizer aclSynthesizer = synthesizeAcls(hostname, configurations.get(hostname), aclName);
+      NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query, true);
+      jobs.add(job);
     }
     return jobs;
   }
@@ -4420,7 +4399,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
   }
 
-  private Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
+  public Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
