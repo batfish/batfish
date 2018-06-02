@@ -49,7 +49,6 @@ public class VendorFamily implements Serializable {
     _juniper = juniper;
   }
 
-
   private static Type toFamilyType(Object family) {
     if (family instanceof AwsFamily) {
       return Type.AWS;
