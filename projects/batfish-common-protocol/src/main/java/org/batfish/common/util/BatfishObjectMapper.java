@@ -37,7 +37,9 @@ public final class BatfishObjectMapper {
 
   /**
    * Returns a {@link ObjectMapper} configured to Batfish JSON standards. The JSON produced is not
-   * pretty-printed; see {@link #prettyWriter} for that.
+   * pretty-printed; see {@link #prettyWriter} for that. It also doesn't include null values and
+   * empty lists; see {@link #ALWAYS_WRITER} for that. If you want both features, use {@link
+   * #verboseMapper()}.
    */
   public static ObjectMapper mapper() {
     return MAPPER;
@@ -69,7 +71,10 @@ public final class BatfishObjectMapper {
     return PRETTY_WRITER;
   }
 
-  /** Returns a {@link ObjectMapper} configured to Batfish JSON standards. It */
+  /**
+   * Returns a {@link ObjectMapper} configured to Batfish JSON standards. Relative to {@link
+   * #mapper()}, it indents the JSON and includes null values and empty lists.
+   */
   public static ObjectMapper verboseMapper() {
     return VERBOSE_MAPPER;
   }

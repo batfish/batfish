@@ -2,6 +2,7 @@ package org.batfish.role;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -29,12 +30,14 @@ public class NodeRole implements Comparable<NodeRole> {
 
   @Override
   public int compareTo(NodeRole o) {
-    return _name.compareTo(o._name);
+    return Comparator.comparing(NodeRole::getName)
+        .thenComparing(NodeRole::getRegex)
+        .compare(this, o);
   }
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof NodeRole)) {
+    if (!(o instanceof NodeRole)) {
       return false;
     }
     return Objects.equals(_name, ((NodeRole) o)._name)
