@@ -731,15 +731,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // Find unreachable lines
     List<NodSatJob<AclLine>> jobs = generateUnreachableAclLineJobs(acls, configurations);
-    for (CanonicalAcl acl : acls) {
-      String aclName = acl.getRepresentativeAclName();
-      String hostname = acl.getRepresentativeHostname();
-      AclReachabilityQuerySynthesizer query =
-          new AclReachabilityQuerySynthesizer(hostname, aclName, acl.getAcl().getLines().size());
-      Synthesizer aclSynthesizer = synthesizeAcls(hostname, configurations.get(hostname), aclName);
-      NodSatJob<AclLine> job = new NodSatJob<>(_settings, aclSynthesizer, query, true);
-      jobs.add(job);
-    }
     Map<AclLine, Boolean> linesReachableMap = new TreeMap<>();
     computeNodSatOutput(jobs, linesReachableMap);
 
