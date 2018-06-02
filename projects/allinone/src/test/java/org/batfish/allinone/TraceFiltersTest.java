@@ -133,7 +133,6 @@ public class TraceFiltersTest {
                     hasEvents(
                         contains(isDefaultDeniedByIpAccessListNamed(referencedAcl.getName()))),
                     new TypeReference<AclTrace>() {}))));
-    System.out.print(answer.prettyPrint());
   }
 
   @Test
