@@ -15,6 +15,11 @@ import org.codehaus.jettison.json.JSONObject;
 
 public abstract class Answerer {
 
+  /** While computing diffs, whether to ignore Keys that appear in one table but not the other */
+  /** TODO: Make this controllable via the Question */
+  /** TODO: Make this setting work for Json-level diff as well if we continue to use it */
+  private static final boolean IGNORE_MISSING_KEYS = true;
+
   public static Answerer create(Question question, IBatfish batfish) {
     String questionName = question.getName();
     BiFunction<Question, IBatfish, Answerer> answererCreator =
@@ -63,7 +68,8 @@ public abstract class Answerer {
     _batfish.popEnvironment();
     if (before instanceof TableAnswerElement) {
       AnswerElement diff =
-          TableDiff.diffTables((TableAnswerElement) before, (TableAnswerElement) after);
+          TableDiff.diffTables(
+              (TableAnswerElement) before, (TableAnswerElement) after, IGNORE_MISSING_KEYS);
       return diff;
     } else {
       try {

@@ -21,10 +21,10 @@ public final class TableDiff {
 
   private TableDiff() {}
 
-  static final String MISSING_KEY_BASE = "Key missing from base";
-  static final String MISSING_KEY_DELTA = "Key missing from delta";
-  static final String NULL_VALUE_BASE = "Base value is null";
-  static final String NULL_VALUE_DELTA = "Delta value is null";
+  static final String MISSING_KEY_BASE = "Key missing in Base";
+  static final String MISSING_KEY_DELTA = "Key missing in Delta";
+  static final String NULL_VALUE_BASE = "Value is null in Base";
+  static final String NULL_VALUE_DELTA = "Value is null in Delta";
 
   public static final String RESULT_DIFFERENT = "<Different>";
   public static final String RESULT_SAME = "<Same>";
@@ -182,7 +182,7 @@ public final class TableDiff {
    * @throws IllegalArgumentException if the input column metadatas are not equal.
    */
   public static TableAnswerElement diffTables(
-      TableAnswerElement baseTable, TableAnswerElement deltaTable) {
+      TableAnswerElement baseTable, TableAnswerElement deltaTable, boolean ignoreMissingKeys) {
     checkArgument(
         baseTable
             .getMetadata()
@@ -219,29 +219,29 @@ public final class TableDiff {
       }
       processedKeys.add(baseKey);
       Row deltaRow = deltaTable.getRows().getRow(baseKey, inputMetadata.getColumnMetadata());
-      if (deltaRow != null) {
-        Object baseValues = baseRow.getValue(valueColumns);
-        Object deltaValues = deltaRow.getValue(valueColumns);
-        if (baseValues.equals(deltaValues)) { // skip rows with identical values
-          continue;
-        }
+      if ((deltaRow == null && ignoreMissingKeys)
+          || (deltaRow != null /* skip if values are equal */
+              && baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns)))) {
+        continue;
       }
       RowBuilder diffRowBuilder = Row.builder(baseRow, keyColumns);
       diffRowValues(diffRowBuilder, baseRow, deltaRow, inputMetadata);
       diffTable.addRow(diffRowBuilder.build());
     }
-    // process keys that are present only in delta
-    Iterator<Row> deltaRows = deltaTable.getRows().iterator();
-    while (deltaRows.hasNext()) {
-      Row deltaRow = deltaRows.next();
-      Object deltaKey = deltaRow.getKey(inputMetadata.getColumnMetadata());
-      if (processedKeys.contains(deltaKey)) {
-        continue;
+    if (!ignoreMissingKeys) {
+      // process keys that are present only in delta
+      Iterator<Row> deltaRows = deltaTable.getRows().iterator();
+      while (deltaRows.hasNext()) {
+        Row deltaRow = deltaRows.next();
+        Object deltaKey = deltaRow.getKey(inputMetadata.getColumnMetadata());
+        if (processedKeys.contains(deltaKey)) {
+          continue;
+        }
+        processedKeys.add(deltaKey);
+        RowBuilder diffRowBuilder = Row.builder(deltaRow, keyColumns);
+        diffRowValues(diffRowBuilder, null, deltaRow, inputMetadata);
+        diffTable.addRow(diffRowBuilder.build());
       }
-      processedKeys.add(deltaKey);
-      RowBuilder diffRowBuilder = Row.builder(deltaRow, keyColumns);
-      diffRowValues(diffRowBuilder, null, deltaRow, inputMetadata);
-      diffTable.addRow(diffRowBuilder.build());
     }
 
     return diffTable;
