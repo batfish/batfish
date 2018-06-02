@@ -1,9 +1,26 @@
 #!/usr/bin/env bash
+JACOCO_VERSION=0.8.1
+JACOCO_AGENT_JAR_NAME="org.jacoco.agent-${JACOCO_VERSION}-runtime.jar"
+JACOCO_AGENT_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.agent/${JACOCO_VERSION}/${JACOCO_AGENT_JAR_NAME}"
+JACOCO_CLI_JAR_NAME="org.jacoco.cli-${JACOCO_VERSION}-nodeps.jar"
+JACOCO_CLI_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.cli/${JACOCO_VERSION}/${JACOCO_CLI_JAR_NAME}"
 
-JACOCO_JAR=third_party/org/jacoco/org.jacoco.agent-0.8.1-runtime.jar
-JACOCO_CLI_JAR=third_party/org/jacoco/jacococli.jar
-JACOCO_DESTFILE=projects/target/jacoco.exec
-COVERAGE_REPORT_XML=coverage.xml
+# the destfile for ref tests
+JACOCO_REF_DESTFILE=projects/target/jacoco-ref.exec
+
+# the destfile for the aggregate of the ref tests and all junit project tests
+JACOCO_ALL_DESTFILE=projects/target/jacoco-all.exec
+
+JACOCO_COVERAGE_REPORT_XML=coverage.xml
+
+
+if [ ! -f ${JACOCO_AGENT_JAR} ]; then
+  mvn dependency:get -Dartifact=org.jacoco:org.jacoco.agent:${JACOCO_VERSION}:jar:runtime
+fi
+
+if [ ! -f ${JACOCO_CLI_JAR} ]; then
+  mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:${JACOCO_VERSION}:jar:nodeps
+fi
 
 if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
    GNU_FIND=gfind
@@ -23,7 +40,7 @@ batfish_test_all || exit 1
 export ALLINONE_JAVA_ARGS=" \
   -enableassertions \
   -DbatfishCoordinatorPropertiesPath=${BATFISH_ROOT}/.travis/travis_coordinator.properties \
-  -javaagent:${JACOCO_JAR}=destfile=${JACOCO_DESTFILE},append=true \
+  -javaagent:${JACOCO_AGENT_JAR}=destfile=${JACOCO_REF_DESTFILE} \
 "
 
 exit_code=0
@@ -56,11 +73,14 @@ echo -e "\n  ..... Running watchdog tests"
 allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
 sleep 5
 
+echo -e "\n .... Aggregating coverage data"
+java -jar $JACOCO_CLI_JAR merge $(find -name 'jacoco*.exec') --destfile $JACOCO_ALL_DESTFILE
+
 echo -e "\n .... Building coverage report"
 # have to collect all classes into one dir
-CLASSES_DIR="$(mktemp -d)"
-cp -r projects/*/target/classes/* $CLASSES_DIR
-java -jar $JACOCO_CLI_JAR report $JACOCO_DESTFILE --classfiles $CLASSES_DIR --xml $COVERAGE_REPORT_XML
+JACOCO_CLASSES_DIR="$(mktemp -d)"
+cp -r projects/*/target/classes/* $JACOCO_CLASSES_DIR
+java -jar $JACOCO_CLI_JAR report $JACOCO_ALL_DESTFILE  --classfiles $JACOCO_CLASSES_DIR --xml $JACOCO_COVERAGE_REPORT_XML
 
 echo -e "\n .... Failed tests: "
 $GNU_FIND -name *.testout
