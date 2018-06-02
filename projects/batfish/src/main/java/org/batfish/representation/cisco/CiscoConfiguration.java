@@ -3551,7 +3551,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     // record references to defined structures
-    recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     recordCommunityLists();
     recordStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
     recordStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
