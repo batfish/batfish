@@ -12,6 +12,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
@@ -25,6 +26,9 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.FlowDisposition;
+import org.batfish.datamodel.FlowHistory;
+import org.batfish.datamodel.FlowHistory.FlowHistoryInfo;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Interface;
@@ -262,5 +266,84 @@ public class TracerouteEngineTest {
         "ARP request for interface subnet to the same interface should fail, "
             + "even if other routes are available",
         TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+  }
+
+  @Test
+  public void testAclBeforeArpNoEdge() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c = cb.build();
+    Vrf v = nf.vrfBuilder().setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    IpAccessList outgoingFilter =
+        nf.aclBuilder().setOwner(c).setName("outgoingAcl").setLines(ImmutableList.of()).build();
+    nf.interfaceBuilder()
+        .setActive(true)
+        .setOwner(c)
+        .setVrf(v)
+        .setAddress(new InterfaceAddress("1.0.0.0/24"))
+        .setOutgoingFilter(outgoingFilter)
+        .build();
+    SortedMap<String, Configuration> configurations = ImmutableSortedMap.of(c.getName(), c);
+    Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    b.computeDataPlane(false);
+    Flow flow =
+        Flow.builder()
+            .setIngressNode(c.getName())
+            .setTag(Batfish.BASE_TESTRIG_TAG)
+            .setDstIp(new Ip("1.0.0.1"))
+            .build();
+    b.processFlows(ImmutableSet.of(flow), false);
+    FlowHistory history = b.getHistory();
+    FlowHistoryInfo info = history.getTraces().get(flow.toString());
+    FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
+
+    assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
+  }
+
+  @Test
+  public void testAclBeforeArpWithEdge() throws IOException {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+
+    // c1
+    Configuration c1 = cb.build();
+    Vrf v1 = vb.setOwner(c1).build();
+    IpAccessList outgoingFilter =
+        nf.aclBuilder().setOwner(c1).setName("outgoingAcl").setLines(ImmutableList.of()).build();
+    ib.setOwner(c1)
+        .setVrf(v1)
+        .setOutgoingFilter(outgoingFilter)
+        .setAddress(new InterfaceAddress("1.0.0.0/24"))
+        .build();
+
+    // c2
+    Configuration c2 = cb.build();
+    Vrf v2 = vb.setOwner(c2).build();
+    ib.setOwner(c2)
+        .setVrf(v2)
+        .setOutgoingFilter(null)
+        .setAddress(new InterfaceAddress("1.0.0.3/24"))
+        .build();
+
+    SortedMap<String, Configuration> configurations =
+        ImmutableSortedMap.of(c1.getName(), c1, c2.getName(), c2);
+    Batfish b = BatfishTestUtils.getBatfish(configurations, _tempFolder);
+    b.computeDataPlane(false);
+    Flow flow =
+        Flow.builder()
+            .setIngressNode(c1.getName())
+            .setTag(Batfish.BASE_TESTRIG_TAG)
+            .setDstIp(new Ip("1.0.0.1"))
+            .build();
+    b.processFlows(ImmutableSet.of(flow), false);
+    FlowHistory history = b.getHistory();
+    FlowHistoryInfo info = history.getTraces().get(flow.toString());
+    FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
+
+    assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
   }
 }

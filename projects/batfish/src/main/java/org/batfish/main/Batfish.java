@@ -206,11 +206,11 @@ import org.codehaus.jettison.json.JSONObject;
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
 
-  private static final String BASE_TESTRIG_TAG = "BASE";
+  public static final String BASE_TESTRIG_TAG = "BASE";
 
-  private static final String DELTA_TESTRIG_TAG = "DELTA";
+  public static final String DELTA_TESTRIG_TAG = "DELTA";
 
-  private static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
+  public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
