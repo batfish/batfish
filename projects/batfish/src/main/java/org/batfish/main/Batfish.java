@@ -744,7 +744,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public AnswerElement aiReachability(HeaderLocationQuestion q, DomainType domainType) {
     Graph graph = new Graph(this);
-    NodesSpecifier ns = new NodesSpecifier(q.getIngressNodeRegex());
     IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
     AbstractInterpreter interpreter = new AbstractInterpreter(graph);
     return interpreter.reachability(q, domain);
