@@ -80,7 +80,7 @@ public abstract class PropertySpecifier {
         if (queryWithStarsHasMatches) {
           suggestions.add(
               new AutocompleteSuggestion(
-                  queryWithStars, false, "All properties matching regex " + queryWithStars));
+                  queryWithStars, true, "All properties matching regex " + queryWithStars));
         }
       }
 

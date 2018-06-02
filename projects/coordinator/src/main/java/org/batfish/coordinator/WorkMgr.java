@@ -1,7 +1,10 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
@@ -308,6 +311,9 @@ public class WorkMgr extends AbstractCoordinator {
         }
       case NODE:
         {
+          checkArgument(
+              !Strings.isNullOrEmpty(testrig),
+              "Testrig name should be supplied for 'NODE' autoCompletion");
           // read all the nodes
           Path pojoTopologyPath =
               getdirTestrig(container, testrig)

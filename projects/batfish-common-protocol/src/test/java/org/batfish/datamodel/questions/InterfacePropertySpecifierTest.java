@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Test;
 
 public class InterfacePropertySpecifierTest {
@@ -24,13 +25,13 @@ public class InterfacePropertySpecifierTest {
                 .add(".*")
                 .build()));
 
-    // the capital P shouldn't matter and this should autoComplete to three entries
+    // the capital S shouldn't matter and this should autoComplete to two entries
     assertThat(
-        InterfacePropertySpecifier.autoComplete("deSc")
-            .stream()
-            .map(s -> s.getText())
-            .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(".*desc.*", "description")));
+        InterfacePropertySpecifier.autoComplete("deSc").stream().collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(".*desc.*", true),
+                new AutocompleteSuggestion("description", false))));
   }
 
   @Test

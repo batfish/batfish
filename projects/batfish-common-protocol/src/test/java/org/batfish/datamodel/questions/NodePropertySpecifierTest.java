@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.junit.Test;
 
 public class NodePropertySpecifierTest {
@@ -26,11 +27,12 @@ public class NodePropertySpecifierTest {
 
     // the capital P shouldn't matter and this should autoComplete to three entries
     assertThat(
-        NodePropertySpecifier.autoComplete("ntP")
-            .stream()
-            .map(s -> s.getText())
-            .collect(Collectors.toSet()),
-        equalTo(ImmutableSet.of(".*ntp.*", "ntp-servers", "ntp-source-interface")));
+        NodePropertySpecifier.autoComplete("ntP").stream().collect(Collectors.toSet()),
+        equalTo(
+            ImmutableSet.of(
+                new AutocompleteSuggestion(".*ntp.*", true),
+                new AutocompleteSuggestion("ntp-servers", false),
+                new AutocompleteSuggestion("ntp-source-interface", false))));
   }
 
   @Test

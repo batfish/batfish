@@ -39,11 +39,9 @@ public class AutocompleteSuggestion {
     if (!(o instanceof AutocompleteSuggestion)) {
       return false;
     }
-    AutocompleteSuggestion os = (AutocompleteSuggestion) o;
-    return Objects.equals(_description, os._description)
-        && Objects.equals(_isPartial, os._isPartial)
-        && Objects.equals(_rank, os._rank)
-        && Objects.equals(_text, os._text);
+    // ignore rank and description
+    return Objects.equals(_isPartial, ((AutocompleteSuggestion) o)._isPartial)
+        && Objects.equals(_text, ((AutocompleteSuggestion) o)._text);
   }
 
   public String getDescription() {
@@ -64,7 +62,8 @@ public class AutocompleteSuggestion {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_description, _isPartial, _rank, _text);
+    // ignore rank and description
+    return Objects.hash(_isPartial, _text);
   }
 
   public void setRank(int rank) {
