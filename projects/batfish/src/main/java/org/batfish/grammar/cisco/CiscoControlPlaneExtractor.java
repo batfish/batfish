@@ -3617,7 +3617,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (asPathSet != null) {
       _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
     }
-    asPathSet = new AsPathSet(name, definitionLine);
+    asPathSet = new AsPathSet(name);
     _configuration.getAsPathSets().put(name, asPathSet);
     for (As_path_set_elemContext elemCtx : ctx.elems) {
       AsPathSetElem elem = toAsPathSetElem(elemCtx);
