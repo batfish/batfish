@@ -69,6 +69,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -300,6 +301,11 @@ public class WorkMgr extends AbstractCoordinator {
       int maxSuggestions)
       throws IOException {
     switch (completionType) {
+      case INTERFACE_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = InterfacePropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
       case NODE:
         {
           // read all the nodes

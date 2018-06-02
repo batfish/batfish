@@ -9,6 +9,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 public class AutocompleteSuggestion {
 
   public enum CompletionType {
+    INTERFACE_PROPERTY,
     NODE,
     NODE_PROPERTY
   }

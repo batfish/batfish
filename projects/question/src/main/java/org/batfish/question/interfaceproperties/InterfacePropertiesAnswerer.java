@@ -1,4 +1,4 @@
-package org.batfish.question.nodeproperties;
+package org.batfish.question.interfaceproperties;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
@@ -11,11 +11,12 @@ import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.DisplayHints;
-import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -24,11 +25,11 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 
-public class NodePropertiesAnswerer extends Answerer {
+public class InterfacePropertiesAnswerer extends Answerer {
 
-  public static final String COL_NODE = "node";
+  public static final String COL_INTERFACE = "interface";
 
-  public NodePropertiesAnswerer(Question question, IBatfish batfish) {
+  public InterfacePropertiesAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
@@ -38,10 +39,10 @@ public class NodePropertiesAnswerer extends Answerer {
    * @param question The question
    * @return The resulting {@link TableMetadata} object
    */
-  static TableMetadata createMetadata(NodePropertiesQuestion question) {
+  static TableMetadata createMetadata(InterfacePropertiesQuestion question) {
     List<ColumnMetadata> columnMetadata =
         new ImmutableList.Builder<ColumnMetadata>()
-            .add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node", true, false))
+            .add(new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false))
             .addAll(
                 question
                     .getPropertySpec()
@@ -51,7 +52,7 @@ public class NodePropertiesAnswerer extends Answerer {
                         prop ->
                             new ColumnMetadata(
                                 prop,
-                                NodePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
+                                InterfacePropertySpecifier.JAVA_MAP.get(prop).getSchema(),
                                 "Property " + prop,
                                 false,
                                 true))
@@ -61,14 +62,14 @@ public class NodePropertiesAnswerer extends Answerer {
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();
-      dhints.setTextDesc(String.format("Properties of node ${%s}.", COL_NODE));
+      dhints.setTextDesc(String.format("Properties of interface ${%s}.", COL_INTERFACE));
     }
     return new TableMetadata(columnMetadata, dhints);
   }
 
   @Override
   public AnswerElement answer() {
-    NodePropertiesQuestion question = (NodePropertiesQuestion) _question;
+    InterfacePropertiesQuestion question = (InterfacePropertiesQuestion) _question;
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
     Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
@@ -83,23 +84,26 @@ public class NodePropertiesAnswerer extends Answerer {
 
   @VisibleForTesting
   static Multiset<Row> rawAnswer(
-      NodePropertiesQuestion question,
+      InterfacePropertiesQuestion question,
       Map<String, Configuration> configurations,
       Set<String> nodes) {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
-      RowBuilder row = Row.builder().put(COL_NODE, new Node(nodeName));
+      for (Interface iface : configurations.get(nodeName).getInterfaces().values()) {
+        if (!question.getInterfaceRegex().matches(iface)) {
+          continue;
+        }
+        RowBuilder row =
+            Row.builder().put(COL_INTERFACE, new NodeInterfacePair(nodeName, iface.getName()));
 
-      for (String property : question.getPropertySpec().getMatchingProperties()) {
-        PropertySpecifier.fillProperty(
-            NodePropertySpecifier.JAVA_MAP.get(property),
-            configurations.get(nodeName),
-            property,
-            row);
+        for (String property : question.getPropertySpec().getMatchingProperties()) {
+          PropertySpecifier.fillProperty(
+              InterfacePropertySpecifier.JAVA_MAP.get(property), iface, property, row);
+        }
+
+        rows.add(row.build());
       }
-
-      rows.add(row.build());
     }
 
     return rows;
