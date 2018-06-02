@@ -1,7 +1,12 @@
 genrule(
     name = "gen_test_sh",
     outs = ["test.sh"],
-    cmd = "echo $(rootpath //projects/allinone:allinone_main) -cmdfile $(location :commands) > $@",
+    cmd = """
+      echo \
+        $(rootpath //projects/allinone:allinone_main) \
+          -coordinatorargs '"-periodassignworkms 5"' \
+          -cmdfile $(location :commands) > $@
+        """,
     srcs = [
         "commands",
     ],

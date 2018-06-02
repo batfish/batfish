@@ -6069,11 +6069,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterPm_ios_inspect(Pm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentInspectPolicyMap =
-        _configuration
-            .getInspectPolicyMaps()
-            .computeIfAbsent(name, n -> new InspectPolicyMap(n, line));
+        _configuration.getInspectPolicyMaps().computeIfAbsent(name, n -> new InspectPolicyMap(n));
     defineStructure(INSPECT_POLICY_MAP, name, ctx);
   }
 
