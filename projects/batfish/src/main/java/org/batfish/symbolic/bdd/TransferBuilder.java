@@ -162,21 +162,21 @@ class TransferBuilder {
    * Apply the effect of modifying a long value (e.g., to set the metric)
    */
   private BDDInteger applyLongExprModification(
-      TransferParam<BDDRoute> p, BDDInteger x, LongExpr e) {
+      TransferParam<BDDRoute> p, BDDInteger x, LongExpr e, int size) {
     if (e instanceof LiteralLong) {
       LiteralLong z = (LiteralLong) e;
       p.debug("LiteralLong: " + z.getValue());
-      return BDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
+      return BDDInteger.makeFromValue(x.getFactory(), size, z.getValue());
     }
     if (e instanceof DecrementMetric) {
       DecrementMetric z = (DecrementMetric) e;
       p.debug("Decrement: " + z.getSubtrahend());
-      return x.sub(BDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
+      return x.sub(BDDInteger.makeFromValue(x.getFactory(), size, z.getSubtrahend()));
     }
     if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
       p.debug("Increment: " + z.getAddend());
-      return x.add(BDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+      return x.add(BDDInteger.makeFromValue(x.getFactory(), size, z.getAddend()));
     }
     throw new BatfishException("int expr transfer function: " + e);
   }
@@ -563,7 +563,9 @@ class TransferBuilder {
           BDDRoute route = result.getReturnValue().getRoute();
           BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
           BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
-          BDDInteger newValue = applyLongExprModification(p.indent(), route.getMetric(), ie);
+          BDDInteger newValue =
+              applyLongExprModification(
+                  p.indent(), route.getMetric(), ie, _netFactory.getNumBitsMetric());
           BDDInteger met = ite(updateMet, route.getMetric(), newValue);
           route.setMetric(met);
           p = p.setData(route);
@@ -680,7 +682,9 @@ class TransferBuilder {
           BDDRoute route = result.getReturnValue().getRoute();
           BDDInteger met = route.getMetric();
           BDDInteger newValue =
-              met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
+              met.add(
+                  BDDInteger.makeFromValue(
+                      met.getFactory(), _netFactory.getNumBitsMetric(), prependCost));
           newValue = ite(result.getReturnAssignedValue(), route.getMetric(), newValue);
           route.setMetric(newValue);
           p = p.setData(route);
@@ -953,37 +957,6 @@ class TransferBuilder {
   }
 
   /*
-   * A record of default values that represent the value of the
-   * outputs if the route is filtered / dropped in the policy
-
-  private BDDRoute zeroedRecord() {
-    BDDRoute rec = _netFactory.createRoute();
-    if (_netFactory.getConfig().getKeepMetric()) {
-      rec.getMetric().setValue(0);
-    }
-    if (_netFactory.getConfig().getKeepLp()) {
-      rec.getLocalPref().setValue(0);
-    }
-    if (_netFactory.getConfig().getKeepAd()) {
-      rec.getAdminDist().setValue(0);
-    }
-    if (_netFactory.getConfig().getKeepMed()) {
-      rec.getMed().setValue(0);
-    }
-    if (_netFactory.getConfig().getKeepCommunities()) {
-      for (CommunityVar comm : _comms) {
-        rec.getCommunities().put(comm, _netFactory.zero());
-      }
-    }
-    if (_netFactory.getConfig().getKeepProtocol()) {
-      rec.getProtocolHistory().getInteger().setValue(0);
-    }
-    rec.getPrefixLength().setValue(0);
-    rec.getPrefix().setValue(0);
-    return rec;
-  } */
-
-  /*
    * Communities assumed to not be attached
    *
   private void addCommunityAssumptions(BDDRoute route) {
@@ -1055,9 +1028,11 @@ class TransferBuilder {
 
     // We need a policy no matter what when iBGP or OSPF import (to update cost)
     boolean needPolicyWhenNull =
-        _edge.isAbstract() || (_protocol == RoutingProtocol.OSPF && _edgeType == EdgeType.IMPORT);
+        (_edge != null)
+            && (_edge.isAbstract()
+                || (_protocol == RoutingProtocol.OSPF && _edgeType == EdgeType.IMPORT));
 
-    TransferResult<BDDTransferFunction, BDD> result = null;
+    TransferResult<BDDTransferFunction, BDD> result;
     if (_statements == null && needPolicyWhenNull) {
       BDDTransferFunction t = new BDDTransferFunction(o, _netFactory.one());
       result = new TransferResult<>();
@@ -1067,8 +1042,6 @@ class TransferBuilder {
               .setReturnAssignedValue(_netFactory.one())
               .setFallthroughValue(_netFactory.one());
     } else if (_statements != null) {
-      // System.out.println("POLICY FOR: " + _edge);
-      // System.out.println("IMPORT?: " + (_edgeType == EdgeType.IMPORT));
       TransferParam<BDDRoute> p = new TransferParam<>(o, false);
       result = compute(_statements, p);
     } else {
