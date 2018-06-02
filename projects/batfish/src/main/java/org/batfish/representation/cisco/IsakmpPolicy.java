@@ -1,18 +1,19 @@
 package org.batfish.representation.cisco;
 
+import org.batfish.common.util.ComparableStructure;
 import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.IkeProposal;
 
-public class IsakmpPolicy extends DefinedStructure<String> {
+public class IsakmpPolicy extends ComparableStructure<String> {
 
   /** */
   private static final long serialVersionUID = 1L;
 
   private IkeProposal _proposal;
 
-  public IsakmpPolicy(String name, int definitionLine) {
-    super(name, definitionLine);
-    _proposal = new IkeProposal(name, definitionLine);
+  public IsakmpPolicy(String name) {
+    super(name);
+    _proposal = new IkeProposal(name, DefinedStructure.IGNORED_DEFINITION_LINE);
   }
 
   public IkeProposal getProposal() {

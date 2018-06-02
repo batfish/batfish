@@ -39,10 +39,7 @@ ri_interface
 
 ri_named_routing_instance
 :
-   (
-      WILDCARD
-      | name = variable
-   )
+   name = variable
    (
       ri_common
       | ri_instance_type
@@ -226,11 +223,7 @@ ro_null
 
 ro_rib
 :
-   RIB
-   (
-      name = VARIABLE
-      | WILDCARD
-   )
+   RIB name = VARIABLE
    (
       apply
       | ro_aggregate

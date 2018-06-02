@@ -1188,6 +1188,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
+    newIface.setDescription(iface.getDescription());
     Integer mtu = iface.getMtu();
     if (mtu != null) {
       newIface.setMtu(mtu);

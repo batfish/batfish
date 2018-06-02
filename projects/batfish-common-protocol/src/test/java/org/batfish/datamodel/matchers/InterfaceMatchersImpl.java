@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.OspfArea;
@@ -36,6 +37,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected SortedSet<Ip> featureValueOf(Interface actual) {
       return actual.getAdditionalArpIps();
+    }
+  }
+
+  static final class HasAllAddresses extends FeatureMatcher<Interface, Set<InterfaceAddress>> {
+    HasAllAddresses(@Nonnull Matcher<? super Set<InterfaceAddress>> subMatcher) {
+      super(subMatcher, "An Interface with allAddresses:", "allAddresses");
+    }
+
+    @Override
+    protected Set<InterfaceAddress> featureValueOf(Interface actual) {
+      return actual.getAllAddresses();
     }
   }
 
@@ -72,6 +84,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasDescription extends FeatureMatcher<Interface, String> {
+    HasDescription(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Interface with description:", "description");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getDescription();
+    }
+  }
+
   static final class HasMtu extends FeatureMatcher<Interface, Integer> {
     HasMtu(@Nonnull Matcher<? super Integer> subMatcher) {
       super(subMatcher, "an Interface with MTU:", "MTU");
@@ -80,6 +103,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected Integer featureValueOf(Interface actual) {
       return actual.getMtu();
+    }
+  }
+
+  static final class HasName extends FeatureMatcher<Interface, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "an Interface with name:", "name");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getName();
     }
   }
 
