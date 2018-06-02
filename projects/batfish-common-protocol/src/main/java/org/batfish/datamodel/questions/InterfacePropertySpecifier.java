@@ -18,8 +18,8 @@ import org.batfish.datamodel.answers.Schema;
  * <p>Currently supported example specifiers:
  *
  * <ul>
- *   <li>ntp-servers —> gets NTP servers using a configured Java function
- *   <li>ntp.* gets all properties that start with 'ntp'
+ *   <li>channel-group —> gets the interface's channel groups using a configured Java function
+ *   <li>channel.* gets all properties that start with 'channel'
  * </ul>
  *
  * <p>In the future, we might add other specifier types, e.g., those based on Json Path

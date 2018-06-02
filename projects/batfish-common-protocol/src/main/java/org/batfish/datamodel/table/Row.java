@@ -157,7 +157,7 @@ public class Row implements Comparable<Row> {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
-    if (_data.get(columnName) == null || _data.get(columnName).isNull()) {
+    if (_data.get(columnName).isNull()) {
       return null;
     }
     return convertType(_data.get(columnName), valueType);
@@ -174,7 +174,7 @@ public class Row implements Comparable<Row> {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
-    if (_data.get(columnName) == null || _data.get(columnName).isNull()) {
+    if (_data.get(columnName).isNull()) {
       return null;
     }
     try {
@@ -201,7 +201,7 @@ public class Row implements Comparable<Row> {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
-    if (_data.get(columnName) == null || _data.get(columnName).isNull()) {
+    if (_data.get(columnName).isNull()) {
       return null;
     }
     if (columnSchema.isList()) {
