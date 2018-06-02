@@ -12,11 +12,15 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.symbolic.Graph;
+import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDNetFactory;
+import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
+import org.batfish.symbolic.utils.Tuple;
 
 public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainElement> {
 
@@ -34,10 +38,13 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
   // Helper object to encapsulate common functionality
   private DomainHelper _domainHelper;
 
-  ReachabilityDomain(BDDNetFactory netFactory) {
+  private BDDNetwork _network;
+
+  ReachabilityDomain(Graph graph, BDDNetFactory netFactory) {
     _netFactory = netFactory;
     _variables = _netFactory.routeVariables();
     _domainHelper = new DomainHelper(netFactory);
+    _network = BDDNetwork.create(graph, netFactory, false);
   }
 
   @Override
@@ -70,14 +77,23 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
 
   @Override
   public ReachabilityDomainElement transform(ReachabilityDomainElement input, EdgeTransformer t) {
-    if (t.getBddTransfer() != null) {
+    BDDTransferFunction f = _domainHelper.lookupTransferFunction(_network, t);
+    if (f != null) {
       BDD under =
-          transformAux(input.getUnderApproximation(), t, Transformation.UNDER_APPROXIMATION);
-      BDD over = transformAux(input.getOverApproximation(), t, Transformation.OVER_APPROXIMATION);
+          transformAux(
+              input.getUnderApproximation(),
+              f,
+              t.getProtocol(),
+              Transformation.UNDER_APPROXIMATION);
+      BDD over =
+          transformAux(
+              input.getOverApproximation(), f, t.getProtocol(), Transformation.OVER_APPROXIMATION);
       BDD blocked = input.getBlockedAcls();
-      if (t.getBddAcl() != null) {
+
+      BDDAcl acl = _domainHelper.lookupAcl(_network, t);
+      if (acl != null) {
         BDD h = _domainHelper.headerspace(over);
-        BDD toBlock = h.andWith(t.getBddAcl().getBdd().not());
+        BDD toBlock = h.andWith(acl.getBdd().not());
         blocked = blocked.orWith(toBlock);
       }
       return new ReachabilityDomainElement(under, over, blocked);
@@ -86,8 +102,8 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
     }
   }
 
-  private BDD transformAux(BDD input, EdgeTransformer t, Transformation type) {
-    BDDTransferFunction f = t.getBddTransfer();
+  private BDD transformAux(
+      BDD input, BDDTransferFunction f, RoutingProtocol prot, Transformation type) {
     // Filter routes that can not pass through the transformer
     BDD allow = f.getFilter();
     if (type == Transformation.OVER_APPROXIMATION) {
@@ -100,8 +116,7 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
       // Not sure why, but andWith does not work here (JavaBDD bug?)
       input = input.and(notBlockedPrefixes);
     }
-
-    return _domainHelper.applyTransformerMods(input, t);
+    return _domainHelper.applyTransformerMods(input, f.getRoute(), prot);
   }
 
   @Override
@@ -128,7 +143,9 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
   private BDD aggregateAux(String router, BDD x, List<AggregateTransformer> aggregates) {
     BDD acc = x;
     for (AggregateTransformer t : aggregates) {
-      BDD aggregated = x.and(t.getTransferFunction().getFilter());
+      BDDTransferFunction f = _network.getGeneratedRoutes().get(t.getRouter(), t.getPolicyName());
+      assert (f != null);
+      BDD aggregated = x.and(f.getFilter());
       if (!aggregated.isZero()) {
         GeneratedRoute r = t.getGeneratedRoute();
 
@@ -166,7 +183,7 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
 
   // TODO: ensure unique reachability (i.e., no other destinations)
   @Override
-  public BDD toFib(Map<String, AbstractRib<ReachabilityDomainElement>> ribs) {
+  public Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<ReachabilityDomainElement>> ribs) {
     Map<String, AbstractFib<ReachabilityDomainElement>> ret = new HashMap<>();
     for (Entry<String, AbstractRib<ReachabilityDomainElement>> e : ribs.entrySet()) {
       String router = e.getKey();
@@ -174,7 +191,7 @@ public class ReachabilityDomain implements IAbstractDomain<ReachabilityDomainEle
       AbstractFib<ReachabilityDomainElement> fib = new AbstractFib<>(rib, toFibSingleRouter(rib));
       ret.put(router, fib);
     }
-    return _domainHelper.transitiveClosure(ret);
+    return new Tuple<>(_netFactory, _domainHelper.transitiveClosure(ret));
   }
 
   private BDD toFibSingleRouter(AbstractRib<ReachabilityDomainElement> value) {

@@ -6,6 +6,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.ainterpreter.DomainType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 
 @AutoService(Plugin.class)
@@ -20,7 +21,7 @@ public class AiReachabilityQuestionPlugin extends QuestionPlugin {
     @Override
     public AnswerElement answer() {
       HeaderLocationQuestion q = (HeaderLocationQuestion) _question;
-      return _batfish.aiReachability(q);
+      return _batfish.aiReachability(q, DomainType.REACHABILITY);
     }
   }
 

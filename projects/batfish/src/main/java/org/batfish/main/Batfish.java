@@ -112,6 +112,7 @@ import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
@@ -149,6 +150,7 @@ import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilitySettings;
+import org.batfish.datamodel.questions.ainterpreter.DomainType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
@@ -175,9 +177,13 @@ import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.IpSpaceAssignment;
+import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
+import org.batfish.symbolic.ainterpreter.AbstractDomainFactory;
 import org.batfish.symbolic.ainterpreter.AbstractInterpreter;
+import org.batfish.symbolic.ainterpreter.IAbstractDomain;
+import org.batfish.symbolic.answers.AiRoutesAnswerElement;
 import org.batfish.symbolic.smt.PropertyChecker;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.z3.AclLine;
@@ -736,15 +742,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement aiReachability(HeaderLocationQuestion q) {
-    AbstractInterpreter i = new AbstractInterpreter(this);
-    return i.reachability(q);
+  public AnswerElement aiReachability(HeaderLocationQuestion q, DomainType domainType) {
+    Graph graph = new Graph(this);
+    NodesSpecifier ns = new NodesSpecifier(q.getIngressNodeRegex());
+    IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
+    AbstractInterpreter interpreter = new AbstractInterpreter(graph);
+    return interpreter.reachability(q, domain);
   }
 
   @Override
-  public AnswerElement aiRoutes(NodesSpecifier ns) {
-    AbstractInterpreter i = new AbstractInterpreter(this);
-    return i.routes(ns);
+  public AnswerElement aiRoutes(NodesSpecifier ns, DomainType domainType) {
+    Graph graph = new Graph(this);
+    IAbstractDomain<?> domain = AbstractDomainFactory.createDomain(graph, domainType);
+    AbstractInterpreter interpreter = new AbstractInterpreter(graph);
+    SortedSet<Route> routes = interpreter.computeRoutes(ns, domain);
+    AiRoutesAnswerElement answer = new AiRoutesAnswerElement();
+    answer.setRoutes(routes);
+    return answer;
   }
 
   @Override

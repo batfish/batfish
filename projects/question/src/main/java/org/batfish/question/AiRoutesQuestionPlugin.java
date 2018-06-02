@@ -8,6 +8,7 @@ import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
+import org.batfish.datamodel.questions.ainterpreter.DomainType;
 
 @AutoService(Plugin.class)
 public class AiRoutesQuestionPlugin extends QuestionPlugin {
@@ -23,7 +24,7 @@ public class AiRoutesQuestionPlugin extends QuestionPlugin {
       AiRoutesQuestion q = (AiRoutesQuestion) _question;
 
       NodesSpecifier ns = new NodesSpecifier(q.getNodeRegex());
-      return _batfish.aiRoutes(ns);
+      return _batfish.aiRoutes(ns, DomainType.EXACT);
     }
   }
 

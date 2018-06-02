@@ -1,21 +1,27 @@
 package org.batfish.symbolic.ainterpreter;
 
 import org.batfish.datamodel.GeneratedRoute;
-import org.batfish.symbolic.bdd.BDDTransferFunction;
 
 public class AggregateTransformer {
 
-  private BDDTransferFunction _transferFunction;
+  private String _router;
+
+  private String _policyName;
 
   private GeneratedRoute _generatedRoute;
 
-  public AggregateTransformer(BDDTransferFunction t, GeneratedRoute gr) {
-    this._transferFunction = t;
+  public AggregateTransformer(String router, String policyName, GeneratedRoute gr) {
+    this._router = router;
+    this._policyName = policyName;
     this._generatedRoute = gr;
   }
 
-  public BDDTransferFunction getTransferFunction() {
-    return _transferFunction;
+  public String getRouter() {
+    return _router;
+  }
+
+  public String getPolicyName() {
+    return _policyName;
   }
 
   public GeneratedRoute getGeneratedRoute() {

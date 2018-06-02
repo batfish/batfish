@@ -35,6 +35,7 @@ import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.questions.ReachabilitySettings;
+import org.batfish.datamodel.questions.ainterpreter.DomainType;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
@@ -45,9 +46,9 @@ import org.batfish.role.NodeRolesData;
 
 public interface IBatfish extends IPluginConsumer {
 
-  AnswerElement aiReachability(HeaderLocationQuestion q);
+  AnswerElement aiReachability(HeaderLocationQuestion q, DomainType dtype);
 
-  AnswerElement aiRoutes(NodesSpecifier ns);
+  AnswerElement aiRoutes(NodesSpecifier ns, DomainType dtype);
 
   void answerAclReachability(
       String aclNameRegexStr,

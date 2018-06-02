@@ -9,19 +9,24 @@ import java.util.Map.Entry;
 import java.util.Set;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDPairing;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.symbolic.CommunityVar;
+import org.batfish.symbolic.GraphEdge;
 import org.batfish.symbolic.OspfType;
+import org.batfish.symbolic.bdd.BDDAcl;
 import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetFactory;
+import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
+import org.batfish.symbolic.smt.EdgeType;
 
 public class DomainHelper {
 
@@ -160,9 +165,39 @@ public class DomainHelper {
     }
   }
 
-  public BDD applyTransformerMods(BDD input, EdgeTransformer t) {
-    BDDTransferFunction f = t.getBddTransfer();
-    BDDRoute mods = f.getRoute();
+  public BDDTransferFunction lookupTransferFunction(BDDNetwork network, EdgeTransformer t) {
+    RoutingProtocol prot = t.getProtocol();
+    GraphEdge edge = t.getEdge();
+    EdgeType type = t.getEdgeType();
+    switch (prot) {
+      case OSPF:
+        if (type == EdgeType.IMPORT) {
+          return network.getImportOspfPolicies().get(edge);
+        } else {
+          return network.getExportOspfPolicies().get(edge);
+        }
+      case BGP:
+      case IBGP:
+      case AGGREGATE:
+        if (type == EdgeType.IMPORT) {
+          return network.getImportBgpPolicies().get(edge);
+        } else {
+          return network.getExportBgpPolicies().get(edge);
+        }
+      default:
+        throw new BatfishException("Invalid protocol for transformer: " + prot.protocolName());
+    }
+  }
+
+  public BDDAcl lookupAcl(BDDNetwork network, EdgeTransformer t) {
+    if (t.getEdgeType() == EdgeType.IMPORT) {
+      return network.getInAcls().get(t.getEdge());
+    } else {
+      return network.getOutAcls().get(t.getEdge());
+    }
+  }
+
+  public BDD applyTransformerMods(BDD input, BDDRoute mods, RoutingProtocol proto) {
     _pairing.reset();
     _modifiedBits = _netFactory.one();
     // reverse order from BDD order is the best
@@ -174,7 +209,7 @@ public class DomainHelper {
     input = modifyLocalPref(input, mods);
     input = modifyAdminDist(input, mods);
     input = modifyNextHop(input, mods);
-    input = modifyProtocol(input, t.getProtocol());
+    input = modifyProtocol(input, proto);
     input = input.exist(_modifiedBits);
     input = input.replaceWith(_pairing);
     return input;

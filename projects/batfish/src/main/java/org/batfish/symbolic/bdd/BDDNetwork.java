@@ -67,14 +67,14 @@ public class BDDNetwork {
   private BDDNetwork(
       Graph graph,
       NodesSpecifier nodesSpecifier,
-      BDDNetConfig config,
+      BDDNetFactory netFactory,
       PolicyQuotient pq,
       boolean ignoreNetworks) {
     _transferCache = new Table3<>();
     _graph = graph;
     _nodeSpecifier = nodesSpecifier;
     _ignoreNetworks = ignoreNetworks;
-    _netFactory = new BDDNetFactory(graph, config);
+    _netFactory = netFactory;
     _policyQuotient = pq;
     _importPolicyMap = new HashMap<>();
     _exportPolicyMap = new HashMap<>();
@@ -91,10 +91,23 @@ public class BDDNetwork {
     return create(g, NodesSpecifier.ALL, config, ignoreNetworks);
   }
 
+  public static BDDNetwork create(Graph g, BDDNetFactory netFactory, boolean ignoreNetworks) {
+    return create(g, NodesSpecifier.ALL, netFactory, ignoreNetworks);
+  }
+
   public static BDDNetwork create(
       Graph g, NodesSpecifier nodesSpecifier, BDDNetConfig config, boolean ignoreNetworks) {
     PolicyQuotient pq = new PolicyQuotient(g);
-    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, config, pq, ignoreNetworks);
+    BDDNetwork network =
+        new BDDNetwork(g, nodesSpecifier, new BDDNetFactory(g, config), pq, ignoreNetworks);
+    network.computeInterfacePolicies();
+    return network;
+  }
+
+  public static BDDNetwork create(
+      Graph g, NodesSpecifier nodesSpecifier, BDDNetFactory netFactory, boolean ignoreNetworks) {
+    PolicyQuotient pq = new PolicyQuotient(g);
+    BDDNetwork network = new BDDNetwork(g, nodesSpecifier, netFactory, pq, ignoreNetworks);
     network.computeInterfacePolicies();
     return network;
   }

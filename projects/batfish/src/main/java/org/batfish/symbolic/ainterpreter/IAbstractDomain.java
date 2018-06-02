@@ -10,6 +10,8 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.symbolic.bdd.BDDNetFactory;
+import org.batfish.symbolic.utils.Tuple;
 
 public interface IAbstractDomain<T> {
 
@@ -27,7 +29,7 @@ public interface IAbstractDomain<T> {
 
   List<Route> toRoutes(AbstractRib<T> value);
 
-  BDD toFib(Map<String, AbstractRib<T>> ribs);
+  Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<T>> ribs);
 
   boolean reachable(Map<String, AbstractRib<T>> ribs, String src, String dst, Flow flow);
 

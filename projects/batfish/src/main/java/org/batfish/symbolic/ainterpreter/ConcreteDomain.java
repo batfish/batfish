@@ -14,14 +14,17 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.symbolic.Graph;
 import org.batfish.symbolic.OspfType;
 import org.batfish.symbolic.bdd.BDDFiniteDomain;
 import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDNetFactory;
+import org.batfish.symbolic.bdd.BDDNetwork;
 import org.batfish.symbolic.bdd.BDDRoute;
 import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
+import org.batfish.symbolic.utils.Tuple;
 
 // TODO: this class should be responsible for setting the BDDNetConfig
 
@@ -33,10 +36,13 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
 
   private DomainHelper _domainHelper;
 
-  public ConcreteDomain(BDDNetFactory netFactory) {
+  private BDDNetwork _network;
+
+  public ConcreteDomain(Graph graph, BDDNetFactory netFactory) {
     _netFactory = netFactory;
     _variables = netFactory.routeVariables();
     _domainHelper = new DomainHelper(netFactory);
+    _network = BDDNetwork.create(graph, netFactory, false);
   }
 
   @Override
@@ -83,25 +89,16 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
 
   @Override
   public BDD transform(BDD input, EdgeTransformer t) {
-    BDDTransferFunction f = t.getBddTransfer();
+    BDDTransferFunction f = _domainHelper.lookupTransferFunction(_network, t);
     BDD ret = input;
     if (f != null) {
       ret = ret.and(f.getFilter());
       ret = ret.exist(_domainHelper.getTransientBits());
-      ret = _domainHelper.applyTransformerMods(ret, t);
+      ret = _domainHelper.applyTransformerMods(ret, f.getRoute(), t.getProtocol());
     }
     if (t.getCost() != null || t.getNextHopIp() != null) {
       BDDTransferFunction addedCost = implicitTransfer(t.getCost(), t.getNextHopIp());
-      EdgeTransformer et =
-          new EdgeTransformer(
-              t.getEdge(),
-              t.getEdgeType(),
-              t.getProtocol(),
-              addedCost,
-              t.getCost(),
-              t.getNextHopIp(),
-              t.getBddAcl());
-      ret = _domainHelper.applyTransformerMods(ret, et);
+      ret = _domainHelper.applyTransformerMods(ret, addedCost.getRoute(), t.getProtocol());
     }
     return ret;
   }
@@ -188,7 +185,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
 
   @Override
   public BDD aggregate(Configuration conf, List<AggregateTransformer> aggregates, BDD x) {
-    // TODO: implement me
+    // BDDTransferFunction f = _network.getGeneratedRoutes().get(neighbor, policyName);
     return x;
   }
 
@@ -198,7 +195,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public BDD toFib(Map<String, AbstractRib<BDD>> ribs) {
+  public Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<BDD>> ribs) {
     BDD allFibs = _netFactory.zero();
     for (Entry<String, AbstractRib<BDD>> e : ribs.entrySet()) {
       String router = e.getKey();
@@ -208,7 +205,7 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
       BDD combined = fib.andWith(src);
       allFibs = allFibs.orWith(combined);
     }
-    return allFibs;
+    return new Tuple<>(_netFactory, allFibs);
   }
 
   @Override
