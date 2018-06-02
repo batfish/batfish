@@ -1945,7 +1945,29 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "D1" : { },
+        "D1" : {
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55,
+                56
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet0/1" : {
+              "definitionLines" : [
+                58,
+                59,
+                60,
+                61,
+                62
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "D2" : {
           "extended ipv4 access-list" : {
             "drop10" : {
@@ -1953,6 +1975,28 @@
                 74,
                 75,
                 76
+              ],
+              "numReferrers" : 1
+            }
+          },
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                51,
+                52,
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet0/1" : {
+              "definitionLines" : [
+                57,
+                58,
+                59,
+                60,
+                61
               ],
               "numReferrers" : 1
             }
@@ -1968,6 +2012,45 @@
               "numReferrers" : 1
             }
           },
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                52,
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet0/1" : {
+              "definitionLines" : [
+                57,
+                58,
+                59,
+                60
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet1/0" : {
+              "definitionLines" : [
+                62,
+                63,
+                64,
+                65
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet2/0" : {
+              "definitionLines" : [
+                67,
+                68,
+                69,
+                70,
+                71
+              ],
+              "numReferrers" : 1
+            }
+          },
           "route-map" : {
             "redirect-S-loopback" : {
               "definitionLines" : [
@@ -1979,9 +2062,79 @@
             }
           }
         },
-        "S" : { },
-        "SL" : { },
-        "SR" : { }
+        "S" : {
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                56,
+                57,
+                58,
+                59
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet0/1" : {
+              "definitionLines" : [
+                61,
+                62,
+                63,
+                64
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "SL" : {
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55,
+                56
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet0/1" : {
+              "definitionLines" : [
+                58,
+                59,
+                60,
+                61
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "SR" : {
+          "interface" : {
+            "FastEthernet0/0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55,
+                56
+              ],
+              "numReferrers" : 1
+            },
+            "FastEthernet0/1" : {
+              "definitionLines" : [
+                58,
+                59,
+                60,
+                61
+              ],
+              "numReferrers" : 1
+            }
+          }
+        }
       },
       "version" : "0.36.0"
     },
