@@ -94,8 +94,8 @@ public final class TableDiff {
    *
    * <p>Treats columns that are keys in input tables as keys of the diff table. For each column in
    * the input tables that is a value (but not a key), three columns are included, two for base and
-   * delta values and one for the difference of the two. Columns that are neither keys nor values
-   * are ignored.
+   * delta values and one for the difference of the two. For remaining columns (which are neither
+   * keys nor values), two columns are included for base and delta values.
    */
   @VisibleForTesting
   static TableMetadata diffMetadata(TableMetadata inputMetadata) {
@@ -118,14 +118,17 @@ public final class TableDiff {
                     .collect(Collectors.toList()))
             + "]";
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
-      if (!cm.getIsKey() && cm.getIsValue()) {
+      if (!cm.getIsKey()) {
+        if (cm.getIsValue()) {
+          diffColumnMetatadata.add(
+              new ColumnMetadata(
+                  diffColumnName(cm.getName()),
+                  Schema.STRING,
+                  diffColumnDescription(cm.getName()),
+                  false,
+                  true));
+        }
         diffColumnMetatadata.add(
-            new ColumnMetadata(
-                diffColumnName(cm.getName()),
-                Schema.STRING,
-                diffColumnDescription(cm.getName()),
-                false,
-                true),
             new ColumnMetadata(
                 baseColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false),
             new ColumnMetadata(
@@ -139,38 +142,37 @@ public final class TableDiff {
   /**
    * Computes the difference between two rows with respect to {@code columns}.
    *
-   * <p>For each column, three columns are generated, consistent with {@link #diffMetadata}. These
-   * columns are inserted into the provided {@code rowBuilder}.
+   * <p>For each column that is not a key, either two or three columns are generated, depending on
+   * whether the column is a value (see {@link #diffMetadata}. These columns are inserted into the
+   * provided {@code rowBuilder}.
    *
    * @throws IllegalArgumentException If both rows are null, rowBuilder is null, or columns is null
    */
   @VisibleForTesting
   static void diffRowValues(
-      RowBuilder rowBuilder, Row baseRow, Row deltaRow, List<ColumnMetadata> columns) {
+      RowBuilder rowBuilder, Row baseRow, Row deltaRow, TableMetadata inputMetadata) {
     checkArgument(baseRow != null || deltaRow != null, "Both base and delta rows cannot be null");
     checkArgument(rowBuilder != null, "rowBuilder cannot be null");
-    checkArgument(columns != null, "columns cannot be null");
+    checkArgument(inputMetadata.getColumnMetadata() != null, "columns cannot be null");
 
-    for (ColumnMetadata cm : columns) {
-      String cname = cm.getName();
-      if (baseRow == null) {
-        rowBuilder
-            .put(diffColumnName(cname), resultDifferent(MISSING_KEY_BASE))
-            .put(baseColumnName(cname), null)
-            .put(deltaColumnName(cname), deltaRow.get(cname));
-      } else if (deltaRow == null) {
-        rowBuilder
-            .put(diffColumnName(cname), resultDifferent(MISSING_KEY_DELTA))
-            .put(baseColumnName(cname), baseRow.get(cname))
-            .put(deltaColumnName(cname), null);
-      } else {
-        Object baseValue = baseRow.get(cname, cm.getSchema());
-        Object deltaValue = deltaRow.get(cname, cm.getSchema());
-        rowBuilder
-            .put(diffColumnName(cname), diffCells(baseValue, deltaValue, cm.getSchema()))
-            .put(baseColumnName(cname), baseValue)
-            .put(deltaColumnName(cname), deltaValue);
+    for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
+      if (cm.getIsKey()) {
+        continue;
       }
+      Object baseValue = baseRow == null ? null : baseRow.get(cm.getName(), cm.getSchema());
+      Object deltaValue = deltaRow == null ? null : deltaRow.get(cm.getName(), cm.getSchema());
+      if (cm.getIsValue()) {
+        String diffResult =
+            baseRow == null
+                ? resultDifferent(MISSING_KEY_BASE)
+                : deltaRow == null
+                    ? resultDifferent(MISSING_KEY_DELTA)
+                    : diffCells(baseValue, deltaValue, cm.getSchema());
+        rowBuilder.put(diffColumnName(cm.getName()), diffResult);
+      }
+      rowBuilder
+          .put(baseColumnName(cm.getName()), baseValue)
+          .put(deltaColumnName(cm.getName()), deltaValue);
     }
   }
 
@@ -225,7 +227,7 @@ public final class TableDiff {
         }
       }
       RowBuilder diffRowBuilder = Row.builder(baseRow, keyColumns);
-      diffRowValues(diffRowBuilder, baseRow, deltaRow, valueColumns);
+      diffRowValues(diffRowBuilder, baseRow, deltaRow, inputMetadata);
       diffTable.addRow(diffRowBuilder.build());
     }
     // process keys that are present only in delta
@@ -238,7 +240,7 @@ public final class TableDiff {
       }
       processedKeys.add(deltaKey);
       RowBuilder diffRowBuilder = Row.builder(deltaRow, keyColumns);
-      diffRowValues(diffRowBuilder, null, deltaRow, valueColumns);
+      diffRowValues(diffRowBuilder, null, deltaRow, inputMetadata);
       diffTable.addRow(diffRowBuilder.build());
     }
 
