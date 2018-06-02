@@ -38,6 +38,8 @@ interface Ethernet0
  dialer-group 5
  disable
  no disable
+ dot1x pae authenticator
+ dot1x timeout tx-period 10
  dsl operating-mode auto
  duplex full
  enable
@@ -142,6 +144,7 @@ interface Ethernet0
  lacp graceful-convergence
  lacp max-bundle 32
  lacp min-links 1
+ mab
  mpls ip
  no lacp suspend-individual
  no lldp receive

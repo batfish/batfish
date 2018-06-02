@@ -279,8 +279,10 @@ public class Hierarchy {
         Settings settings = parserSettings();
         FlatJuniperCombinedParser parser =
             new FlatJuniperCombinedParser(newStatementText, settings);
+        parser.setMarkWildcards(true);
         Flat_juniper_configurationContext newConfiguration =
             parser.getParser().flat_juniper_configuration();
+        parser.setMarkWildcards(false);
         // StatementContext newStatement = parser.getParser().statement();
         StatementContext newStatement = newConfiguration.set_line(0).set_line_tail().statement();
         newStatement.parent = setLineTail;

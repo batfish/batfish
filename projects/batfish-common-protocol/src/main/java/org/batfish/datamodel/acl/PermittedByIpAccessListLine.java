@@ -2,11 +2,12 @@ package org.batfish.datamodel.acl;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.FilterResult;
+import org.batfish.datamodel.LineAction;
 
-public final class PermittedByIpAccessListLine implements TraceEvent {
+public final class PermittedByIpAccessListLine implements TerminalTraceEvent {
 
   private static final String PROP_INDEX = "index";
 
@@ -67,11 +68,12 @@ public final class PermittedByIpAccessListLine implements TraceEvent {
   }
 
   @Override
+  public FilterResult toFilterResult() {
+    return new FilterResult(_index, LineAction.ACCEPT);
+  }
+
+  @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass())
-        .add(PROP_NAME, _name)
-        .add(PROP_INDEX, _index)
-        .add(PROP_LINE_DESCRIPTION, _lineDescription)
-        .toString();
+    return String.format("Permitted by ACL '%s', index %d: %s", _name, _index, _lineDescription);
   }
 }

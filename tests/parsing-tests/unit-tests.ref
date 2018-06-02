@@ -13134,6 +13134,22 @@
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_accounting",
             "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
+            "        (aaa_accounting_identity",
+            "          IDENTITY:'identity'  <== mode:DEFAULT_MODE",
+            "          DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "          (aaa_accounting_method",
+            "            (aaa_accounting_method_start_stop",
+            "              START_STOP:'start-stop'  <== mode:DEFAULT_MODE",
+            "              (aaa_accounting_method_target",
+            "                GROUP:'group'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  VARIABLE:'MEE'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_accounting",
+            "        ACCOUNTING:'accounting'  <== mode:DEFAULT_MODE",
             "        (aaa_accounting_nested",
             "          NESTED:'nested'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
@@ -13522,6 +13538,18 @@
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_authorization",
             "        AUTHORIZATION:'authorization'  <== mode:DEFAULT_MODE",
+            "        (aaa_authorization_auth_proxy",
+            "          AUTH_PROXY:'auth-proxy'  <== mode:DEFAULT_MODE",
+            "          DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "          (aaa_authorization_method",
+            "            GROUP:'group'  <== mode:DEFAULT_MODE",
+            "            VARIABLE:'MEE'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_authorization",
+            "        AUTHORIZATION:'authorization'  <== mode:DEFAULT_MODE",
             "        (aaa_authorization_commands",
             "          COMMANDS:'commands'  <== mode:DEFAULT_MODE",
             "          level = DEC:'0'  <== mode:DEFAULT_MODE",
@@ -13660,6 +13688,47 @@
             "  (stanza",
             "    (s_aaa",
             "      AAA:'aaa'  <== mode:DEFAULT_MODE",
+            "      (aaa_server",
+            "        SERVER:'server'  <== mode:DEFAULT_MODE",
+            "        RADIUS:'radius'  <== mode:DEFAULT_MODE",
+            "        DYNAMIC_AUTHOR:'dynamic-author'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "        (aaa_server_client",
+            "          CLIENT:'client'  <== mode:DEFAULT_MODE",
+            "          IP_ADDRESS:'12.5.1.61'  <== mode:DEFAULT_MODE",
+            "          SERVER_KEY:'server-key'  <== mode:DEFAULT_MODE",
+            "          DEC:'7'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'KKKKAAA'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_client",
+            "          CLIENT:'client'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'nameMe'  <== mode:DEFAULT_MODE)",
+            "          SERVER_KEY:'server-key'  <== mode:DEFAULT_MODE",
+            "          DEC:'0'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'KKKKAAA'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_port",
+            "          PORT:'port'  <== mode:DEFAULT_MODE",
+            "          port_num = DEC:'12'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_auth_type",
+            "          AUTH_TYPE:'auth-type'  <== mode:DEFAULT_MODE",
+            "          ALL:'all'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_ignore",
+            "          IGNORE:'ignore'  <== mode:DEFAULT_MODE",
+            "          SESSION_KEY:'session-key'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_server_ignore",
+            "          IGNORE:'ignore'  <== mode:DEFAULT_MODE",
+            "          SERVER_KEY:'server-key'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_aaa",
+            "      AAA:'aaa'  <== mode:DEFAULT_MODE",
             "      (aaa_group",
             "        GROUP:'group'  <== mode:DEFAULT_MODE",
             "        SERVER:'server'  <== mode:DEFAULT_MODE",
@@ -13674,6 +13743,12 @@
             "          auth_port = DEC:'1812'  <== mode:DEFAULT_MODE",
             "          ACCT_PORT:'acct-port'  <== mode:DEFAULT_MODE",
             "          acct_port = DEC:'1813'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (aaa_group_server",
+            "          SERVER:'server'  <== mode:DEFAULT_MODE",
+            "          NAME:'name'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'somename'  <== mode:M_Name)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (aaa_group_no_source_interface",
             "          NO:'no'  <== mode:DEFAULT_MODE",
@@ -14392,11 +14467,12 @@
             "          limit = DEC:'50'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (router_bgp_stanza_tail",
-            "        (bgp_scan_time_rb_stanza",
-            "          BGP:'bgp'  <== mode:DEFAULT_MODE",
-            "          SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
-            "          secs = DEC:'5'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (bgp_tail",
+            "          (bgp_scan_time_bgp_tail",
+            "            BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "            SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
+            "            secs = DEC:'5'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (router_bgp_stanza_tail",
             "        (bgp_tail",
             "          (redistribute_connected_bgp_tail",
@@ -14499,6 +14575,12 @@
             "              IPV6:'ipv6'  <== mode:DEFAULT_MODE",
             "              UNICAST:'unicast'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          (bgp_tail",
+            "            (bgp_scan_time_bgp_tail",
+            "              BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "              SCAN_TIME:'scan-time'  <== mode:DEFAULT_MODE",
+            "              secs = DEC:'5'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "          (bgp_tail",
             "            (redistribute_ospfv3_bgp_tail",
             "              REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
@@ -16092,7 +16174,7 @@
             "    (s_null",
             "      (null_single",
             "        PACKETCABLE:'packetcable'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'authorize'  <== mode:DEFAULT_MODE",
+            "        AUTHORIZE:'authorize'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'vanilla-docsis-mta'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
@@ -19527,7 +19609,7 @@
             "      (dapr_null",
             "        ACTION:'action'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
-            "          VARIABLE:'terminate'  <== mode:DEFAULT_MODE",
+            "          TERMINATE:'terminate'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (dapr_webvpn",
             "        WEBVPN:'webvpn'  <== mode:DEFAULT_MODE",
@@ -21268,6 +21350,17 @@
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        DISABLE:'disable'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'pae'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'authenticator'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "        TIMEOUT:'timeout'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'tx-period'  <== mode:DEFAULT_MODE",
+            "        DEC:'10'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        DSL:'dsl'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'operating-mode'  <== mode:DEFAULT_MODE",
@@ -21903,6 +21996,9 @@
             "        VARIABLE:'min-links'  <== mode:DEFAULT_MODE",
             "        DEC:'1'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        MAB:'mab'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        MPLS:'mpls'  <== mode:DEFAULT_MODE",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
@@ -22049,7 +22145,7 @@
             "        (if_port_security_null",
             "          VIOLATION:'violation'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
-            "            VARIABLE:'restrict'  <== mode:DEFAULT_MODE",
+            "            RESTRICT:'restrict'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "      (if_null_block",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -26708,6 +26804,12 @@
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_null",
+            "      (null_single",
+            "        EPM:'epm'  <== mode:DEFAULT_MODE",
+            "        LOGGING:'logging'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (s_null",
             "      (null_block",
             "        ETHERNET:'ethernet'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
@@ -30145,6 +30247,49 @@
             "    (s_class_map",
             "      CLASS_MAP:'class-map'  <== mode:DEFAULT_MODE",
             "      TYPE:'type'  <== mode:DEFAULT_MODE",
+            "      CONTROL:'control'  <== mode:DEFAULT_MODE",
+            "      SUBSCRIBER:'subscriber'  <== mode:DEFAULT_MODE",
+            "      MATCH_NONE:'match-none'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'ABC'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_result_type",
+            "          RESULT_TYPE:'result-type'  <== mode:DEFAULT_MODE",
+            "          (variable",
+            "            VARIABLE:'aaa-timeout'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_authorization_status",
+            "          AUTHORIZATION_STATUS:'authorization-status'  <== mode:DEFAULT_MODE",
+            "          AUTHORIZED:'authorized'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_method",
+            "          METHOD:'method'  <== mode:DEFAULT_MODE",
+            "          DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_activated_service_template",
+            "          ACTIVATED_SERVICE_TEMPLATE:'activated-service-template'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'DEF'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_service_template",
+            "          SERVICE_TEMPLATE:'service-template'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'GHI'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_class_map",
+            "      CLASS_MAP:'class-map'  <== mode:DEFAULT_MODE",
+            "      TYPE:'type'  <== mode:DEFAULT_MODE",
             "      NETWORK_QOS:'network-qos'  <== mode:DEFAULT_MODE",
             "      MATCH_ANY:'match-any'  <== mode:DEFAULT_MODE",
             "      name = (variable",
@@ -30220,6 +30365,14 @@
             "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
             "          name = (variable",
             "            VARIABLE:'boop'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (cm_match",
+            "        num = DEC:'20'  <== mode:DEFAULT_MODE",
+            "        MATCH:'match'  <== mode:DEFAULT_MODE",
+            "        (cmm_access_list",
+            "          ACCESS_LIST:'access-list'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'boop2'  <== mode:DEFAULT_MODE)",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_class_map",
@@ -30830,6 +30983,153 @@
             "            DEC:'1500'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
+            "    (s_policy_map",
+            "      POLICY_MAP:'policy-map'  <== mode:DEFAULT_MODE",
+            "      TYPE:'type'  <== mode:DEFAULT_MODE",
+            "      (variable",
+            "        CONTROL:'control'  <== mode:DEFAULT_MODE)",
+            "      (variable",
+            "        SUBSCRIBER:'subscriber'  <== mode:DEFAULT_MODE)",
+            "      (variable",
+            "        VARIABLE:'my-bogus-policy'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (pm_event",
+            "        EVENT:'event'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'session-started'  <== mode:DEFAULT_MODE",
+            "          MATCH_ALL:'match-all'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (pm_event_class",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          CLASS:'class'  <== mode:DEFAULT_MODE",
+            "          ALWAYS:'always'  <== mode:DEFAULT_MODE",
+            "          DO_UNTIL_FAILURE:'do-until-failure'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          DEC:'20'  <== mode:DEFAULT_MODE",
+            "          AUTHENTICATE:'authenticate'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'using'  <== mode:DEFAULT_MODE",
+            "            DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "            PRIORITY:'priority'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (pm_event",
+            "        EVENT:'event'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          VARIABLE:'authentication-failure'  <== mode:DEFAULT_MODE",
+            "          VARIABLE:'match-first'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "        (pm_event_class",
+            "          DEC:'5'  <== mode:DEFAULT_MODE",
+            "          CLASS:'class'  <== mode:DEFAULT_MODE",
+            "          classname = (variable",
+            "            VARIABLE:'MY_CLASS_1'  <== mode:DEFAULT_MODE)",
+            "          DO_UNTIL_FAILURE:'do-until-failure'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          ACTIVATE:'activate'  <== mode:DEFAULT_MODE",
+            "          SERVICE_TEMPLATE:'service-template'  <== mode:DEFAULT_MODE",
+            "          stname = (variable",
+            "            VARIABLE:'my_TEMPLATE_NAME'  <== mode:DEFAULT_MODE)",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (pm_event_class",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          CLASS:'class'  <== mode:DEFAULT_MODE",
+            "          classname = (variable",
+            "            VARIABLE:'MY_CLASS_2'  <== mode:DEFAULT_MODE)",
+            "          DO_UNTIL_FAILURE:'do-until-failure'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "          DEC:'10'  <== mode:DEFAULT_MODE",
+            "          PAUSE:'pause'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            REAUTHENTICATION:'reauthentication'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'20'  <== mode:DEFAULT_MODE",
+            "          AUTHORIZE:'authorize'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'30'  <== mode:DEFAULT_MODE",
+            "          TERMINATE:'terminate'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DOT1X:'dot1x'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'40'  <== mode:DEFAULT_MODE",
+            "          AUTHENTICATE:'authenticate'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            VARIABLE:'using'  <== mode:DEFAULT_MODE",
+            "            MAB:'mab'  <== mode:DEFAULT_MODE",
+            "            PRIORITY:'priority'  <== mode:DEFAULT_MODE",
+            "            DEC:'10'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'50'  <== mode:DEFAULT_MODE",
+            "          AUTHENTICATION_RESTART:'authentication-restart'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'60'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'60'  <== mode:DEFAULT_MODE",
+            "          TERMINATE:'terminate'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            MAB:'mab'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'70'  <== mode:DEFAULT_MODE",
+            "          AUTHENTICATION_RESTART:'authentication-restart'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            DEC:'60'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'80'  <== mode:DEFAULT_MODE",
+            "          CLEAR_SESSION:'clear-session'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "          DEC:'90'  <== mode:DEFAULT_MODE",
+            "          RESUME:'resume'  <== mode:DEFAULT_MODE",
+            "          (null_rest_of_line",
+            "            REAUTHENTICATION:'reauthentication'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_service_template",
+            "      SERVICE_TEMPLATE:'service-template'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'template_name'  <== mode:DEFAULT_MODE)",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (st_access_group",
+            "        ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'ACL_NAME'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_description",
+            "        DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          RAW_TEXT:' Service template for Fail open mode'  <== mode:M_Description",
+            "          NEWLINE:'\\n'  <== mode:M_Description))",
+            "      (st_inactivity_timer",
+            "        INACTIVITY_TIMER:'inactivity-timer'  <== mode:DEFAULT_MODE",
+            "        DEC:'3600'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_linksec",
+            "        LINKSEC:'linksec'  <== mode:DEFAULT_MODE",
+            "        POLICY:'policy'  <== mode:DEFAULT_MODE",
+            "        MUST_SECURE:'must-secure'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_linksec",
+            "        LINKSEC:'linksec'  <== mode:DEFAULT_MODE",
+            "        POLICY:'policy'  <== mode:DEFAULT_MODE",
+            "        SHOULD_SECURE:'should-secure'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_vlan",
+            "        VLAN:'vlan'  <== mode:DEFAULT_MODE",
+            "        DEC:'313'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_voice_vlan",
+            "        VOICE:'voice'  <== mode:DEFAULT_MODE",
+            "        VLAN:'vlan'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (st_tag",
+            "        TAG:'tag'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'USER_DEFINED_TAG'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
             "    (s_table_map",
             "      TABLE_MAP:'table-map'  <== mode:DEFAULT_MODE",
             "      name = (variable",
@@ -31123,7 +31423,17 @@
             "        VERSION:'version'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          DEC:'2'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (rr_distance",
+            "        DISTANCE:'distance'  <== mode:DEFAULT_MODE",
+            "        distance = DEC:'12'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (rr_distance",
+            "        DISTANCE:'distance'  <== mode:DEFAULT_MODE",
+            "        distance = DEC:'123'  <== mode:DEFAULT_MODE",
+            "        prefix = IP_ADDRESS:'1.1.1.1'  <== mode:DEFAULT_MODE",
+            "        mask = IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -34930,7 +35240,7 @@
             "      (null_rest_of_line",
             "        SIP:'sip'  <== mode:DEFAULT_MODE",
             "        BIND:'bind'  <== mode:DEFAULT_MODE",
-            "        VARIABLE:'control'  <== mode:DEFAULT_MODE",
+            "        CONTROL:'control'  <== mode:DEFAULT_MODE",
             "        SOURCE_INTERFACE:'source-interface'  <== mode:DEFAULT_MODE",
             "        M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
             "        DEC:'0'  <== mode:M_Interface",
@@ -35376,7 +35686,7 @@
             "            (voice_service_voip_sip_null",
             "              BIND:'bind'  <== mode:DEFAULT_MODE",
             "              (null_rest_of_line",
-            "                VARIABLE:'control'  <== mode:DEFAULT_MODE",
+            "                CONTROL:'control'  <== mode:DEFAULT_MODE",
             "                SOURCE_INTERFACE:'source-interface'  <== mode:DEFAULT_MODE",
             "                M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
             "                DEC:'0'  <== mode:M_Interface",
@@ -37185,7 +37495,7 @@
             "        (if_port_security_null",
             "          VIOLATION:'violation'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
-            "            VARIABLE:'restrict'  <== mode:DEFAULT_MODE",
+            "            RESTRICT:'restrict'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        (if_port_security_null",
             "          MAXIMUM:'maximum'  <== mode:DEFAULT_MODE",
@@ -43607,10 +43917,333 @@
             "                (pops_common",
             "                  (pops_from",
             "                    FROM:'from'  <== mode:DEFAULT_MODE",
+            "                    (popsf_as_path_group",
+            "                      AS_PATH_GROUP:'as-path-group'  <== mode:DEFAULT_MODE",
+            "                      name = (variable",
+            "                        text = VARIABLE:'AS_PATH_GROUP'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'  <== mode:DEFAULT_MODE",
+            "                    (popsf_instance",
+            "                      INSTANCE:'instance'  <== mode:DEFAULT_MODE",
+            "                      name = (variable",
+            "                        text = VARIABLE:'FORWARDING'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'  <== mode:DEFAULT_MODE",
             "                    (popsf_protocol",
             "                      PROTOCOL:'protocol'  <== mode:DEFAULT_MODE",
             "                      protocol = (routing_protocol",
             "                        STATIC:'static'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'  <== mode:DEFAULT_MODE",
+            "                    (popsf_rib",
+            "                      RIB:'rib'  <== mode:DEFAULT_MODE",
+            "                      name = (variable",
+            "                        text = VARIABLE:'inet6.0'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_from",
+            "                    FROM:'from'  <== mode:DEFAULT_MODE",
+            "                    (popsf_tag",
+            "                      TAG:'tag'  <== mode:DEFAULT_MODE",
+            "                      DEC:'11'  <== mode:DEFAULT_MODE)))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_as_path_prepend",
+            "                        AS_PATH_PREPEND:'as-path-prepend'  <== mode:DEFAULT_MODE",
+            "                        DEC:'123'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_as_path_prepend",
+            "                        AS_PATH_PREPEND:'as-path-prepend'  <== mode:DEFAULT_MODE",
+            "                        DOUBLE_QUOTED_STRING:'\"456 789\"'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_default_action_accept",
+            "                        DEFAULT_ACTION:'default-action'  <== mode:DEFAULT_MODE",
+            "                        ACCEPT:'accept'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_default_action_reject",
+            "                        DEFAULT_ACTION:'default-action'  <== mode:DEFAULT_MODE",
+            "                        REJECT:'reject'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_external",
+            "                        EXTERNAL:'external'  <== mode:DEFAULT_MODE",
+            "                        TYPE:'type'  <== mode:DEFAULT_MODE",
+            "                        DEC:'1'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_metric",
+            "                        METRIC:'metric'  <== mode:DEFAULT_MODE",
+            "                        metric = DEC:'10'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_metric_add",
+            "                        METRIC:'metric'  <== mode:DEFAULT_MODE",
+            "                        ADD:'add'  <== mode:DEFAULT_MODE",
+            "                        metric = DEC:'20'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_next_hop_self",
+            "                        NEXT_HOP:'next-hop'  <== mode:DEFAULT_MODE",
+            "                        SELF:'self'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_next_term",
+            "                        NEXT:'next'  <== mode:DEFAULT_MODE",
+            "                        TERM:'term'  <== mode:DEFAULT_MODE))))))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_policy_options",
+            "            POLICY_OPTIONS:'policy-options'  <== mode:DEFAULT_MODE",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                text = VARIABLE:'POLICY-NAME'  <== mode:DEFAULT_MODE)",
+            "              (pops_term",
+            "                TERM:'term'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'TERM'  <== mode:DEFAULT_MODE)",
+            "                (pops_common",
+            "                  (pops_then",
+            "                    THEN:'then'  <== mode:DEFAULT_MODE",
+            "                    (popst_common",
+            "                      (popst_origin",
+            "                        ORIGIN:'origin'  <== mode:DEFAULT_MODE",
+            "                        IGP:'igp'  <== mode:DEFAULT_MODE))))))))))",
             "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "  (set_line",
             "    SET:'set'  <== mode:DEFAULT_MODE",
@@ -47344,7 +47977,7 @@
             "        (ntp_null",
             "          ALLOW:'allow'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
-            "            VARIABLE:'control'  <== mode:DEFAULT_MODE",
+            "            CONTROL:'control'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_ntp",
@@ -52714,6 +53347,13 @@
             "1" : "MISCELLANEOUS: apply-groups statement at path: 'forwarding-options' refers to non-existent group: 'g1'\n"
           }
         },
+        "juniper_policy_statement" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: as-path-group AS_PATH_GROUP",
+            "2" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: instance FORWARDING",
+            "3" : "MISCELLANEOUS: unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
+          }
+        },
         "juniper_tacplus" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: apply-groups statement at path: 'system tacplus-server 1.2.3.4' refers to non-existent group: 'bippety'\n"
@@ -53177,25 +53817,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                33
+                34
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                31
+                32
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                35
+                36
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                29
+                30
               ],
               "numReferrers" : 1
             }
@@ -53536,7 +54176,7 @@
           "class-map" : {
             "class-default" : {
               "definitionLines" : [
-                209
+                210
               ],
               "numReferrers" : 1
             }
@@ -53544,8 +54184,8 @@
           "object-group service" : {
             "SVCGRP-ICMP" : {
               "definitionLines" : [
-                176,
-                177
+                177,
+                178
               ],
               "numReferrers" : 0
             }
@@ -53553,7 +54193,6 @@
           "policy-map" : {
             "global_policy" : {
               "definitionLines" : [
-                193,
                 194,
                 195,
                 196,
@@ -53570,7 +54209,8 @@
                 207,
                 208,
                 209,
-                210
+                210,
+                211
               ],
               "numReferrers" : 0
             }
@@ -53617,35 +54257,47 @@
         "cisco_privilege" : { },
         "cisco_qos" : {
           "class-map" : {
-            "bippety" : {
+            "ABC" : {
               "definitionLines" : [
                 5,
                 6,
-                7
+                7,
+                8,
+                9,
+                10
+              ],
+              "numReferrers" : 0
+            },
+            "bippety" : {
+              "definitionLines" : [
+                11,
+                12,
+                13
               ],
               "numReferrers" : 0
             },
             "boop" : {
               "definitionLines" : [
-                13,
-                14
+                19,
+                20,
+                21
               ],
               "numReferrers" : 0
             },
             "boppety" : {
               "definitionLines" : [
-                8,
-                9,
-                10,
-                11
+                14,
+                15,
+                16,
+                17
               ],
               "numReferrers" : 0
             },
             "cos_all" : {
               "definitionLines" : [
-                16,
-                17,
-                18
+                23,
+                24,
+                25
               ],
               "numReferrers" : 0
             }
@@ -53653,25 +54305,25 @@
           "object-group network" : {
             "1.2.3.4-24" : {
               "definitionLines" : [
-                26,
-                27
+                33,
+                34
               ],
               "numReferrers" : 0
             },
             "dns_servers" : {
               "definitionLines" : [
-                28,
-                29,
-                30
+                35,
+                36,
+                37
               ],
               "numReferrers" : 0
             },
             "ntp_servers" : {
               "definitionLines" : [
-                31,
-                32,
-                33,
-                34
+                38,
+                39,
+                40,
+                41
               ],
               "numReferrers" : 0
             }
@@ -53679,12 +54331,28 @@
           "policy-map type inspect" : {
             "pminspect" : {
               "definitionLines" : [
-                35,
-                36,
-                37,
-                38,
-                39,
-                40
+                42,
+                43,
+                44,
+                45,
+                46,
+                47
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "service-template" : {
+            "template_name" : {
+              "definitionLines" : [
+                142,
+                143,
+                144,
+                145,
+                146,
+                147,
+                148,
+                149,
+                150
               ],
               "numReferrers" : 0
             }
@@ -54949,58 +55617,58 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                121
+                123
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                124
+                126
               ]
             },
             "ag1" : {
               "interface incoming ip access-list" : [
-                54
+                56
               ]
             },
             "ag2" : {
               "interface outgoing ip access-list" : [
-                55
+                57
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                88
+                90
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                85
+                87
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                75
+                77
               ]
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                88
+                90
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                89
+                91
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                274
+                277
               ]
             }
           }
@@ -55050,17 +55718,17 @@
           "class-map" : {
             "ICMP-cmap" : {
               "policy-map class" : [
-                205
+                206
               ]
             },
             "TCP-cmap" : {
               "policy-map class" : [
-                207
+                208
               ]
             },
             "inspection_default" : {
               "policy-map class" : [
-                194
+                195
               ]
             }
           },
@@ -55108,81 +55776,113 @@
           "acl" : {
             "boop" : {
               "class-map access-group" : [
-                14
+                20
+              ]
+            },
+            "boop2" : {
+              "class-map access-list" : [
+                21
               ]
             }
           },
           "class-map" : {
+            "MY_CLASS_1" : {
+              "policy-map event class" : [
+                129
+              ]
+            },
+            "MY_CLASS_2" : {
+              "policy-map event class" : [
+                131
+              ]
+            },
             "bippetyboo-drop" : {
               "policy-map class" : [
-                43
+                50
               ]
             },
             "bippetyboo-ndrop" : {
               "policy-map class" : [
-                59
+                66
               ]
             },
             "bippetyboo-ndrop-fcoe" : {
               "policy-map class" : [
-                55
+                62
               ]
             },
             "bleefee" : {
               "policy-map class" : [
-                95
+                102
               ]
             },
             "bleefee2" : {
               "policy-map class" : [
-                100
+                107
               ]
             },
             "blerf" : {
               "policy-map class" : [
-                91
+                98
               ]
             },
             "c-bleeb-drop" : {
               "policy-map class" : [
-                102
+                109
               ]
             },
             "c-bleeb-ndrop-fcoe" : {
               "policy-map class" : [
-                107
+                114
               ]
             },
             "c-foob-drop" : {
               "policy-map class" : [
-                74
+                81
               ]
             },
             "c-foob-ndrop" : {
               "policy-map class" : [
-                86
+                93
               ]
             },
             "c-foob-ndrop-fcoe" : {
               "policy-map class" : [
-                82
+                89
               ]
             },
             "fffoooddd" : {
               "policy-map class" : [
-                65
+                72
               ]
             },
             "floop" : {
               "policy-map class" : [
-                112
+                119
               ]
             }
           },
           "class-map type inspect" : {
             "cinspect" : {
               "policy-map type inspect class type inspect" : [
-                36
+                43
+              ]
+            }
+          },
+          "service-template" : {
+            "DEF" : {
+              "class-map activate-service-template" : [
+                9
+              ]
+            },
+            "GHI" : {
+              "class-map service-template" : [
+                10
+              ]
+            },
+            "my_TEMPLATE_NAME" : {
+              "policy-map event class activate" : [
+                130
               ]
             }
           }

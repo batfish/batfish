@@ -1,31 +1,27 @@
-package org.batfish.datamodel.questions;
+package org.batfish.question;
 
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Sets;
 import java.util.Objects;
-import java.util.Set;
 import java.util.SortedSet;
-import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.question.ReachabilityParameters;
-import org.batfish.question.SrcNattedConstraint;
+import org.batfish.datamodel.questions.InterfacesSpecifier;
+import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.specifier.AllInterfacesLocationSpecifier;
 import org.batfish.specifier.ConstantIpSpaceSpecifier;
 import org.batfish.specifier.DifferenceLocationSpecifier;
-import org.batfish.specifier.InferFromLocationIpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.LocationSpecifier;
 import org.batfish.specifier.LocationSpecifiers;
 import org.batfish.specifier.NodeSpecifiers;
 import org.batfish.specifier.UnionLocationSpecifier;
 
-public class ReachabilitySettings {
+public final class ReachabilitySettings {
 
-  public static class Builder {
+  public static final class Builder {
 
     private SortedSet<ForwardingAction> _actions;
 
@@ -217,46 +213,6 @@ public class ReachabilitySettings {
     _srcNatted = builder._srcNatted;
   }
 
-  public Set<String> computeActiveFinalNodes(IBatfish batfish)
-      throws InvalidReachabilitySettingsException {
-    Set<String> matchingFinalNodes = _finalNodes.getMatchingNodes(batfish);
-    Set<String> matchingNotFinalNodes = _notFinalNodes.getMatchingNodes(batfish);
-    Set<String> activeFinalNodes = Sets.difference(matchingFinalNodes, matchingNotFinalNodes);
-    if (activeFinalNodes.isEmpty()) {
-      throw new InvalidReachabilitySettingsException(
-          "NOTHING TO DO: No nodes both match finalNodeRegex: '"
-              + _finalNodes
-              + "' and fail to match notFinalNodeRegex: '"
-              + _notFinalNodes
-              + "'");
-    }
-    return activeFinalNodes;
-  }
-
-  public Set<String> computeActiveIngressNodes(IBatfish batfish)
-      throws InvalidReachabilitySettingsException {
-    Set<String> matchingIngressNodes = _ingressNodes.getMatchingNodes(batfish);
-    Set<String> matchingNotIngressNodes = _notIngressNodes.getMatchingNodes(batfish);
-    Set<String> activeIngressNodes = Sets.difference(matchingIngressNodes, matchingNotIngressNodes);
-    if (activeIngressNodes.isEmpty()) {
-      throw new InvalidReachabilitySettingsException(
-          "NOTHING TO DO: No nodes both match ingressNodeRegex: '"
-              + _ingressNodes
-              + "' and fail to match notIngressNodeRegex: '"
-              + _notIngressNodes
-              + "'");
-    }
-    return activeIngressNodes;
-  }
-
-  public Set<String> computeActiveNonTransitNodes(IBatfish batfish) {
-    return _nonTransitNodes.getMatchingNodes(batfish);
-  }
-
-  public Set<String> computeActiveTransitNodes(IBatfish batfish) {
-    return _transitNodes.getMatchingNodes(batfish);
-  }
-
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
@@ -346,7 +302,12 @@ public class ReachabilitySettings {
         _useCompression);
   }
 
-  public ReachabilityParameters toReachabilityParameters(ReachabilitySettings settings) {
+  /**
+   * Convert to a {@link ReachabilityParameters} object. Mostly this means converting user input
+   * into {@link LocationSpecifier} and {@link IpSpaceSpecifier} objects. At some point, this class
+   * can be removed and replaced entirely with {@link ReachabilityParameters}.
+   */
+  public ReachabilityParameters toReachabilityParameters() {
     // compute the source LocationSpecifier
     LocationSpecifier ingressInterfaces =
         _ingressInterfaces == null ? null : LocationSpecifiers.from(_ingressInterfaces);
@@ -373,15 +334,10 @@ public class ReachabilitySettings {
       sourceLocations = ingressNodes;
     }
 
-    // remove src IPs from headerspace since they're specified via an IpSpaceSpecifier
-    IpSpace nullIpSpace = null;
-    HeaderSpace headerSpace =
-        _headerSpace.toBuilder().setNotSrcIps(nullIpSpace).setSrcIps(nullIpSpace).build();
-
     // compute the source IpSpaceSpecifier
-    IpSpaceSpecifier sourceIpSpace = InferFromLocationIpSpaceSpecifier.INSTANCE;
-    IpSpace srcIps = headerSpace.getSrcIps();
-    IpSpace notSrcIps = headerSpace.getNotSrcIps();
+    IpSpaceSpecifier sourceIpSpace = new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
+    IpSpace srcIps = _headerSpace.getSrcIps();
+    IpSpace notSrcIps = _headerSpace.getNotSrcIps();
     if (srcIps != null && notSrcIps != null) {
       sourceIpSpace = new ConstantIpSpaceSpecifier(AclIpSpace.difference(srcIps, notSrcIps));
     } else if (srcIps != null) {
@@ -392,30 +348,19 @@ public class ReachabilitySettings {
     }
 
     return ReachabilityParameters.builder()
-        .setActions(settings.getActions())
+        .setActions(_actions)
         .setFinalNodesSpecifier(
             NodeSpecifiers.difference(
                 NodeSpecifiers.from(_finalNodes), NodeSpecifiers.from(_notFinalNodes)))
-        .setForbiddenTransitNodesSpecifier(NodeSpecifiers.from(settings.getNonTransitNodes()))
-        .setHeaderSpace(headerSpace)
-        .setMaxChunkSize(settings.getMaxChunkSize())
-        .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(settings.getTransitNodes()))
+        .setForbiddenTransitNodesSpecifier(NodeSpecifiers.from(_nonTransitNodes))
+        .setHeaderSpace(_headerSpace)
+        .setMaxChunkSize(_maxChunkSize)
+        .setRequiredTransitNodesSpecifier(NodeSpecifiers.from(_transitNodes))
         .setSourceIpSpaceSpecifier(sourceIpSpace)
         .setSourceSpecifier(sourceLocations)
-        .setSrcNatted(SrcNattedConstraint.fromBoolean(settings.getSrcNatted()))
-        .setSpecialize(settings.getSpecialize())
-        .setUseCompression(settings.getUseCompression())
+        .setSrcNatted(SrcNattedConstraint.fromBoolean(_srcNatted))
+        .setSpecialize(_specialize)
+        .setUseCompression(_useCompression)
         .build();
-  }
-
-  public void validateTransitNodes(IBatfish batfish) throws InvalidReachabilitySettingsException {
-    Set<String> commonNodes =
-        Sets.intersection(
-            computeActiveTransitNodes(batfish), computeActiveNonTransitNodes(batfish));
-    if (!commonNodes.isEmpty()) {
-      throw new InvalidReachabilitySettingsException(
-          "The following nodes illegally match both transitNodes and nonTransitNodes: "
-              + commonNodes);
-    }
   }
 }

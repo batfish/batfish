@@ -23,6 +23,7 @@ aaa accounting exec default
  action-type start-stop
  group tacacs+
 !
+aaa accounting identity default start-stop group MEE
 aaa accounting nested
 aaa accounting network default start-stop group tacacs+
 aaa accounting network default
@@ -61,6 +62,7 @@ aaa authentication ppp default group radius
 aaa authentication ppp dialup if-needed group radius group tacacs+
 aaa authentication telnet console TACACS+ LOCAL
 aaa authentication username-prompt "Local Username: "
+aaa authorization auth-proxy default group MEE
 aaa authorization commands 0 default group tacacs+ local none 
 aaa authorization commands 1 default group tacacs+ local none 
 aaa authorization commands 15 default group tacacs+ local none 
@@ -72,8 +74,16 @@ aaa authorization exec ffffff none
 aaa authorization include telnet outside 1.2.3.4 255.255.255.255 0.0.0.0 0.0.0.0 User_Telnet
 aaa authorization network default group tacacs+ 
 aaa authorization reverse-access default none
+aaa server radius dynamic-author
+ client 12.5.1.61 server-key 7 KKKKAAA
+ client nameMe server-key 0 KKKKAAA
+ port 12
+ auth-type all
+ ignore session-key
+ ignore server-key
 aaa group server radius fguiwrego
  server 1.2.3.4 auth-port 1812 acct-port 1813
+ server name somename
  no source-interface
 !
 aaa group server tacacs+ authservers

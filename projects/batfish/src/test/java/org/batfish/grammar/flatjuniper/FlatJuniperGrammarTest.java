@@ -2,42 +2,42 @@ package org.batfish.grammar.flatjuniper;
 
 import static java.util.Collections.emptyMap;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
-import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasAction;
-import static org.batfish.datamodel.matchers.IpAccessListLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
-import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
-import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -49,6 +49,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_S
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -102,9 +103,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
@@ -666,6 +664,60 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFirewallCombinedPolicies() throws IOException {
+    Configuration c = parseConfig("firewall-combined-policies");
+    String interfaceNameTrust = "ge-0/0/0.0";
+    String interfaceNameUntrust = "ge-0/0/1.0";
+    String addrPermitted = "1.2.3.1";
+    String addrDeniedByZonePolicy = "1.2.3.3";
+    String addrDeniedByGlobalPolicy = "1.2.3.7";
+    String addrDeniedByFilter = "2.2.2.2";
+    String addrDefaultPolicy = "1.2.3.15";
+    String untrustIpAddr = "1.2.4.5";
+
+    Flow flowPermitted = createFlow(addrPermitted, untrustIpAddr);
+    Flow flowDeniedByZonePolicy = createFlow(addrDeniedByZonePolicy, untrustIpAddr);
+    Flow flowDeniedByGlobalPolicy = createFlow(addrDeniedByGlobalPolicy, untrustIpAddr);
+    Flow flowDeniedByFilter = createFlow(addrDeniedByFilter, untrustIpAddr);
+    Flow flowDefaultPolicy = createFlow(addrDefaultPolicy, untrustIpAddr);
+
+    IpAccessList aclUntrustOut = c.getInterfaces().get(interfaceNameUntrust).getOutgoingFilter();
+
+    /* Confirm flow from address explicitly allowed by zone policy is accepted */
+    assertThat(
+        aclUntrustOut,
+        accepts(flowPermitted, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow from trust interface not matching any policy deny is accepted (accepted by default permit-all) */
+    assertThat(
+        aclUntrustOut,
+        accepts(flowDefaultPolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow matching zone policy deny is rejected */
+    assertThat(
+        aclUntrustOut,
+        rejects(flowDeniedByZonePolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow blocked by the outgoing filter is rejected */
+    assertThat(
+        aclUntrustOut,
+        rejects(flowDeniedByFilter, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm flow matching global policy deny is rejected */
+    assertThat(
+        aclUntrustOut,
+        rejects(
+            flowDeniedByGlobalPolicy, interfaceNameTrust, c.getIpAccessLists(), c.getIpSpaces()));
+
+    /* Confirm traffic originating from the device is not blocked by policies */
+    assertThat(
+        aclUntrustOut,
+        accepts(flowDeniedByZonePolicy, null, c.getIpAccessLists(), c.getIpSpaces()));
+    assertThat(
+        aclUntrustOut,
+        accepts(flowDeniedByGlobalPolicy, null, c.getIpAccessLists(), c.getIpSpaces()));
+    /* Confirm traffic originating from the device is still blocked by an outgoing filter */
+    assertThat(
+        aclUntrustOut, rejects(flowDeniedByFilter, null, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
   public void testFirewallGlobalAddressBook() throws IOException {
     Configuration c = parseConfig("firewall-global-address-book");
     String interfaceNameTrust = "ge-0/0/0.0";
@@ -761,52 +813,6 @@ public class FlatJuniperGrammarTest {
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
 
-    IpAccessListLine aclGlobalPolicyLine =
-        Iterables.getOnlyElement(c.getIpAccessLists().get(ACL_NAME_GLOBAL_POLICY).getLines());
-
-    /* Global policy should permit the specific src address defined in the config */
-    assertThat(
-        aclGlobalPolicyLine,
-        hasMatchCondition(equalTo(new MatchHeaderSpace(HeaderSpace.builder().build()))));
-    assertThat(aclGlobalPolicyLine, hasAction(equalTo(LineAction.ACCEPT)));
-
-    List<IpAccessListLine> aclTrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
-    List<IpAccessListLine> aclUntrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
-
-    /* Security policy ACLs should have two lines, one for specific policies and one for default */
-    assertThat(aclTrustSPLines, iterableWithSize(3));
-    assertThat(aclUntrustSPLines, iterableWithSize(3));
-
-    /* First line should be specific security policy (existing connection in this case) */
-    assertThat(
-        aclTrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-    assertThat(
-        aclUntrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-
-    /* Second line should be global policy */
-    assertThat(
-        aclTrustSPLines.get(1),
-        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
-    assertThat(
-        aclUntrustSPLines.get(1),
-        hasMatchCondition(equalTo(new PermittedByAcl(ACL_NAME_GLOBAL_POLICY))));
-
-    /* Third line should be default policy (reject all traffic) */
-    assertThat(aclTrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclTrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
-    assertThat(aclUntrustSPLines.get(2), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclUntrustSPLines.get(2), hasAction(equalTo(LineAction.REJECT)));
-
     /* Flows in either direction should be permitted by the global policy */
     assertThat(
         aclUntrustOut,
@@ -887,60 +893,6 @@ public class FlatJuniperGrammarTest {
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
 
-    List<IpAccessListLine> aclTrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
-    List<IpAccessListLine> aclUntrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
-
-    /*
-     * The interface security policies should have two lines each: one for the actual
-     * security policy (allow established connections here), and one for the default action
-     */
-    assertThat(aclTrustSPLines, iterableWithSize(2));
-    assertThat(aclUntrustSPLines, iterableWithSize(2));
-
-    IpAccessListLine aclTrustOutLine = Iterables.getOnlyElement(aclTrustOut.getLines());
-    IpAccessListLine aclUntrustOutLine = Iterables.getOnlyElement(aclUntrustOut.getLines());
-
-    /* Each interface's outgoing ACL line should reference its security policy */
-    assertThat(
-        aclTrustOutLine,
-        hasMatchCondition(
-            isAndMatchExprThat(
-                hasConjuncts(
-                    containsInAnyOrder(
-                        new PermittedByAcl(ACL_NAME_SECURITY_POLICY + interfaceNameTrust))))));
-    assertThat(
-        aclUntrustOutLine,
-        hasMatchCondition(
-            isAndMatchExprThat(
-                hasConjuncts(
-                    containsInAnyOrder(
-                        new PermittedByAcl(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust))))));
-
-    /*
-     * Since no policies are defined in either direction, should default to allowing only
-     * established connections
-     */
-    assertThat(
-        aclTrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-    assertThat(
-        aclUntrustSPLines.get(0),
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-
-    /* Default line should be reject all traffic */
-    assertThat(aclTrustSPLines.get(1), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclTrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
-    assertThat(aclUntrustSPLines.get(1), hasMatchCondition(equalTo(TrueExpr.INSTANCE)));
-    assertThat(aclUntrustSPLines.get(1), hasAction(equalTo(LineAction.REJECT)));
-
     /* Simple flow in either direction should be blocked */
     assertThat(
         aclUntrustOut,
@@ -987,52 +939,6 @@ public class FlatJuniperGrammarTest {
             ACL_NAME_EXISTING_CONNECTION,
             ACL_NAME_SECURITY_POLICY + interfaceNameTrust,
             ACL_NAME_SECURITY_POLICY + interfaceNameUntrust));
-
-    List<IpAccessListLine> aclTrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameTrust).getLines();
-    List<IpAccessListLine> aclUntrustSPLines =
-        c.getIpAccessLists().get(ACL_NAME_SECURITY_POLICY + interfaceNameUntrust).getLines();
-
-    /* Security policy ACLs should have two lines, one for specific policies and one for default */
-    assertThat(aclTrustSPLines, iterableWithSize(2));
-    assertThat(aclUntrustSPLines, iterableWithSize(2));
-
-    /* Extract the lines for content testing */
-    IpAccessListLine aclTrustSecurityPolicyLine = aclTrustSPLines.get(0);
-    IpAccessListLine aclUntrustSecurityPolicyLine = aclUntrustSPLines.get(0);
-    IpAccessListLine aclSecurityPolicyLine =
-        Iterables.getOnlyElement(c.getIpAccessLists().get(securityPolicyName).getLines());
-
-    /* Security policy for traffic to trust zone should just allow existing connections */
-    assertThat(
-        aclTrustSecurityPolicyLine,
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION))))));
-
-    /*
-     * Security policy for traffic to untrust zone should allow existing connections OR matching
-     * the security policy
-     */
-    assertThat(
-        aclUntrustSecurityPolicyLine,
-        hasMatchCondition(
-            isOrMatchExprThat(
-                hasDisjuncts(
-                    containsInAnyOrder(
-                        new PermittedByAcl(ACL_NAME_EXISTING_CONNECTION),
-                        new PermittedByAcl(securityPolicyName))))));
-
-    /* Confirm the security policy acl contains logical AND of srcInterface and headerSpace match */
-    assertThat(
-        aclSecurityPolicyLine,
-        hasMatchCondition(
-            isAndMatchExprThat(
-                hasConjuncts(
-                    containsInAnyOrder(
-                        new MatchSrcInterface(ImmutableList.of(interfaceNameTrust)),
-                        new MatchHeaderSpace(HeaderSpace.builder().build()))))));
 
     /* Simple flow from trust to untrust should be permitted */
     assertThat(
@@ -1408,6 +1314,38 @@ public class FlatJuniperGrammarTest {
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testJuniperWildcards() throws IOException {
+    String hostname = "juniper-wildcards";
+    String loopback = "lo0.0";
+    String prefix1 = "1.1.1.1/32";
+    String prefix2 = "3.3.3.3/32";
+    String prefixList1 = "p1";
+    String prefixList2 = "p2";
+    Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
+
+    Configuration c = parseConfig(hostname);
+
+    /* apply-groups using group containing interface wildcard should function as expected. */
+    assertThat(c, hasInterface(loopback, hasAllAddresses(contains(new InterfaceAddress(prefix1)))));
+
+    /* The wildcard copied out of groups should disappear and not be treated as an actual interface */
+    assertThat(c, hasInterfaces(not(hasKey("*.*"))));
+
+    /* The wildcard-looking interface description should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(c, hasInterface(loopback, hasDescription("<SCRUBBED>")));
+
+    /* apply-path should work with wildcard. Its line should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(c, hasRouteFilterList(prefixList1, permits(Prefix.parse(prefix1))));
+
+    /* prefix-list p2 should get content from g2, but no prefix-list named "<*>" should be created */
+    assertThat(c, hasRouteFilterList(prefixList2, permits(Prefix.parse(prefix2))));
+    assertThat(c, hasRouteFilterLists(not(hasKey("<*>"))));
+
+    /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
   }
 
   @Test

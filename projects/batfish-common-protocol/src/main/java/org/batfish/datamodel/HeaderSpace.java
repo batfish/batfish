@@ -1128,42 +1128,6 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
     return true;
   }
 
-  public Builder toBuilder() {
-    return builder()
-        .setDscps(_dscps)
-        .setDstIps(_dstIps)
-        .setDstPorts(_dstPorts)
-        .setDstProtocols(_dstProtocols)
-        .setEcns(_ecns)
-        .setFragmentOffsets(_fragmentOffsets)
-        .setIcmpCodes(_icmpCodes)
-        .setIcmpTypes(_icmpTypes)
-        .setIpProtocols(_ipProtocols)
-        .setNegate(_negate)
-        .setNotDscps(_notDscps)
-        .setNotDstIps(_notDstIps)
-        .setNotDstPorts(_notDstPorts)
-        .setNotDstProtocols(_notDstProtocols)
-        .setNotEcns(_notEcns)
-        .setNotFragmentOffsets(_notFragmentOffsets)
-        .setNotIcmpCodes(_notIcmpCodes)
-        .setNotIcmpTypes(_notIcmpTypes)
-        .setNotIpProtocols(_notIpProtocols)
-        .setNotPacketLengths(_notPacketLengths)
-        .setNotSrcIps(_notSrcIps)
-        .setNotSrcPorts(_notSrcPorts)
-        .setNotSrcProtocols(_notSrcProtocols)
-        .setPacketLengths(_packetLengths)
-        .setSrcIps(_srcIps)
-        .setSrcOrDstIps(_srcOrDstIps)
-        .setSrcOrDstPorts(_srcOrDstPorts)
-        .setSrcOrDstProtocols(_srcOrDstProtocols)
-        .setSrcPorts(_srcPorts)
-        .setSrcProtocols(_srcProtocols)
-        .setStates(_states)
-        .setTcpFlags(_tcpFlags);
-  }
-
   @JsonProperty(PROP_DSCPS)
   public void setDscps(Iterable<Integer> dscps) {
     _dscps = ImmutableSortedSet.copyOf(dscps);
@@ -1342,6 +1306,42 @@ public class HeaderSpace implements Serializable, Comparable<HeaderSpace> {
   @JsonProperty(PROP_TCP_FLAGS)
   public void setTcpFlags(Iterable<TcpFlags> tcpFlags) {
     _tcpFlags = ImmutableList.copyOf(tcpFlags);
+  }
+
+  public Builder toBuilder() {
+    return builder()
+        .setDscps(_dscps)
+        .setDstIps(_dstIps)
+        .setDstPorts(_dstPorts)
+        .setDstProtocols(_dstProtocols)
+        .setEcns(_ecns)
+        .setFragmentOffsets(_fragmentOffsets)
+        .setIcmpCodes(_icmpCodes)
+        .setIcmpTypes(_icmpTypes)
+        .setIpProtocols(_ipProtocols)
+        .setNegate(_negate)
+        .setNotDscps(_notDscps)
+        .setNotDstIps(_notDstIps)
+        .setNotDstPorts(_notDstPorts)
+        .setNotDstProtocols(_notDstProtocols)
+        .setNotEcns(_notEcns)
+        .setNotFragmentOffsets(_notFragmentOffsets)
+        .setNotIcmpCodes(_notIcmpCodes)
+        .setNotIcmpTypes(_notIcmpTypes)
+        .setNotIpProtocols(_notIpProtocols)
+        .setNotPacketLengths(_notPacketLengths)
+        .setNotSrcIps(_notSrcIps)
+        .setNotSrcPorts(_notSrcPorts)
+        .setNotSrcProtocols(_notSrcProtocols)
+        .setPacketLengths(_packetLengths)
+        .setSrcIps(_srcIps)
+        .setSrcOrDstIps(_srcOrDstIps)
+        .setSrcOrDstPorts(_srcOrDstPorts)
+        .setSrcOrDstProtocols(_srcOrDstProtocols)
+        .setSrcPorts(_srcPorts)
+        .setSrcProtocols(_srcProtocols)
+        .setStates(_states)
+        .setTcpFlags(_tcpFlags);
   }
 
   @Override

@@ -282,7 +282,7 @@ public class IncrementalBdpEngine {
                   continue;
                 }
                 Map<BgpMultipathRib, RibDelta<BgpRoute>> deltas =
-                    vr.processBgpMessages(bgpTopology, allNodes);
+                    vr.processBgpMessages(bgpTopology);
                 vr.finalizeBgpRoutesAndQueueOutgoingMessages(
                     proc.getMultipathEbgp(),
                     proc.getMultipathIbgp(),

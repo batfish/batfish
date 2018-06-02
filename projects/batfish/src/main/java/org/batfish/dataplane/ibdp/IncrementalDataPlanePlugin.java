@@ -2,14 +2,15 @@ package org.batfish.dataplane.ibdp;
 
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.stream.Stream;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.ITracerouteEngine;
 import org.batfish.common.plugin.Plugin;
@@ -80,15 +81,17 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public Set<BgpAdvertisement> getAdvertisements() {
-    Set<BgpAdvertisement> adverts = new LinkedHashSet<>();
     IncrementalDataPlane dp = loadDataPlane();
-    for (Node node : dp._nodes.values()) {
-      for (VirtualRouter vrf : node.getVirtualRouters().values()) {
-        adverts.addAll(vrf._receivedBgpAdvertisements);
-        adverts.addAll(vrf._sentBgpAdvertisements);
-      }
-    }
-    return adverts;
+    return dp.getNodes()
+        .values()
+        .stream()
+        .flatMap(n -> n.getVirtualRouters().values().stream())
+        .flatMap(
+            virtualRouter ->
+                Stream.concat(
+                    virtualRouter.getSentBgpAdvertisements().stream(),
+                    virtualRouter.getReceivedBgpAdvertisements().stream()))
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override

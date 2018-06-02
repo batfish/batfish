@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Sets;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -10,6 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.ForwardingAction;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.specifier.IpSpaceAssignment;
 
 /**
@@ -43,7 +45,7 @@ public final class ResolvedReachabilityParameters {
 
     private boolean _useCompression;
 
-    public ResolvedReachabilityParameters build() {
+    public ResolvedReachabilityParameters build() throws InvalidReachabilityParametersException {
       return new ResolvedReachabilityParameters(this);
     }
 
@@ -128,11 +130,12 @@ public final class ResolvedReachabilityParameters {
 
   private final boolean _specialize;
 
-  private final Set<String> _transitNodes;
+  private final Set<String> _requiredTransitNodes;
 
   private final boolean _useCompression;
 
-  private ResolvedReachabilityParameters(Builder builder) {
+  private ResolvedReachabilityParameters(Builder builder)
+      throws InvalidReachabilityParametersException {
     _actions = builder._actions;
     _configurations = builder._configurations;
     _dataPlane = builder._dataPlane;
@@ -143,8 +146,29 @@ public final class ResolvedReachabilityParameters {
     _sourceIpSpaceByLocations = builder._sourceIpSpaceAssignment;
     _srcNatted = builder._srcNatted;
     _specialize = builder._specialize;
-    _transitNodes = builder._requiredTransitNodes;
+    _requiredTransitNodes = builder._requiredTransitNodes;
     _useCompression = builder._useCompression;
+
+    // validate actions
+    if (_actions.isEmpty()) {
+      throw new InvalidReachabilityParametersException("No actions");
+    }
+    // validate source IP assignment
+    if (_sourceIpSpaceByLocations.getEntries().isEmpty()) {
+      throw new InvalidReachabilityParametersException("No source locations");
+    }
+
+    // validate final nodes
+    if (_finalNodes.isEmpty()) {
+      throw new InvalidReachabilityParametersException("No final nodes");
+    }
+
+    // validate transit nodes
+    Set<String> commonNodes = Sets.intersection(_requiredTransitNodes, _forbiddenTransitNodes);
+    if (!commonNodes.isEmpty()) {
+      throw new InvalidReachabilityParametersException(
+          "Required and forbidden transit nodes overlap: " + commonNodes);
+    }
   }
 
   public static Builder builder() {
@@ -179,7 +203,7 @@ public final class ResolvedReachabilityParameters {
     return _maxChunkSize;
   }
 
-  public IpSpaceAssignment getSourceLocationsByIpSpace() {
+  public IpSpaceAssignment getSourceIpAssignment() {
     return _sourceIpSpaceByLocations;
   }
 
@@ -192,7 +216,7 @@ public final class ResolvedReachabilityParameters {
   }
 
   public Set<String> getRequiredTransitNodes() {
-    return _transitNodes;
+    return _requiredTransitNodes;
   }
 
   public boolean getUseCompression() {

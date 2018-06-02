@@ -50,6 +50,8 @@ public class Interface extends ComparableStructure<String> {
 
   private final int _definitionLine;
 
+  private String _description;
+
   private String _incomingFilter;
 
   private int _incomingFilterLine;
@@ -154,6 +156,10 @@ public class Interface extends ComparableStructure<String> {
     return _definitionLine;
   }
 
+  public String getDescription() {
+    return _description;
+  }
+
   public String getIncomingFilter() {
     return _incomingFilter;
   }
@@ -244,6 +250,9 @@ public class Interface extends ComparableStructure<String> {
     }
     _inherited = true;
     _parent.inheritUnsetFields();
+    if (_description == null) {
+      _description = _parent._description;
+    }
     if (_mtu == null) {
       _mtu = _parent._mtu;
     }
@@ -269,6 +278,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setBandwidth(Double bandwidth) {
     _bandwidth = bandwidth;
+  }
+
+  public void setDescription(String description) {
+    _description = description;
   }
 
   public void setIncomingFilter(String accessListName) {

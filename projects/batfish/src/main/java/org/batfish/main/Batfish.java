@@ -2,6 +2,7 @@ package org.batfish.main;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.toMap;
+import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -9,12 +10,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
@@ -86,6 +86,7 @@ import org.batfish.config.Settings;
 import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
 import org.batfish.datamodel.Configuration;
@@ -106,6 +107,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
@@ -143,11 +145,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
 import org.batfish.datamodel.pojo.Environment;
-import org.batfish.datamodel.questions.InterfacesSpecifier;
-import org.batfish.datamodel.questions.InvalidReachabilitySettingsException;
+import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.ReachabilitySettings;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
@@ -165,12 +165,15 @@ import org.batfish.job.FlattenVendorConfigurationJob;
 import org.batfish.job.ParseEnvironmentBgpTableJob;
 import org.batfish.job.ParseEnvironmentRoutingTableJob;
 import org.batfish.job.ParseVendorConfigurationJob;
+import org.batfish.question.ReachabilityParameters;
+import org.batfish.question.ResolvedReachabilityParameters;
 import org.batfish.representation.aws.AwsConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -181,7 +184,8 @@ import org.batfish.z3.AclReachabilityQuerySynthesizer;
 import org.batfish.z3.BlacklistDstIpQuerySynthesizer;
 import org.batfish.z3.CompositeNodJob;
 import org.batfish.z3.EarliestMoreGeneralReachableLineQuerySynthesizer;
-import org.batfish.z3.IngressPoint;
+import org.batfish.z3.IngressLocation;
+import org.batfish.z3.LocationToIngressLocation;
 import org.batfish.z3.MultipathInconsistencyQuerySynthesizer;
 import org.batfish.z3.NodFirstUnsatJob;
 import org.batfish.z3.NodJob;
@@ -192,6 +196,9 @@ import org.batfish.z3.ReachabilityQuerySynthesizer;
 import org.batfish.z3.StandardReachabilityQuerySynthesizer;
 import org.batfish.z3.Synthesizer;
 import org.batfish.z3.SynthesizerInputImpl;
+import org.batfish.z3.expr.BooleanExpr;
+import org.batfish.z3.expr.OrExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -2739,9 +2746,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement multipath(ReachabilitySettings reachabilitySettings) {
+  public AnswerElement multipath(ReachabilityParameters reachabilityParameters) {
     return singleReachability(
-        reachabilitySettings, MultipathInconsistencyQuerySynthesizer.builder());
+        reachabilityParameters, MultipathInconsistencyQuerySynthesizer.builder());
   }
 
   @Override
@@ -2976,7 +2983,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement pathDiff(ReachabilitySettings reachabilitySettings) {
+  public AnswerElement pathDiff(ReachabilityParameters reachabilityParameters) {
+    /* TODO pathDiff deserves its own parameter set type.
+     * Sources are ignored, since we always originate from vrfs that have missing or removed
+     * edges. So the user-facing question shouldn't include a source parameter.
+     */
     Settings settings = getSettings();
     checkDifferentialDataPlaneQuestionDependencies();
     String tag = getDifferentialFlowTag();
@@ -3019,17 +3030,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String outInterface = edge.getInt1();
       String vrf =
           diffConfigurations.get(ingressNode).getInterfaces().get(outInterface).getVrf().getName();
+      Map<IngressLocation, BooleanExpr> srcIpConstraint =
+          ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
       ReachEdgeQuerySynthesizer reachQuery =
           new ReachEdgeQuerySynthesizer(
-              ingressNode, vrf, edge, true, reachabilitySettings.getHeaderSpace());
+              ingressNode, vrf, edge, true, reachabilityParameters.getHeaderSpace());
       ReachEdgeQuerySynthesizer noReachQuery =
           new ReachEdgeQuerySynthesizer(ingressNode, vrf, edge, true, new HeaderSpace());
       noReachQuery.setNegate(true);
       List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, noReachQuery, blacklistQuery);
-      SortedSet<IngressPoint> ingressPoints =
-          ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
       CompositeNodJob job =
-          new CompositeNodJob(settings, commonEdgeSynthesizers, queries, ingressPoints, tag);
+          new CompositeNodJob(settings, commonEdgeSynthesizers, queries, srcIpConstraint, tag);
       jobs.add(job);
     }
 
@@ -3053,12 +3064,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 .getName();
         ReachEdgeQuerySynthesizer reachQuery =
             new ReachEdgeQuerySynthesizer(
-                ingressNode, vrf, missingEdge, true, reachabilitySettings.getHeaderSpace());
+                ingressNode, vrf, missingEdge, true, reachabilityParameters.getHeaderSpace());
         List<QuerySynthesizer> queries = ImmutableList.of(reachQuery, blacklistQuery);
-        SortedSet<IngressPoint> ingressPoints =
-            ImmutableSortedSet.of(IngressPoint.ingressVrf(ingressNode, vrf));
+        Map<IngressLocation, BooleanExpr> srcIpConstraint =
+            ImmutableMap.of(IngressLocation.vrf(ingressNode, vrf), TrueExpr.INSTANCE);
         CompositeNodJob job =
-            new CompositeNodJob(settings, missingEdgeSynthesizers, queries, ingressPoints, tag);
+            new CompositeNodJob(settings, missingEdgeSynthesizers, queries, srcIpConstraint, tag);
         jobs.add(job);
       }
     }
@@ -3477,38 +3488,41 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement reducedReachability(ReachabilitySettings reachabilitySettings) {
-    Settings settings = getSettings();
+  public AnswerElement reducedReachability(ReachabilityParameters params) {
     checkDifferentialDataPlaneQuestionDependencies();
+    pushBaseEnvironment();
+    ResolvedReachabilityParameters baseParams;
+    try {
+      baseParams = resolveReachabilityParameters(this, params, getSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
+    }
+    popEnvironment();
+
+    pushDeltaEnvironment();
+    ResolvedReachabilityParameters deltaParams;
+    try {
+      deltaParams = resolveReachabilityParameters(this, params, getSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
+    }
+    popEnvironment();
+
+    return reducedReachability(baseParams, deltaParams);
+  }
+
+  public AnswerElement reducedReachability(
+      ResolvedReachabilityParameters baseParams, ResolvedReachabilityParameters deltaParams) {
+    Settings settings = getSettings();
     String tag = getDifferentialFlowTag();
 
-    Set<String> baseActiveIngressNodes = null;
-    Set<String> diffActiveIngressNodes = null;
+    Map<String, Configuration> baseConfigurations = baseParams.getConfigurations();
 
-    // load base configurations and generate base data plane
-    pushBaseEnvironment();
-    Map<String, Configuration> baseConfigurations = loadConfigurations();
-    try {
-      baseActiveIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
-    } catch (InvalidReachabilitySettingsException e) {
-      return e.getInvalidSettingsAnswer();
-    }
-    Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane();
-    popEnvironment();
+    Synthesizer baseDataPlaneSynthesizer =
+        synthesizeDataPlane(baseParams.getConfigurations(), baseParams.getDataPlane());
 
-    // load diff configurations and generate diff data plane
-    pushDeltaEnvironment();
-    try {
-      diffActiveIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
-    } catch (InvalidReachabilitySettingsException e) {
-      return e.getInvalidSettingsAnswer();
-    }
-    Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane();
-    popEnvironment();
-
-    Set<String> ingressNodes;
-    ingressNodes =
-        ImmutableSet.copyOf(Sets.intersection(baseActiveIngressNodes, diffActiveIngressNodes));
+    Synthesizer diffDataPlaneSynthesizer =
+        synthesizeDataPlane(deltaParams.getConfigurations(), deltaParams.getDataPlane());
 
     pushDeltaEnvironment();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
@@ -3522,59 +3536,60 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // compute composite program and flows
     List<Synthesizer> synthesizers =
-        ImmutableList.of(
-            baseDataPlaneSynthesizer, diffDataPlaneSynthesizer, baseDataPlaneSynthesizer);
+        ImmutableList.of(baseDataPlaneSynthesizer, diffDataPlaneSynthesizer);
 
-    // generate base reachability and diff blackhole and blacklist queries
+    /*
+     * Merge the srcIpConstraints
+     */
+    Map<IngressLocation, BooleanExpr> srcIpConstraints =
+        new HashMap<>(baseDataPlaneSynthesizer.getInput().getSrcIpConstraints());
+    diffDataPlaneSynthesizer
+        .getInput()
+        .getSrcIpConstraints()
+        .forEach(
+            (loc, expr) ->
+                srcIpConstraints.merge(
+                    loc, expr, (expr1, expr2) -> new OrExpr(ImmutableList.of(expr1, expr2))));
+
     List<CompositeNodJob> jobs =
-        ingressNodes
+        srcIpConstraints
+            .entrySet()
             .stream()
-            .flatMap(
-                node ->
-                    baseConfigurations
-                        .get(node)
-                        .getVrfs()
-                        .keySet()
-                        .stream()
-                        .map(
-                            vrf -> {
-                              Multimap<String, String> ingressNodeVrfs =
-                                  ImmutableMultimap.of(node, vrf);
-                              StandardReachabilityQuerySynthesizer acceptQuery =
-                                  StandardReachabilityQuerySynthesizer.builder()
-                                      .setActions(
-                                          ImmutableSet.of(
-                                              ForwardingAction.ACCEPT,
-                                              ForwardingAction
-                                                  .NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
-                                      .setHeaderSpace(reachabilitySettings.getHeaderSpace())
-                                      .setIngressNodeVrfs(ingressNodeVrfs)
-                                      .setFinalNodes(ImmutableSet.of())
-                                      .setTransitNodes(ImmutableSet.of())
-                                      .setNonTransitNodes(ImmutableSet.of())
-                                      .setSrcNatted(reachabilitySettings.getSrcNatted())
-                                      .build();
-                              StandardReachabilityQuerySynthesizer notAcceptQuery =
-                                  StandardReachabilityQuerySynthesizer.builder()
-                                      .setActions(
-                                          ImmutableSet.of(
-                                              ForwardingAction.ACCEPT,
-                                              ForwardingAction
-                                                  .NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
-                                      .setHeaderSpace(new HeaderSpace())
-                                      .setIngressNodeVrfs(ingressNodeVrfs)
-                                      .setFinalNodes(ImmutableSet.of())
-                                      .setTransitNodes(ImmutableSet.of())
-                                      .setNonTransitNodes(ImmutableSet.of())
-                                      .build();
-                              notAcceptQuery.setNegate(true);
-                              SortedSet<IngressPoint> ingressPoints =
-                                  ImmutableSortedSet.of(IngressPoint.ingressVrf(node, vrf));
-                              List<QuerySynthesizer> queries =
-                                  ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
-                              return new CompositeNodJob(
-                                  settings, synthesizers, queries, ingressPoints, tag);
-                            }))
+            .map(
+                entry -> {
+                  Map<IngressLocation, BooleanExpr> srcIpConstraint =
+                      ImmutableMap.of(entry.getKey(), entry.getValue());
+                  StandardReachabilityQuerySynthesizer acceptQuery =
+                      StandardReachabilityQuerySynthesizer.builder()
+                          .setActions(
+                              ImmutableSet.of(
+                                  ForwardingAction.ACCEPT,
+                                  ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                          .setHeaderSpace(baseParams.getHeaderSpace())
+                          .setSrcIpConstraints(srcIpConstraint)
+                          .setFinalNodes(ImmutableSet.of())
+                          .setRequiredTransitNodes(ImmutableSet.of())
+                          .setForbiddenTransitNodes(ImmutableSet.of())
+                          .setSrcNatted(baseParams.getSrcNatted())
+                          .build();
+                  StandardReachabilityQuerySynthesizer notAcceptQuery =
+                      StandardReachabilityQuerySynthesizer.builder()
+                          .setActions(
+                              ImmutableSet.of(
+                                  ForwardingAction.ACCEPT,
+                                  ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                          .setFinalNodes(ImmutableSet.of())
+                          .setForbiddenTransitNodes(ImmutableSet.of())
+                          .setHeaderSpace(baseParams.getHeaderSpace())
+                          .setRequiredTransitNodes(ImmutableSet.of())
+                          .setSrcIpConstraints(srcIpConstraint)
+                          .setSrcNatted(baseParams.getSrcNatted())
+                          .build();
+                  notAcceptQuery.setNegate(true);
+                  List<QuerySynthesizer> queries =
+                      ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
+                  return new CompositeNodJob(settings, synthesizers, queries, srcIpConstraint, tag);
+                })
             .collect(Collectors.toList());
 
     // TODO: maybe do something with nod answer element
@@ -4189,151 +4204,78 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   private AnswerElement singleReachability(
-      ReachabilitySettings reachabilitySettings,
+      ReachabilityParameters reachabilityParameters,
       ReachabilityQuerySynthesizer.Builder<?, ?> builder) {
     Settings settings = getSettings();
     String tag = getFlowTag(_testrigSettings);
-    Set<ForwardingAction> actions = reachabilitySettings.getActions();
-    Snapshot snapshot = getSnapshot();
-    boolean useCompression = reachabilitySettings.getUseCompression();
 
-    boolean useSpecializedCompression = false;
-
-    CompressDataPlaneResult compressionResult =
-        useCompression && useSpecializedCompression
-            ? computeCompressedDataPlane(reachabilitySettings.getHeaderSpace())
-            : null;
-
-    Map<String, Configuration> configurations =
-        useCompression && useSpecializedCompression
-            ? compressionResult._compressedConfigs
-            : useCompression
-                ? loadCompressedConfigurations(snapshot)
-                : loadConfigurations(snapshot);
-
-    DataPlane dataPlane =
-        useCompression && useSpecializedCompression
-            ? compressionResult._compressedDataPlane
-            : loadDataPlane(useCompression);
-
-    if (configurations == null) {
-      throw new BatfishException("error loading configurations");
-    }
-
-    if (dataPlane == null) {
-      throw new BatfishException("error loading data plane");
-    }
-
-    Set<String> activeIngressNodes;
-    Set<String> activeFinalNodes;
-    HeaderSpace headerSpace;
-    Set<String> transitNodes;
-    Set<String> nonTransitNodes;
-    int maxChunkSize;
-
+    ResolvedReachabilityParameters parameters;
     try {
-      activeIngressNodes = reachabilitySettings.computeActiveIngressNodes(this);
-      activeFinalNodes = reachabilitySettings.computeActiveFinalNodes(this);
-      headerSpace = reachabilitySettings.getHeaderSpace();
-      transitNodes = reachabilitySettings.computeActiveTransitNodes(this);
-      nonTransitNodes = reachabilitySettings.computeActiveNonTransitNodes(this);
-      maxChunkSize = reachabilitySettings.getMaxChunkSize();
-      reachabilitySettings.validateTransitNodes(this);
-    } catch (InvalidReachabilitySettingsException e) {
-      return e.getInvalidSettingsAnswer();
+      parameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
+    } catch (InvalidReachabilityParametersException e) {
+      return e.getInvalidParametersAnswer();
     }
 
-    List<IngressPoint> ingressPoints = new ArrayList<>();
-    if (reachabilitySettings.getIngressInterfaces() != InterfacesSpecifier.NONE) {
-      // originate from specified interfaces
-      activeIngressNodes
-          .stream()
-          .flatMap(
-              ingressNode ->
-                  configurations
-                      .get(ingressNode)
-                      .getInterfaces()
-                      .values()
-                      .stream()
-                      .filter(reachabilitySettings.getIngressInterfaces()::matches)
-                      .map(iface -> IngressPoint.ingressInterface(ingressNode, iface.getName())))
-          .forEach(ingressPoints::add);
-    } else {
-      // originate from VRFs
-      activeIngressNodes
-          .stream()
-          .flatMap(
-              ingressNode ->
-                  configurations
-                      .get(ingressNode)
-                      .getVrfs()
-                      .keySet()
-                      .stream()
-                      .map(ingressVrf -> IngressPoint.ingressVrf(ingressNode, ingressVrf)))
-          .forEach(ingressPoints::add);
-    }
+    Set<ForwardingAction> actions = reachabilityParameters.getActions();
 
-    int chunkSize =
-        Math.max(1, Math.min(maxChunkSize, ingressPoints.size() / _settings.getAvailableThreads()));
-
-    // partition originateNodeVrfs into chunks
-    List<List<IngressPoint>> ingressPointChunks = Lists.partition(ingressPoints, chunkSize);
-
+    Map<String, Configuration> configurations = parameters.getConfigurations();
+    DataPlane dataPlane = parameters.getDataPlane();
+    Set<String> forbiddenTransitNodes = parameters.getForbiddenTransitNodes();
+    HeaderSpace headerSpace = parameters.getHeaderSpace();
+    Set<String> requiredTransitNodes = parameters.getRequiredTransitNodes();
     Synthesizer dataPlaneSynthesizer =
         synthesizeDataPlane(
             configurations,
             dataPlane,
             loadForwardingAnalysis(configurations, dataPlane),
             headerSpace,
-            nonTransitNodes,
-            reachabilitySettings.getSpecialize(),
-            transitNodes);
+            forbiddenTransitNodes,
+            requiredTransitNodes,
+            parameters.getSourceIpAssignment(),
+            reachabilityParameters.getSpecialize());
+
+    Map<IngressLocation, BooleanExpr> srcIpConstraints =
+        dataPlaneSynthesizer.getInput().getSrcIpConstraints();
+
+    // chunk ingress locations
+    int chunkSize =
+        Math.max(
+            1,
+            Math.min(
+                parameters.getMaxChunkSize(),
+                srcIpConstraints.size() / _settings.getAvailableThreads()));
+
+    // partition ingress locations into chunks.
+    List<List<Entry<IngressLocation, BooleanExpr>>> partitionedIngressLocations =
+        Lists.partition(ImmutableList.copyOf(srcIpConstraints.entrySet()), chunkSize);
+
+    List<Map<IngressLocation, BooleanExpr>> chunkedSrcIpConstraints =
+        partitionedIngressLocations.stream().map(ImmutableMap::copyOf).collect(Collectors.toList());
 
     // build query jobs
     List<NodJob> jobs =
-        ingressPointChunks
+        chunkedSrcIpConstraints
             .stream()
-            .map(ImmutableSortedSet::copyOf)
             .map(
-                chunkIngressPoints -> {
-                  ImmutableMultimap.Builder<String, String> ingressNodeInterfacesBuilder =
-                      ImmutableMultimap.builder();
-                  ImmutableMultimap.Builder<String, String> ingressNodeVrfsBuilder =
-                      ImmutableMultimap.builder();
-                  chunkIngressPoints.forEach(
-                      ingressPoint -> {
-                        if (ingressPoint.isIngressInterface()) {
-                          ingressNodeInterfacesBuilder.put(
-                              ingressPoint.getNode(), ingressPoint.getInterface());
-                        } else if (ingressPoint.isIngressVrf()) {
-                          ingressNodeVrfsBuilder.put(ingressPoint.getNode(), ingressPoint.getVrf());
-                        } else {
-                          throw new BatfishException("Unexpected IngressPoint type");
-                        }
-                      });
-                  Multimap<String, String> ingressNodeInterfaces =
-                      ingressNodeInterfacesBuilder.build();
-                  Multimap<String, String> ingressNodeVrfs = ingressNodeVrfsBuilder.build();
-
+                chunkSrcIpConstraints -> {
                   ReachabilityQuerySynthesizer query =
                       builder
                           .setActions(actions)
+                          .setFinalNodes(parameters.getFinalNodes())
+                          .setForbiddenTransitNodes(forbiddenTransitNodes)
                           .setHeaderSpace(headerSpace)
-                          .setFinalNodes(activeFinalNodes)
-                          .setIngressNodeInterfaces(ingressNodeInterfaces)
-                          .setIngressNodeVrfs(ingressNodeVrfs)
-                          .setTransitNodes(transitNodes)
-                          .setNonTransitNodes(nonTransitNodes)
-                          .setSrcNatted(reachabilitySettings.getSrcNatted())
+                          .setSrcIpConstraints(chunkSrcIpConstraints)
+                          .setRequiredTransitNodes(requiredTransitNodes)
+                          .setSrcNatted(parameters.getSrcNatted())
                           .build();
 
                   return new NodJob(
                       settings,
                       dataPlaneSynthesizer,
                       query,
-                      chunkIngressPoints,
+                      chunkSrcIpConstraints,
                       tag,
-                      reachabilitySettings.getSpecialize());
+                      parameters.getSpecialize());
                 })
             .collect(Collectors.toList());
 
@@ -4416,8 +4358,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public AnswerElement standard(ReachabilitySettings reachabilitySettings) {
-    return singleReachability(reachabilitySettings, StandardReachabilityQuerySynthesizer.builder());
+  public AnswerElement standard(ReachabilityParameters reachabilityParameters) {
+    return singleReachability(
+        reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
   }
 
   private Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
@@ -4447,8 +4390,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   public Synthesizer synthesizeDataPlane() {
-    SortedMap<String, Configuration> configurations = loadConfigurations();
-    DataPlane dataPlane = loadDataPlane();
+    return synthesizeDataPlane(loadConfigurations(), loadDataPlane());
+  }
+
+  private Synthesizer synthesizeDataPlane(
+      Map<String, Configuration> configurations, DataPlane dataPlane) {
     ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations, dataPlane);
     return synthesizeDataPlane(
         configurations,
@@ -4456,8 +4402,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
         forwardingAnalysis,
         new HeaderSpace(),
         ImmutableSet.of(),
-        false,
-        ImmutableSet.of());
+        ImmutableSet.of(),
+        IpSpaceAssignment.empty(),
+        false);
   }
 
   @Nonnull
@@ -4467,8 +4414,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       Set<String> nonTransitNodes,
-      boolean specialize,
-      Set<String> transitNodes) {
+      Set<String> transitNodes,
+      IpSpaceAssignment ipSpaceAssignment,
+      boolean specialize) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
@@ -4481,10 +4429,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 dataPlane,
                 forwardingAnalysis,
                 headerSpace,
+                ipSpaceAssignment,
+                transitNodes,
                 nonTransitNodes,
                 _settings.getSimplify(),
-                specialize,
-                transitNodes));
+                specialize));
 
     List<String> warnings = s.getWarnings();
     int numWarnings = warnings.size();
@@ -4504,15 +4453,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
       DataPlane dataPlane,
       ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
+      IpSpaceAssignment ipSpaceAssignment,
+      Set<String> transitNodes,
       Set<String> nonTransitNodes,
       boolean simplify,
-      boolean specialize,
-      Set<String> transitNodes) {
+      boolean specialize) {
     Topology topology = new Topology(dataPlane.getTopologyEdges());
+
+    // convert Locations to IngressLocations
+    Map<IngressLocation, IpSpace> ipSpacePerLocation = new HashMap<>();
+    LocationToIngressLocation toIngressLocation = new LocationToIngressLocation(configurations);
+    ipSpaceAssignment
+        .getEntries()
+        .forEach(
+            entry ->
+                entry
+                    .getLocations()
+                    .forEach(
+                        location ->
+                            ipSpacePerLocation.merge(
+                                location.accept(toIngressLocation),
+                                entry.getIpSpace(),
+                                ((ipSpace1, ipSpace2) -> AclIpSpace.union(ipSpace1, ipSpace2)))));
+
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
         .setForwardingAnalysis(forwardingAnalysis)
         .setHeaderSpace(headerSpace)
+        .setSrcIpConstraints(ipSpacePerLocation)
         .setNonTransitNodes(nonTransitNodes)
         .setSimplify(simplify)
         .setSpecialize(specialize)

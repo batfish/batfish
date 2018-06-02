@@ -8,7 +8,6 @@ import com.google.common.collect.Streams;
 import java.util.Arrays;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
-import net.sf.javabdd.JFactory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -24,10 +23,7 @@ public class IpSpaceToBDDTest {
 
   @Before
   public void init() {
-    _factory = JFactory.init(10000, 1000);
-    _factory.disableReorder();
-    _factory.setCacheRatio(64);
-    _factory.setVarNum(32); // reserve 32 1-bit variables
+    _factory = BDDUtils.bddFactory(32);
     _bddOps = new BDDOps(_factory);
     _ipAddrBdd = BDDInteger.makeFromIndex(_factory, 32, 0, true);
     _ipSpaceToBdd = new IpSpaceToBDD(_factory, _ipAddrBdd);
