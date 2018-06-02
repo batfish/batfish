@@ -31,6 +31,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
@@ -97,7 +98,14 @@ public class IncrementalBdpEngine {
 
     Network<BgpNeighbor, BgpSession> bgpTopology =
         initBgpTopology(
-            configurations, dp.getIpOwners(), false, true, TracerouteEngineImpl.getInstance(), dp);
+            configurations,
+            dp.getIpOwners(),
+            false,
+            true,
+            TracerouteEngineImpl.getInstance(),
+            dp,
+            new ForwardingAnalysisImpl(
+                dp.getConfigurations(), dp.getRibs(), dp.getFibs(), dp.getTopology()));
 
     boolean isOscillating =
         computeNonMonotonicPortionOfDataPlane(
@@ -116,7 +124,9 @@ public class IncrementalBdpEngine {
               false,
               true,
               TracerouteEngineImpl.getInstance(),
-              dp);
+              dp,
+              new ForwardingAnalysisImpl(
+                  dp.getConfigurations(), dp.getRibs(), dp.getFibs(), topology));
       // Update queues (if necessary) based on new neighbor relationships
       final Network<BgpNeighbor, BgpSession> finalBgpTopology = bgpTopology;
       nodes

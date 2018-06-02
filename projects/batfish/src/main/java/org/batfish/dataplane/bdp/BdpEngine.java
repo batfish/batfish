@@ -33,6 +33,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -578,7 +579,14 @@ public class BdpEngine {
       dp.setTopology(topology);
       Network<BgpNeighbor, BgpSession> bgpTopology =
           initBgpTopology(
-              configuations, dp.getIpOwners(), false, true, TracerouteEngineImpl.getInstance(), dp);
+              configuations,
+              dp.getIpOwners(),
+              false,
+              true,
+              TracerouteEngineImpl.getInstance(),
+              dp,
+              new ForwardingAnalysisImpl(
+                  dp.getConfigurations(), dp.getRibs(), dp.getFibs(), topology));
       dp.setBgpTopology(bgpTopology);
       // END DONE ONCE
 
@@ -689,7 +697,9 @@ public class BdpEngine {
                   false,
                   true,
                   TracerouteEngineImpl.getInstance(),
-                  dp);
+                  dp,
+                  new ForwardingAnalysisImpl(
+                      dp.getConfigurations(), dp.getRibs(), dp.getFibs(), topology));
         }
         dp.setBgpTopology(bgpTopology);
       } while (checkDependentRoutesChanged(

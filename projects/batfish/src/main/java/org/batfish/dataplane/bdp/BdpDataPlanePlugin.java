@@ -18,6 +18,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.IbgpTopology;
@@ -144,10 +145,16 @@ public class BdpDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
+  public void processFlows(
+      Set<Flow> flows,
+      DataPlane dataPlane,
+      boolean ignoreAcls,
+      ForwardingAnalysis forwardingAnalysis) {
     BdpDataPlane dp = (BdpDataPlane) dataPlane;
     _flowTraces.put(
-        dp, TracerouteEngineImpl.getInstance().processFlows(dp, flows, dp.getFibs(), ignoreAcls));
+        dp,
+        TracerouteEngineImpl.getInstance()
+            .processFlows(dp, flows, dp.getFibs(), ignoreAcls, forwardingAnalysis));
   }
 
   @Override

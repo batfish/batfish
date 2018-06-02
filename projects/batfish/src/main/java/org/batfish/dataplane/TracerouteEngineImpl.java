@@ -34,6 +34,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.FlowTraceHop;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -62,7 +63,8 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreAcls) {
+      boolean ignoreAcls,
+      ForwardingAnalysis forwardingAnalysis) {
     Map<Flow, Set<FlowTrace>> flowTraces = new ConcurrentHashMap<>();
     Map<String, Configuration> configurations = dataPlane.getConfigurations();
     flows
@@ -112,7 +114,8 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                     null,
                     edges,
                     false,
-                    ignoreAcls);
+                    ignoreAcls,
+                    forwardingAnalysis);
               } else {
                 collectFlowTraces(
                     dataPlane,
@@ -125,13 +128,14 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                     currentFlowTraces,
                     flow,
                     flow,
-                    ignoreAcls);
+                    ignoreAcls,
+                    forwardingAnalysis);
               }
             });
     return new TreeMap<>(flowTraces);
   }
 
-  private boolean processCurrentNextHopInterfaceEdges(
+  private void processCurrentNextHopInterfaceEdges(
       DataPlane dp,
       Map<String, Configuration> configurations,
       Map<String, Map<String, Fib>> fibs,
@@ -151,15 +155,58 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       @Nullable NodeInterfacePair nextHopInterface,
       SortedSet<Edge> edges,
       boolean arp,
-      boolean ignoreAcls) {
-    boolean continueToNextNextHopInterface = false;
-    int unreachableNeighbors = 0;
-    int potentialNeighbors = 0;
+      boolean ignoreAcls,
+      ForwardingAnalysis forwardingAnalysis) {
+    // check output filter
+    if (nextHopInterfaceName != null) {
+      IpAccessList outFilter =
+          configurations
+              .get(currentNodeName)
+              .getInterfaces()
+              .get(nextHopInterfaceName)
+              .getOutgoingFilter();
+      if (!ignoreAcls && outFilter != null) {
+        FlowDisposition disposition = FlowDisposition.DENIED_OUT;
+        boolean denied =
+            flowTraceFilterHelper(
+                flowTraces,
+                originalFlow,
+                transformedFlow,
+                srcInterface,
+                aclDefinitions,
+                namedIpSpaces,
+                hopsSoFar,
+                outFilter,
+                disposition);
+        if (denied) {
+          return;
+        }
+      }
+    }
+    if (arp) {
+      Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
+      Configuration c = configurations.get(currentNodeName);
+      if (forwardingAnalysis
+          .getNeighborUnreachable()
+          .get(currentNodeName)
+          .get(c.getInterfaces().get(nextHopInterfaceName).getVrfName())
+          .get(nextHopInterfaceName)
+          .containsIp(arpIp, c.getIpSpaces())) {
+        FlowTrace trace =
+            neighborUnreachableTrace(
+                hopsSoFar,
+                nextHopInterface,
+                routesForThisNextHopInterface,
+                originalFlow,
+                transformedFlow);
+        flowTraces.add(trace);
+        return;
+      }
+    }
     for (Edge edge : edges) {
       if (!edge.getNode1().equals(currentNodeName)) {
         continue;
       }
-      potentialNeighbors++;
       List<FlowTraceHop> newHops = new ArrayList<>(hopsSoFar);
       Set<Edge> newVisitedEdges = new LinkedHashSet<>(visitedEdges);
       FlowTraceHop newHop =
@@ -171,55 +218,14 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
               hopFlow(originalFlow, transformedFlow));
       newVisitedEdges.add(edge);
       newHops.add(newHop);
-      if (arp) {
-        Ip arpIp = finalNextHopIp != null ? finalNextHopIp : dstIp;
-        Interface arpInterface =
-            configurations.get(edge.getNode2()).getInterfaces().get(edge.getInt2());
-        Fib arpInterfaceFib =
-            dp.getFibs().get(arpInterface.getOwner().getHostname()).get(arpInterface.getVrfName());
-
-        boolean neighborUnreachable =
-            !interfaceRepliesToArpRequestForIp(arpInterface, arpInterfaceFib, arpIp);
-        if (neighborUnreachable) {
-          unreachableNeighbors++;
-          continue;
-        }
-      }
       if (visitedEdges.contains(edge)) {
         FlowTrace trace =
             new FlowTrace(FlowDisposition.LOOP, newHops, FlowDisposition.LOOP.toString());
         flowTraces.add(trace);
-        potentialNeighbors--;
         continue;
       }
       String nextNodeName = edge.getNode2();
-      // now check output filter and input filter
-      if (nextHopInterfaceName != null) {
-        IpAccessList outFilter =
-            configurations
-                .get(currentNodeName)
-                .getInterfaces()
-                .get(nextHopInterfaceName)
-                .getOutgoingFilter();
-        if (!ignoreAcls && outFilter != null) {
-          FlowDisposition disposition = FlowDisposition.DENIED_OUT;
-          boolean denied =
-              flowTraceFilterHelper(
-                  flowTraces,
-                  originalFlow,
-                  transformedFlow,
-                  srcInterface,
-                  aclDefinitions,
-                  namedIpSpaces,
-                  newHops,
-                  outFilter,
-                  disposition);
-          if (denied) {
-            potentialNeighbors--;
-            continue;
-          }
-        }
-      }
+      // check input filter
       Interface nextInterface =
           configurations.get(nextNodeName).getInterfaces().get(edge.getInt2());
       IpAccessList inFilter = nextInterface.getIncomingFilter();
@@ -237,7 +243,6 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
                 inFilter,
                 disposition);
         if (denied) {
-          potentialNeighbors--;
           continue;
         }
       }
@@ -253,20 +258,9 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
           flowTraces,
           originalFlow,
           transformedFlow,
-          ignoreAcls);
+          ignoreAcls,
+          forwardingAnalysis);
     }
-    if (arp && unreachableNeighbors > 0 && unreachableNeighbors == potentialNeighbors) {
-      FlowTrace trace =
-          neighborUnreachableTrace(
-              hopsSoFar,
-              nextHopInterface,
-              routesForThisNextHopInterface,
-              originalFlow,
-              transformedFlow);
-      flowTraces.add(trace);
-      continueToNextNextHopInterface = true;
-    }
-    return continueToNextNextHopInterface;
   }
 
   @VisibleForTesting
@@ -350,7 +344,8 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       Set<FlowTrace> flowTraces,
       Flow originalFlow,
       Flow transformedFlow,
-      boolean ignoreAcls) {
+      boolean ignoreAcls,
+      ForwardingAnalysis forwardingAnalysis) {
     Ip dstIp = transformedFlow.getDstIp();
     Configuration currentConfiguration = configurations.get(currentNodeName);
     if (dp.getIpVrfOwners()
@@ -450,31 +445,28 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
 
             SortedSet<Edge> edges = dp.getTopology().getInterfaceEdges().get(nextHopInterface);
             if (edges != null) {
-              boolean continueToNextNextHopInterface =
-                  processCurrentNextHopInterfaceEdges(
-                      dp,
-                      configurations,
-                      fibs,
-                      currentNodeName,
-                      visitedEdges,
-                      hopsSoFar,
-                      flowTraces,
-                      originalFlow,
-                      transformedFlow,
-                      srcInterface,
-                      aclDefinitions,
-                      namedIpSpaces,
-                      dstIp,
-                      nextHopInterfaceName,
-                      routesForThisNextHopInterface,
-                      finalNextHopIp,
-                      nextHopInterface,
-                      edges,
-                      true,
-                      ignoreAcls);
-              if (continueToNextNextHopInterface) {
-                continue;
-              }
+              processCurrentNextHopInterfaceEdges(
+                  dp,
+                  configurations,
+                  fibs,
+                  currentNodeName,
+                  visitedEdges,
+                  hopsSoFar,
+                  flowTraces,
+                  originalFlow,
+                  transformedFlow,
+                  srcInterface,
+                  aclDefinitions,
+                  namedIpSpaces,
+                  dstIp,
+                  nextHopInterfaceName,
+                  routesForThisNextHopInterface,
+                  finalNextHopIp,
+                  nextHopInterface,
+                  edges,
+                  true,
+                  ignoreAcls,
+                  forwardingAnalysis);
             } else {
               /*
                * Should only get here for delta environment where

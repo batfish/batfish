@@ -26,6 +26,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -181,7 +182,12 @@ public class TracerouteEngineTest {
     // Compute flow traces
     SortedMap<Flow, Set<FlowTrace>> flowTraces =
         TracerouteEngineImpl.getInstance()
-            .processFlows(dp, ImmutableSet.of(flow1, flow2), dp.getFibs(), false);
+            .processFlows(
+                dp,
+                ImmutableSet.of(flow1, flow2),
+                dp.getFibs(),
+                false,
+                new ForwardingAnalysisImpl(configs, dp.getRibs(), dp.getFibs(), dp.getTopology()));
 
     assertThat(flowTraces, hasEntry(equalTo(flow1), contains(hasDisposition(NO_ROUTE))));
     assertThat(flowTraces, hasEntry(equalTo(flow2), contains(hasDisposition(ACCEPTED))));
