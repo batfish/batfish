@@ -3564,7 +3564,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordPeerGroups();
     recordPeerSessions();
-    recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
     recordServiceClasses();
 
     c.simplifyRoutingPolicies();
