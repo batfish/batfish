@@ -1370,17 +1370,14 @@
         }
       },
       "aruba_net" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARUBAOS",
         "name" : "aruba_net",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "aruba_net",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "aruba_net"
           }
         },
         "vrfs" : {
