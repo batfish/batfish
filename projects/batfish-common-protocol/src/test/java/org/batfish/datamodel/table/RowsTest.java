@@ -45,6 +45,5 @@ public class RowsTest {
 
     // nothing should be returned since there is no matching key
     assertThat(rows.getRow(ImmutableList.of("key1", "both2"), columns), equalTo(null));
-
   }
 }
