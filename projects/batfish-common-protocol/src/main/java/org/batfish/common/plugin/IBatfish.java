@@ -41,6 +41,7 @@ import org.batfish.grammar.GrammarSettings;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
+import org.batfish.specifier.SpecifierContext;
 
 public interface IBatfish extends IPluginConsumer {
 
@@ -188,6 +189,8 @@ public interface IBatfish extends IPluginConsumer {
   AnswerElement smtRoles(RoleQuestion q);
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
+
+  SpecifierContext specifierContext();
 
   AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
