@@ -1876,9 +1876,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     int definitionLine = ctx.name.getStart().getLine();
     _currentAsPathAcl =
-        _configuration
-            .getAsPathAccessLists()
-            .computeIfAbsent(name, n -> new IpAsPathAccessList(n, definitionLine));
+        _configuration.getAsPathAccessLists().computeIfAbsent(name, n -> new IpAsPathAccessList(n));
     defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
   }
 
@@ -5588,6 +5586,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Set<String> names = new TreeSet<>();
     for (VariableContext name : ctx.name_list) {
       names.add(name.getText());
+      _configuration.referenceStructure(
+          AS_PATH_ACCESS_LIST, name.getText(),
+          ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, name.getStart().getLine());
     }
     RouteMapMatchAsPathAccessListLine line =
         new RouteMapMatchAsPathAccessListLine(names, statementLine);
