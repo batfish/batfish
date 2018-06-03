@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
@@ -18,6 +19,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.PropertySpecifier;
+import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
@@ -98,8 +100,21 @@ public class InterfacePropertiesAnswerer extends Answerer {
             Row.builder().put(COL_INTERFACE, new NodeInterfacePair(nodeName, iface.getName()));
 
         for (String property : question.getPropertySpec().getMatchingProperties()) {
-          PropertySpecifier.fillProperty(
-              InterfacePropertySpecifier.JAVA_MAP.get(property), iface, property, row);
+          PropertyDescriptor<Interface> propertyDescriptor =
+              InterfacePropertySpecifier.JAVA_MAP.get(property);
+          try {
+            PropertySpecifier.fillProperty(propertyDescriptor, iface, property, row);
+          } catch (ClassCastException e) {
+            throw new BatfishException(
+                String.format(
+                    "Type mismatch between property value ('%s') and Schema ('%s') for property '%s' for interface '%s': %s",
+                    propertyDescriptor.getGetter().apply(iface),
+                    propertyDescriptor.getSchema(),
+                    property,
+                    iface,
+                    e.getMessage()),
+                e);
+          }
         }
 
         rows.add(row.build());

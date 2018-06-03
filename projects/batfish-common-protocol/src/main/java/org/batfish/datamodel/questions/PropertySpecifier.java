@@ -122,6 +122,13 @@ public abstract class PropertySpecifier {
     return propertyValue;
   }
 
+  /**
+   * Uses {@code propertyDescriptor} to extract the property value from {@code object} and insert
+   * into {@row} at {@code columnName}.
+   *
+   * @throws ClassCastException if the recovered property value is not compatible with the specified
+   *     {@link Schema} in the {@code propertyDescriptor}.
+   */
   public static <T> void fillProperty(
       PropertyDescriptor<T> propertyDescriptor, T object, String columnName, RowBuilder row) {
     Object propertyValue = propertyDescriptor.getGetter().apply(object);

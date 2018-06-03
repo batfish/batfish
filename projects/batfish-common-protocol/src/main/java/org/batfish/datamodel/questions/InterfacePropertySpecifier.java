@@ -116,7 +116,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put("vrf", new PropertyDescriptor<>(Interface::getVrf, Schema.STRING))
           .put(
               "vrrp-groups",
-              new PropertyDescriptor<>(Interface::getSwitchport, Schema.list(Schema.INTEGER)))
+              new PropertyDescriptor<>(Interface::getVrrpGroups, Schema.list(Schema.INTEGER)))
           // skip zone
           .put("zone-name", new PropertyDescriptor<>(Interface::getZoneName, Schema.STRING))
           .build();
