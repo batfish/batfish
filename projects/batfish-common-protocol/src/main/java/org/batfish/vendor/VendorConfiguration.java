@@ -19,7 +19,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.DefinedStructure;
@@ -87,48 +86,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
   }
 
   /**
-   * Mark all structures of a particular type with its recorded usages. This function should
-   * typically be called prior to warning about unused structures of that type.
-   *
-   * @param type The type of the structure to which a reference will be added
-   * @param usage The usage mode of the structure that was pre-recorded
-   * @param maps A list of maps to check for the structure to be updated. Each map could be null.
-   *     There must be at least one element. The structure may exist in more than one map.
-   */
-  protected void markStructure(
-      StructureType type,
-      StructureUsage usage,
-      List<Map<String, ? extends ReferenceCountedStructure>> maps) {
-    if (maps.isEmpty()) {
-      throw new BatfishException("List of maps must contain at least one element");
-    }
-    SortedMap<String, SortedMap<StructureUsage, SortedMultiset<Integer>>> byName =
-        _structureReferences.get(type);
-    if (byName != null) {
-      byName.forEach(
-          (name, byUsage) -> {
-            SortedMultiset<Integer> lines = byUsage.get(usage);
-            if (lines != null) {
-              List<Map<String, ? extends ReferenceCountedStructure>> matchingMaps =
-                  maps.stream()
-                      .filter(map -> map != null && map.containsKey(name))
-                      .collect(ImmutableList.toImmutableList());
-              if (matchingMaps.isEmpty()) {
-                for (int line : lines) {
-                  undefined(type, name, usage, line);
-                }
-              } else {
-                String msg = usage.getDescription();
-                for (Map<String, ? extends ReferenceCountedStructure> matchingMap : matchingMaps) {
-                  matchingMap.get(name).getReferers().put(this, msg);
-                }
-              }
-            }
-          });
-    }
-  }
-
-  /**
    * Updates referrers and/or warns for undefined structures based on references to an abstract
    * {@link StructureType}: a reference type that may refer to one of a number of defined structure
    * types passed in {@code structureTypesToCheck}.
@@ -175,13 +132,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     for (StructureUsage usage : usages) {
       markAbstractStructure(type, usage, ImmutableList.of(type));
     }
-  }
-
-  protected void markStructure(
-      StructureType type,
-      StructureUsage usage,
-      Map<String, ? extends ReferenceCountedStructure> map) {
-    markStructure(type, usage, Collections.singletonList(map));
   }
 
   public void referenceStructure(StructureType type, String name, StructureUsage usage, int line) {
