@@ -71,18 +71,18 @@ public class ProductDomain<U, T> implements IAbstractDomain<Tuple<U, T>> {
   }
 
   @Override
-  public List<Route> toRoutes(AbstractRib<Tuple<U, T>> value) {
+  public List<Route> toRoutes(Tuple<U, T> value) {
     throw new BatfishException("Unimplemented method");
   }
 
   @Override
-  public Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<Tuple<U, T>>> ribs) {
+  public Tuple<BDDNetFactory, BDD> toFib(Map<String, Tuple<U, T>> ribs) {
     throw new BatfishException("Unimplemented method");
   }
 
   @Override
-  public boolean reachable(
-      Map<String, AbstractRib<Tuple<U, T>>> ribs, String src, String dst, Flow flow) {
+  @Nullable
+  public String nextHop(Tuple<U, T> ribs, String node, Flow flow) {
     throw new BatfishException("Unimplemented method");
   }
 

@@ -86,11 +86,15 @@ public class BDDUtils {
     Set<Long> ads = findAllSetMetrics(g);
     for (Configuration conf : g.getConfigurations().values()) {
       ConfigurationFormat format = conf.getConfigurationFormat();
-      ads.add((long) RoutingProtocol.CONNECTED.getDefaultAdministrativeCost(format));
-      ads.add((long) RoutingProtocol.STATIC.getDefaultAdministrativeCost(format));
-      ads.add((long) RoutingProtocol.OSPF.getDefaultAdministrativeCost(format));
-      ads.add((long) RoutingProtocol.BGP.getDefaultAdministrativeCost(format));
-      ads.add((long) RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
+      try {
+        ads.add((long) RoutingProtocol.CONNECTED.getDefaultAdministrativeCost(format));
+        ads.add((long) RoutingProtocol.STATIC.getDefaultAdministrativeCost(format));
+        ads.add((long) RoutingProtocol.OSPF.getDefaultAdministrativeCost(format));
+        ads.add((long) RoutingProtocol.BGP.getDefaultAdministrativeCost(format));
+        ads.add((long) RoutingProtocol.IBGP.getDefaultAdministrativeCost(format));
+      } catch (Exception ignored) {
+
+      }
       for (Vrf vrf : conf.getVrfs().values()) {
         for (GeneratedRoute gr : vrf.getGeneratedRoutes()) {
           ads.add((long) gr.getAdministrativeCost());

@@ -22,9 +22,9 @@ public class AbstractDomainFactory {
         netFactory = new BDDNetFactory(graph, config);
         ReachabilityUnderDomain under = new ReachabilityUnderDomain(graph, netFactory);
         ReachabilityOverDomain over = new ReachabilityOverDomain(graph, netFactory);
-        IDomainMixable<BDD, RouteAclStateSetPair> mixer =
+        IDomainDifferencer<BDD, RouteAclStateSetPair> mixer =
             new ReachabilityMixer(under.getDomainHelper());
-        return new DonutDomain<>(mixer, over, under);
+        return new DelayedDonutDomain<>(mixer, over, under);
       default:
         throw new BatfishException("Invalid domain type: " + dtype);
     }

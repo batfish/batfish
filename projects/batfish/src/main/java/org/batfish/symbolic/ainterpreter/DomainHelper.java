@@ -28,6 +28,7 @@ import org.batfish.symbolic.bdd.BDDTransferFunction;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.SatAssignment;
 import org.batfish.symbolic.smt.EdgeType;
+import org.batfish.symbolic.utils.Tuple;
 
 public class DomainHelper {
 
@@ -597,13 +598,13 @@ public class DomainHelper {
     return newFib;
   }
 
-  public <T> BDD transitiveClosure(Map<String, AbstractFib<T>> fibs) {
+  public <T> BDD transitiveClosure(Map<String, BDD> fibs) {
     BDD allFibs = _netFactory.zero();
-    for (Entry<String, AbstractFib<T>> e : fibs.entrySet()) {
+    for (Entry<String, BDD> e : fibs.entrySet()) {
       String router = e.getKey();
-      AbstractFib<T> fib = e.getValue();
+      BDD fib = e.getValue();
       BDD routerBdd = _variables.getSrcRouter().value(router);
-      BDD annotatedFib = fib.getHeaderspace().and(routerBdd);
+      BDD annotatedFib = fib.and(routerBdd);
       allFibs = allFibs.orWith(annotatedFib);
     }
     return transitiveClosure(allFibs);
@@ -611,12 +612,12 @@ public class DomainHelper {
 
   public List<Route> toRoutes(BDD rib) {
     List<Route> ribEntries = new ArrayList<>();
-    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, rib, true);
+    List<SatAssignment> entries = BDDUtils.allSat(_netFactory, rib, false);
     for (SatAssignment entry : entries) {
       Prefix p = new Prefix(entry.getDstIp(), entry.getPrefixLen());
       Route r =
           new Route(
-              entry.getSrcRouter(),
+              entry.getDstRouter(),
               "default",
               p,
               entry.getNextHopIp(),
@@ -629,6 +630,44 @@ public class DomainHelper {
       ribEntries.add(r);
     }
     return ribEntries;
+  }
+
+  public static <U, T> AbstractRib<U> convertRib1(AbstractRib<Tuple<U, T>> rib) {
+    return new AbstractRib<>(
+        rib.getBgpRib().getFirst(),
+        rib.getOspfRib().getFirst(),
+        rib.getStaticRib().getFirst(),
+        rib.getConnectedRib().getFirst(),
+        rib.getMainRib().getFirst());
+  }
+
+  public static <U, T> AbstractRib<T> convertRib2(AbstractRib<Tuple<U, T>> rib) {
+    return new AbstractRib<>(
+        rib.getBgpRib().getSecond(),
+        rib.getOspfRib().getSecond(),
+        rib.getStaticRib().getSecond(),
+        rib.getConnectedRib().getSecond(),
+        rib.getMainRib().getSecond());
+  }
+
+  public static <U, T> Map<String, U> convertRibs1(Map<String, Tuple<U, T>> ribs) {
+    Map<String, U> acc = new HashMap<>();
+    for (Entry<String, Tuple<U, T>> e : ribs.entrySet()) {
+      Tuple<U, T> value = e.getValue();
+      U rib = value.getFirst();
+      acc.put(e.getKey(), rib);
+    }
+    return acc;
+  }
+
+  public static <U, T> Map<String, T> convertRibs2(Map<String, Tuple<U, T>> ribs) {
+    Map<String, T> acc = new HashMap<>();
+    for (Entry<String, Tuple<U, T>> e : ribs.entrySet()) {
+      Tuple<U, T> value = e.getValue();
+      T rib = value.getSecond();
+      acc.put(e.getKey(), rib);
+    }
+    return acc;
   }
 
   /*

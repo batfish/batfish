@@ -190,17 +190,17 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public List<Route> toRoutes(AbstractRib<BDD> value) {
-    return _domainHelper.toRoutes(value.getMainRib());
+  public List<Route> toRoutes(BDD value) {
+    return _domainHelper.toRoutes(value);
   }
 
   @Override
-  public Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<BDD>> ribs) {
+  public Tuple<BDDNetFactory, BDD> toFib(Map<String, BDD> ribs) {
     BDD allFibs = _netFactory.zero();
-    for (Entry<String, AbstractRib<BDD>> e : ribs.entrySet()) {
+    for (Entry<String, BDD> e : ribs.entrySet()) {
       String router = e.getKey();
-      AbstractRib<BDD> rib = e.getValue();
-      BDD fib = _domainHelper.headerspace(rib.getMainRib());
+      BDD rib = e.getValue();
+      BDD fib = _domainHelper.headerspace(rib);
       BDD src = _variables.getSrcRouter().value(router);
       BDD combined = fib.andWith(src);
       allFibs = allFibs.orWith(combined);
@@ -209,8 +209,9 @@ public class ConcreteDomain implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public boolean reachable(Map<String, AbstractRib<BDD>> ribs, String src, String dst, Flow flow) {
-    return false;
+  @Nullable
+  public String nextHop(BDD ribs, String node, Flow flow) {
+    return null;
   }
 
   @Override

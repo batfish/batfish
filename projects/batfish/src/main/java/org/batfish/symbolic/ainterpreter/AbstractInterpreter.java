@@ -126,7 +126,9 @@ public class AbstractInterpreter {
     long tempTime;
     long t = System.currentTimeMillis();
 
+    // int i = 0;
     while (!update.isEmpty()) {
+      // i++;
       String router = update.poll();
       assert (router != null);
       updateSet.remove(router);
@@ -234,9 +236,15 @@ public class AbstractInterpreter {
               fb.setDstPort(NamedPort.EPHEMERAL_LOWEST.number());
               Flow flow2 = fb.build();
 
+              // TODO: a bit inefficient
+              Map<String, T> reach = new HashMap<>();
+              for (Entry<String, AbstractRib<T>> e : state.getPerRouterRoutes().entrySet()) {
+                reach.put(e.getKey(), e.getValue().getMainRib());
+              }
+
               doUpdate =
-                  domain.reachable(state.getPerRouterRoutes(), router, neighbor, flow1)
-                      && domain.reachable(state.getPerRouterRoutes(), neighbor, router, flow2);
+                  reachable(domain, reach, router, neighbor, flow1)
+                      && reachable(domain, reach, neighbor, router, flow2);
 
               // System.out.println("    Both are reachable? " + doUpdate);
 
@@ -277,7 +285,7 @@ public class AbstractInterpreter {
               }
               tmpBgp = domain.aggregate(neighborConf, transformers, tmpBgp);
 
-              boolean anyWithdraw =
+              /* boolean anyWithdraw =
                   withdrawn(
                       domain,
                       state.getPerNeighborRoutes(),
@@ -285,7 +293,7 @@ public class AbstractInterpreter {
                       RoutingProtocol.BGP,
                       rev,
                       tmpBgp);
-              assert (!anyWithdraw);
+              assert (!anyWithdraw); */
               // TODO: if withdraw, recompute rib from all neighbors rather than just this one
               newNeighborBgp = domain.merge(neighborBgp, tmpBgp);
 
@@ -304,6 +312,7 @@ public class AbstractInterpreter {
           newNeighborRib = domain.selectBest(newNeighborRib);
           totalTimeSelectBest += (System.currentTimeMillis() - tempTime);
 
+          // System.out.println("");
           // System.out.println("  neighbor RIB now: " + domain.debug(newNeighborRib));
 
           // If changed, then add it to the workset
@@ -411,5 +420,20 @@ public class AbstractInterpreter {
     System.out.println("Time for network to BDD conversion: " + (System.currentTimeMillis() - t));
     computeFixedPoint(domain, state, initialRouters);
     return state;
+  }
+
+  private <T> boolean reachable(
+      IAbstractDomain<T> domain, Map<String, T> ribs, String src, String dst, Flow flow) {
+    String current = src;
+    while (true) {
+      if (current == null) {
+        return false;
+      }
+      if (current.equals(dst)) {
+        return true;
+      }
+      T rib = ribs.get(current);
+      current = domain.nextHop(rib, current, flow);
+    }
   }
 }

@@ -128,53 +128,65 @@ public class ReachabilityUnderDomain implements IAbstractDomain<RouteAclStateSet
   }
 
   @Override
-  public List<Route> toRoutes(AbstractRib<RouteAclStateSetPair> value) {
-    return _domainHelper.toRoutes(value.getMainRib().getRoutes());
+  public List<Route> toRoutes(RouteAclStateSetPair value) {
+    return _domainHelper.toRoutes(value.getRoutes());
   }
 
   // TODO: ensure unique reachability (i.e., no other destinations)
   @Override
-  public Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<RouteAclStateSetPair>> ribs) {
-    Map<String, AbstractFib<RouteAclStateSetPair>> ret = new HashMap<>();
-    for (Entry<String, AbstractRib<RouteAclStateSetPair>> e : ribs.entrySet()) {
+  public Tuple<BDDNetFactory, BDD> toFib(Map<String, RouteAclStateSetPair> ribs) {
+    Map<String, BDD> ret = new HashMap<>();
+    for (Entry<String, RouteAclStateSetPair> e : ribs.entrySet()) {
       String router = e.getKey();
-      AbstractRib<RouteAclStateSetPair> rib = e.getValue();
-      AbstractFib<RouteAclStateSetPair> fib = new AbstractFib<>(rib, toFibSingleRouter(rib));
+      RouteAclStateSetPair rib = e.getValue();
+      BDD fib = toFibSingleRouter(rib);
       ret.put(router, fib);
     }
     return new Tuple<>(_netFactory, _domainHelper.transitiveClosure(ret));
   }
 
-  private BDD toFibSingleRouter(AbstractRib<RouteAclStateSetPair> value) {
-    RouteAclStateSetPair elt = value.getMainRib();
-    BDD reachablePackets = elt.getRoutes();
-    reachablePackets = reachablePackets.andWith(elt.getBlockedAcls().not());
+  private BDD toFibSingleRouter(RouteAclStateSetPair value) {
+    BDD reachablePackets = value.getRoutes();
+    BDD aclAllow = value.getBlockedAcls().not();
+    reachablePackets = reachablePackets.and(aclAllow);
+    aclAllow.free();
     return reachablePackets;
   }
 
   @Override
-  public boolean reachable(
-      Map<String, AbstractRib<RouteAclStateSetPair>> ribs, String src, String dst, Flow flow) {
+  @Nullable
+  public String nextHop(RouteAclStateSetPair rib, String node, Flow flow) {
     BDD f = BDDUtils.flowToBdd(_netFactory, flow);
-    String current = src;
-    while (true) {
-      AbstractRib<RouteAclStateSetPair> rib = ribs.get(current);
-      BDD fib = toFibSingleRouter(rib);
-      BDD fibForFlow = fib.and(f);
-      SatAssignment assignment = BDDUtils.satOne(_netFactory, fibForFlow);
-      if (assignment == null) {
-        return false;
-      }
-      current = assignment.getDstRouter();
-      if (current.equals(dst)) {
-        return true;
-      }
+    BDD fib = toFibSingleRouter(rib);
+    BDD fibForFlow = fib.and(f);
+    SatAssignment assignment = BDDUtils.satOne(_netFactory, fibForFlow);
+    if (assignment == null) {
+      return null;
     }
+    return assignment.getDstRouter();
   }
 
   @Override
   public String debug(RouteAclStateSetPair x) {
     List<Route> ribs = _domainHelper.toRoutes(x.getRoutes());
-    return ribs.toString();
+    StringBuilder sb = new StringBuilder();
+    sb.append("[");
+    for (Route route : ribs) {
+      sb.append("{")
+          .append(route.getNetwork())
+          .append(",")
+          .append(route.getProtocol().protocolName())
+          .append(",")
+          .append(route.getMetric())
+          .append(",")
+          .append(route.getAdministrativeCost())
+          .append(",")
+          .append(route.getNode())
+          .append(",")
+          .append(route.getNextHopIp())
+          .append("},");
+    }
+    sb.append("]");
+    return sb.toString();
   }
 }

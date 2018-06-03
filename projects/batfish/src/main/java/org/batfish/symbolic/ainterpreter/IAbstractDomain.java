@@ -27,11 +27,11 @@ public interface IAbstractDomain<T> {
 
   T aggregate(Configuration conf, List<AggregateTransformer> aggregates, T x);
 
-  List<Route> toRoutes(AbstractRib<T> value);
+  String nextHop(T rib, String node, Flow flow);
 
-  Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<T>> ribs);
+  List<Route> toRoutes(T value);
 
-  boolean reachable(Map<String, AbstractRib<T>> ribs, String src, String dst, Flow flow);
+  Tuple<BDDNetFactory, BDD> toFib(Map<String, T> ribs);
 
   String debug(T x);
 }

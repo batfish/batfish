@@ -2,7 +2,7 @@ package org.batfish.symbolic.ainterpreter;
 
 import net.sf.javabdd.BDD;
 
-public class ReachabilityMixer implements IDomainMixable<BDD, RouteAclStateSetPair> {
+public class ReachabilityMixer implements IDomainDifferencer<BDD, RouteAclStateSetPair> {
 
   private DomainHelper _domainHelper;
 
@@ -11,14 +11,7 @@ public class ReachabilityMixer implements IDomainMixable<BDD, RouteAclStateSetPa
   }
 
   @Override
-  public AbstractRib<RouteAclStateSetPair> difference(
-      AbstractRib<BDD> x, AbstractRib<RouteAclStateSetPair> y) {
-    BDD routes = _domainHelper.difference(x.getMainRib(), y.getMainRib().getRoutes());
-    return new AbstractRib<>(
-        y.getBgpRib(),
-        y.getOspfRib(),
-        y.getStaticRib(),
-        y.getConnectedRib(),
-        new RouteAclStateSetPair(routes, y.getMainRib().getBlockedAcls()));
+  public RouteAclStateSetPair difference(BDD x, RouteAclStateSetPair y) {
+    return new RouteAclStateSetPair(_domainHelper.difference(x, y.getRoutes()), y.getBlockedAcls());
   }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -60,8 +61,12 @@ public class QueryAnswerer {
       AbstractInterpreter interpreter, IAbstractDomain<T> domain, HeaderLocationQuestion question) {
     AbstractState<T> state = interpreter.computeFixedPoint(domain);
     Map<String, AbstractRib<T>> reachable = state.getPerRouterRoutes();
+    Map<String, T> ribMap = new HashMap<>();
+    for (Entry<String, AbstractRib<T>> e : reachable.entrySet()) {
+      ribMap.put(e.getKey(), e.getValue().getMainRib());
+    }
     long t = System.currentTimeMillis();
-    Tuple<BDDNetFactory, BDD> fibsTup = domain.toFib(reachable);
+    Tuple<BDDNetFactory, BDD> fibsTup = domain.toFib(ribMap);
     BDDNetFactory netFactory = fibsTup.getFirst();
     BDDRoute variables = netFactory.routeVariables();
     BDD fibs = fibsTup.getSecond();
@@ -149,7 +154,7 @@ public class QueryAnswerer {
               });
 
       // build new rib to match Batfish output
-      AbstractRib<T> rib = reachable.get(router);
+      T rib = reachable.get(router).getMainRib();
       SortedSet<Route> entries = new TreeSet<>(domain.toRoutes(rib));
       for (Route r : entries) {
         Ip nhopIp = (r.getNextHopIp().asLong() == 0 ? new Ip(-1) : r.getNextHopIp());

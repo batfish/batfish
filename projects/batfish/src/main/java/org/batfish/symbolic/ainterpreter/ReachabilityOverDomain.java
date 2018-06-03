@@ -106,43 +106,37 @@ public class ReachabilityOverDomain implements IAbstractDomain<BDD> {
   }
 
   @Override
-  public List<Route> toRoutes(AbstractRib<BDD> value) {
-    return _domainHelper.toRoutes(value.getMainRib());
+  public List<Route> toRoutes(BDD value) {
+    return _domainHelper.toRoutes(value);
   }
 
   @Override
-  public Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<BDD>> ribs) {
-    Map<String, AbstractFib<BDD>> ret = new HashMap<>();
-    for (Entry<String, AbstractRib<BDD>> e : ribs.entrySet()) {
+  public Tuple<BDDNetFactory, BDD> toFib(Map<String, BDD> ribs) {
+    Map<String, BDD> ret = new HashMap<>();
+    for (Entry<String, BDD> e : ribs.entrySet()) {
       String router = e.getKey();
-      AbstractRib<BDD> rib = e.getValue();
-      AbstractFib<BDD> fib = new AbstractFib<>(rib, toFibSingleRouter(rib));
+      BDD rib = e.getValue();
+      BDD fib = toFibSingleRouter(rib);
       ret.put(router, fib);
     }
     return new Tuple<>(_netFactory, _domainHelper.transitiveClosure(ret));
   }
 
-  private BDD toFibSingleRouter(AbstractRib<BDD> value) {
-    return _domainHelper.headerspace(value.getMainRib());
+  private BDD toFibSingleRouter(BDD value) {
+    return _domainHelper.headerspace(value);
   }
 
   @Override
-  public boolean reachable(Map<String, AbstractRib<BDD>> ribs, String src, String dst, Flow flow) {
+  @Nullable
+  public String nextHop(BDD rib, String node, Flow flow) {
     BDD f = BDDUtils.flowToBdd(_netFactory, flow);
-    String current = src;
-    while (true) {
-      AbstractRib<BDD> rib = ribs.get(current);
-      BDD fib = toFibSingleRouter(rib);
-      BDD fibForFlow = fib.and(f);
-      SatAssignment assignment = BDDUtils.satOne(_netFactory, fibForFlow);
-      if (assignment == null) {
-        return false;
-      }
-      current = assignment.getDstRouter();
-      if (current.equals(dst)) {
-        return true;
-      }
+    BDD fib = toFibSingleRouter(rib);
+    BDD fibForFlow = fib.and(f);
+    SatAssignment assignment = BDDUtils.satOne(_netFactory, fibForFlow);
+    if (assignment == null) {
+      return null;
     }
+    return assignment.getDstRouter();
   }
 
   @Override
