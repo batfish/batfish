@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -32,6 +33,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -302,22 +304,9 @@ public class WorkMgr extends AbstractCoordinator {
     switch (completionType) {
       case NODE:
         {
-          // read all the nodes
-          Path pojoTopologyPath =
-              getdirTestrig(container, testrig)
-                  .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
-          Topology topology =
-              BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
-          Set<String> nodes =
-              topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
-
-          // read node roles data
-          Path nodeRolespath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-          NodeRolesData nodeRolesData = NodeRolesData.read(nodeRolespath);
-
-          // get suggestions
           List<AutocompleteSuggestion> suggestions =
-              NodesSpecifier.autoComplete(query, nodes, nodeRolesData);
+              NodesSpecifier.autoComplete(
+                  query, getNodes(container, testrig), getNodeRolesData(container));
           return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
         }
       case NODE_PROPERTY:
@@ -875,6 +864,52 @@ public class WorkMgr extends AbstractCoordinator {
   @Override
   public Path getdirTestrigs(String containerName) {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
+  }
+
+  /**
+   * Returns the latest testrig in the container.
+   *
+   * @returns An {@link Optional} object with the latest testrig or empty if no testrigs exist
+   */
+  public Optional<String> getLatestTestrig(String container) {
+    Function<String, Instant> toTestrigTimestamp =
+        t -> TestrigMetadataMgr.getTestrigCreationTimeOrMin(container, t);
+    return listTestrigs(container)
+        .stream()
+        .max(
+            Comparator.comparing(
+                toTestrigTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
+  }
+
+  /**
+   * Gets the {@link NodeRolesData} for the {@code container}.
+   *
+   * @param container The container for which we should fetch the node roles
+   * @return The node roles
+   * @throws {@link IOException} The contents of node roles file cannot be converted to {@link
+   *     NodeRolesData}
+   */
+  public NodeRolesData getNodeRolesData(String container) throws IOException {
+    Path nodeRolesPath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    return NodeRolesData.read(nodeRolesPath);
+  }
+
+  /**
+   * Gets the set of nodes in this container and testrig. Extracts the set based on the topology
+   * file that is generated as part of the testrig initialization.
+   *
+   * @param container The container
+   * @param testrig The testrig
+   * @return The set of nodes
+   * @throws IOException If the contents of the topology file cannot be mapped to the topology
+   *     object
+   */
+  public Set<String> getNodes(String container, String testrig) throws IOException {
+    Path pojoTopologyPath =
+        getdirTestrig(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+    Topology topology =
+        BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
+    return topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
