@@ -15,11 +15,6 @@ import org.codehaus.jettison.json.JSONObject;
 
 public abstract class Answerer {
 
-  /** While computing diffs, whether to ignore Keys that appear in one table but not the other */
-  /** TODO: Make this controllable via the Question */
-  /** TODO: Make this setting work for Json-level diff as well if we continue to use it */
-  private static final boolean IGNORE_MISSING_KEYS = true;
-
   public static Answerer create(Question question, IBatfish batfish) {
     String questionName = question.getName();
     BiFunction<Question, IBatfish, Answerer> answererCreator =
@@ -61,20 +56,22 @@ public abstract class Answerer {
     _batfish.checkEnvironmentExists();
     _batfish.popEnvironment();
     _batfish.pushBaseEnvironment();
-    AnswerElement before = create(_question, _batfish).answer();
+    AnswerElement baseAnswer = create(_question, _batfish).answer();
     _batfish.popEnvironment();
     _batfish.pushDeltaEnvironment();
-    AnswerElement after = create(_question, _batfish).answer();
+    AnswerElement deltaAnswer = create(_question, _batfish).answer();
     _batfish.popEnvironment();
-    if (before instanceof TableAnswerElement) {
+    if (baseAnswer instanceof TableAnswerElement) {
       AnswerElement diff =
           TableDiff.diffTables(
-              (TableAnswerElement) before, (TableAnswerElement) after, IGNORE_MISSING_KEYS);
+              (TableAnswerElement) baseAnswer,
+              (TableAnswerElement) deltaAnswer,
+              _question.getIncludeOneTableKeys());
       return diff;
     } else {
       try {
-        String beforeJsonStr = BatfishObjectMapper.writePrettyString(before);
-        String afterJsonStr = BatfishObjectMapper.writePrettyString(after);
+        String beforeJsonStr = BatfishObjectMapper.writePrettyString(baseAnswer);
+        String afterJsonStr = BatfishObjectMapper.writePrettyString(deltaAnswer);
         JSONObject beforeJson = new JSONObject(beforeJsonStr);
         JSONObject afterJson = new JSONObject(afterJsonStr);
         JsonDiff diff = new JsonDiff(beforeJson, afterJson);

@@ -198,7 +198,7 @@ public final class TableDiff {
    * @throws IllegalArgumentException if the input column metadatas are not equal.
    */
   public static TableAnswerElement diffTables(
-      TableAnswerElement baseTable, TableAnswerElement deltaTable, boolean ignoreMissingKeys) {
+      TableAnswerElement baseTable, TableAnswerElement deltaTable, boolean includeOneTableKeys) {
     checkArgument(
         baseTable
             .getMetadata()
@@ -235,7 +235,7 @@ public final class TableDiff {
       }
       processedKeys.add(baseKey);
       Row deltaRow = deltaTable.getRows().getRow(baseKey, inputMetadata.getColumnMetadata());
-      if ((deltaRow == null && ignoreMissingKeys)
+      if ((deltaRow == null && !includeOneTableKeys)
           || (deltaRow != null /* skip if values are equal */
               && baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns)))) {
         continue;
@@ -244,7 +244,7 @@ public final class TableDiff {
       diffRowValues(diffRowBuilder, baseRow, deltaRow, inputMetadata);
       diffTable.addRow(diffRowBuilder.build());
     }
-    if (!ignoreMissingKeys) {
+    if (includeOneTableKeys) {
       // process keys that are present only in delta
       Iterator<Row> deltaRows = deltaTable.getRows().iterator();
       while (deltaRows.hasNext()) {
