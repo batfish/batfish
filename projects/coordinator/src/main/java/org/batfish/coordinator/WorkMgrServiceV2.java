@@ -40,7 +40,7 @@ public class WorkMgrServiceV2 {
 
   /** Returns the list of {@link Container containers} that the given API key may access. */
   @GET
-  @Path(CoordConsts.SVC_KEY_CONTAINERS)
+  @Path(CoordConstsV2.RSC_CONTAINERS)
   public Response getContainers() {
     _logger.info("WMS2:getContainers\n");
     List<Container> containers = Main.getWorkMgr().getContainers(_apiKey);
@@ -49,17 +49,17 @@ public class WorkMgrServiceV2 {
 
   /** Redirect to /containers if the user does not supply a container ID. */
   @GET
-  @Path(CoordConsts.SVC_KEY_CONTAINER_NAME)
+  @Path(CoordConstsV2.RSC_CONTAINER)
   public Response redirectContainer() {
     _logger.info("WMS2:redirect container\n");
     return Response.status(Status.MOVED_PERMANENTLY)
-        .location(_uriInfo.getRequestUri().resolve(CoordConsts.SVC_KEY_CONTAINERS))
+        .location(_uriInfo.getRequestUri().resolve(CoordConstsV2.RSC_CONTAINERS))
         .build();
   }
 
   /** Relocate the request to ContainerResource. */
-  @Path("containers/{id}")
-  public ContainerResource getResource(@PathParam("id") String id) {
+  @Path(CoordConstsV2.RSC_CONTAINERS + "/{id}")
+  public ContainerResource getContainerResource(@PathParam("id") String id) {
     return new ContainerResource(_uriInfo, _apiKey, id);
   }
 }
