@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.LinkedList;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
@@ -59,8 +58,8 @@ public class PropertySpecifierTest {
     PropertyDescriptor<Configuration> propDescriptor =
         new PropertyDescriptor<>(null, Schema.list(Schema.STRING));
 
-    _thrown.expect(BatfishException.class);
-    _thrown.expectMessage("Could not recover object");
+    _thrown.expect(ClassCastException.class);
+    _thrown.expectMessage("Cannot recover object");
 
     PropertySpecifier.fillProperty("col", "stringNotList", Row.builder(), propDescriptor);
   }
