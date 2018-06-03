@@ -11,14 +11,14 @@ public class ReachabilityMixer implements IDomainMixable<BDD, RouteAclStateSetPa
   }
 
   @Override
-  public BDD fibDifference(BDD x, BDD y) {
-    return _domainHelper.toFib(x, y);
-  }
-
-  // TODO: implement me
-  @Override
-  public AbstractRib<RouteAclStateSetPair> ribDifference(
+  public AbstractRib<RouteAclStateSetPair> difference(
       AbstractRib<BDD> x, AbstractRib<RouteAclStateSetPair> y) {
-    return y;
+    BDD routes = _domainHelper.difference(x.getMainRib(), y.getMainRib().getRoutes());
+    return new AbstractRib<>(
+        y.getBgpRib(),
+        y.getOspfRib(),
+        y.getStaticRib(),
+        y.getConnectedRib(),
+        new RouteAclStateSetPair(routes, y.getMainRib().getBlockedAcls()));
   }
 }

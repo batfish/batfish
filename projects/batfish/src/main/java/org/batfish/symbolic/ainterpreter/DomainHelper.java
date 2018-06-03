@@ -447,35 +447,37 @@ public class DomainHelper {
    * destinations matched by the /24 but not the /32 to go to A
    *
    */
-  public BDD toFib(BDD under, BDD over) {
+  public BDD difference(BDD under, BDD over) {
     // Get the prefixes only by removing communities, protocol tag etc.
-    BDD underPfxOnly = under.exist(getAllQuantifyBits());
-    BDD overPfxOnly = over.exist(getAllQuantifyBits());
+    // BDD underPfxOnly = under.exist(getAllQuantifyBits());
+    // BDD overPfxOnly = over.exist(getAllQuantifyBits());
 
     // Early return if there is nothing in the rib
-    if (underPfxOnly.isZero()) {
-      return underPfxOnly;
+    if (under.isZero()) {
+      return under;
     }
 
     // Prefixes that might take traffic away
-    BDD allOverPrefixes = overPfxOnly.andWith(underPfxOnly.not()).exist(getDstRouterBits());
+    BDD allOverRoutes = over.andWith(under.not()).exist(getDstRouterBits());
 
     // Accumulate the might hijack destination addresses by prefix length
     BDD mightHijack = _netFactory.zero();
 
-    // Accumulate the reachable packets (prefix length is removed at the end)
-    BDD reachablePackets = _netFactory.zero();
+    // Accumulate the reachable prefixes
+    BDD reachablePrefixes = _netFactory.zero();
 
     // Walk starting from most specific prefix length
     for (int i = 32; i >= 0; i--) {
       BDD len = makeLength(i);
 
       // Add new prefixes that might hijack traffic
-      BDD withLenOver = allOverPrefixes.and(len).exist(getLenBits());
+      // TODO: this is stronger than it needs to be, e.g., if the over
+      // TODO: approximation has an extra route, but it is worse than the underapproximation one.
+      BDD withLenOver = allOverRoutes.and(len).exist(getAllQuantifyBits());
       mightHijack = mightHijack.orWith(withLenOver);
 
       // Get the must reach prefixes for this length
-      BDD withLen = underPfxOnly.and(len);
+      BDD withLen = under.and(len);
       if (withLen.isZero()) {
         continue;
       }
@@ -490,11 +492,15 @@ public class DomainHelper {
       withLen = withLen.andWith(mightHijack.not());
 
       // accumulate resulting headers
-      reachablePackets = reachablePackets.orWith(withLen);
+      reachablePrefixes = reachablePrefixes.orWith(withLen);
     }
 
-    reachablePackets = reachablePackets.exist(getLenBits());
-    return reachablePackets;
+    return reachablePrefixes;
+  }
+
+  public BDD toFib(BDD under, BDD over) {
+    BDD reachablePrefixes = difference(under, over);
+    return reachablePrefixes.exist(getLenBits());
   }
 
   /*
@@ -525,7 +531,7 @@ public class DomainHelper {
       BDDInteger newVal = new BDDInteger(pfxLen);
       newVal.setValue(i);
       len = _netFactory.one();
-      for (int j = pfxLen.getBitvec().length; j >= 0; j--) {
+      for (int j = pfxLen.getBitvec().length - 1; j >= 0; j--) {
         BDD var = pfxLen.getBitvec()[j];
         BDD val = newVal.getBitvec()[j];
         if (val.isOne()) {

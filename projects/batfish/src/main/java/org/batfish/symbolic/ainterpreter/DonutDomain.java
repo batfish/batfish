@@ -24,7 +24,7 @@ public class DonutDomain<U, T> extends ProductDomain<U, T> {
   public List<Route> toRoutes(AbstractRib<Tuple<U, T>> value) {
     AbstractRib<U> rib1 = convertRib1(value);
     AbstractRib<T> rib2 = convertRib2(value);
-    AbstractRib<T> result = _mixer.ribDifference(rib1, rib2);
+    AbstractRib<T> result = _mixer.difference(rib1, rib2);
     return this._domain2.toRoutes(result);
   }
 
@@ -32,9 +32,15 @@ public class DonutDomain<U, T> extends ProductDomain<U, T> {
   public Tuple<BDDNetFactory, BDD> toFib(Map<String, AbstractRib<Tuple<U, T>>> ribs) {
     Map<String, AbstractRib<U>> newRibs1 = convertRibs1(ribs);
     Map<String, AbstractRib<T>> newRibs2 = convertRibs2(ribs);
-    Tuple<BDDNetFactory, BDD> ret1 = _domain1.toFib(newRibs1);
-    Tuple<BDDNetFactory, BDD> ret2 = _domain2.toFib(newRibs2);
-    return new Tuple<>(ret1.getFirst(), _mixer.fibDifference(ret1.getSecond(), ret2.getSecond()));
+    Map<String, AbstractRib<T>> newRibs = new HashMap<>();
+    for (Entry<String, AbstractRib<U>> e : newRibs1.entrySet()) {
+      String router = e.getKey();
+      AbstractRib<U> rib1 = e.getValue();
+      AbstractRib<T> rib2 = newRibs2.get(router);
+      AbstractRib<T> newRib = _mixer.difference(rib1, rib2);
+      newRibs.put(router, newRib);
+    }
+    return _domain2.toFib(newRibs);
   }
 
   // TODO: take away reachable
