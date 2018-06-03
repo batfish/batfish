@@ -14,12 +14,24 @@ import org.junit.Test;
 
 public class TableDiffTest {
 
+  private static ColumnMetadata colBoth =
+      new ColumnMetadata("both", Schema.STRING, "both", true, true);
+
+  private static ColumnMetadata colKey =
+      new ColumnMetadata("key", Schema.STRING, "key", true, false);
+
+  private static ColumnMetadata colKeyStatus =
+      new ColumnMetadata(
+          TableDiff.COL_KEY_STATUS, Schema.STRING, TableDiff.COL_KEY_STATUS_DESC, false, true);
+
+  private static ColumnMetadata colValue =
+      new ColumnMetadata("value", Schema.STRING, "value", false, true);
+
+  private static ColumnMetadata colNeither =
+      new ColumnMetadata("neither", Schema.STRING, "neither", false, false);
+
   private static List<ColumnMetadata> mixColumns() {
-    return ImmutableList.of(
-        new ColumnMetadata("key", Schema.STRING, "key", true, false),
-        new ColumnMetadata("both", Schema.STRING, "both", true, true),
-        new ColumnMetadata("value", Schema.STRING, "value", false, true),
-        new ColumnMetadata("neither", Schema.STRING, "neither", false, false));
+    return ImmutableList.of(colKey, colBoth, colValue, colNeither);
   }
 
   private static Row mixRow(String key, String both, String value, String neither) {
@@ -64,8 +76,9 @@ public class TableDiffTest {
     TableMetadata expectedMetadata =
         new TableMetadata(
             ImmutableList.of(
-                new ColumnMetadata("key", Schema.STRING, "key", true, false),
+                colKey,
                 new ColumnMetadata("both", Schema.STRING, "both", true, false),
+                colKeyStatus,
                 new ColumnMetadata(
                     TableDiff.diffColumnName("value"),
                     Schema.STRING,
@@ -97,6 +110,8 @@ public class TableDiffTest {
         diff.build(),
         equalTo(
             Row.of(
+                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_STATUS_BOTH,
                 // value
                 TableDiff.diffColumnName("value"),
                 TableDiff.diffCells("value1", null, Schema.STRING),
@@ -126,8 +141,10 @@ public class TableDiffTest {
         diff1.build(),
         equalTo(
             Row.of(
+                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_STATUS_ONLY_BASE,
                 TableDiff.diffColumnName("key"),
-                TableDiff.resultDifferent(TableDiff.MISSING_KEY_DELTA),
+                TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_BASE),
                 TableDiff.baseColumnName("key"),
                 "value",
                 TableDiff.deltaColumnName("key"),
@@ -140,8 +157,10 @@ public class TableDiffTest {
         diff2.build(),
         equalTo(
             Row.of(
+                TableDiff.COL_KEY_STATUS,
+                TableDiff.COL_KEY_STATUS_ONLY_DELTA,
                 TableDiff.diffColumnName("key"),
-                TableDiff.resultDifferent(TableDiff.MISSING_KEY_BASE),
+                TableDiff.resultDifferent(TableDiff.COL_KEY_STATUS_ONLY_DELTA),
                 TableDiff.baseColumnName("key"),
                 null,
                 TableDiff.deltaColumnName("key"),
@@ -215,8 +234,9 @@ public class TableDiffTest {
     assertThat(TableDiff.diffTables(table13, table1, false).getRows().size(), equalTo(1));
   }
 
+  /** Checks if the content of the Rows we get back after diffing tables is what we expect */
   @Test
-  public void diffTablesTestRowComposition() {
+  public void diffTablesTestRowContent() {
     List<ColumnMetadata> columns = mixColumns();
     TableMetadata metadata = new TableMetadata(columns, null);
 
@@ -232,6 +252,7 @@ public class TableDiffTest {
                 Row.builder()
                     .put("key", "key1")
                     .put("both", "both1")
+                    .put(TableDiff.COL_KEY_STATUS, TableDiff.COL_KEY_STATUS_BOTH)
                     .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
                     .put(TableDiff.baseColumnName("value"), "value1")
                     .put(TableDiff.deltaColumnName("value"), "value2")
@@ -240,5 +261,67 @@ public class TableDiffTest {
                     .build());
 
     assertThat(TableDiff.diffTables(table1, table2, true).getRows(), equalTo(expectedRows));
+  }
+
+  /** Checks if we properly handle tables that have no key columns */
+  @Test
+  public void diffTablesTestNoKeys() {
+    TableMetadata noKeys =
+        new TableMetadata(
+            ImmutableList.of(new ColumnMetadata("value", Schema.STRING, "value", false, true)),
+            null);
+
+    Row row1 = Row.of("value", "value1");
+    Row row2 = Row.of("value", "value2");
+
+    TableAnswerElement table1 = new TableAnswerElement(noKeys).addRow(row1);
+    TableAnswerElement table2 = new TableAnswerElement(noKeys).addRow(row2);
+
+    Rows expectedRows =
+        new Rows()
+            .add(
+                Row.builder()
+                    .put(TableDiff.COL_KEY_STATUS, TableDiff.COL_KEY_STATUS_BOTH)
+                    .put(TableDiff.diffColumnName("value"), TableDiff.RESULT_DIFFERENT)
+                    .put(TableDiff.baseColumnName("value"), "value1")
+                    .put(TableDiff.deltaColumnName("value"), "value2")
+                    .build());
+
+    assertThat(TableDiff.diffTables(table1, table2, true).getRows(), equalTo(expectedRows));
+  }
+
+  /** Checks if we properly handle tables where all columns are keys */
+  @Test
+  public void diffTablesTestAllKeys() {
+    TableMetadata noKeys =
+        new TableMetadata(
+            ImmutableList.of(new ColumnMetadata("key", Schema.STRING, "key", true, false)), null);
+
+    Row row1 = Row.of("key", "key1");
+    Row row2 = Row.of("key", "key2");
+
+    TableAnswerElement table1 = new TableAnswerElement(noKeys).addRow(row1);
+    TableAnswerElement table2 = new TableAnswerElement(noKeys).addRow(row2);
+
+    // should get back no rows if we are ignoring missing keys
+    assertThat(TableDiff.diffTables(table1, table2, true).getRows(), equalTo(new Rows()));
+
+    // should get back two rows if we are not ignoring missing keys
+    assertThat(
+        TableDiff.diffTables(table1, table2, false).getRows(),
+        equalTo(
+            new Rows()
+                .add(
+                    Row.of(
+                        "key",
+                        "key1",
+                        TableDiff.COL_KEY_STATUS,
+                        TableDiff.COL_KEY_STATUS_ONLY_BASE))
+                .add(
+                    Row.of(
+                        "key",
+                        "key2",
+                        TableDiff.COL_KEY_STATUS,
+                        TableDiff.COL_KEY_STATUS_ONLY_DELTA))));
   }
 }
