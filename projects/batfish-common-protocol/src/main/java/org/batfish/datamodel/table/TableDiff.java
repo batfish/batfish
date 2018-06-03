@@ -21,8 +21,12 @@ public final class TableDiff {
 
   private TableDiff() {}
 
-  static final String MISSING_KEY_BASE = "Key missing in Base";
-  static final String MISSING_KEY_DELTA = "Key missing in Delta";
+  static final String COL_KEY_STATUS = "KeyStatus";
+  static final String COL_KEY_STATUS_DESC = "In which table(s) is the key present";
+  static final String COL_KEY_STATUS_BOTH = "Key in both";
+  static final String COL_KEY_STATUS_ONLY_BASE = "Key only in Base";
+  static final String COL_KEY_STATUS_ONLY_DELTA = "Key only in Delta";
+
   static final String NULL_VALUE_BASE = "Value is null in Base";
   static final String NULL_VALUE_DELTA = "Value is null in Delta";
 
@@ -100,7 +104,7 @@ public final class TableDiff {
   @VisibleForTesting
   static TableMetadata diffMetadata(TableMetadata inputMetadata) {
     Builder<ColumnMetadata> diffColumnMetatadata = new Builder<ColumnMetadata>();
-    // We two do passes so we can insert all keys first
+    // 1. Insert all key columns
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
       if (cm.getIsKey()) {
         diffColumnMetatadata.add(
@@ -117,23 +121,30 @@ public final class TableDiff {
                     .map(cm -> cm.getName())
                     .collect(Collectors.toList()))
             + "]";
+
+    // 2. Insert the key status column
+    diffColumnMetatadata.add(
+        new ColumnMetadata(COL_KEY_STATUS, Schema.STRING, COL_KEY_STATUS_DESC, false, true));
+
+    // 3. Add other columns
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
-      if (!cm.getIsKey()) {
-        if (cm.getIsValue()) {
-          diffColumnMetatadata.add(
-              new ColumnMetadata(
-                  diffColumnName(cm.getName()),
-                  Schema.STRING,
-                  diffColumnDescription(cm.getName()),
-                  false,
-                  true));
-        }
+      if (cm.getIsKey()) {
+        continue;
+      }
+      if (cm.getIsValue()) {
         diffColumnMetatadata.add(
             new ColumnMetadata(
-                baseColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false),
-            new ColumnMetadata(
-                deltaColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false));
+                diffColumnName(cm.getName()),
+                Schema.STRING,
+                diffColumnDescription(cm.getName()),
+                false,
+                true));
       }
+      diffColumnMetatadata.add(
+          new ColumnMetadata(
+              baseColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false),
+          new ColumnMetadata(
+              deltaColumnName(cm.getName()), cm.getSchema(), cm.getDescription(), false, false));
     }
 
     return new TableMetadata(diffColumnMetatadata.build(), new DisplayHints(null, null, dhintText));
@@ -155,6 +166,12 @@ public final class TableDiff {
     checkArgument(rowBuilder != null, "rowBuilder cannot be null");
     checkArgument(inputMetadata.getColumnMetadata() != null, "columns cannot be null");
 
+    String keyStatus =
+        baseRow == null
+            ? COL_KEY_STATUS_ONLY_DELTA
+            : deltaRow == null ? COL_KEY_STATUS_ONLY_BASE : COL_KEY_STATUS_BOTH;
+    rowBuilder.put(COL_KEY_STATUS, keyStatus);
+
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
       if (cm.getIsKey()) {
         continue;
@@ -162,13 +179,12 @@ public final class TableDiff {
       Object baseValue = baseRow == null ? null : baseRow.get(cm.getName(), cm.getSchema());
       Object deltaValue = deltaRow == null ? null : deltaRow.get(cm.getName(), cm.getSchema());
       if (cm.getIsValue()) {
-        String diffResult =
-            baseRow == null
-                ? resultDifferent(MISSING_KEY_BASE)
-                : deltaRow == null
-                    ? resultDifferent(MISSING_KEY_DELTA)
-                    : diffCells(baseValue, deltaValue, cm.getSchema());
-        rowBuilder.put(diffColumnName(cm.getName()), diffResult);
+        if (baseRow == null || deltaRow == null) {
+          rowBuilder.put(diffColumnName(cm.getName()), resultDifferent(keyStatus));
+        } else {
+          rowBuilder.put(
+              diffColumnName(cm.getName()), diffCells(baseValue, deltaValue, cm.getSchema()));
+        }
       }
       rowBuilder
           .put(baseColumnName(cm.getName()), baseValue)
