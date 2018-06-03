@@ -290,28 +290,16 @@
             </licenseMerges>
           </configuration>
         </plugin>
-	<plugin>
+
+        <plugin>
           <groupId>org.jacoco</groupId>
           <artifactId>jacoco-maven-plugin</artifactId>
-	  <version>${maven-jacoco-plugin.version}</version>
-	</plugin>
+          <version>${maven-jacoco-plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
     <plugins>
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>prepare-agent</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin> 
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-checkstyle-plugin</artifactId>
@@ -462,6 +450,19 @@
           <execution>
             <goals>
               <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
             </goals>
           </execution>
         </executions>
