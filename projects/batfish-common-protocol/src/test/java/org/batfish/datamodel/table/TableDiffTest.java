@@ -169,7 +169,7 @@ public class TableDiffTest {
 
   /** Checks if we get back the expected number of rows based on ignoring missing keys. */
   @Test
-  public void diffTablesTestIgnoreMissingKeys() {
+  public void diffTablesTestIncludeOneTableKeys() {
     List<ColumnMetadata> columns =
         ImmutableList.of(
             new ColumnMetadata("key", Schema.STRING, "key", true, false),
@@ -186,16 +186,16 @@ public class TableDiffTest {
     TableAnswerElement table23 = new TableAnswerElement(metadata).addRow(row2).addRow(row3);
 
     // ignore: true -- should get 0 rows since the two tables have no key in common
-    assertThat(TableDiff.diffTables(table12, table3, true).getRows().size(), equalTo(0));
-    assertThat(TableDiff.diffTables(table3, table12, true).getRows().size(), equalTo(0));
+    assertThat(TableDiff.diffTables(table12, table3, false).getRows().size(), equalTo(0));
+    assertThat(TableDiff.diffTables(table3, table12, false).getRows().size(), equalTo(0));
 
     // ignore: true should get 1 row since the two tables have a common key with different value
-    assertThat(TableDiff.diffTables(table23, table1, true).getRows().size(), equalTo(1));
-    assertThat(TableDiff.diffTables(table1, table23, true).getRows().size(), equalTo(1));
+    assertThat(TableDiff.diffTables(table23, table1, false).getRows().size(), equalTo(1));
+    assertThat(TableDiff.diffTables(table1, table23, false).getRows().size(), equalTo(1));
 
     // ignore: false -- should get 2 rows, one for each key
-    assertThat(TableDiff.diffTables(table12, table3, false).getRows().size(), equalTo(2));
-    assertThat(TableDiff.diffTables(table3, table12, false).getRows().size(), equalTo(2));
+    assertThat(TableDiff.diffTables(table12, table3, true).getRows().size(), equalTo(2));
+    assertThat(TableDiff.diffTables(table3, table12, true).getRows().size(), equalTo(2));
   }
 
   /**
@@ -222,16 +222,16 @@ public class TableDiffTest {
         new TableAnswerElement(metadata).addRow(row1).addRow(row2).addRow(row3);
 
     // expected count is 2: Two rows with identical keys in table123 are compressed
-    assertThat(TableDiff.diffTables(table123, table0, false).getRows().size(), equalTo(2));
-    assertThat(TableDiff.diffTables(table0, table123, false).getRows().size(), equalTo(2));
+    assertThat(TableDiff.diffTables(table123, table0, true).getRows().size(), equalTo(2));
+    assertThat(TableDiff.diffTables(table0, table123, true).getRows().size(), equalTo(2));
 
     // expected count is 2: one for diffKey, one for sameKey
-    assertThat(TableDiff.diffTables(table13, table2, false).getRows().size(), equalTo(2));
-    assertThat(TableDiff.diffTables(table2, table13, false).getRows().size(), equalTo(2));
+    assertThat(TableDiff.diffTables(table13, table2, true).getRows().size(), equalTo(2));
+    assertThat(TableDiff.diffTables(table2, table13, true).getRows().size(), equalTo(2));
 
     // expected count is 1: one for diffKey; sameKey should be removed since values are same
-    assertThat(TableDiff.diffTables(table1, table13, false).getRows().size(), equalTo(1));
-    assertThat(TableDiff.diffTables(table13, table1, false).getRows().size(), equalTo(1));
+    assertThat(TableDiff.diffTables(table1, table13, true).getRows().size(), equalTo(1));
+    assertThat(TableDiff.diffTables(table13, table1, true).getRows().size(), equalTo(1));
   }
 
   /** Checks if the content of the Rows we get back after diffing tables is what we expect */
@@ -303,12 +303,12 @@ public class TableDiffTest {
     TableAnswerElement table1 = new TableAnswerElement(noKeys).addRow(row1);
     TableAnswerElement table2 = new TableAnswerElement(noKeys).addRow(row2);
 
-    // should get back no rows if we are ignoring missing keys
-    assertThat(TableDiff.diffTables(table1, table2, true).getRows(), equalTo(new Rows()));
+    // should get back no rows if we are not including one table keys
+    assertThat(TableDiff.diffTables(table1, table2, false).getRows(), equalTo(new Rows()));
 
-    // should get back two rows if we are not ignoring missing keys
+    // should get back two rows if we are including one table keys
     assertThat(
-        TableDiff.diffTables(table1, table2, false).getRows(),
+        TableDiff.diffTables(table1, table2, true).getRows(),
         equalTo(
             new Rows()
                 .add(

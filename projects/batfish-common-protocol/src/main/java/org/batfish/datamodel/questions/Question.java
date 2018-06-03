@@ -280,6 +280,9 @@ public abstract class Question implements IQuestion {
 
   private List<Exclusion> _exclusions;
 
+  /** When diffing tables, whether to ignore keys present in only one table */
+  private boolean _includeOneTableKeys;
+
   private InstanceData _instance;
 
   public Question() {
@@ -313,6 +316,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_EXCLUSIONS)
   public List<Exclusion> getExclusions() {
     return _exclusions;
+  }
+
+  @JsonProperty(BfConsts.PROP_INCLUDE_ONE_TABLE_KEYS)
+  public boolean getIncludeOneTableKeys() {
+    return _includeOneTableKeys;
   }
 
   /** Returns {@code true} iff this question does not need the testrig to be properly parsed */
@@ -507,6 +515,11 @@ public abstract class Question implements IQuestion {
   @JsonProperty(BfConsts.PROP_EXCLUSIONS)
   public void setExclusions(List<Exclusion> exclusions) {
     _exclusions = exclusions;
+  }
+
+  @JsonProperty(BfConsts.PROP_INCLUDE_ONE_TABLE_KEYS)
+  public void setIncludeOneTableKeys(boolean includeOneTableKeys) {
+    _includeOneTableKeys = includeOneTableKeys;
   }
 
   @JsonProperty(BfConsts.PROP_INSTANCE)
