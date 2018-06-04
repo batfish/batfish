@@ -1934,9 +1934,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           If defaultRouteGenerationConditional =
               new If(
                   ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                  ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                      Statements.ReturnTrue.toStaticStatement()));
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
           RoutingPolicy defaultRouteGenerationPolicy =
               new RoutingPolicy(
                   "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);

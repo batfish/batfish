@@ -79,6 +79,7 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.dataplane.exceptions.BgpRoutePropagationException;
 import org.batfish.dataplane.protocols.BgpProtocolHelper;
+import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.protocols.OspfProtocolHelper;
 import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
@@ -435,39 +436,19 @@ public class VirtualRouter extends ComparableStructure<String> {
   RibDelta<AbstractRoute> activateGeneratedRoutes() {
     RibDelta.Builder<AbstractRoute> builder = new Builder<>(_generatedRib);
 
-    // Loop over all generated routes and check whether any of the contributing routes have changed
+    /*
+     * Loop over all generated routes and check whether any of the contributing routes can trigger
+     * activation.
+     */
     for (GeneratedRoute gr : _vrf.getGeneratedRoutes()) {
-      boolean active = true;
-      String generationPolicyName = gr.getGenerationPolicy();
-      GeneratedRoute.Builder grb = new GeneratedRoute.Builder();
-      grb.setNetwork(gr.getNetwork());
-      grb.setAdmin(gr.getAdministrativeCost());
-      grb.setMetric(gr.getMetric() != null ? gr.getMetric() : 0);
-      grb.setAttributePolicy(gr.getAttributePolicy());
-      grb.setGenerationPolicy(gr.getGenerationPolicy());
-      boolean discard = gr.getDiscard();
-      grb.setDiscard(discard);
-      if (discard) {
-        grb.setNextHopInterface(Interface.NULL_INTERFACE_NAME);
-      }
-      if (generationPolicyName != null) {
-        RoutingPolicy generationPolicy = _c.getRoutingPolicies().get(generationPolicyName);
-        if (generationPolicy != null) {
-          active = false;
-          for (AbstractRoute contributingCandidate : _mainRib.getRoutes()) {
-            boolean accept =
-                generationPolicy.process(contributingCandidate, grb, null, _key, Direction.OUT);
-            if (accept) {
-              if (!discard) {
-                grb.setNextHopIp(contributingCandidate.getNextHopIp());
-              }
-              active = true;
-              break;
-            }
-          }
-        }
-      }
-      if (active) {
+      String policyName = gr.getGenerationPolicy();
+      RoutingPolicy generationPolicy =
+          policyName != null ? _c.getRoutingPolicies().get(gr.getGenerationPolicy()) : null;
+      GeneratedRoute.Builder grb =
+          GeneratedRouteHelper.activateGeneratedRoute(
+              gr, generationPolicy, _mainRib.getRoutes(), _vrf.getName());
+
+      if (grb != null) {
         GeneratedRoute newGr = grb.build();
         // Routes have been changed
         RibDelta<AbstractRoute> d = _generatedRib.mergeRouteGetDelta(newGr);
@@ -917,7 +898,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   /**
    * This function creates BGP routes from generated routes that go into the BGP RIB, but cannot be
    * imported into the main RIB. The purpose of these routes is to prevent the local router from
-   * accepting advertisements less desirable than the local generated ones for the given network.
+   * accepting advertisements less desirable than the local generated ones for a given network.
    */
   void initBgpAggregateRoutes() {
     // first import aggregates
@@ -931,26 +912,12 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
     for (AbstractRoute grAbstract : _generatedRib.getRoutes()) {
       GeneratedRoute gr = (GeneratedRoute) grAbstract;
-      BgpRoute.Builder b = new BgpRoute.Builder();
-      b.setAdmin(gr.getAdministrativeCost());
-      b.setAsPath(gr.getAsPath().getAsSets());
-      b.setMetric(gr.getMetric());
-      b.setSrcProtocol(RoutingProtocol.AGGREGATE);
-      b.setProtocol(RoutingProtocol.AGGREGATE);
-      b.setNetwork(gr.getNetwork());
-      b.setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE);
-      /* Note: Origin type and originator IP should get overwritten, but are needed initially */
-      b.setOriginatorIp(_vrf.getBgpProcess().getRouterId());
-      b.setOriginType(OriginType.INCOMPLETE);
-      b.setReceivedFromIp(Ip.ZERO);
-      BgpRoute br = b.build();
 
-      /*
-       * TODO: tests for this
-       * 1. Really hope setNonRouting(true) prevents this from being in the main RIB
-       * 2. General functionality of aggregate routes is not well tested
-       */
+      BgpRoute br =
+          BgpProtocolHelper.convertGeneratedRouteToBgp(gr, _vrf.getBgpProcess().getRouterId());
+      // Prevent route from being merged into the main RIB.
       br.setNonRouting(true);
+      /* TODO: tests for this */
       RibDelta<BgpRoute> d1 = _bgpMultipathRib.mergeRouteGetDelta(br);
       _bgpBestPathDeltaBuilder.from(d1);
       RibDelta<BgpRoute> d2 = _bgpBestPathRib.mergeRouteGetDelta(br);
@@ -2400,7 +2367,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     // Note prefixes we tried to originate
     _mainRib.getRoutes().forEach(r -> _prefixTracer.originated(r.getNetwork()));
 
-    // Exported route advertisements
+    /*
+     * Export route advertisements by looking at main RIB
+     */
     Set<RouteAdvertisement<BgpRoute>> exportedRoutes =
         _mainRib
             .getRoutes()
@@ -2414,8 +2383,46 @@ public class VirtualRouter extends ComparableStructure<String> {
     // Call this on the neighbor's VR!
     remoteVr.enqueueBgpMessages(session, exportedRoutes);
 
+    /*
+     * Export neighbor-specific generated routes, these routes skip global export policy
+     */
+    Set<RouteAdvertisement<BgpRoute>> exportedNeighborSpecificRoutes =
+        neighbor
+            .getGeneratedRoutes()
+            .stream()
+            .map(this::processNeighborSpecificGeneratedRoute)
+            .filter(Objects::nonNull)
+            .map(RouteAdvertisement::new)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // Call this on the neighbor's VR!
+    remoteVr.enqueueBgpMessages(session, exportedNeighborSpecificRoutes);
+
     // Note which BGP advertisements were sent
     markSentBgpAdvertisements(neighbor, remoteNeighbor, exportedRoutes);
+    markSentBgpAdvertisements(neighbor, remoteNeighbor, exportedNeighborSpecificRoutes);
+  }
+
+  /**
+   * Check whether given {@link GeneratedRoute} should be sent to a BGP neighbor. This checks
+   * activation conditions for the generated route, and converts it to a {@link BgpRoute}. No export
+   * policy computation is performed.
+   *
+   * @param generatedRoute route to process
+   * @return a new {@link BgpRoute} if the {@code generatedRoute} was activated.
+   */
+  @Nullable
+  private BgpRoute processNeighborSpecificGeneratedRoute(@Nonnull GeneratedRoute generatedRoute) {
+
+    String policyName = generatedRoute.getGenerationPolicy();
+    RoutingPolicy policy = policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
+    GeneratedRoute.Builder builder =
+        GeneratedRouteHelper.activateGeneratedRoute(
+            generatedRoute, policy, _mainRib.getRoutes(), _vrf.getName());
+    return builder != null
+        ? BgpProtocolHelper.convertGeneratedRouteToBgp(
+            builder.build(), _vrf.getBgpProcess().getRouterId())
+        : null;
   }
 
   /**

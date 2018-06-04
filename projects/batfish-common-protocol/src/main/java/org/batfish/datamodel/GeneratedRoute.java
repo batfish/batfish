@@ -34,23 +34,35 @@ public final class GeneratedRoute extends AbstractRoute {
 
     @Override
     public GeneratedRoute build() {
-      GeneratedRoute gr =
-          new GeneratedRoute(
-              getNetwork(),
-              getAdmin(),
-              getNextHopIp(),
-              new AsPath(_asPath),
-              _attributePolicy,
-              _discard,
-              _generationPolicy,
-              getMetric(),
-              _nextHopInterface);
-      return gr;
+      return new GeneratedRoute(
+          getNetwork(),
+          getAdmin(),
+          getNextHopIp(),
+          new AsPath(_asPath),
+          _attributePolicy,
+          _discard,
+          _generationPolicy,
+          getMetric(),
+          _nextHopInterface);
     }
 
     @Override
     protected Builder getThis() {
       return this;
+    }
+
+    public static Builder fromRoute(GeneratedRoute route) {
+      return new Builder()
+          // General route properties
+          .setNetwork(route.getNetwork())
+          .setMetric(firstNonNull(route.getMetric(), 0L))
+          .setAdmin(route.getAdministrativeCost())
+          // GeneratedRoute properties
+          .setAsPath(route.getAsPath().getAsSets())
+          .setAttributePolicy(route.getAttributePolicy())
+          .setDiscard(route.getDiscard())
+          .setGenerationPolicy(route.getGenerationPolicy())
+          .setNextHopInterface(route.getNextHopInterface());
     }
 
     public Builder setAsPath(List<SortedSet<Long>> asPath) {
