@@ -8,9 +8,13 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -38,6 +42,11 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasLocalIp;
+import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
@@ -148,6 +157,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -339,6 +349,13 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
+  }
+
+  @Test
+  public void testArubaConfigurationFormat() throws IOException {
+    Configuration arubaConfig = parseConfig("arubaConfiguration");
+
+    assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
   }
 
   @Test
@@ -1350,35 +1367,32 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    MultipathEquivalentAsPathMatchMode aristaDisabled =
-        configurations
-            .get("arista_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode aristaEnabled =
-        configurations
-            .get("arista_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosDisabled =
-        configurations
-            .get("nxos_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosEnabled =
-        configurations
-            .get("nxos_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
+    org.batfish.datamodel.BgpProcess aristaDisabled =
+        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaEnabled =
+        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosDisabled =
+        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosEnabled =
+        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
-    assertThat(aristaDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        aristaDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        aristaEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        nxosDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        nxosEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+
+    assertThat(aristaDisabled, hasMultipathEbgp(false));
+    assertThat(aristaEnabled, hasMultipathEbgp(true));
+    assertThat(nxosDisabled, hasMultipathEbgp(false));
+    assertThat(nxosEnabled, hasMultipathEbgp(true));
   }
 
   @Test
@@ -1553,7 +1567,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoAruba() throws IOException {
+  public void testIsakmpPolicyAruba() throws IOException {
     Configuration c = parseConfig("arubaCrypto");
     assertThat(
         c,
@@ -1568,7 +1582,7 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoIos() throws IOException {
+  public void testIsakmpPolicyIos() throws IOException {
     Configuration c = parseConfig("ios-crypto");
 
     assertThat(
@@ -1593,6 +1607,33 @@ public class CiscoGrammarTest {
                 hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
                 hasLifeTimeSeconds(86400))));
+  }
+
+  @Test
+  public void testIsakmpProfile() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+    assertThat(
+        c,
+        hasIkeGateway(
+            "ISAKMP-PROFILE-ADDRESS",
+            allOf(
+                hasAddress(new Ip("1.2.3.4")),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                hasLocalIp(new Ip("2.3.4.6")),
+                hasIkePolicy(
+                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
+
+    // The interface in the local-address should also be mapped with the same local ip
+    assertThat(
+        c,
+        hasIkeGateway(
+            "ISAKMP-PROFILE-INTERFACE",
+            allOf(
+                hasAddress(new Ip("1.2.3.4")),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                hasLocalIp(new Ip("2.3.4.6")),
+                hasIkePolicy(
+                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
   }
 
   private static String getCLRegex(

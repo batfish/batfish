@@ -6,11 +6,11 @@ jdk:
 
 env:
   - BF_BUILDER="mvn"
-  - BF_BUILDER="bazel" V="0.13.1"
+  - BF_BUILDER="bazel" V="0.14.0"
 matrix:
   fast_finish: true
   allow_failures:
-  - env: BF_BUILDER="bazel" V="0.13.1"
+  - env: BF_BUILDER="bazel" V="0.14.0"
 
 before_install:
   - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
@@ -69,3 +69,6 @@ before_cache:
   - rm -rf $HOME/.m2/repository/net/sf/javabdd/bdd/
   - rm -rf $HOME/.m2/repository/org/batfish
   - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
+  
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

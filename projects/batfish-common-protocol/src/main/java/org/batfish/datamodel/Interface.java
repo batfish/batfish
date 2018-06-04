@@ -468,6 +468,7 @@ public final class Interface extends ComparableStructure<String> {
         return computeAwsInterfaceType(name);
 
       case ARISTA:
+      case ARUBAOS:
       case CADANT:
       case CISCO_ASA:
       case CISCO_IOS:

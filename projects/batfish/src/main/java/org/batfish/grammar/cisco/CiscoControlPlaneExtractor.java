@@ -111,6 +111,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
@@ -1709,12 +1710,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCisprf_local_address(Cisprf_local_addressContext ctx) {
-    _currentIsakmpProfile.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    if (ctx.IP_ADDRESS() != null) {
+      _currentIsakmpProfile.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    } else {
+      _currentIsakmpProfile.setLocalInterfaceName(ctx.interface_name().getText());
+    }
   }
 
   @Override
   public void exitCkr_local_address(Ckr_local_addressContext ctx) {
-    _currentKeyring.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    if (ctx.IP_ADDRESS() != null) {
+      _currentKeyring.setLocalAddress(toIp(ctx.IP_ADDRESS()));
+    } else {
+      _currentKeyring.setLocalInterfaceName(ctx.interface_name().getText());
+    }
   }
 
   @Override
@@ -3032,6 +3041,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         for (int i = range.getStart(); i <= range.getEnd(); i++) {
           String name = namePrefix + i;
           addInterface(name, ctx.iname, true);
+          defineStructure(INTERFACE, name, ctx);
+          _configuration.referenceStructure(
+              INTERFACE, name, INTERFACE_SELF_REF, ctx.getStart().getLine());
         }
       }
     } else {
@@ -3609,7 +3621,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (asPathSet != null) {
       _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
     }
-    asPathSet = new AsPathSet(name, definitionLine);
+    asPathSet = new AsPathSet(name);
     _configuration.getAsPathSets().put(name, asPathSet);
     for (As_path_set_elemContext elemCtx : ctx.elems) {
       AsPathSetElem elem = toAsPathSetElem(elemCtx);
@@ -3718,11 +3730,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentInspectClassMap =
-        _configuration
-            .getInspectClassMaps()
-            .computeIfAbsent(name, n -> new InspectClassMap(n, line));
+        _configuration.getInspectClassMaps().computeIfAbsent(name, n -> new InspectClassMap(n));
     defineStructure(INSPECT_CLASS_MAP, name, ctx);
     MatchSemantics matchSemantics =
         ctx.match_semantics() != null
@@ -3744,8 +3753,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_zone(S_zoneContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _configuration.getSecurityZones().computeIfAbsent(name, n -> new SecurityZone(n, line));
+    _configuration.getSecurityZones().computeIfAbsent(name, n -> new SecurityZone(n));
     defineStructure(SECURITY_ZONE, name, ctx);
   }
 
@@ -5019,18 +5027,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIftunnel_source(Iftunnel_sourceContext ctx) {
+    Ip sourceAddress = null;
+    String sourceInterfaceName = null;
     if (ctx.IP_ADDRESS() != null) {
-      Ip source = toIp(ctx.IP_ADDRESS());
-      for (Interface iface : _currentInterfaces) {
-        iface.getTunnelInitIfNull().setSource(source);
-      }
+      sourceAddress = toIp(ctx.IP_ADDRESS());
     } else {
+      sourceInterfaceName = ctx.interface_name().getText();
       _configuration.referenceStructure(
-          INTERFACE,
-          ctx.interface_name().getText(),
-          TUNNEL_SOURCE,
-          ctx.interface_name().getStart().getLine());
-      todo(ctx, "tunnel source [interface]");
+          INTERFACE, sourceInterfaceName, TUNNEL_SOURCE, ctx.interface_name().getStart().getLine());
+    }
+    for (Interface iface : _currentInterfaces) {
+      if (sourceAddress != null) {
+        iface.getTunnelInitIfNull().setSourceAddress(sourceAddress);
+      } else {
+        iface.getTunnelInitIfNull().setSourceInterfaceName(sourceInterfaceName);
+      }
     }
   }
 
@@ -6062,11 +6073,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterPm_ios_inspect(Pm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentInspectPolicyMap =
-        _configuration
-            .getInspectPolicyMaps()
-            .computeIfAbsent(name, n -> new InspectPolicyMap(n, line));
+        _configuration.getInspectPolicyMaps().computeIfAbsent(name, n -> new InspectPolicyMap(n));
     defineStructure(INSPECT_POLICY_MAP, name, ctx);
   }
 

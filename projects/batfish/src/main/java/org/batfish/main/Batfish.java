@@ -3503,7 +3503,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       baseParams = resolveReachabilityParameters(this, params, getSnapshot());
     } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidSettingsAnswer();
+      return e.getInvalidParametersAnswer();
     }
     popEnvironment();
 
@@ -3512,7 +3512,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       deltaParams = resolveReachabilityParameters(this, params, getSnapshot());
     } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidSettingsAnswer();
+      return e.getInvalidParametersAnswer();
     }
     popEnvironment();
 
@@ -4227,7 +4227,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       parameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
     } catch (InvalidReachabilityParametersException e) {
-      return e.getInvalidSettingsAnswer();
+      return e.getInvalidParametersAnswer();
     }
 
     Set<ForwardingAction> actions = reachabilityParameters.getActions();

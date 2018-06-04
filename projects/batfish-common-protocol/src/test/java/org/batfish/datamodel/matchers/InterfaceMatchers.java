@@ -23,6 +23,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
@@ -128,6 +129,11 @@ public final class InterfaceMatchers {
    */
   public static HasMtu hasMtu(Matcher<? super Integer> subMatcher) {
     return new HasMtu(subMatcher);
+  }
+
+  /** Provides a matcher that matches if the provided name matches the interface's name. */
+  public static HasName hasName(String expectedName) {
+    return new HasName(equalTo(expectedName));
   }
 
   /**

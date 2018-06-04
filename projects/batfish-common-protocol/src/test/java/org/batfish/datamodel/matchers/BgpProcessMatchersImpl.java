@@ -5,6 +5,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
@@ -66,6 +67,22 @@ final class BgpProcessMatchersImpl {
     @Override
     protected Ip featureValueOf(BgpProcess actual) {
       return actual.getRouterId();
+    }
+  }
+
+  static final class HasMultipathEquivalentAsPathMatchMode
+      extends FeatureMatcher<BgpProcess, MultipathEquivalentAsPathMatchMode> {
+    public HasMultipathEquivalentAsPathMatchMode(
+        Matcher<? super MultipathEquivalentAsPathMatchMode> subMatcher) {
+      super(
+          subMatcher,
+          "A BGP process with multipath equivalency match mode:",
+          "multipath equivalency match mode");
+    }
+
+    @Override
+    protected MultipathEquivalentAsPathMatchMode featureValueOf(BgpProcess bgpProcess) {
+      return bgpProcess.getMultipathEquivalentAsPathMatchMode();
     }
   }
 }
