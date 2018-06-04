@@ -275,6 +275,7 @@ public class TracerouteEngineTest {
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Configuration c = cb.build();
     Vrf v = nf.vrfBuilder().setOwner(c).setName(Configuration.DEFAULT_VRF_NAME).build();
+    // denies everything
     IpAccessList outgoingFilter =
         nf.aclBuilder().setOwner(c).setName("outgoingAcl").setLines(ImmutableList.of()).build();
     nf.interfaceBuilder()
@@ -298,6 +299,7 @@ public class TracerouteEngineTest {
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
     FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
 
+    /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
   }
 
@@ -312,6 +314,7 @@ public class TracerouteEngineTest {
     // c1
     Configuration c1 = cb.build();
     Vrf v1 = vb.setOwner(c1).build();
+    // denies everything
     IpAccessList outgoingFilter =
         nf.aclBuilder().setOwner(c1).setName("outgoingAcl").setLines(ImmutableList.of()).build();
     ib.setOwner(c1)
@@ -344,6 +347,7 @@ public class TracerouteEngineTest {
     FlowHistoryInfo info = history.getTraces().get(flow.toString());
     FlowTrace trace = info.getPaths().get(Batfish.BASE_TESTRIG_TAG).iterator().next();
 
+    /* Flow should be blocked by ACL before ARP, which would otherwise result in unreachable neighbor */
     assertThat(trace.getDisposition(), equalTo(FlowDisposition.DENIED_OUT));
   }
 }
