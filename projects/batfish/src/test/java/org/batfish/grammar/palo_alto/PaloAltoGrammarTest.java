@@ -17,8 +17,6 @@ import org.junit.rules.TemporaryFolder;
 public class PaloAltoGrammarTest {
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
-  private static String TESTRIGS_PREFIX = "org/batfish/grammar/palo_alto/testrigs/";
-
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
@@ -42,8 +40,8 @@ public class PaloAltoGrammarTest {
   public void testHostname() throws IOException {
     String filename = "basic-parsing";
     String hostname = "my-hostname";
-    Configuration c = parseConfig(filename);
 
+    // Confirm hostname extraction works
     assertThat(parseTextConfigs(filename).keySet(), contains(hostname));
   }
 }

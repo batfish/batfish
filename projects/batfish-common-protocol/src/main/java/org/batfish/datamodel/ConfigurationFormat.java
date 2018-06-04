@@ -17,7 +17,6 @@ public enum ConfigurationFormat {
   EMPTY("empty"),
   F5("f5"),
   FLAT_JUNIPER("juniper"),
-  FLAT_PALO_ALTO("paloalto"),
   FLAT_VYOS("vyos"),
   FORCE10("force10"),
   FOUNDRY("foundry"),

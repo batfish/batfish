@@ -12,8 +12,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private static final long serialVersionUID = 1L;
 
   Configuration _c;
+
   private String _hostname;
+
   private transient Set<String> _unimplementedFeatures;
+
   private ConfigurationFormat _vendor;
 
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {

@@ -55,4 +55,3 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
     _configuration = cb.getConfiguration();
   }
 }
-

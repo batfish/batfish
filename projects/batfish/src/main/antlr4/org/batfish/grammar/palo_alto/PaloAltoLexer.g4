@@ -8,8 +8,8 @@ options {
 // Java code to end up in PaloAltoLexer.java goes here
 }
 
-// PaloAlto keywords
-// This section includes keywords that are literally the same as their tokens (except for potential variation in case and punctuation)
+// Keywords
+
 DEVICECONFIG
 :
     'deviceconfig'
@@ -53,14 +53,12 @@ WS
 fragment
 F_Newline
 :
-/* newline definition varies by language, and sometimes is included in whitespace */
     [\r\n] // carriage return or line feed
 ;
 
 fragment
 F_Whitespace
 :
-/* whitespace definition varies by language */
     [ \t\u000C] // tab or space or unicode 0x000C
 ;
 
@@ -70,8 +68,5 @@ F_Variable_VarChar
    ~[ \t\n\r;{}[\]&|()"']
 ;
 
-
 // Modes
 // Blank for now, not all lexers will require modes
-// TODO add description
-

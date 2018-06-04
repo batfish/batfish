@@ -7,9 +7,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.S_deviceconfigContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdcs_hostnameContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Set_lineContext;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
@@ -56,8 +54,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
-    // String bogus = "basic-parsing";
-    // _configuration.setHostname(bogus);
   }
 
   @Override
@@ -65,21 +61,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _configuration.setHostname(ctx.name.getText());
   }
 
-  @Override
-  public void exitSet_line(Set_lineContext ctx) {
-    // _configuration.setHostname("bogus1");
-  }
-
-  @Override
-  public void exitS_deviceconfig(S_deviceconfigContext ctx) {
-    // _configuration.setHostname("bogus2");
-  }
-
   public PaloAltoConfiguration getConfiguration() {
     return _configuration;
   }
 
-  /** ONLY OVERRIDE THIS IF GRAMMAR SUPPORTS NEWLINE-BASED RECOVERY */
   @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();

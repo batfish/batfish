@@ -69,9 +69,6 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern SET_PATTERN = Pattern.compile("(?m)^set ");
 
   // checkPaloAlto patterns
-  // TODO update this to take into account hostname setting in vsys
-  private static final Pattern FLAT_PALO_ALTO_HOSTNAME_DECLARATION_PATTERN =
-      Pattern.compile("(?m)^set deviceconfig system host-name ");
   private static final Pattern FLAT_PALO_ALTO_PATTERN =
       Pattern.compile(Pattern.quote(BATFISH_FLATTENED_PALO_ALTO_HEADER));
   private static final Pattern PALO_ALTO_DEVICECONFIG_PATTERN = Pattern.compile("(?m)deviceconfig");
@@ -264,8 +261,7 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkPaloAlto() {
-    if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)
-        || fileTextMatches(FLAT_PALO_ALTO_HOSTNAME_DECLARATION_PATTERN)) {
+    if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
       return ConfigurationFormat.PALO_ALTO;
     } else if (fileTextMatches(PALO_ALTO_DEVICECONFIG_PATTERN)
         || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)

@@ -7,12 +7,10 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 
-public class PaloAltoCombinedParser
-    extends BatfishCombinedParser<PaloAltoParser, PaloAltoLexer> {
+public class PaloAltoCombinedParser extends BatfishCombinedParser<PaloAltoParser, PaloAltoLexer> {
 
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
-      new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(
-          PaloAltoLexer.NEWLINE, "\n");
+      new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(PaloAltoLexer.NEWLINE, "\n");
 
   public PaloAltoCombinedParser(String input, Settings settings) {
     super(
