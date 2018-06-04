@@ -1720,6 +1720,42 @@ public class CiscoGrammarTest {
                     IpsecAuthenticationAlgorithm.HMAC_MD5_96),
                 IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts2",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts4",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts5",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
   @Test
@@ -1742,6 +1778,15 @@ public class CiscoGrammarTest {
                 IpsecProposalMatchers.hasAuthenticationAlgorithm(
                     IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
                 IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
                 hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
   }
 

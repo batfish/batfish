@@ -7,5 +7,8 @@ crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
 crypto ipsec transform-set ts2 esp-3des ah-sha-hmac
  mode tunnel
 !
+crypto ipsec transform-set ts3 esp-aes 192 ah-md5-hmac
+ mode tunnel
+!
 
 

@@ -1265,6 +1265,24 @@ public class FlatJuniperGrammarTest {
                     IpsecAuthenticationAlgorithm.HMAC_MD5_96),
                 IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop2",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
   @Test
