@@ -111,6 +111,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IP_
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
@@ -3040,6 +3041,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         for (int i = range.getStart(); i <= range.getEnd(); i++) {
           String name = namePrefix + i;
           addInterface(name, ctx.iname, true);
+          defineStructure(INTERFACE, name, ctx);
+          _configuration.referenceStructure(
+              INTERFACE, name, INTERFACE_SELF_REF, ctx.getStart().getLine());
         }
       }
     } else {
