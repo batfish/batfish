@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_binary(
     name = "coordinator_main",
@@ -59,6 +59,9 @@ java_library(
     resources = glob(["src/test/resources/**"]),
     deps = [
         ":coordinator",
+        "//projects/batfish-common-protocol:common",
+        "@jersey_media_jackson//:compile",
+        "@jersey_test_framework//:compile",
     ],
 )
 

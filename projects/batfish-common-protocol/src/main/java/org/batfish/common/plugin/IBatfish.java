@@ -34,12 +34,12 @@ import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.ReachabilitySettings;
 import org.batfish.datamodel.questions.smt.HeaderLocationQuestion;
 import org.batfish.datamodel.questions.smt.HeaderQuestion;
 import org.batfish.datamodel.questions.smt.RoleQuestion;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.question.ReachabilityParameters;
 import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 
@@ -125,11 +125,11 @@ public interface IBatfish extends IPluginConsumer {
 
   ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement();
 
-  AnswerElement multipath(ReachabilitySettings reachabilitySettings);
+  AnswerElement multipath(ReachabilityParameters reachabilityParameters);
 
   AtomicInteger newBatch(String description, int jobs);
 
-  AnswerElement pathDiff(ReachabilitySettings reachabilitySettings);
+  AnswerElement pathDiff(ReachabilityParameters reachabilityParameters);
 
   void popEnvironment();
 
@@ -144,7 +144,7 @@ public interface IBatfish extends IPluginConsumer {
   @Nullable
   String readExternalBgpAnnouncementsFile();
 
-  AnswerElement reducedReachability(ReachabilitySettings reachabilitySettings);
+  AnswerElement reducedReachability(ReachabilityParameters reachabilityParameters);
 
   void registerAnswerer(
       String questionName,
@@ -187,7 +187,7 @@ public interface IBatfish extends IPluginConsumer {
 
   AnswerElement smtRoutingLoop(HeaderQuestion q);
 
-  AnswerElement standard(ReachabilitySettings reachabilitySettings);
+  AnswerElement standard(ReachabilityParameters reachabilityParameters);
 
   void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae);
 }

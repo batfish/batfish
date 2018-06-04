@@ -23,7 +23,6 @@ import org.batfish.datamodel.questions.IReachabilityQuestion;
 import org.batfish.datamodel.questions.InterfacesSpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
-import org.batfish.datamodel.questions.ReachabilitySettings;
 
 @AutoService(Plugin.class)
 public class ReachabilityQuestionPlugin extends QuestionPlugin {
@@ -73,19 +72,20 @@ public class ReachabilityQuestionPlugin extends QuestionPlugin {
     }
 
     private AnswerElement multipath(ReachabilityQuestion question) {
-      return _batfish.multipath(question._reachabilitySettings.build());
+      return _batfish.multipath(question._reachabilitySettings.build().toReachabilityParameters());
     }
 
     private AnswerElement pathDiff(ReachabilityQuestion question) {
-      return _batfish.pathDiff(question._reachabilitySettings.build());
+      return _batfish.pathDiff(question._reachabilitySettings.build().toReachabilityParameters());
     }
 
     private AnswerElement reducedReachability(ReachabilityQuestion question) {
-      return _batfish.reducedReachability(question._reachabilitySettings.build());
+      return _batfish.reducedReachability(
+          question._reachabilitySettings.build().toReachabilityParameters());
     }
 
     private AnswerElement standard(ReachabilityQuestion question) {
-      return _batfish.standard(question._reachabilitySettings.build());
+      return _batfish.standard(question._reachabilitySettings.build().toReachabilityParameters());
     }
   }
 

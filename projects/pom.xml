@@ -34,6 +34,7 @@
     <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
     <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-jacoco-plugin.version>0.8.1</maven-jacoco-plugin.version>
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
@@ -42,7 +43,8 @@
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
 
     <!-- The versions of Java libraries used. Please keep alphabetical. -->
-    <antlr.version>4.7.1</antlr.version>
+    <antlr4.version>4.7.1-batfish-internal</antlr4.version>
+    <antlr4-runtime.version>4.7.1</antlr4-runtime.version>
     <autoservice.version>1.0-rc3</autoservice.version>
     <azure.version>2.0.0</azure.version>
     <beanutils.version>1.9.3</beanutils.version>
@@ -53,9 +55,9 @@
     <commons-exec.version>1.3</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang3.version>3.7</commons-lang3.version>
-    <errorprone.version>2.1.3</errorprone.version>
+    <errorprone.version>2.0.18</errorprone.version>
     <grizzly.version>2.3.18</grizzly.version>
-    <guava.version>25.1-jre</guava.version>
+    <guava.version>22.0</guava.version>
     <jackson.version>2.9.0</jackson.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-annotation-api.version>1.2</javax-annotation-api.version>
@@ -237,6 +239,13 @@
           <configuration>
             <treatWarningsAsErrors>true</treatWarningsAsErrors>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.antlr</groupId>
+              <artifactId>antlr4</artifactId>
+              <version>${antlr4.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
 
         <plugin>
@@ -280,6 +289,12 @@
               <licenseMerge>MIT License|MIT|MIT license</licenseMerge>
             </licenseMerges>
           </configuration>
+        </plugin>
+
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${maven-jacoco-plugin.version}</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -330,6 +345,21 @@
               <version>batfish-internal</version>
               <packaging>jar</packaging>
               <file>${basedir}/lib/bdd/net.sf.javabdd.jar</file>
+            </configuration>
+          </execution>
+          <!-- Batfish includes a custom version of antlr4 that supports larger lexers. -->
+          <execution>
+            <phase>initialize</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+            <id>install-antlr4</id>
+            <configuration>
+              <groupId>org.antlr</groupId>
+              <artifactId>antlr4</artifactId>
+              <packaging>jar</packaging>
+              <pomFile>${basedir}/lib/antlr4/antlr4-${antlr4.version}.pom</pomFile>
+              <file>${basedir}/lib/antlr4/antlr4-${antlr4.version}.jar</file>
             </configuration>
           </execution>
           <!-- Batfish includes a custom version of JsonPath with bugfixes to array handling. -->
@@ -420,6 +450,19 @@
           <execution>
             <goals>
               <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
             </goals>
           </execution>
         </executions>
@@ -685,13 +728,13 @@
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4</artifactId>
-        <version>${antlr.version}</version>
+        <version>${antlr4.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr4-runtime</artifactId>
-        <version>${antlr.version}</version>
+        <version>${antlr4-runtime.version}</version>
       </dependency>
 
       <dependency>

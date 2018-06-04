@@ -376,6 +376,7 @@ cispol_hash
    HASH
    (
       MD5
+      | SHA
       | SHA2_256_128
    ) NEWLINE
 ;
@@ -401,7 +402,11 @@ cisprf_keyring
 
 cisprf_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS NEWLINE
+    LOCAL_ADDRESS
+    (
+       IP_ADDRESS
+       | interface_name
+    ) NEWLINE
 ;
 
 cisprf_match
@@ -456,7 +461,11 @@ ckpn_null
 
 ckr_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS NEWLINE
+   LOCAL_ADDRESS
+   (
+      IP_ADDRESS
+      | interface_name
+   ) NEWLINE
 ;
 
 ckr_psk
@@ -754,6 +763,7 @@ ike_encryption
    (
       AES strength = DEC?
    )
+   | DES
    | THREE_DES
 ;
 
@@ -762,6 +772,8 @@ ike_encryption_aruba
    AES128
    | AES192
    | AES256
+   | DES
+   | THREE_DES
 ;
 
 ipsec_authentication

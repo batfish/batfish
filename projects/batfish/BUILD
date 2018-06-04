@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_binary(
     name = "batfish_main",
@@ -108,5 +108,5 @@ junit_tests(
         "@jettison//:compile",
         "@junit//:compile",
     ],
-    size = "small",
+    size = "medium",
 )

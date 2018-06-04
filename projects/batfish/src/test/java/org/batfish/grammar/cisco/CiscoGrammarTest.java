@@ -4,12 +4,18 @@ import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
 import static org.batfish.datamodel.matchers.AaaMatchers.hasAuthentication;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -36,6 +42,16 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclT
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasExternalInterface;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasIkePolicy;
+import static org.batfish.datamodel.matchers.IkeGatewayMatchers.hasLocalIp;
+import static org.batfish.datamodel.matchers.IkePolicyMatchers.hasPresharedKeyHash;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
+import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -116,7 +132,12 @@ import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.IkeAuthenticationAlgorithm;
+import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -136,6 +157,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -327,6 +349,13 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
+  }
+
+  @Test
+  public void testArubaConfigurationFormat() throws IOException {
+    Configuration arubaConfig = parseConfig("arubaConfiguration");
+
+    assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
   }
 
   @Test
@@ -615,6 +644,26 @@ public class CiscoGrammarTest {
             CiscoStructureType.KEYRING,
             "kundefined",
             CiscoStructureUsage.ISAKMP_PROFILE_KEYRING));
+  }
+
+  @Test
+  public void testIosNeighborDefaultOriginate() throws IOException {
+    String testrigName = "ios-default-originate";
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationText(
+                    TESTRIGS_PREFIX + testrigName, ImmutableList.of("originator", "listener"))
+                .build(),
+            _folder);
+
+    batfish.computeDataPlane(false);
+    DataPlane dp = batfish.loadDataPlane();
+    Set<AbstractRoute> routesOnListener =
+        dp.getRibs().get("listener").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
+
+    // Ensure that default route is advertised to and installed on listener
+    assertThat(routesOnListener, hasItem(hasPrefix(Prefix.ZERO)));
   }
 
   @Test
@@ -1318,35 +1367,32 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    MultipathEquivalentAsPathMatchMode aristaDisabled =
-        configurations
-            .get("arista_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode aristaEnabled =
-        configurations
-            .get("arista_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosDisabled =
-        configurations
-            .get("nxos_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosEnabled =
-        configurations
-            .get("nxos_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
+    org.batfish.datamodel.BgpProcess aristaDisabled =
+        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaEnabled =
+        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosDisabled =
+        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosEnabled =
+        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
-    assertThat(aristaDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        aristaDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        aristaEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        nxosDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        nxosEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+
+    assertThat(aristaDisabled, hasMultipathEbgp(false));
+    assertThat(aristaEnabled, hasMultipathEbgp(true));
+    assertThat(nxosDisabled, hasMultipathEbgp(false));
+    assertThat(nxosEnabled, hasMultipathEbgp(true));
   }
 
   @Test
@@ -1518,6 +1564,76 @@ public class CiscoGrammarTest {
     assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
     assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
     assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+  }
+
+  @Test
+  public void testIsakmpPolicyAruba() throws IOException {
+    Configuration c = parseConfig("arubaCrypto");
+    assertThat(
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
+                hasLifeTimeSeconds(86400))));
+  }
+
+  @Test
+  public void testIsakmpPolicyIos() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+
+    assertThat(
+        c,
+        hasIkeProposal(
+            "010",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(14400))));
+
+    // asserting the default values being set
+    assertThat(
+        c,
+        hasIkeProposal(
+            "020",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                hasLifeTimeSeconds(86400))));
+  }
+
+  @Test
+  public void testIsakmpProfile() throws IOException {
+    Configuration c = parseConfig("ios-crypto");
+    assertThat(
+        c,
+        hasIkeGateway(
+            "ISAKMP-PROFILE-ADDRESS",
+            allOf(
+                hasAddress(new Ip("1.2.3.4")),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                hasLocalIp(new Ip("2.3.4.6")),
+                hasIkePolicy(
+                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
+
+    // The interface in the local-address should also be mapped with the same local ip
+    assertThat(
+        c,
+        hasIkeGateway(
+            "ISAKMP-PROFILE-INTERFACE",
+            allOf(
+                hasAddress(new Ip("1.2.3.4")),
+                hasExternalInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                hasLocalIp(new Ip("2.3.4.6")),
+                hasIkePolicy(
+                    hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
   }
 
   private static String getCLRegex(

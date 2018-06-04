@@ -59,6 +59,9 @@ public interface SynthesizerInput {
   /** Mapping: hostname -> interface-> incomingAcl */
   Map<String, Map<String, String>> getIncomingAcls();
 
+  /** Ingress locations grouped by the required constraint on src IP */
+  Map<IngressLocation, BooleanExpr> getSrcIpConstraints();
+
   /** Mapping: hostname -> ipsOwnedByHostname */
   Map<String, Set<Ip>> getIpsByHostname();
 

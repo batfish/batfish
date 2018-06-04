@@ -180,7 +180,7 @@ bgp_redistribute_internal_rb_stanza
    BGP REDISTRIBUTE_INTERNAL NEWLINE
 ;
 
-bgp_scan_time_rb_stanza
+bgp_scan_time_bgp_tail
 :
    BGP SCAN_TIME secs = DEC NEWLINE
 ;
@@ -192,6 +192,7 @@ bgp_tail
    | allowas_in_bgp_tail
    | as_override_bgp_tail
    | cluster_id_bgp_tail
+   | bgp_scan_time_bgp_tail
    | default_metric_bgp_tail
    | default_originate_bgp_tail
    | default_shutdown_bgp_tail
@@ -882,7 +883,6 @@ router_bgp_stanza_tail
    | bgp_listen_range_rb_stanza
    | bgp_maxas_limit_rb_stanza
    | bgp_redistribute_internal_rb_stanza
-   | bgp_scan_time_rb_stanza
    | bgp_tail
    | cluster_id_rb_stanza
    | compare_routerid_rb_stanza

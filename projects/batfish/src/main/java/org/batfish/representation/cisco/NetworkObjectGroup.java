@@ -11,8 +11,8 @@ public class NetworkObjectGroup extends ObjectGroup {
 
   private List<IpSpace> _lines;
 
-  public NetworkObjectGroup(String name, int definitionLine) {
-    super(name, definitionLine);
+  public NetworkObjectGroup(String name) {
+    super(name);
     _lines = new LinkedList<>();
   }
 

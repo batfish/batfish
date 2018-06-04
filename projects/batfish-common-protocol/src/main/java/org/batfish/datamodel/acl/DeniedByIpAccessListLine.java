@@ -5,8 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.FilterResult;
+import org.batfish.datamodel.LineAction;
 
-public final class DeniedByIpAccessListLine implements TraceEvent {
+public final class DeniedByIpAccessListLine implements TerminalTraceEvent {
 
   private static final String PROP_INDEX = "index";
 
@@ -64,6 +66,11 @@ public final class DeniedByIpAccessListLine implements TraceEvent {
   @Override
   public int hashCode() {
     return Objects.hash(_index, _lineDescription, _name);
+  }
+
+  @Override
+  public FilterResult toFilterResult() {
+    return new FilterResult(_index, LineAction.REJECT);
   }
 
   @Override

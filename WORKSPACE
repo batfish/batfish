@@ -58,16 +58,15 @@ maven_repository(
         'com.google.auto.service:auto-service:1.0-rc3',
     ],
     force = [
-        'com.google.guava:guava:25.1-jre',
+        'com.google.guava:guava:22.0',
     ],
-		transitive_deps = [
+    transitive_deps = [
         '4073ab16ab4aceb9a217273da6442166bf51ae16:com.google.auto:auto-common:0.3',
         '35c5d43b0332b8f94d473f9fee5fb1d74b5e0056:com.google.auto.service:auto-service:1.0-rc3',
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        '39b109f2cd352b2d71b52a3b5a1a9850e1dc304b:com.google.errorprone:error_prone_annotations:2.1.3',
-        '6c57e4b22b44e89e548b5c9f70f0c45fe10fb0b4:com.google.guava:guava:25.1-jre',
+        '40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf:com.google.code.findbugs:jsr305:1.3.9',
+        '5f65affce1684999e2f4024983835efc3504012e:com.google.errorprone:error_prone_annotations:2.0.18',
+        '3564ef3803de51fb0530a8377ec6100b33b0d073:com.google.guava:guava:22.0',
         'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
-        '518929596ee3249127502a8573b2e008e2d51ed3:org.checkerframework:checker-qual:2.0.0',
         '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
     ],
 )
@@ -179,10 +178,10 @@ commons_io_compile()
 maven_repository(
     name = 'errorprone_annotations',
     deps = [
-        'com.google.errorprone:error_prone_annotations:2.1.3',
+        'com.google.errorprone:error_prone_annotations:2.0.18',
     ],
     transitive_deps = [
-        '39b109f2cd352b2d71b52a3b5a1a9850e1dc304b:com.google.errorprone:error_prone_annotations:2.1.3',
+        '5f65affce1684999e2f4024983835efc3504012e:com.google.errorprone:error_prone_annotations:2.0.18',
     ],
 )
 load('@errorprone_annotations//:rules.bzl', 'errorprone_annotations_compile')
@@ -219,14 +218,13 @@ grizzly_server_compile()
 maven_repository(
     name = 'guava',
     deps = [
-        'com.google.guava:guava:25.1-jre',
+        'com.google.guava:guava:22.0',
     ],
     transitive_deps = [
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        '39b109f2cd352b2d71b52a3b5a1a9850e1dc304b:com.google.errorprone:error_prone_annotations:2.1.3',
-        '6c57e4b22b44e89e548b5c9f70f0c45fe10fb0b4:com.google.guava:guava:25.1-jre',
+        '40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf:com.google.code.findbugs:jsr305:1.3.9',
+        '5f65affce1684999e2f4024983835efc3504012e:com.google.errorprone:error_prone_annotations:2.0.18',
+        '3564ef3803de51fb0530a8377ec6100b33b0d073:com.google.guava:guava:22.0',
         'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
-        '518929596ee3249127502a8573b2e008e2d51ed3:org.checkerframework:checker-qual:2.0.0',
         '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
     ],
 )
@@ -237,7 +235,7 @@ guava_compile()
 maven_repository(
     name = 'guava_testlib',
     deps = [
-        'com.google.guava:guava-testlib:25.1-jre',
+        'com.google.guava:guava-testlib:22.0',
         'org.hamcrest:java-hamcrest:2.0.0.0',
     ],
     exclude = {
@@ -249,13 +247,12 @@ maven_repository(
         'junit:junit:4.12',
     ],
     transitive_deps = [
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        '39b109f2cd352b2d71b52a3b5a1a9850e1dc304b:com.google.errorprone:error_prone_annotations:2.1.3',
-        '6c57e4b22b44e89e548b5c9f70f0c45fe10fb0b4:com.google.guava:guava:25.1-jre',
-        'c4358f1ca5398b199ced023c00440840ca513b6e:com.google.guava:guava-testlib:25.1-jre',
+        '40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf:com.google.code.findbugs:jsr305:1.3.9',
+        '5f65affce1684999e2f4024983835efc3504012e:com.google.errorprone:error_prone_annotations:2.0.18',
+        '3564ef3803de51fb0530a8377ec6100b33b0d073:com.google.guava:guava:22.0',
+        '3be1b88f1cfc6592acbcbfe1f3a420f79eb2b146:com.google.guava:guava-testlib:22.0',
         'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
         '2973d150c0dc1fefe998f834810d68f278ea58ec:junit:junit:4.12',
-        '518929596ee3249127502a8573b2e008e2d51ed3:org.checkerframework:checker-qual:2.0.0',
         '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
         '0f1c8853ade0ecf707f5a261c830e98893983813:org.hamcrest:java-hamcrest:2.0.0.0',
     ],
@@ -321,18 +318,17 @@ maven_repository(
         'com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.0'
     ],
     force = [
-        'com.google.guava:guava:25.1-jre',
+        'com.google.guava:guava:22.0',
     ],
     transitive_deps = [
         '07c10d545325e3a6e72e06381afe469fd40eb701:com.fasterxml.jackson.core:jackson-annotations:2.9.0',
         '88e7c6220be3b3497b3074d3fc7754213289b987:com.fasterxml.jackson.core:jackson-core:2.9.0',
         '14fb5f088cc0b0dc90a73ba745bcade4961a3ee3:com.fasterxml.jackson.core:jackson-databind:2.9.0',
         '5b242c510a315d3c116a7c2dd8c5a225aedfc1db:com.fasterxml.jackson.datatype:jackson-datatype-guava:2.9.0',
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
-        '39b109f2cd352b2d71b52a3b5a1a9850e1dc304b:com.google.errorprone:error_prone_annotations:2.1.3',
-        '6c57e4b22b44e89e548b5c9f70f0c45fe10fb0b4:com.google.guava:guava:25.1-jre',
+        '40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf:com.google.code.findbugs:jsr305:1.3.9',
+        '5f65affce1684999e2f4024983835efc3504012e:com.google.errorprone:error_prone_annotations:2.0.18',
+        '3564ef3803de51fb0530a8377ec6100b33b0d073:com.google.guava:guava:22.0',
         'ed28ded51a8b1c6b112568def5f4b455e6809019:com.google.j2objc:j2objc-annotations:1.1',
-        '518929596ee3249127502a8573b2e008e2d51ed3:org.checkerframework:checker-qual:2.0.0',
         '775b7e22fb10026eed3f86e8dc556dfafe35f2d5:org.codehaus.mojo:animal-sniffer-annotations:1.14',
     ],
 )
@@ -812,10 +808,10 @@ jsonpath_compile()
 maven_repository(
     name = 'jsr305',
     deps = [
-        'com.google.code.findbugs:jsr305:3.0.2',
+        'com.google.code.findbugs:jsr305:1.3.9',
     ],
     transitive_deps = [
-        '25ea2e8b0c338a877313bd4672d3fe056ea78f0d:com.google.code.findbugs:jsr305:3.0.2',
+        '40719ea6961c0cb6afaeb6a921eaa1f6afd4cfdf:com.google.code.findbugs:jsr305:1.3.9',
     ],
 )
 load('@jsr305//:rules.bzl', 'jsr305_compile')

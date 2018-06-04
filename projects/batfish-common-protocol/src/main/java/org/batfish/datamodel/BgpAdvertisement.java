@@ -330,6 +330,10 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     _weight = weight;
   }
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   @Override
   public int compareTo(BgpAdvertisement rhs) {
     int ret;

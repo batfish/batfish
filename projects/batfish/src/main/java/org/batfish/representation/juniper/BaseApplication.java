@@ -8,13 +8,12 @@ import java.util.List;
 import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
-public class BaseApplication extends DefinedStructure<String> implements Application {
+public class BaseApplication extends ComparableStructure<String> implements Application {
 
   public static class Term extends ComparableStructure<String> {
 
@@ -55,8 +54,8 @@ public class BaseApplication extends DefinedStructure<String> implements Applica
 
   private final Map<String, Term> _terms;
 
-  public BaseApplication(String name, int definitionLine) {
-    super(name, definitionLine);
+  public BaseApplication(String name) {
+    super(name);
     _mainTerm = new Term(getMainTermName());
     _terms = new LinkedHashMap<>();
   }

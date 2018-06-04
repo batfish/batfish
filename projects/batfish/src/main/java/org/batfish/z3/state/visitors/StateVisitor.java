@@ -24,7 +24,7 @@ import org.batfish.z3.state.NodeDropNullRoute;
 import org.batfish.z3.state.NodeInterfaceNeighborUnreachable;
 import org.batfish.z3.state.NodeNeighborUnreachable.State;
 import org.batfish.z3.state.NumberedQuery;
-import org.batfish.z3.state.OriginateInterface;
+import org.batfish.z3.state.OriginateInterfaceLink;
 import org.batfish.z3.state.OriginateVrf;
 import org.batfish.z3.state.PostInInterface;
 import org.batfish.z3.state.PostInVrf;
@@ -85,7 +85,7 @@ public interface StateVisitor {
 
   void visitNumberedQuery(NumberedQuery.State numberedQuery);
 
-  void visitOriginateInterface(OriginateInterface.State state);
+  void visitOriginateInterfaceLink(OriginateInterfaceLink.State state);
 
   void visitOriginateVrf(OriginateVrf.State originateVrf);
 

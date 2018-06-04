@@ -6,7 +6,15 @@
         "description" : "Undefined reference to structure of type: 'acl' with usage: 'class-map access-group' named 'boop'",
         "files" : {
           "cisco_qos" : [
-            14
+            20
+          ]
+        }
+      },
+      "undefined:acl:usage:class-map access-list:boop2" : {
+        "description" : "Undefined reference to structure of type: 'acl' with usage: 'class-map access-list' named 'boop2'",
+        "files" : {
+          "cisco_qos" : [
+            21
           ]
         }
       },
@@ -126,7 +134,7 @@
         "description" : "Undefined reference to structure of type: 'class-map type inspect' with usage: 'policy-map type inspect class type inspect' named 'cinspect'",
         "files" : {
           "cisco_qos" : [
-            36
+            43
           ]
         }
       },
@@ -134,7 +142,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'ICMP-cmap'",
         "files" : {
           "cisco_misc" : [
-            205
+            206
           ]
         }
       },
@@ -142,7 +150,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'TCP-cmap'",
         "files" : {
           "cisco_misc" : [
-            207
+            208
           ]
         }
       },
@@ -150,7 +158,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-drop'",
         "files" : {
           "cisco_qos" : [
-            43
+            50
           ]
         }
       },
@@ -158,7 +166,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-ndrop'",
         "files" : {
           "cisco_qos" : [
-            59
+            66
           ]
         }
       },
@@ -166,7 +174,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bippetyboo-ndrop-fcoe'",
         "files" : {
           "cisco_qos" : [
-            55
+            62
           ]
         }
       },
@@ -174,7 +182,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bleefee'",
         "files" : {
           "cisco_qos" : [
-            95
+            102
           ]
         }
       },
@@ -182,7 +190,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'bleefee2'",
         "files" : {
           "cisco_qos" : [
-            100
+            107
           ]
         }
       },
@@ -190,7 +198,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'blerf'",
         "files" : {
           "cisco_qos" : [
-            91
+            98
           ]
         }
       },
@@ -198,7 +206,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-bleeb-drop'",
         "files" : {
           "cisco_qos" : [
-            102
+            109
           ]
         }
       },
@@ -206,7 +214,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-bleeb-ndrop-fcoe'",
         "files" : {
           "cisco_qos" : [
-            107
+            114
           ]
         }
       },
@@ -214,7 +222,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-drop'",
         "files" : {
           "cisco_qos" : [
-            74
+            81
           ]
         }
       },
@@ -222,7 +230,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-ndrop'",
         "files" : {
           "cisco_qos" : [
-            86
+            93
           ]
         }
       },
@@ -230,7 +238,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'c-foob-ndrop-fcoe'",
         "files" : {
           "cisco_qos" : [
-            82
+            89
           ]
         }
       },
@@ -238,7 +246,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'fffoooddd'",
         "files" : {
           "cisco_qos" : [
-            65
+            72
           ]
         }
       },
@@ -246,7 +254,7 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'floop'",
         "files" : {
           "cisco_qos" : [
-            112
+            119
           ]
         }
       },
@@ -254,7 +262,23 @@
         "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map class' named 'inspection_default'",
         "files" : {
           "cisco_misc" : [
-            194
+            195
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map event class:MY_CLASS_1" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map event class' named 'MY_CLASS_1'",
+        "files" : {
+          "cisco_qos" : [
+            129
+          ]
+        }
+      },
+      "undefined:class-map:usage:policy-map event class:MY_CLASS_2" : {
+        "description" : "Undefined reference to structure of type: 'class-map' with usage: 'policy-map event class' named 'MY_CLASS_2'",
+        "files" : {
+          "cisco_qos" : [
+            131
           ]
         }
       },
@@ -353,7 +377,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface incoming ip access-list' named 'ag1'",
         "files" : {
           "cisco_interface" : [
-            54
+            56
           ]
         }
       },
@@ -361,7 +385,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            121
+            123
           ]
         }
       },
@@ -369,7 +393,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            124
+            126
           ]
         }
       },
@@ -388,7 +412,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named 'ag2'",
         "files" : {
           "cisco_interface" : [
-            55
+            57
           ]
         }
       },
@@ -396,7 +420,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat destination acl' named 'mynatacl'",
         "files" : {
           "cisco_interface" : [
-            85
+            87
           ]
         }
       },
@@ -404,7 +428,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
           "cisco_interface" : [
-            88
+            90
           ]
         }
       },
@@ -690,7 +714,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface igmp access-group acl' named '1'",
         "files" : {
           "cisco_interface" : [
-            75
+            77
           ]
         }
       },
@@ -706,7 +730,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
           "cisco_interface" : [
-            88
+            90
           ]
         }
       },
@@ -837,7 +861,7 @@
         "description" : "Undefined reference to structure of type: 'nat pool' with usage: 'ip nat source pool' named 'beeble'",
         "files" : {
           "cisco_interface" : [
-            89
+            91
           ]
         }
       },
@@ -1181,6 +1205,30 @@
           ]
         }
       },
+      "undefined:service-template:usage:class-map activate-service-template:DEF" : {
+        "description" : "Undefined reference to structure of type: 'service-template' with usage: 'class-map activate-service-template' named 'DEF'",
+        "files" : {
+          "cisco_qos" : [
+            9
+          ]
+        }
+      },
+      "undefined:service-template:usage:class-map service-template:GHI" : {
+        "description" : "Undefined reference to structure of type: 'service-template' with usage: 'class-map service-template' named 'GHI'",
+        "files" : {
+          "cisco_qos" : [
+            10
+          ]
+        }
+      },
+      "undefined:service-template:usage:policy-map event class activate:my_TEMPLATE_NAME" : {
+        "description" : "Undefined reference to structure of type: 'service-template' with usage: 'policy-map event class activate' named 'my_TEMPLATE_NAME'",
+        "files" : {
+          "cisco_qos" : [
+            130
+          ]
+        }
+      },
       "undefined:vlan:usage:interface vlan:bippetyboppety" : {
         "description" : "Undefined reference to structure of type: 'vlan' with usage: 'interface vlan' named 'bippetyboppety'",
         "files" : {
@@ -1193,7 +1241,7 @@
         "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
         "files" : {
           "cisco_interface" : [
-            274
+            277
           ]
         }
       }
@@ -1201,7 +1249,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 148
+      "numResults" : 154
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1475,58 +1523,58 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              121
+              123
             ]
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              124
+              126
             ]
           },
           "ag1" : {
             "interface incoming ip access-list" : [
-              54
+              56
             ]
           },
           "ag2" : {
             "interface outgoing ip access-list" : [
-              55
+              57
             ]
           },
           "def" : {
             "ip nat source dynamic access-list" : [
-              88
+              90
             ]
           },
           "mynatacl" : {
             "ip nat destination acl" : [
-              85
+              87
             ]
           }
         },
         "ipv4/6 acl" : {
           "1" : {
             "interface igmp access-group acl" : [
-              75
+              77
             ]
           },
           "def" : {
             "ip nat source dynamic access-list" : [
-              88
+              90
             ]
           }
         },
         "nat pool" : {
           "beeble" : {
             "ip nat source pool" : [
-              89
+              91
             ]
           }
         },
         "zone security" : {
           "z1" : {
             "interface zone-member" : [
-              274
+              277
             ]
           }
         }
@@ -1576,17 +1624,17 @@
         "class-map" : {
           "ICMP-cmap" : {
             "policy-map class" : [
-              205
+              206
             ]
           },
           "TCP-cmap" : {
             "policy-map class" : [
-              207
+              208
             ]
           },
           "inspection_default" : {
             "policy-map class" : [
-              194
+              195
             ]
           }
         },
@@ -1634,81 +1682,113 @@
         "acl" : {
           "boop" : {
             "class-map access-group" : [
-              14
+              20
+            ]
+          },
+          "boop2" : {
+            "class-map access-list" : [
+              21
             ]
           }
         },
         "class-map" : {
+          "MY_CLASS_1" : {
+            "policy-map event class" : [
+              129
+            ]
+          },
+          "MY_CLASS_2" : {
+            "policy-map event class" : [
+              131
+            ]
+          },
           "bippetyboo-drop" : {
             "policy-map class" : [
-              43
+              50
             ]
           },
           "bippetyboo-ndrop" : {
             "policy-map class" : [
-              59
+              66
             ]
           },
           "bippetyboo-ndrop-fcoe" : {
             "policy-map class" : [
-              55
+              62
             ]
           },
           "bleefee" : {
             "policy-map class" : [
-              95
+              102
             ]
           },
           "bleefee2" : {
             "policy-map class" : [
-              100
+              107
             ]
           },
           "blerf" : {
             "policy-map class" : [
-              91
+              98
             ]
           },
           "c-bleeb-drop" : {
             "policy-map class" : [
-              102
+              109
             ]
           },
           "c-bleeb-ndrop-fcoe" : {
             "policy-map class" : [
-              107
+              114
             ]
           },
           "c-foob-drop" : {
             "policy-map class" : [
-              74
+              81
             ]
           },
           "c-foob-ndrop" : {
             "policy-map class" : [
-              86
+              93
             ]
           },
           "c-foob-ndrop-fcoe" : {
             "policy-map class" : [
-              82
+              89
             ]
           },
           "fffoooddd" : {
             "policy-map class" : [
-              65
+              72
             ]
           },
           "floop" : {
             "policy-map class" : [
-              112
+              119
             ]
           }
         },
         "class-map type inspect" : {
           "cinspect" : {
             "policy-map type inspect class type inspect" : [
-              36
+              43
+            ]
+          }
+        },
+        "service-template" : {
+          "DEF" : {
+            "class-map activate-service-template" : [
+              9
+            ]
+          },
+          "GHI" : {
+            "class-map service-template" : [
+              10
+            ]
+          },
+          "my_TEMPLATE_NAME" : {
+            "policy-map event class activate" : [
+              130
             ]
           }
         }

@@ -1,7 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//skylark:junit.bzl", "junit_tests")
-#load("//skylark:cmdfile_test.bzl", "cmdfile_test")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_library(
     name = "question",
@@ -18,6 +17,7 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/lib/jsonpath",
         "@auto_service//:compile",
+        "@commons_lang3//:compile",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",

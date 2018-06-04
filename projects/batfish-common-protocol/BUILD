@@ -1,6 +1,6 @@
 package(default_visibility = ["//visibility:public"])
 
-load("//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:junit.bzl", "junit_tests")
 
 java_library(
     name = "common",
@@ -8,8 +8,8 @@ java_library(
         "src/main/**/*.java",
     ]),
     resources = [
-        "src/main/resources/org/batfish/common/util/salt",
         "src/generated/resources/org/batfish/common/common.properties",
+        "src/main/resources/org/batfish/common/util/salt",
     ],
     runtime_deps = [
         "@commons_beanutils//:runtime",
@@ -61,8 +61,10 @@ java_library(
         ":common",
         ":recovery_grammar",
         "@antlr4_runtime//:compile",
+        "@commons_lang3//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
+        "@jackson_core//:compile",
         "@jsr305//:compile",
         "@junit//:compile",
     ],
@@ -70,6 +72,7 @@ java_library(
 
 junit_tests(
     name = "common_tests",
+    size = "small",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
@@ -91,7 +94,6 @@ junit_tests(
         "@opentracing_mock//:compile",
         "@opentracing_util//:compile",
     ],
-    size = "small",
 )
 
 java_library(

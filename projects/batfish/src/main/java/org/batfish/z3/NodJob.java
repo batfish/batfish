@@ -9,9 +9,9 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Map;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.config.Settings;
+import org.batfish.z3.expr.BooleanExpr;
 
 public final class NodJob extends AbstractNodJob {
 
@@ -25,10 +25,10 @@ public final class NodJob extends AbstractNodJob {
       Settings settings,
       Synthesizer dataPlaneSynthesizer,
       QuerySynthesizer querySynthesizer,
-      SortedSet<IngressPoint> ingressPoints,
+      Map<IngressLocation, BooleanExpr> srcIpConstraints,
       String tag,
       boolean optimize) {
-    super(settings, ingressPoints, tag);
+    super(settings, srcIpConstraints, tag);
     _dataPlaneSynthesizer = dataPlaneSynthesizer;
     _querySynthesizer = querySynthesizer;
     _optimize = optimize;

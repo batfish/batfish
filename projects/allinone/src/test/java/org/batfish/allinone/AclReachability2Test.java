@@ -284,7 +284,7 @@ public class AclReachability2Test {
                     AclLines2Rows.COL_MESSAGE,
                     "ACL(s) { c1: acl2 } contain(s) an unreachable line: '1: IpAccessListLine{action=ACCEPT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
-                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1}}")
+                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1, defaultAccept=false}}")
                 .build());
 
     assertThat(generalAnswer.getRows().getData(), equalTo(expected));

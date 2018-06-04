@@ -18,6 +18,7 @@ aaa_accounting
       | aaa_accounting_delay_start
       | aaa_accounting_exec_line
       | aaa_accounting_exec_stanza
+      | aaa_accounting_identity
       | aaa_accounting_nested
       | aaa_accounting_network_line
       | aaa_accounting_network_stanza
@@ -130,6 +131,15 @@ aaa_accounting_exec_stanza
          | GROUP
       ) null_rest_of_line
    )+
+;
+
+aaa_accounting_identity
+:
+   IDENTITY
+   (
+      DEFAULT
+      | list = variable
+   ) aaa_accounting_method NEWLINE
 ;
 
 aaa_accounting_method
@@ -670,7 +680,8 @@ aaa_authorization
 :
    AUTHORIZATION
    (
-      aaa_authorization_commands
+      aaa_authorization_auth_proxy
+      | aaa_authorization_commands
       | aaa_authorization_config_commands
       | aaa_authorization_console
       | aaa_authorization_exec
@@ -680,6 +691,15 @@ aaa_authorization
       | aaa_authorization_ssh_certificate
       | aaa_authorization_ssh_publickey
    )
+;
+
+aaa_authorization_auth_proxy
+:
+   AUTH_PROXY
+   (
+      DEFAULT
+      | list = variable
+   ) aaa_authorization_method
 ;
 
 aaa_authorization_commands
@@ -846,7 +866,7 @@ aaa_group_server
    (
       IP_ADDRESS
       | IPV6_ADDRESS
-      | name = variable
+      | NAME? name = variable
    )
    (
       (
@@ -953,6 +973,54 @@ aaa_rfc_3576_server
    RFC_3576_SERVER double_quoted_string NEWLINE
 ;
 
+aaa_server
+:
+   SERVER RADIUS DYNAMIC_AUTHOR NEWLINE
+   (
+      aaa_server_auth_type
+      | aaa_server_client
+      | aaa_server_ignore
+      | aaa_server_port
+   )*
+;
+
+aaa_server_auth_type
+:
+   AUTH_TYPE
+   (
+      ANY
+      | ALL
+      | SESSION_KEY
+   ) NEWLINE
+;
+
+aaa_server_client
+:
+   CLIENT
+   (
+      IP_ADDRESS
+      | name = variable
+   )
+   SERVER_KEY
+   DEC?
+   variable
+   NEWLINE
+;
+
+aaa_server_ignore
+:
+   IGNORE
+   (
+      SERVER_KEY
+      | SESSION_KEY
+   ) NEWLINE
+;
+
+aaa_server_port
+:
+   PORT port_num = DEC NEWLINE
+;
+
 aaa_server_group
 :
    SERVER_GROUP double_quoted_string NEWLINE
@@ -1050,6 +1118,7 @@ s_aaa
       | aaa_password_policy
       | aaa_profile
       | aaa_rfc_3576_server
+      | aaa_server
       | aaa_server_group
       | aaa_session_id
       | aaa_user
