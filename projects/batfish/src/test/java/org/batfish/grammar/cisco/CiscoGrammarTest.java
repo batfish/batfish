@@ -1365,35 +1365,32 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    MultipathEquivalentAsPathMatchMode aristaDisabled =
-        configurations
-            .get("arista_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode aristaEnabled =
-        configurations
-            .get("arista_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosDisabled =
-        configurations
-            .get("nxos_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosEnabled =
-        configurations
-            .get("nxos_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
+    org.batfish.datamodel.BgpProcess aristaDisabled =
+        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaEnabled =
+        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosDisabled =
+        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosEnabled =
+        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
-    assertThat(aristaDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        aristaDisabled.getMultipathEquivalentAsPathMatchMode(),
+        equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        aristaEnabled.getMultipathEquivalentAsPathMatchMode(),
+        equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        nxosDisabled.getMultipathEquivalentAsPathMatchMode(),
+        equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        nxosEnabled.getMultipathEquivalentAsPathMatchMode(),
+        equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+
+    assertThat(aristaDisabled.getMultipathEbgp(), equalTo(false));
+    assertThat(aristaEnabled.getMultipathEbgp(), equalTo(true));
+    assertThat(nxosDisabled.getMultipathEbgp(), equalTo(false));
+    assertThat(nxosEnabled.getMultipathEbgp(), equalTo(true));
   }
 
   @Test
