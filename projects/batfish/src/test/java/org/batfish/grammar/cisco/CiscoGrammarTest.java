@@ -8,6 +8,8 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -1375,22 +1377,22 @@ public class CiscoGrammarTest {
         configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
     assertThat(
-        aristaDisabled.getMultipathEquivalentAsPathMatchMode(),
-        equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+        aristaDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
     assertThat(
-        aristaEnabled.getMultipathEquivalentAsPathMatchMode(),
-        equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+        aristaEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
     assertThat(
-        nxosDisabled.getMultipathEquivalentAsPathMatchMode(),
-        equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+        nxosDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
     assertThat(
-        nxosEnabled.getMultipathEquivalentAsPathMatchMode(),
-        equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+        nxosEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
 
-    assertThat(aristaDisabled.getMultipathEbgp(), equalTo(false));
-    assertThat(aristaEnabled.getMultipathEbgp(), equalTo(true));
-    assertThat(nxosDisabled.getMultipathEbgp(), equalTo(false));
-    assertThat(nxosEnabled.getMultipathEbgp(), equalTo(true));
+    assertThat(aristaDisabled, hasMultipathEbgp(false));
+    assertThat(aristaEnabled, hasMultipathEbgp(true));
+    assertThat(nxosDisabled, hasMultipathEbgp(false));
+    assertThat(nxosEnabled, hasMultipathEbgp(true));
   }
 
   @Test
