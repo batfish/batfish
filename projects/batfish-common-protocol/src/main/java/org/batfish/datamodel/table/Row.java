@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.InputMismatchException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -43,6 +44,25 @@ public class Row implements Comparable<Row> {
 
     public Row build() {
       return new Row(_data);
+    }
+
+    /**
+     * Safely builds a {@Row} after checking for consistency with {@code columnMetadata}.
+     * Consistency means that the set of columns in the row and in the metadata are identical and
+     * have the right type.
+     */
+    public Row build(List<ColumnMetadata> columnMetadata) {
+      Set<String> columnsInMetadata =
+          columnMetadata.stream().map(cm -> cm.getName()).collect(Collectors.toSet());
+      Set<String> columnsInData = Row.getColumnNames(_data);
+      if (!columnsInData.equals(columnsInMetadata)) {
+        throw new InputMismatchException(
+            "Set of columns in the row do not match those in the metadata");
+      }
+      for (ColumnMetadata columnData : columnMetadata) {
+        Row.get(_data, columnData.getName(), columnData.getSchema());
+      }
+      return build();
     }
 
     /**
@@ -113,7 +133,7 @@ public class Row implements Comparable<Row> {
     }
   }
 
-  private <T> T convertType(JsonNode jsonNode, Class<T> valueType) {
+  private static <T> T convertType(JsonNode jsonNode, Class<T> valueType) {
     try {
       return BatfishObjectMapper.mapper().treeToValue(jsonNode, valueType);
     } catch (JsonProcessingException e) {
@@ -141,7 +161,7 @@ public class Row implements Comparable<Row> {
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(getMissingColumnErrorMessage(_data, columnName));
     }
     return _data.get(columnName);
   }
@@ -155,7 +175,7 @@ public class Row implements Comparable<Row> {
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(getMissingColumnErrorMessage(_data, columnName));
     }
     if (_data.get(columnName) == null) {
       return null;
@@ -171,16 +191,19 @@ public class Row implements Comparable<Row> {
    * @throws {@link NoSuchElementException} if this column is not present
    */
   public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
-    if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+    return get(_data, columnName, valueTypeRef);
+  }
+
+  private static <T> T get(ObjectNode data, String columnName, TypeReference<T> valueTypeRef) {
+    if (!data.has(columnName)) {
+      throw new NoSuchElementException(getMissingColumnErrorMessage(data, columnName));
     }
-    if (_data.get(columnName) == null) {
+    if (data.get(columnName) == null) {
       return null;
     }
     try {
       return BatfishObjectMapper.mapper()
-          .readValue(
-              BatfishObjectMapper.mapper().treeAsTokens(_data.get(columnName)), valueTypeRef);
+          .readValue(BatfishObjectMapper.mapper().treeAsTokens(data.get(columnName)), valueTypeRef);
     } catch (IOException e) {
       throw new BatfishException(
           String.format(
@@ -198,19 +221,23 @@ public class Row implements Comparable<Row> {
    * @throws {@link NoSuchElementException} if this column is not present
    */
   public Object get(String columnName, Schema columnSchema) {
-    if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+    return get(_data, columnName, columnSchema);
+  }
+
+  private static Object get(ObjectNode data, String columnName, Schema columnSchema) {
+    if (!data.has(columnName)) {
+      throw new NoSuchElementException(getMissingColumnErrorMessage(data, columnName));
     }
-    if (_data.get(columnName) == null) {
+    if (data.get(columnName) == null) {
       return null;
     }
     if (columnSchema.isList()) {
-      List<JsonNode> list = get(columnName, new TypeReference<List<JsonNode>>() {});
+      List<JsonNode> list = get(data, columnName, new TypeReference<List<JsonNode>>() {});
       return list.stream()
           .map(in -> convertType(in, columnSchema.getBaseType()))
           .collect(Collectors.toList());
     } else {
-      return convertType(_data.get(columnName), columnSchema.getBaseType());
+      return convertType(data.get(columnName), columnSchema.getBaseType());
     }
   }
 
@@ -220,8 +247,12 @@ public class Row implements Comparable<Row> {
    * @return The {@link Set} of names
    */
   public Set<String> getColumnNames() {
+    return getColumnNames(_data);
+  }
+
+  private static Set<String> getColumnNames(ObjectNode data) {
     HashSet<String> columns = new HashSet<>();
-    _data.fieldNames().forEachRemaining(column -> columns.add(column));
+    data.fieldNames().forEachRemaining(column -> columns.add(column));
     return columns;
   }
 
@@ -246,9 +277,9 @@ public class Row implements Comparable<Row> {
     return keyList;
   }
 
-  private String getMissingColumnErrorMessage(String columnName) {
+  private static String getMissingColumnErrorMessage(ObjectNode data, String columnName) {
     return String.format(
-        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
+        "Column '%s' is not present. Valid columns are: %s", columnName, Row.getColumnNames(data));
   }
 
   /**
