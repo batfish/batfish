@@ -53,7 +53,7 @@ public class NodeRolesDataBeanTest extends WorkMgrServiceV2TestBase {
     // we should get OK and the expected bean
     assertThat(
         NodeRolesDataBean.create("someContainer"),
-        equalTo(new NodeRolesDataBean(data, "testrig", ImmutableSet.of("a1", "b1"))));
+        equalTo(new NodeRolesDataBean(data, "testrig", ImmutableSet.of("a", "b"))));
   }
 
   @Test

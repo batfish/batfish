@@ -81,7 +81,7 @@ public class NodeRoleDimensionBean {
 
   /** Returns a {@link NodeRoleDimension} object corresponding to this bean */
   public NodeRoleDimension toNodeRoleDimension() {
-    SortedSet nodeRoles =
+    SortedSet<NodeRole> nodeRoles =
         roles == null
             ? null
             : roles
