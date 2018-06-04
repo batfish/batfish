@@ -23,9 +23,11 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -65,8 +67,10 @@ import org.batfish.datamodel.IsisOption;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
+import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.RoutingProtocol;
@@ -158,6 +162,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hib_system_serviceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
@@ -229,6 +234,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
@@ -240,13 +246,21 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_thenContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_deleteContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_setContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metric_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_hopContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_hop_selfContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_policyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.PortContext;
@@ -463,13 +477,20 @@ import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
+import org.batfish.representation.juniper.PsThenAsPathPrepend;
 import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunityDelete;
 import org.batfish.representation.juniper.PsThenCommunitySet;
+import org.batfish.representation.juniper.PsThenDefaultActionAccept;
+import org.batfish.representation.juniper.PsThenDefaultActionReject;
+import org.batfish.representation.juniper.PsThenExternal;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
+import org.batfish.representation.juniper.PsThenMetricAdd;
 import org.batfish.representation.juniper.PsThenNextHopIp;
+import org.batfish.representation.juniper.PsThenNextHopSelf;
 import org.batfish.representation.juniper.PsThenNextPolicy;
+import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.Route4FilterLine;
@@ -1634,9 +1655,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterA_application(A_applicationContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentApplication =
-        _configuration.getApplications().computeIfAbsent(name, n -> new BaseApplication(n, line));
+        _configuration.getApplications().computeIfAbsent(name, BaseApplication::new);
     _currentApplicationTerm = _currentApplication.getMainTerm();
     defineStructure(APPLICATION, name, ctx);
   }
@@ -1644,9 +1664,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterA_application_set(A_application_setContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentApplicationSet =
-        _configuration.getApplicationSets().computeIfAbsent(name, n -> new ApplicationSet(n, line));
+        _configuration.getApplicationSets().computeIfAbsent(name, ApplicationSet::new);
     defineStructure(APPLICATION_SET, name, ctx);
   }
 
@@ -3186,6 +3205,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitI_description(I_descriptionContext ctx) {
+    String text = unquote(ctx.description().text.getText());
+    _currentInterface.setDescription(text);
+  }
+
+  @Override
   public void exitI_disable(I_disableContext ctx) {
     _currentInterface.setActive(false);
   }
@@ -3678,6 +3703,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitPopsf_rib(Popsf_ribContext ctx) {
+    _w.redFlag(
+        String.format(
+            "unimplemented 'policy-options policy-statement term' from clause: %s",
+            getFullText(ctx)));
+  }
+
+  @Override
   public void exitPopsf_route_filter(Popsf_route_filterContext ctx) {
     _currentRouteFilterPrefix = null;
     _currentRoute6FilterPrefix = null;
@@ -3703,6 +3736,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
+    List<Long> asPaths = new LinkedList<>();
+    if (ctx.DEC() != null) {
+      asPaths.add(toLong(ctx.DEC()));
+    } else if (ctx.DOUBLE_QUOTED_STRING() != null) {
+      String[] unquoted = unquote(ctx.DOUBLE_QUOTED_STRING().getText()).split("\\s+");
+      Arrays.stream(unquoted).map(Long::parseLong).forEach(asPaths::add);
+    } else {
+      _w.redFlag(
+          String.format(
+              "unimplemented 'policy-options policy-statement term' then clause: %s",
+              getFullText(ctx)));
+      return;
+    }
+    _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
+  }
+
+  @Override
   public void exitPopst_community_add(Popst_community_addContext ctx) {
     String name = ctx.name.getText();
     PsThenCommunityAdd then = new PsThenCommunityAdd(name, _configuration);
@@ -3724,6 +3775,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitPopst_default_action_accept(Popst_default_action_acceptContext ctx) {
+    _currentPsThens.add(new PsThenDefaultActionAccept());
+  }
+
+  @Override
+  public void exitPopst_default_action_reject(Popst_default_action_rejectContext ctx) {
+    _currentPsThens.add(new PsThenDefaultActionReject());
+  }
+
+  @Override
+  public void exitPopst_external(Popst_externalContext ctx) {
+    int type = toInt(ctx.DEC());
+    if (type == 1) {
+      _currentPsThens.add(new PsThenExternal(OspfMetricType.E1));
+    } else if (type == 2) {
+      _currentPsThens.add(new PsThenExternal(OspfMetricType.E2));
+    } else {
+      _w.redFlag(String.format("unimplemented: then %s", getFullText(ctx)));
+    }
+  }
+
+  @Override
   public void exitPopst_local_preference(Popst_local_preferenceContext ctx) {
     int localPreference = toInt(ctx.localpref);
     PsThenLocalPreference then = new PsThenLocalPreference(localPreference);
@@ -3735,6 +3808,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     int metric = toInt(ctx.metric);
     PsThenMetric then = new PsThenMetric(metric);
     _currentPsThens.add(then);
+  }
+
+  @Override
+  public void exitPopst_metric_add(Popst_metric_addContext ctx) {
+    int metric = toInt(ctx.metric);
+    _currentPsThens.add(new PsThenMetricAdd(metric));
   }
 
   @Override
@@ -3751,8 +3830,37 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
+  public void exitPopst_next_hop_self(Popst_next_hop_selfContext ctx) {
+    _currentPsThens.add(PsThenNextHopSelf.INSTANCE);
+  }
+
+  @Override
   public void exitPopst_next_policy(Popst_next_policyContext ctx) {
     _currentPsThens.add(PsThenNextPolicy.INSTANCE);
+  }
+
+  @Override
+  public void exitPopst_next_term(Popst_next_termContext ctx) {
+    // The next-term action itself is a no-op in Batfish, so we do not model this behavior.
+    //
+    // TODO(https://github.com/batfish/batfish/issues/1551): need to implement next_term replacing
+    // any existing flow control action.
+  }
+
+  @Override
+  public void exitPopst_origin(Popst_originContext ctx) {
+    OriginType origin;
+    if (ctx.EGP() != null) {
+      origin = OriginType.EGP;
+    } else if (ctx.IGP() != null) {
+      origin = OriginType.IGP;
+    } else if (ctx.INCOMPLETE() != null) {
+      origin = OriginType.INCOMPLETE;
+    } else {
+      _w.redFlag(String.format("unimplemented origin type: %s", getFullText(ctx)));
+      return;
+    }
+    _currentPsThens.add(new PsThenOrigin(origin));
   }
 
   @Override
@@ -4449,7 +4557,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitVlt_vlan_id(Vlt_vlan_idContext ctx) {
-    Vlan vlan = new Vlan(_currentVlanName, ctx.id.getLine(), toInt(ctx.id));
+    Vlan vlan = new Vlan(_currentVlanName, toInt(ctx.id));
     _configuration.getVlanNameToVlan().put(_currentVlanName, vlan);
   }
 

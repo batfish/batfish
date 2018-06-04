@@ -19,7 +19,7 @@ is_interface
    INTERFACE
    (
       id = interface_id
-      | WILDCARD
+      | wildcard
    )
    (
       apply
@@ -35,7 +35,7 @@ is_level
    LEVEL
    (
       DEC
-      | WILDCARD
+      | wildcard
    )
    (
       isl_disable

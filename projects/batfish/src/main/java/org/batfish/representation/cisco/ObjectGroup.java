@@ -1,13 +1,13 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.DefinedStructure;
+import org.batfish.common.util.ComparableStructure;
 
-abstract class ObjectGroup extends DefinedStructure<String> {
+abstract class ObjectGroup extends ComparableStructure<String> {
 
   /** */
   private static final long serialVersionUID = 1L;
 
-  ObjectGroup(String name, int definitionLine) {
-    super(name, definitionLine);
+  ObjectGroup(String name) {
+    super(name);
   }
 }

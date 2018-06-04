@@ -4838,6 +4838,38 @@
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
         "plane_0_spine_0" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                46,
+                47,
+                48
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4862,6 +4894,38 @@
           }
         },
         "plane_1_spine_0" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                46,
+                47,
+                48
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4886,6 +4950,49 @@
           }
         },
         "pod_0_leaf_0" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4910,6 +5017,49 @@
           }
         },
         "pod_0_leaf_1" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4934,6 +5084,49 @@
           }
         },
         "pod_0_tor_0" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4958,6 +5151,49 @@
           }
         },
         "pod_0_tor_1" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -4982,6 +5218,49 @@
           }
         },
         "pod_1_leaf_0" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5006,6 +5285,49 @@
           }
         },
         "pod_1_leaf_1" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5030,6 +5352,49 @@
           }
         },
         "pod_1_tor_0" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [
@@ -5054,6 +5419,49 @@
           }
         },
         "pod_1_tor_1" : {
+          "interface" : {
+            "Ethernet1" : {
+              "definitionLines" : [
+                30,
+                31,
+                32,
+                33,
+                34,
+                35
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                37,
+                38,
+                39,
+                40,
+                41,
+                42
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet3" : {
+              "definitionLines" : [
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
+              ],
+              "numReferrers" : 1
+            },
+            "Loopback0" : {
+              "definitionLines" : [
+                53,
+                54,
+                55
+              ],
+              "numReferrers" : 1
+            }
+          },
           "ipv4 prefix-list" : {
             "DEFAULT_IPV4" : {
               "definitionLines" : [

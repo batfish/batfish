@@ -1071,6 +1071,11 @@ AUTHENTICATION_PORT
    'authentication-port'
 ;
 
+AUTHENTICATION_RESTART
+:
+   'authentication-restart'
+;
+
 AUTHENTICATION_RETRIES
 :
    'authentication-retries'
@@ -1109,6 +1114,11 @@ AUTHORIZATION_STATUS
 AUTHORIZATION_SERVER_GROUP
 :
    'authorization-server-group'
+;
+
+AUTHORIZE
+:
+   'authorize'
 ;
 
 AUTHORIZED
@@ -1924,6 +1934,11 @@ CLEANUP
 CLEAR
 :
    'clear'
+;
+
+CLEAR_SESSION
+:
+   'clear-session'
 ;
 
 CLI
@@ -3245,6 +3260,11 @@ DNSIX
 DO
 :
    'do'
+;
+
+DO_UNTIL_FAILURE
+:
+   'do-until-failure'
 ;
 
 DOCSIS_ENABLE
@@ -9523,6 +9543,11 @@ RESTART_TIME
    'restart-time'
 ;
 
+RESTRICT
+:
+   'restrict'
+;
+
 RESTRICTED
 :
    'restricted'
@@ -9531,6 +9556,11 @@ RESTRICTED
 RESULT_TYPE
 :
    'result-type'
+;
+
+RESUME
+:
+   'resume'
 ;
 
 RETRANSMIT
@@ -11483,6 +11513,11 @@ TERMINAL
 TERMINAL_TYPE
 :
    'terminal-type'
+;
+
+TERMINATE
+:
+   'terminate'
 ;
 
 TERMINATION

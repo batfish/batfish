@@ -8,4 +8,8 @@ public class CoordConstsV2 {
   public static final String HTTP_HEADER_BATFISH_APIKEY = "X-Batfish-Apikey";
   /** The HTTP Header containing the client's version. */
   public static final String HTTP_HEADER_BATFISH_VERSION = "X-Batfish-Version";
+
+  public static final String RSC_CONTAINER = "container";
+  public static final String RSC_CONTAINERS = "containers";
+  public static final String RSC_NODE_ROLES = "noderoles";
 }

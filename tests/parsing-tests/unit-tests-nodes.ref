@@ -1214,7 +1214,8 @@
             "authenticationAlgorithm" : "SHA_256",
             "authenticationMethod" : "RSA_SIGNATURES",
             "diffieHellmanGroup" : "GROUP20",
-            "encryptionAlgorithm" : "AES_256_CBC"
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "lifetimeSeconds" : 86400
           }
         },
         "vendorFamily" : {
@@ -1369,17 +1370,14 @@
         }
       },
       "aruba_net" : {
-        "configurationFormat" : "CISCO_IOS",
+        "configurationFormat" : "ARUBAOS",
         "name" : "aruba_net",
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "aruba_net",
-            "logging" : {
-              "on" : true
-            }
+            "hostname" : "aruba_net"
           }
         },
         "vrfs" : {
@@ -14062,6 +14060,74 @@
                       "class" : "org.batfish.datamodel.routing_policy.expr.LiteralInt",
                       "value" : 100
                     }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOrigin",
+                    "originType" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralOrigin",
+                      "originType" : "igp"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetNextHop",
+                    "destinationVrf" : false,
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.SelfNextHop"
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.IncrementMetric",
+                      "addend" : 20
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetMetric",
+                    "metric" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralLong",
+                      "value" : 10
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.SetOspfMetricType",
+                    "metricType" : "E1"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                      "list" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 456
+                        },
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 789
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.PrependAsPath",
+                    "expr" : {
+                      "class" : "org.batfish.datamodel.routing_policy.expr.LiteralAsList",
+                      "list" : [
+                        {
+                          "class" : "org.batfish.datamodel.routing_policy.expr.ExplicitAs",
+                          "as" : 123
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetDefaultActionAccept"
+                  },
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "SetDefaultActionReject"
                   }
                 ]
               },
@@ -16259,7 +16325,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : false,
+              "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
               "multipathIbgp" : false,
               "routerId" : "0.0.0.0",

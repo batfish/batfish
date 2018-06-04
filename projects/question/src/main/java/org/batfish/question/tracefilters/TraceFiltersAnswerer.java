@@ -12,7 +12,8 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.acl.AclTrace;
+import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
@@ -26,12 +27,13 @@ import org.batfish.datamodel.table.TableMetadata;
 
 public class TraceFiltersAnswerer extends Answerer {
 
-  static final String COLUMN_NODE = "node";
-  static final String COLUMN_FILTER_NAME = "filterName";
-  static final String COLUMN_FLOW = "flow";
-  static final String COLUMN_ACTION = "action";
-  static final String COLUMN_LINE_NUMBER = "lineNumber";
-  static final String COLUMN_LINE_CONTENT = "lineContent";
+  public static final String COLUMN_NODE = "node";
+  public static final String COLUMN_FILTER_NAME = "filterName";
+  public static final String COLUMN_FLOW = "flow";
+  public static final String COLUMN_ACTION = "action";
+  public static final String COLUMN_LINE_NUMBER = "lineNumber";
+  public static final String COLUMN_LINE_CONTENT = "lineContent";
+  public static final String COLUMN_TRACE = "trace";
 
   public TraceFiltersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
@@ -52,7 +54,8 @@ public class TraceFiltersAnswerer extends Answerer {
             new ColumnMetadata(COLUMN_FLOW, Schema.FLOW, "Evaluated flow", true, false),
             new ColumnMetadata(COLUMN_ACTION, Schema.STRING, "Outcome", false, true),
             new ColumnMetadata(COLUMN_LINE_NUMBER, Schema.INTEGER, "Line number", false, true),
-            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true));
+            new ColumnMetadata(COLUMN_LINE_CONTENT, Schema.STRING, "Line content", false, true),
+            new ColumnMetadata(COLUMN_TRACE, Schema.ACL_TRACE, "ACL trace", false, true));
     DisplayHints dhints = question.getDisplayHints();
     if (dhints == null) {
       dhints = new DisplayHints();
@@ -71,7 +74,7 @@ public class TraceFiltersAnswerer extends Answerer {
   }
 
   @Override
-  public AnswerElement answer() {
+  public TableAnswerElement answer() {
     TraceFiltersQuestion question = (TraceFiltersQuestion) _question;
 
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
@@ -87,6 +90,13 @@ public class TraceFiltersAnswerer extends Answerer {
           continue;
         }
         Flow flow = getFlow(c.getHostname(), question, configurations);
+        AclTrace trace =
+            AclTracer.trace(
+                filter,
+                flow,
+                question.getIngressInterface(),
+                c.getIpAccessLists(),
+                c.getIpSpaces());
         FilterResult result =
             filter.filter(
                 flow, question.getIngressInterface(), c.getIpAccessLists(), c.getIpSpaces());
@@ -100,7 +110,13 @@ public class TraceFiltersAnswerer extends Answerer {
         }
         Row row =
             getRow(
-                c.getHostname(), filter.getName(), flow, result.getAction(), matchLine, lineDesc);
+                c.getHostname(),
+                filter.getName(),
+                flow,
+                result.getAction(),
+                matchLine,
+                lineDesc,
+                trace);
 
         // exclude or not?
         Exclusion exclusion = Exclusion.covered(row, question.getExclusions());
@@ -135,14 +151,16 @@ public class TraceFiltersAnswerer extends Answerer {
       Flow flow,
       LineAction action,
       Integer matchLine,
-      String lineContent) {
+      String lineContent,
+      AclTrace trace) {
     RowBuilder row = Row.builder();
     row.put(TraceFiltersAnswerer.COLUMN_NODE, new Node(nodeName))
         .put(TraceFiltersAnswerer.COLUMN_FILTER_NAME, filterName)
         .put(TraceFiltersAnswerer.COLUMN_FLOW, flow)
         .put(TraceFiltersAnswerer.COLUMN_ACTION, action)
         .put(TraceFiltersAnswerer.COLUMN_LINE_NUMBER, matchLine)
-        .put(TraceFiltersAnswerer.COLUMN_LINE_CONTENT, lineContent);
+        .put(TraceFiltersAnswerer.COLUMN_LINE_CONTENT, lineContent)
+        .put(TraceFiltersAnswerer.COLUMN_TRACE, trace);
     return row.build();
   }
 }

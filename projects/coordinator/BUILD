@@ -59,6 +59,9 @@ java_library(
     resources = glob(["src/test/resources/**"]),
     deps = [
         ":coordinator",
+        "//projects/batfish-common-protocol:common",
+        "@jersey_media_jackson//:compile",
+        "@jersey_test_framework//:compile",
     ],
 )
 

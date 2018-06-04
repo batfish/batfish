@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import javax.annotation.Nullable;
 import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -21,7 +22,9 @@ public class Tunnel extends ReferenceCountedStructure {
 
   IpProtocol _protocol;
 
-  Ip _source;
+  @Nullable Ip _sourceAddress;
+
+  @Nullable String _sourceInterfaceName;
 
   public Ip getDestination() {
     return _destination;
@@ -35,8 +38,14 @@ public class Tunnel extends ReferenceCountedStructure {
     return _mode;
   }
 
-  public Ip getSource() {
-    return _source;
+  @Nullable
+  public Ip getSourceAddress() {
+    return _sourceAddress;
+  }
+
+  @Nullable
+  public String getSourceInterfaceName() {
+    return _sourceInterfaceName;
   }
 
   public void setDestination(Ip destination) {
@@ -55,7 +64,11 @@ public class Tunnel extends ReferenceCountedStructure {
     _protocol = protocol;
   }
 
-  public void setSource(Ip source) {
-    _source = source;
+  public void setSourceAddress(Ip source) {
+    _sourceAddress = source;
+  }
+
+  public void setSourceInterfaceName(String sourceInterfaceName) {
+    _sourceInterfaceName = sourceInterfaceName;
   }
 }

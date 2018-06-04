@@ -1,5 +1,6 @@
 package org.batfish.representation.cisco;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -252,6 +253,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return "~BGP_COMMON_EXPORT_POLICY:" + vrf + "~";
   }
 
+  /**
+   * Computes a mapping of interface names to the primary {@link Ip} owned by each of the interface.
+   * Filters out the interfaces having no primary {@link InterfaceAddress}
+   */
+  private static Map<String, Ip> computeInterfaceOwnedPrimaryIp(Map<String, Interface> interfaces) {
+    return interfaces
+        .entrySet()
+        .stream()
+        .filter(e -> Objects.nonNull(e.getValue().getAddress()))
+        .collect(
+            ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getAddress().getIp()));
+  }
+
   public static String computeProtocolObjectGroupAclName(String name) {
     return String.format("~PROTOCOL_OBJECT_GROUP~%s~", name);
   }
@@ -305,19 +319,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, AsPathSet> _asPathSets;
 
-  private final Set<String> _bgpVrfAggregateAddressRouteMaps;
-
   private final CiscoFamily _cf;
-
-  /**
-   * These can be either ipv4 or ipv6, so we must check both protocols for access-lists when doing
-   * undefined references check
-   */
-  private final Set<String> _classMapAccessGroups;
-
-  private final Set<String> _controlPlaneAccessGroups;
-
-  private final Set<String> _cryptoAcls;
 
   private final List<Ip> _dhcpRelayServers;
 
@@ -353,17 +355,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
-  private final Set<String> _igmpAcls;
-
   private final Map<String, InspectClassMap> _inspectClassMaps;
 
   private final Map<String, InspectPolicyMap> _inspectPolicyMaps;
 
   private final Map<String, Interface> _interfaces;
-
-  private final Set<String> _ipNatDestinationAccessLists;
-
-  private final Set<String> _ipPimNeighborFilters;
 
   private final Map<String, IpsecProfile> _ipsecProfiles;
 
@@ -375,21 +371,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, Keyring> _keyrings;
 
-  private final Set<String> _lineAccessClassLists;
-
-  private final Set<String> _lineIpv6AccessClassLists;
-
   private final Map<String, MacAccessList> _macAccessLists;
-
-  private final Set<String> _managementAccessGroups;
-
-  private final Set<String> _msdpPeerSaLists;
 
   private final Map<String, NatPool> _natPools;
 
   private final Map<String, NetworkObjectGroup> _networkObjectGroups;
-
-  private final Set<String> _ntpAccessGroups;
 
   private String _ntpSourceInterface;
 
@@ -397,33 +383,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final Map<String, ObjectGroup> _objectGroups;
 
-  private final Set<String> _pimAcls;
-
-  private final Set<String> _pimRouteMaps;
-
   private final Map<String, Prefix6List> _prefix6Lists;
 
   private final Map<String, PrefixList> _prefixLists;
 
   private final Map<String, ProtocolObjectGroup> _protocolObjectGroups;
 
-  private final Set<String> _referencedRouteMaps;
-
   private final Map<String, RouteMap> _routeMaps;
 
   private final Map<String, RoutePolicy> _routePolicies;
-
-  private final Set<String> _snmpAccessLists;
 
   private SnmpServer _snmpServer;
 
   private String _snmpSourceInterface;
 
   private boolean _spanningTreePortfastDefault;
-
-  private final Set<String> _sshAcls;
-
-  private final Set<String> _sshIpv6Acls;
 
   private final Map<String, StandardAccessList> _standardAccessLists;
 
@@ -445,13 +419,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
-  private final Set<String> _verifyAccessLists;
-
   private final Map<String, Vrf> _vrfs;
 
   private final SortedMap<String, VrrpInterface> _vrrpGroups;
-
-  private final Set<String> _wccpAcls;
 
   private final Map<String, ServiceObjectGroup> _serviceObjectGroups;
 
@@ -462,11 +432,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public CiscoConfiguration(Set<String> unimplementedFeatures) {
     _asPathAccessLists = new TreeMap<>();
     _asPathSets = new TreeMap<>();
-    _bgpVrfAggregateAddressRouteMaps = new TreeSet<>();
     _cf = new CiscoFamily();
-    _classMapAccessGroups = new TreeSet<>();
-    _controlPlaneAccessGroups = new TreeSet<>();
-    _cryptoAcls = new TreeSet<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
     _expandedCommunityLists = new TreeMap<>();
@@ -475,52 +441,36 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _failoverInterfaces = new TreeMap<>();
     _failoverPrimaryAddresses = new TreeMap<>();
     _failoverStandbyAddresses = new TreeMap<>();
-    _igmpAcls = new TreeSet<>();
     _isakmpPolicies = new TreeMap<>();
     _isakmpProfiles = new TreeMap<>();
     _inspectClassMaps = new TreeMap<>();
     _inspectPolicyMaps = new TreeMap<>();
     _interfaces = new TreeMap<>();
-    _ipNatDestinationAccessLists = new TreeSet<>();
-    _ipPimNeighborFilters = new TreeSet<>();
     _ipsecTransformSets = new TreeMap<>();
     _ipsecProfiles = new TreeMap<>();
     _keyrings = new TreeMap<>();
-    _lineAccessClassLists = new TreeSet<>();
-    _lineIpv6AccessClassLists = new TreeSet<>();
     _macAccessLists = new TreeMap<>();
-    _managementAccessGroups = new TreeSet<>();
-    _msdpPeerSaLists = new TreeSet<>();
     _natPools = new TreeMap<>();
     _networkObjectGroups = new TreeMap<>();
-    _ntpAccessGroups = new TreeSet<>();
     _nxBgpGlobalConfiguration = new CiscoNxBgpGlobalConfiguration();
     _objectGroups = new TreeMap<>();
-    _pimAcls = new TreeSet<>();
-    _pimRouteMaps = new TreeSet<>();
     _prefixLists = new TreeMap<>();
     _prefix6Lists = new TreeMap<>();
     _protocolObjectGroups = new TreeMap<>();
-    _referencedRouteMaps = new TreeSet<>();
     _routeMaps = new TreeMap<>();
     _routePolicies = new TreeMap<>();
     _securityZonePairs = new TreeMap<>();
     _securityZones = new TreeMap<>();
     _serviceObjectGroups = new TreeMap<>();
-    _snmpAccessLists = new TreeSet<>();
-    _sshAcls = new TreeSet<>();
-    _sshIpv6Acls = new TreeSet<>();
     _standardAccessLists = new TreeMap<>();
     _standardIpv6AccessLists = new TreeMap<>();
     _standardCommunityLists = new TreeMap<>();
     _tacacsServers = new TreeSet<>();
     _undefinedPeerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
-    _verifyAccessLists = new HashSet<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
     _vrrpGroups = new TreeMap<>();
-    _wccpAcls = new TreeSet<>();
   }
 
   private void applyVrrp(Configuration c) {
@@ -680,24 +630,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return routerId;
   }
 
-  public Set<String> getBgpVrfAggregateAddressRouteMaps() {
-    return _bgpVrfAggregateAddressRouteMaps;
-  }
-
   public CiscoFamily getCf() {
     return _cf;
-  }
-
-  public Set<String> getClassMapAccessGroups() {
-    return _classMapAccessGroups;
-  }
-
-  public Set<String> getControlPlaneAccessGroups() {
-    return _controlPlaneAccessGroups;
-  }
-
-  public Set<String> getCryptoAcls() {
-    return _cryptoAcls;
   }
 
   public Vrf getDefaultVrf() {
@@ -769,16 +703,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  public Set<String> getIgmpAcls() {
-    return _igmpAcls;
-  }
-
   private @Nullable Interface getInterfaceByTunnelAddresses(Ip sourceAddress, Prefix destPrefix) {
     for (Interface iface : _interfaces.values()) {
       Tunnel tunnel = iface.getTunnel();
       if (tunnel != null
-          && tunnel.getSource() != null
-          && tunnel.getSource().equals(sourceAddress)
+          && tunnel.getSourceAddress() != null
+          && tunnel.getSourceAddress().equals(sourceAddress)
           && tunnel.getDestination() != null
           && destPrefix.containsIp(tunnel.getDestination())) {
         /*
@@ -801,14 +731,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _interfaces;
   }
 
-  public Set<String> getIpNatDestinationAccessLists() {
-    return _ipNatDestinationAccessLists;
-  }
-
-  public Set<String> getIpPimNeighborFilters() {
-    return _ipPimNeighborFilters;
-  }
-
   public Map<String, IpsecProfile> getIpsecProfiles() {
     return _ipsecProfiles;
   }
@@ -829,32 +751,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _keyrings;
   }
 
-  public Set<String> getLineAccessClassLists() {
-    return _lineAccessClassLists;
-  }
-
-  public Set<String> getLineIpv6AccessClassLists() {
-    return _lineIpv6AccessClassLists;
-  }
-
   public Map<String, MacAccessList> getMacAccessLists() {
     return _macAccessLists;
   }
 
-  public Set<String> getManagementAccessGroups() {
-    return _managementAccessGroups;
-  }
-
-  public Set<String> getMsdpPeerSaLists() {
-    return _msdpPeerSaLists;
-  }
-
   public Map<String, NatPool> getNatPools() {
     return _natPools;
-  }
-
-  public Set<String> getNtpAccessGroups() {
-    return _ntpAccessGroups;
   }
 
   public String getNtpSourceInterface() {
@@ -865,24 +767,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _nxBgpGlobalConfiguration;
   }
 
-  public Set<String> getPimAcls() {
-    return _pimAcls;
-  }
-
-  public Set<String> getPimRouteMaps() {
-    return _pimRouteMaps;
-  }
-
   public Map<String, Prefix6List> getPrefix6Lists() {
     return _prefix6Lists;
   }
 
   public Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
-  }
-
-  public Set<String> getReferencedRouteMaps() {
-    return _referencedRouteMaps;
   }
 
   public Map<String, RouteMap> getRouteMaps() {
@@ -965,10 +855,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return maps;
   }
 
-  public Set<String> getSnmpAccessLists() {
-    return _snmpAccessLists;
-  }
-
   public SnmpServer getSnmpServer() {
     return _snmpServer;
   }
@@ -979,14 +865,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public boolean getSpanningTreePortfastDefault() {
     return _spanningTreePortfastDefault;
-  }
-
-  public Set<String> getSshAcls() {
-    return _sshAcls;
-  }
-
-  public Set<String> getSshIpv6Acls() {
-    return _sshIpv6Acls;
   }
 
   public Map<String, StandardAccessList> getStandardAcls() {
@@ -1074,10 +952,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _vendor;
   }
 
-  public Set<String> getVerifyAccessLists() {
-    return _verifyAccessLists;
-  }
-
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
@@ -1086,93 +960,53 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _vrrpGroups;
   }
 
-  public Set<String> getWccpAcls() {
-    return _wccpAcls;
+  private void markAcls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.IP_ACCESS_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+    }
   }
 
-  private void markAcls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.IP_ACCESS_LIST,
-        usage,
-        ImmutableList.of(
-            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+  private void markIpOrMacAcls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.ACCESS_LIST,
+          usage,
+          Arrays.asList(
+              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
+              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
+              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
+              CiscoStructureType.MAC_ACCESS_LIST));
+    }
   }
 
-  private void markDepiClasses(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DEPI_CLASS, usage);
+  private void markIpv4Acls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.IPV4_ACCESS_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
+    }
   }
 
-  private void markDepiTunnels(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DEPI_TUNNEL, usage);
-  }
-
-  private void markDocsisPolicies(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY, usage);
-  }
-
-  private void markDocsisPolicyRules(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.DOCSIS_POLICY_RULE, usage);
-  }
-
-  private void markInspectClassMaps(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.INSPECT_CLASS_MAP, usage);
-  }
-
-  private void markInspectPolicyMaps(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.INSPECT_POLICY_MAP, usage);
-  }
-
-  private void markIpOrMacAcls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.ACCESS_LIST,
-        usage,
-        Arrays.asList(
-            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED,
-            CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-            CiscoStructureType.MAC_ACCESS_LIST));
-  }
-
-  private void markIpv4Acls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.IPV4_ACCESS_LIST,
-        usage,
-        ImmutableList.of(
-            CiscoStructureType.IPV4_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED));
-  }
-
-  private void markIpv6Acls(CiscoStructureUsage usage) {
-    markAbstractStructure(
-        CiscoStructureType.IPV6_ACCESS_LIST,
-        usage,
-        ImmutableList.of(
-            CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
-            CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
-  }
-
-  private void markKeyrings(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.KEYRING, usage);
-  }
-
-  private void markL2tpClasses(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.L2TP_CLASS, usage);
-  }
-
-  private void markNetworkObjectGroups(CiscoStructureUsage... usages) {
-    markConcreteStructure(CiscoStructureType.NETWORK_OBJECT_GROUP, usages);
-  }
-
-  private void markPrefixSets(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.PREFIX_SET, usage);
-  }
-
-  private void markServiceClasses(CiscoStructureUsage usage) {
-    markConcreteStructure(CiscoStructureType.SERVICE_CLASS, usage);
+  private void markIpv6Acls(CiscoStructureUsage... usages) {
+    for (CiscoStructureUsage usage : usages) {
+      markAbstractStructure(
+          CiscoStructureType.IPV6_ACCESS_LIST,
+          usage,
+          ImmutableList.of(
+              CiscoStructureType.IPV6_ACCESS_LIST_STANDARD,
+              CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED));
+    }
   }
 
   private void processFailoverSettings() {
@@ -1308,8 +1142,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     CiscoNxBgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
     if (ipv4af != null) {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
-      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
+      newBgpProcess.setMultipathEbgp(
+          ipv4af.getMaximumPathsEbgp() > 1 || nxBgpVrf.getBestpathAsPathMultipathRelax());
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
+    } else {
+      newBgpProcess.setMultipathEbgp(nxBgpVrf.getBestpathAsPathMultipathRelax());
     }
 
     // Next we build up the BGP common export policy.
@@ -1566,23 +1403,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
     MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
         proc.getAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH;
     newBgpProcess.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
-    Integer maximumPaths = proc.getMaximumPaths();
-    Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
-    Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
-    if (maximumPaths != null && maximumPaths > 1) {
+    if (firstNonNull(proc.getMaximumPaths(), 0) > 1) {
       multipathEbgp = true;
       multipathIbgp = true;
     }
-    if (maximumPathsEbgp != null && maximumPathsEbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1 || proc.getAsPathMultipathRelax()) {
       multipathEbgp = true;
     }
-    if (maximumPathsIbgp != null && maximumPathsIbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsIbgp(), 0) > 1) {
       multipathIbgp = true;
     }
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
+
     Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
@@ -2114,9 +1949,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           If defaultRouteGenerationConditional =
               new If(
                   ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                  ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                      Statements.ReturnTrue.toStaticStatement()));
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
           RoutingPolicy defaultRouteGenerationPolicy =
               new RoutingPolicy(
                   "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
@@ -3415,7 +3248,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
       c.getIkeProposals().put(e.getKey(), e.getValue().getProposal());
     }
-
+    resolveKeyringIsakmpProfileAddresses();
+    resolveTunnelSourceInterfaces();
     addIkePoliciesAndGateways(c);
 
     // ipsec proposals
@@ -3450,7 +3284,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         IpsecVpn ipsecVpn = new IpsecVpn(name, c);
         ipsecVpn.setBindInterface(c.getInterfaces().get(name));
         ipsecVpn.setIpsecPolicy(c.getIpsecPolicies().get(tunnel.getIpsecProfileName()));
-        Ip source = tunnel.getSource();
+        Ip source = tunnel.getSourceAddress();
         Ip destination = tunnel.getDestination();
         if (source == null || destination == null) {
           _w.redFlag("Can't match IkeGateway: tunnel source or destination is not set for " + name);
@@ -3536,53 +3370,55 @@ public final class CiscoConfiguration extends VendorConfiguration {
           e.getValue());
     }
 
-    // mark references to IPv4/6 ACLs that may not appear in data model
-    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP);
-    markIpOrMacAcls(CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP);
-    markAcls(CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST);
-    markAcls(CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL);
-    markAcls(CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP);
-    markAcls(CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_INCOMING_FILTER);
-    markAcls(CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_OUTGOING_FILTER);
-    markIpv4Acls(CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER);
-    markIpv4Acls(CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST);
-    markIpv4Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST);
-    markIpv6Acls(CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6);
-    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.MSDP_PEER_SA_LIST);
-    markIpv4Acls(CiscoStructureUsage.NTP_ACCESS_GROUP);
-    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_ACCEPT_RP_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_ADDRESS_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER);
-    markIpv4Acls(CiscoStructureUsage.PIM_RP_CANDIDATE_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL);
-    markIpv4Acls(CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL);
-    markAcls(CiscoStructureUsage.RIP_DISTRIBUTE_LIST);
-    markIpv4Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST);
-    markIpv6Acls(CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST);
-    markAcls(CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST);
-    markAcls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL);
-    markIpv4Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4);
-    markIpv6Acls(CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6);
-    markAcls(CiscoStructureUsage.SSH_ACL);
-    markIpv4Acls(CiscoStructureUsage.SSH_IPV4_ACL);
-    markIpv6Acls(CiscoStructureUsage.SSH_IPV6_ACL);
-    markAcls(CiscoStructureUsage.WCCP_GROUP_LIST);
-    markAcls(CiscoStructureUsage.WCCP_REDIRECT_LIST);
-    markAcls(CiscoStructureUsage.WCCP_SERVICE_LIST);
+    markConcreteStructure(CiscoStructureType.INTERFACE, CiscoStructureUsage.INTERFACE_SELF_REF);
 
-    // mark references to mac-ACLs that may not appear in data model
-    // TODO: fill in
+    // mark references to ACLs that may not appear in data model
+    markIpOrMacAcls(
+        CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
+    markIpv4Acls(
+        CiscoStructureUsage.CONTROL_PLANE_ACCESS_GROUP,
+        CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL,
+        CiscoStructureUsage.INTERFACE_INCOMING_FILTER,
+        CiscoStructureUsage.INTERFACE_IP_VERIFY_ACCESS_LIST,
+        CiscoStructureUsage.INTERFACE_OUTGOING_FILTER,
+        CiscoStructureUsage.INTERFACE_PIM_NEIGHBOR_FILTER,
+        CiscoStructureUsage.IP_NAT_DESTINATION_ACCESS_LIST,
+        CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
+        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST,
+        CiscoStructureUsage.MANAGEMENT_SSH_ACCESS_GROUP,
+        CiscoStructureUsage.MANAGEMENT_TELNET_ACCESS_GROUP,
+        CiscoStructureUsage.MSDP_PEER_SA_LIST,
+        CiscoStructureUsage.NTP_ACCESS_GROUP,
+        CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL,
+        CiscoStructureUsage.PIM_ACCEPT_RP_ACL,
+        CiscoStructureUsage.PIM_RP_ADDRESS_ACL,
+        CiscoStructureUsage.PIM_RP_ANNOUNCE_FILTER,
+        CiscoStructureUsage.PIM_RP_CANDIDATE_ACL,
+        CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL,
+        CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST,
+        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4,
+        CiscoStructureUsage.SSH_IPV4_ACL);
+    markIpv6Acls(
+        CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
+        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
+        CiscoStructureUsage.SSH_IPV6_ACL);
+    markAcls(
+        CiscoStructureUsage.COPS_LISTENER_ACCESS_LIST,
+        CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_ACL,
+        CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
+        CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
+        CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
+        CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
+        CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
+        CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
+        CiscoStructureUsage.SNMP_SERVER_TFTP_SERVER_LIST,
+        CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL,
+        CiscoStructureUsage.SSH_ACL,
+        CiscoStructureUsage.WCCP_GROUP_LIST,
+        CiscoStructureUsage.WCCP_REDIRECT_LIST,
+        CiscoStructureUsage.WCCP_SERVICE_LIST);
 
     markConcreteStructure(
         CiscoStructureType.PREFIX_LIST,
@@ -3595,7 +3431,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST);
 
-    markPrefixSets(CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
+    markConcreteStructure(
+        CiscoStructureType.PREFIX_SET, CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET);
 
     // mark references to route-maps
     markConcreteStructure(
@@ -3638,15 +3475,23 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.BGP_TEMPLATE_PEER_SESSION, CiscoStructureUsage.BGP_INHERITED_SESSION);
 
     // Cable
-    markDepiClasses(CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
-    markDepiTunnels(CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL);
-    markDepiTunnels(CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
-    markDocsisPolicies(CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
-    markDocsisPolicyRules(CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
-    markServiceClasses(CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.DEPI_CLASS, CiscoStructureUsage.DEPI_TUNNEL_DEPI_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.DEPI_TUNNEL,
+        CiscoStructureUsage.CONTROLLER_DEPI_TUNNEL,
+        CiscoStructureUsage.DEPI_TUNNEL_PROTECT_TUNNEL);
+    markConcreteStructure(
+        CiscoStructureType.DOCSIS_POLICY, CiscoStructureUsage.DOCSIS_GROUP_DOCSIS_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.DOCSIS_POLICY_RULE,
+        CiscoStructureUsage.DOCSIS_POLICY_DOCSIS_POLICY_RULE);
+    markConcreteStructure(
+        CiscoStructureType.SERVICE_CLASS, CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS);
 
     // L2tp
-    markL2tpClasses(CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.L2TP_CLASS, CiscoStructureUsage.DEPI_TUNNEL_L2TP_CLASS);
 
     // Crypto, Isakmp, and Ipsec
     markConcreteStructure(
@@ -3662,19 +3507,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.IPSEC_TRANSFORM_SET,
         CiscoStructureUsage.CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET,
         CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET);
-    markKeyrings(CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
+    markConcreteStructure(CiscoStructureType.KEYRING, CiscoStructureUsage.ISAKMP_PROFILE_KEYRING);
 
     // class-map
-    markInspectClassMaps(CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
-    markConcreteStructure(CiscoStructureType.CLASS_MAP, CiscoStructureUsage.POLICY_MAP_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.INSPECT_CLASS_MAP, CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS);
+    markConcreteStructure(
+        CiscoStructureType.CLASS_MAP,
+        CiscoStructureUsage.POLICY_MAP_CLASS,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS);
 
     // policy-map
-    markInspectPolicyMaps(CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
+    markConcreteStructure(
+        CiscoStructureType.INSPECT_POLICY_MAP,
+        CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
     markConcreteStructure(
         CiscoStructureType.POLICY_MAP, CiscoStructureUsage.INTERFACE_SERVICE_POLICY);
 
     // object-group
-    markNetworkObjectGroups(
+    markConcreteStructure(
+        CiscoStructureType.NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_GROUP_OBJECT,
         CiscoStructureUsage.NETWORK_OBJECT_GROUP_NETWORK_OBJECT);
@@ -3688,7 +3540,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.SERVICE_TEMPLATE,
         CiscoStructureUsage.CLASS_MAP_SERVICE_TEMPLATE,
-        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE);
+        CiscoStructureUsage.CLASS_MAP_ACTIVATED_SERVICE_TEMPLATE,
+        CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE);
+
     // zone
     markConcreteStructure(
         CiscoStructureType.SECURITY_ZONE,
@@ -3696,22 +3550,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ZONE_PAIR_DESTINATION_ZONE,
         CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
+    markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     // record references to defined structures
-    recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     recordCommunityLists();
     recordStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
     recordStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
     recordDocsisPolicies();
     recordDocsisPolicyRules();
     recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
-    recordStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
-    recordStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
     recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
     recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
-    recordStructure(_natPools, CiscoStructureType.NAT_POOL);
     recordPeerGroups();
     recordPeerSessions();
-    recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
     recordServiceClasses();
 
     c.simplifyRoutingPolicies();
@@ -3963,21 +3813,29 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (Entry<String, IsakmpProfile> e : _isakmpProfiles.entrySet()) {
       String name = e.getKey();
       IsakmpProfile isakmpProfile = e.getValue();
-
       IkePolicy ikePolicy = new IkePolicy(name);
       c.getIkePolicies().put(name, ikePolicy);
       ikePolicy.setProposals(c.getIkeProposals());
 
       String keyringName = isakmpProfile.getKeyring();
       if (keyringName == null) {
-        _w.redFlag("Cannot get PSK hash since keyring not configured for isakmpProfile " + name);
+        _w.redFlag(
+            String.format(
+                "Cannot get PSK hash since keyring not configured for isakmpProfile %s", name));
       } else if (_keyrings.containsKey(keyringName)) {
         Keyring keyring = _keyrings.get(keyringName);
-        if (keyring.match(isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
+        // LocalAddress can only be Ip.AUTO if LocalInterfaceName contains an invalid interface
+        if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
+          _w.redFlag(
+              String.format(
+                  "Invalid local address interface configured for ISAKMP profile %s", name));
+        } else if (keyring.match(
+            isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
           ikePolicy.setPreSharedKeyHash(keyring.getKey());
         } else {
           _w.redFlag(
-              "The addresses of keyring " + keyringName + " do not match isakmpProfile " + name);
+              String.format(
+                  "The addresses of keyring %s do not match isakmpProfile %s", keyringName, name));
         }
       }
 
@@ -3985,7 +3843,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
       Prefix remotePrefix = isakmpProfile.getMatchIdentity();
       if (localAddress == null || remotePrefix == null) {
         _w.redFlag(
-            "Can't get IkeGateway: Local or remote address is not set for isakmpProfile " + name);
+            String.format(
+                "Can't get IkeGateway: Local or remote address is not set for isakmpProfile %s",
+                name));
       } else {
         IkeGateway ikeGateway = new IkeGateway(e.getKey());
         c.getIkeGateways().put(name, ikeGateway);
@@ -3994,7 +3854,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         if (oldIface != null) {
           ikeGateway.setExternalInterface(c.getInterfaces().get(oldIface.getName()));
         } else {
-          _w.redFlag("External interface not found for ikeGateway for isakmpProfile " + name);
+          _w.redFlag(
+              String.format(
+                  "External interface not found for ikeGateway for isakmpProfile %s", name));
         }
         ikeGateway.setIkePolicy(ikePolicy);
         ikeGateway.setLocalIp(isakmpProfile.getLocalAddress());
@@ -4138,16 +4000,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private void recordIpAccessLists() {
-    recordStructure(_extendedAccessLists, CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED);
-    recordStructure(_standardAccessLists, CiscoStructureType.IPV4_ACCESS_LIST_STANDARD);
-  }
-
-  private void recordIpv6AccessLists() {
-    recordStructure(_extendedIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_EXTENDED);
-    recordStructure(_standardIpv6AccessLists, CiscoStructureType.IPV6_ACCESS_LIST_STANDARD);
-  }
-
   private void recordPeerGroups() {
     for (Vrf vrf : getVrfs().values()) {
       BgpProcess proc = vrf.getBgpProcess();
@@ -4195,6 +4047,47 @@ public final class CiscoConfiguration extends VendorConfiguration {
   private void recordServiceClasses() {
     if (_cf.getCable() != null) {
       recordStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
+    }
+  }
+
+  /**
+   * Resolves the addresses of the interfaces used in localInterfaceName of IsaKmpProfiles and
+   * Keyrings
+   */
+  private void resolveKeyringIsakmpProfileAddresses() {
+    Map<String, Ip> ifaceNameToPrimaryIp = computeInterfaceOwnedPrimaryIp(_interfaces);
+
+    _keyrings
+        .values()
+        .stream()
+        .filter(keyring -> keyring.getLocalInterfaceName() != null)
+        .forEach(
+            keyring -> {
+              keyring.setLocalAddress(
+                  firstNonNull(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName()), Ip.AUTO));
+            });
+
+    _isakmpProfiles
+        .values()
+        .stream()
+        .filter(isakmpProfile -> isakmpProfile.getLocalInterfaceName() != null)
+        .forEach(
+            isakmpProfile -> {
+              isakmpProfile.setLocalAddress(
+                  firstNonNull(
+                      ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName()), Ip.AUTO));
+            });
+  }
+
+  /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */
+  private void resolveTunnelSourceInterfaces() {
+    Map<String, Ip> ifaceNameToPrimaryIp = computeInterfaceOwnedPrimaryIp(_interfaces);
+
+    for (Interface iface : _interfaces.values()) {
+      Tunnel tunnel = iface.getTunnel();
+      if (tunnel != null && tunnel.getSourceInterfaceName() != null) {
+        tunnel.setSourceAddress(ifaceNameToPrimaryIp.get(tunnel.getSourceInterfaceName()));
+      }
     }
   }
 

@@ -22,6 +22,17 @@ final class VrfMatchersImpl {
     }
   }
 
+  static final class HasInterfaces extends FeatureMatcher<Vrf, SortedSet<String>> {
+    HasInterfaces(@Nonnull Matcher<? super SortedSet<String>> subMatcher) {
+      super(subMatcher, "A VRF with interfaces:", "interfaces");
+    }
+
+    @Override
+    protected SortedSet<String> featureValueOf(Vrf actual) {
+      return actual.getInterfaceNames();
+    }
+  }
+
   static final class HasOspfProcess extends FeatureMatcher<Vrf, OspfProcess> {
     HasOspfProcess(@Nonnull Matcher<? super OspfProcess> subMatcher) {
       super(subMatcher, "A VRF with ospfProcess:", "ospfProcess");
