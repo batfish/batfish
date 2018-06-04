@@ -23,7 +23,6 @@ import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -107,7 +106,6 @@ public class CiscoNxosTest {
 
   // Neighbor default-originate overrides outbound route map.
   @Test
-  @Ignore("https://github.com/batfish/batfish/issues/1351")
   public void testDefaultOriginate() throws Exception {
     GenericRib<AbstractRoute> listenerRib =
         parseDpAndGetRib(
