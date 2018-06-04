@@ -42,4 +42,14 @@ public class NodeRoleBean {
   public int hashCode() {
     return Objects.hash(name, nodes, regex);
   }
+
+  /**
+   * Gets a {@link NodeRole} object from this bean.
+   *
+   * <p>Name and regex may be null in the bean. Error handling happens inside the NodeRole
+   * constructor.
+   */
+  public NodeRole toNodeRole() {
+    return new NodeRole(name, regex);
+  }
 }

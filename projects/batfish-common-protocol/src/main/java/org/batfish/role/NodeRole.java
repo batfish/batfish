@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -23,9 +24,19 @@ public class NodeRole implements Comparable<NodeRole> {
 
   @JsonCreator
   public NodeRole(@JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_REGEX) String regex) {
+    if (name == null) {
+      throw new IllegalArgumentException("Node role name cannot be null");
+    }
+    if (regex == null) {
+      throw new IllegalArgumentException("Node role regex cannot be null");
+    }
     _name = name;
     _regex = regex;
-    _compiledPattern = Pattern.compile(regex);
+    try {
+      _compiledPattern = Pattern.compile(regex);
+    } catch (PatternSyntaxException e) {
+      throw new IllegalArgumentException("Bad regex: " + e.getMessage());
+    }
   }
 
   @Override

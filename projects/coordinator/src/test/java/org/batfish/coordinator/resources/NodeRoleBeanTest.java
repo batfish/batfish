@@ -16,4 +16,12 @@ public class NodeRoleBeanTest {
 
     assertThat(role.nodes, equalTo(ImmutableSet.of("a")));
   }
+
+  @Test
+  public void toNodeRole() {
+    NodeRoleBean roleBean = new NodeRoleBean(new NodeRole("name", "a.*"), ImmutableSet.of("a", "b"));
+    NodeRole role = roleBean.toNodeRole();
+
+    assertThat(role, equalTo(new NodeRole("name", "a.*")));
+  }
 }

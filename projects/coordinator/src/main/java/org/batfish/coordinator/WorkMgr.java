@@ -890,8 +890,12 @@ public class WorkMgr extends AbstractCoordinator {
    *     NodeRolesData}
    */
   public NodeRolesData getNodeRolesData(String container) throws IOException {
-    Path nodeRolesPath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-    return NodeRolesData.read(nodeRolesPath);
+    return NodeRolesData.read(getNodeRolesPath(container));
+  }
+
+  /** Gets the path of the node roles file */
+  public Path getNodeRolesPath(String container) {
+    return getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
   }
 
   /**
