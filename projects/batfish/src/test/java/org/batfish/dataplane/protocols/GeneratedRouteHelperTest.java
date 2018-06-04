@@ -13,6 +13,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute.Builder;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.junit.Before;
@@ -67,5 +68,32 @@ public class GeneratedRouteHelperTest {
     Builder newRoute =
         GeneratedRouteHelper.activateGeneratedRoute(gr, policy, ImmutableSet.of(), "vrf");
     assertThat(newRoute, nullValue());
+  }
+
+  @Test
+  public void activateWithPolicyMatch() {
+    GeneratedRoute gr = _builder.setDiscard(true).setNetwork(Prefix.parse("1.1.1.0/24")).build();
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("n1")
+            .build();
+
+    RoutingPolicy policy =
+        nf.routingPolicyBuilder()
+            .setName("always match")
+            .setOwner(c)
+            .setStatements(ImmutableList.of(Statements.ReturnTrue.toStaticStatement()))
+            .build();
+
+    Builder newRoute =
+        GeneratedRouteHelper.activateGeneratedRoute(
+            gr,
+            policy,
+            ImmutableSet.of(new StaticRoute(Prefix.parse("2.2.2.2/32"), null, "eth0", 1, 1)),
+            "vrf");
+
+    assertThat(newRoute, notNullValue());
   }
 }
