@@ -1,0 +1,6 @@
+#
+set system host-name ipsec-proposal
+#
+set security ipsec proposal prop1 authentication-algorithm hmac-md5-96
+set security ipsec proposal prop1 encryption-algorithm aes-128-cbc
+set security ipsec proposal prop1 protocol bundle

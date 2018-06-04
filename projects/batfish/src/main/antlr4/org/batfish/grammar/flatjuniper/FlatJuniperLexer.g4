@@ -532,6 +532,11 @@ BROADCAST_CLIENT
    'broadcast-client'
 ;
 
+BUNDLE
+:
+   'bundle'
+;
+
 CATEGORIES
 :
    'categories'

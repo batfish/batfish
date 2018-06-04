@@ -1,0 +1,7 @@
+!
+hostname arubaCryptoTransformSet
+!
+crypto ipsec transform-set ts1 esp-aes128 esp-md5-hmac
+
+
+

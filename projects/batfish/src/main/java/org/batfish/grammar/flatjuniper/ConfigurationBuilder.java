@@ -22,6 +22,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1383,11 +1384,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static IpsecProtocol toIpsecProtocol(Ipsec_protocolContext ctx) {
+  private static SortedSet<IpsecProtocol> toIpsecProtocol(Ipsec_protocolContext ctx) {
     if (ctx.AH() != null) {
-      return IpsecProtocol.AH;
+      return ImmutableSortedSet.of(IpsecProtocol.AH);
     } else if (ctx.ESP() != null) {
-      return IpsecProtocol.ESP;
+      return ImmutableSortedSet.of(IpsecProtocol.ESP);
+    } else if (ctx.BUNDLE() != null) {
+      return ImmutableSortedSet.of(IpsecProtocol.AH, IpsecProtocol.ESP);
     } else {
       throw new BatfishException("invalid ipsec protocol: " + ctx.getText());
     }
@@ -4226,8 +4229,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeippr_protocol(Seippr_protocolContext ctx) {
-    IpsecProtocol protocol = toIpsecProtocol(ctx.ipsec_protocol());
-    _currentIpsecProposal.setProtocol(protocol);
+    _currentIpsecProposal.setProtocols(toIpsecProtocol(ctx.ipsec_protocol()));
   }
 
   @Override

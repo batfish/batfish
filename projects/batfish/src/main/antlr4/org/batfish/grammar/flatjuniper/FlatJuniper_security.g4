@@ -111,6 +111,7 @@ ipsec_protocol
 :
    AH
    | ESP
+   | BUNDLE
 ;
 
 nat_rule_set

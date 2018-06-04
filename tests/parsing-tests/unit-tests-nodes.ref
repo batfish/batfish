@@ -5750,31 +5750,40 @@
             "name" : "ESP-3DES-MD5",
             "authenticationAlgorithm" : "HMAC_MD5_96",
             "encryptionAlgorithm" : "THREEDES_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "IPSEC_AES_256" : {
             "name" : "IPSEC_AES_256",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "cipts1" : {
             "name" : "cipts1",
             "authenticationAlgorithm" : "HMAC_SHA_256_128",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "cipts2" : {
             "name" : "cipts2",
             "authenticationAlgorithm" : "HMAC_SHA_512",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "noAuthHeader" : {
             "name" : "noAuthHeader",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "vendorFamily" : {

@@ -1,0 +1,11 @@
+!
+hostname ios-crypto-transform-set
+!
+crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
+ mode tunnel
+!
+crypto ipsec transform-set ts2 esp-3des ah-sha-hmac
+ mode tunnel
+!
+
+
