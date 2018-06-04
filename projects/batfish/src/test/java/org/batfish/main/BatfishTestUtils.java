@@ -92,8 +92,8 @@ public class BatfishTestUtils {
   }
 
   private static Batfish initBatfish(
-      SortedMap<String, Configuration> baseConfigs,
-      SortedMap<String, Configuration> deltaConfigs,
+      @Nonnull SortedMap<String, Configuration> baseConfigs,
+      @Nonnull SortedMap<String, Configuration> deltaConfigs,
       @Nonnull TemporaryFolder tempFolder)
       throws IOException {
     Settings settings = new Settings(new String[] {});
@@ -247,8 +247,8 @@ public class BatfishTestUtils {
    * @return New Batfish instance
    */
   public static Batfish getBatfish(
-      SortedMap<String, Configuration> baseConfigs,
-      SortedMap<String, Configuration> deltaConfigs,
+      @Nonnull SortedMap<String, Configuration> baseConfigs,
+      @Nonnull SortedMap<String, Configuration> deltaConfigs,
       @Nonnull TemporaryFolder tempFolder)
       throws IOException {
     return initBatfish(baseConfigs, deltaConfigs, tempFolder);

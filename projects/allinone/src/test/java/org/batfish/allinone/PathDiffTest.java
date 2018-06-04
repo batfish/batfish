@@ -25,56 +25,15 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.question.ReachabilityParameters;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.hamcrest.Matchers;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class PathDiffTest {
-  /** 3.3.3.3/32 <--- A B ---> 4.4.4.4/32 */
-  private static SortedMap<String, Configuration> disconnectedTwoNodeNetwork() {
-    NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Configuration cA = cb.build();
-    Configuration cB = cb.build();
-
-    Vrf.Builder vb = nf.vrfBuilder();
-    Vrf vA = vb.setOwner(cA).build();
-    Vrf vB = vb.setOwner(cB).build();
-
-    Interface.Builder ib = nf.interfaceBuilder();
-
-    // A's interface
-    Prefix pA = Prefix.parse("3.3.3.3/32");
-    ib.setOwner(cA)
-        .setVrf(vA)
-        .setAddress(new InterfaceAddress(pA.getStartIp(), pA.getPrefixLength()))
-        .build();
-
-    // B's interface
-    Prefix pB = Prefix.parse("4.4.4.4/32");
-    ib.setOwner(cB)
-        .setVrf(vB)
-        .setAddress(new InterfaceAddress(pB.getStartIp(), pB.getPrefixLength()))
-        .build();
-
-    // A's interface on link to B
-    Prefix pAB = Prefix.parse("10.0.0.0/31");
-    ib.setOwner(cA)
-        .setVrf(vA)
-        .setAddress(new InterfaceAddress(pAB.getStartIp(), pAB.getPrefixLength()))
-        .build();
-
-    // B's interface on link to A
-    ib.setOwner(cB)
-        .setVrf(vB)
-        .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
-        .build();
-
-    return ImmutableSortedMap.of(cA.getName(), cA, cB.getName(), cB);
-  }
+  @Rule public TemporaryFolder tmp = new TemporaryFolder();
 
   /** 3.3.3.3/32 <--- A <---> B ---> 4.4.4.4/32 */
-  private static SortedMap<String, Configuration> connectedTwoNodeNetwork() {
+  private static SortedMap<String, Configuration> twoNodeNetwork(boolean connected) {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
@@ -114,21 +73,21 @@ public class PathDiffTest {
         .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
         .build();
 
-    // static route from A to pB
-    StaticRoute.Builder rb = StaticRoute.builder();
-    vA.getStaticRoutes().add(rb.setNetwork(pB).setNextHopIp(pAB.getEndIp()).build());
-    // static route from B to pA
-    vB.getStaticRoutes().add(rb.setNetwork(pA).setNextHopIp(pAB.getStartIp()).build());
+    if (connected) {
+      // add a static route from A to pB
+      StaticRoute.Builder rb = StaticRoute.builder();
+      vA.getStaticRoutes().add(rb.setNetwork(pB).setNextHopIp(pAB.getEndIp()).build());
+      // add a static route from B to pA
+      vB.getStaticRoutes().add(rb.setNetwork(pA).setNextHopIp(pAB.getStartIp()).build());
+    }
 
     return ImmutableSortedMap.of(cA.getName(), cA, cB.getName(), cB);
   }
 
   @Test
   public void testPathDiff() throws IOException {
-    TemporaryFolder tmp = new TemporaryFolder();
-    tmp.create();
-    SortedMap<String, Configuration> baseConfigs = connectedTwoNodeNetwork();
-    SortedMap<String, Configuration> deltaConfigs = disconnectedTwoNodeNetwork();
+    SortedMap<String, Configuration> baseConfigs = twoNodeNetwork(true);
+    SortedMap<String, Configuration> deltaConfigs = twoNodeNetwork(false);
     Batfish batfish = BatfishTestUtils.getBatfish(baseConfigs, deltaConfigs, tmp);
 
     batfish.pushBaseEnvironment();
