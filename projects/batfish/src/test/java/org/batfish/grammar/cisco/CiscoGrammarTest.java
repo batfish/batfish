@@ -8,6 +8,8 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
@@ -1365,35 +1367,32 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    MultipathEquivalentAsPathMatchMode aristaDisabled =
-        configurations
-            .get("arista_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode aristaEnabled =
-        configurations
-            .get("arista_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosDisabled =
-        configurations
-            .get("nxos_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosEnabled =
-        configurations
-            .get("nxos_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
+    org.batfish.datamodel.BgpProcess aristaDisabled =
+        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaEnabled =
+        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosDisabled =
+        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosEnabled =
+        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
-    assertThat(aristaDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        aristaDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        aristaEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        nxosDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        nxosEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+
+    assertThat(aristaDisabled, hasMultipathEbgp(false));
+    assertThat(aristaEnabled, hasMultipathEbgp(true));
+    assertThat(nxosDisabled, hasMultipathEbgp(false));
+    assertThat(nxosEnabled, hasMultipathEbgp(true));
   }
 
   @Test

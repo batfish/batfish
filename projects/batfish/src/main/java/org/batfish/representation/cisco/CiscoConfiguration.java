@@ -1142,8 +1142,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     CiscoNxBgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
     if (ipv4af != null) {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
-      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
+      newBgpProcess.setMultipathEbgp(
+          ipv4af.getMaximumPathsEbgp() > 1 || nxBgpVrf.getBestpathAsPathMultipathRelax());
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
+    } else {
+      newBgpProcess.setMultipathEbgp(nxBgpVrf.getBestpathAsPathMultipathRelax());
     }
 
     // Next we build up the BGP common export policy.
@@ -1400,23 +1403,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
     MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
         proc.getAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH;
     newBgpProcess.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
-    Integer maximumPaths = proc.getMaximumPaths();
-    Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
-    Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
-    if (maximumPaths != null && maximumPaths > 1) {
+    if (firstNonNull(proc.getMaximumPaths(), 0) > 1) {
       multipathEbgp = true;
       multipathIbgp = true;
     }
-    if (maximumPathsEbgp != null && maximumPathsEbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1 || proc.getAsPathMultipathRelax()) {
       multipathEbgp = true;
     }
-    if (maximumPathsIbgp != null && maximumPathsIbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsIbgp(), 0) > 1) {
       multipathIbgp = true;
     }
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
+
     Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
