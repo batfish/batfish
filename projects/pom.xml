@@ -77,7 +77,6 @@
     <lz4.version>1.4.1</lz4.version>
     <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
-    <org.eclipse.jdt.annotation.version>2.1.150</org.eclipse.jdt.annotation.version>
     <puppycrawl.version>8.0</puppycrawl.version>
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.21.0</sqlite-jdbc.version>
@@ -784,12 +783,6 @@
         <groupId>org.codehaus.jettison</groupId>
         <artifactId>jettison</artifactId>
         <version>${jettison.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.eclipse.jdt</groupId>
-        <artifactId>org.eclipse.jdt.annotation</artifactId>
-        <version>${org.eclipse.jdt.annotation.version}</version>
       </dependency>
 
       <dependency>
