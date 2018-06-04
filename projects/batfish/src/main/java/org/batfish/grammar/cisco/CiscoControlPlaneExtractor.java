@@ -2,6 +2,7 @@ package org.batfish.grammar.cisco;
 
 import static java.util.Comparator.naturalOrder;
 import static org.batfish.datamodel.ConfigurationFormat.ARISTA;
+import static org.batfish.datamodel.ConfigurationFormat.ARUBAOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_ASA;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_NX;
@@ -1603,8 +1604,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentIsakmpPolicy
         .getProposal()
         .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-    // TODO: group 1 should be the default DH group for aruba
-    _currentIsakmpPolicy.getProposal().setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+    if (_format == ARUBAOS) {
+      _currentIsakmpPolicy.getProposal().setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
+    } else {
+      _currentIsakmpPolicy.getProposal().setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+    }
+
     _currentIsakmpPolicy.getProposal().setLifetimeSeconds(86400);
     defineStructure(ISAKMP_POLICY, priority, ctx);
     /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
