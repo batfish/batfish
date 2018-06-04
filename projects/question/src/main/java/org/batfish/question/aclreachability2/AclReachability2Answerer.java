@@ -10,8 +10,10 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
+import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -45,7 +47,16 @@ public class AclReachability2Answerer extends Answerer {
      - Deal with any cycles in ACL references
     */
     Set<String> specifiedNodes = question.getNodeRegex().getMatchingNodes(_batfish);
-    Pattern aclRegex = Pattern.compile(question.getAclNameRegex());
+    Pattern aclRegex;
+    try {
+      aclRegex = Pattern.compile(question.getAclNameRegex());
+    } catch (PatternSyntaxException e) {
+      throw new BatfishException(
+          "Supplied regex for nodes is not a valid Java regex: \""
+              + question.getAclNameRegex()
+              + "\"",
+          e);
+    }
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
     List<CanonicalAcl> canonicalAcls = new ArrayList<>();
 
