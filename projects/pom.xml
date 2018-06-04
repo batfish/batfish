@@ -58,11 +58,13 @@
     <errorprone.version>2.0.18</errorprone.version>
     <grizzly.version>2.3.18</grizzly.version>
     <guava.version>22.0</guava.version>
+    <guava-eea.version>0.0.1</guava-eea.version>
     <jackson.version>2.9.0</jackson.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-annotation-api.version>1.2</javax-annotation-api.version>
     <jaeger.version>0.21.0</jaeger.version>
     <jaxrs.version>2.0.1</jaxrs.version>
+    <jdk-eea.version>0.0.1</jdk-eea.version>
     <jersey.version>2.25.1</jersey.version>
     <jettison.version>1.3.8</jettison.version>
     <jgrapht-core.version>1.1.0</jgrapht-core.version>
@@ -82,8 +84,15 @@
     <xstream.version>1.4.7</xstream.version>
     <z3.version>2018-01-12-450f3c9b459d128135abb5bbd4fa0508fe26bfae</z3.version>
 
-    <!-- Annotation path for Eclipse -->
-    <m2e.jdt.annotationpath>${project.basedir}/../eea-parent/eea-all/target/eea-all-${version}.jar</m2e.jdt.annotationpath>
+    <!--
+      Annotation paths for Eclipse. The Eclipse workspace must first have the M2_REPO classpath variable configured.
+      This can be done via:
+      mvn -Declipse.workspace="/path/to/eclipse/workspace" eclipse:configure-workspace
+    -->
+    <m2e.eea.annotationpath.jre>M2_REPO/org/lastnpe/eea/jdk-eea/${jdk-eea.version}/jdk-eea-${jdk-eea.version}.jar</m2e.eea.annotationpath.jre>
+    <!-- For now we only use guava annotations. Only one jar can be specified, so this is all that is possible
+         until resolution of https://github.com/lastnpe/eclipse-null-eea-augments/issues/51 -->
+    <m2e.eea.annotationpath.maven>M2_REPO/org/lastnpe/eea/guava-eea/${guava-eea.version}/guava-eea-${guava-eea.version}.jar</m2e.eea.annotationpath.maven>
   </properties>
 
 
@@ -548,12 +557,6 @@
 
       <dependency>
         <groupId>org.batfish</groupId>
-        <artifactId>eea-all</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-
-      <dependency>
-        <groupId>org.batfish</groupId>
         <artifactId>question</artifactId>
         <version>${project.version}</version>
       </dependency>
@@ -862,6 +865,18 @@
       </dependency>
 
       <dependency>
+        <groupId>org.lastnpe.eea</groupId>
+        <artifactId>guava-eea</artifactId>
+        <version>${guava-eea.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.lastnpe.eea</groupId>
+        <artifactId>jdk-eea</artifactId>
+        <version>${jdk-eea.version}</version>
+      </dependency>
+
+      <dependency>
         <groupId>org.skyscreamer</groupId>
         <artifactId>jsonassert</artifactId>
         <version>${jsonassert.version}</version>
@@ -894,7 +909,6 @@
     <module>batfish-common-protocol</module>
     <module>build-tools</module>
     <module>coordinator</module>
-    <module>eea-parent</module>
     <module>question</module>
   </modules>
 </project>

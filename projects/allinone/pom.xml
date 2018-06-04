@@ -108,11 +108,6 @@
 
     <dependency>
       <groupId>org.batfish</groupId>
-      <artifactId>eea-all</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.batfish</groupId>
       <artifactId>question</artifactId>
     </dependency>
 
@@ -139,6 +134,16 @@
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>guava-eea</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>jdk-eea</artifactId>
     </dependency>
 
     <!-- Test scope dependencies. -->

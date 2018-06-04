@@ -1,4 +1,0 @@
-class java/util/GregorianCalendar
-clone
- ()Ljava/lang/Object;
- ()L1java/lang/Object;

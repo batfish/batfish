@@ -1,4 +1,0 @@
-class java/io/RandomAccessFile
-readUTF
- ()Ljava/lang/String;
- ()L1java/lang/String;

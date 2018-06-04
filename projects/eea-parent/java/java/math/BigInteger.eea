@@ -1,4 +1,0 @@
-class java/math/BigInteger
-valueOf
- (J)Ljava/math/BigInteger;
- (J)L1java/math/BigInteger;

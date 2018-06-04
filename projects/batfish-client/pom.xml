@@ -79,11 +79,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.batfish</groupId>
-      <artifactId>eea-all</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
@@ -156,6 +151,16 @@
     <dependency>
       <groupId>org.jline</groupId>
       <artifactId>jline</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>guava-eea</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>jdk-eea</artifactId>
     </dependency>
 
     <!-- Runtime dependencies to add logging. -->

@@ -1,4 +1,0 @@
-class java/util/concurrent/LinkedBlockingQueue
-poll
- (JLjava/util/concurrent/TimeUnit;)TE;
- (JLjava/util/concurrent/TimeUnit;)T0E;

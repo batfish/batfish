@@ -1,7 +1,0 @@
-class java/util/Formatter
-format
- (Ljava/lang/String;[Ljava/lang/Object;)Ljava/util/Formatter;
- (Ljava/lang/String;[Ljava/lang/Object;)L1java/util/Formatter;
-format
- (Ljava/util/Locale;Ljava/lang/String;[Ljava/lang/Object;)Ljava/util/Formatter;
- (Ljava/util/Locale;Ljava/lang/String;[Ljava/lang/Object;)L1java/util/Formatter;
