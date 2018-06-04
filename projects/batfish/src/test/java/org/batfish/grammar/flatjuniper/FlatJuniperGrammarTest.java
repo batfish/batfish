@@ -190,6 +190,14 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void test() throws IOException {
+    String hostname = "bogus";
+    Configuration c = parseConfig(hostname);
+
+    String blah = "blah";
+  }
+
+  @Test
   public void testApplications() throws IOException {
     String hostname = "applications";
 

@@ -9,6 +9,9 @@ public final class VendorConfigurationFormatDetector {
   public static final String BATFISH_FLATTENED_JUNIPER_HEADER =
       "####BATFISH FLATTENED JUNIPER CONFIG####\n";
 
+  public static final String BATFISH_FLATTENED_PALO_ALTO_HEADER =
+      "####BATFISH FLATTENED PALO ALTO CONFIG####\n";
+
   public static final String BATFISH_FLATTENED_VYOS_HEADER =
       "####BATFISH FLATTENED VYOS CONFIG####\n";
 
@@ -65,6 +68,13 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern SET_PATTERN = Pattern.compile("(?m)^set ");
 
   // checkPaloAlto patterns
+  // TODO update this to take into account hostname setting in vsys
+  private static final Pattern FLAT_PALO_ALTO_HOSTNAME_DECLARATION_PATTERN =
+      Pattern.compile("(?m)^set deviceconfig system host-name ");
+  private static final Pattern FLAT_PALO_ALTO_PATTERN =
+      Pattern.compile(Pattern.quote(BATFISH_FLATTENED_PALO_ALTO_HEADER));
+  private static final Pattern PALO_ALTO_DEVICE_CONFIG_PATTERN =
+      Pattern.compile("(?m)deviceconfig");
   private static final Pattern PALO_ALTO_PANORAMA_PATTERN =
       Pattern.compile("(?m)(send-to-panorama|panorama-server)");
 
@@ -238,7 +248,15 @@ public final class VendorConfigurationFormatDetector {
 
   @Nullable
   private ConfigurationFormat checkPaloAlto() {
-    if (fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)) {
+    if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)
+        || fileTextMatches(FLAT_PALO_ALTO_HOSTNAME_DECLARATION_PATTERN)) {
+      return ConfigurationFormat.PALO_ALTO;
+    } else if (fileTextMatches(PALO_ALTO_DEVICE_CONFIG_PATTERN)
+        || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)
+        || fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
+      if (_fileText.contains("{")) {
+        return ConfigurationFormat.PALO_ALTO_NESTED;
+      }
       return ConfigurationFormat.PALO_ALTO;
     }
     return null;
@@ -268,7 +286,7 @@ public final class VendorConfigurationFormatDetector {
     } else if (fileTextMatches(RANCID_MRV_PATTERN)) {
       return ConfigurationFormat.MRV;
     } else if (fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
-      return ConfigurationFormat.PALO_ALTO;
+      return checkPaloAlto();
     }
     return null;
   }

@@ -29,6 +29,7 @@ public enum ConfigurationFormat {
   MRV_COMMANDS("mrv_commands"),
   MSS("mss"),
   PALO_ALTO("paloalto"),
+  PALO_ALTO_NESTED("paloalto"),
   UNKNOWN("unknown"),
   VXWORKS("vxworks"),
   VYOS("vyos");
