@@ -3371,6 +3371,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           e.getValue());
     }
 
+    markConcreteStructure(CiscoStructureType.INTERFACE, CiscoStructureUsage.INTERFACE_SELF_REF);
+
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
         CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
