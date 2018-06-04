@@ -1579,6 +1579,17 @@ public class CiscoGrammarTest {
                 hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
                 hasLifeTimeSeconds(86400))));
+    // asserting the default values being set
+    assertThat(
+        c,
+        hasIkeProposal(
+            "030",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(86400))));
   }
 
   @Test
