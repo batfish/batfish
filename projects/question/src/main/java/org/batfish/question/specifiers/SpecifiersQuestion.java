@@ -2,9 +2,6 @@ package org.batfish.question.specifiers;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
-import java.util.ServiceLoader;
-import java.util.function.Function;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
@@ -39,10 +36,7 @@ public final class SpecifiersQuestion extends Question {
         _ipSpaceSpecifierFactory, String.format("%s is required", PROP_IP_SPACE_SPECIFIER_FACTORY));
 
     IpSpaceSpecifierFactory ipSpaceSpecifierFactory =
-        loadService(
-            IpSpaceSpecifierFactory.class,
-            IpSpaceSpecifierFactory::getName,
-            _ipSpaceSpecifierFactory);
+        IpSpaceSpecifierFactory.load(_ipSpaceSpecifierFactory);
 
     return ipSpaceSpecifierFactory.buildIpSpaceSpecifier(_ipSpaceSpecifierInput);
   }
@@ -53,23 +47,9 @@ public final class SpecifiersQuestion extends Question {
         String.format("%s is required", PROP_LOCATION_SPECIFIER_FACTORY));
 
     LocationSpecifierFactory locationSpecifierFactory =
-        loadService(
-            LocationSpecifierFactory.class,
-            LocationSpecifierFactory::getName,
-            _locationSpecifierFactory);
+        LocationSpecifierFactory.load(_locationSpecifierFactory);
 
     return locationSpecifierFactory.buildLocationSpecifier(_locationSpecifierInput);
-  }
-
-  private static <T> T loadService(
-      Class<T> serviceClass, Function<T, String> nameFunction, String name) {
-    for (T svc : ServiceLoader.load(serviceClass)) {
-      if (nameFunction.apply(svc).equals(name)) {
-        return svc;
-      }
-    }
-    throw new BatfishException(
-        String.format("Service %s not found with name %s", serviceClass.getSimpleName(), name));
   }
 
   @Override

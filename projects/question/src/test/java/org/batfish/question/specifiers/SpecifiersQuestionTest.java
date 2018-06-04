@@ -5,12 +5,48 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.auto.service.AutoService;
+import java.util.Set;
+import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.IpSpaceSpecifier;
+import org.batfish.specifier.IpSpaceSpecifierFactory;
+import org.batfish.specifier.Location;
+import org.batfish.specifier.SpecifierContext;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-public class SpecifiersQuestionTest {
+public final class SpecifiersQuestionTest {
+  @AutoService(IpSpaceSpecifierFactory.class)
+  public static final class TestIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
+    @Override
+    public String getName() {
+      return getClass().getSimpleName();
+    }
+
+    @Override
+    public IpSpaceSpecifier buildIpSpaceSpecifier(Object input) {
+      return new TestIpSpaceSpecifier(input);
+    }
+  }
+
+  public static final class TestIpSpaceSpecifier implements IpSpaceSpecifier {
+    private final Object _input;
+
+    TestIpSpaceSpecifier(Object input) {
+      _input = input;
+    }
+
+    Object getInput() {
+      return _input;
+    }
+
+    @Override
+    public IpSpaceAssignment resolve(Set<Location> locations, SpecifierContext ctxt) {
+      return null;
+    }
+  }
+
   @Rule public final ExpectedException exception = ExpectedException.none();
 
   @Test
