@@ -16325,7 +16325,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : false,
+              "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
               "multipathIbgp" : false,
               "routerId" : "0.0.0.0",
