@@ -83,10 +83,16 @@ public class IpsecProposal extends ComparableStructure<String> {
   private IpsecProtocol _protocol;
 
   @JsonCreator
-  private IpsecProposal(@JsonProperty(PROP_NAME) String name) {
+  public IpsecProposal(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _definitionLine = -1;
   }
+
+  /*
+   * [TODO]: Currently IpsecProposal() is used in Juniper ConfigurationBuilder and
+   * hence when fixing the reference tracking for juniper's configuration, this
+   * can be removed.
+   */
 
   public IpsecProposal(String name, int definitionLine) {
     super(name);
