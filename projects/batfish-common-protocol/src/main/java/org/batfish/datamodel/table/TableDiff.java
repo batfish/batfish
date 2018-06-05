@@ -11,12 +11,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.Row.RowBuilder;
 
 /** A utility class to diff two tables */
+@ParametersAreNonnullByDefault
 public final class TableDiff {
 
   private TableDiff() {}
@@ -61,11 +64,11 @@ public final class TableDiff {
   /**
    * Computes the String representation of the difference for base and delta values.
    *
-   * <p>The underlying Schema of both values should be the same, though onr or both values may be
-   * null.
+   * <p>The underlying Schema of both values should be the same, though one or both values may be
+   * null. Meaningful diffs are currently computed only for Integers and Sets.
    */
   @VisibleForTesting
-  static String diffCells(Object baseValue, Object deltaValue, Schema schema) {
+  static String diffCells(@Nullable Object baseValue, @Nullable Object deltaValue, Schema schema) {
     if (baseValue == null && deltaValue == null) {
       return RESULT_SAME;
     } else if (baseValue == null) {
@@ -161,7 +164,10 @@ public final class TableDiff {
    */
   @VisibleForTesting
   static void diffRowValues(
-      RowBuilder rowBuilder, Row baseRow, Row deltaRow, TableMetadata inputMetadata) {
+      @Nullable RowBuilder rowBuilder,
+      @Nullable Row baseRow,
+      Row deltaRow,
+      TableMetadata inputMetadata) {
     checkArgument(baseRow != null || deltaRow != null, "Both base and delta rows cannot be null");
     checkArgument(rowBuilder != null, "rowBuilder cannot be null");
     checkArgument(inputMetadata.getColumnMetadata() != null, "columns cannot be null");
