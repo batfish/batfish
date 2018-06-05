@@ -3000,14 +3000,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_depi_class(S_depi_classContext ctx) {
     String name = ctx.name.getText();
-    _configuration.getCf().getDepiClasses().computeIfAbsent(name, n -> new DepiClass(n));
+    _configuration.getCf().getDepiClasses().computeIfAbsent(name, DepiClass::new);
     defineStructure(DEPI_CLASS, name, ctx);
   }
 
   @Override
   public void enterS_depi_tunnel(S_depi_tunnelContext ctx) {
     String name = ctx.name.getText();
-    _configuration.getCf().getDepiTunnels().computeIfAbsent(name, n -> new DepiTunnel(n));
+    _configuration.getCf().getDepiTunnels().computeIfAbsent(name, DepiTunnel::new);
     defineStructure(DEPI_TUNNEL, name, ctx);
   }
 
