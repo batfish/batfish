@@ -81,10 +81,10 @@ public class CanonicalAclTest {
     // Canonical acls for acl1 and acl2 should match
     CanonicalAcl canonicalAcl1 =
         new CanonicalAcl(
-            "acl1", acl1, ImmutableMap.of("referencedAcl1", referencedAcl1), _c.getName());
+            "acl1", acl1, ImmutableMap.of("referencedAcl", referencedAcl1), _c.getName());
     CanonicalAcl canonicalAcl2 =
         new CanonicalAcl(
-            "acl2", acl2, ImmutableMap.of("referencedAcl2", referencedAcl2), _c2.getName());
+            "acl2", acl2, ImmutableMap.of("referencedAcl", referencedAcl2), _c2.getName());
 
     assertThat(canonicalAcl1.equals(canonicalAcl2), equalTo(true));
   }
@@ -166,10 +166,10 @@ public class CanonicalAclTest {
     // Canonical acls for acl1 and acl2 shouldn't match since references are different
     CanonicalAcl canonicalAcl1 =
         new CanonicalAcl(
-            "acl1", acl1, ImmutableMap.of("referencedAcl1", referencedAcl1), _c.getName());
+            "acl1", acl1, ImmutableMap.of("referencedAcl", referencedAcl1), _c.getName());
     CanonicalAcl canonicalAcl2 =
         new CanonicalAcl(
-            "acl2", acl2, ImmutableMap.of("referencedAcl2", referencedAcl2), _c2.getName());
+            "acl2", acl2, ImmutableMap.of("referencedAcl", referencedAcl2), _c2.getName());
 
     assertThat(canonicalAcl1.equals(canonicalAcl2), equalTo(false));
   }
