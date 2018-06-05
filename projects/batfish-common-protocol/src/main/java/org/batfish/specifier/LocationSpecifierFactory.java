@@ -15,7 +15,7 @@ public interface LocationSpecifierFactory {
         return factory;
       }
     }
-    throw new BatfishException("Could not find an IpSpaceSpecifierFactory with name " + name);
+    throw new BatfishException("Could not find a LocationSpecifierFactory with name " + name);
   }
 
   String getName();

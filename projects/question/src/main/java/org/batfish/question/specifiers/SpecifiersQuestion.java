@@ -1,7 +1,9 @@
 package org.batfish.question.specifiers;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.Objects;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.specifier.IpSpaceSpecifier;
 import org.batfish.specifier.IpSpaceSpecifierFactory;
@@ -29,27 +31,32 @@ public final class SpecifiersQuestion extends Question {
 
   private String _locationSpecifierInput;
 
-  SpecifiersQuestion() {}
+  public SpecifiersQuestion() {}
 
-  IpSpaceSpecifier getIpSpaceSpecifier() {
-    Objects.requireNonNull(
-        _ipSpaceSpecifierFactory, String.format("%s is required", PROP_IP_SPACE_SPECIFIER_FACTORY));
+  public IpSpaceSpecifier getIpSpaceSpecifier() {
+    if (_ipSpaceSpecifierFactory == null && _ipSpaceSpecifierInput != null) {
+      throw new BatfishException("Cannot specify a specifier input without a specifier factory");
+    }
 
-    IpSpaceSpecifierFactory ipSpaceSpecifierFactory =
-        IpSpaceSpecifierFactory.load(_ipSpaceSpecifierFactory);
+    String ipSpaceSpecifierFactory =
+        firstNonNull(_ipSpaceSpecifierFactory, "ConstantUniverseIpSpaceSpecifierFactory");
 
-    return ipSpaceSpecifierFactory.buildIpSpaceSpecifier(_ipSpaceSpecifierInput);
+    IpSpaceSpecifierFactory factory = IpSpaceSpecifierFactory.load(ipSpaceSpecifierFactory);
+
+    return factory.buildIpSpaceSpecifier(_ipSpaceSpecifierInput);
   }
 
-  LocationSpecifier getLocationSpecifier() {
-    Objects.requireNonNull(
-        _locationSpecifierFactory,
-        String.format("%s is required", PROP_LOCATION_SPECIFIER_FACTORY));
+  public LocationSpecifier getLocationSpecifier() {
+    if (_locationSpecifierFactory == null && _locationSpecifierInput != null) {
+      throw new BatfishException("Cannot specify a specifier input without a specifier factory");
+    }
 
-    LocationSpecifierFactory locationSpecifierFactory =
-        LocationSpecifierFactory.load(_locationSpecifierFactory);
+    String locationSpecifierFactory =
+        firstNonNull(_locationSpecifierFactory, "AllInterfacesLocationSpecifierFactory");
 
-    return locationSpecifierFactory.buildLocationSpecifier(_locationSpecifierInput);
+    LocationSpecifierFactory factory = LocationSpecifierFactory.load(locationSpecifierFactory);
+
+    return factory.buildLocationSpecifier(_locationSpecifierInput);
   }
 
   @Override
@@ -93,12 +100,12 @@ public final class SpecifiersQuestion extends Question {
   }
 
   @JsonProperty(PROP_LOCATION_SPECIFIER_FACTORY)
-  public void getLocationSpecifierFactory(String locationSpecifierFactory) {
+  public void setLocationSpecifierFactory(String locationSpecifierFactory) {
     _locationSpecifierFactory = locationSpecifierFactory;
   }
 
   @JsonProperty(PROP_LOCATION_SPECIFIER_INPUT)
-  public void getLocationSpecifierInput(String locationSpecifierInput) {
+  public void setLocationSpecifierInput(String locationSpecifierInput) {
     _locationSpecifierInput = locationSpecifierInput;
   }
 }
