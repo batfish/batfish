@@ -3978,6 +3978,16 @@ ESP_GCM
    'esp-gcm'
 ;
 
+ESP_AES128_GCM
+:
+   'esp-aes128-gcm'
+;
+
+ESP_AES256_GCM
+:
+   'esp-aes256-gcm'
+;
+
 ESP_GMAC
 :
    'esp-gmac'

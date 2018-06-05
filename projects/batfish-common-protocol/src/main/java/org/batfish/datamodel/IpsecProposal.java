@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
@@ -59,7 +60,6 @@ public class IpsecProposal extends ComparableStructure<String> {
   private static IpsecProposal initNOPFS_ESP_DES_MD5() {
     IpsecProposal p = new IpsecProposal("NOPFS_ESP_DES_MD5");
     p.getProtocols().add(IpsecProtocol.ESP);
-    ;
     p.setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC);
     return p;
@@ -145,7 +145,13 @@ public class IpsecProposal extends ComparableStructure<String> {
     _lifetimeSeconds = lifetimeSeconds;
   }
 
-  public void setProtocols(SortedSet<IpsecProtocol> protocol) {
-    _protocols = protocol;
+  /** @deprecated Use {@link #setProtocols(SortedSet)} instead. */
+  @Deprecated
+  public void setProtocol(IpsecProtocol protocol) {
+    setProtocols(ImmutableSortedSet.of(protocol));
+  }
+
+  public void setProtocols(SortedSet<IpsecProtocol> protocols) {
+    _protocols = protocols;
   }
 }

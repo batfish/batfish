@@ -2,7 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
-import java.util.SortedSet;
+import java.util.Set;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
@@ -34,7 +34,7 @@ public final class IpsecProposalMatchers {
    * Provides a matcher that matches if the Ipsec Proposal's value of {@code protocols} matches
    * specified {@code protocols}
    */
-  public static HasProtocols hasProtocols(SortedSet<IpsecProtocol> protocols) {
+  public static HasProtocols hasProtocols(Set<IpsecProtocol> protocols) {
     return new HasProtocols(equalTo(protocols));
   }
 

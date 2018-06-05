@@ -8036,8 +8036,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private EncryptionAlgorithm toEncryptionAlgorithm(Ipsec_encryptionContext ctx) {
+    int strength;
     if (ctx.ESP_AES() != null) {
-      int strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
+      strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
       switch (strength) {
         case 128:
           return EncryptionAlgorithm.AES_128_CBC;
@@ -8052,6 +8053,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return EncryptionAlgorithm.DES_CBC;
     } else if (ctx.ESP_3DES() != null) {
       return EncryptionAlgorithm.THREEDES_CBC;
+    } else if (ctx.ESP_GCM() != null) {
+      strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
+      switch (strength) {
+        case 128:
+          return EncryptionAlgorithm.AES_128_GCM;
+        case 192:
+          return EncryptionAlgorithm.AES_192_GCM;
+        case 256:
+          return EncryptionAlgorithm.AES_256_GCM;
+        default:
+          throw convError(EncryptionAlgorithm.class, ctx);
+      }
+    } else if (ctx.ESP_GMAC() != null) {
+      strength = ctx.strength == null ? 128 : toInteger(ctx.strength);
+      switch (strength) {
+        case 128:
+          return EncryptionAlgorithm.AES_128_GMAC;
+        case 192:
+          return EncryptionAlgorithm.AES_192_GMAC;
+        case 256:
+          return EncryptionAlgorithm.AES_256_GMAC;
+        default:
+          throw convError(EncryptionAlgorithm.class, ctx);
+      }
+    } else if (ctx.ESP_NULL() != null) {
+      return EncryptionAlgorithm.NULL;
+    } else if (ctx.ESP_SEAL() != null) {
+      return EncryptionAlgorithm.AES_SEAL_160;
     } else {
       throw convError(EncryptionAlgorithm.class, ctx);
     }
@@ -8060,10 +8089,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private EncryptionAlgorithm toEncryptionAlgorithm(Ipsec_encryption_arubaContext ctx) {
     if (ctx.ESP_AES128() != null) {
       return EncryptionAlgorithm.AES_128_CBC;
+    } else if (ctx.ESP_AES128_GCM() != null) {
+      return EncryptionAlgorithm.AES_128_GCM;
     } else if (ctx.ESP_AES192() != null) {
       return EncryptionAlgorithm.AES_192_CBC;
     } else if (ctx.ESP_AES256() != null) {
       return EncryptionAlgorithm.AES_256_CBC;
+    } else if (ctx.ESP_AES256_GCM() != null) {
+      return EncryptionAlgorithm.AES_256_GCM;
     } else if (ctx.ESP_DES() != null) {
       return EncryptionAlgorithm.DES_CBC;
     } else if (ctx.ESP_3DES() != null) {

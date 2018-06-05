@@ -1130,10 +1130,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else if (ctx.AES_128_CBC() != null) {
       return EncryptionAlgorithm.AES_128_CBC;
+    } else if (ctx.AES_128_GCM() != null) {
+      return EncryptionAlgorithm.AES_128_GCM;
     } else if (ctx.AES_192_CBC() != null) {
       return EncryptionAlgorithm.AES_192_CBC;
+    } else if (ctx.AES_192_GCM() != null) {
+      return EncryptionAlgorithm.AES_192_GCM;
     } else if (ctx.AES_256_CBC() != null) {
       return EncryptionAlgorithm.AES_256_CBC;
+    } else if (ctx.AES_256_GCM() != null) {
+      return EncryptionAlgorithm.AES_256_GCM;
     } else if (ctx.DES_CBC() != null) {
       return EncryptionAlgorithm.DES_CBC;
     } else {

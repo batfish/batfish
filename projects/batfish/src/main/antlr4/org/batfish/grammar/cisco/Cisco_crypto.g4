@@ -798,8 +798,14 @@ ipsec_encryption
    )
    | ESP_DES
    | ESP_3DES
-   | ESP_GCM
-   | ESP_GMAC
+   |
+   (
+      ESP_GCM strength = DEC?
+   )
+   |
+   (
+      ESP_GMAC strength = DEC?
+   )
    | ESP_NULL
    | ESP_SEAL
 ;
@@ -809,6 +815,8 @@ ipsec_encryption_aruba
    ESP_AES128
    | ESP_AES192
    | ESP_AES256
+   | ESP_AES128_GCM
+   | ESP_AES256_GCM
    | ESP_DES
    | ESP_3DES
 ;
