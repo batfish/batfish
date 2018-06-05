@@ -1258,7 +1258,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testIpsecProfile() throws IOException {
+  public void testIpsecPolicy() throws IOException {
     Configuration c = parseConfig("ipsec-policy");
 
     assertThat(
