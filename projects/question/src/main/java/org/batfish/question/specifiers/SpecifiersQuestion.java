@@ -1,6 +1,6 @@
 package org.batfish.question.specifiers;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.BatfishException;
