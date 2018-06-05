@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -876,24 +877,24 @@ public class CommonUtil {
   }
 
   /**
-   * Checks if an IP address is associated with a loopback interface for the configuration.
+   * Returns an active interface with the specified IP address for {@code configuration}.
    *
    * @param ipAddress The IP address to check
    * @param c The configuration object in which to check
-   * @return The result
+   * @return Any Interface that matches the condition
    */
-  public static boolean isActiveLoopbackIp(Ip ipAddress, Configuration c) {
+  public static Optional<Interface> getActiveInterfaceWithIp(Ip ipAddress, Configuration c) {
     return c.getInterfaces()
         .values()
         .stream()
-        .anyMatch(
+        .filter(
             iface ->
                 iface.getActive()
-                    && iface.isLoopback(c.getConfigurationFormat())
                     && iface
                         .getAllAddresses()
                         .stream()
-                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)));
+                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)))
+        .findAny();
   }
 
   /**

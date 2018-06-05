@@ -8,6 +8,7 @@ import com.google.common.graph.Network;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.batfish.common.Answerer;
@@ -21,6 +22,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.pojo.Interface;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -37,9 +39,9 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
   public static final String COL_CONFIGURED_STATUS = "configuredStatus";
   public static final String COL_ESTABLISHED_NEIGHBORS = "establishedNeighbors";
+  public static final String COL_LOCAL_INTERFACE = "localInterface";
   public static final String COL_LOCAL_IP = "localIp";
   public static final String COL_NODE = "node";
-  public static final String COL_ON_LOOPBACK = "onLoopback";
   public static final String COL_REMOTE_NODE = "remoteNode";
   public static final String COL_REMOTE_PREFIX = "remotePrefix";
   public static final String COL_SESSION_TYPE = "sessionType";
@@ -136,8 +138,10 @@ public class BgpSessionStatusAnswerer extends Answerer {
         configuredStatus = SessionStatus.NO_LOCAL_IP;
       } else {
         bsiBuilder.withLocalIp(localIp);
-        bsiBuilder.withOnLoopback(
-            CommonUtil.isActiveLoopbackIp(localIp, configurations.get(hostname)));
+        Optional<org.batfish.datamodel.Interface> iface =
+            CommonUtil.getActiveInterfaceWithIp(localIp, configurations.get(hostname));
+        bsiBuilder.withLocalInterface(
+            iface.isPresent() ? new Interface(hostname, iface.get().getName()) : null);
 
         Ip remoteIp = bgpNeighbor.getAddress();
 
@@ -193,6 +197,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
                 true,
                 false),
             new ColumnMetadata(
+                COL_LOCAL_INTERFACE,
+                Schema.BOOLEAN,
+                "Local interface of the session",
+                false,
+                true),
+            new ColumnMetadata(
                 COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
             new ColumnMetadata(
                 COL_REMOTE_PREFIX, Schema.PREFIX, "Remote prefix for this session", true, false),
@@ -204,12 +214,6 @@ public class BgpSessionStatusAnswerer extends Answerer {
                 COL_ESTABLISHED_NEIGHBORS,
                 Schema.INTEGER,
                 "Number of neighbors with whom BGP session was established",
-                false,
-                true),
-            new ColumnMetadata(
-                COL_ON_LOOPBACK,
-                Schema.BOOLEAN,
-                "Whether the session was established on loopback interface",
                 false,
                 true));
 
@@ -234,7 +238,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
     SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
     Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);
-    Boolean onLoopback = row.get(COL_ON_LOOPBACK, Boolean.class);
+    Interface localInterface = row.get(COL_LOCAL_INTERFACE, Interface.class);
     Node node = row.get(COL_NODE, Node.class);
     Node remoteNode = row.get(COL_REMOTE_NODE, Node.class);
     Prefix remotePrefix = row.get(COL_REMOTE_PREFIX, Prefix.class);
@@ -245,8 +249,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
         configuredStatus,
         establishedNeighbors,
         node.getName(),
+        localInterface,
         localIp,
-        onLoopback,
         remoteNode.getName(),
         remotePrefix,
         sessionType,
@@ -263,9 +267,9 @@ public class BgpSessionStatusAnswerer extends Answerer {
     RowBuilder row = Row.builder();
     row.put(COL_CONFIGURED_STATUS, info.getConfiguredStatus())
         .put(COL_ESTABLISHED_NEIGHBORS, info.getEstablishedNeighbors())
+        .put(COL_LOCAL_INTERFACE, info.getLocalInterface())
         .put(COL_LOCAL_IP, info.getLocalIp())
         .put(COL_NODE, new Node(info.getNodeName()))
-        .put(COL_ON_LOOPBACK, info.getOnLoopback())
         .put(COL_REMOTE_NODE, info.getRemoteNode() == null ? null : new Node(info.getRemoteNode()))
         .put(COL_REMOTE_PREFIX, info.getRemotePrefix())
         .put(COL_SESSION_TYPE, info.getSessionType())
