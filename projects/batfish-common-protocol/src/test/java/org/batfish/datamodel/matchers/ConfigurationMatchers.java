@@ -11,6 +11,7 @@ import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
@@ -23,6 +24,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpace;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpaces;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPolicy;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
@@ -128,6 +130,15 @@ public class ConfigurationMatchers {
    */
   public static HasIpSpaces hasIpSpaces(@Nonnull Matcher<? super Map<String, IpSpace>> subMatcher) {
     return new HasIpSpaces(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * Ipspec policy with the specified name.
+   */
+  public static HasIpsecPolicy hasIpsecPolicy(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecPolicy> subMatcher) {
+    return new HasIpsecPolicy(name, subMatcher);
   }
 
   /**
