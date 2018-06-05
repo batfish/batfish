@@ -1,5 +1,7 @@
 package org.batfish.representation.cisco;
 
+import java.util.LinkedList;
+import java.util.List;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 
@@ -11,10 +13,11 @@ public class IpsecProfile extends ComparableStructure<String> {
 
   private DiffieHellmanGroup _pfsGroup;
 
-  private String _transformSet;
+  private List<String> _transformSets;
 
   public IpsecProfile(String name) {
     super(name);
+    _transformSets = new LinkedList<>();
   }
 
   public String getIsakmpProfile() {
@@ -25,8 +28,8 @@ public class IpsecProfile extends ComparableStructure<String> {
     return _pfsGroup;
   }
 
-  public String getTransformSet() {
-    return _transformSet;
+  public List<String> getTransformSets() {
+    return _transformSets;
   }
 
   public void setIsakmpProfile(String isakmpProfile) {
@@ -37,7 +40,7 @@ public class IpsecProfile extends ComparableStructure<String> {
     _pfsGroup = pfsGroup;
   }
 
-  public void setTransformSet(String transformSet) {
-    _transformSet = transformSet;
+  public void setTransformSets(List<String> transformSets) {
+    _transformSets = transformSets;
   }
 }

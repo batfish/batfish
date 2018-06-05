@@ -1,0 +1,14 @@
+#
+set system host-name ipsec-policy
+#
+set security ipsec proposal TRANSFORM-SET1 authentication-algorithm hmac-md5-96
+set security ipsec proposal TRANSFORM-SET1 encryption-algorithm 3des-cbc
+set security ipsec proposal TRANSFORM-SET1 protocol esp
+#
+set security ipsec proposal TRANSFORM-SET2 authentication-algorithm hmac-sha1-96
+set security ipsec proposal TRANSFORM-SET2 encryption-algorithm des-cbc
+set security ipsec proposal TRANSFORM-SET2 protocol esp
+#
+set security ipsec policy policy1 perfect-forward-secrecy keys group14
+set security ipsec policy policy1 proposals [ TRANSFORM-SET1 TRANSFORM-SET2 ]
+

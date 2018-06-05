@@ -10,6 +10,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -32,6 +33,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
@@ -85,6 +87,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -113,6 +116,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
+import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
@@ -1251,6 +1255,31 @@ public class FlatJuniperGrammarTest {
                                         .build()))
                             .setName("TERM")
                             .build())))));
+  }
+
+  @Test
+  public void testIpsecProfile() throws IOException {
+    Configuration c = parseConfig("ipsec-policy");
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "policy1",
+            allOf(
+                IpsecPolicyMatchers.hasIpsecProposal(
+                    "TRANSFORM-SET1",
+                    allOf(
+                        IpsecProposalMatchers.hasEncryptionAlgorithm(
+                            EncryptionAlgorithm.THREEDES_CBC),
+                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                            IpsecAuthenticationAlgorithm.HMAC_MD5_96))),
+                IpsecPolicyMatchers.hasIpsecProposal(
+                    "TRANSFORM-SET2",
+                    allOf(
+                        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                            IpsecAuthenticationAlgorithm.HMAC_SHA1_96))),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
   }
 
   @Test

@@ -1585,10 +1585,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCipprf_set_transform_set(Cipprf_set_transform_setContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _currentIpsecProfile.setTransformSet(name);
-    _configuration.referenceStructure(IPSEC_TRANSFORM_SET, name, IPSEC_PROFILE_TRANSFORM_SET, line);
+    for (VariableContext transform : ctx.transforms) {
+      int line = transform.getStart().getLine();
+      String name = transform.getText();
+      _currentIpsecProfile.getTransformSets().add(name);
+      _configuration.referenceStructure(
+          IPSEC_TRANSFORM_SET, name, IPSEC_PROFILE_TRANSFORM_SET, line);
+    }
   }
 
   @Override
@@ -7915,8 +7918,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {
     if (ctx.GROUP1() != null) {
       return DiffieHellmanGroup.GROUP1;
+    } else if (ctx.GROUP1() != null) {
+      return DiffieHellmanGroup.GROUP1;
+    } else if (ctx.GROUP14() != null) {
+      return DiffieHellmanGroup.GROUP14;
+    } else if (ctx.GROUP15() != null) {
+      return DiffieHellmanGroup.GROUP15;
+    } else if (ctx.GROUP16() != null) {
+      return DiffieHellmanGroup.GROUP16;
+    } else if (ctx.GROUP19() != null) {
+      return DiffieHellmanGroup.GROUP19;
     } else if (ctx.GROUP2() != null) {
       return DiffieHellmanGroup.GROUP2;
+    } else if (ctx.GROUP21() != null) {
+      return DiffieHellmanGroup.GROUP21;
+    } else if (ctx.GROUP24() != null) {
+      return DiffieHellmanGroup.GROUP24;
+    } else if (ctx.GROUP5() != null) {
+      return DiffieHellmanGroup.GROUP5;
     } else {
       throw convError(DiffieHellmanGroup.class, ctx);
     }

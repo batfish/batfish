@@ -4,9 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
 
@@ -23,12 +24,12 @@ public class IpsecPolicy extends ComparableStructure<String> {
 
   private transient SortedSet<String> _proposalNames;
 
-  private SortedMap<String, IpsecProposal> _proposals;
+  private Map<String, IpsecProposal> _proposals;
 
   @JsonCreator
   public IpsecPolicy(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _proposals = new TreeMap<>();
+    _proposals = new LinkedHashMap<>();
   }
 
   public DiffieHellmanGroup getPfsKeyGroup() {
@@ -50,7 +51,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  public SortedMap<String, IpsecProposal> getProposals() {
+  public Map<String, IpsecProposal> getProposals() {
     return _proposals;
   }
 
