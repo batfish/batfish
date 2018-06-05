@@ -1,14 +1,18 @@
 package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.acl.CanonicalAcl;
 
 public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnswerElementInterface {
 
@@ -138,6 +142,8 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   }
 
   @Override
+  public void addCycle(String hostname, List<String> aclsInCycle) {}
+
   public void addEquivalenceClass(
       String aclName, String hostname, SortedSet<String> eqClassNodes, List<String> aclLines) {
     SortedMap<String, SortedSet<String>> byRep =
@@ -258,5 +264,21 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   public void setUnreachableLines(
       SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> unreachableLines) {
     _unreachableLines = unreachableLines;
+  }
+
+  @Override
+  @JsonIgnore
+  public void setCanonicalAcls(List<CanonicalAcl> acls) {
+    for (CanonicalAcl acl : acls) {
+      addEquivalenceClass(
+          acl.getRepresentativeAclName(),
+          acl.getRepresentativeHostname(),
+          ImmutableSortedSet.copyOf(acl.getSources().keySet()),
+          acl.getAcl()
+              .getLines()
+              .stream()
+              .map(line -> line.getName())
+              .collect(Collectors.toList()));
+    }
   }
 }

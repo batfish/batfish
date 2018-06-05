@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -27,10 +26,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
 
   private Multiset<Row> _rows = ConcurrentHashMultiset.create();
   private Map<String, Map<String, CanonicalAcl>> _representativeSourcesToAcls = new TreeMap<>();
-
-  @Override
-  public void addEquivalenceClass(
-      String aclName, String hostname, SortedSet<String> eqClassNodes, List<String> aclLines) {}
 
   @Override
   public void addReachableLine(
@@ -78,6 +73,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .build());
   }
 
+  @Override
   public void addCycle(String hostname, List<String> aclsInCycle) {
     _rows.add(
         Row.builder()
@@ -131,6 +127,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     return _rows;
   }
 
+  @Override
   public void setCanonicalAcls(List<CanonicalAcl> acls) {
     for (CanonicalAcl acl : acls) {
       _representativeSourcesToAcls
