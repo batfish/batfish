@@ -1732,20 +1732,19 @@ public class CiscoGrammarTest {
             allOf(
                 IpsecPolicyMatchers.hasIkeGateway(
                     allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
-                IpsecPolicyMatchers.hasIpsecProposal(
-                    "TRANSFORM-SET1",
-                    allOf(
-                        IpsecProposalMatchers.hasEncryptionAlgorithm(
-                            EncryptionAlgorithm.AES_256_CBC),
-                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                            IpsecAuthenticationAlgorithm.HMAC_MD5_96))),
-                IpsecPolicyMatchers.hasIpsecProposal(
-                    "TRANSFORM-SET2",
-                    allOf(
-                        IpsecProposalMatchers.hasEncryptionAlgorithm(
-                            EncryptionAlgorithm.AES_256_CBC),
-                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                            IpsecAuthenticationAlgorithm.HMAC_SHA1_96))),
+                IpsecPolicyMatchers.hasIpsecProposals(
+                    containsInAnyOrder(
+                        ImmutableList.of(
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.AES_256_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.AES_256_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
                 hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
 
     // testing the Diffie Hellman groups

@@ -76,8 +76,8 @@ public final class IpsecVpn extends ComparableStructure<String> {
     } else if (_ipsecPolicy.getPfsKeyGroup() != remoteIpsecVpn.getIpsecPolicy().getPfsKeyGroup()) {
       return false;
     }
-    for (IpsecProposal lhs : _ipsecPolicy.getProposals().values()) {
-      for (IpsecProposal rhs : remoteIpsecVpn.getIpsecPolicy().getProposals().values()) {
+    for (IpsecProposal lhs : _ipsecPolicy.getProposals()) {
+      for (IpsecProposal rhs : remoteIpsecVpn.getIpsecPolicy().getProposals()) {
         if (lhs.compatibleWith(rhs)) {
           return true;
         }

@@ -4,11 +4,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.SortedMap;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
 
 public class IpsecPolicy extends ComparableStructure<String> {
@@ -26,13 +26,13 @@ public class IpsecPolicy extends ComparableStructure<String> {
 
   private transient SortedSet<String> _proposalNames;
 
-  private Map<String, IpsecProposal>
-      _proposals; /* Ipsec proposals are applied in the order they are specified */
+  private List<IpsecProposal> _proposals;
 
   @JsonCreator
   public IpsecPolicy(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _proposals = new LinkedHashMap<>();
+    _proposals =
+        new ArrayList<>(); /* Ipsec proposals are applied in the order they are specified */
   }
 
   public DiffieHellmanGroup getPfsKeyGroup() {
@@ -51,21 +51,24 @@ public class IpsecPolicy extends ComparableStructure<String> {
   @JsonPropertyDescription("IPSEC proposals to try with this policy")
   public SortedSet<String> getProposalNames() {
     if (_proposals != null && !_proposals.isEmpty()) {
-      return new TreeSet<>(_proposals.keySet());
+      return _proposals
+          .stream()
+          .map(IpsecProposal::getName)
+          .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     } else {
       return _proposalNames;
     }
   }
 
   @JsonIgnore
-  public Map<String, IpsecProposal> getProposals() {
+  public List<IpsecProposal> getProposals() {
     return _proposals;
   }
 
   public void resolveReferences(Configuration owner) {
     if (_proposalNames != null) {
       for (String name : _proposalNames) {
-        _proposals.put(name, owner.getIpsecProposals().get(name));
+        _proposals.add(owner.getIpsecProposals().get(name));
       }
     }
   }
@@ -87,7 +90,7 @@ public class IpsecPolicy extends ComparableStructure<String> {
     _proposalNames = proposalNames;
   }
 
-  public void setProposals(SortedMap<String, IpsecProposal> proposals) {
+  public void setProposals(List<IpsecProposal> proposals) {
     _proposals = proposals;
   }
 }

@@ -1,6 +1,6 @@
 package org.batfish.representation.cisco;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
@@ -17,7 +17,7 @@ public class IpsecProfile extends ComparableStructure<String> {
 
   public IpsecProfile(String name) {
     super(name);
-    _transformSets = new LinkedList<>();
+    _transformSets = new ArrayList<>();
   }
 
   public String getIsakmpProfile() {

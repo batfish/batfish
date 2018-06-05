@@ -3577,7 +3577,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     for (String transformSetName : ipsecProfile.getTransformSets()) {
       IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
       if (ipsecProposalName != null) {
-        policy.getProposals().put(transformSetName, ipsecProposalName);
+        policy.getProposals().add(ipsecProposalName);
       }
     }
 

@@ -1266,19 +1266,19 @@ public class FlatJuniperGrammarTest {
         hasIpsecPolicy(
             "policy1",
             allOf(
-                IpsecPolicyMatchers.hasIpsecProposal(
-                    "TRANSFORM-SET1",
-                    allOf(
-                        IpsecProposalMatchers.hasEncryptionAlgorithm(
-                            EncryptionAlgorithm.THREEDES_CBC),
-                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                            IpsecAuthenticationAlgorithm.HMAC_MD5_96))),
-                IpsecPolicyMatchers.hasIpsecProposal(
-                    "TRANSFORM-SET2",
-                    allOf(
-                        IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
-                        IpsecProposalMatchers.hasAuthenticationAlgorithm(
-                            IpsecAuthenticationAlgorithm.HMAC_SHA1_96))),
+                IpsecPolicyMatchers.hasIpsecProposals(
+                    containsInAnyOrder(
+                        ImmutableList.of(
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.THREEDES_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.DES_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
                 hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
 
     // testing the Diffie Hellman groups

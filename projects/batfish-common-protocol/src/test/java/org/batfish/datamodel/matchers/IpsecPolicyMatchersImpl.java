@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.IkeGateway;
@@ -10,20 +11,15 @@ import org.hamcrest.Matcher;
 
 final class IpsecPolicyMatchersImpl {
 
-  static final class HasIpsecProposal extends FeatureMatcher<IpsecPolicy, IpsecProposal> {
-    private final String _name;
+  static class HasIpsecProposals extends FeatureMatcher<IpsecPolicy, List<IpsecProposal>> {
 
-    HasIpsecProposal(@Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
-      super(
-          subMatcher,
-          String.format("An Ipsec policy with IpsecProposal %s:", name),
-          String.format("IpsecProposal %s", name));
-      _name = name;
+    public HasIpsecProposals(@Nonnull Matcher<? super List<IpsecProposal>> subMatcher) {
+      super(subMatcher, "An IpsecPolicy with IpsecProposals:", "IpsecProposals");
     }
 
     @Override
-    protected IpsecProposal featureValueOf(IpsecPolicy actual) {
-      return actual.getProposals().get(_name);
+    protected List<IpsecProposal> featureValueOf(IpsecPolicy actual) {
+      return actual.getProposals();
     }
   }
 
