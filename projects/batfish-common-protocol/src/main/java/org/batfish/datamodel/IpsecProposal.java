@@ -89,7 +89,7 @@ public class IpsecProposal extends ComparableStructure<String> {
   }
 
   /*
-   * [TODO]: Currently IpsecProposal() is used in Juniper ConfigurationBuilder and
+   * TODO: Currently IpsecProposal() is used in Juniper ConfigurationBuilder and
    * hence when fixing the reference tracking for juniper's configuration, this
    * can be removed.
    */
