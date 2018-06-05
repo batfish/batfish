@@ -4333,7 +4333,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         reachabilityParameters, StandardReachabilityQuerySynthesizer.builder());
   }
 
-  public Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
+  private Synthesizer synthesizeAcls(String hostname, Configuration config, String aclName) {
     _logger.info("\n*** GENERATING Z3 LOGIC ***\n");
     _logger.resetTimer();
 
