@@ -24,11 +24,14 @@ dh_group
 
 encryption_algorithm
 :
-   THREEDES_CBC
-   | AES_128_CBC
+   AES_128_CBC
+   | AES_128_GCM
    | AES_192_CBC
+   | AES_192_GCM
    | AES_256_CBC
+   | AES_256_GCM
    | DES_CBC
+   | THREEDES_CBC
 ;
 
 hib_protocol
@@ -110,6 +113,7 @@ ipsec_authentication_algorithm
 ipsec_protocol
 :
    AH
+   | BUNDLE
    | ESP
 ;
 

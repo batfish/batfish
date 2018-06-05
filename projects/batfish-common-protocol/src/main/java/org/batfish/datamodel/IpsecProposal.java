@@ -3,6 +3,9 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableSortedSet;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
 
 public class IpsecProposal extends ComparableStructure<String> {
@@ -24,7 +27,7 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private static IpsecProposal initG2_ESP_3DES_SHA() {
     IpsecProposal p = new IpsecProposal("G2_ESP_3DES_SHA");
-    p.setProtocol(IpsecProtocol.ESP);
+    p.getProtocols().add(IpsecProtocol.ESP);
     p.setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     return p;
@@ -32,7 +35,7 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private static IpsecProposal initG2_ESP_AES128_SHA() {
     IpsecProposal p = new IpsecProposal("G2_ESP_AES128_SHA");
-    p.setProtocol(IpsecProtocol.ESP);
+    p.getProtocols().add(IpsecProtocol.ESP);
     p.setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC);
     return p;
@@ -40,7 +43,7 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private static IpsecProposal initNOPFS_ESP_3DES_MD5() {
     IpsecProposal p = new IpsecProposal("NOPFS_ESP_3DES_MD5");
-    p.setProtocol(IpsecProtocol.ESP);
+    p.getProtocols().add(IpsecProtocol.ESP);
     p.setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     return p;
@@ -48,7 +51,7 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private static IpsecProposal initNOPFS_ESP_3DES_SHA() {
     IpsecProposal p = new IpsecProposal("NOPFS_ESP_3DES_SHA");
-    p.setProtocol(IpsecProtocol.ESP);
+    p.getProtocols().add(IpsecProtocol.ESP);
     p.setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     return p;
@@ -56,7 +59,7 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private static IpsecProposal initNOPFS_ESP_DES_MD5() {
     IpsecProposal p = new IpsecProposal("NOPFS_ESP_DES_MD5");
-    p.setProtocol(IpsecProtocol.ESP);
+    p.getProtocols().add(IpsecProtocol.ESP);
     p.setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_MD5_96);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC);
     return p;
@@ -64,7 +67,7 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private static IpsecProposal initNOPFS_ESP_DES_SHA() {
     IpsecProposal p = new IpsecProposal("NOPFS_ESP_DES_SHA");
-    p.setProtocol(IpsecProtocol.ESP);
+    p.getProtocols().add(IpsecProtocol.ESP);
     p.setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm.HMAC_SHA1_96);
     p.setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC);
     return p;
@@ -80,23 +83,31 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private Integer _lifetimeSeconds;
 
-  private IpsecProtocol _protocol;
+  private SortedSet<IpsecProtocol> _protocols;
 
   @JsonCreator
-  private IpsecProposal(@JsonProperty(PROP_NAME) String name) {
+  public IpsecProposal(@JsonProperty(PROP_NAME) String name) {
     super(name);
     _definitionLine = -1;
+    _protocols = new TreeSet<>();
   }
+
+  /*
+   * TODO: Currently IpsecProposal() is used in Juniper ConfigurationBuilder and
+   * hence when fixing the reference tracking for juniper's configuration, this
+   * can be removed.
+   */
 
   public IpsecProposal(String name, int definitionLine) {
     super(name);
     _definitionLine = definitionLine;
+    _protocols = new TreeSet<>();
   }
 
   public boolean compatibleWith(IpsecProposal rhs) {
     return (_authenticationAlgorithm == rhs._authenticationAlgorithm
         && _encryptionAlgorithm == rhs._encryptionAlgorithm
-        && _protocol == rhs._protocol);
+        && _protocols.equals(rhs._protocols));
   }
 
   public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
@@ -120,8 +131,8 @@ public class IpsecProposal extends ComparableStructure<String> {
     return _lifetimeSeconds;
   }
 
-  public IpsecProtocol getProtocol() {
-    return _protocol;
+  public SortedSet<IpsecProtocol> getProtocols() {
+    return _protocols;
   }
 
   public void setAuthenticationAlgorithm(IpsecAuthenticationAlgorithm alg) {
@@ -140,7 +151,13 @@ public class IpsecProposal extends ComparableStructure<String> {
     _lifetimeSeconds = lifetimeSeconds;
   }
 
+  /** @deprecated Use {@link #setProtocols(SortedSet)} instead. */
+  @Deprecated
   public void setProtocol(IpsecProtocol protocol) {
-    _protocol = protocol;
+    setProtocols(ImmutableSortedSet.of(protocol));
+  }
+
+  public void setProtocols(SortedSet<IpsecProtocol> protocols) {
+    _protocols = protocols;
   }
 }

@@ -8,8 +8,11 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.hasConjuncts;
 import static org.batfish.datamodel.matchers.AndMatchExprMatchers.isAndMatchExprThat;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasRemoteAs;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEbgp;
+import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEquivalentAsPathMatchMode;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
@@ -18,6 +21,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
@@ -62,6 +66,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
@@ -108,6 +113,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.Arrays;
@@ -141,6 +147,8 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OspfArea;
@@ -155,6 +163,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
+import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -346,6 +355,13 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.ARISTA)));
+  }
+
+  @Test
+  public void testArubaConfigurationFormat() throws IOException {
+    Configuration arubaConfig = parseConfig("arubaConfiguration");
+
+    assertThat(arubaConfig, hasConfigurationFormat(equalTo(ConfigurationFormat.ARUBAOS)));
   }
 
   @Test
@@ -1357,35 +1373,32 @@ public class CiscoGrammarTest {
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
     CommonUtil.initBgpTopology(configurations, ipOwners, false);
-    MultipathEquivalentAsPathMatchMode aristaDisabled =
-        configurations
-            .get("arista_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode aristaEnabled =
-        configurations
-            .get("arista_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosDisabled =
-        configurations
-            .get("nxos_disabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
-    MultipathEquivalentAsPathMatchMode nxosEnabled =
-        configurations
-            .get("nxos_enabled")
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getMultipathEquivalentAsPathMatchMode();
+    org.batfish.datamodel.BgpProcess aristaDisabled =
+        configurations.get("arista_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess aristaEnabled =
+        configurations.get("arista_enabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosDisabled =
+        configurations.get("nxos_disabled").getDefaultVrf().getBgpProcess();
+    org.batfish.datamodel.BgpProcess nxosEnabled =
+        configurations.get("nxos_enabled").getDefaultVrf().getBgpProcess();
 
-    assertThat(aristaDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(aristaEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
-    assertThat(nxosDisabled, equalTo(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
-    assertThat(nxosEnabled, equalTo(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        aristaDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        aristaEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+    assertThat(
+        nxosDisabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.EXACT_PATH));
+    assertThat(
+        nxosEnabled,
+        hasMultipathEquivalentAsPathMatchMode(MultipathEquivalentAsPathMatchMode.PATH_LENGTH));
+
+    assertThat(aristaDisabled, hasMultipathEbgp(false));
+    assertThat(aristaEnabled, hasMultipathEbgp(true));
+    assertThat(nxosDisabled, hasMultipathEbgp(false));
+    assertThat(nxosEnabled, hasMultipathEbgp(true));
   }
 
   @Test
@@ -1572,6 +1585,17 @@ public class CiscoGrammarTest {
                 hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
                 hasLifeTimeSeconds(86400))));
+    // asserting the default values being set
+    assertThat(
+        c,
+        hasIkeProposal(
+            "030",
+            allOf(
+                hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                hasLifeTimeSeconds(86400))));
   }
 
   @Test
@@ -1692,6 +1716,160 @@ public class CiscoGrammarTest {
 
     Interface i1 = configurations.get(iosHostname).getInterfaces().get(i1Name);
     assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
+  }
+
+  @Test
+  public void testArubaIpsecTransformset() throws IOException {
+    Configuration c = parseConfig("arubaCryptoTransformSet");
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts1",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts2",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts4",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts5",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts6",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts7",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+  }
+
+  @Test
+  public void testIpsecTransformset() throws IOException {
+    Configuration c = parseConfig("ios-crypto-transform-set");
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts1",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts2",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts4",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts5",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts6",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GMAC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts7",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GMAC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts8",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.SEAL_160),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "ts9",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.NULL),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
   }
 
   @Test

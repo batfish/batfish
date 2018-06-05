@@ -5,12 +5,15 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeGateway;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeProposal;
@@ -20,6 +23,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpace;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpaces;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
@@ -27,6 +31,11 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
 import org.hamcrest.Matcher;
 
 public class ConfigurationMatchers {
+
+  public static HasConfigurationFormat hasConfigurationFormat(
+      @Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
+    return new HasConfigurationFormat(subMatcher);
+  }
 
   /** Provides a matcher that matches if the configuration has a default VRF. */
   public static HasDefaultVrf hasDefaultVrf() {
@@ -93,6 +102,15 @@ public class ConfigurationMatchers {
   public static HasIpAccessLists hasIpAccessLists(
       @Nonnull Matcher<? super Map<String, IpAccessList>> subMatcher) {
     return new HasIpAccessLists(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * Ipsec proposal with specified name.
+   */
+  public static HasIpsecProposal hasIpsecProposal(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
+    return new HasIpsecProposal(name, subMatcher);
   }
 
   /**

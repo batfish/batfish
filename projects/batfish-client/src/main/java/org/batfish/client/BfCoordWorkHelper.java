@@ -238,7 +238,7 @@ public class BfCoordWorkHelper {
   public boolean delContainer(String containerName) {
     try {
       WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConsts.SVC_KEY_CONTAINERS, containerName));
+          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_CONTAINERS, containerName));
 
       Response response =
           webTarget
@@ -528,7 +528,7 @@ public class BfCoordWorkHelper {
   public Container getContainer(String containerName) {
     try {
       WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConsts.SVC_KEY_CONTAINERS, containerName));
+          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_CONTAINERS, containerName));
 
       Response response =
           webTarget

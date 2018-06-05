@@ -4,11 +4,13 @@ import java.util.Map;
 import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
@@ -18,6 +20,18 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class ConfigurationMatchersImpl {
+
+  static final class HasConfigurationFormat
+      extends FeatureMatcher<Configuration, ConfigurationFormat> {
+    HasConfigurationFormat(@Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
+      super(subMatcher, "a configuration with configurationFormat", "configurationFormat");
+    }
+
+    @Override
+    protected ConfigurationFormat featureValueOf(Configuration actual) {
+      return actual.getConfigurationFormat();
+    }
+  }
 
   static final class HasDefaultVrf extends FeatureMatcher<Configuration, Vrf> {
     HasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
@@ -106,6 +120,21 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, IpAccessList> featureValueOf(Configuration actual) {
       return actual.getIpAccessLists();
+    }
+  }
+
+  static final class HasIpsecProposal extends FeatureMatcher<Configuration, IpsecProposal> {
+    private final String _name;
+
+    HasIpsecProposal(@Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
+      super(
+          subMatcher, "A Configuration with ipsecProposal " + name + ":", "ipsecProposal " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecProposal featureValueOf(Configuration actual) {
+      return actual.getIpsecProposals().get(_name);
     }
   }
 

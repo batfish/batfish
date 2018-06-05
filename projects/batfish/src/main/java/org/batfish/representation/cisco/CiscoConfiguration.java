@@ -1142,8 +1142,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     CiscoNxBgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
     if (ipv4af != null) {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
-      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
+      newBgpProcess.setMultipathEbgp(
+          ipv4af.getMaximumPathsEbgp() > 1 || nxBgpVrf.getBestpathAsPathMultipathRelax());
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
+    } else {
+      newBgpProcess.setMultipathEbgp(nxBgpVrf.getBestpathAsPathMultipathRelax());
     }
 
     // Next we build up the BGP common export policy.
@@ -1400,23 +1403,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
     MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
         proc.getAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH;
     newBgpProcess.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
-    Integer maximumPaths = proc.getMaximumPaths();
-    Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
-    Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
-    if (maximumPaths != null && maximumPaths > 1) {
+    if (firstNonNull(proc.getMaximumPaths(), 0) > 1) {
       multipathEbgp = true;
       multipathIbgp = true;
     }
-    if (maximumPathsEbgp != null && maximumPathsEbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1 || proc.getAsPathMultipathRelax()) {
       multipathEbgp = true;
     }
-    if (maximumPathsIbgp != null && maximumPathsIbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsIbgp(), 0) > 1) {
       multipathIbgp = true;
     }
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
+
     Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
@@ -1948,9 +1949,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           If defaultRouteGenerationConditional =
               new If(
                   ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                  ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                      Statements.ReturnTrue.toStaticStatement()));
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
           RoutingPolicy defaultRouteGenerationPolicy =
               new RoutingPolicy(
                   "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
@@ -3371,6 +3370,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           e.getValue());
     }
 
+    markConcreteStructure(CiscoStructureType.INTERFACE, CiscoStructureUsage.INTERFACE_SELF_REF);
+
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
         CiscoStructureUsage.CLASS_MAP_ACCESS_GROUP, CiscoStructureUsage.CLASS_MAP_ACCESS_LIST);
@@ -3551,20 +3552,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     // record references to defined structures
-    recordStructure(_asPathSets, CiscoStructureType.AS_PATH_SET);
     recordCommunityLists();
-    recordStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
-    recordStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
     recordDocsisPolicies();
     recordDocsisPolicyRules();
     recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
-    recordStructure(_inspectClassMaps, CiscoStructureType.INSPECT_CLASS_MAP);
-    recordStructure(_inspectPolicyMaps, CiscoStructureType.INSPECT_POLICY_MAP);
-    recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
-    recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordPeerGroups();
     recordPeerSessions();
-    recordStructure(_securityZones, CiscoStructureType.SECURITY_ZONE);
     recordServiceClasses();
 
     c.simplifyRoutingPolicies();
