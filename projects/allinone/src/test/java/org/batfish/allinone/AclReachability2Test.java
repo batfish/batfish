@@ -144,7 +144,7 @@ public class AclReachability2Test {
   @Test
   public void test3CircularReferences() throws IOException {
     // acl0 permits anything acl1 permits
-    // acl1 permits anything acl2 permits, plus 1 other line to avoid acl0's line being unmatchable
+    // acl1 permits anything acl2 permits, plus 1 other line to avoid acl3's line being unmatchable
     // acl2 permits anything acl0 permits
     // acl3 permits anything acl1 permits (not part of cycle)
     _aclb
