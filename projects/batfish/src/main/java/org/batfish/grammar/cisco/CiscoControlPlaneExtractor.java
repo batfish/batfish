@@ -1875,7 +1875,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterIp_as_path_access_list_stanza(Ip_as_path_access_list_stanzaContext ctx) {
     String name = ctx.name.getText();
     _currentAsPathAcl =
-        _configuration.getAsPathAccessLists().computeIfAbsent(name, n -> new IpAsPathAccessList(n));
+        _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
     defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
   }
 
