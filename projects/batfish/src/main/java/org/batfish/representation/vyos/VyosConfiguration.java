@@ -220,7 +220,7 @@ public class VyosConfiguration extends VendorConfiguration {
               espProposal.getHashAlgorithm().toIpsecAuthenticationAlgorithm());
           newIpsecProposal.setEncryptionAlgorithm(espProposal.getEncryptionAlgorithm());
           newIpsecProposal.setLifetimeSeconds(espGroup.getLifetimeSeconds());
-          newIpsecProposal.setProtocol(IpsecProtocol.ESP);
+          newIpsecProposal.getProtocols().add(IpsecProtocol.ESP);
         }
       }
     }

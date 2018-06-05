@@ -253,7 +253,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
           toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
       ipsecProposal.setEncryptionAlgorithm(
           toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
-      ipsecProposal.setProtocol(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
+      ipsecProposal.getProtocols().add(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
       ipsecProposal.setLifetimeSeconds(ipsecTunnel.getIpsecLifetime());
 
       // ike

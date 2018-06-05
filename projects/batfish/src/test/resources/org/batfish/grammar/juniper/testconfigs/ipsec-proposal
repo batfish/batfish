@@ -1,0 +1,26 @@
+#
+set system host-name ipsec-proposal
+#
+set security ipsec proposal prop1 authentication-algorithm hmac-md5-96
+set security ipsec proposal prop1 encryption-algorithm aes-128-cbc
+set security ipsec proposal prop1 protocol bundle
+#
+set security ipsec proposal prop2 authentication-algorithm hmac-sha1-96
+set security ipsec proposal prop2 encryption-algorithm aes-192-cbc
+set security ipsec proposal prop2 protocol ah
+#
+set security ipsec proposal prop3 authentication-algorithm hmac-md5-96
+set security ipsec proposal prop3 encryption-algorithm 3des-cbc
+set security ipsec proposal prop3 protocol esp
+#
+set security ipsec proposal prop4 authentication-algorithm hmac-md5-96
+set security ipsec proposal prop4 encryption-algorithm aes-128-gcm
+set security ipsec proposal prop4 protocol esp
+#
+set security ipsec proposal prop5 authentication-algorithm hmac-md5-96
+set security ipsec proposal prop5 encryption-algorithm aes-192-gcm
+set security ipsec proposal prop5 protocol esp
+#
+set security ipsec proposal prop6 authentication-algorithm hmac-md5-96
+set security ipsec proposal prop6 encryption-algorithm aes-256-gcm
+set security ipsec proposal prop6 protocol esp
