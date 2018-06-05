@@ -1,5 +1,6 @@
 package org.batfish.datamodel.acl;
 
+import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -13,6 +14,7 @@ public final class CanonicalAcl {
   private final String _reprAclName;
   private final String _reprHostname;
   private final IpAccessList _acl;
+  private final Map<String, IpAccessList> _dependencies;
   private final int _hashCode;
   private final SortedMap<String, Set<String>> _sources = new TreeMap<>();
 
@@ -25,6 +27,7 @@ public final class CanonicalAcl {
   public CanonicalAcl(
       String aclName, IpAccessList acl, Map<String, IpAccessList> dependencies, String hostname) {
     _acl = acl;
+    _dependencies = ImmutableMap.copyOf(dependencies);
     _sources.computeIfAbsent(hostname, h -> new TreeSet<>()).add(aclName);
     _reprAclName = aclName;
     _reprHostname = hostname;
@@ -79,10 +82,14 @@ public final class CanonicalAcl {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof CanonicalAcl)) {
+    if (o == this) {
+      return true;
+    }
+    if (!(o instanceof CanonicalAcl) || hashCode() != o.hashCode()) {
       return false;
     }
-    return hashCode() == o.hashCode();
+    CanonicalAcl otherAcl = (CanonicalAcl) o;
+    return _acl.equals(otherAcl._acl) && _dependencies.equals(otherAcl._dependencies);
   }
 
   @Override
