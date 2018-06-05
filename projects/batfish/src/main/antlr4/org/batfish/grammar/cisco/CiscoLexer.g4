@@ -539,6 +539,16 @@ AH
    'ah'
 ;
 
+AH_MD5_HMAC
+:
+   'ah-md5-hmac'
+;
+
+AH_SHA_HMAC
+:
+   'ah-sha-hmac'
+;
+
 AHP
 :
    'ahp'
@@ -3942,6 +3952,22 @@ ESP_AES
    'esp-aes'
 ;
 
+ESP_AES128
+:
+   'esp-aes128'
+;
+
+ESP_AES192
+:
+   'esp-aes192'
+;
+
+ESP_AES256
+:
+   'esp-aes256'
+;
+
+
 ESP_DES
 :
    'esp-des'
@@ -3950,6 +3976,16 @@ ESP_DES
 ESP_GCM
 :
    'esp-gcm'
+;
+
+ESP_AES128_GCM
+:
+   'esp-aes128-gcm'
+;
+
+ESP_AES256_GCM
+:
+   'esp-aes256-gcm'
 ;
 
 ESP_GMAC

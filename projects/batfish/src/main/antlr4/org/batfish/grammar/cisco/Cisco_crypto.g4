@@ -243,7 +243,12 @@ cip_profile
 
 cip_transform_set
 :
-   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication? NEWLINE
+   TRANSFORM_SET name = variable
+   (
+      ipsec_encryption
+      | ipsec_encryption_aruba
+   )
+      ipsec_authentication? NEWLINE
    (
       cipt_mode
    )*
@@ -778,7 +783,9 @@ ike_encryption_aruba
 
 ipsec_authentication
 :
-   ESP_MD5_HMAC
+   AH_MD5_HMAC
+   | AH_SHA_HMAC
+   | ESP_MD5_HMAC
    | ESP_SHA_HMAC
    | ESP_SHA256_HMAC
    | ESP_SHA512_HMAC
@@ -791,10 +798,27 @@ ipsec_encryption
    )
    | ESP_DES
    | ESP_3DES
-   | ESP_GCM
-   | ESP_GMAC
+   |
+   (
+      ESP_GCM strength = DEC?
+   )
+   |
+   (
+      ESP_GMAC strength = DEC?
+   )
    | ESP_NULL
    | ESP_SEAL
+;
+
+ipsec_encryption_aruba
+:
+   ESP_AES128
+   | ESP_AES192
+   | ESP_AES256
+   | ESP_AES128_GCM
+   | ESP_AES256_GCM
+   | ESP_DES
+   | ESP_3DES
 ;
 
 s_crypto
