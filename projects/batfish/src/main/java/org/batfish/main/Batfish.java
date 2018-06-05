@@ -176,6 +176,8 @@ import org.batfish.role.NodeRolesData;
 import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
+import org.batfish.specifier.SpecifierContext;
+import org.batfish.specifier.SpecifierContextImpl;
 import org.batfish.symbolic.abstraction.BatfishCompressor;
 import org.batfish.symbolic.abstraction.Roles;
 import org.batfish.symbolic.smt.PropertyChecker;
@@ -4400,6 +4402,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public AnswerElement smtRoutingLoop(HeaderQuestion q) {
     PropertyChecker p = new PropertyChecker(this, _settings);
     return p.checkRoutingLoop(q);
+  }
+
+  @Override
+  public SpecifierContext specifierContext() {
+    return new SpecifierContextImpl(this, loadConfigurations());
   }
 
   @Override
