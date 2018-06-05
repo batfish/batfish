@@ -759,7 +759,7 @@ public class CommonUtil {
   }
 
   /**
-   * Returns an active interface with the specified name for {@code configuration}.
+   * Returns an active interface with the specified name for configuration.
    *
    * @param name The name to check
    * @param c The configuration object in which to check
@@ -774,7 +774,7 @@ public class CommonUtil {
   }
 
   /**
-   * Returns an active interface with the specified IP address for {@code configuration}.
+   * Returns an active interface with the specified IP address for configuration.
    *
    * @param ipAddress The IP address to check
    * @param c The configuration object in which to check

@@ -197,7 +197,11 @@ public class BgpSessionStatusAnswerer extends Answerer {
                 true,
                 false),
             new ColumnMetadata(
-                COL_LOCAL_INTERFACE, Schema.BOOLEAN, "Local interface of the session", false, true),
+                COL_LOCAL_INTERFACE,
+                Schema.INTERFACE,
+                "Local interface of the session",
+                false,
+                true),
             new ColumnMetadata(
                 COL_REMOTE_NODE, Schema.NODE, "Remote node for this session", false, false),
             new ColumnMetadata(

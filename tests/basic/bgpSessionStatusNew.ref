@@ -29,7 +29,7 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "localInterface",
-          "schema" : "Boolean"
+          "schema" : "Interface"
         },
         {
           "description" : "Remote node for this session",
