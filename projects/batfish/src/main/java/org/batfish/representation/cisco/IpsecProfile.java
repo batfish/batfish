@@ -39,8 +39,4 @@ public class IpsecProfile extends ComparableStructure<String> {
   public void setPfsGroup(DiffieHellmanGroup pfsGroup) {
     _pfsGroup = pfsGroup;
   }
-
-  public void setTransformSets(List<String> transformSets) {
-    _transformSets = transformSets;
-  }
 }

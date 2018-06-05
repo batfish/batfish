@@ -4786,7 +4786,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (ctx.GROUP2() != null) {
       return DiffieHellmanGroup.GROUP2;
     } else if (ctx.GROUP20() != null) {
-      return DiffieHellmanGroup.GROUP14;
+      return DiffieHellmanGroup.GROUP20;
     } else if (ctx.GROUP24() != null) {
       return DiffieHellmanGroup.GROUP24;
     } else if (ctx.GROUP5() != null) {

@@ -1728,7 +1728,7 @@ public class CiscoGrammarTest {
     assertThat(
         c,
         hasIpsecPolicy(
-            "IPSEC-PROFILE",
+            "IPSEC-PROFILE1",
             allOf(
                 IpsecPolicyMatchers.hasIkeGateway(
                     allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
@@ -1747,6 +1747,13 @@ public class CiscoGrammarTest {
                         IpsecProposalMatchers.hasAuthenticationAlgorithm(
                             IpsecAuthenticationAlgorithm.HMAC_SHA1_96))),
                 hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
+
+    // testing the Diffie Hellman groups
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP21)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
   }
 
   @Test

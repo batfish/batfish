@@ -1280,6 +1280,13 @@ public class FlatJuniperGrammarTest {
                         IpsecProposalMatchers.hasAuthenticationAlgorithm(
                             IpsecAuthenticationAlgorithm.HMAC_SHA1_96))),
                 hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
+
+    // testing the Diffie Hellman groups
+    assertThat(c, hasIpsecPolicy("policy2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
+    assertThat(c, hasIpsecPolicy("policy3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
+    assertThat(c, hasIpsecPolicy("policy4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
+    assertThat(c, hasIpsecPolicy("policy5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP20)));
+    assertThat(c, hasIpsecPolicy("policy6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
   }
 
   @Test
