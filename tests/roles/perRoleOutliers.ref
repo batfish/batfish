@@ -26,8 +26,6 @@
             "GigabitEthernet2/0"
           ],
           "incomingFilter" : "blocktelnet",
-          "isisL1InterfaceMode" : "unset",
-          "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
           "ospfArea" : 1,
@@ -74,8 +72,6 @@
             "GigabitEthernet3/0"
           ],
           "incomingFilter" : "blocktelnet",
-          "isisL1InterfaceMode" : "unset",
-          "isisL2InterfaceMode" : "unset",
           "mtu" : 1500,
           "nativeVlan" : 1,
           "ospfArea" : 1,
