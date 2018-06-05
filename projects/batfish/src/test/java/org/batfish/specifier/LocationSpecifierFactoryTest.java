@@ -8,43 +8,42 @@ import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class LocationSpecifierFactoryTest {
+
   /** Test that each Factory is discoverable by the registry. */
   @Test
   public void testLocationSpecifierFactoryRegistry() {
-    LocationSpecifierFactoryRegistry registry = new LocationSpecifierFactoryRegistry();
-
     assertThat(
-        registry.getLocationSpecifierFactory(
+        LocationSpecifierFactory.load(
             new DescriptionRegexInterfaceLocationSpecifierFactory().getName()),
         Matchers.instanceOf(DescriptionRegexInterfaceLocationSpecifierFactory.class));
 
     assertThat(
-        registry.getLocationSpecifierFactory(
+        LocationSpecifierFactory.load(
             new NameRegexInterfaceLocationSpecifierFactory().getName()),
         Matchers.instanceOf(NameRegexInterfaceLocationSpecifierFactory.class));
 
     assertThat(
-        registry.getLocationSpecifierFactory(
+        LocationSpecifierFactory.load(
             new NodeNameRegexInterfaceLinkLocationSpecifierFactory().getName()),
         Matchers.instanceOf(NodeNameRegexInterfaceLinkLocationSpecifierFactory.class));
 
     assertThat(
-        registry.getLocationSpecifierFactory(
+        LocationSpecifierFactory.load(
             new NodeNameRegexInterfaceLocationSpecifierFactory().getName()),
         Matchers.instanceOf(NodeNameRegexInterfaceLocationSpecifierFactory.class));
 
     assertThat(
-        registry.getLocationSpecifierFactory(
+        LocationSpecifierFactory.load(
             new NodeRoleRegexInterfaceLinkLocationSpecifierFactory().getName()),
         Matchers.instanceOf(NodeRoleRegexInterfaceLinkLocationSpecifierFactory.class));
 
     assertThat(
-        registry.getLocationSpecifierFactory(
+        LocationSpecifierFactory.load(
             new VrfNameRegexInterfaceLinkLocationSpecifierFactory().getName()),
         Matchers.instanceOf(VrfNameRegexInterfaceLinkLocationSpecifierFactory.class));
 
     assertThat(
-        registry.getLocationSpecifierFactory(
+        LocationSpecifierFactory.load(
             new VrfNameRegexInterfaceLocationSpecifierFactory().getName()),
         Matchers.instanceOf(VrfNameRegexInterfaceLocationSpecifierFactory.class));
   }
