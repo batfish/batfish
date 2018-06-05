@@ -34,6 +34,8 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
+                  </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
