@@ -14,7 +14,6 @@ test tests/basic/neighbors-summary.ref get neighbors neighborTypes=["ebgp","ibgp
 test tests/basic/neighbors.ref get neighbors style=verbose, neighborTypes=["ebgp","ibgp","ospf","lan"]
 test tests/basic/routes.ref get routes
 test tests/basic/ipowners.ref get ipowners
-test tests/basic/specifiers.ref get specifiers locationSpecifierFactory=AllInterfaceLinksLocationSpecifierFactory, ipSpaceSpecifierFactory=InferFromLocationIpSpaceSpecifierFactory
 
 # some ref tests using delta testrig
 test -compareall tests/basic/init-delta.ref init-delta-testrig test_rigs/example-with-delta basic-example-delta
