@@ -19,7 +19,7 @@ import org.batfish.specifier.SpecifierContext;
 
 public final class SpecifiersAnswerer extends Answerer {
 
-  SpecifiersAnswerer(Question question, IBatfish batfish) {
+  public SpecifiersAnswerer(Question question, IBatfish batfish) {
     super(question, batfish);
   }
 
@@ -35,7 +35,12 @@ public final class SpecifiersAnswerer extends Answerer {
 
     TableAnswerElement table = tableAnswerElement();
     for (IpSpaceAssignment.Entry entry : ipSpaceAssignment.getEntries()) {
-      table.addRow(Row.of("Locations", entry.getLocations(), "IpSpace", entry.getIpSpace()));
+      table.addRow(
+          Row.of(
+              "Locations",
+              entry.getLocations().toArray(new Location[0]),
+              "IpSpace",
+              entry.getIpSpace()));
     }
     return table;
   }
@@ -44,7 +49,7 @@ public final class SpecifiersAnswerer extends Answerer {
     List<ColumnMetadata> columns =
         ImmutableList.of(
             new ColumnMetadata("Locations", Schema.STRING, "Locations", false, false),
-            new ColumnMetadata("IpSpace", Schema.STRING, "IpSpaces", false, false));
+            new ColumnMetadata("IpSpace", Schema.STRING, "IpSpace", false, false));
     DisplayHints displayHints = new DisplayHints();
     return new TableAnswerElement(new TableMetadata(columns, displayHints));
   }
