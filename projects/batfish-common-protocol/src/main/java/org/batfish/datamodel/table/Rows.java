@@ -9,6 +9,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import javax.annotation.Nullable;
 
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
@@ -77,7 +78,9 @@ public class Rows implements Serializable {
    *
    * @param key The key value to match on
    * @param metadata ColumnMetadata used as reference to extract keys from rows.
+   * @return A matching row or null
    */
+  @Nullable
   public Row getRow(Object key, List<ColumnMetadata> metadata) {
     Iterator<Row> iterator = iterator();
     while (iterator.hasNext()) {
