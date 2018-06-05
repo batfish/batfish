@@ -240,7 +240,9 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
         .setSmtConstraint(
             new AndExpr(
                 ImmutableList.of(
-                    new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
+                    _headerSpace == null
+                        ? TrueExpr.INSTANCE
+                        : new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
                     getSrcNattedConstraint(),
                     SaneExpr.INSTANCE,
                     transitNodesConstraint)))
