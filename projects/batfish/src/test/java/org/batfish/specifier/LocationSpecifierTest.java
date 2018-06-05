@@ -149,6 +149,21 @@ public class LocationSpecifierTest {
   }
 
   @Test
+  public void testNodeNameRegexInterfaceLocationSpecifiers() {
+    Configuration config = _testConfigs.values().iterator().next();
+    List<Interface> ifaces = ImmutableList.copyOf(config.getInterfaces().values());
+    Pattern pat = Pattern.compile(config.getName());
+
+    assertThat(
+        new NodeNameRegexInterfaceLocationSpecifier(pat).resolve(_context),
+        equalTo(interfaceLocations(ifaces)));
+
+    assertThat(
+        new NodeNameRegexInterfaceLinkLocationSpecifier(pat).resolve(_context),
+        equalTo(interfaceLinkLocations(ifaces)));
+  }
+
+  @Test
   public void testNodeRoleRegexInterfaceLocationSpecifier() {
     Set<Location> nodeInterfaceLocations =
         _roleNode
@@ -174,6 +189,11 @@ public class LocationSpecifierTest {
     assertThat(
         new NodeRoleRegexInterfaceLinkLocationSpecifier(_roleDim, _rolePattern).resolve(_context),
         equalTo(nodeInterfaceLinkLocations));
+  }
+
+  @Test
+  public void testNullLocationSpecifier() {
+    assertThat(NullLocationSpecifier.INSTANCE.resolve(_context), equalTo(ImmutableSet.of()));
   }
 
   @Test

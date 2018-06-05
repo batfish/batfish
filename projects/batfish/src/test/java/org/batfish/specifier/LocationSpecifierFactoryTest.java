@@ -2,9 +2,10 @@ package org.batfish.specifier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
 
 import java.util.regex.Pattern;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class LocationSpecifierFactoryTest {
@@ -15,37 +16,59 @@ public class LocationSpecifierFactoryTest {
     assertThat(
         LocationSpecifierFactory.load(
             new DescriptionRegexInterfaceLocationSpecifierFactory().getName()),
-        Matchers.instanceOf(DescriptionRegexInterfaceLocationSpecifierFactory.class));
+        instanceOf(DescriptionRegexInterfaceLocationSpecifierFactory.class));
 
     assertThat(
-        LocationSpecifierFactory.load(
-            new NameRegexInterfaceLocationSpecifierFactory().getName()),
-        Matchers.instanceOf(NameRegexInterfaceLocationSpecifierFactory.class));
+        LocationSpecifierFactory.load(new NameRegexInterfaceLocationSpecifierFactory().getName()),
+        instanceOf(NameRegexInterfaceLocationSpecifierFactory.class));
 
     assertThat(
         LocationSpecifierFactory.load(
             new NodeNameRegexInterfaceLinkLocationSpecifierFactory().getName()),
-        Matchers.instanceOf(NodeNameRegexInterfaceLinkLocationSpecifierFactory.class));
+        instanceOf(NodeNameRegexInterfaceLinkLocationSpecifierFactory.class));
 
     assertThat(
         LocationSpecifierFactory.load(
             new NodeNameRegexInterfaceLocationSpecifierFactory().getName()),
-        Matchers.instanceOf(NodeNameRegexInterfaceLocationSpecifierFactory.class));
+        instanceOf(NodeNameRegexInterfaceLocationSpecifierFactory.class));
 
     assertThat(
         LocationSpecifierFactory.load(
             new NodeRoleRegexInterfaceLinkLocationSpecifierFactory().getName()),
-        Matchers.instanceOf(NodeRoleRegexInterfaceLinkLocationSpecifierFactory.class));
+        instanceOf(NodeRoleRegexInterfaceLinkLocationSpecifierFactory.class));
 
     assertThat(
         LocationSpecifierFactory.load(
             new VrfNameRegexInterfaceLinkLocationSpecifierFactory().getName()),
-        Matchers.instanceOf(VrfNameRegexInterfaceLinkLocationSpecifierFactory.class));
+        instanceOf(VrfNameRegexInterfaceLinkLocationSpecifierFactory.class));
 
     assertThat(
         LocationSpecifierFactory.load(
             new VrfNameRegexInterfaceLocationSpecifierFactory().getName()),
-        Matchers.instanceOf(VrfNameRegexInterfaceLocationSpecifierFactory.class));
+        instanceOf(VrfNameRegexInterfaceLocationSpecifierFactory.class));
+  }
+
+  @Test
+  public void testAllInterfaceLinksLocationSpecifierFactory() {
+    assertThat(
+        new AllInterfaceLinksLocationSpecifierFactory().buildLocationSpecifier(null),
+        is(AllInterfaceLinksLocationSpecifier.INSTANCE));
+  }
+
+  @Test
+  public void testAllInterfacesLocationSpecifierFactory() {
+    assertThat(
+        new AllInterfacesLocationSpecifierFactory().buildLocationSpecifier(null),
+        is(AllInterfacesLocationSpecifier.INSTANCE));
+  }
+
+  @Test
+  public void testDescriptionRegexInterfaceLinkLocationSpecifierFactory() {
+    Pattern pat = Pattern.compile("foo");
+    assertThat(
+        new DescriptionRegexInterfaceLinkLocationSpecifierFactory()
+            .buildLocationSpecifierTyped(pat),
+        equalTo(new DescriptionRegexInterfaceLinkLocationSpecifier(pat)));
   }
 
   @Test
