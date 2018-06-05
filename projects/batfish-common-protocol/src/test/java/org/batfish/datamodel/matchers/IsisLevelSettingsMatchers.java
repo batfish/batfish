@@ -9,7 +9,7 @@ import org.hamcrest.Matcher;
 
 public final class IsisLevelSettingsMatchers {
   private IsisLevelSettingsMatchers() {}
-  
+
   /**
    * Provides a matcher that matches when the {@link IsisLevelSettings}'s wideMetricsOnly flag is
    * true.
@@ -26,5 +26,4 @@ public final class IsisLevelSettingsMatchers {
       @Nonnull Matcher<? super Boolean> subMatcher) {
     return new HasWideMetricsOnly(subMatcher);
   }
-
 }

@@ -19,6 +19,8 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -625,35 +627,115 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private IsisProcess createIsisProcess(RoutingInstance routingInstance, IsoAddress netAddress) {
     IsisProcess newProc = new IsisProcess();
-    // newProc.setNetAddress(netAddress);
-    // IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
-    // for (String policyName : settings.getExportPolicies()) {
-    // PolicyMap policy = _c.getPolicyMaps().get(policyName);
-    // if (policy == null) {
-    // undefined("Reference to undefined is-is export policy-statement: '"
-    // + policyName + "'", POLICY_STATEMENT, policyName);
-    // }
-    // else {
-    // setPolicyStatementReferent(policyName, settings.getExportPolicies(),
-    // "IS-IS export policies");
-    // newProc.getOutboundPolicyMaps().add(policy);
-    // }
-    // }
-    // boolean l1 = settings.getLevel1Settings().getEnabled();
-    // boolean l2 = settings.getLevel2Settings().getEnabled();
-    // if (l1 && l2) {
-    // newProc.setLevel(IsisLevel.LEVEL_1_2);
-    // }
-    // else if (l1) {
-    // newProc.setLevel(IsisLevel.LEVEL_1);
-    // }
-    // else if (l2) {
-    // newProc.setLevel(IsisLevel.LEVEL_2);
-    // }
-    // else {
-    // return null;
-    // }
+    newProc.setNetAddress(netAddress);
+    IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
+    for (String policyName : settings.getExportPolicies()) {
+      RoutingPolicy policy = _c.getRoutingPolicies().get(policyName);
+      if (policy == null) {
+        continue;
+      } else {
+        // TODO: support IS-IS export policy-statements
+      }
+    }
+    boolean isisEnabled = false;
+    if (settings.getLevel1Settings().getEnabled()) {
+      newProc.setLevel1(toIsisLevelSettings(settings.getLevel1Settings()));
+      processIsisInterfaceLevelSettings(
+          routingInstance,
+          IsisInterfaceSettings::getLevel1Settings,
+          org.batfish.datamodel.IsisInterfaceSettings::setLevel1);
+      isisEnabled = true;
+    }
+    if (settings.getLevel2Settings().getEnabled()) {
+      newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
+      processIsisInterfaceLevelSettings(
+          routingInstance,
+          IsisInterfaceSettings::getLevel2Settings,
+          org.batfish.datamodel.IsisInterfaceSettings::setLevel2);
+      isisEnabled = true;
+    }
+    if (isisEnabled) {
+      processIsisInterfaceSettings(routingInstance, settings);
+    }
+    newProc.setOverloadTimeout(settings.getOverloadTimeout());
+    newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc;
+  }
+
+  private void processIsisInterfaceSettings(
+      RoutingInstance routingInstance, IsisSettings settings) {
+    _c.getVrfs()
+        .get(routingInstance.getName())
+        .getInterfaces()
+        .forEach(
+            (ifaceName, newIface) -> {
+              Interface iface = routingInstance.getInterfaces().get(ifaceName);
+              applyIsisInterfaceSettings(iface, newIface.getIsis());
+            });
+  }
+
+  private void applyIsisInterfaceSettings(
+      Interface iface, org.batfish.datamodel.IsisInterfaceSettings newSettings) {
+    IsisInterfaceSettings settings = iface.getIsisSettings();
+    newSettings.setBfdLivenessDetectionMinimumInterval(
+        settings.getBfdLivenessDetectionMinimumInterval());
+    newSettings.setBfdLivenessDetectionMultiplier(settings.getBfdLivenessDetectionMultiplier());
+    newSettings.setIsoAddress(iface.getIsoAddress());
+    newSettings.setPointToPoint(settings.getPointToPoint());
+  }
+
+  private void processIsisInterfaceLevelSettings(
+      RoutingInstance routingInstance,
+      Function<IsisInterfaceSettings, IsisInterfaceLevelSettings> getLevel,
+      BiConsumer<
+              org.batfish.datamodel.IsisInterfaceSettings,
+              org.batfish.datamodel.IsisInterfaceLevelSettings>
+          setLevel) {
+    _c.getVrfs()
+        .get(routingInstance.getName())
+        .getInterfaces()
+        .forEach(
+            (ifaceName, newIface) -> {
+              Interface iface = routingInstance.getInterfaces().get(ifaceName);
+              IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
+              if (interfaceSettings == null) {
+                return;
+              }
+              IsisInterfaceLevelSettings levelSettings = getLevel.apply(interfaceSettings);
+              if (levelSettings == null) {
+                return;
+              }
+              org.batfish.datamodel.IsisInterfaceSettings newInterfaceSettings = newIface.getIsis();
+              if (newInterfaceSettings == null) {
+                newInterfaceSettings = new org.batfish.datamodel.IsisInterfaceSettings();
+                newIface.setIsis(newInterfaceSettings);
+              }
+              setLevel.accept(
+                  newInterfaceSettings,
+                  toIsisInterfaceLevelSettings(interfaceSettings, levelSettings));
+            });
+  }
+
+  private org.batfish.datamodel.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
+      IsisInterfaceSettings interfaceSettings, IsisInterfaceLevelSettings settings) {
+    org.batfish.datamodel.IsisInterfaceLevelSettings newSettings =
+        new org.batfish.datamodel.IsisInterfaceLevelSettings();
+    newSettings.setCost(settings.getMetric());
+    newSettings.setHelloAuthenticationKey(settings.getHelloAuthenticationKey());
+    newSettings.setHelloAuthenticationType(settings.getHelloAuthenticationType());
+    newSettings.setHelloInterval(settings.getHelloInterval());
+    newSettings.setHoldTime(settings.getHoldTime());
+    newSettings.setMode(
+        interfaceSettings.getPassive() ? IsisInterfaceMode.PASSIVE : IsisInterfaceMode.ACTIVE);
+    return newSettings;
+  }
+
+  private org.batfish.datamodel.IsisLevelSettings toIsisLevelSettings(
+      IsisLevelSettings levelSettings) {
+    org.batfish.datamodel.IsisLevelSettings newLevelSettings =
+        new org.batfish.datamodel.IsisLevelSettings();
+    newLevelSettings.setWideMetricsOnly(levelSettings.getWideMetricsOnly());
+    return newLevelSettings;
   }
 
   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
@@ -2196,16 +2278,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create is-is process
       // is-is runs only if iso address is configured on lo0 unit 0
       Interface loopback0 =
-          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME);
+          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
       if (loopback0 != null) {
-        Interface loopback0unit0 = loopback0.getUnits().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-        if (loopback0unit0 != null) {
-          IsoAddress isisNet = loopback0unit0.getIsoAddress();
-          if (isisNet != null) {
-            // now we should create is-is process
-            IsisProcess proc = createIsisProcess(ri, isisNet);
-            vrf.setIsisProcess(proc);
-          }
+        IsoAddress isisNet = loopback0.getIsoAddress();
+        if (isisNet != null) {
+          // now we should create is-is process
+          IsisProcess proc = createIsisProcess(ri, isisNet);
+          vrf.setIsisProcess(proc);
         }
       }
 

@@ -566,7 +566,7 @@ public final class Interface extends ComparableStructure<String> {
   private InterfaceType _interfaceType;
 
   private IsisInterfaceSettings _isis;
-  
+
   private int _mtu;
 
   private int _nativeVlan;

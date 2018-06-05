@@ -88,7 +88,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
         _helloAuthenticationType,
         _helloInterval,
         _holdTime,
-        _mode.ordinal());
+        _mode != null ? _mode.ordinal() : -1);
   }
 
   @JsonProperty(PROP_COST)

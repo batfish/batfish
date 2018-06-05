@@ -233,7 +233,8 @@ public final class DataModelMatchers {
    * Provides a matcher that matches if the provied {@code subMatcher} matches the {@link Vrf}'s
    * isisProcess.
    */
-  public static @Nonnull Matcher<Vrf> hasIsisProcess(@Nonnull Matcher<? super IsisProcess> subMatcher) {
+  public static @Nonnull Matcher<Vrf> hasIsisProcess(
+      @Nonnull Matcher<? super IsisProcess> subMatcher) {
     return new HasIsisProcess(subMatcher);
   }
 

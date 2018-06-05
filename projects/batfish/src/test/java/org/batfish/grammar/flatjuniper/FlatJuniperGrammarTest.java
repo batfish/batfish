@@ -1432,14 +1432,17 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasInterface(physical, hasIsis(hasLevel1(nullValue()))));
     assertThat(
         c,
-        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(3)))));
+        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(5)))));
     assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.ACTIVE)))));
     assertThat(
         c,
         hasInterface(
             physical,
             hasIsis(hasLevel2(hasHelloAuthenticationType(IsisHelloAuthenticationType.MD5)))));
-    assertThat(c, hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1)))));
+    assertThat(
+        c,
+        hasInterface(
+            physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1)))));
     assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasHoldTime(3)))));
   }
 

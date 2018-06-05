@@ -27,10 +27,12 @@ public class IsisInterfaceSettings implements Serializable {
   }
 
   public Integer getBfdLivenessDetectionMinimumInterval() {
-  return _bfdLivenessDetectionMinimumInterval;}
+    return _bfdLivenessDetectionMinimumInterval;
+  }
 
   public Integer getBfdLivenessDetectionMultiplier() {
-  return _bfdLivenessDetectionMultiplier;}
+    return _bfdLivenessDetectionMultiplier;
+  }
 
   public boolean getEnabled() {
     return _enabled;
@@ -53,10 +55,12 @@ public class IsisInterfaceSettings implements Serializable {
   }
 
   public void setBfdLivenessDetectionMinimumInterval(int bfdLivenessDetectionMinimumInterval) {
-  _bfdLivenessDetectionMinimumInterval = bfdLivenessDetectionMinimumInterval;}
+    _bfdLivenessDetectionMinimumInterval = bfdLivenessDetectionMinimumInterval;
+  }
 
   public void setBfdLivenessDetectionMultiplier(int bfdLivenessDetectionMultiplier) {
-  _bfdLivenessDetectionMultiplier = bfdLivenessDetectionMultiplier;}
+    _bfdLivenessDetectionMultiplier = bfdLivenessDetectionMultiplier;
+  }
 
   public void setEnabled(boolean enabled) {
     _enabled = enabled;
