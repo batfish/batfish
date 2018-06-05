@@ -26,7 +26,8 @@ public class IpsecPolicy extends ComparableStructure<String> {
 
   private transient SortedSet<String> _proposalNames;
 
-  private Map<String, IpsecProposal> _proposals;
+  private Map<String, IpsecProposal>
+      _proposals; /* Ipsec proposals are applied in the order they are specified */
 
   @JsonCreator
   public IpsecPolicy(@JsonProperty(PROP_NAME) String name) {

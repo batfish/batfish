@@ -7918,8 +7918,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private DiffieHellmanGroup toDhGroup(Dh_groupContext ctx) {
     if (ctx.GROUP1() != null) {
       return DiffieHellmanGroup.GROUP1;
-    } else if (ctx.GROUP1() != null) {
-      return DiffieHellmanGroup.GROUP1;
     } else if (ctx.GROUP14() != null) {
       return DiffieHellmanGroup.GROUP14;
     } else if (ctx.GROUP15() != null) {
