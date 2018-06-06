@@ -261,6 +261,11 @@ public class Row implements Comparable<Row> {
     return keyList;
   }
 
+  /** For backwards compability -- remove later; see {@link #getKey(List)} */
+  public List<Object> getKey(TableMetadata metadata) {
+    return getKey(metadata.getColumnMetadata());
+  }
+
   private String getMissingColumnErrorMessage(String columnName) {
     return String.format(
         "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
@@ -280,6 +285,11 @@ public class Row implements Comparable<Row> {
       }
     }
     return valueList;
+  }
+
+  /** For backwards compability -- remove later; see {@link #getValue(List)} */
+  public List<Object> getValue(TableMetadata metadata) {
+    return getValue(metadata.getColumnMetadata());
   }
 
   @Override
