@@ -13,7 +13,7 @@ TRAVIS_DIR="$(dirname $0)"
 
 arg=$1
 
-if [ -z "$($GNU_FIND -name 'jacoco*.exec')" ]
+if [ -z "$("$GNU_FIND" -name 'jacoco*.exec')" ]
 then
     echo "No coverage data files found. Try again after running .travis/build.sh"
     exit 1
@@ -22,7 +22,7 @@ fi
 cp -r projects/*/target/classes/* "$JACOCO_CLASSES_DIR"
 
 if [ "$arg" = 'junit' ]; then
-  java -jar "$JACOCO_CLI_JAR" merge $($GNU_FIND -name 'jacoco.exec') --destfile $JACOCO_JUNIT_DESTFILE
+  java -jar "$JACOCO_CLI_JAR" merge $("$GNU_FIND" -name 'jacoco.exec') --destfile "$JACOCO_JUNIT_DESTFILE"
   JACOCO_REPORT_DESTFILE="$JACOCO_JUNIT_DESTFILE"
 else
   JACOCO_REPORT_DESTFILE="$JACOCO_ALL_DESTFILE"
