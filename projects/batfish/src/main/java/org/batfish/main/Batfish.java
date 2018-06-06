@@ -75,7 +75,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
-import org.batfish.common.plugin.DataPlanePluginSettings;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
@@ -1759,11 +1758,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
               _settings.getDataPlaneEngineName()));
     }
     return plugin;
-  }
-
-  @Override
-  public DataPlanePluginSettings getDataPlanePluginSettings() {
-    return _settings;
   }
 
   @Override

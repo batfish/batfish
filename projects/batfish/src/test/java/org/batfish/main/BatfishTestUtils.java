@@ -26,7 +26,6 @@ import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
-import org.batfish.dataplane.bdp.BdpDataPlanePlugin;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
 import org.junit.rules.TemporaryFolder;
 
@@ -145,8 +144,6 @@ public class BatfishTestUtils {
   }
 
   private static void registerDataPlanePlugins(Batfish batfish) {
-    BdpDataPlanePlugin bdpPlugin = new BdpDataPlanePlugin();
-    bdpPlugin.initialize(batfish);
     IncrementalDataPlanePlugin ibdpPlugin = new IncrementalDataPlanePlugin();
     ibdpPlugin.initialize(batfish);
   }
