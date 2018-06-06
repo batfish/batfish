@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Prefix.MAX_PREFIX_LENGTH;
+import static org.batfish.dataplane.ibdp.PrefixTracer.SENT;
 import static org.batfish.dataplane.matchers.PrefixTracerMatchers.fromHostname;
 import static org.batfish.dataplane.matchers.PrefixTracerMatchers.fromIp;
 import static org.batfish.dataplane.matchers.PrefixTracerMatchers.toHostname;
@@ -11,13 +12,18 @@ import static org.batfish.dataplane.matchers.PrefixTracerMatchers.wasInstalled;
 import static org.batfish.dataplane.matchers.PrefixTracerMatchers.wasOriginated;
 import static org.batfish.dataplane.matchers.PrefixTracerMatchers.wasSent;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -221,5 +227,24 @@ public class PrefixTracerTest {
     // Assert that static route was filtered
     assertThat(pt, wasOriginated(_staticRoutePrefix));
     assertThat(pt, wasFilteredOut(_staticRoutePrefix, toHostname("n2")));
+  }
+
+  @Test
+  public void testSummarizeEmpty() {
+    assertThat(new PrefixTracer().summarize(), anEmptyMap());
+  }
+
+  @Test
+  public void testSummarize() throws IOException {
+    Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
+    IncrementalDataPlane dp =
+        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane(false)._dataPlane;
+    PrefixTracer pt = dp.getPrefixTracingInfo().get("n1").get(Configuration.DEFAULT_VRF_NAME);
+
+    // Test: summarize pt
+    Map<Prefix, Map<String, Set<String>>> summary = pt.summarize();
+
+    assertThat(
+        summary, hasEntry(equalTo(_staticRoutePrefix), hasEntry(equalTo(SENT), contains("n2"))));
   }
 }

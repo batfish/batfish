@@ -18,10 +18,10 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 public class PrefixTracer implements Serializable {
 
   private static final long serialVersionUID = 1L;
-  private static final String SENT = "sent";
-  private static final String FILTERED_OUT = "filtered_out";
-  private static final String FILTERED_IN = "filtered_in";
-  private static final String RECEIVED = "received";
+  static final String SENT = "sent";
+  static final String FILTERED_OUT = "filtered_out";
+  static final String FILTERED_IN = "filtered_in";
+  static final String RECEIVED = "received";
 
   public class Neighbor implements Serializable {
     private static final long serialVersionUID = 1L;
