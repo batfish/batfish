@@ -14,7 +14,8 @@ import java.util.SortedMap;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.table.Row;
-import org.junit.BeforeClass;
+import org.junit.Before;
+import org.junit.Test;
 
 public class PrefixTracerAnswererTest {
 
@@ -22,7 +23,7 @@ public class PrefixTracerAnswererTest {
   private SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       _prefixTracingInfo;
 
-  @BeforeClass
+  @Before
   public void setup() {
     // Setup sample data that would be extracted from the dataplane
     _prefixTracingInfo =
@@ -42,11 +43,13 @@ public class PrefixTracerAnswererTest {
                     ImmutableMap.of("received", ImmutableSet.of("n3")))));
   }
 
+  @Test
   public void testMatchesAllPrefixesWithoutSpecifying() {
     Multiset<Row> answer = getRows(_prefixTracingInfo, null, NodesSpecifier.ALL);
     assertThat(answer, hasSize(3));
   }
 
+  @Test
   public void testPrefixAndNodeSpecifierIsConjunction() {
     Multiset<Row> answer =
         getRows(_prefixTracingInfo, Prefix.parse("1.1.1.1/32"), new NodesSpecifier("n2"));
