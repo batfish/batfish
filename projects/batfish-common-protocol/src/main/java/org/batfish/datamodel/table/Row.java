@@ -261,7 +261,8 @@ public class Row implements Comparable<Row> {
     return keyList;
   }
 
-  /** For backwards compability -- remove later; see {@link #getKey(List)} */
+  /** This used to be the old signature, changed now to {@link #getKey(List)} */
+  @Deprecated
   public List<Object> getKey(TableMetadata metadata) {
     return getKey(metadata.getColumnMetadata());
   }
@@ -287,7 +288,8 @@ public class Row implements Comparable<Row> {
     return valueList;
   }
 
-  /** For backwards compability -- remove later; see {@link #getValue(List)} */
+  /** This used to be the old signature, changed now to {@link #getValue(List)} */
+  @Deprecated
   public List<Object> getValue(TableMetadata metadata) {
     return getValue(metadata.getColumnMetadata());
   }
