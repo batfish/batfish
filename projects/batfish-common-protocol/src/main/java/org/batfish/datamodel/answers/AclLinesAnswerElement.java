@@ -9,10 +9,9 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.stream.Collectors;
-import javax.annotation.Nullable;
+import org.batfish.common.Pair;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.acl.CanonicalAcl;
+import org.batfish.datamodel.IpAccessListLine;
 
 public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnswerElementInterface {
 
@@ -22,7 +21,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
 
     private static final String PROP_NAME = "name";
 
-    private boolean _differentAction;
+    private boolean _differentAction = false;
 
     private Integer _earliestMoreGeneralLineIndex;
 
@@ -141,11 +140,13 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     _unreachableLines = new TreeMap<>();
   }
 
+  // Not used in this class, but having it in AclLinesAnswerElementInterface allows
+  // AclReachabilityAnswererUtils to use it.
   @Override
   public void addCycle(String hostname, List<String> aclsInCycle) {}
 
-  public void addEquivalenceClass(
-      String aclName, String hostname, SortedSet<String> eqClassNodes, List<String> aclLines) {
+  private void addEquivalenceClass(
+      String aclName, String hostname, SortedSet<String> eqClassNodes) {
     SortedMap<String, SortedSet<String>> byRep =
         _equivalenceClasses.computeIfAbsent(aclName, k -> new TreeMap<>());
     byRep.put(hostname, eqClassNodes);
@@ -154,9 +155,9 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   private void addLine(
       SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> lines,
       String hostname,
+      String aclName,
       IpAccessList ipAccessList,
       AclReachabilityEntry entry) {
-    String aclName = ipAccessList.getName();
     SortedMap<String, IpAccessList> aclsByHostname =
         _acls.computeIfAbsent(hostname, k -> new TreeMap<>());
     if (!aclsByHostname.containsKey(aclName)) {
@@ -170,29 +171,30 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   }
 
   @Override
-  public void addReachableLine(
-      String hostname, IpAccessList ipAccessList, int lineNumber, String line) {
-    addLine(_reachableLines, hostname, ipAccessList, new AclReachabilityEntry(lineNumber, line));
+  public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {
+    Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
+    IpAccessList acl = aclSpecs.acl.getAcl();
+    addLine(
+        _reachableLines,
+        hostnameAndAcl.getFirst(),
+        hostnameAndAcl.getSecond(),
+        acl,
+        new AclReachabilityEntry(lineNumber, acl.getLines().get(lineNumber).getName()));
   }
 
   @Override
   public void addUnreachableLine(
-      String hostname,
-      IpAccessList ipAccessList,
-      int lineNumber,
-      String line,
-      boolean unmatchable,
-      SortedMap<Integer, String> blockingLines,
-      boolean diffAction,
-      boolean undefinedReference,
-      @Nullable boolean cycle) {
+      AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
 
-    AclReachabilityEntry entry = new AclReachabilityEntry(lineNumber, line);
-    if (undefinedReference) {
+    IpAccessListLine blockedLine = aclSpecs.acl.getAcl().getLines().get(lineNumber);
+    AclReachabilityEntry entry = new AclReachabilityEntry(lineNumber, blockedLine.getName());
+    Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
+
+    if (blockedLine.undefinedReference()) {
       entry.setEarliestMoreGeneralLineIndex(-1);
       entry.setEarliestMoreGeneralLineName(
           "This line will never match any packet because it references an undefined structure.");
-    } else if (cycle) {
+    } else if (blockedLine.inCycle()) {
       entry.setEarliestMoreGeneralLineIndex(-1);
       entry.setEarliestMoreGeneralLineName(
           "This line contains a reference that is part of a circular chain of references.");
@@ -205,13 +207,19 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
       entry.setEarliestMoreGeneralLineName(
           "Multiple earlier lines partially block this line, making it unreachable.");
     } else {
-      int blockingLineNum = blockingLines.firstKey();
+      int blockingLineNum = blockingLines.first();
+      IpAccessListLine blockingLine = aclSpecs.acl.getAcl().getLines().get(blockingLineNum);
       entry.setEarliestMoreGeneralLineIndex(blockingLineNum);
-      entry.setEarliestMoreGeneralLineName(blockingLines.get(blockingLineNum));
+      entry.setEarliestMoreGeneralLineName(blockingLine.getName());
+      entry.setDifferentAction(!blockedLine.getAction().equals(blockingLine.getAction()));
     }
-    entry.setDifferentAction(diffAction);
 
-    addLine(_unreachableLines, hostname, ipAccessList, entry);
+    addLine(
+        _unreachableLines,
+        hostnameAndAcl.getFirst(),
+        hostnameAndAcl.getSecond(),
+        aclSpecs.acl.getAcl(),
+        entry);
   }
 
   public SortedMap<String, SortedMap<String, IpAccessList>> getAcls() {
@@ -266,19 +274,14 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     _unreachableLines = unreachableLines;
   }
 
-  @Override
   @JsonIgnore
-  public void setCanonicalAcls(List<CanonicalAcl> acls) {
-    for (CanonicalAcl acl : acls) {
+  public void setAcls(List<AclSpecs> acls) {
+    for (AclSpecs specs : acls) {
+      Pair<String, String> representativeSource = specs.getRepresentativeHostnameAclPair();
       addEquivalenceClass(
-          acl.getRepresentativeAclName(),
-          acl.getRepresentativeHostname(),
-          ImmutableSortedSet.copyOf(acl.getSources().keySet()),
-          acl.getAcl()
-              .getLines()
-              .stream()
-              .map(line -> line.getName())
-              .collect(Collectors.toList()));
+          representativeSource.getSecond(),
+          representativeSource.getFirst(),
+          ImmutableSortedSet.copyOf(specs.sources.keySet()));
     }
   }
 }

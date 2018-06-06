@@ -9,6 +9,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -16,6 +17,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 
 /**
  * Class to hold methods used by both {@link
@@ -38,12 +40,12 @@ public final class AclReachabilityAnswererUtils {
    * @return List of {@link CanonicalAcl} objects to analyze for an ACL reachability question with
    *     the given specified nodes and ACL regex.
    */
-  public static List<CanonicalAcl> getCanonicalAcls(
+  public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
       Set<String> specifiedNodes,
       Pattern aclRegex,
       AclLinesAnswerElementInterface answer) {
-    List<CanonicalAcl> canonicalAcls = new ArrayList<>();
+    List<AclSpecs.Builder> aclSpecs = new ArrayList<>();
 
     /*
      - For each ACL, build a CanonicalAcl structure with that ACL and its referenced ACLs
@@ -52,7 +54,10 @@ public final class AclReachabilityAnswererUtils {
     */
     for (String hostname : configurations.keySet()) {
       if (specifiedNodes.contains(hostname)) {
-        SortedMap<String, IpAccessList> acls = configurations.get(hostname).getIpAccessLists();
+
+        // Create a copy of the configuration's ACL map
+        SortedMap<String, IpAccessList> acls = new TreeMap<>();
+        acls.putAll(configurations.get(hostname).getIpAccessLists());
         Map<String, Map<String, IpAccessList>> aclDependenciesMap = new TreeMap<>();
 
         // Break cycles in ACLs specified by aclRegex and their dependencies.
@@ -75,28 +80,28 @@ public final class AclReachabilityAnswererUtils {
         for (Entry<String, Map<String, IpAccessList>> e : aclDependenciesMap.entrySet()) {
           String aclName = e.getKey();
           if (aclRegex.matcher(aclName).matches()) {
-            CanonicalAcl currentAcl =
-                new CanonicalAcl(aclName, acls.get(aclName), e.getValue(), hostname);
+            CanonicalAcl currentAcl = new CanonicalAcl(acls.get(aclName), e.getValue());
 
             // If an identical ACL doesn't exist, add it to the set; otherwise, find the existing
             // version and add current hostname
             boolean added = false;
-            for (CanonicalAcl existingAcl : canonicalAcls) {
-              if (existingAcl.equals(currentAcl)) {
-                existingAcl.addSource(hostname, aclName);
+            for (AclSpecs.Builder aclSpec : aclSpecs) {
+              if (aclSpec.getAcl().equals(currentAcl)) {
+                aclSpec.addSource(hostname, aclName);
                 added = true;
                 break;
               }
             }
             if (!added) {
-              canonicalAcls.add(currentAcl);
+              aclSpecs.add(AclSpecs.builder().setAcl(currentAcl).addSource(hostname, aclName));
             }
           }
         }
       }
     }
-    answer.setCanonicalAcls(canonicalAcls);
-    return canonicalAcls;
+    List<AclSpecs> finalAclSpecs =
+        aclSpecs.stream().map(aclSpec -> aclSpec.build()).collect(Collectors.toList());
+    return finalAclSpecs;
   }
 
   /*
@@ -124,6 +129,7 @@ public final class AclReachabilityAnswererUtils {
     Set<String> dependenciesWithCycles = new TreeSet<>();
 
     // Find lines with dependencies
+    int index = 0;
     for (IpAccessListLine line : acls.get(aclName).getLines()) {
       AclLineMatchExpr matchCondition = line.getMatchCondition();
       if (matchCondition instanceof PermittedByAcl) {
@@ -131,16 +137,19 @@ public final class AclReachabilityAnswererUtils {
 
         if (dependenciesWithCycles.contains(referencedAcl)) {
           // Dependency was already found to cause a cycle. Modify the line but don't record again.
-          line.makeUnmatchableDueToCycle();
+          acls.put(aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, true, false));
         } else if (!acls.containsKey(referencedAcl)) {
           // Referenced ACL doesn't exist. Mark line as unmatchable; will be reported in answer.
-          line.makeUnmatchableDueToUndefinedReference();
+          acls.put(aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, false, true));
         } else {
           int referencedAclIndex = aclsSoFar.indexOf(referencedAcl);
           if (referencedAclIndex != -1) {
-            // Dependency causes a cycle. Record cycle and modify line to be unmatchable.
+            // Dependency causes a cycle. Record cycle and modify
+            // line to be unmatchable.
             answer.addCycle(hostname, aclsSoFar.subList(referencedAclIndex, aclsSoFar.size()));
-            line.makeUnmatchableDueToCycle();
+            acls.put(
+                aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, true, false));
+
             dependenciesWithCycles.add(referencedAcl);
             firstNodesInCycles.add(referencedAcl);
           } else {
@@ -148,11 +157,13 @@ public final class AclReachabilityAnswererUtils {
             firstNodesInCycles.addAll(
                 breakAndReportCycles(hostname, referencedAcl, aclsSoFar, acls, answer));
             if (!firstNodesInCycles.isEmpty()) {
-              line.makeUnmatchableDueToCycle();
+              acls.put(
+                  aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, true, false));
             }
           }
         }
       }
+      index++;
     }
     aclsSoFar.remove(aclsSoFar.size() - 1);
     firstNodesInCycles.remove(aclName);

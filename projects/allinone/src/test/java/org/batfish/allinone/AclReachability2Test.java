@@ -110,12 +110,15 @@ public class AclReachability2Test {
   public void test2CircularReferences() throws IOException {
     // acl1 permits anything acl2 permits
     // acl2 permits anything acl1 permits
-    _aclb
-        .setLines(
-            ImmutableList.of(
-                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl2")).build()))
-        .setName("acl1")
-        .build();
+    IpAccessList acl1 =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new PermittedByAcl("acl2"))
+                        .build()))
+            .setName("acl1")
+            .build();
     _aclb
         .setLines(
             ImmutableList.of(
@@ -423,6 +426,34 @@ public class AclReachability2Test {
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));
+  }
+
+  @Test
+  public void testOriginalAclNotMutated() throws IOException {
+    // ACL that references an undefined ACL; that line should not change in original version
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new PermittedByAcl("???"))
+                        .build()))
+            .setName("acl")
+            .build();
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    // ACL's line should be the same as before
+    assertThat(
+        acl.getLines(),
+        equalTo(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("???"))
+                    .build())));
+
+    // Config's ACL should be the same as the original version
+    assertThat(_c1.getIpAccessLists().get(acl.getName()), equalTo(acl));
   }
 
   private TableAnswerElement answer(AclReachability2Question q) throws IOException {

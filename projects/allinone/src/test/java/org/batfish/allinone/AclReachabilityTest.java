@@ -46,9 +46,7 @@ public class AclReachabilityTest {
   @Before
   public void setup() {
     NetworkFactory nf = new NetworkFactory();
-    Configuration.Builder cb =
-        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    _c = cb.build();
+    _c = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     _aclb = nf.aclBuilder().setOwner(_c);
   }
 
@@ -349,6 +347,34 @@ public class AclReachabilityTest {
             equalTo("This line will never match any packet, independent of preceding lines."));
       }
     }
+  }
+
+  @Test
+  public void testOriginalAclNotMutated() throws IOException {
+    // ACL that references an undefined ACL; that line should not change in original version
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new PermittedByAcl("???"))
+                        .build()))
+            .setName("acl")
+            .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    // ACL's line should be the same as before
+    assertThat(
+        acl.getLines(),
+        equalTo(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new PermittedByAcl("???"))
+                    .build())));
+
+    // Config's ACL should be the same as the original version
+    assertThat(_c.getIpAccessLists().get(acl.getName()), equalTo(acl));
   }
 
   private AclLinesAnswerElement answer(AclReachabilityQuestion q) throws IOException {

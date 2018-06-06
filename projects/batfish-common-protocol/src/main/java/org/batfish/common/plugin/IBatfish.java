@@ -21,8 +21,8 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
@@ -45,7 +45,7 @@ import org.batfish.role.NodeRolesData;
 
 public interface IBatfish extends IPluginConsumer {
 
-  void answerAclReachability(List<CanonicalAcl> acls, AclLinesAnswerElementInterface emptyAnswer);
+  void answerAclReachability(List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface emptyAnswer);
 
   void checkDataPlane();
 

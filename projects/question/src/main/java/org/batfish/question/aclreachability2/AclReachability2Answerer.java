@@ -11,8 +11,8 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclLines2Rows;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -44,10 +44,10 @@ public class AclReachability2Answerer extends Answerer {
           e);
     }
     SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
-    List<CanonicalAcl> canonicalAcls =
-        AclReachabilityAnswererUtils.getCanonicalAcls(
+    List<AclSpecs> aclSpecs =
+        AclReachabilityAnswererUtils.getAclSpecs(
             configurations, specifiedNodes, aclRegex, answerRows);
-    _batfish.answerAclReachability(canonicalAcls, answerRows);
+    _batfish.answerAclReachability(aclSpecs, answerRows);
     TableAnswerElement answer = new TableAnswerElement(createMetadata(question));
     answer.postProcessAnswer(question, answerRows.getRows());
     return answer;

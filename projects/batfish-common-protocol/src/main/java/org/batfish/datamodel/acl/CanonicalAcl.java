@@ -1,36 +1,27 @@
 package org.batfish.datamodel.acl;
 
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
+import java.util.NavigableMap;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import org.batfish.datamodel.IpAccessList;
 
 /** Represents an ACL with all its dependencies for the purpose of detecting identical ACLs. */
 public final class CanonicalAcl {
 
-  private final String _reprAclName;
-  private final String _reprHostname;
   private final IpAccessList _acl;
-  private final Map<String, IpAccessList> _dependencies;
+  private final ImmutableSortedMap<String, IpAccessList> _dependencies;
   private final int _hashCode;
-  private final SortedMap<String, Set<String>> _sources = new TreeMap<>();
 
   /**
-   * @param aclName Name of ACL represented by this CanonicalAcl
    * @param acl {@link IpAccessList} represented by this CanonicalAcl
    * @param dependencies Map of names to {@link IpAccessList}s of ACLs upon which this ACL depends
-   * @param hostname Name of node on which this ACL was initially found
    */
-  public CanonicalAcl(
-      String aclName, IpAccessList acl, Map<String, IpAccessList> dependencies, String hostname) {
+  public CanonicalAcl(IpAccessList acl, Map<String, IpAccessList> dependencies) {
     _acl = acl;
-    _dependencies = ImmutableMap.copyOf(dependencies);
-    _sources.computeIfAbsent(hostname, h -> new TreeSet<>()).add(aclName);
-    _reprAclName = aclName;
-    _reprHostname = hostname;
+
+    // _dependencies is a map of aclName to ACL all ACLs it upon which this ACL depends
+    _dependencies = ImmutableSortedMap.copyOf(dependencies);
 
     // Build hashcode. This hashcode will match another CanonicalAcl hashcode if that CanonicalAcl's
     // _acl and dependencies all match this one syntactically. Ignores the acl name (though not the
@@ -42,42 +33,20 @@ public final class CanonicalAcl {
     _hashCode = _acl.getLines().hashCode() + relatedAclsHashCodeMap.hashCode();
   }
 
-  /**
-   * Adds a hostname/ACL pair to the map of ACLs that this {@link CanonicalAcl} represents.
-   *
-   * @param hostname Name of node containing a copy of this ACL
-   * @param aclName Name of ACL identical to this ACL
-   */
-  public void addSource(String hostname, String aclName) {
-    _sources.computeIfAbsent(hostname, h -> new TreeSet<>()).add(aclName);
-  }
-
   /** @return {@link IpAccessList} of the ACL represented by this {@link CanonicalAcl} */
   public IpAccessList getAcl() {
     return _acl;
   }
 
-  /**
-   * Returns the hostname/ACL pairs represented by this {@link CanonicalAcl}.
-   *
-   * @return Mapping of hostnames to ACL names of the identical ACLs represented by this {@link
-   *     CanonicalAcl}.
-   */
-  public Map<String, Set<String>> getSources() {
-    return _sources;
-  }
-
-  /** @return Name of any one of the identical ACLs represented by this {@link CanonicalAcl}. */
-  public String getRepresentativeAclName() {
-    return _reprAclName;
+  public String getAclName() {
+    return _acl.getName();
   }
 
   /**
-   * @return Name of the node on which the representative ACL given by {@link
-   *     CanonicalAcl#getRepresentativeAclName()} appears.
+   * @return Map of names to {@link IpAccessList} objects containing main ACL and its dependencies.
    */
-  public String getRepresentativeHostname() {
-    return _reprHostname;
+  public NavigableMap<String, IpAccessList> getDependencies() {
+    return _dependencies;
   }
 
   @Override

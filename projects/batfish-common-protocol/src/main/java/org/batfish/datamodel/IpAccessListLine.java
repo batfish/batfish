@@ -9,7 +9,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 
@@ -20,9 +19,13 @@ public final class IpAccessListLine implements Serializable {
 
     private LineAction _action;
 
+    private boolean _inCycle = false;
+
     private AclLineMatchExpr _matchCondition;
 
     private String _name;
+
+    private boolean _undefinedReference = false;
 
     private Builder() {}
 
@@ -32,7 +35,7 @@ public final class IpAccessListLine implements Serializable {
     }
 
     public IpAccessListLine build() {
-      return new IpAccessListLine(_action, _matchCondition, _name);
+      return new IpAccessListLine(_action, _matchCondition, _name, _inCycle, _undefinedReference);
     }
 
     public Builder rejecting() {
@@ -45,6 +48,11 @@ public final class IpAccessListLine implements Serializable {
       return this;
     }
 
+    public Builder setInCycle(boolean inCycle) {
+      _inCycle = inCycle;
+      return this;
+    }
+
     public Builder setMatchCondition(AclLineMatchExpr matchCondition) {
       _matchCondition = matchCondition;
       return this;
@@ -52,6 +60,11 @@ public final class IpAccessListLine implements Serializable {
 
     public Builder setName(String name) {
       _name = name;
+      return this;
+    }
+
+    public Builder setUndefinedReference(boolean undefinedReference) {
+      _undefinedReference = undefinedReference;
       return this;
     }
   }
@@ -94,7 +107,7 @@ public final class IpAccessListLine implements Serializable {
 
   private boolean _inCycle = false;
 
-  private AclLineMatchExpr _matchCondition;
+  private final AclLineMatchExpr _matchCondition;
 
   private final String _name;
 
@@ -110,14 +123,15 @@ public final class IpAccessListLine implements Serializable {
     _name = name;
   }
 
-  public void makeUnmatchableDueToCycle() {
-    _matchCondition = FalseExpr.INSTANCE;
-    _inCycle = true;
-  }
-
-  public void makeUnmatchableDueToUndefinedReference() {
-    _matchCondition = FalseExpr.INSTANCE;
-    _undefinedReference = true;
+  private IpAccessListLine(
+      @Nonnull LineAction action,
+      @Nonnull AclLineMatchExpr matchCondition,
+      String name,
+      boolean inCycle,
+      boolean undefinedReference) {
+    this(action, matchCondition, name);
+    _inCycle = inCycle;
+    _undefinedReference = undefinedReference;
   }
 
   @Override
@@ -131,7 +145,9 @@ public final class IpAccessListLine implements Serializable {
     IpAccessListLine other = (IpAccessListLine) obj;
     return _action == other._action
         && Objects.equals(_matchCondition, other._matchCondition)
-        && Objects.equals(_name, other._name);
+        && Objects.equals(_name, other._name)
+        && _inCycle == other._inCycle
+        && _undefinedReference == other._undefinedReference;
   }
 
   @JsonPropertyDescription(

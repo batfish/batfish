@@ -1,18 +1,16 @@
 package org.batfish.datamodel.answers;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ConcurrentHashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
-import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.table.Row;
 
 @ParametersAreNonnullByDefault
@@ -24,34 +22,31 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
   public static final String COL_DIFF_ACTION = "differentAction";
   public static final String COL_MESSAGE = "message";
 
-  private Multiset<Row> _rows = ConcurrentHashMultiset.create();
-  private Map<String, Map<String, CanonicalAcl>> _representativeSourcesToAcls = new TreeMap<>();
+  private final Multiset<Row> _rows = ConcurrentHashMultiset.create();
 
   @Override
-  public void addReachableLine(
-      String hostname, IpAccessList ipAccessList, int lineNumber, String line) {}
+  public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {}
 
   @Override
   public void addUnreachableLine(
-      String hostname,
-      IpAccessList acl,
-      int lineNumber,
-      String line,
-      boolean unmatchable,
-      SortedMap<Integer, String> blockingLines,
-      boolean diffAction,
-      boolean undefinedReference,
-      boolean cycle) {
-    if (cycle) {
+      AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
+
+    IpAccessList acl = aclSpecs.acl.getAcl();
+    IpAccessListLine blockedLine = acl.getLines().get(lineNumber);
+    if (blockedLine.inCycle()) {
       return;
     }
-    String aclName = acl.getName();
+
+    boolean diffAction = false;
+    if (!blockingLines.isEmpty()) {
+      IpAccessListLine blockingLine = acl.getLines().get(blockingLines.first());
+      diffAction = !blockedLine.getAction().equals(blockingLine.getAction());
+    }
 
     // All the host-acl pairs that contain this canonical acl
-    Map<String, Set<String>> sources =
-        _representativeSourcesToAcls.get(hostname).get(aclName).getSources();
     List<String> flatSources =
-        sources
+        aclSpecs
+            .sources
             .entrySet()
             .stream()
             .map(e -> e.getKey() + ": " + String.join(", ", e.getValue()))
@@ -64,12 +59,11 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
                 COL_LINES,
                 acl.getLines().stream().map(IpAccessListLine::getName).collect(Collectors.toList()))
             .put(COL_BLOCKED_LINE_NUM, lineNumber)
-            .put(COL_BLOCKING_LINE_NUMS, blockingLines.keySet())
+            .put(COL_BLOCKING_LINE_NUMS, blockingLines)
             .put(COL_DIFF_ACTION, diffAction)
             .put(
                 COL_MESSAGE,
-                buildMessage(
-                    flatSources, lineNumber, line, unmatchable, blockingLines, undefinedReference))
+                buildMessage(acl.getLines(), flatSources, lineNumber, blockingLines, unmatchable))
             .build());
   }
 
@@ -91,33 +85,38 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
   }
 
   private static String buildMessage(
+      List<IpAccessListLine> lines,
       List<String> flatSources,
-      int lineNumber,
-      String line,
-      boolean unmatchable,
-      Map<Integer, String> blockingLines,
-      boolean undefinedReference) {
+      int blockedLineNum,
+      SortedSet<Integer> blockingLines,
+      boolean unmatchable) {
+    IpAccessListLine blockedLine = lines.get(blockedLineNum);
+    String blockedLineName = firstNonNull(blockedLine.getName(), blockedLine.toString());
     StringBuilder sb =
         new StringBuilder(
             String.format(
                 "ACL(s) { %s } contain(s) an unreachable line: '%d: %s'. ",
-                String.join("; ", flatSources), lineNumber, line));
-    if (undefinedReference) {
+                String.join("; ", flatSources), blockedLineNum, blockedLineName));
+    if (blockedLine.undefinedReference()) {
       sb.append("This line references a structure that is not defined.");
     } else if (unmatchable) {
       sb.append("This line will never match any packet, independent of preceding lines.");
     } else if (blockingLines.isEmpty()) {
       sb.append("Multiple earlier lines partially block this line, making it unreachable.");
     } else {
+      List<String> blockingLineNames =
+          blockingLines
+              .stream()
+              .map(i -> firstNonNull(lines.get(i).getName(), lines.get(i).toString()))
+              .collect(Collectors.toList());
       sb.append(
           String.format(
               "Blocking line(s):\n%s",
               String.join(
                   "\n",
                   blockingLines
-                      .entrySet()
                       .stream()
-                      .map(e -> String.format("  [index %d] %s", e.getKey(), e.getValue()))
+                      .map(i -> String.format("  [index %d] %s", i, blockingLineNames.get(i)))
                       .collect(Collectors.toList()))));
     }
     return sb.toString();
@@ -125,14 +124,5 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
 
   public Multiset<Row> getRows() {
     return _rows;
-  }
-
-  @Override
-  public void setCanonicalAcls(List<CanonicalAcl> acls) {
-    for (CanonicalAcl acl : acls) {
-      _representativeSourcesToAcls
-          .computeIfAbsent(acl.getRepresentativeHostname(), h -> new TreeMap<>())
-          .put(acl.getRepresentativeAclName(), acl);
-    }
   }
 }

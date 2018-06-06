@@ -15,8 +15,8 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
+import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -48,10 +48,11 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
             e);
       }
       SortedMap<String, Configuration> configurations = _batfish.loadConfigurations();
-      List<CanonicalAcl> canonicalAcls =
-          AclReachabilityAnswererUtils.getCanonicalAcls(
+      List<AclSpecs> aclSpecs =
+          AclReachabilityAnswererUtils.getAclSpecs(
               configurations, specifiedNodes, aclRegex, answer);
-      _batfish.answerAclReachability(canonicalAcls, answer);
+      answer.setAcls(aclSpecs);
+      _batfish.answerAclReachability(aclSpecs, answer);
       return answer;
     }
   }
