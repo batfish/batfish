@@ -18,6 +18,8 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -88,16 +90,22 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Network<BgpNeighbor, BgpSession> configuredBgpTopology =
         CommonUtil.initBgpTopology(configurations, ipOwners, true);
 
-    Network<BgpNeighbor, BgpSession> establishedBgpTopology =
-        question.getIncludeEstablishedCount()
-            ? CommonUtil.initBgpTopology(
-                configurations,
-                ipOwners,
-                false,
-                true,
-                _batfish.getDataPlanePlugin().getTracerouteEngine(),
-                _batfish.loadDataPlane())
-            : null;
+    Network<BgpNeighbor, BgpSession> establishedBgpTopology;
+    if (question.getIncludeEstablishedCount()) {
+      DataPlane dp = _batfish.loadDataPlane();
+      establishedBgpTopology =
+          CommonUtil.initBgpTopology(
+              configurations,
+              ipOwners,
+              false,
+              true,
+              _batfish.getDataPlanePlugin().getTracerouteEngine(),
+              dp,
+              new ForwardingAnalysisImpl(
+                  configurations, dp.getRibs(), dp.getFibs(), dp.getTopology()));
+    } else {
+      establishedBgpTopology = null;
+    }
 
     for (BgpNeighbor bgpNeighbor : configuredBgpTopology.nodes()) {
       String hostname = bgpNeighbor.getOwner().getHostname();
