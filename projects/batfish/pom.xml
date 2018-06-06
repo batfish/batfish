@@ -104,6 +104,20 @@
               <statusDirectory>${project.build.directory}/maven-status/antlr4-mrv</statusDirectory>
             </configuration>
           </execution>
+          <execution>
+            <id>antlr4-palo-alto</id>
+            <goals>
+              <goal>antlr4</goal>
+            </goals>
+            <configuration>
+              <includes>**/PaloAltoLexer.g4,**/PaloAltoParser.g4</includes>
+              <libDirectory>${basedir}/src/main/antlr4/org/batfish/grammar/palo_alto
+              </libDirectory>
+              <statusDirectory>${project.build.directory}/maven-status/antlr4-palo-alto
+              </statusDirectory>
+            </configuration>
+          </execution>
+
 
           <!-- All the rest that do not have imports. Note that we exclude all the g4 files from above. -->
           <execution>
@@ -113,7 +127,9 @@
             </goals>
             <configuration>
               <includes>**/*.g4</includes>
-              <excludes>**/cisco/*.g4,**/flatjuniper/*.g4,**/flatvyos/*.g4,**/mrv/*.g4</excludes>
+              <excludes>
+                **/cisco/*.g4,**/flatjuniper/*.g4,**/flatvyos/*.g4,**/mrv/*.g4,**/palo_alto/*.g4
+              </excludes>
             </configuration>
           </execution>
         </executions>
