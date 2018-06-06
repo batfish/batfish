@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+source $(dirname $0)/jacoco-common.sh
 
 if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
    GNU_FIND=gfind
@@ -15,7 +16,11 @@ trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 batfish_test_all || exit 1
 
 # Configure arguments for allinone throughout later runs.
-export ALLINONE_JAVA_ARGS="-enableassertions -DbatfishCoordinatorPropertiesPath=${BATFISH_ROOT}/.travis/travis_coordinator.properties"
+export ALLINONE_JAVA_ARGS=" \
+  -enableassertions \
+  -DbatfishCoordinatorPropertiesPath=${BATFISH_ROOT}/.travis/travis_coordinator.properties \
+  -javaagent:${JACOCO_AGENT_JAR}=destfile=${JACOCO_REF_DESTFILE} \
+"
 
 exit_code=0
 echo -e "\n  ..... Running parsing tests"
@@ -47,17 +52,13 @@ echo -e "\n  ..... Running watchdog tests"
 allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
 sleep 5
 
-#Test running separately
-coordinator &
-batfish -runmode workservice -register -coordinatorhost localhost -loglevel output &
+echo -e "\n .... Aggregating coverage data"
+java -jar $JACOCO_CLI_JAR merge $(find -name 'jacoco*.exec') --destfile $JACOCO_ALL_DESTFILE
 
-echo -e "\n  ..... Running java demo tests"
-if ! batfish_client -cmdfile demos/example/commands -coordinatorhost localhost > demos/example/commands.ref.testout; then
-   echo "DEMO FAILED!" 1>&2
-   exit_code=1
-else
-   rm demos/example/commands.ref.testout
-fi
+echo -e "\n .... Building coverage report"
+# have to collect all classes into one dir
+cp -r projects/*/target/classes/* $JACOCO_CLASSES_DIR
+java -jar $JACOCO_CLI_JAR report $JACOCO_ALL_DESTFILE  --classfiles $JACOCO_CLASSES_DIR --xml $JACOCO_COVERAGE_REPORT_XML
 
 echo -e "\n .... Failed tests: "
 $GNU_FIND -name *.testout

@@ -8,16 +8,23 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAccessVlan;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpIps;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -26,12 +33,15 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
+import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
+import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
 import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
@@ -43,6 +53,8 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_S
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
@@ -57,6 +69,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import java.io.IOException;
 import java.util.Arrays;
@@ -74,6 +87,8 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.InterfaceAddress;
@@ -83,6 +98,8 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -99,6 +116,8 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
+import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
+import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -1239,6 +1258,97 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIpsecPolicy() throws IOException {
+    Configuration c = parseConfig("ipsec-policy");
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "policy1",
+            allOf(
+                IpsecPolicyMatchers.hasIpsecProposals(
+                    contains(
+                        ImmutableList.of(
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.THREEDES_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.DES_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
+
+    // testing the Diffie Hellman groups
+    assertThat(c, hasIpsecPolicy("policy2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
+    assertThat(c, hasIpsecPolicy("policy3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
+    assertThat(c, hasIpsecPolicy("policy4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
+    assertThat(c, hasIpsecPolicy("policy5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP20)));
+    assertThat(c, hasIpsecPolicy("policy6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
+  }
+
+  @Test
+  public void testIpsecProposal() throws IOException {
+    Configuration c = parseConfig("ipsec-proposal");
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop1",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop2",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.AH)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop3",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop4",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop5",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+    assertThat(
+        c,
+        hasIpsecProposal(
+            "prop6",
+            allOf(
+                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                IpsecProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)))));
+  }
+
+  @Test
   public void testDestinationAddress() throws IOException {
     Configuration c = parseConfig("firewall-destination-address");
     String filterNameV4 = "FILTER";
@@ -1307,6 +1417,38 @@ public class FlatJuniperGrammarTest {
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testJuniperWildcards() throws IOException {
+    String hostname = "juniper-wildcards";
+    String loopback = "lo0.0";
+    String prefix1 = "1.1.1.1/32";
+    String prefix2 = "3.3.3.3/32";
+    String prefixList1 = "p1";
+    String prefixList2 = "p2";
+    Prefix neighborPrefix = Prefix.parse("2.2.2.2/32");
+
+    Configuration c = parseConfig(hostname);
+
+    /* apply-groups using group containing interface wildcard should function as expected. */
+    assertThat(c, hasInterface(loopback, hasAllAddresses(contains(new InterfaceAddress(prefix1)))));
+
+    /* The wildcard copied out of groups should disappear and not be treated as an actual interface */
+    assertThat(c, hasInterfaces(not(hasKey("*.*"))));
+
+    /* The wildcard-looking interface description should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(c, hasInterface(loopback, hasDescription("<SCRUBBED>")));
+
+    /* apply-path should work with wildcard. Its line should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(c, hasRouteFilterList(prefixList1, permits(Prefix.parse(prefix1))));
+
+    /* prefix-list p2 should get content from g2, but no prefix-list named "<*>" should be created */
+    assertThat(c, hasRouteFilterList(prefixList2, permits(Prefix.parse(prefix2))));
+    assertThat(c, hasRouteFilterLists(not(hasKey("<*>"))));
+
+    /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
+    assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborPrefix)))));
   }
 
   @Test

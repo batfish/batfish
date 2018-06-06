@@ -1,6 +1,7 @@
 package org.batfish.z3.state.visitors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -913,6 +914,29 @@ public class DefaultTransitionGeneratorTest {
                     new AclDeny(NODE2, ACL2),
                     new PreOutEdgePostNat(NODE2, INTERFACE2, NODE1, INTERFACE2)),
                 new NodeDropAclOut(NODE2))));
+  }
+
+  @Test
+  public void testVisitNodeDropAclOut_nonEdgeInterfaces() {
+    SynthesizerInput input =
+        MockSynthesizerInput.builder()
+            .setNeighborUnreachable(
+                ImmutableMap.of(NODE1, ImmutableMap.of(VRF1, ImmutableMap.of(INTERFACE1, b(1)))))
+            .setOutgoingAcls(ImmutableMap.of(NODE1, ImmutableMap.of(INTERFACE1, ACL1)))
+            .build();
+    Set<RuleStatement> rules =
+        ImmutableSet.copyOf(
+            DefaultTransitionGenerator.generateTransitions(
+                input, ImmutableSet.of(NodeDropAclOut.State.INSTANCE)));
+
+    // NeighborUnreachable fail OutAcl
+    assertThat(
+        rules,
+        contains(
+            new BasicRuleStatement(
+                b(1),
+                ImmutableSet.of(new AclDeny(NODE1, ACL1), new PreOutVrf(NODE1, VRF1)),
+                new NodeDropAclOut(NODE1))));
   }
 
   @Test

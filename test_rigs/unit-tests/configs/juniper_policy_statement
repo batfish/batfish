@@ -4,6 +4,17 @@ set system host-name juniper_policy_statement
 set policy-options policy-statement POLICY-NAME term TERM from as-path-group AS_PATH_GROUP
 set policy-options policy-statement POLICY-NAME term TERM from instance FORWARDING
 set policy-options policy-statement POLICY-NAME term TERM from protocol static
+set policy-options policy-statement POLICY-NAME term TERM from rib inet6.0
 set policy-options policy-statement POLICY-NAME term TERM from tag 11
+set policy-options policy-statement POLICY-NAME term TERM then as-path-prepend 123
+set policy-options policy-statement POLICY-NAME term TERM then as-path-prepend "456 789"
+set policy-options policy-statement POLICY-NAME term TERM then default-action accept
+set policy-options policy-statement POLICY-NAME term TERM then default-action reject
+set policy-options policy-statement POLICY-NAME term TERM then external type 1
+set policy-options policy-statement POLICY-NAME term TERM then metric 10
+set policy-options policy-statement POLICY-NAME term TERM then metric add 20
+set policy-options policy-statement POLICY-NAME term TERM then next-hop self
+set policy-options policy-statement POLICY-NAME term TERM then next term
+set policy-options policy-statement POLICY-NAME term TERM then origin igp
 set policy-options policy-statement POLICY-NAME term TERM then preference 100
 #

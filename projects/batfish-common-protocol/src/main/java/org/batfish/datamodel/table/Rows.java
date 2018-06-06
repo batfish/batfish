@@ -6,6 +6,10 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import javax.annotation.Nullable;
 
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
@@ -23,8 +27,9 @@ public class Rows implements Serializable {
     _data = data == null ? TreeMultiset.create() : data;
   }
 
-  public void add(Row row) {
+  public Rows add(Row row) {
     _data.add(row);
+    return this;
   }
 
   public boolean contains(Row row) {
@@ -49,6 +54,10 @@ public class Rows implements Serializable {
     return ImmutableMultiset.copyOf(_data);
   }
 
+  public Iterator<Row> iterator() {
+    return _data.iterator();
+  }
+
   @Override
   public int hashCode() {
     return _data.hashCode();
@@ -56,5 +65,35 @@ public class Rows implements Serializable {
 
   public int size() {
     return _data.size();
+  }
+
+  /**
+   * Returns a Row with the specified {@code key} if one exists.
+   *
+   * <p>It will return the first such Row encountered in the iteration if multiple such rows exist.
+   * Returns null if no such row exists.
+   *
+   * <p>TODO: This is highly inefficient currently; need data structure that can help look up rows
+   * by key
+   *
+   * @param key The key value to match on
+   * @param metadata ColumnMetadata used as reference to extract keys from rows.
+   * @return A matching row or null
+   */
+  @Nullable
+  public Row getRow(Object key, List<ColumnMetadata> metadata) {
+    Iterator<Row> iterator = iterator();
+    while (iterator.hasNext()) {
+      Row row = iterator.next();
+      if (key.equals(row.getKey(metadata))) {
+        return row;
+      }
+    }
+    return null;
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toString(_data);
   }
 }

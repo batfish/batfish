@@ -539,6 +539,16 @@ AH
    'ah'
 ;
 
+AH_MD5_HMAC
+:
+   'ah-md5-hmac'
+;
+
+AH_SHA_HMAC
+:
+   'ah-sha-hmac'
+;
+
 AHP
 :
    'ahp'
@@ -1071,6 +1081,11 @@ AUTHENTICATION_PORT
    'authentication-port'
 ;
 
+AUTHENTICATION_RESTART
+:
+   'authentication-restart'
+;
+
 AUTHENTICATION_RETRIES
 :
    'authentication-retries'
@@ -1109,6 +1124,11 @@ AUTHORIZATION_STATUS
 AUTHORIZATION_SERVER_GROUP
 :
    'authorization-server-group'
+;
+
+AUTHORIZE
+:
+   'authorize'
 ;
 
 AUTHORIZED
@@ -1924,6 +1944,11 @@ CLEANUP
 CLEAR
 :
    'clear'
+;
+
+CLEAR_SESSION
+:
+   'clear-session'
 ;
 
 CLI
@@ -3247,6 +3272,11 @@ DO
    'do'
 ;
 
+DO_UNTIL_FAILURE
+:
+   'do-until-failure'
+;
+
 DOCSIS_ENABLE
 :
    'docsis-enable'
@@ -3922,6 +3952,22 @@ ESP_AES
    'esp-aes'
 ;
 
+ESP_AES128
+:
+   'esp-aes128'
+;
+
+ESP_AES192
+:
+   'esp-aes192'
+;
+
+ESP_AES256
+:
+   'esp-aes256'
+;
+
+
 ESP_DES
 :
    'esp-des'
@@ -3930,6 +3976,16 @@ ESP_DES
 ESP_GCM
 :
    'esp-gcm'
+;
+
+ESP_AES128_GCM
+:
+   'esp-aes128-gcm'
+;
+
+ESP_AES256_GCM
+:
+   'esp-aes256-gcm'
 ;
 
 ESP_GMAC
@@ -4801,9 +4857,49 @@ GROUP1
    'group1'
 ;
 
+GROUP14
+:
+   'group14'
+;
+
+GROUP15
+:
+   'group15'
+;
+
+GROUP16
+:
+   'group16'
+;
+
+GROUP19
+:
+   'group19'
+;
+
 GROUP2
 :
    'group2'
+;
+
+GROUP20
+:
+   'group20'
+;
+
+GROUP21
+:
+   'group21'
+;
+
+GROUP24
+:
+   'group24'
+;
+
+GROUP5
+:
+   'group5'
 ;
 
 GSHUT
@@ -9523,6 +9619,11 @@ RESTART_TIME
    'restart-time'
 ;
 
+RESTRICT
+:
+   'restrict'
+;
+
 RESTRICTED
 :
    'restricted'
@@ -9531,6 +9632,11 @@ RESTRICTED
 RESULT_TYPE
 :
    'result-type'
+;
+
+RESUME
+:
+   'resume'
 ;
 
 RETRANSMIT
@@ -11483,6 +11589,11 @@ TERMINAL
 TERMINAL_TYPE
 :
    'terminal-type'
+;
+
+TERMINATE
+:
+   'terminate'
 ;
 
 TERMINATION

@@ -1,11 +1,17 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Map;
+import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
@@ -16,6 +22,18 @@ import org.hamcrest.Matcher;
 
 final class ConfigurationMatchersImpl {
 
+  static final class HasConfigurationFormat
+      extends FeatureMatcher<Configuration, ConfigurationFormat> {
+    HasConfigurationFormat(@Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
+      super(subMatcher, "a configuration with configurationFormat", "configurationFormat");
+    }
+
+    @Override
+    protected ConfigurationFormat featureValueOf(Configuration actual) {
+      return actual.getConfigurationFormat();
+    }
+  }
+
   static final class HasDefaultVrf extends FeatureMatcher<Configuration, Vrf> {
     HasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
       super(subMatcher, "A Configuration with defaultVrf:", "defaultVrf");
@@ -24,6 +42,34 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Vrf featureValueOf(Configuration actual) {
       return actual.getDefaultVrf();
+    }
+  }
+
+  static final class HasIkeGateway extends FeatureMatcher<Configuration, IkeGateway> {
+    private final String _name;
+
+    HasIkeGateway(@Nonnull String name, @Nonnull Matcher<? super IkeGateway> subMatcher) {
+      super(subMatcher, "A Configuration with ikeGateway " + name + ":", "ikeGateway " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IkeGateway featureValueOf(Configuration actual) {
+      return actual.getIkeGateways().get(_name);
+    }
+  }
+
+  static final class HasIkeProposal extends FeatureMatcher<Configuration, IkeProposal> {
+    private final String _name;
+
+    HasIkeProposal(@Nonnull String name, @Nonnull Matcher<? super IkeProposal> subMatcher) {
+      super(subMatcher, "A Configuration with ikeProposal " + name + ":", "ikeProposal " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IkeProposal featureValueOf(Configuration actual) {
+      return actual.getIkeProposals().get(_name);
     }
   }
 
@@ -78,6 +124,21 @@ final class ConfigurationMatchersImpl {
     }
   }
 
+  static final class HasIpsecProposal extends FeatureMatcher<Configuration, IpsecProposal> {
+    private final String _name;
+
+    HasIpsecProposal(@Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
+      super(
+          subMatcher, "A Configuration with ipsecProposal " + name + ":", "ipsecProposal " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecProposal featureValueOf(Configuration actual) {
+      return actual.getIpsecProposals().get(_name);
+    }
+  }
+
   static final class HasIpSpace extends FeatureMatcher<Configuration, IpSpace> {
     private final String _name;
 
@@ -100,6 +161,20 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, IpSpace> featureValueOf(Configuration actual) {
       return actual.getIpSpaces();
+    }
+  }
+
+  static final class HasIpsecPolicy extends FeatureMatcher<Configuration, IpsecPolicy> {
+    private final String _name;
+
+    HasIpsecPolicy(@Nonnull String name, @Nonnull Matcher<? super IpsecPolicy> subMatcher) {
+      super(subMatcher, "A Configuration with ipsecPolicy " + name + ":", "ipsecPolicy " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecPolicy featureValueOf(Configuration actual) {
+      return actual.getIpsecPolicies().get(_name);
     }
   }
 
@@ -135,6 +210,19 @@ final class ConfigurationMatchersImpl {
     @Override
     protected RouteFilterList featureValueOf(Configuration actual) {
       return actual.getRouteFilterLists().get(_name);
+    }
+  }
+
+  static final class HasRouteFilterLists
+      extends FeatureMatcher<Configuration, NavigableMap<String, RouteFilterList>> {
+    HasRouteFilterLists(
+        @Nonnull Matcher<? super NavigableMap<String, RouteFilterList>> subMatcher) {
+      super(subMatcher, "A Configuration with routeFilterLists:", "routeFilterLists");
+    }
+
+    @Override
+    protected NavigableMap<String, RouteFilterList> featureValueOf(Configuration actual) {
+      return actual.getRouteFilterLists();
     }
   }
 

@@ -12,6 +12,7 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.acl.AclTrace;
 import org.batfish.datamodel.collections.FileLinePair;
 import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -20,12 +21,23 @@ import org.batfish.datamodel.pojo.Node;
 
 public class Schema {
 
+  public enum Type {
+    BASE,
+    LIST,
+    SET
+  }
+
+  private static final Pattern LIST_PATTERN = Pattern.compile("List<(.+)>");
+
+  private static final Pattern SET_PATTERN = Pattern.compile("Set<(.+)>");
+
   private static String getClassString(Class<?> cls) {
     return String.format("class:%s", cls.getCanonicalName());
   }
 
   private static final Map<String, String> schemaAliases =
       ImmutableMap.<String, String>builder()
+          .put("AclTrace", getClassString(AclTrace.class))
           .put("Boolean", getClassString(Boolean.class))
           .put("Environment", getClassString(Environment.class))
           .put("FileLine", getClassString(FileLinePair.class))
@@ -42,6 +54,7 @@ public class Schema {
           .put("String", getClassString(String.class))
           .build();
 
+  public static final Schema ACL_TRACE = new Schema("AclTrace");
   public static final Schema BOOLEAN = new Schema("Boolean");
   public static final Schema ENVIRONMENT = new Schema("Environment");
   public static final Schema FILE_LINE = new Schema("FileLine");
@@ -57,27 +70,39 @@ public class Schema {
   public static final Schema PREFIX = new Schema("Prefix");
   public static final Schema STRING = new Schema("String");
 
+  /** Generates a list Schema with the give base schema */
   public static final Schema list(Schema baseSchema) {
     return new Schema("List<" + baseSchema._schemaStr + ">");
   }
 
+  /** Generates a set Schema from the give base schema */
+  public static final Schema set(Schema baseSchema) {
+    return new Schema("Set<" + baseSchema._schemaStr + ">");
+  }
+
   private Class<?> _baseType;
 
-  private boolean _isListType;
+  private Type _type;
 
   private String _schemaStr;
 
   @JsonCreator
-  private Schema(String schema) {
+  Schema(String schema) {
     _schemaStr = schema;
 
     String baseTypeName = schema;
-    _isListType = false;
+    _type = Type.BASE;
 
-    Matcher matcher = Pattern.compile("List<(.+)>").matcher(schema);
-    if (matcher.find()) {
-      baseTypeName = matcher.group(1);
-      _isListType = true;
+    Matcher listMatcher = LIST_PATTERN.matcher(schema);
+    if (listMatcher.find()) {
+      baseTypeName = listMatcher.group(1);
+      _type = Type.LIST;
+    }
+
+    Matcher setMatcher = SET_PATTERN.matcher(schema);
+    if (setMatcher.find()) {
+      baseTypeName = setMatcher.group(1);
+      _type = Type.SET;
     }
 
     if (!schemaAliases.containsKey(baseTypeName)) {
@@ -105,24 +130,25 @@ public class Schema {
       return false;
     }
     return Objects.equals(_baseType, ((Schema) o)._baseType)
-        && Objects.equals(_isListType, ((Schema) o)._isListType);
+        && Objects.equals(_type, ((Schema) o)._type);
   }
 
   public Class<?> getBaseType() {
     return _baseType;
   }
 
+  public Type getType() {
+    return _type;
+  }
+
   @Override
   public int hashCode() {
-    return Objects.hash(_baseType, _isListType);
+    return Objects.hash(_baseType, _type);
   }
 
-  public boolean isIntOrIntList() {
+  /** Whether this Schema object is Integer-based (base, list, or set) */
+  public boolean isIntBased() {
     return _baseType.equals(Integer.class);
-  }
-
-  public boolean isList() {
-    return _isListType;
   }
 
   @Override

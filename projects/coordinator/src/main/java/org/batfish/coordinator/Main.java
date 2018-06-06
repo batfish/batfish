@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static com.google.common.base.Preconditions.checkState;
 import static java.nio.file.FileVisitOption.FOLLOW_LINKS;
 
+import com.google.common.base.Throwables;
 import com.google.common.collect.Lists;
 import com.uber.jaeger.Configuration;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
@@ -25,7 +26,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.annotation.Nullable;
 import javax.ws.rs.core.UriBuilder;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -285,6 +285,7 @@ public class Main {
     startWorkManagerService(
         WorkMgrServiceV2.class,
         Lists.newArrayList(
+            ServiceObjectMapper.class,
             JacksonFeature.class,
             ApiKeyAuthenticationFilter.class,
             VersionCompatibilityFilter.class),
@@ -312,7 +313,7 @@ public class Main {
       httpServerLogger.setLevel(Level.WARNING);
     } catch (Exception e) {
       System.err.print(
-          "org.batfish.coordinator: Initialization failed: " + ExceptionUtils.getStackTrace(e));
+          "org.batfish.coordinator: Initialization failed: " + Throwables.getStackTraceAsString(e));
       System.exit(1);
     }
   }
@@ -328,7 +329,7 @@ public class Main {
     } catch (Exception e) {
       System.err.println(
           "org.batfish.coordinator: Initialization of a helper failed: "
-              + ExceptionUtils.getStackTrace(e));
+              + Throwables.getStackTraceAsString(e));
       System.exit(1);
     }
 
@@ -339,7 +340,7 @@ public class Main {
         _logger.info("Still alive .... waiting for work to show up\n");
       }
     } catch (Exception ex) {
-      String stackTrace = ExceptionUtils.getStackTrace(ex);
+      String stackTrace = Throwables.getStackTraceAsString(ex);
       System.err.println(stackTrace);
     }
   }

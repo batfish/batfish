@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -32,6 +34,7 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -40,7 +43,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -148,7 +150,7 @@ public class WorkMgr extends AbstractCoordinator {
 
       assignWork(work, idleWorker);
     } catch (Exception e) {
-      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("Got exception in assignWork: %s\n", Throwables.getStackTraceAsString(e));
     }
   }
 
@@ -234,10 +236,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Unable to connect to worker at %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -257,14 +259,14 @@ public class WorkMgr extends AbstractCoordinator {
       try {
         _workQueueMgr.markAssignmentError(work);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
       }
     } else if (assigned) {
       try {
         _workQueueMgr.markAssignmentSuccess(work, worker);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
       }
 
@@ -288,7 +290,7 @@ public class WorkMgr extends AbstractCoordinator {
         checkTask(work, assignedWorker);
       }
     } catch (Exception e) {
-      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("Got exception in checkTasks: %s\n", Throwables.getStackTraceAsString(e));
     }
   }
 
@@ -302,22 +304,9 @@ public class WorkMgr extends AbstractCoordinator {
     switch (completionType) {
       case NODE:
         {
-          // read all the nodes
-          Path pojoTopologyPath =
-              getdirTestrig(container, testrig)
-                  .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
-          Topology topology =
-              BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
-          Set<String> nodes =
-              topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
-
-          // read node roles data
-          Path nodeRolespath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-          NodeRolesData nodeRolesData = NodeRolesData.read(nodeRolespath);
-
-          // get suggestions
           List<AutocompleteSuggestion> suggestions =
-              NodesSpecifier.autoComplete(query, nodes, nodeRolesData);
+              NodesSpecifier.autoComplete(
+                  query, getNodes(container, testrig), getNodeRolesData(container));
           return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
         }
       case NODE_PROPERTY:
@@ -387,10 +376,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -405,7 +394,7 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     }
 
     // if the task ended, send a hint to the pool manager to look up worker status
@@ -877,6 +866,52 @@ public class WorkMgr extends AbstractCoordinator {
     return getdirContainer(containerName).resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR));
   }
 
+  /**
+   * Returns the latest testrig in the container.
+   *
+   * @returns An {@link Optional} object with the latest testrig or empty if no testrigs exist
+   */
+  public Optional<String> getLatestTestrig(String container) {
+    Function<String, Instant> toTestrigTimestamp =
+        t -> TestrigMetadataMgr.getTestrigCreationTimeOrMin(container, t);
+    return listTestrigs(container)
+        .stream()
+        .max(
+            Comparator.comparing(
+                toTestrigTimestamp, Comparator.nullsFirst(Comparator.naturalOrder())));
+  }
+
+  /**
+   * Gets the {@link NodeRolesData} for the {@code container}.
+   *
+   * @param container The container for which we should fetch the node roles
+   * @return The node roles
+   * @throws {@link IOException} The contents of node roles file cannot be converted to {@link
+   *     NodeRolesData}
+   */
+  public NodeRolesData getNodeRolesData(String container) throws IOException {
+    Path nodeRolesPath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    return NodeRolesData.read(nodeRolesPath);
+  }
+
+  /**
+   * Gets the set of nodes in this container and testrig. Extracts the set based on the topology
+   * file that is generated as part of the testrig initialization.
+   *
+   * @param container The container
+   * @param testrig The testrig
+   * @return The set of nodes
+   * @throws IOException If the contents of the topology file cannot be mapped to the topology
+   *     object
+   */
+  public Set<String> getNodes(String container, String testrig) throws IOException {
+    Path pojoTopologyPath =
+        getdirTestrig(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
+    Topology topology =
+        BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
+    return topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
+  }
+
   public JSONObject getParsingResults(String containerName, String testrigName)
       throws JsonProcessingException, JSONException {
 
@@ -1197,7 +1232,7 @@ public class WorkMgr extends AbstractCoordinator {
       _workQueueMgr.processTaskCheckResult(work, fakeTask);
       killed = true;
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     }
     return killed;
   }
@@ -1261,9 +1296,9 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getStackTrace(e));
+      _logger.errorf("unable to connect to %s: %s\n", worker, Throwables.getStackTraceAsString(e));
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     } finally {
       if (client != null) {
         client.close();

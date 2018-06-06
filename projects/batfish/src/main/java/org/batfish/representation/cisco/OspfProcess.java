@@ -88,6 +88,7 @@ public class OspfProcess extends ComparableStructure<String> {
       case ARISTA: // EOS manual, Chapter 27, "auto-cost reference-bandwidth (OSPFv2)"
         return DEFAULT_REFERENCE_BANDWIDTH_10_MBPS;
 
+      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
       case CADANT: // Internet claims they use the Cisco defaults.
       case CISCO_ASA: // ASA uses 100 Mbps, switches to 40 Gbps for OSPF v3
       case CISCO_IOS: // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/iproute_ospf/command/iro-cr-book/ospf-a1.html#wp3271966058
@@ -114,6 +115,7 @@ public class OspfProcess extends ComparableStructure<String> {
         // Inferred from Arista manual OSPF v3 default-metric comment.
         return 10;
 
+      case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
       case CADANT: // Vetted IOS and NXOS; assuming the rest use IOS defaults.
       case CISCO_ASA:
       case CISCO_IOS:

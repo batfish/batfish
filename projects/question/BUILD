@@ -17,6 +17,7 @@ java_library(
         "//projects/batfish-common-protocol:common",
         "//projects/lib/jsonpath",
         "@auto_service//:compile",
+        "@commons_lang3//:compile",
         "@jackson_annotations//:compile",
         "@jackson_core//:compile",
         "@jackson_databind//:compile",
@@ -25,9 +26,13 @@ java_library(
 
 junit_tests(
     name = "question_tests",
+    size = "small",
     srcs = glob([
         "src/test/java/**/*Test.java",
     ]),
+    plugins = [
+        "//:auto_service_plugin",
+    ],
     resources = glob([
         "src/test/resources/**",
     ]),
@@ -38,10 +43,10 @@ junit_tests(
         ":question",
         "//projects/batfish-common-protocol:common",
         "//projects/lib/jsonpath",
+        "@auto_service//:compile",
         "@guava//:compile",
         "@hamcrest//:compile",
         "@jackson_databind//:compile",
         "@junit//:compile",
     ],
-    size = "small",
 )

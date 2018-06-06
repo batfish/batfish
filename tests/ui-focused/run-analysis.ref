@@ -286,6 +286,7 @@
         "question" : {
           "class" : "org.batfish.question.UnusedStructuresQuestionPlugin$UnusedStructuresQuestion",
           "differential" : false,
+          "includeOneTableKeys" : false,
           "instance" : {
             "description" : "Outputs cases where structures (e.g., ACL, routemaps) are defined but not used.",
             "instanceName" : "unusedStructures",

@@ -23,7 +23,6 @@ java_library(
         "//projects/batfish-client:client",
         "//projects/batfish-common-protocol:common",
         "//projects/coordinator",
-        "@commons_lang3//:compile",
         "@guava//:compile",
         "@jaeger_core//:compile",
     ],
@@ -44,6 +43,7 @@ junit_tests(
         "//projects/question",
         "@guava//:compile",
         "@hamcrest//:compile",
+        "@jackson_core//:compile",
         "@junit//:compile",
     ],
 )

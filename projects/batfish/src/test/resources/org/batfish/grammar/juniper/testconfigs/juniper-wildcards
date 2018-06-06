@@ -1,0 +1,12 @@
+#
+set system host-name juniper-wildcards
+#
+set groups g1 interfaces <*> unit <*> family inet address 1.1.1.1/32
+set groups g2 policy-options prefix-list <*> 3.3.3.3/32
+set interfaces lo0 unit 0 apply-groups g1
+set interfaces lo0 unit 0 description <SCRUBBED>
+set policy-options prefix-list p1 apply-path "interfaces <*> unit <*> family inet address <*>"
+set policy-options prefix-list p2 apply-groups g2
+set routing-options autonomous-system 1
+set protocols bgp group <SCRUBBED> neighbor 2.2.2.2 peer-as 2
+#

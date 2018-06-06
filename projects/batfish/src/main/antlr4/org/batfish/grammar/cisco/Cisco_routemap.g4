@@ -704,8 +704,12 @@ set_next_hop_rp_stanza
       IP_ADDRESS
       | IPV6_ADDRESS
       | PEER_ADDRESS
-      | SELF
    ) DESTINATION_VRF? NEWLINE
+;
+
+set_next_hop_self_rp_stanza
+:
+   SET NEXT_HOP SELF NEWLINE
 ;
 
 set_nlri_rm_stanza_null
@@ -792,6 +796,7 @@ set_rp_stanza
    | set_med_rp_stanza
    | set_metric_type_rp_stanza
    | set_next_hop_rp_stanza
+   | set_next_hop_self_rp_stanza
    | set_origin_rp_stanza
    | set_tag_rp_stanza
    | set_weight_rp_stanza

@@ -19,6 +19,7 @@ router bgp 1
  neighbor 10.0.0.1 disable-connected-check
  neighbor 10.0.0.1 unsuppress-map UNSUPP-MAP
  address-family ipv6 unicast
+   bgp scan-time 5
    redistribute ospfv3 1 route-map ospfv3_map
  vrf aVrfWithInnerStatements
    neighbor 10.0.1.2 remote-as 65001

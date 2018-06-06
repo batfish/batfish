@@ -8,6 +8,7 @@ options {
 boolean enableIPV6_ADDRESS = true;
 boolean enableIP_ADDRESS = true;
 boolean enableDEC = true;
+boolean _markWildcards = false;
 
 public boolean isPrefix() {
    char nextChar = (char)this.getInputStream().LA(1);
@@ -23,7 +24,16 @@ public String printStateVariables() {
    sb.append("enableIPV6_ADDRESS: " + enableIPV6_ADDRESS + "\n");
    sb.append("enableIP_ADDRESS: " + enableIP_ADDRESS + "\n");
    sb.append("enableDEC: " + enableDEC + "\n");
+   sb.append("markWildcards: " + _markWildcards + "\n");
    return sb.toString();
+}
+
+public void setMarkWildcards(boolean markWildcards) {
+   _markWildcards = markWildcards;
+}
+
+private void setWildcard() {
+  setType(_markWildcards? WILDCARD_ARTIFACT : WILDCARD);
 }
 
 }
@@ -36,7 +46,8 @@ tokens {
    PIPE,
    RST,
    SYN,
-   VERSION_STRING
+   VERSION_STRING,
+   WILDCARD_ARTIFACT
 }
 
 // Juniper Keywords
@@ -166,14 +177,30 @@ AES_128_CMAC_96
    'aes-128-cmac-96'
 ;
 
+AES_128_GCM
+:
+   'aes-128-gcm'
+;
+
+
 AES_192_CBC
 :
    'aes-192-cbc'
 ;
 
+AES_192_GCM
+:
+   'aes-192-gcm'
+;
+
 AES_256_CBC
 :
    'aes-256-cbc'
+;
+
+AES_256_GCM
+:
+   'aes-256-gcm'
 ;
 
 AH
@@ -519,6 +546,11 @@ BRIDGE_DOMAINS
 BROADCAST_CLIENT
 :
    'broadcast-client'
+;
+
+BUNDLE
+:
+   'bundle'
 ;
 
 CATEGORIES
@@ -1290,9 +1322,34 @@ GROUP14
    'group14'
 ;
 
+GROUP15
+:
+   'group15'
+;
+
+GROUP16
+:
+   'group16'
+;
+
+GROUP19
+:
+   'group19'
+;
+
 GROUP2
 :
    'group2'
+;
+
+GROUP20
+:
+   'group20'
+;
+
+GROUP24
+:
+   'group24'
 ;
 
 GROUP5
@@ -5439,7 +5496,7 @@ UNDERSCORE
 
 WILDCARD
 :
-   '<' ~'>'* '>'
+   '<' ~'>'* '>' {setWildcard();}
 ;
 
 WS
@@ -5772,7 +5829,7 @@ M_Interface_VARIABLE
 
 M_Interface_WILDCARD
 :
-   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);} -> popMode
 ;
 
 M_Interface_IP_ADDRESS
@@ -5800,7 +5857,7 @@ M_InterfaceQuote_VARIABLE
 
 M_InterfaceQuote_WILDCARD
 :
-   '<' ~'>'* '>' -> type ( WILDCARD )
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}
 ;
 
 mode M_ISO;
@@ -5979,7 +6036,12 @@ M_Members_WS
 
 mode M_PrefixListName;
 
-M_PrefixLsitName_VARIABLE
+M_PrefixListName_WILDCARD
+:
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);} -> popMode
+;
+
+M_PrefixListName_VARIABLE
 :
    ~[ \t\n\r&|()"]+ -> type ( VARIABLE ) , popMode
 ;
@@ -6223,7 +6285,7 @@ M_VarOrWildcard_VARIABLE
 
 M_VarOrWildcard_WILDCARD
 :
-   '<' ~'>'* '>' -> type ( WILDCARD ) , popMode
+   '<' ~'>'* '>' {setType(_markWildcards?WILDCARD_ARTIFACT:WILDCARD);}-> popMode
 ;
 
 M_VarOrWildcard_WS

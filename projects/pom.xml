@@ -34,6 +34,7 @@
     <maven-enforcer-plugin.version>3.0.0-M1</maven-enforcer-plugin.version>
     <maven-findbugs-plugin.version>3.0.5</maven-findbugs-plugin.version>
     <maven-install-plugin.version>2.5.2</maven-install-plugin.version>
+    <maven-jacoco-plugin.version>0.8.1</maven-jacoco-plugin.version>
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
@@ -289,6 +290,12 @@
             </licenseMerges>
           </configuration>
         </plugin>
+
+        <plugin>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <version>${maven-jacoco-plugin.version}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -443,6 +450,19 @@
           <execution>
             <goals>
               <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>prepare-agent</id>
+            <goals>
+              <goal>prepare-agent</goal>
             </goals>
           </execution>
         </executions>

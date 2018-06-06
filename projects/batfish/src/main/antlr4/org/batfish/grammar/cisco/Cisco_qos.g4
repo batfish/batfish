@@ -575,6 +575,37 @@ pm_end_policy_map
    END_POLICY_MAP NEWLINE
 ;
 
+pm_event
+:
+   EVENT null_rest_of_line
+   (
+      pm_event_class
+   )*
+;
+
+pm_event_class
+:
+   DEC CLASS
+   ( ALWAYS
+     | classname = variable
+   )
+   DO_UNTIL_FAILURE NEWLINE
+   (
+      DEC
+      (
+          ACTIVATE SERVICE_TEMPLATE stname = variable
+          | AUTHENTICATE
+          | AUTHENTICATION_RESTART
+          | AUTHORIZE
+          | CLEAR_SESSION
+          | PAUSE
+          | RESTRICT
+          | RESUME
+          | TERMINATE
+      ) null_rest_of_line
+   )*
+;
+
 pm_ios_inspect
 :
    INSPECT name = variable_permissive NEWLINE
@@ -792,6 +823,7 @@ s_policy_map
    (
       pm_class
       | pm_end_policy_map
+      | pm_event
       | pm_null
       | pm_parameters
    )*

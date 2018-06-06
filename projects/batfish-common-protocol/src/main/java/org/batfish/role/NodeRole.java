@@ -2,26 +2,27 @@ package org.batfish.role;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
+import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Describes a role played by a node */
+@ParametersAreNonnullByDefault
 public class NodeRole implements Comparable<NodeRole> {
 
   private static final String PROP_NAME = "name";
-
   private static final String PROP_REGEX = "regex";
-
   private static final String PROP_CASE_SENSITIVE = "caseSensitive";
+
+  @Nonnull private final transient Pattern _compiledPattern;
 
   @Nonnull private final String _name;
 
   @Nonnull private final String _regex;
 
   private final boolean _caseSensitive;
-
-  private final transient Pattern _compiledPattern;
 
   @JsonCreator
   public NodeRole(
@@ -40,10 +41,12 @@ public class NodeRole implements Comparable<NodeRole> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof NodeRole)) {
+    if (!(o instanceof NodeRole)) {
       return false;
     }
-    return _regex.equals(((NodeRole) o)._regex);
+    return Objects.equals(_name, ((NodeRole) o)._name)
+        && Objects.equals(_regex, ((NodeRole) o)._regex)
+        && _caseSensitive == ((NodeRole) o)._caseSensitive;
   }
 
   @JsonProperty(PROP_NAME)
@@ -57,9 +60,7 @@ public class NodeRole implements Comparable<NodeRole> {
   }
 
   @JsonProperty(PROP_CASE_SENSITIVE)
-  public boolean getCaseSensitive() {
-    return _caseSensitive;
-  }
+  public boolean getCaseSensitive() { return _caseSensitive; }
 
   @Override
   public int hashCode() {
@@ -67,17 +68,12 @@ public class NodeRole implements Comparable<NodeRole> {
   }
 
   /**
-   * Does the provided node name match the regex of this role?
+   * Does the provided node name belong to this role?
    *
    * @param nodeName The nodeName to test
    * @return The results of the test
    */
   public boolean matches(String nodeName) {
     return _compiledPattern.matcher(nodeName).matches();
-  }
-
-  @Override
-  public int compareTo(NodeRole o) {
-    return _name.compareTo(o._name);
   }
 }

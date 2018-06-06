@@ -243,7 +243,12 @@ cip_profile
 
 cip_transform_set
 :
-   TRANSFORM_SET name = variable ipsec_encryption ipsec_authentication? NEWLINE
+   TRANSFORM_SET name = variable
+   (
+      ipsec_encryption
+      | ipsec_encryption_aruba
+   )
+      ipsec_authentication? NEWLINE
    (
       cipt_mode
    )*
@@ -296,7 +301,10 @@ cipprf_set_pfs
 
 cipprf_set_transform_set
 :
-   TRANSFORM_SET name = variable NEWLINE
+   TRANSFORM_SET
+      (
+          transforms += variable
+      )+ NEWLINE
 ;
 
 cipt_mode
@@ -376,6 +384,7 @@ cispol_hash
    HASH
    (
       MD5
+      | SHA
       | SHA2_256_128
    ) NEWLINE
 ;
@@ -401,7 +410,11 @@ cisprf_keyring
 
 cisprf_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS NEWLINE
+    LOCAL_ADDRESS
+    (
+       IP_ADDRESS
+       | interface_name
+    ) NEWLINE
 ;
 
 cisprf_match
@@ -456,7 +469,11 @@ ckpn_null
 
 ckr_local_address
 :
-   LOCAL_ADDRESS IP_ADDRESS NEWLINE
+   LOCAL_ADDRESS
+   (
+      IP_ADDRESS
+      | interface_name
+   ) NEWLINE
 ;
 
 ckr_psk
@@ -727,7 +744,14 @@ crypto_pki
 dh_group
 :
    GROUP1
+   | GROUP14
+   | GROUP15
+   | GROUP16
+   | GROUP19
    | GROUP2
+   | GROUP21
+   | GROUP24
+   | GROUP5
 ;
 
 key_key
@@ -754,6 +778,7 @@ ike_encryption
    (
       AES strength = DEC?
    )
+   | DES
    | THREE_DES
 ;
 
@@ -762,11 +787,15 @@ ike_encryption_aruba
    AES128
    | AES192
    | AES256
+   | DES
+   | THREE_DES
 ;
 
 ipsec_authentication
 :
-   ESP_MD5_HMAC
+   AH_MD5_HMAC
+   | AH_SHA_HMAC
+   | ESP_MD5_HMAC
    | ESP_SHA_HMAC
    | ESP_SHA256_HMAC
    | ESP_SHA512_HMAC
@@ -779,10 +808,27 @@ ipsec_encryption
    )
    | ESP_DES
    | ESP_3DES
-   | ESP_GCM
-   | ESP_GMAC
+   |
+   (
+      ESP_GCM strength = DEC?
+   )
+   |
+   (
+      ESP_GMAC strength = DEC?
+   )
    | ESP_NULL
    | ESP_SEAL
+;
+
+ipsec_encryption_aruba
+:
+   ESP_AES128
+   | ESP_AES192
+   | ESP_AES256
+   | ESP_AES128_GCM
+   | ESP_AES256_GCM
+   | ESP_DES
+   | ESP_3DES
 ;
 
 s_crypto

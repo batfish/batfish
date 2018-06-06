@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Map;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints.Extraction;
 import org.junit.Test;
 
@@ -28,15 +29,15 @@ public class DisplayHintsTest {
     assertThat(extractions.size(), equalTo(3));
 
     Extraction hint0 = extractions.get("node1");
-    assertThat(hint0.getSchemaAsObject().isList(), equalTo(false));
+    assertThat(hint0.getSchemaAsObject(), equalTo(Schema.STRING));
     assertThat(
         hint0.getSchemaAsObject().getBaseType().getCanonicalName(), equalTo("java.lang.String"));
     assertThat(hint0.getMethod().containsKey("use"), equalTo(true));
 
     Extraction hint1 = extractions.get("interfaces1");
-    assertThat(hint1.getSchemaAsObject().isList(), equalTo(true));
+    assertThat(hint1.getSchemaAsObject(), equalTo(Schema.list(Schema.STRING)));
 
     Extraction hint2 = extractions.get("nodes1");
-    assertThat(hint2.getSchemaAsObject().isIntOrIntList(), equalTo(true));
+    assertThat(hint2.getSchemaAsObject(), equalTo(Schema.list(Schema.INTEGER)));
   }
 }
