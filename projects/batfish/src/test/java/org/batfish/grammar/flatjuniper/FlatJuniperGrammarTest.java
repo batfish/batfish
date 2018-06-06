@@ -1267,7 +1267,7 @@ public class FlatJuniperGrammarTest {
             "policy1",
             allOf(
                 IpsecPolicyMatchers.hasIpsecProposals(
-                    containsInAnyOrder(
+                    contains(
                         ImmutableList.of(
                             allOf(
                                 IpsecProposalMatchers.hasEncryptionAlgorithm(

@@ -1733,7 +1733,7 @@ public class CiscoGrammarTest {
                 IpsecPolicyMatchers.hasIkeGateway(
                     allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
                 IpsecPolicyMatchers.hasIpsecProposals(
-                    containsInAnyOrder(
+                    contains(
                         ImmutableList.of(
                             allOf(
                                 IpsecProposalMatchers.hasEncryptionAlgorithm(
