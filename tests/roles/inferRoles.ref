@@ -55,6 +55,7 @@
   "question" : {
     "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesQuestion",
     "differential" : false,
+    "includeOneTableKeys" : false,
     "nodeRegex" : ".*"
   },
   "status" : "SUCCESS",
