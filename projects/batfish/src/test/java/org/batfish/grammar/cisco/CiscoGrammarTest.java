@@ -21,6 +21,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLists;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -66,6 +67,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
@@ -163,6 +165,7 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
+import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
@@ -1716,6 +1719,40 @@ public class CiscoGrammarTest {
 
     Interface i1 = configurations.get(iosHostname).getInterfaces().get(i1Name);
     assertThat(i1, hasDeclaredNames("Ethernet0/0", "e0/0", "Eth0/0", "ether0/0-1"));
+  }
+
+  @Test
+  public void testIpsecProfile() throws IOException {
+    Configuration c = parseConfig("ios-crypto-ipsec-profile");
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "IPSEC-PROFILE1",
+            allOf(
+                IpsecPolicyMatchers.hasIkeGateway(
+                    allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
+                IpsecPolicyMatchers.hasIpsecProposals(
+                    contains(
+                        ImmutableList.of(
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.AES_256_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.AES_256_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
+
+    // testing the Diffie Hellman groups
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP21)));
+    assertThat(c, hasIpsecPolicy("IPSEC-PROFILE6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
   }
 
   @Test

@@ -301,7 +301,10 @@ cipprf_set_pfs
 
 cipprf_set_transform_set
 :
-   TRANSFORM_SET name = variable NEWLINE
+   TRANSFORM_SET
+      (
+          transforms += variable
+      )+ NEWLINE
 ;
 
 cipt_mode
@@ -741,7 +744,14 @@ crypto_pki
 dh_group
 :
    GROUP1
+   | GROUP14
+   | GROUP15
+   | GROUP16
+   | GROUP19
    | GROUP2
+   | GROUP21
+   | GROUP24
+   | GROUP5
 ;
 
 key_key

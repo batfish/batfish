@@ -10,6 +10,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
@@ -34,6 +35,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isOspfPassive;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHelloAuthenticationType;
 import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHoldTime;
@@ -97,6 +99,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConnectedRoute;
+import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
@@ -128,6 +131,7 @@ import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
+import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers;
 import org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers;
@@ -1269,6 +1273,38 @@ public class FlatJuniperGrammarTest {
                                         .build()))
                             .setName("TERM")
                             .build())))));
+  }
+
+  @Test
+  public void testIpsecPolicy() throws IOException {
+    Configuration c = parseConfig("ipsec-policy");
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "policy1",
+            allOf(
+                IpsecPolicyMatchers.hasIpsecProposals(
+                    contains(
+                        ImmutableList.of(
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.THREEDES_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96)),
+                            allOf(
+                                IpsecProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.DES_CBC),
+                                IpsecProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96))))),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14))));
+
+    // testing the Diffie Hellman groups
+    assertThat(c, hasIpsecPolicy("policy2", hasPfsKeyGroup(DiffieHellmanGroup.GROUP15)));
+    assertThat(c, hasIpsecPolicy("policy3", hasPfsKeyGroup(DiffieHellmanGroup.GROUP16)));
+    assertThat(c, hasIpsecPolicy("policy4", hasPfsKeyGroup(DiffieHellmanGroup.GROUP19)));
+    assertThat(c, hasIpsecPolicy("policy5", hasPfsKeyGroup(DiffieHellmanGroup.GROUP20)));
+    assertThat(c, hasIpsecPolicy("policy6", hasPfsKeyGroup(DiffieHellmanGroup.GROUP5)));
   }
 
   @Test

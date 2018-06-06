@@ -17,7 +17,6 @@ public enum ConfigurationFormat {
   EMPTY("empty"),
   F5("f5"),
   FLAT_JUNIPER("juniper"),
-  FLAT_PALO_ALTO("paloalto"),
   FLAT_VYOS("vyos"),
   FORCE10("force10"),
   FOUNDRY("foundry"),
@@ -31,6 +30,7 @@ public enum ConfigurationFormat {
   MRV_COMMANDS("mrv_commands"),
   MSS("mss"),
   PALO_ALTO("paloalto"),
+  PALO_ALTO_NESTED("paloalto"),
   UNKNOWN("unknown"),
   VXWORKS("vxworks"),
   VYOS("vyos");

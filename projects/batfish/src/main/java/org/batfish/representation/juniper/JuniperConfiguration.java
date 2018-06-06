@@ -1638,7 +1638,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     .get(ipsecProposalName)
                     .getReferers()
                     .put(oldIpsecPolicy, "IPSEC proposal for IPSEC policy: " + oldIpsecPolicy);
-                newIpsecPolicy.getProposals().put(ipsecProposalName, ipsecProposal);
+                newIpsecPolicy.getProposals().add(ipsecProposal);
               }
             });
 

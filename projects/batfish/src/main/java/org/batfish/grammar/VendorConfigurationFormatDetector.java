@@ -262,14 +262,14 @@ public final class VendorConfigurationFormatDetector {
   @Nullable
   private ConfigurationFormat checkPaloAlto() {
     if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
-      return ConfigurationFormat.FLAT_PALO_ALTO;
+      return ConfigurationFormat.PALO_ALTO;
     } else if (fileTextMatches(PALO_ALTO_DEVICECONFIG_PATTERN)
         || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)
         || fileTextMatches(RANCID_PALO_ALTO_PATTERN)) {
       if (_fileText.contains("{")) {
-        return ConfigurationFormat.PALO_ALTO;
+        return ConfigurationFormat.PALO_ALTO_NESTED;
       }
-      return ConfigurationFormat.FLAT_PALO_ALTO;
+      return ConfigurationFormat.PALO_ALTO;
     }
     return null;
   }

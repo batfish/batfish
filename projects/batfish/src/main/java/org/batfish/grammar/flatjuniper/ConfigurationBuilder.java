@@ -4274,9 +4274,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipp_proposals(Seipp_proposalsContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _currentIpsecPolicy.getProposals().put(name, line);
+    for (VariableContext proposal : ctx.proposals) {
+      int line = proposal.getStart().getLine();
+      _currentIpsecPolicy.getProposals().put(proposal.getText(), line);
+    }
   }
 
   @Override
@@ -4847,8 +4848,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return DiffieHellmanGroup.GROUP1;
     } else if (ctx.GROUP14() != null) {
       return DiffieHellmanGroup.GROUP14;
+    } else if (ctx.GROUP15() != null) {
+      return DiffieHellmanGroup.GROUP15;
+    } else if (ctx.GROUP16() != null) {
+      return DiffieHellmanGroup.GROUP16;
+    } else if (ctx.GROUP19() != null) {
+      return DiffieHellmanGroup.GROUP19;
     } else if (ctx.GROUP2() != null) {
       return DiffieHellmanGroup.GROUP2;
+    } else if (ctx.GROUP20() != null) {
+      return DiffieHellmanGroup.GROUP20;
+    } else if (ctx.GROUP24() != null) {
+      return DiffieHellmanGroup.GROUP24;
     } else if (ctx.GROUP5() != null) {
       return DiffieHellmanGroup.GROUP5;
     } else {
