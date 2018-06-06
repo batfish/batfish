@@ -11,7 +11,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
-  Configuration _c;
+  private Configuration _c;
 
   private String _hostname;
 
