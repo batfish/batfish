@@ -7,6 +7,7 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
@@ -58,7 +59,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -75,7 +75,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
-import org.batfish.common.plugin.DataPlanePluginSettings;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
@@ -1762,11 +1761,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public DataPlanePluginSettings getDataPlanePluginSettings() {
-    return _settings;
-  }
-
-  @Override
   public String getDifferentialFlowTag() {
     // return _settings.getQuestionName() + ":" +
     // _baseTestrigSettings.getEnvName()
@@ -2783,7 +2777,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         @Nullable String logString = writeLog ? answerString : null;
         writeJsonAnswerWithLog(logString, answerString);
       } catch (Exception e1) {
-        _logger.errorf("Could not serialize failure answer. %s", ExceptionUtils.getStackTrace(e1));
+        _logger.errorf(
+            "Could not serialize failure answer. %s", Throwables.getStackTraceAsString(e1));
       }
       throw be;
     }

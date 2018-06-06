@@ -64,8 +64,6 @@ public interface IBatfish extends IPluginConsumer {
 
   DataPlanePlugin getDataPlanePlugin();
 
-  DataPlanePluginSettings getDataPlanePluginSettings();
-
   String getDifferentialFlowTag();
 
   Environment getEnvironment();
