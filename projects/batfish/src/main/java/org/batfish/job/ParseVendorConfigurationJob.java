@@ -24,6 +24,8 @@ import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
 import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
+import org.batfish.grammar.palo_alto.PaloAltoCombinedParser;
+import org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.representation.host.HostConfiguration;
@@ -263,16 +265,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         extractor = new MrvControlPlaneExtractor(_fileText, mrvParser, _warnings);
         break;
 
+      case PALO_ALTO:
+        PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(_fileText, _settings);
+        combinedParser = paParser;
+        extractor =
+            new PaloAltoControlPlaneExtractor(
+                _fileText, paParser, _warnings, _settings.getUnrecognizedAsRedFlag());
+        break;
+
       case ALCATEL_AOS:
       case AWS:
       case BLADENETWORK:
       case F5:
-      case FLAT_PALO_ALTO:
       case JUNIPER_SWITCH:
       case METAMAKO:
       case MRV_COMMANDS:
       case MSS:
-      case PALO_ALTO:
+      case PALO_ALTO_NESTED:
       case VXWORKS:
         String unsupportedError =
             "Unsupported configuration format: '" + format + "' for file: '" + currentPath + "'\n";
