@@ -7327,6 +7327,15 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
+            "isis" : {
+              "level1" : {
+                "mode" : "passive"
+              },
+              "level2" : {
+                "mode" : "passive"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7355,6 +7364,17 @@
             "declaredNames" : [
               "GigabitEthernet0/0/1"
             ],
+            "isis" : {
+              "level1" : {
+                "cost" : 15,
+                "mode" : "passive"
+              },
+              "level2" : {
+                "cost" : 15,
+                "mode" : "passive"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7381,6 +7401,15 @@
             "declaredNames" : [
               "GigabitEthernet0/1"
             ],
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7406,6 +7435,15 @@
             "declaredNames" : [
               "HundredGigE0/0/0/0.2302"
             ],
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7431,6 +7469,15 @@
             "declaredNames" : [
               "Loopback0"
             ],
+            "isis" : {
+              "level1" : {
+                "mode" : "passive"
+              },
+              "level2" : {
+                "mode" : "passive"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7456,6 +7503,15 @@
             "declaredNames" : [
               "Serial4/0"
             ],
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11812,6 +11868,15 @@
             "declaredNames" : [
               "GigabitEthernet0/2/1/6"
             ],
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
