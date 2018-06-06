@@ -53,7 +53,7 @@ allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
 sleep 5
 
 echo -e "\n .... Aggregating coverage data"
-java -jar $JACOCO_CLI_JAR merge $(find -name 'jacoco*.exec') --destfile $JACOCO_ALL_DESTFILE
+java -jar $JACOCO_CLI_JAR merge $($GNU_FIND -name 'jacoco*.exec') --destfile $JACOCO_ALL_DESTFILE
 
 echo -e "\n .... Building coverage report"
 # have to collect all classes into one dir
