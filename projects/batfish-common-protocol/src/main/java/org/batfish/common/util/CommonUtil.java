@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -758,6 +759,42 @@ public class CommonUtil {
     }
   }
 
+  /**
+   * Returns an active interface with the specified name for configuration.
+   *
+   * @param name The name to check
+   * @param c The configuration object in which to check
+   * @return Any Interface that matches the condition
+   */
+  public static Optional<Interface> getActiveInterfaceWithName(String name, Configuration c) {
+    return c.getInterfaces()
+        .values()
+        .stream()
+        .filter(iface -> iface.getActive() && iface.getName().equals(name))
+        .findAny();
+  }
+
+  /**
+   * Returns an active interface with the specified IP address for configuration.
+   *
+   * @param ipAddress The IP address to check
+   * @param c The configuration object in which to check
+   * @return Any Interface that matches the condition
+   */
+  public static Optional<Interface> getActiveInterfaceWithIp(Ip ipAddress, Configuration c) {
+    return c.getInterfaces()
+        .values()
+        .stream()
+        .filter(
+            iface ->
+                iface.getActive()
+                    && iface
+                        .getAllAddresses()
+                        .stream()
+                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)))
+        .findAny();
+  }
+
   public static Path getCanonicalPath(Path path) {
     try {
       return Paths.get(path.toFile().getCanonicalPath());
@@ -874,27 +911,6 @@ public class CommonUtil {
     long h = (millis / (1000 * 60 * 60)) % 24;
     String time = String.format("%02d:%02d:%02d.%02d", h, m, s, cs);
     return time;
-  }
-
-  /**
-   * Checks if an IP address is associated with a loopback interface for the configuration.
-   *
-   * @param ipAddress The IP address to check
-   * @param c The configuration object in which to check
-   * @return The result
-   */
-  public static boolean isActiveLoopbackIp(Ip ipAddress, Configuration c) {
-    return c.getInterfaces()
-        .values()
-        .stream()
-        .anyMatch(
-            iface ->
-                iface.getActive()
-                    && iface.isLoopback(c.getConfigurationFormat())
-                    && iface
-                        .getAllAddresses()
-                        .stream()
-                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)));
   }
 
   /**

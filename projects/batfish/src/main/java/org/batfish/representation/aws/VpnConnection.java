@@ -219,9 +219,9 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       IpsecPolicy ipsecPolicy = new IpsecPolicy(vpnId);
       vpnGatewayCfgNode.getIpsecPolicies().put(vpnId, ipsecPolicy);
       ipsecVpn.setIpsecPolicy(ipsecPolicy);
-      IpsecProposal ipsecProposal = new IpsecProposal(vpnId, -1);
+      IpsecProposal ipsecProposal = new IpsecProposal(vpnId);
       vpnGatewayCfgNode.getIpsecProposals().put(vpnId, ipsecProposal);
-      ipsecPolicy.getProposals().put(vpnId, ipsecProposal);
+      ipsecPolicy.getProposals().add(ipsecProposal);
       IkeGateway ikeGateway = new IkeGateway(vpnId);
       vpnGatewayCfgNode.getIkeGateways().put(vpnId, ikeGateway);
       ipsecVpn.setIkeGateway(ikeGateway);
@@ -253,7 +253,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
           toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
       ipsecProposal.setEncryptionAlgorithm(
           toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
-      ipsecProposal.setProtocol(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
+      ipsecProposal.getProtocols().add(toIpsecProtocol(ipsecTunnel.getIpsecProtocol()));
       ipsecProposal.setLifetimeSeconds(ipsecTunnel.getIpsecLifetime());
 
       // ike
