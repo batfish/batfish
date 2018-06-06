@@ -1,6 +1,7 @@
 package org.batfish.coordinator.authorizer;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -12,7 +13,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
@@ -322,7 +322,7 @@ public class DbAuthorizer implements Authorizer {
           throw new BatfishException("No tries left loading JDBC driver: " + _driverClassName);
         }
         _logger.errorf(
-            "SQLException while opening Db connection: %s\n", ExceptionUtils.getStackTrace(e));
+            "SQLException while opening Db connection: %s\n", Throwables.getStackTraceAsString(e));
         _logger.errorf("Tries left = %d\n", triesLeft);
 
       } catch (ClassNotFoundException e) {

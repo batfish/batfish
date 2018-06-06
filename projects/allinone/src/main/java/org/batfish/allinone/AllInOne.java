@@ -1,6 +1,7 @@
 package org.batfish.allinone;
 
 import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
 import com.uber.jaeger.Configuration;
 import com.uber.jaeger.Configuration.ReporterConfiguration;
 import com.uber.jaeger.Configuration.SamplerConfiguration;
@@ -10,7 +11,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.allinone.config.Settings;
 import org.batfish.client.Client;
 import org.batfish.common.BatfishLogger;
@@ -124,7 +124,7 @@ public class AllInOne {
           _logger.info("allinone: still alive ....\n");
         }
       } catch (Exception ex) {
-        String stackTrace = ExceptionUtils.getStackTrace(ex);
+        String stackTrace = Throwables.getStackTraceAsString(ex);
         System.err.println(stackTrace);
       }
     }
