@@ -1,0 +1,3 @@
+set deviceconfig system hostname dns-servers
+set deviceconfig system dns-setting servers primary 1.1.1.1
+set deviceconfig system dns-setting servers secondary 2.2.2.2

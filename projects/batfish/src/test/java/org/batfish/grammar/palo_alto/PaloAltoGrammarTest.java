@@ -2,6 +2,7 @@ package org.batfish.grammar.palo_alto;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -34,6 +35,15 @@ public class PaloAltoGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+  }
+
+  @Test
+  public void testDnsServers() throws IOException {
+    String hostname = "dns-servers";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm both dns servers show up
+    assertThat(c.getDnsServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2"));
   }
 
   @Test
