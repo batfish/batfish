@@ -42,7 +42,7 @@ public class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Confirm both dns servers show up in the right order
-    assertThat(c.getDnsServers(), contains("1.1.1.1", "2.2.2.2"));
+    assertThat(c.getDnsServers(), contains("1.1.1.1", "222.222.222.222"));
   }
 
   @Test
@@ -60,6 +60,6 @@ public class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Confirm both ntp servers show up in the right order
-    assertThat(c.getNtpServers(), contains("1.1.1.1", "2.2.2.2"));
+    assertThat(c.getNtpServers(), contains("1.1.1.1", "222.222.222.222"));
   }
 }

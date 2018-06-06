@@ -79,12 +79,12 @@ SYSTEM
 
 IP_ADDRESS
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+   F_IpAddress
 ;
 
 IP_PREFIX
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte '/' F_Digit
+   F_IpAddress '/' F_Digit
 ;
 
 NEWLINE
@@ -108,16 +108,10 @@ fragment
 F_DecByte
 :
    (
-   F_DecByteThreeDigit
+   F_Digit
    | F_DecByteTwoDigit
-   | F_DecByteOneDigit
+   | F_DecByteThreeDigit
    )
-;
-
-fragment
-F_DecByteOneDigit
-:
-   [0-9]
 ;
 
 fragment
