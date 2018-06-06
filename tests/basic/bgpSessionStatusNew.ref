@@ -25,6 +25,13 @@
           "schema" : "String"
         },
         {
+          "description" : "Local interface of the session",
+          "isKey" : false,
+          "isValue" : true,
+          "name" : "localInterface",
+          "schema" : "Interface"
+        },
+        {
           "description" : "Remote node for this session",
           "isKey" : false,
           "isValue" : false,
@@ -58,13 +65,6 @@
           "isValue" : true,
           "name" : "establishedNeighbors",
           "schema" : "Integer"
-        },
-        {
-          "description" : "Whether the session was established on loopback interface",
-          "isKey" : false,
-          "isValue" : true,
-          "name" : "onLoopback",
-          "schema" : "Boolean"
         }
       ],
       "displayHints" : {
@@ -75,12 +75,17 @@
       {
         "configuredStatus" : "UNIQUE_MATCH",
         "establishedNeighbors" : 1,
+        "localInterface" : {
+          "id" : "interface-as2border2-GigabitEthernet0/0",
+          "name" : "GigabitEthernet0/0",
+          "nodeId" : "as2border2",
+          "type" : "UNKNOWN"
+        },
         "localIp" : "10.23.21.2",
         "node" : {
           "id" : "node-as2border2",
           "name" : "as2border2"
         },
-        "onLoopback" : false,
         "remoteNode" : {
           "id" : "node-as3border1",
           "name" : "as3border1"

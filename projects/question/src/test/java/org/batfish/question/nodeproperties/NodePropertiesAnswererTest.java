@@ -1,9 +1,9 @@
 package org.batfish.question.nodeproperties;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.hamcrest.core.IsEqual.equalTo;
 
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -21,6 +21,7 @@ import org.junit.Test;
 public class NodePropertiesAnswererTest {
 
   @Test
+  @SuppressWarnings("deprecation") // includes test of deprecated functionality
   public void rawAnswer() {
     String property1 = "configuration-format";
     String property2 = "ntp-servers";
@@ -37,22 +38,25 @@ public class NodePropertiesAnswererTest {
     Multiset<Row> propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes);
 
     // we should have exactly these two rows
-    String colName1 = property1;
-    String colName2 = property2;
-    Row row1 =
-        Row.builder()
-            .put(NodePropertiesAnswerer.COL_NODE, new Node("node1"))
-            .put(colName1, ConfigurationFormat.CISCO_IOS)
-            .put(colName2, ImmutableList.of())
-            .build();
-    Row row2 =
-        Row.builder()
-            .put(NodePropertiesAnswerer.COL_NODE, new Node("node2"))
-            .put(colName1, ConfigurationFormat.HOST)
-            .put(colName2, ImmutableList.of("sa"))
-            .build();
+    Multiset<Row> expected =
+        HashMultiset.create(
+            ImmutableList.of(
+                Row.builder()
+                    .put(NodePropertiesAnswerer.COL_NODE, new Node("node1"))
+                    .put(property1, ConfigurationFormat.CISCO_IOS)
+                    .put(property2, ImmutableList.of())
+                    .build(),
+                Row.builder()
+                    .put(NodePropertiesAnswerer.COL_NODE, new Node("node2"))
+                    .put(property1, ConfigurationFormat.HOST)
+                    .put(property2, ImmutableList.of("sa"))
+                    .build()));
+    assertThat(propertyRows, equalTo(expected));
 
-    assertThat(propertyRows.size(), equalTo(2));
-    assertThat(propertyRows, hasItems(row1, row2));
+    // Using the legacy properties question
+    NodePropertiesQuestion questionDeprecated = new NodePropertiesQuestion(null, null);
+    questionDeprecated.setProperties(ImmutableList.of(property1, property2));
+    propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes);
+    assertThat(propertyRows, equalTo(expected));
   }
 }

@@ -8,8 +8,10 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpRoute;
+import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
@@ -203,5 +205,30 @@ public class BgpProtocolHelper {
     transformedIncomingRouteBuilder.setSrcProtocol(targetProtocol);
 
     return transformedIncomingRouteBuilder;
+  }
+
+  /**
+   * Convert an aggregate/generated route to a BGP route.
+   *
+   * @param generatedRoute a {@link GeneratedRoute} to convert to a {@link BgpRoute}.
+   * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
+   */
+  public static BgpRoute convertGeneratedRouteToBgp(GeneratedRoute generatedRoute, Ip routerId) {
+    BgpRoute.Builder b = new BgpRoute.Builder();
+    b.setAdmin(generatedRoute.getAdministrativeCost());
+    b.setAsPath(generatedRoute.getAsPath().getAsSets());
+    b.setMetric(generatedRoute.getMetric());
+    b.setSrcProtocol(RoutingProtocol.AGGREGATE);
+    b.setProtocol(RoutingProtocol.AGGREGATE);
+    b.setNetwork(generatedRoute.getNetwork());
+    b.setLocalPreference(BgpRoute.DEFAULT_LOCAL_PREFERENCE);
+    /*
+     * Note: Origin type and originator IP should get overwritten by export policy,
+     * but are needed initially
+     */
+    b.setOriginatorIp(routerId);
+    b.setOriginType(OriginType.INCOMPLETE);
+    b.setReceivedFromIp(Ip.ZERO);
+    return b.build();
   }
 }

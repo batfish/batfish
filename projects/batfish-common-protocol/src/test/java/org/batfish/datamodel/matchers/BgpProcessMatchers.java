@@ -7,8 +7,10 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEbgp;
+import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasMultipathIbgp;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasNeighbor;
 import org.batfish.datamodel.matchers.BgpProcessMatchersImpl.HasNeighbors;
@@ -32,6 +34,15 @@ public class BgpProcessMatchers {
    */
   public static HasMultipathEbgp hasMultipathEbgp(@Nonnull Matcher<? super Boolean> subMatcher) {
     return new HasMultipathEbgp(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provides {@code subMatcher} matches whther the BGP
+   * process has specified {@link MultipathEquivalentAsPathMatchMode}.
+   */
+  public static HasMultipathEquivalentAsPathMatchMode hasMultipathEquivalentAsPathMatchMode(
+      MultipathEquivalentAsPathMatchMode mode) {
+    return new HasMultipathEquivalentAsPathMatchMode(equalTo(mode));
   }
 
   /**

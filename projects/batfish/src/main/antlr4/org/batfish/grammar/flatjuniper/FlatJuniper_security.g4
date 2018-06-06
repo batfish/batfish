@@ -18,17 +18,25 @@ dh_group
 :
    GROUP1
    | GROUP14
+   | GROUP15
+   | GROUP16
+   | GROUP19
    | GROUP2
+   | GROUP20
+   | GROUP24
    | GROUP5
 ;
 
 encryption_algorithm
 :
-   THREEDES_CBC
-   | AES_128_CBC
+   AES_128_CBC
+   | AES_128_GCM
    | AES_192_CBC
+   | AES_192_GCM
    | AES_256_CBC
+   | AES_256_GCM
    | DES_CBC
+   | THREEDES_CBC
 ;
 
 hib_protocol
@@ -110,6 +118,7 @@ ipsec_authentication_algorithm
 ipsec_protocol
 :
    AH
+   | BUNDLE
    | ESP
 ;
 
@@ -731,7 +740,11 @@ seipp_proposal_set
 
 seipp_proposals
 :
-   PROPOSALS name = variable
+   PROPOSALS OPEN_BRACKET
+   (
+       proposals += variable
+   )+
+   CLOSE_BRACKET
 ;
 
 seippr_authentication_algorithm

@@ -40,9 +40,7 @@ public class IpsecVpnStatusAnswererTest {
     IpsecPolicy ipsecPolicy = new IpsecPolicy(name + "-ipsecpolicy");
     ipsecVpn.setIpsecPolicy(ipsecPolicy);
 
-    SortedMap<String, IpsecProposal> ipsecProposalMap = new TreeMap<>();
-    ipsecProposalMap.put(name + "-ipsecproposal", ipsecProposal);
-    ipsecPolicy.setProposals(ipsecProposalMap);
+    ipsecPolicy.getProposals().add(ipsecProposal);
 
     return ipsecVpn;
   }

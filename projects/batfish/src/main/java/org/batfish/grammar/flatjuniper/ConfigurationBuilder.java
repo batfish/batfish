@@ -22,6 +22,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -1129,10 +1130,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return EncryptionAlgorithm.THREEDES_CBC;
     } else if (ctx.AES_128_CBC() != null) {
       return EncryptionAlgorithm.AES_128_CBC;
+    } else if (ctx.AES_128_GCM() != null) {
+      return EncryptionAlgorithm.AES_128_GCM;
     } else if (ctx.AES_192_CBC() != null) {
       return EncryptionAlgorithm.AES_192_CBC;
+    } else if (ctx.AES_192_GCM() != null) {
+      return EncryptionAlgorithm.AES_192_GCM;
     } else if (ctx.AES_256_CBC() != null) {
       return EncryptionAlgorithm.AES_256_CBC;
+    } else if (ctx.AES_256_GCM() != null) {
+      return EncryptionAlgorithm.AES_256_GCM;
     } else if (ctx.DES_CBC() != null) {
       return EncryptionAlgorithm.DES_CBC;
     } else {
@@ -1383,11 +1390,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static IpsecProtocol toIpsecProtocol(Ipsec_protocolContext ctx) {
+  private static SortedSet<IpsecProtocol> toIpsecProtocol(Ipsec_protocolContext ctx) {
     if (ctx.AH() != null) {
-      return IpsecProtocol.AH;
+      return ImmutableSortedSet.of(IpsecProtocol.AH);
     } else if (ctx.ESP() != null) {
-      return IpsecProtocol.ESP;
+      return ImmutableSortedSet.of(IpsecProtocol.ESP);
+    } else if (ctx.BUNDLE() != null) {
+      return ImmutableSortedSet.of(IpsecProtocol.AH, IpsecProtocol.ESP);
     } else {
       throw new BatfishException("invalid ipsec protocol: " + ctx.getText());
     }
@@ -4194,9 +4203,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeipp_proposals(Seipp_proposalsContext ctx) {
-    String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _currentIpsecPolicy.getProposals().put(name, line);
+    for (VariableContext proposal : ctx.proposals) {
+      int line = proposal.getStart().getLine();
+      _currentIpsecPolicy.getProposals().put(proposal.getText(), line);
+    }
   }
 
   @Override
@@ -4226,8 +4236,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeippr_protocol(Seippr_protocolContext ctx) {
-    IpsecProtocol protocol = toIpsecProtocol(ctx.ipsec_protocol());
-    _currentIpsecProposal.setProtocol(protocol);
+    _currentIpsecProposal.setProtocols(toIpsecProtocol(ctx.ipsec_protocol()));
   }
 
   @Override
@@ -4768,8 +4777,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       return DiffieHellmanGroup.GROUP1;
     } else if (ctx.GROUP14() != null) {
       return DiffieHellmanGroup.GROUP14;
+    } else if (ctx.GROUP15() != null) {
+      return DiffieHellmanGroup.GROUP15;
+    } else if (ctx.GROUP16() != null) {
+      return DiffieHellmanGroup.GROUP16;
+    } else if (ctx.GROUP19() != null) {
+      return DiffieHellmanGroup.GROUP19;
     } else if (ctx.GROUP2() != null) {
       return DiffieHellmanGroup.GROUP2;
+    } else if (ctx.GROUP20() != null) {
+      return DiffieHellmanGroup.GROUP20;
+    } else if (ctx.GROUP24() != null) {
+      return DiffieHellmanGroup.GROUP24;
     } else if (ctx.GROUP5() != null) {
       return DiffieHellmanGroup.GROUP5;
     } else {
