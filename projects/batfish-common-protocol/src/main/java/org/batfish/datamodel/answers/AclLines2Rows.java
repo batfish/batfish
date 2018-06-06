@@ -32,6 +32,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
       AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
 
     IpAccessList acl = aclSpecs.acl.getAcl();
+    IpAccessList original = aclSpecs.acl.getOriginal();
     IpAccessListLine blockedLine = acl.getLines().get(lineNumber);
     if (blockedLine.inCycle()) {
       return;
@@ -57,13 +58,23 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .put(COL_SOURCES, flatSources)
             .put(
                 COL_LINES,
-                acl.getLines().stream().map(IpAccessListLine::getName).collect(Collectors.toList()))
+                original
+                    .getLines()
+                    .stream()
+                    .map(l -> firstNonNull(l.getName(), l.toString()))
+                    .collect(Collectors.toList()))
             .put(COL_BLOCKED_LINE_NUM, lineNumber)
             .put(COL_BLOCKING_LINE_NUMS, blockingLines)
             .put(COL_DIFF_ACTION, diffAction)
             .put(
                 COL_MESSAGE,
-                buildMessage(acl.getLines(), flatSources, lineNumber, blockingLines, unmatchable))
+                buildMessage(
+                    original.getLines(),
+                    blockedLine,
+                    lineNumber,
+                    flatSources,
+                    blockingLines,
+                    unmatchable))
             .build());
   }
 
@@ -85,19 +96,20 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
   }
 
   private static String buildMessage(
-      List<IpAccessListLine> lines,
-      List<String> flatSources,
+      List<IpAccessListLine> lines, // Original lines with unsanitized cycles & ACL references
+      IpAccessListLine modifiedBlockedLine, // Could have sanitized cycle/undefined reference
       int blockedLineNum,
+      List<String> flatSources,
       SortedSet<Integer> blockingLines,
       boolean unmatchable) {
-    IpAccessListLine blockedLine = lines.get(blockedLineNum);
-    String blockedLineName = firstNonNull(blockedLine.getName(), blockedLine.toString());
+    String blockedLineName =
+        firstNonNull(lines.get(blockedLineNum).getName(), lines.get(blockedLineNum).toString());
     StringBuilder sb =
         new StringBuilder(
             String.format(
                 "ACL(s) { %s } contain(s) an unreachable line: '%d: %s'. ",
                 String.join("; ", flatSources), blockedLineNum, blockedLineName));
-    if (blockedLine.undefinedReference()) {
+    if (modifiedBlockedLine.undefinedReference()) {
       sb.append("This line references a structure that is not defined.");
     } else if (unmatchable) {
       sb.append("This line will never match any packet, independent of preceding lines.");

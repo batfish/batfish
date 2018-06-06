@@ -1,5 +1,7 @@
 package org.batfish.datamodel.answers;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -163,23 +165,23 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     if (!aclsByHostname.containsKey(aclName)) {
       aclsByHostname.put(aclName, ipAccessList);
     }
-    SortedMap<String, SortedSet<AclReachabilityEntry>> linesByHostname =
-        lines.computeIfAbsent(hostname, k -> new TreeMap<>());
-    SortedSet<AclReachabilityEntry> linesByAcl =
-        linesByHostname.computeIfAbsent(aclName, k -> new TreeSet<>());
-    linesByAcl.add(entry);
+    lines
+        .computeIfAbsent(hostname, k -> new TreeMap<>())
+        .computeIfAbsent(aclName, k -> new TreeSet<>())
+        .add(entry);
   }
 
   @Override
   public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {
     Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
-    IpAccessList acl = aclSpecs.acl.getAcl();
+    IpAccessList acl = aclSpecs.acl.getOriginal();
+    IpAccessListLine line = acl.getLines().get(lineNumber);
     addLine(
         _reachableLines,
         hostnameAndAcl.getFirst(),
         hostnameAndAcl.getSecond(),
         acl,
-        new AclReachabilityEntry(lineNumber, acl.getLines().get(lineNumber).getName()));
+        new AclReachabilityEntry(lineNumber, firstNonNull(line.getName(), line.toString())));
   }
 
   @Override
@@ -187,8 +189,10 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
       AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
 
     IpAccessListLine blockedLine = aclSpecs.acl.getAcl().getLines().get(lineNumber);
-    AclReachabilityEntry entry = new AclReachabilityEntry(lineNumber, blockedLine.getName());
-    Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
+    IpAccessListLine originalLine = aclSpecs.acl.getOriginal().getLines().get(lineNumber);
+    AclReachabilityEntry entry =
+        new AclReachabilityEntry(
+            lineNumber, firstNonNull(originalLine.getName(), originalLine.toString()));
 
     if (blockedLine.undefinedReference()) {
       entry.setEarliestMoreGeneralLineIndex(-1);
@@ -208,17 +212,19 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
           "Multiple earlier lines partially block this line, making it unreachable.");
     } else {
       int blockingLineNum = blockingLines.first();
-      IpAccessListLine blockingLine = aclSpecs.acl.getAcl().getLines().get(blockingLineNum);
+      IpAccessListLine blockingLine = aclSpecs.acl.getOriginal().getLines().get(blockingLineNum);
       entry.setEarliestMoreGeneralLineIndex(blockingLineNum);
-      entry.setEarliestMoreGeneralLineName(blockingLine.getName());
+      entry.setEarliestMoreGeneralLineName(
+          firstNonNull(blockingLine.getName(), blockingLine.toString()));
       entry.setDifferentAction(!blockedLine.getAction().equals(blockingLine.getAction()));
     }
 
+    Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
     addLine(
         _unreachableLines,
         hostnameAndAcl.getFirst(),
         hostnameAndAcl.getSecond(),
-        aclSpecs.acl.getAcl(),
+        aclSpecs.acl.getOriginal(),
         entry);
   }
 

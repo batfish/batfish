@@ -12,13 +12,16 @@ public final class CanonicalAcl {
   private final IpAccessList _acl;
   private final ImmutableSortedMap<String, IpAccessList> _dependencies;
   private final int _hashCode;
+  private final IpAccessList _originalAcl;
 
   /**
    * @param acl {@link IpAccessList} represented by this CanonicalAcl
    * @param dependencies Map of names to {@link IpAccessList}s of ACLs upon which this ACL depends
    */
-  public CanonicalAcl(IpAccessList acl, Map<String, IpAccessList> dependencies) {
+  public CanonicalAcl(
+      IpAccessList acl, IpAccessList originalAcl, Map<String, IpAccessList> dependencies) {
     _acl = acl;
+    _originalAcl = originalAcl;
 
     // _dependencies is a map of aclName to ACL all ACLs it upon which this ACL depends
     _dependencies = ImmutableSortedMap.copyOf(dependencies);
@@ -33,7 +36,7 @@ public final class CanonicalAcl {
     _hashCode = _acl.getLines().hashCode() + relatedAclsHashCodeMap.hashCode();
   }
 
-  /** @return {@link IpAccessList} of the ACL represented by this {@link CanonicalAcl} */
+  /** @return The ACL represented by this {@link CanonicalAcl} */
   public IpAccessList getAcl() {
     return _acl;
   }
@@ -47,6 +50,13 @@ public final class CanonicalAcl {
    */
   public NavigableMap<String, IpAccessList> getDependencies() {
     return _dependencies;
+  }
+
+  /**
+   * @return Original version of this ACL, with no modifications to sanitize cycles/undefined refs.
+   */
+  public IpAccessList getOriginal() {
+    return _originalAcl;
   }
 
   @Override

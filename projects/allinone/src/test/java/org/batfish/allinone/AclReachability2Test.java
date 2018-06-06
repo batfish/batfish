@@ -10,6 +10,8 @@ import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Multiset;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
@@ -56,32 +58,23 @@ public class AclReachability2Test {
   @Test
   public void testIdenticalAclsCombine() throws IOException {
     // acl1 and acl2 are identical; blocked line should only appear as one result
-    _aclb
-        .setLines(
-            ImmutableList.of(
-                rejectingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                        .build()),
-                acceptingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                        .build())))
-        .setName("acl1")
-        .build();
-    _aclb2
-        .setLines(
-            ImmutableList.of(
-                rejectingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                        .build()),
-                acceptingHeaderSpace(
-                    HeaderSpace.builder()
-                        .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                        .build())))
-        .setName("acl2")
-        .build();
+    List<IpAccessListLine> acl1Lines =
+        ImmutableList.of(
+            rejectingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()),
+            acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()));
+    _aclb.setLines(acl1Lines).setName("acl1").build();
+
+    List<IpAccessListLine> acl2Lines =
+        ImmutableList.of(
+            rejectingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()),
+            acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()));
+    _aclb2.setLines(acl2Lines).setName("acl2").build();
+
+    List<String> lineNames = acl1Lines.stream().map(l -> l.toString()).collect(Collectors.toList());
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 
@@ -92,7 +85,7 @@ public class AclReachability2Test {
                 .put(
                     AclLines2Rows.COL_SOURCES,
                     ImmutableList.of(_c1.getName() + ": acl1", _c2.getName() + ": acl2"))
-                .put(AclLines2Rows.COL_LINES, new String[2])
+                .put(AclLines2Rows.COL_LINES, lineNames)
                 .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
                 .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(AclLines2Rows.COL_DIFF_ACTION, true)
@@ -201,15 +194,10 @@ public class AclReachability2Test {
 
   @Test
   public void testUndefinedReference() throws IOException {
-    IpAccessList acl =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.accepting()
-                        .setMatchCondition(new PermittedByAcl("pretend acl"))
-                        .build()))
-            .setName("acl")
-            .build();
+
+    IpAccessListLine aclLine =
+        IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("???")).build();
+    IpAccessList acl = _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 
@@ -218,15 +206,15 @@ public class AclReachability2Test {
         ImmutableMultiset.of(
             Row.builder()
                 .put(AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getName() + ": acl"))
-                .put(AclLines2Rows.COL_LINES, new String[1])
+                .put(AclLines2Rows.COL_LINES, ImmutableList.of(aclLine.toString()))
                 .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 0)
                 .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
                     "ACL(s) { c1: acl } contain(s) an unreachable line: '0: "
-                        + "IpAccessListLine{action=ACCEPT, matchCondition=FalseExpr{}}'. This line "
-                        + "references a structure that is not defined.")
+                        + "IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=???, defaultAccept=false}}'."
+                        + " This line references a structure that is not defined.")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -239,29 +227,21 @@ public class AclReachability2Test {
      0. Permit anything that referenced ACL permits
      1. Permit 1.0.0.0/24
     */
-    IpAccessList referencedAcl =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                            .build())))
-            .setName("acl1")
-            .build();
-    IpAccessList acl =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.accepting()
-                        .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
-                        .build(),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                            .build())))
-            .setName("acl2")
-            .build();
+    List<IpAccessListLine> referencedAclLines =
+        ImmutableList.of(
+            acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()));
+    IpAccessList referencedAcl = _aclb.setLines(referencedAclLines).setName("acl1").build();
+
+    List<IpAccessListLine> aclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setMatchCondition(new PermittedByAcl(referencedAcl.getName()))
+                .build(),
+            acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()));
+    IpAccessList acl = _aclb.setLines(aclLines).setName("acl2").build();
+    List<String> lineNames = aclLines.stream().map(l -> l.toString()).collect(Collectors.toList());
 
     /*
      Runs two questions:
@@ -279,7 +259,7 @@ public class AclReachability2Test {
                 .put(
                     AclLines2Rows.COL_SOURCES,
                     ImmutableList.of(_c1.getName() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, new String[2])
+                .put(AclLines2Rows.COL_LINES, lineNames)
                 .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
                 .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
@@ -296,24 +276,22 @@ public class AclReachability2Test {
 
   @Test
   public void testMultipleCoveringLines() throws IOException {
-    IpAccessList acl =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.0").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.1:0.0.0.0").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.1").toIpSpace())
-                            .build())))
-            .setName("acl")
-            .build();
+    List<IpAccessListLine> aclLines =
+        ImmutableList.of(
+            acceptingHeaderSpace(
+                HeaderSpace.builder()
+                    .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.0").toIpSpace())
+                    .build()),
+            acceptingHeaderSpace(
+                HeaderSpace.builder()
+                    .setSrcIps(new IpWildcard("1.0.0.1:0.0.0.0").toIpSpace())
+                    .build()),
+            acceptingHeaderSpace(
+                HeaderSpace.builder()
+                    .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.1").toIpSpace())
+                    .build()));
+    IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
+    List<String> lineNames = aclLines.stream().map(l -> l.toString()).collect(Collectors.toList());
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 
@@ -328,7 +306,7 @@ public class AclReachability2Test {
                 .put(
                     AclLines2Rows.COL_SOURCES,
                     ImmutableList.of(_c1.getName() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, new String[3])
+                .put(AclLines2Rows.COL_LINES, lineNames)
                 .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 2)
                 .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
@@ -352,29 +330,19 @@ public class AclReachability2Test {
     3. Accept 1.0.0.0/32 (blocked by line 0)
     4. Accept 1.2.3.4/32 (unblocked)
      */
-    IpAccessList acl =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    rejectingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                            .build()),
-                    IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build(),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/32").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.2.3.4/32").toIpSpace())
-                            .build())))
-            .setName("acl")
-            .build();
+    List<IpAccessListLine> aclLines =
+        ImmutableList.of(
+            rejectingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()),
+            acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace()).build()),
+            IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build(),
+            acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.0.0.0/32").toIpSpace()).build()),
+            acceptingHeaderSpace(
+                HeaderSpace.builder().setSrcIps(Prefix.parse("1.2.3.4/32").toIpSpace()).build()));
+    IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
+    List<String> lineNames = aclLines.stream().map(l -> l.toString()).collect(Collectors.toList());
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 
@@ -385,7 +353,7 @@ public class AclReachability2Test {
                 .put(
                     AclLines2Rows.COL_SOURCES,
                     ImmutableList.of(_c1.getName() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, new String[5])
+                .put(AclLines2Rows.COL_LINES, lineNames)
                 .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
                 .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(AclLines2Rows.COL_DIFF_ACTION, true)
@@ -400,7 +368,7 @@ public class AclReachability2Test {
                 .put(
                     AclLines2Rows.COL_SOURCES,
                     ImmutableList.of(_c1.getName() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, new String[5])
+                .put(AclLines2Rows.COL_LINES, lineNames)
                 .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 2)
                 .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
@@ -413,7 +381,7 @@ public class AclReachability2Test {
                 .put(
                     AclLines2Rows.COL_SOURCES,
                     ImmutableList.of(_c1.getName() + ": " + acl.getName()))
-                .put(AclLines2Rows.COL_LINES, new String[5])
+                .put(AclLines2Rows.COL_LINES, lineNames)
                 .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 3)
                 .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
                 .put(AclLines2Rows.COL_DIFF_ACTION, true)

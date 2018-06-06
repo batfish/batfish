@@ -54,10 +54,11 @@ public final class AclReachabilityAnswererUtils {
     */
     for (String hostname : configurations.keySet()) {
       if (specifiedNodes.contains(hostname)) {
+        Map<String, IpAccessList> originalAcls = configurations.get(hostname).getIpAccessLists();
 
         // Create a copy of the configuration's ACL map
         SortedMap<String, IpAccessList> acls = new TreeMap<>();
-        acls.putAll(configurations.get(hostname).getIpAccessLists());
+        acls.putAll(originalAcls);
         Map<String, Map<String, IpAccessList>> aclDependenciesMap = new TreeMap<>();
 
         // Break cycles in ACLs specified by aclRegex and their dependencies.
@@ -80,7 +81,8 @@ public final class AclReachabilityAnswererUtils {
         for (Entry<String, Map<String, IpAccessList>> e : aclDependenciesMap.entrySet()) {
           String aclName = e.getKey();
           if (aclRegex.matcher(aclName).matches()) {
-            CanonicalAcl currentAcl = new CanonicalAcl(acls.get(aclName), e.getValue());
+            CanonicalAcl currentAcl =
+                new CanonicalAcl(acls.get(aclName), originalAcls.get(aclName), e.getValue());
 
             // If an identical ACL doesn't exist, add it to the set; otherwise, find the existing
             // version and add current hostname
