@@ -552,7 +552,6 @@ class TracerouteEngineImplContext {
               }
               Set<Edge> visitedEdges = Collections.emptySet();
               List<FlowTraceHop> hops = new ArrayList<>();
-              SortedSet<Edge> edges = new TreeSet<>();
               String ingressInterfaceName = flow.getIngressInterface();
               if (ingressInterfaceName != null) {
                 Edge edge =
@@ -561,7 +560,6 @@ class TracerouteEngineImplContext {
                         TRACEROUTE_INGRESS_NODE_INTERFACE_NAME,
                         ingressNodeName,
                         ingressInterfaceName);
-                edges.add(edge);
                 TransmissionContext transmissionContext =
                     new TransmissionContext(
                         _configurations.get(ingressNodeName).getIpAccessLists(),
@@ -572,7 +570,7 @@ class TracerouteEngineImplContext {
                         flow,
                         new TreeSet<>(),
                         flow);
-                processFlowReception(edge, transmissionContext, edges);
+                processFlowReception(edge, transmissionContext, new TreeSet<>());
               } else {
                 collectFlowTraces(
                     ingressNodeName,
