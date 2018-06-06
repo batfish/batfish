@@ -78,7 +78,7 @@ public class TracerouteEngineTest {
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
-        TracerouteEngineImpl.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
@@ -92,7 +92,7 @@ public class TracerouteEngineTest {
     nat.setPoolIpFirst(new Ip("4.5.6.7"));
 
     Flow transformed =
-        TracerouteEngineImpl.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
     assertThat(transformed, is(flow));
   }
@@ -110,7 +110,7 @@ public class TracerouteEngineTest {
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
-        TracerouteEngineImpl.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.7")));
   }
@@ -128,7 +128,7 @@ public class TracerouteEngineTest {
     secondNat.setPoolIpFirst(new Ip("4.5.6.8"));
 
     Flow transformed =
-        TracerouteEngineImpl.applySourceNat(
+        TracerouteEngineImplContext.applySourceNat(
             flow, null, ImmutableMap.of(), ImmutableMap.of(), Lists.newArrayList(nat, secondNat));
     assertThat(transformed.getSrcIp(), equalTo(new Ip("4.5.6.8")));
   }
@@ -142,7 +142,7 @@ public class TracerouteEngineTest {
 
     _thrown.expect(BatfishException.class);
     _thrown.expectMessage("missing NAT address or pool");
-    TracerouteEngineImpl.applySourceNat(
+    TracerouteEngineImplContext.applySourceNat(
         flow, null, ImmutableMap.of(), ImmutableMap.of(), singletonList(nat));
   }
 
@@ -231,25 +231,25 @@ public class TracerouteEngineTest {
 
     assertFalse(
         "ARP request to interface on a different VRF should fail",
-        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i1, vrf1Fib, arpIp));
+        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i1, vrf1Fib, arpIp));
     assertTrue(
         "ARP request to interface with proxy-arp enabled should succeed",
-        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i2, vrf2Fib, arpIp));
+        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i2, vrf2Fib, arpIp));
     assertFalse(
         "ARP request to interface with proxy-arp disabled should fail",
-        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i3, vrf2Fib, arpIp));
+        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i3, vrf2Fib, arpIp));
     assertTrue(
         "ARP request to interface that owns arpIp should succeed",
-        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
     assertFalse(
         "ARP request to interface with no address should fail",
-        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp));
+        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i5, vrf2Fib, arpIp));
 
     // arpIp isn't owned by the VRF, but is routable
     arpIp = new Ip("4.4.4.0");
     assertFalse(
         "ARP request for interface subnet to the same interface should fail",
-        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
 
     /*
      * There are routes for arpIp through multiple interfaces, but i4 still doesn't reply because
@@ -265,7 +265,7 @@ public class TracerouteEngineTest {
     assertFalse(
         "ARP request for interface subnet to the same interface should fail, "
             + "even if other routes are available",
-        TracerouteEngineImpl.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
+        TracerouteEngineImplContext.interfaceRepliesToArpRequestForIp(i4, vrf2Fib, arpIp));
   }
 
   @Test
