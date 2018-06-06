@@ -82,6 +82,7 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
   }
 
   public enum Token {
+    ALPHA_PLUS,
     ALPHA_PLUS_DIGIT_PLUS,
     ALNUM_PLUS,
     DELIMITER,
@@ -89,10 +90,12 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
 
     public String tokenToRegex(String s) {
       switch (this) {
+        case ALPHA_PLUS:
+          return plus(ALPHABETIC_REGEX);
         case ALPHA_PLUS_DIGIT_PLUS:
           return plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
         case ALNUM_PLUS:
-          return ALPHABETIC_REGEX + star(ALPHANUMERIC_REGEX);
+          return plus(ALPHANUMERIC_REGEX);
         case DELIMITER:
           return Pattern.quote(s);
         case DIGIT_PLUS:
@@ -261,20 +264,11 @@ public class InferRoles implements Callable<SortedSet<NodeRoleDimension>> {
         case ALPHA_PLUS:
           int next = i + 1;
           if (next >= size) {
-            // generalize a final alphabetic sequence to allow alphanumeric ones
-            tokens.add(new Pair<>(chars, Token.ALNUM_PLUS));
+            tokens.add(new Pair<>(chars, Token.ALPHA_PLUS));
           } else {
             // the next token must be DIGIT_PLUS since we know there are no delimiters
-            int third = i + 2;
             String bothChars = chars + pretokens.get(next).getFirst();
-            if (third >= size) {
-              // generalize a final ALPHA+DIGIT+ to ALNUM+
-              tokens.add(new Pair<>(bothChars, Token.ALNUM_PLUS));
-            } else {
-              // keep ALPHA+DIGIT+ as is, to separate it from the subsequent
-              // alphabetic sequence
-              tokens.add(new Pair<>(bothChars, Token.ALPHA_PLUS_DIGIT_PLUS));
-            }
+            tokens.add(new Pair<>(bothChars, Token.ALPHA_PLUS_DIGIT_PLUS));
             i++;
           }
           break;
