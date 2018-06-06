@@ -11,6 +11,9 @@ java_library(
         "src/generated/resources/org/batfish/common/common.properties",
         "src/main/resources/org/batfish/common/util/salt",
     ],
+    plugins = [
+        "//:auto_service_plugin",
+    ],
     runtime_deps = [
         "@commons_beanutils//:runtime",
     ],
@@ -19,6 +22,7 @@ java_library(
         "//projects/lib/jsonpath",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
+        "@auto_service//:compile",
         "@commons_cli//:compile",
         "@commons_configuration2//:compile",
         "@commons_io//:compile",
