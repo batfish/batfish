@@ -41,7 +41,7 @@ public class PaloAltoGrammarTest {
     String hostname = "dns-server";
     Configuration c = parseConfig(hostname);
 
-    // Confirm both dns servers show up
+    // Confirm both dns servers show up in the right order
     assertThat(c.getDnsServers(), contains("1.1.1.1", "2.2.2.2"));
   }
 
@@ -59,7 +59,7 @@ public class PaloAltoGrammarTest {
     String hostname = "ntp-server";
     Configuration c = parseConfig(hostname);
 
-    // Confirm both ntp servers show up
+    // Confirm both ntp servers show up in the right order
     assertThat(c.getNtpServers(), contains("1.1.1.1", "2.2.2.2"));
   }
 }
