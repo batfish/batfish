@@ -10,6 +10,7 @@ import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
@@ -160,6 +161,20 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, IpSpace> featureValueOf(Configuration actual) {
       return actual.getIpSpaces();
+    }
+  }
+
+  static final class HasIpsecPolicy extends FeatureMatcher<Configuration, IpsecPolicy> {
+    private final String _name;
+
+    HasIpsecPolicy(@Nonnull String name, @Nonnull Matcher<? super IpsecPolicy> subMatcher) {
+      super(subMatcher, "A Configuration with ipsecPolicy " + name + ":", "ipsecPolicy " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecPolicy featureValueOf(Configuration actual) {
+      return actual.getIpsecPolicies().get(_name);
     }
   }
 

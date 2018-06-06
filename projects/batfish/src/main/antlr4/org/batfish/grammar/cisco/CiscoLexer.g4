@@ -4857,9 +4857,49 @@ GROUP1
    'group1'
 ;
 
+GROUP14
+:
+   'group14'
+;
+
+GROUP15
+:
+   'group15'
+;
+
+GROUP16
+:
+   'group16'
+;
+
+GROUP19
+:
+   'group19'
+;
+
 GROUP2
 :
    'group2'
+;
+
+GROUP20
+:
+   'group20'
+;
+
+GROUP21
+:
+   'group21'
+;
+
+GROUP24
+:
+   'group24'
+;
+
+GROUP5
+:
+   'group5'
 ;
 
 GSHUT

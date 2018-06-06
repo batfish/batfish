@@ -56,6 +56,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.LineAction;
@@ -3258,21 +3259,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // ipsec policies
-    for (Entry<String, IpsecProfile> e : _ipsecProfiles.entrySet()) {
-      String name = e.getKey();
-      IpsecProfile profile = e.getValue();
-
-      IpsecPolicy policy = new IpsecPolicy(name);
-      policy.setPfsKeyGroup(profile.getPfsGroup());
-      String transformSetName = profile.getTransformSet();
-      if (c.getIpsecProposals().containsKey(transformSetName)) {
-        policy.getProposals().put(transformSetName, c.getIpsecProposals().get(transformSetName));
-      }
-      c.getIpsecPolicies().put(name, policy);
-
-      if (profile.getIsakmpProfile() != null) {
-        _w.unimplemented("isakmp profiles set within ipsec profiles");
-      }
+    for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
+      IpsecPolicy ipsecPolicy = toIpSecPolicy(c, ipsecProfile);
+      c.getIpsecPolicies().put(ipsecPolicy.getName(), ipsecPolicy);
     }
 
     // ipsec vpns
@@ -3576,6 +3565,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .build()))
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
         .build();
+  }
+
+  /** Converts an Ipsec Profile to Ipsec policy */
+  private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
+    String name = ipsecProfile.getName();
+
+    IpsecPolicy policy = new IpsecPolicy(name);
+    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
+
+    for (String transformSetName : ipsecProfile.getTransformSets()) {
+      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
+      if (ipsecProposalName != null) {
+        policy.getProposals().add(ipsecProposalName);
+      }
+    }
+
+    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
+    if (isakmpProfileName != null) {
+      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
+      if (ikeGateway != null) {
+        policy.setIkeGateway(ikeGateway);
+      }
+    }
+
+    return policy;
   }
 
   private void createInspectClassMapAcls(Configuration c) {
