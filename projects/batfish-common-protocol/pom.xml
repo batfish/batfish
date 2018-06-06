@@ -38,6 +38,10 @@
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils
                   </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
+                  </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
                   </ignoredUnusedDeclaredDependency>
                 </ignoredUnusedDeclaredDependencies>
