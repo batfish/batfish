@@ -131,11 +131,6 @@
       <artifactId>opentracing-util</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-    </dependency>
-
     <!-- Test scope dependencies. -->
     <dependency>
       <groupId>org.batfish</groupId>
