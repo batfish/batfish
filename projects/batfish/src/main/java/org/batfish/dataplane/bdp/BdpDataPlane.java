@@ -20,6 +20,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 
 public class BdpDataPlane implements Serializable, DataPlane {
@@ -148,5 +149,11 @@ public class BdpDataPlane implements Serializable, DataPlane {
 
   void setBgpTopology(Network<BgpNeighbor, BgpSession> bgpTopology) {
     _bgpTopology = bgpTopology;
+  }
+
+  @Override
+  public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+      getPrefixTracingInfoSummary() {
+    return ImmutableSortedMap.of();
   }
 }

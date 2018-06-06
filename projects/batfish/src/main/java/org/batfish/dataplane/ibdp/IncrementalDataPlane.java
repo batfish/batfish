@@ -20,6 +20,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 
 public class IncrementalDataPlane implements Serializable, DataPlane {
@@ -176,5 +177,31 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
                                 String::compareTo,
                                 Entry::getKey,
                                 e2 -> e2.getValue().getPrefixTracer()))));
+  }
+
+  @Override
+  public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+      getPrefixTracingInfoSummary() {
+    /*
+     * Iterate over nodes, then virtual routers, and extract prefix tracer from each.
+     * Sort hostnames and VRF names
+     */
+    return _nodes
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                String::compareTo,
+                Entry::getKey,
+                e ->
+                    e.getValue()
+                        .getVirtualRouters()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                String::compareTo,
+                                Entry::getKey,
+                                e2 -> e2.getValue().getPrefixTracer().summarize()))));
   }
 }
