@@ -178,16 +178,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.lastnpe.eea</groupId>
-      <artifactId>guava-eea</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.lastnpe.eea</groupId>
-      <artifactId>jdk-eea</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>com.thoughtworks.xstream</groupId>
       <artifactId>xstream</artifactId>
     </dependency>
@@ -286,6 +276,19 @@
     <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
+    </dependency>
+
+    <!-- Provided dependencies to be available at compile time only -->
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>guava-eea</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>jdk-eea</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test dependencies. -->

@@ -131,14 +131,17 @@
       <artifactId>opentracing-util</artifactId>
     </dependency>
 
+    <!-- Provided dependencies to be available at compile time only -->
     <dependency>
       <groupId>org.lastnpe.eea</groupId>
       <artifactId>guava-eea</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.lastnpe.eea</groupId>
       <artifactId>jdk-eea</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test scope dependencies. -->

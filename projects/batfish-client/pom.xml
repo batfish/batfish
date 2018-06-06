@@ -153,21 +153,24 @@
       <artifactId>jline</artifactId>
     </dependency>
 
-    <dependency>
-      <groupId>org.lastnpe.eea</groupId>
-      <artifactId>guava-eea</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>org.lastnpe.eea</groupId>
-      <artifactId>jdk-eea</artifactId>
-    </dependency>
-
     <!-- Runtime dependencies to add logging. -->
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-jdk14</artifactId>
       <scope>runtime</scope>
+    </dependency>
+
+    <!-- Provided dependencies to be available at compile time only -->
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>guava-eea</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>jdk-eea</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test dependencies. -->
