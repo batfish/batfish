@@ -265,6 +265,39 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         extractor = new MrvControlPlaneExtractor(_fileText, mrvParser, _warnings);
         break;
 
+      case PALO_ALTO_NESTED:
+        if (_settings.flattenOnTheFly()) {
+          String msg =
+              "Flattening: '"
+                  + currentPath
+                  + "' on-the-fly; line-numbers reported for this file will be spurious\n";
+          _warnings.pedantic(msg);
+          try {
+            _fileText =
+                Batfish.flatten(
+                    _fileText,
+                    _logger,
+                    _settings,
+                    ConfigurationFormat.PALO_ALTO_NESTED,
+                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+          } catch (BatfishException e) {
+            String error = "Error flattening configuration file: '" + currentPath + "'";
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(
+                elapsedTime, _logger.getHistory(), _file, new BatfishException(error, e));
+          }
+        } else {
+          elapsedTime = System.currentTimeMillis() - startTime;
+          return new ParseVendorConfigurationResult(
+              elapsedTime,
+              _logger.getHistory(),
+              _file,
+              new BatfishException(
+                  "Palo Alto nested configurations must be flattened prior to this stage: '"
+                      + relativePathStr
+                      + "'"));
+        }
+        // fall through
       case PALO_ALTO:
         PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(_fileText, _settings);
         combinedParser = paParser;
@@ -281,7 +314,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       case METAMAKO:
       case MRV_COMMANDS:
       case MSS:
-      case PALO_ALTO_NESTED:
       case VXWORKS:
         String unsupportedError =
             "Unsupported configuration format: '" + format + "' for file: '" + currentPath + "'\n";
