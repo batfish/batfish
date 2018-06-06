@@ -57,9 +57,15 @@ public final class InferRoles {
   private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}";
   private static final String DIGIT_REGEX = "\\p{Digit}";
 
-  public InferRoles(Collection<String> nodes, Topology topology) {
+  public InferRoles(Collection<String> nodes, Topology topology, boolean caseSensitive) {
     _nodes = ImmutableSortedSet.copyOf(nodes);
     _topology = topology;
+    _caseSensitive = caseSensitive;
+    _patternFlags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
+  }
+
+  public InferRoles(Collection<String> nodes, Topology topology) {
+    this(nodes, topology, false);
   }
 
   // A node's name is first parsed into a sequence of simple "pretokens",
@@ -421,7 +427,7 @@ public final class InferRoles {
     return supportSum / numEdges;
   }
 
-  private static SortedMap<String, SortedSet<String>> regexToRoleNodesMap(
+  private SortedMap<String, SortedSet<String>> regexToRoleNodesMap(
       String regex, Collection<String> nodes) {
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
     Pattern pattern;
@@ -460,7 +466,7 @@ public final class InferRoles {
   }
 
   // return a map from each node name to the set of roles that it plays
-  private static SortedMap<String, SortedSet<String>> regexToNodeRolesMap(
+  private SortedMap<String, SortedSet<String>> regexToNodeRolesMap(
       String regex, Collection<String> allNodes) {
 
     SortedMap<String, SortedSet<String>> roleNodesMap = regexToRoleNodesMap(regex, allNodes);

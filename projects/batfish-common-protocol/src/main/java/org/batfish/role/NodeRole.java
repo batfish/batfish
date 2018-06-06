@@ -40,6 +40,14 @@ public class NodeRole implements Comparable<NodeRole> {
   }
 
   @Override
+  public int compareTo(NodeRole o) {
+    return Comparator.comparing(NodeRole::getName)
+        .thenComparing(NodeRole::getRegex)
+        .thenComparing(NodeRole::getCaseSensitive)
+        .compare(this, o);
+  }
+
+  @Override
   public boolean equals(Object o) {
     if (!(o instanceof NodeRole)) {
       return false;
@@ -60,7 +68,9 @@ public class NodeRole implements Comparable<NodeRole> {
   }
 
   @JsonProperty(PROP_CASE_SENSITIVE)
-  public boolean getCaseSensitive() { return _caseSensitive; }
+  public boolean getCaseSensitive() {
+    return _caseSensitive;
+  }
 
   @Override
   public int hashCode() {

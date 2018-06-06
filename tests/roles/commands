@@ -17,8 +17,3 @@ test tests/roles/nsRoleConsistency.ref get namedStructureRoleConsistency hypothe
 init-testrig test_rigs/example2 roles-example2
 test -compareall tests/roles/inferRoles.ref get inferRoles
 test tests/roles/roleNeighbors2.ref get neighbors neighborTypes=["ebgp","ibgp","ospf","lan"], style="role"
-
-#example2-mixed-case testrig
-init-testrig test_rigs/example2-mixed-case roles-example2-mixed-case
-test -compareall tests/roles/inferRolesMixed1.ref get inferRoles
-test -compareall tests/roles/inferRolesMixed2.ref get inferRoles caseSensitive=true
