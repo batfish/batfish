@@ -1,4 +1,4 @@
-if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
+if [[ "$(uname)" == 'Darwin' && -n "$(which gfind)" ]]; then
    GNU_FIND=gfind
 else
    GNU_FIND=find
@@ -22,11 +22,11 @@ JACOCO_ALL_DESTFILE=projects/target/jacoco-all.exec
 JACOCO_COVERAGE_REPORT_XML=coverage.xml
 JACOCO_COVERAGE_REPORT_HTML=coverage
 
-if [ ! -f ${JACOCO_AGENT_JAR} ]; then
+if [ ! -f "${JACOCO_AGENT_JAR}" ]; then
   mvn dependency:get -Dartifact=org.jacoco:org.jacoco.agent:${JACOCO_VERSION}:jar:runtime
 fi
 
-if [ ! -f ${JACOCO_CLI_JAR} ]; then
+if [ ! -f "${JACOCO_CLI_JAR}" ]; then
   mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:${JACOCO_VERSION}:jar:nodeps
 fi
 

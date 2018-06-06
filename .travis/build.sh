@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-. $(dirname $0)/common.sh
+. "$(dirname "$0")/common.sh"
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
