@@ -67,6 +67,7 @@ before_cache:
   - rm -rf $HOME/.m2/repository/com/kjetland/mbknor-jackson-jsonschema_2.12/
   - rm -rf $HOME/.m2/repository/com/microsoft/z3/z3/
   - rm -rf $HOME/.m2/repository/net/sf/javabdd/bdd/
+  - rm -rf $HOME/.m2/repository/org/antlr/antlr4/
   - rm -rf $HOME/.m2/repository/org/batfish
   - rm -rf $HOME/.cache/bazel/_bazel_$USER/install
   
