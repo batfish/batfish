@@ -1322,9 +1322,34 @@ GROUP14
    'group14'
 ;
 
+GROUP15
+:
+   'group15'
+;
+
+GROUP16
+:
+   'group16'
+;
+
+GROUP19
+:
+   'group19'
+;
+
 GROUP2
 :
    'group2'
+;
+
+GROUP20
+:
+   'group20'
+;
+
+GROUP24
+:
+   'group24'
 ;
 
 GROUP5
