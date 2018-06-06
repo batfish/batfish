@@ -85,7 +85,7 @@ public class NodePropertiesAnswerer extends Answerer {
   @VisibleForTesting
   static Object convertTypeIfNeeded(Object propertyValue, PropertyDescriptor propertyDescriptor) {
 
-    // for Maps (e.g., routing policies) we use the list of keys
+    // for Maps (e.g., routing policies) we use set of keys
     if (propertyValue instanceof Map<?, ?>) {
       propertyValue =
           ((Map<?, ?>) propertyValue)

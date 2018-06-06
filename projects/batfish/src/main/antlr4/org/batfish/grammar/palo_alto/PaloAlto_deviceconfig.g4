@@ -43,8 +43,7 @@ sdsd_servers
    (
       PRIMARY primary_name = IP_ADDRESS
       | SECONDARY secondary_name = IP_ADDRESS
-   )+
-   // Can I do this instead of +? {1,2}
+   )
 ;
 
 sds_hostname
@@ -61,17 +60,10 @@ sds_ntp_servers
    )
    (
       sdsn_ntp_server_address
-      | sdsn_authentication_type
    )
-;
-
-sdsn_authentication_type
-:
-   AUTHENTICATION_TYPE null_rest_of_line
 ;
 
 sdsn_ntp_server_address
 :
    NTP_SERVER_ADDRESS IP_ADDRESS
 ;
-

@@ -57,15 +57,15 @@ public class NodePropertySpecifier {
           .put(
               "as-path-access-lists",
               new PropertyDescriptor(
-                  Configuration::getAsPathAccessLists, Schema.list(Schema.STRING)))
+                  Configuration::getAsPathAccessLists, Schema.set(Schema.STRING)))
           .put(
               "authentication-key-chains",
               new PropertyDescriptor(
-                  Configuration::getAuthenticationKeyChains, Schema.list(Schema.STRING)))
+                  Configuration::getAuthenticationKeyChains, Schema.set(Schema.STRING)))
           .put("canonical-ip", new PropertyDescriptor(Configuration::getCanonicalIp, Schema.IP))
           .put(
               "community-lists",
-              new PropertyDescriptor(Configuration::getCommunityLists, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getCommunityLists, Schema.set(Schema.STRING)))
           .put(
               "configuration-format",
               new PropertyDescriptor(Configuration::getConfigurationFormat, Schema.STRING))
@@ -79,7 +79,7 @@ public class NodePropertySpecifier {
           .put("device-type", new PropertyDescriptor(Configuration::getDeviceType, Schema.STRING))
           .put(
               "dns-servers",
-              new PropertyDescriptor(Configuration::getDnsServers, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getDnsServers, Schema.set(Schema.STRING)))
           .put(
               "dns-source-interface",
               new PropertyDescriptor(Configuration::getDnsSourceInterface, Schema.STRING))
@@ -87,71 +87,70 @@ public class NodePropertySpecifier {
           .put("hostname", new PropertyDescriptor(Configuration::getHostname, Schema.STRING))
           .put(
               "ike-gateways",
-              new PropertyDescriptor(Configuration::getIkeGateways, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIkeGateways, Schema.set(Schema.STRING)))
           .put(
               "ike-policies",
-              new PropertyDescriptor(Configuration::getIkePolicies, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIkePolicies, Schema.set(Schema.STRING)))
           .put(
               "interfaces",
-              new PropertyDescriptor(Configuration::getInterfaces, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getInterfaces, Schema.set(Schema.STRING)))
           .put(
               "ip-access-lists",
-              new PropertyDescriptor(Configuration::getIpAccessLists, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIpAccessLists, Schema.set(Schema.STRING)))
           .put(
               "ip-spaces",
-              new PropertyDescriptor(Configuration::getIpSpaces, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIpSpaces, Schema.set(Schema.STRING)))
           .put(
               "ip6-access-lists",
-              new PropertyDescriptor(Configuration::getIp6AccessLists, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIp6AccessLists, Schema.set(Schema.STRING)))
           .put(
               "ipsec-policies",
-              new PropertyDescriptor(Configuration::getIpsecPolicies, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIpsecPolicies, Schema.set(Schema.STRING)))
           .put(
               "ipsec-proposals",
-              new PropertyDescriptor(Configuration::getIpsecProposals, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIpsecProposals, Schema.set(Schema.STRING)))
           .put(
               "ipsec-vpns",
-              new PropertyDescriptor(Configuration::getIpsecVpns, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getIpsecVpns, Schema.set(Schema.STRING)))
           .put(
               "logging-servers",
-              new PropertyDescriptor(Configuration::getLoggingServers, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getLoggingServers, Schema.set(Schema.STRING)))
           .put(
               "logging-source-interface",
               new PropertyDescriptor(Configuration::getLoggingSourceInterface, Schema.STRING))
           .put(
               "ntp-servers",
-              new PropertyDescriptor(Configuration::getNtpServers, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getNtpServers, Schema.set(Schema.STRING)))
           .put(
               "ntp-source-interface",
               new PropertyDescriptor(Configuration::getNtpSourceInterface, Schema.STRING))
           .put(
               "route-filter-lists",
-              new PropertyDescriptor(
-                  Configuration::getRouteFilterLists, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getRouteFilterLists, Schema.set(Schema.STRING)))
           .put(
               "route6-filter-lists",
               new PropertyDescriptor(
-                  Configuration::getRoute6FilterLists, Schema.list(Schema.STRING)))
+                  Configuration::getRoute6FilterLists, Schema.set(Schema.STRING)))
           .put(
               "routing-policies",
-              new PropertyDescriptor(Configuration::getRoutingPolicies, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getRoutingPolicies, Schema.set(Schema.STRING)))
           .put(
               "snmp-source-interface",
               new PropertyDescriptor(Configuration::getSnmpSourceInterface, Schema.STRING))
           .put(
               "snmp-trap-servers",
-              new PropertyDescriptor(Configuration::getSnmpTrapServers, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getSnmpTrapServers, Schema.set(Schema.STRING)))
           .put(
               "tacacs-servers",
-              new PropertyDescriptor(Configuration::getTacacsServers, Schema.list(Schema.STRING)))
+              new PropertyDescriptor(Configuration::getTacacsServers, Schema.set(Schema.STRING)))
           .put(
               "tacacs-source-interface",
               new PropertyDescriptor(Configuration::getTacacsSourceInterface, Schema.STRING))
           .put(
               "vendor-family",
               new PropertyDescriptor(Configuration::getVendorFamily, Schema.STRING))
-          .put("vrfs", new PropertyDescriptor(Configuration::getVrfs, Schema.list(Schema.STRING)))
-          .put("zones", new PropertyDescriptor(Configuration::getZones, Schema.list(Schema.STRING)))
+          .put("vrfs", new PropertyDescriptor(Configuration::getVrfs, Schema.set(Schema.STRING)))
+          .put("zones", new PropertyDescriptor(Configuration::getZones, Schema.set(Schema.STRING)))
           .build();
 
   public static final NodePropertySpecifier ALL = new NodePropertySpecifier(".*");

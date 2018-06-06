@@ -531,6 +531,33 @@ public class DefaultTransitionGenerator implements StateVisitor {
                         TrueExpr.INSTANCE, postTransformationPreStates, new NodeDropAclOut(node1)));
               }
             });
+
+    // NeighborUnreachable fail OutAcl
+    _input
+        .getNeighborUnreachable()
+        .forEach(
+            (hostname, neighborUnreachableByVrf) ->
+                neighborUnreachableByVrf.forEach(
+                    (vrf, neighborUnreachableByOutInterface) ->
+                        neighborUnreachableByOutInterface.forEach(
+                            (outIface, dstIpConstraint) -> {
+                              String outAcl =
+                                  _input
+                                      .getOutgoingAcls()
+                                      .getOrDefault(hostname, ImmutableMap.of())
+                                      .get(outIface);
+                              if (outAcl == null) {
+                                return;
+                              }
+
+                              _rules.add(
+                                  new BasicRuleStatement(
+                                      dstIpConstraint,
+                                      ImmutableSet.of(
+                                          new PreOutVrf(hostname, vrf),
+                                          new AclDeny(hostname, outAcl)),
+                                      new NodeDropAclOut(hostname)));
+                            })));
   }
 
   @Override

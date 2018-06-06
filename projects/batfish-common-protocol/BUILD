@@ -2,6 +2,43 @@ package(default_visibility = ["//visibility:public"])
 
 load("@batfish//skylark:junit.bzl", "junit_tests")
 
+filegroup(
+    name = "parser_files",
+    srcs = [
+        "src/main/java/org/batfish/common/BatfishException.java",
+        "src/main/java/org/batfish/common/DebugBatfishException.java",
+        "src/main/java/org/batfish/common/ParseTreeSentences.java",
+        "src/main/java/org/batfish/common/util/BatfishObjectMapper.java",
+        "src/main/java/org/batfish/datamodel/answers/AnswerElement.java",
+        "src/main/java/org/batfish/datamodel/answers/AnswerSummary.java",
+        "src/main/java/org/batfish/grammar/BatfishANTLRErrorStrategy.java",
+        "src/main/java/org/batfish/grammar/BatfishCombinedParser.java",
+        "src/main/java/org/batfish/grammar/BatfishGrammarErrorListener.java",
+        "src/main/java/org/batfish/grammar/BatfishLexer.java",
+        "src/main/java/org/batfish/grammar/BatfishLexerErrorListener.java",
+        "src/main/java/org/batfish/grammar/BatfishLexerRecoveryStrategy.java",
+        "src/main/java/org/batfish/grammar/BatfishParser.java",
+        "src/main/java/org/batfish/grammar/BatfishParserATNSimulator.java",
+        "src/main/java/org/batfish/grammar/BatfishParserErrorListener.java",
+        "src/main/java/org/batfish/grammar/GrammarSettings.java",
+        "src/main/java/org/batfish/grammar/ParseTreePrettyPrinter.java",
+    ],
+)
+
+java_library(
+    name = "parser_common",
+    srcs = [":parser_files"],
+    deps = [
+        "@antlr4_runtime//:compile",
+        "@guava//:compile",
+        "@jackson_annotations//:compile",
+        "@jackson_core//:compile",
+        "@jackson_guava//:compile",
+        "@jackson_jdk8//:compile",
+        "@jackson_jsr310//:compile",
+    ],
+)
+
 java_library(
     name = "common",
     srcs = glob([
@@ -11,14 +48,19 @@ java_library(
         "src/generated/resources/org/batfish/common/common.properties",
         "src/main/resources/org/batfish/common/util/salt",
     ],
+    plugins = [
+        "//:auto_service_plugin",
+    ],
     runtime_deps = [
         "@commons_beanutils//:runtime",
     ],
     deps = [
+        ":parser_common",
         "//projects/lib/jackson-jsonschema:jackson_jsonschema",
         "//projects/lib/jsonpath",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
+        "@auto_service//:compile",
         "@commons_cli//:compile",
         "@commons_configuration2//:compile",
         "@commons_io//:compile",

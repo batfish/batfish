@@ -2,9 +2,11 @@
   "class" : "org.batfish.question.jsonpath.JsonPathQuestionPlugin$JsonPathQuestion",
   "debug" : false,
   "differential" : false,
+  "includeOneTableKeys" : false,
   "innerQuestion" : {
     "class" : "org.batfish.question.NodesQuestionPlugin$NodesQuestion",
     "differential" : false,
+    "includeOneTableKeys" : false,
     "nodeRegex" : ".*",
     "summary" : false
   },
