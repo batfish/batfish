@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import io.opentracing.ActiveSpan;
@@ -42,7 +43,6 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -150,7 +150,7 @@ public class WorkMgr extends AbstractCoordinator {
 
       assignWork(work, idleWorker);
     } catch (Exception e) {
-      _logger.errorf("Got exception in assignWork: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("Got exception in assignWork: %s\n", Throwables.getStackTraceAsString(e));
     }
   }
 
@@ -236,10 +236,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Unable to connect to worker at %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("Exception assigning work: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -259,14 +259,14 @@ public class WorkMgr extends AbstractCoordinator {
       try {
         _workQueueMgr.markAssignmentError(work);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignmentError for work %s: %s\n", work, stackTrace);
       }
     } else if (assigned) {
       try {
         _workQueueMgr.markAssignmentSuccess(work, worker);
       } catch (Exception e) {
-        String stackTrace = ExceptionUtils.getStackTrace(e);
+        String stackTrace = Throwables.getStackTraceAsString(e);
         _logger.errorf("Unable to markAssignmentSuccess for work %s: %s\n", work, stackTrace);
       }
 
@@ -290,7 +290,7 @@ public class WorkMgr extends AbstractCoordinator {
         checkTask(work, assignedWorker);
       }
     } catch (Exception e) {
-      _logger.errorf("Got exception in checkTasks: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("Got exception in checkTasks: %s\n", Throwables.getStackTraceAsString(e));
     }
   }
 
@@ -376,10 +376,10 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("unable to connect to %s: %s\n", worker, stackTrace));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.error(String.format("exception: %s\n", stackTrace));
     } finally {
       if (client != null) {
@@ -394,7 +394,7 @@ public class WorkMgr extends AbstractCoordinator {
     try {
       _workQueueMgr.processTaskCheckResult(work, task);
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     }
 
     // if the task ended, send a hint to the pool manager to look up worker status
@@ -1232,7 +1232,7 @@ public class WorkMgr extends AbstractCoordinator {
       _workQueueMgr.processTaskCheckResult(work, fakeTask);
       killed = true;
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     }
     return killed;
   }
@@ -1296,9 +1296,9 @@ public class WorkMgr extends AbstractCoordinator {
         }
       }
     } catch (ProcessingException e) {
-      _logger.errorf("unable to connect to %s: %s\n", worker, ExceptionUtils.getStackTrace(e));
+      _logger.errorf("unable to connect to %s: %s\n", worker, Throwables.getStackTraceAsString(e));
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
     } finally {
       if (client != null) {
         client.close();
