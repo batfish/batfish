@@ -33,7 +33,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _unimplementedFeatures = unimplementedFeatures;
   }
 
-  public NavigableSet<String> getDnsServers() {
+  private NavigableSet<String> getDnsServers() {
     NavigableSet<String> servers = new TreeSet<>();
     if (_dnsServerPrimary != null) {
       servers.add(_dnsServerPrimary);
@@ -49,7 +49,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  public NavigableSet<String> getNtpServers() {
+  private NavigableSet<String> getNtpServers() {
     NavigableSet<String> servers = new TreeSet<>();
     if (_ntpServerPrimary != null) {
       servers.add(_ntpServerPrimary);
@@ -97,6 +97,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _c = new Configuration(hostname, _vendor);
     _c.setDefaultCrossZoneAction(LineAction.REJECT);
     _c.setDefaultInboundAction(LineAction.ACCEPT);
+    _c.setDnsServers(getDnsServers());
+    _c.setNtpServers(getNtpServers());
     return _c;
   }
 }

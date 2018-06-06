@@ -2,7 +2,6 @@ package org.batfish.grammar.palo_alto;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -39,11 +38,11 @@ public class PaloAltoGrammarTest {
 
   @Test
   public void testDnsServers() throws IOException {
-    String hostname = "dns-servers";
+    String hostname = "dns-server";
     Configuration c = parseConfig(hostname);
 
     // Confirm both dns servers show up
-    assertThat(c.getDnsServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2"));
+    assertThat(c.getDnsServers(), contains("1.1.1.1", "2.2.2.2"));
   }
 
   @Test
@@ -53,5 +52,14 @@ public class PaloAltoGrammarTest {
 
     // Confirm hostname extraction works
     assertThat(parseTextConfigs(filename).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testNtpServers() throws IOException {
+    String hostname = "ntp-server";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm both ntp servers show up
+    assertThat(c.getNtpServers(), contains("1.1.1.1", "2.2.2.2"));
   }
 }

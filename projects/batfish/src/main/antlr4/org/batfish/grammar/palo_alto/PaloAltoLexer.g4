@@ -10,6 +10,11 @@ options {
 
 // Keywords
 
+AUTHENTICATION_TYPE
+:
+   'authentication-type'
+;
+
 DEVICECONFIG
 :
     'deviceconfig'

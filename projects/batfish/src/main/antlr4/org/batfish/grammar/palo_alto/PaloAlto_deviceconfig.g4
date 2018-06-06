@@ -31,7 +31,7 @@ sd_system
 
 sds_dns_setting
 :
-   DNS_SETTING SERVERS
+   DNS_SETTING
    (
       sdsd_servers
    )

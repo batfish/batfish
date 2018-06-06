@@ -7,6 +7,7 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
@@ -61,6 +62,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSds_hostname(Sds_hostnameContext ctx) {
+    _configuration.setHostname(ctx.name.getText());
+  }
+
+  @Override
   public void enterSds_ntp_servers(Sds_ntp_serversContext ctx) {
     _currentNtpServerPrimary = ctx.PRIMARY_NTP_SERVER() != null;
   }
@@ -68,9 +74,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSdsn_ntp_server_address(Sdsn_ntp_server_addressContext ctx) {
     if (_currentNtpServerPrimary) {
-      _configuration.setDnsServerPrimary(ctx.IP_ADDRESS().getText());
+      _configuration.setNtpServerPrimary(ctx.IP_ADDRESS().getText());
     } else {
-      _configuration.setDnsServerSecondary(ctx.IP_ADDRESS().getText());
+      _configuration.setNtpServerSecondary(ctx.IP_ADDRESS().getText());
     }
   }
 
