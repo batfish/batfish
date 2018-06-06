@@ -213,14 +213,14 @@ public class VyosConfiguration extends VendorConfiguration {
           String newIpsecProposalName =
               espGroupName + ":" + Integer.toString(espProposalEntry.getKey());
           EspProposal espProposal = espProposalEntry.getValue();
-          IpsecProposal newIpsecProposal = new IpsecProposal(newIpsecProposalName, -1);
+          IpsecProposal newIpsecProposal = new IpsecProposal(newIpsecProposalName);
           _c.getIpsecProposals().put(newIpsecProposalName, newIpsecProposal);
-          newIpsecPolicy.getProposals().put(newIpsecProposalName, newIpsecProposal);
+          newIpsecPolicy.getProposals().add(newIpsecProposal);
           newIpsecProposal.setAuthenticationAlgorithm(
               espProposal.getHashAlgorithm().toIpsecAuthenticationAlgorithm());
           newIpsecProposal.setEncryptionAlgorithm(espProposal.getEncryptionAlgorithm());
           newIpsecProposal.setLifetimeSeconds(espGroup.getLifetimeSeconds());
-          newIpsecProposal.setProtocol(IpsecProtocol.ESP);
+          newIpsecProposal.getProtocols().add(IpsecProtocol.ESP);
         }
       }
     }

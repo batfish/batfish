@@ -3,10 +3,10 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.hasItem;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Throwables;
 import java.util.Collection;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.datamodel.table.Row;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -57,7 +57,7 @@ final class RowMatchersImpl {
                 "Value for column '%s' could not be converted to a '%s': %s",
                 columnName,
                 _valueTypeReference.getType().getTypeName(),
-                ExceptionUtils.getStackTrace(e)));
+                Throwables.getStackTraceAsString(e)));
         return false;
       }
       if (!_valueMatcher.matches(value)) {

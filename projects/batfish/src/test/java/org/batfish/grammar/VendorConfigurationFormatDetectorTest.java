@@ -77,7 +77,7 @@ public class VendorConfigurationFormatDetectorTest {
     for (String fileText : ImmutableList.of(rancid, panorama, sendPanorama, deviceConfig)) {
       assertThat(
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.PALO_ALTO));
+          equalTo(ConfigurationFormat.PALO_ALTO_NESTED));
     }
 
     /* Confirm flat (set-style) PAN configs are correctly identified */
@@ -85,7 +85,7 @@ public class VendorConfigurationFormatDetectorTest {
         ImmutableList.of(flatRancid, flatPanorama, flatSendPanorama, flatDeviceConfig, flattened)) {
       assertThat(
           VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
-          equalTo(ConfigurationFormat.FLAT_PALO_ALTO));
+          equalTo(ConfigurationFormat.PALO_ALTO));
     }
   }
 

@@ -1018,13 +1018,17 @@
             "name" : "ipsec-prop-vpn-ba2e34a8-0",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "ipsec-prop-vpn-ba2e34a8-1" : {
             "name" : "ipsec-prop-vpn-ba2e34a8-1",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "ipsecVpns" : {
@@ -3813,14 +3817,18 @@
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
             "lifetimeSeconds" : 3600,
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "vpn-ba2e34a8-2" : {
             "name" : "vpn-ba2e34a8-2",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
             "lifetimeSeconds" : 3600,
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "ipsecVpns" : {
