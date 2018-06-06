@@ -313,26 +313,9 @@ public class WorkMgr extends AbstractCoordinator {
         }
       case NODE:
         {
-<<<<<<< HEAD
           checkArgument(
               !Strings.isNullOrEmpty(testrig),
               "Testrig name should be supplied for 'NODE' autoCompletion");
-          // read all the nodes
-          Path pojoTopologyPath =
-              getdirTestrig(container, testrig)
-                  .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
-          Topology topology =
-              BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
-          Set<String> nodes =
-              topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
-
-          // read node roles data
-          Path nodeRolespath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-          NodeRolesData nodeRolesData = NodeRolesData.read(nodeRolespath);
-
-          // get suggestions
-=======
->>>>>>> origin/master
           List<AutocompleteSuggestion> suggestions =
               NodesSpecifier.autoComplete(
                   query, getNodes(container, testrig), getNodeRolesData(container));
