@@ -25,7 +25,6 @@ java_library(
         "//projects/question",
         "@azure_storage//:compile",
         "@commons_io//:compile",
-        "@commons_lang3//:compile",
         "@grizzly_server//:compile",
         "@guava//:compile",
         "@jackson_core//:compile",

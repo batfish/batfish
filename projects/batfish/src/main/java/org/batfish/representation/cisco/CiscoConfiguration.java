@@ -56,6 +56,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.LineAction;
@@ -1142,8 +1143,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
     CiscoNxBgpVrfAddressFamilyConfiguration ipv4af = nxBgpVrf.getIpv4UnicastAddressFamily();
     if (ipv4af != null) {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
-      newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
+      newBgpProcess.setMultipathEbgp(
+          ipv4af.getMaximumPathsEbgp() > 1 || nxBgpVrf.getBestpathAsPathMultipathRelax());
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
+    } else {
+      newBgpProcess.setMultipathEbgp(nxBgpVrf.getBestpathAsPathMultipathRelax());
     }
 
     // Next we build up the BGP common export policy.
@@ -1400,23 +1404,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
     MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode =
         proc.getAsPathMultipathRelax() ? PATH_LENGTH : EXACT_PATH;
     newBgpProcess.setMultipathEquivalentAsPathMatchMode(multipathEquivalentAsPathMatchMode);
-    Integer maximumPaths = proc.getMaximumPaths();
-    Integer maximumPathsEbgp = proc.getMaximumPathsEbgp();
-    Integer maximumPathsIbgp = proc.getMaximumPathsIbgp();
     boolean multipathEbgp = false;
     boolean multipathIbgp = false;
-    if (maximumPaths != null && maximumPaths > 1) {
+    if (firstNonNull(proc.getMaximumPaths(), 0) > 1) {
       multipathEbgp = true;
       multipathIbgp = true;
     }
-    if (maximumPathsEbgp != null && maximumPathsEbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsEbgp(), 0) > 1 || proc.getAsPathMultipathRelax()) {
       multipathEbgp = true;
     }
-    if (maximumPathsIbgp != null && maximumPathsIbgp > 1) {
+    if (firstNonNull(proc.getMaximumPathsIbgp(), 0) > 1) {
       multipathIbgp = true;
     }
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
+
     Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
@@ -1948,9 +1950,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           If defaultRouteGenerationConditional =
               new If(
                   ipv4 ? MATCH_DEFAULT_ROUTE : MATCH_DEFAULT_ROUTE6,
-                  ImmutableList.of(
-                      new SetOrigin(new LiteralOrigin(OriginType.IGP, null)),
-                      Statements.ReturnTrue.toStaticStatement()));
+                  ImmutableList.of(Statements.ReturnTrue.toStaticStatement()));
           RoutingPolicy defaultRouteGenerationPolicy =
               new RoutingPolicy(
                   "~BGP_DEFAULT_ROUTE_GENERATION_POLICY:" + vrfName + ":" + lpg.getName() + "~", c);
@@ -3259,21 +3259,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // ipsec policies
-    for (Entry<String, IpsecProfile> e : _ipsecProfiles.entrySet()) {
-      String name = e.getKey();
-      IpsecProfile profile = e.getValue();
-
-      IpsecPolicy policy = new IpsecPolicy(name);
-      policy.setPfsKeyGroup(profile.getPfsGroup());
-      String transformSetName = profile.getTransformSet();
-      if (c.getIpsecProposals().containsKey(transformSetName)) {
-        policy.getProposals().put(transformSetName, c.getIpsecProposals().get(transformSetName));
-      }
-      c.getIpsecPolicies().put(name, policy);
-
-      if (profile.getIsakmpProfile() != null) {
-        _w.unimplemented("isakmp profiles set within ipsec profiles");
-      }
+    for (IpsecProfile ipsecProfile : _ipsecProfiles.values()) {
+      IpsecPolicy ipsecPolicy = toIpSecPolicy(c, ipsecProfile);
+      c.getIpsecPolicies().put(ipsecPolicy.getName(), ipsecPolicy);
     }
 
     // ipsec vpns
@@ -3370,6 +3358,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
           CiscoStructureUsage.BGP_NEIGHBOR_STATEMENT,
           e.getValue());
     }
+
+    markConcreteStructure(CiscoStructureType.INTERFACE, CiscoStructureUsage.INTERFACE_SELF_REF);
 
     // mark references to ACLs that may not appear in data model
     markIpOrMacAcls(
@@ -3552,13 +3542,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     // record references to defined structures
     recordCommunityLists();
-    recordStructure(_cf.getDepiClasses(), CiscoStructureType.DEPI_CLASS);
-    recordStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
     recordDocsisPolicies();
     recordDocsisPolicyRules();
     recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
-    recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
-    recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordPeerGroups();
     recordPeerSessions();
     recordServiceClasses();
@@ -3579,6 +3565,31 @@ public final class CiscoConfiguration extends VendorConfiguration {
                     .build()))
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
         .build();
+  }
+
+  /** Converts an Ipsec Profile to Ipsec policy */
+  private IpsecPolicy toIpSecPolicy(Configuration configuration, IpsecProfile ipsecProfile) {
+    String name = ipsecProfile.getName();
+
+    IpsecPolicy policy = new IpsecPolicy(name);
+    policy.setPfsKeyGroup(ipsecProfile.getPfsGroup());
+
+    for (String transformSetName : ipsecProfile.getTransformSets()) {
+      IpsecProposal ipsecProposalName = configuration.getIpsecProposals().get(transformSetName);
+      if (ipsecProposalName != null) {
+        policy.getProposals().add(ipsecProposalName);
+      }
+    }
+
+    String isakmpProfileName = ipsecProfile.getIsakmpProfile();
+    if (isakmpProfileName != null) {
+      IkeGateway ikeGateway = configuration.getIkeGateways().get(isakmpProfileName);
+      if (ikeGateway != null) {
+        policy.setIkeGateway(ikeGateway);
+      }
+    }
+
+    return policy;
   }
 
   private void createInspectClassMapAcls(Configuration c) {

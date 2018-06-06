@@ -33,3 +33,6 @@ org.eclipse.core.resources.prefs
 # based on the name of the directory bazel is cloned into.
 /bazel-*
 
+# Ignore jacoco coverage reports
+coverage*
+

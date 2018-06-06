@@ -14,6 +14,7 @@
     "differential" : false,
     "environmentBgpTables" : false,
     "environmentRoutes" : false,
+    "includeOneTableKeys" : false,
     "summary" : false,
     "verboseError" : false
   },
