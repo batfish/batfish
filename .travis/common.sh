@@ -1,3 +1,9 @@
+if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
+   GNU_FIND=gfind
+else
+   GNU_FIND=find
+fi
+
 JACOCO_VERSION=0.8.1
 JACOCO_AGENT_JAR_NAME="org.jacoco.agent-${JACOCO_VERSION}-runtime.jar"
 JACOCO_AGENT_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.agent/${JACOCO_VERSION}/${JACOCO_AGENT_JAR_NAME}"

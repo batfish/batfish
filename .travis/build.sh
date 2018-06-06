@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
-source $(dirname $0)/jacoco-common.sh
-
-if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
-   GNU_FIND=gfind
-else
-   GNU_FIND=find
-fi
+. $(dirname $0)/common.sh
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
