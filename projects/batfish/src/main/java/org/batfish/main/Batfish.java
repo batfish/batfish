@@ -773,9 +773,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
           boolean unmatchable = unmatchableLineNums.contains(lineNumber);
           SortedSet<Integer> blockingLines = new TreeSet<>();
 
-          // TODO
-          assert (aclLines.get(lineNumber).getLine() == lineNumber);
-
           Integer blockingLineNumber = blockingLinesMap.get(aclLines.get(lineNumber));
           if (blockingLineNumber != null) {
             blockingLines.add(blockingLineNumber);
