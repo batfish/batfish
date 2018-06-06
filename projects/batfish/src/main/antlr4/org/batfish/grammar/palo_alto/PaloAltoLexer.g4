@@ -117,13 +117,13 @@ F_DecByte
 fragment
 F_DecByteThreeDigit
 :
-   [12][0-9][0-9]
+   [12] F_Digit F_Digit
 ;
 
 fragment
 F_DecByteTwoDigit
 :
-   [1-9][0-9]
+   [1-9] F_Digit
 ;
 
 fragment
