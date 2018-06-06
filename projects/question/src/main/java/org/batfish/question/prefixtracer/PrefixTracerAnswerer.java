@@ -11,7 +11,6 @@ import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
-import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Prefix;
@@ -42,9 +41,6 @@ class PrefixTracerAnswerer extends Answerer {
   public AnswerElement answer() {
     PrefixTracerQuestion question = (PrefixTracerQuestion) _question;
     TableAnswerElement answer = new TableAnswerElement(getTableMetadata());
-    if (!_batfish.getDataPlanePlugin().getName().equals("ibdp")) {
-      throw new BatfishException("Prefix tracing is only supported with the new ibdp engine");
-    }
     DataPlane dp = _batfish.loadDataPlane();
 
     SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>> prefixTracingInfo =
