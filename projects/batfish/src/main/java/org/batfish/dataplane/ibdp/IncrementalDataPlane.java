@@ -1,6 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
-import static java.util.Comparator.naturalOrder;
+import static java.util.Comparator;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
