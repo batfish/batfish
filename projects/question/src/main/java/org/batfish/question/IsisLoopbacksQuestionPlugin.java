@@ -1,5 +1,9 @@
 package org.batfish.question;
 
+import static org.batfish.datamodel.IsisInterfaceMode.ACTIVE;
+import static org.batfish.datamodel.IsisInterfaceMode.PASSIVE;
+import static org.batfish.datamodel.IsisInterfaceMode.UNSET;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import java.util.Map;
@@ -147,34 +151,35 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
                 (interfaceName, iface) -> {
                   if (iface.isLoopback(c.getConfigurationFormat())) {
                     IsisInterfaceSettings ifaceSettings = iface.getIsis();
-                    if (ifaceSettings == null) {
-                      return;
-                    }
                     IsisInterfaceMode l1Mode =
-                        ifaceSettings.getLevel1() != null
-                            ? ifaceSettings.getLevel1().getMode()
-                            : IsisInterfaceMode.UNSET;
+                        ifaceSettings != null
+                            ? ifaceSettings.getLevel1() != null
+                                ? ifaceSettings.getLevel1().getMode()
+                                : UNSET
+                            : UNSET;
                     IsisInterfaceMode l2Mode =
-                        ifaceSettings.getLevel2() != null
-                            ? ifaceSettings.getLevel2().getMode()
-                            : IsisInterfaceMode.UNSET;
+                        ifaceSettings != null
+                            ? ifaceSettings.getLevel2() != null
+                                ? ifaceSettings.getLevel2().getMode()
+                                : UNSET
+                            : UNSET;
                     boolean l1 = false;
                     boolean l2 = false;
                     boolean isis = false;
-                    if (l1Mode == IsisInterfaceMode.ACTIVE) {
+                    if (l1Mode == ACTIVE) {
                       l1 = true;
                       isis = true;
                       answerElement.add(answerElement.getL1Active(), hostname, interfaceName);
-                    } else if (l1Mode == IsisInterfaceMode.PASSIVE) {
+                    } else if (l1Mode == PASSIVE) {
                       l1 = true;
                       isis = true;
                       answerElement.add(answerElement.getL1Passive(), hostname, interfaceName);
                     }
-                    if (l2Mode == IsisInterfaceMode.ACTIVE) {
+                    if (l2Mode == ACTIVE) {
                       l2 = true;
                       isis = true;
                       answerElement.add(answerElement.getL2Active(), hostname, interfaceName);
-                    } else if (l2Mode == IsisInterfaceMode.PASSIVE) {
+                    } else if (l2Mode == PASSIVE) {
                       l2 = true;
                       isis = true;
                       answerElement.add(answerElement.getL2Passive(), hostname, interfaceName);
