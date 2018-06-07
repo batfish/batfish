@@ -598,7 +598,7 @@ public class DomainHelper {
     return newFib;
   }
 
-  public <T> BDD transitiveClosure(Map<String, BDD> fibs) {
+  public BDD transitiveClosure(Map<String, BDD> fibs) {
     BDD allFibs = _netFactory.zero();
     for (Entry<String, BDD> e : fibs.entrySet()) {
       String router = e.getKey();

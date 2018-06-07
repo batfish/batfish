@@ -7,19 +7,19 @@ public class RouteAclStateSetPair {
 
   private BDD _routes;
 
-  private BDD _blockedAcls;
+  private BDD _acls;
 
   public RouteAclStateSetPair(BDD routes, BDD acls) {
     this._routes = routes;
-    this._blockedAcls = acls;
+    this._acls = acls;
   }
 
   public BDD getRoutes() {
     return _routes;
   }
 
-  public BDD getBlockedAcls() {
-    return _blockedAcls;
+  public BDD getAcls() {
+    return _acls;
   }
 
   @Override
@@ -31,11 +31,11 @@ public class RouteAclStateSetPair {
       return false;
     }
     RouteAclStateSetPair that = (RouteAclStateSetPair) o;
-    return Objects.equals(_routes, that._routes) && Objects.equals(_blockedAcls, that._blockedAcls);
+    return Objects.equals(_routes, that._routes) && Objects.equals(_acls, that._acls);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_routes, _blockedAcls);
+    return Objects.hash(_routes, _acls);
   }
 }

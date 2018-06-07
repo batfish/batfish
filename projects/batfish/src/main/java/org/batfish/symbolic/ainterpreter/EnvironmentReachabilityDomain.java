@@ -2,7 +2,6 @@ package org.batfish.symbolic.ainterpreter;
 
 import java.util.Set;
 import javax.annotation.Nullable;
-import net.sf.javabdd.BDD;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
@@ -16,7 +15,8 @@ public class EnvironmentReachabilityDomain extends ReachabilityOverDomain {
   }
 
   @Override
-  public BDD value(Configuration conf, RoutingProtocol proto, @Nullable Set<Prefix> prefixes) {
-    return _netFactory.zero();
+  public RouteAclStateSetPair value(
+      Configuration conf, RoutingProtocol proto, @Nullable Set<Prefix> prefixes) {
+    return new RouteAclStateSetPair(_netFactory.zero(), _netFactory.zero());
   }
 }
