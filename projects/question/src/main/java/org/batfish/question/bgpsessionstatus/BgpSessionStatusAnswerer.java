@@ -24,7 +24,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.pojo.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -149,7 +149,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
         Optional<org.batfish.datamodel.Interface> iface =
             CommonUtil.getActiveInterfaceWithIp(localIp, configurations.get(hostname));
         bsiBuilder.withLocalInterface(
-            iface.isPresent() ? new Interface(hostname, iface.get().getName()) : null);
+            iface.isPresent() ? new NodeInterfacePair(hostname, iface.get().getName()) : null);
 
         Ip remoteIp = bgpNeighbor.getAddress();
 
@@ -246,7 +246,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
     SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
     Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);
-    Interface localInterface = row.get(COL_LOCAL_INTERFACE, Interface.class);
+    NodeInterfacePair localInterface = row.get(COL_LOCAL_INTERFACE, NodeInterfacePair.class);
     Node node = row.get(COL_NODE, Node.class);
     Node remoteNode = row.get(COL_REMOTE_NODE, Node.class);
     Prefix remotePrefix = row.get(COL_REMOTE_PREFIX, Prefix.class);

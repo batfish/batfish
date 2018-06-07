@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.pojo.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 
 public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
@@ -45,7 +45,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   @Nonnull private final String _nodeName;
 
-  private final Interface _localInterface;
+  private final NodeInterfacePair _localInterface;
 
   private final Ip _localIp;
 
@@ -62,7 +62,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
       @JsonProperty(PROP_CONFIGURED_STATUS) SessionStatus configuredStatus,
       @JsonProperty(PROP_ESTABLISHED_NEIGHBORS) Integer dynamicNeighbors,
       @Nonnull @JsonProperty(PROP_NODE_NAME) String nodeName,
-      @JsonProperty(PROP_LOCAL_INTERFACE) Interface localInterface,
+      @JsonProperty(PROP_LOCAL_INTERFACE) NodeInterfacePair localInterface,
       @JsonProperty(PROP_LOCAL_IP) Ip localIp,
       @JsonProperty(PROP_REMOTE_NODE) String remoteNode,
       @Nonnull @JsonProperty(PROP_REMOTE_PREFIX) Prefix remotePrefix,
@@ -93,7 +93,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
 
   @Nullable
   @JsonProperty(PROP_LOCAL_INTERFACE)
-  public Interface getLocalInterface() {
+  public NodeInterfacePair getLocalInterface() {
     return _localInterface;
   }
 
@@ -188,7 +188,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
     private SessionStatus _configuredStatus;
     private Integer _establishedNeighbors;
     private String _nodeName;
-    private Interface _localInterface;
+    private NodeInterfacePair _localInterface;
     private Ip _localIp;
     private String _remoteNode;
     private Prefix _remotePrefix;
@@ -218,7 +218,7 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
       return this;
     }
 
-    public BgpSessionInfoBuilder withLocalInterface(Interface localInterface) {
+    public BgpSessionInfoBuilder withLocalInterface(NodeInterfacePair localInterface) {
       _localInterface = localInterface;
       return this;
     }
