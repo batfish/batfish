@@ -1,0 +1,2 @@
+set deviceconfig system hostname dns-server-invalid
+set deviceconfig system dns-setting servers primary 1.1.1.256
