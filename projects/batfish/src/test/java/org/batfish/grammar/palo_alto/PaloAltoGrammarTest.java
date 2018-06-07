@@ -66,6 +66,14 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testNestedConfig() throws IOException {
+    String hostname = "nested-config";
+
+    // Confirm a simple extraction (hostname) works for nested config format
+    assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
   public void testNtpServers() throws IOException {
     String hostname = "ntp-server";
     Configuration c = parseConfig(hostname);

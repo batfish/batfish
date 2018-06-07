@@ -1,11 +1,10 @@
 package org.batfish.dataplane.ibdp;
 
-import static java.util.Comparator.naturalOrder;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.Network;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -20,6 +19,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.GenericRib;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Topology;
 
 public class IncrementalDataPlane implements Serializable, DataPlane {
@@ -78,11 +78,11 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs() {
     ImmutableSortedMap.Builder<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
-        new ImmutableSortedMap.Builder<>(naturalOrder());
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
     _nodes.forEach(
         (hostname, node) -> {
           ImmutableSortedMap.Builder<String, GenericRib<AbstractRoute>> byVrf =
-              new ImmutableSortedMap.Builder<>(naturalOrder());
+              new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
           node.getVirtualRouters()
               .forEach(
                   (vrf, virtualRouter) -> {
@@ -164,7 +164,7 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
         .stream()
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
-                String::compareTo,
+                Comparator.naturalOrder(),
                 Entry::getKey,
                 e ->
                     e.getValue()
@@ -173,8 +173,34 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
                         .stream()
                         .collect(
                             ImmutableSortedMap.toImmutableSortedMap(
-                                String::compareTo,
+                                Comparator.naturalOrder(),
                                 Entry::getKey,
                                 e2 -> e2.getValue().getPrefixTracer()))));
+  }
+
+  @Override
+  public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+      getPrefixTracingInfoSummary() {
+    /*
+     * Iterate over nodes, then virtual routers, and extract prefix tracer from each.
+     * Sort hostnames and VRF names
+     */
+    return _nodes
+        .entrySet()
+        .stream()
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(),
+                Entry::getKey,
+                e ->
+                    e.getValue()
+                        .getVirtualRouters()
+                        .entrySet()
+                        .stream()
+                        .collect(
+                            ImmutableSortedMap.toImmutableSortedMap(
+                                Comparator.naturalOrder(),
+                                Entry::getKey,
+                                e2 -> e2.getValue().getPrefixTracer().summarize()))));
   }
 }

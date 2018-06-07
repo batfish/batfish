@@ -87,6 +87,15 @@ IP_PREFIX
     F_IpAddress '/' F_PrefixLength
 ;
 
+LINE_COMMENT
+:
+   (
+      '#'
+      | '!'
+   )
+   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+;
+
 NEWLINE
 :
     F_Newline+
@@ -156,6 +165,12 @@ F_PrefixLength
         | [12] F_Digit
         | [3] [012]
     )
+;
+
+fragment
+F_NonNewlineChar
+:
+    ~[\r\n] // carriage return or line feed
 ;
 
 fragment

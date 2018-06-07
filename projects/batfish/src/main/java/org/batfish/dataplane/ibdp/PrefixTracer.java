@@ -18,6 +18,10 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 public class PrefixTracer implements Serializable {
 
   private static final long serialVersionUID = 1L;
+  static final String SENT = "sent";
+  static final String FILTERED_OUT = "filtered_out";
+  static final String FILTERED_IN = "filtered_in";
+  static final String RECEIVED = "received";
 
   public class Neighbor implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -189,5 +193,44 @@ public class PrefixTracer implements Serializable {
     } else {
       throw new UnsupportedOperationException("Unknown filtering direction");
     }
+  }
+
+  /** Structure: prefix -> action -> set of hostnames */
+  public Map<Prefix, Map<String, Set<String>>> summarize() {
+    Map<Prefix, Map<String, Set<String>>> result = new HashMap<>();
+    _sent.forEach(
+        (prefix, neighbors) ->
+            neighbors.forEach(
+                neighbor ->
+                    result
+                        .computeIfAbsent(prefix, p -> new HashMap<>())
+                        .computeIfAbsent(SENT, a -> new HashSet<>())
+                        .add(neighbor.getHostname())));
+
+    _filteredOnExport.forEach(
+        (prefix, neighbors) ->
+            neighbors.forEach(
+                neighbor ->
+                    result
+                        .computeIfAbsent(prefix, p -> new HashMap<>())
+                        .computeIfAbsent(FILTERED_OUT, a -> new HashSet<>())
+                        .add(neighbor.getHostname())));
+    _filteredOnImport.forEach(
+        (prefix, neighbors) ->
+            neighbors.forEach(
+                neighbor ->
+                    result
+                        .computeIfAbsent(prefix, p -> new HashMap<>())
+                        .computeIfAbsent(FILTERED_IN, a -> new HashSet<>())
+                        .add(neighbor.getHostname())));
+    _installed.forEach(
+        (prefix, neighbors) ->
+            neighbors.forEach(
+                neighbor ->
+                    result
+                        .computeIfAbsent(prefix, p -> new HashMap<>())
+                        .computeIfAbsent(RECEIVED, a -> new HashSet<>())
+                        .add(neighbor.getHostname())));
+    return result;
   }
 }

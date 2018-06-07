@@ -14,6 +14,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolic
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
@@ -25,6 +26,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAdditionalArpI
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
@@ -35,6 +37,16 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHelloAuthenticationType;
+import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasHoldTime;
+import static org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers.hasMode;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasBfdLivenessDetectionMinimumInterval;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasBfdLivenessDetectionMultiplier;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasIsoAddress;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel1;
+import static org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers.hasLevel2;
+import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMetricsOnly;
+import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverloadTimeout;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
 import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
@@ -100,6 +112,9 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.IsisHelloAuthenticationType;
+import org.batfish.datamodel.IsisInterfaceMode;
+import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -118,6 +133,9 @@ import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
+import org.batfish.datamodel.matchers.IsisInterfaceLevelSettingsMatchers;
+import org.batfish.datamodel.matchers.IsisInterfaceSettingsMatchers;
+import org.batfish.datamodel.matchers.IsisProcessMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.RouteFilterListMatchers;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -1417,6 +1435,51 @@ public class FlatJuniperGrammarTest {
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testJuniperIsis() throws IOException {
+    String hostname = "juniper-isis";
+    String loopback = "lo0.0";
+    String physical = "ge-0/0/0.0";
+
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel1(nullValue()))));
+    assertThat(
+        c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasLevel2(hasWideMetricsOnly()))));
+    assertThat(c, hasDefaultVrf(hasIsisProcess(hasOverloadTimeout(360))));
+    assertThat(c, hasDefaultVrf(hasIsisProcess(IsisProcessMatchers.hasReferenceBandwidth(100E9D))));
+
+    assertThat(
+        c,
+        hasInterface(
+            loopback, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.00")))));
+    assertThat(c, hasInterface(loopback, hasIsis(hasLevel1(nullValue()))));
+    assertThat(c, hasInterface(loopback, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.PASSIVE)))));
+
+    assertThat(
+        c,
+        hasInterface(
+            physical, hasIsis(hasIsoAddress(new IsoAddress("12.1234.1234.1234.1234.01")))));
+    assertThat(c, hasInterface(physical, hasIsis(hasBfdLivenessDetectionMinimumInterval(250))));
+    assertThat(c, hasInterface(physical, hasIsis(hasBfdLivenessDetectionMultiplier(3))));
+    assertThat(c, hasInterface(physical, hasIsis(IsisInterfaceSettingsMatchers.hasPointToPoint())));
+    assertThat(c, hasInterface(physical, hasIsis(hasLevel1(nullValue()))));
+    assertThat(
+        c,
+        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(5)))));
+    assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.ACTIVE)))));
+    assertThat(
+        c,
+        hasInterface(
+            physical,
+            hasIsis(hasLevel2(hasHelloAuthenticationType(IsisHelloAuthenticationType.MD5)))));
+    assertThat(
+        c,
+        hasInterface(
+            physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasHelloInterval(1)))));
+    assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasHoldTime(3)))));
   }
 
   @Test

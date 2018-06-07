@@ -11,6 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 import org.batfish.datamodel.collections.IbgpTopology;
@@ -74,7 +75,11 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
 
-  public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls);
+  public abstract void processFlows(
+      Set<Flow> flows,
+      DataPlane dataPlane,
+      boolean ignoreAcls,
+      ForwardingAnalysis forwardingAnalysis);
 
   public abstract String getName();
 }
