@@ -8,6 +8,7 @@ import org.batfish.datamodel.Interface;
  */
 public final class NameRegexInterfaceLinkLocationSpecifier
     extends InterfaceNameRegexLocationSpecifier {
+
   public NameRegexInterfaceLinkLocationSpecifier(Pattern pattern) {
     super(pattern);
   }
