@@ -84,7 +84,7 @@ IP_ADDRESS
 
 IP_PREFIX
 :
-    F_IpAddress '/' F_SubnetMask
+    F_IpAddress '/' F_PrefixLength
 ;
 
 NEWLINE
@@ -149,7 +149,7 @@ F_Newline
 ;
 
 fragment
-F_SubnetMask
+F_PrefixLength
 :
     (
         F_Digit
