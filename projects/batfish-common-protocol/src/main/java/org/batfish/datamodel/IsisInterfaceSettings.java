@@ -106,8 +106,7 @@ public class IsisInterfaceSettings implements Serializable {
   private IsisInterfaceSettings(
       @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MINIMUM_INTERVAL)
           Integer bfdLivenessDetectionMinimumInterval,
-      @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MINIMUM_INTERVAL)
-          Integer bfdLivenessDetectionMultiplier,
+      @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MULTIPLIER) Integer bfdLivenessDetectionMultiplier,
       @JsonProperty(PROP_ISO_ADDRESS) IsoAddress isoAddress,
       @JsonProperty(PROP_LEVEL1) IsisInterfaceLevelSettings level1,
       @JsonProperty(PROP_LEVEL2) IsisInterfaceLevelSettings level2,
