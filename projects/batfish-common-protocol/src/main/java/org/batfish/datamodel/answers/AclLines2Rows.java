@@ -13,6 +13,10 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.table.Row;
 
+/**
+ * Represents answers to aclReachability2. Implements {@link AclLinesAnswerElementInterface} so that
+ * aclReachability and aclReachability2 can use some of the same methods to answer both.
+ */
 @ParametersAreNonnullByDefault
 public class AclLines2Rows implements AclLinesAnswerElementInterface {
   public static final String COL_SOURCES = "aclSources";
@@ -24,6 +28,11 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
+  /**
+   * Not used in this class because reachable lines are not recorded for aclReachability2. Having
+   * this method in {@link AclLinesAnswerElementInterface} allows Batfish to use it to report
+   * reachable lines for aclReachability.
+   */
   @Override
   public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {}
 

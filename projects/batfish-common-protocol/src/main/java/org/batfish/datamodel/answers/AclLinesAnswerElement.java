@@ -15,6 +15,10 @@ import org.batfish.common.Pair;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 
+/**
+ * Represents answers to aclReachability. Implements {@link AclLinesAnswerElementInterface} so that
+ * aclReachability and aclReachability2 can use some of the same methods to answer both.
+ */
 public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnswerElementInterface {
 
   public static class AclReachabilityEntry implements Comparable<AclReachabilityEntry> {
@@ -142,8 +146,12 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     _unreachableLines = new TreeMap<>();
   }
 
-  // Not used in this class, but having it in AclLinesAnswerElementInterface allows
-  // AclReachabilityAnswererUtils to use it.
+  /**
+   * Not used in this class because its {@link AclReachabilityEntry} class is better suited to
+   * report each line in a cycle individually. Having this method in {@link
+   * AclLinesAnswerElementInterface} allows code used for both aclReachability and aclReachability2
+   * to report cycles for aclReachability2.
+   */
   @Override
   public void addCycle(String hostname, List<String> aclsInCycle) {}
 
@@ -260,11 +268,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     }
     return sb.toString();
   }
-
-  public void setAcls(SortedMap<String, SortedMap<String, IpAccessList>> acls) {
-    _acls = acls;
-  }
-
+  
   public void setEquivalenceClasses(
       SortedMap<String, SortedMap<String, SortedSet<String>>> equivalenceClasses) {
     _equivalenceClasses = equivalenceClasses;

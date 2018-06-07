@@ -100,6 +100,43 @@ public class AclReachability2Test {
   }
 
   @Test
+  public void testCycleAppearsOnce() throws IOException {
+    // acl1 permits anything acl2 permits... twice
+    // acl2 permits anything acl1 permits... twice
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl2")).build(),
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl2")).build()))
+        .setName("acl1")
+        .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build(),
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl1")).build()))
+        .setName("acl2")
+        .build();
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    // Construct the expected result. Should find only one cycle result.
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            Row.builder()
+                .put(AclLines2Rows.COL_SOURCES, ImmutableList.of(_c1.getName() + ": acl1, acl2"))
+                .put(AclLines2Rows.COL_LINES, null)
+                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, null)
+                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, null)
+                .put(AclLines2Rows.COL_DIFF_ACTION, null)
+                .put(
+                    AclLines2Rows.COL_MESSAGE,
+                    "Cyclic ACL references in node 'c1': acl1 -> acl2 -> acl1")
+                .build());
+    assertThat(answer.getRows().getData(), equalTo(expected));
+  }
+
+  @Test
   public void test2CircularReferences() throws IOException {
     // acl1 permits anything acl2 permits
     // acl2 permits anything acl1 permits
