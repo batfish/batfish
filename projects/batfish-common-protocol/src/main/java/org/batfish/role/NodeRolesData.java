@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -40,6 +41,16 @@ public class NodeRolesData {
     _defaultDimension = defaultDimension;
     _lastModifiedTime = lastModifiedTime;
     _roleDimensions = roleDimensions == null ? new TreeSet<>() : roleDimensions;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof NodeRolesData)) {
+      return false;
+    }
+    return Objects.equals(_defaultDimension, ((NodeRolesData) o)._defaultDimension)
+        && Objects.equals(_lastModifiedTime, ((NodeRolesData) o)._lastModifiedTime)
+        && Objects.equals(_roleDimensions, ((NodeRolesData) o)._roleDimensions);
   }
 
   @JsonProperty(PROP_DEFAULT_DIMENSION)
@@ -110,6 +121,11 @@ public class NodeRolesData {
   @JsonProperty(PROP_ROLE_DIMENSIONS)
   public SortedSet<NodeRoleDimension> getNodeRoleDimensions() {
     return _roleDimensions;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_defaultDimension, _lastModifiedTime, _roleDimensions);
   }
 
   /**

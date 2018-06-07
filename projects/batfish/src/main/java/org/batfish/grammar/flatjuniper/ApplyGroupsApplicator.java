@@ -1,10 +1,10 @@
 package org.batfish.grammar.flatjuniper;
 
+import com.google.common.base.Throwables;
 import java.util.ArrayList;
 import java.util.List;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
@@ -50,7 +50,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
       HierarchyPath currentPath, String groupName, Throwable e) {
     return String.format(
         "Exception processing apply-groups statement at %s with group '%s': %s: caused by: %s",
-        pathString(), groupName, e.getMessage(), ExceptionUtils.getStackTrace(e));
+        pathString(), groupName, e.getMessage(), Throwables.getStackTraceAsString(e));
   }
 
   @Override

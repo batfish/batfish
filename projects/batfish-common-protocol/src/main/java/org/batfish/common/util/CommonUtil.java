@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -96,6 +97,7 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -735,10 +737,6 @@ public class CommonUtil {
     return differenceSet;
   }
 
-  public static String escape(String offendingTokenText) {
-    return offendingTokenText.replace("\n", "\\n").replace("\t", "\\t").replace("\r", "\\r");
-  }
-
   public static String extractBits(long l, int start, int end) {
     StringBuilder s = new StringBuilder();
     for (int pos = end; pos >= start; pos--) {
@@ -755,6 +753,42 @@ public class CommonUtil {
       biConsumer.accept(i, t);
       i++;
     }
+  }
+
+  /**
+   * Returns an active interface with the specified name for configuration.
+   *
+   * @param name The name to check
+   * @param c The configuration object in which to check
+   * @return Any Interface that matches the condition
+   */
+  public static Optional<Interface> getActiveInterfaceWithName(String name, Configuration c) {
+    return c.getInterfaces()
+        .values()
+        .stream()
+        .filter(iface -> iface.getActive() && iface.getName().equals(name))
+        .findAny();
+  }
+
+  /**
+   * Returns an active interface with the specified IP address for configuration.
+   *
+   * @param ipAddress The IP address to check
+   * @param c The configuration object in which to check
+   * @return Any Interface that matches the condition
+   */
+  public static Optional<Interface> getActiveInterfaceWithIp(Ip ipAddress, Configuration c) {
+    return c.getInterfaces()
+        .values()
+        .stream()
+        .filter(
+            iface ->
+                iface.getActive()
+                    && iface
+                        .getAllAddresses()
+                        .stream()
+                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)))
+        .findAny();
   }
 
   public static Path getCanonicalPath(Path path) {
@@ -876,27 +910,6 @@ public class CommonUtil {
   }
 
   /**
-   * Checks if an IP address is associated with a loopback interface for the configuration.
-   *
-   * @param ipAddress The IP address to check
-   * @param c The configuration object in which to check
-   * @return The result
-   */
-  public static boolean isActiveLoopbackIp(Ip ipAddress, Configuration c) {
-    return c.getInterfaces()
-        .values()
-        .stream()
-        .anyMatch(
-            iface ->
-                iface.getActive()
-                    && iface.isLoopback(c.getConfigurationFormat())
-                    && iface
-                        .getAllAddresses()
-                        .stream()
-                        .anyMatch(ifAddr -> Objects.equals(ifAddr.getIp(), ipAddress)));
-  }
-
-  /**
    * Check if a bgp peer is reachable to establish a session
    *
    * <p><b>Warning:</b> Notion of directionality is important here, we are assuming {@code src} is
@@ -907,7 +920,8 @@ public class CommonUtil {
       BgpNeighbor src,
       BgpNeighbor dst,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp) {
+      @Nullable DataPlane dp,
+      @Nullable ForwardingAnalysis forwardingAnalysis) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getAddress();
     if (dstAddress == null) {
@@ -935,7 +949,8 @@ public class CommonUtil {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, Set<FlowTrace>> traces =
-        tracerouteEngine.processFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
+        tracerouteEngine.processFlows(
+            dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false, forwardingAnalysis);
 
     SortedSet<FlowTrace> acceptedFlows =
         traces
@@ -972,7 +987,9 @@ public class CommonUtil {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces = tracerouteEngine.processFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
+    traces =
+        tracerouteEngine.processFlows(
+            dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false, forwardingAnalysis);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
@@ -1005,7 +1022,7 @@ public class CommonUtil {
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid) {
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null);
+    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null, null);
   }
 
   /**
@@ -1031,7 +1048,8 @@ public class CommonUtil {
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp) {
+      @Nullable DataPlane dp,
+      @Nullable ForwardingAnalysis forwardingAnalysis) {
 
     // TODO: handle duplicate ips on different vrfs
 
@@ -1116,7 +1134,8 @@ public class CommonUtil {
          * Perform reachability checks.
          */
         if (checkReachability) {
-          if (isReachableBgpNeighbor(neighbor, candidateNeighbor, tracerouteEngine, dp)) {
+          if (isReachableBgpNeighbor(
+              neighbor, candidateNeighbor, tracerouteEngine, dp, forwardingAnalysis)) {
             graph.addEdge(neighbor, candidateNeighbor, new BgpSession(neighbor, candidateNeighbor));
           }
         } else {

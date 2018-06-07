@@ -25,7 +25,6 @@ java_library(
         "//projects/question",
         "@azure_storage//:compile",
         "@commons_io//:compile",
-        "@commons_lang3//:compile",
         "@grizzly_server//:compile",
         "@guava//:compile",
         "@jackson_core//:compile",
@@ -59,6 +58,9 @@ java_library(
     resources = glob(["src/test/resources/**"]),
     deps = [
         ":coordinator",
+        "//projects/batfish-common-protocol:common",
+        "@jersey_media_jackson//:compile",
+        "@jersey_test_framework//:compile",
     ],
 )
 

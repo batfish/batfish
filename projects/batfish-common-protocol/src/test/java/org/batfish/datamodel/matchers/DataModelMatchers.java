@@ -15,12 +15,14 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
+import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTrace;
@@ -52,6 +54,7 @@ import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasReferenceBandwi
 import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchersImpl.IsPermittedByAclIpSpaceLineThat;
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchersImpl.IsPermittedByIpAccessListLineThat;
 import org.batfish.datamodel.matchers.PermittedByNamedIpSpaceMatchers.IsPermittedByNamedIpSpaceThat;
+import org.batfish.datamodel.matchers.VrfMatchersImpl.HasIsisProcess;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.hamcrest.Matcher;
@@ -224,6 +227,15 @@ public final class DataModelMatchers {
   public static @Nonnull Matcher<Zone> hasMemberInterfaces(
       @Nonnull Matcher<? super SortedSet<String>> subMatcher) {
     return new ZoneMatchers.HasInterfaces(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provied {@code subMatcher} matches the {@link Vrf}'s
+   * isisProcess.
+   */
+  public static @Nonnull Matcher<Vrf> hasIsisProcess(
+      @Nonnull Matcher<? super IsisProcess> subMatcher) {
+    return new HasIsisProcess(subMatcher);
   }
 
   /**

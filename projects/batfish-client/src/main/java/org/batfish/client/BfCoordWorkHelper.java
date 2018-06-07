@@ -2,6 +2,7 @@ package org.batfish.client;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Throwables;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import java.io.File;
@@ -21,7 +22,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.client.config.Settings;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
@@ -59,7 +59,7 @@ public class BfCoordWorkHelper {
       _client = getClientBuilder().build();
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       throw new BatfishException("Failed to create HTTP client", e);
     }
   }
@@ -105,7 +105,7 @@ public class BfCoordWorkHelper {
       return jObj.getString(CoordConsts.SVC_KEY_SUGGESTIONS);
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -127,7 +127,7 @@ public class BfCoordWorkHelper {
       return Boolean.toString(jObj.getBoolean(CoordConsts.SVC_KEY_API_KEY));
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -170,7 +170,7 @@ public class BfCoordWorkHelper {
             analysisName,
             addQuestionsFileName,
             delQuestionsStr,
-            ExceptionUtils.getStackTrace(e));
+            Throwables.getStackTraceAsString(e));
       }
       return false;
     }
@@ -210,7 +210,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in configureTemplate from %s using (%s, %s, %s)\n",
           _coordWorkMgr, inTemplate, exceptions, assertion);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -230,7 +230,7 @@ public class BfCoordWorkHelper {
     } catch (Exception e) {
       _logger.errorf(
           "Exception when deleting analysis to %s using (%s, %s): %s\n",
-          _coordWorkMgr, containerName, analysisName, ExceptionUtils.getStackTrace(e));
+          _coordWorkMgr, containerName, analysisName, Throwables.getStackTraceAsString(e));
       return false;
     }
   }
@@ -238,7 +238,7 @@ public class BfCoordWorkHelper {
   public boolean delContainer(String containerName) {
     try {
       WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConsts.SVC_KEY_CONTAINERS, containerName));
+          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_CONTAINERS, containerName));
 
       Response response =
           webTarget
@@ -255,7 +255,7 @@ public class BfCoordWorkHelper {
       return true;
     } catch (Exception e) {
       _logger.errorf("Exception in delContainer from %s for %s\n", _coordWorkMgrV2, containerName);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
   }
@@ -276,7 +276,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
   }
@@ -297,7 +297,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
   }
@@ -317,7 +317,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
   }
@@ -412,7 +412,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getAnswer from %s using (%s, %s)\n",
           _coordWorkMgr, baseTestrig, analysisName);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -459,7 +459,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getAnswer from %s using (%s, %s)\n",
           _coordWorkMgr, baseTestrig, questionName);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -514,7 +514,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getConfiguration from %s for container %s, testrig %s, configuration %s\n",
           _coordWorkMgr, containerName, testrigName, configName);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -528,7 +528,7 @@ public class BfCoordWorkHelper {
   public Container getContainer(String containerName) {
     try {
       WebTarget webTarget =
-          getTargetV2(Lists.newArrayList(CoordConsts.SVC_KEY_CONTAINERS, containerName));
+          getTargetV2(Lists.newArrayList(CoordConstsV2.RSC_CONTAINERS, containerName));
 
       Response response =
           webTarget
@@ -550,7 +550,7 @@ public class BfCoordWorkHelper {
       return container;
     } catch (Exception e) {
       _logger.errorf("Exception in getContainer from %s for %s\n", _coordWorkMgrV2, containerName);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -592,7 +592,7 @@ public class BfCoordWorkHelper {
       return retMap;
     } catch (Exception e) {
       _logger.errorf("Exception in getInfo from %s\n", _coordWorkMgr);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -652,7 +652,7 @@ public class BfCoordWorkHelper {
       _logger.errorf(
           "Exception in getObject from %s using (%s, %s)\n",
           _coordWorkMgr, testrigName, objectName);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -686,7 +686,7 @@ public class BfCoordWorkHelper {
       return jObj.getJSONObject(CoordConsts.SVC_KEY_QUESTION_LIST);
     } catch (Exception e) {
       _logger.errorf("Exception in getQuestionTemplates from %s\n", _coordWorkMgr);
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -746,7 +746,7 @@ public class BfCoordWorkHelper {
       return new Pair<>(workStatus, taskStr);
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -779,7 +779,7 @@ public class BfCoordWorkHelper {
       return jObj.getString(CoordConsts.SVC_KEY_CONTAINER_NAME);
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -849,7 +849,7 @@ public class BfCoordWorkHelper {
 
       return jObj.getBoolean(CoordConsts.SVC_KEY_RESULT);
     } catch (Exception e) {
-      _logger.errorf("exception: %s\n", ExceptionUtils.getStackTrace(e));
+      _logger.errorf("exception: %s\n", Throwables.getStackTraceAsString(e));
       return false;
     }
   }
@@ -878,7 +878,7 @@ public class BfCoordWorkHelper {
       return jObj.getJSONObject(CoordConsts.SVC_KEY_ANALYSIS_LIST);
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -915,7 +915,7 @@ public class BfCoordWorkHelper {
       return containerList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -953,7 +953,7 @@ public class BfCoordWorkHelper {
       return environmentList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -987,7 +987,7 @@ public class BfCoordWorkHelper {
       return workList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -1021,7 +1021,7 @@ public class BfCoordWorkHelper {
       return questionList;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -1053,7 +1053,7 @@ public class BfCoordWorkHelper {
       return testrigArray;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     }
   }
@@ -1121,7 +1121,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
   }
@@ -1143,7 +1143,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
   }
@@ -1168,7 +1168,7 @@ public class BfCoordWorkHelper {
       return jObj != null;
     } catch (Exception e) {
       _logger.errorf("exception: ");
-      _logger.error(ExceptionUtils.getStackTrace(e) + "\n");
+      _logger.error(Throwables.getStackTraceAsString(e) + "\n");
       return false;
     }
   }
@@ -1194,7 +1194,7 @@ public class BfCoordWorkHelper {
       } else {
         _logger.errorf(
             "Exception when uploading custom object to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, testrigName, objName, objFileName, ExceptionUtils.getStackTrace(e));
+            _coordWorkMgr, testrigName, objName, objFileName, Throwables.getStackTraceAsString(e));
       }
       return false;
     }
@@ -1223,7 +1223,7 @@ public class BfCoordWorkHelper {
       } else {
         _logger.errorf(
             "Exception when uploading environment to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, testrigName, envName, zipfileName, ExceptionUtils.getStackTrace(e));
+            _coordWorkMgr, testrigName, envName, zipfileName, Throwables.getStackTraceAsString(e));
       }
       return false;
     }
@@ -1250,7 +1250,7 @@ public class BfCoordWorkHelper {
       } else {
         _logger.errorf(
             "Exception when uploading question to %s using (%s, %s, %s): %s\n",
-            _coordWorkMgr, testrigName, qName, qFileName, ExceptionUtils.getStackTrace(e));
+            _coordWorkMgr, testrigName, qName, qFileName, Throwables.getStackTraceAsString(e));
       }
       return false;
     }
@@ -1282,7 +1282,7 @@ public class BfCoordWorkHelper {
             containerName,
             testrigName,
             zipfileName,
-            ExceptionUtils.getStackTrace(e));
+            Throwables.getStackTraceAsString(e));
       }
       return false;
     }

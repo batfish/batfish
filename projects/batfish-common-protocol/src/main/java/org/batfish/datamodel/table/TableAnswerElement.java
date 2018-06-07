@@ -42,8 +42,9 @@ public final class TableAnswerElement extends AnswerElement {
    *
    * @param row The row to add
    */
-  public void addRow(Row row) {
+  public TableAnswerElement addRow(Row row) {
     _rows.add(row);
+    return this;
   }
 
   /**
@@ -64,6 +65,13 @@ public final class TableAnswerElement extends AnswerElement {
     _excludedRows.add(rows);
   }
 
+  /** Computes the summary of this table, given the assertion */
+  public AnswerSummary computeSummary(Assertion assertion) {
+    String notes = "Found " + _rows.size() + " results";
+    return computeSummary(assertion, notes);
+  }
+
+  /** Computes the summary of this table, given the assertion and notes */
   public AnswerSummary computeSummary(Assertion assertion, String notes) {
     int numPassed = 0;
     int numFailed = 0;
@@ -74,20 +82,6 @@ public final class TableAnswerElement extends AnswerElement {
         numFailed = 1;
       }
     }
-    return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
-  }
-
-  public AnswerSummary computeSummary(Assertion assertion) {
-    int numPassed = 0;
-    int numFailed = 0;
-    if (assertion != null) {
-      if (evaluateAssertion(assertion)) {
-        numPassed = 1;
-      } else {
-        numFailed = 1;
-      }
-    }
-    String notes = "Found " + _rows.size() + " results";
     return new AnswerSummary(notes, numFailed, numPassed, _rows.size());
   }
 

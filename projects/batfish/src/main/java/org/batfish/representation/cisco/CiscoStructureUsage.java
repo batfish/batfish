@@ -72,6 +72,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_OUTGOING_FILTER("interface outgoing ip access-list"),
   INTERFACE_PIM_NEIGHBOR_FILTER("interface ip pim neighbor-filter"),
   INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),
+  INTERFACE_SELF_REF("interface"),
   INTERFACE_SERVICE_POLICY("interface service-policy"),
   INTERFACE_ZONE_MEMBER("interface zone-member"),
   IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),

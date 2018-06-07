@@ -1,32 +1,5 @@
 #!/usr/bin/env bash
-JACOCO_VERSION=0.8.1
-JACOCO_AGENT_JAR_NAME="org.jacoco.agent-${JACOCO_VERSION}-runtime.jar"
-JACOCO_AGENT_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.agent/${JACOCO_VERSION}/${JACOCO_AGENT_JAR_NAME}"
-JACOCO_CLI_JAR_NAME="org.jacoco.cli-${JACOCO_VERSION}-nodeps.jar"
-JACOCO_CLI_JAR="${HOME}/.m2/repository/org/jacoco/org.jacoco.cli/${JACOCO_VERSION}/${JACOCO_CLI_JAR_NAME}"
-
-# the destfile for ref tests
-JACOCO_REF_DESTFILE=projects/target/jacoco-ref.exec
-
-# the destfile for the aggregate of the ref tests and all junit project tests
-JACOCO_ALL_DESTFILE=projects/target/jacoco-all.exec
-
-JACOCO_COVERAGE_REPORT_XML=coverage.xml
-
-
-if [ ! -f ${JACOCO_AGENT_JAR} ]; then
-  mvn dependency:get -Dartifact=org.jacoco:org.jacoco.agent:${JACOCO_VERSION}:jar:runtime
-fi
-
-if [ ! -f ${JACOCO_CLI_JAR} ]; then
-  mvn dependency:get -Dartifact=org.jacoco:org.jacoco.cli:${JACOCO_VERSION}:jar:nodeps
-fi
-
-if [[ $(uname) == 'Darwin' && $(which gfind) ]]; then
-   GNU_FIND=gfind
-else
-   GNU_FIND=find
-fi
+. "$(dirname "$0")/common.sh"
 
 trap 'kill -9 $(pgrep -g $$ | grep -v $$) >& /dev/null' EXIT SIGINT SIGTERM
 
@@ -74,19 +47,18 @@ allinone -cmdfile tests/watchdog/commands -batfishmode watchdog || exit_code=$?
 sleep 5
 
 echo -e "\n .... Aggregating coverage data"
-java -jar $JACOCO_CLI_JAR merge $(find -name 'jacoco*.exec') --destfile $JACOCO_ALL_DESTFILE
+java -jar "$JACOCO_CLI_JAR" merge $("$GNU_FIND" -name 'jacoco*.exec') --destfile "$JACOCO_ALL_DESTFILE"
 
 echo -e "\n .... Building coverage report"
 # have to collect all classes into one dir
-JACOCO_CLASSES_DIR="$(mktemp -d)"
-cp -r projects/*/target/classes/* $JACOCO_CLASSES_DIR
-java -jar $JACOCO_CLI_JAR report $JACOCO_ALL_DESTFILE  --classfiles $JACOCO_CLASSES_DIR --xml $JACOCO_COVERAGE_REPORT_XML
+cp -r projects/*/target/classes/* "$JACOCO_CLASSES_DIR"
+java -jar "$JACOCO_CLI_JAR" report "$JACOCO_ALL_DESTFILE"  --classfiles "$JACOCO_CLASSES_DIR" --xml "$JACOCO_COVERAGE_REPORT_XML"
 
 echo -e "\n .... Failed tests: "
-$GNU_FIND -name *.testout
+"$GNU_FIND" -name *.testout
 
 echo -e "\n .... Diffing failed tests:"
-for i in $($GNU_FIND -name *.testout); do
+for i in $("$GNU_FIND" -name *.testout); do
    echo -e "\n $i"; diff -u ${i%.testout} $i
 done
 

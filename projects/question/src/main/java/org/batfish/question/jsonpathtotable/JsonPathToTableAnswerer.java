@@ -19,6 +19,7 @@ import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.JsonPathResult;
 import org.batfish.common.util.JsonPathUtils;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.Schema.Type;
 import org.batfish.datamodel.questions.Exclusion;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -185,7 +186,8 @@ public class JsonPathToTableAnswerer extends Answerer {
     for (Entry<String, JsonPathToTableComposition> cEntry : compositions.entrySet()) {
       String varName = cEntry.getKey();
       JsonPathToTableComposition composition = cEntry.getValue();
-      if (composition.getSchema().isList()) {
+      if (composition.getSchema().getType() == Type.LIST
+          || composition.getSchema().getType() == Type.SET) {
         doCompositionList(varName, composition, extractions, answerValues);
       } else {
         doCompositionSingleton(varName, composition, answerValues);
@@ -209,7 +211,8 @@ public class JsonPathToTableAnswerer extends Answerer {
                 "varName '%s' for '%s' of '%s' is not in extractions",
                 varName, composition.getDictionary().get(varName), compositionName));
       }
-      if (extractions.get(varName).getSchema().isList()) {
+      if (extractions.get(varName).getSchema().getType() == Type.LIST
+          || extractions.get(varName).getSchema().getType() == Type.SET) {
         if (answerValues.get(varName) == null) {
           throw new BatfishException(
               String.format(
@@ -235,7 +238,8 @@ public class JsonPathToTableAnswerer extends Answerer {
         String propertyName = pEntry.getKey();
         String varName = pEntry.getValue();
         JsonNode varNode = answerValues.get(varName);
-        if (extractions.get(varName).getSchema().isList()) {
+        if (extractions.get(varName).getSchema().getType() == Type.LIST
+            || extractions.get(varName).getSchema().getType() == Type.SET) {
           object.set(propertyName, ((ArrayNode) varNode).get(index));
         } else {
           object.set(propertyName, varNode);
@@ -271,8 +275,9 @@ public class JsonPathToTableAnswerer extends Answerer {
       JsonPathToTableExtraction extraction,
       JsonPathResult jpResult,
       ObjectNode answerValues) {
-    if (extraction.getSchema().isList()) {
-      throw new BatfishException("Prefix-based hints are incompatible with list types");
+    if (extraction.getSchema().getType() == Type.LIST
+        || extraction.getSchema().getType() == Type.SET) {
+      throw new BatfishException("Prefix-based hints are incompatible with list or set types");
     }
     answerValues.set(varName, new TextNode(jpResult.getPrefixPart(extraction.getIndex())));
   }
@@ -287,7 +292,7 @@ public class JsonPathToTableAnswerer extends Answerer {
       switch (extraction.getMethod()) {
         case FUNCOFSUFFIX:
           {
-            if (!extraction.getSchema().isIntOrIntList()) {
+            if (!extraction.getSchema().isIntBased()) {
               throw new BatfishException(
                   "schema must be INT(LIST) with funcofsuffix-based extraction hint");
             }
@@ -337,7 +342,8 @@ public class JsonPathToTableAnswerer extends Answerer {
       }
     }
 
-    if (extraction.getSchema().isList()) {
+    if (extraction.getSchema().getType() == Type.LIST
+        || extraction.getSchema().getType() == Type.SET) {
       answerValues.set(varName, BatfishObjectMapper.mapper().valueToTree(extractedList));
     } else {
       if (extractedList.size() == 0) {
