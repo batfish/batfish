@@ -2659,17 +2659,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
-    String filterList = ctx.getText();
-    _configuration.referenceStructure(
-        AS_PATH_ACCESS_LIST,
-        filterList,
-        BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
-        ctx.getStart().getLine());
-    // TODO: Handle filter-list in batfish
-  }
-
-  @Override
   public void exitRbnx_n_af_inherit(Rbnx_n_af_inheritContext ctx) {
     String name = ctx.template.getText();
     int sequence = toInteger(ctx.seq);
@@ -4503,6 +4492,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _configuration.getFailoverInterfaces().put(alias, ifaceName);
     _configuration.setFailoverStatefulSignalingInterfaceAlias(alias);
     _configuration.setFailoverStatefulSignalingInterface(ifaceName);
+  }
+
+  @Override
+  public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
+    String filterList = ctx.getText();
+    _configuration.referenceStructure(
+        AS_PATH_ACCESS_LIST,
+        filterList,
+        BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
+        ctx.getStart().getLine());
+    // TODO: Handle filter-list in batfish
   }
 
   @Override
