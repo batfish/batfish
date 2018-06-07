@@ -12,7 +12,7 @@ options {
 
 AUTHENTICATION_TYPE
 :
-   'authentication-type'
+    'authentication-type'
 ;
 
 DEVICECONFIG
@@ -79,12 +79,12 @@ SYSTEM
 
 IP_ADDRESS
 :
-   F_IpAddress
+    F_IpAddress
 ;
 
 IP_PREFIX
 :
-   F_IpAddress '/' F_Digit F_Digit?
+    F_IpAddress '/' F_SubnetMask
 ;
 
 NEWLINE
@@ -94,7 +94,7 @@ NEWLINE
 
 VARIABLE
 :
-   F_Variable_VarChar+
+    F_Variable_VarChar+
 ;
 
 WS
@@ -107,41 +107,55 @@ WS
 fragment
 F_DecByte
 :
-   (
-      F_Digit
-      | F_DecByteTwoDigit
-      | F_DecByteThreeDigit
-   )
+    (
+        F_Digit
+        | F_DecByteTwoDigit
+        | F_DecByteThreeDigit
+    )
 ;
 
 fragment
 F_DecByteThreeDigit
 :
-   [12] F_Digit F_Digit
+    (
+        ([1] F_Digit F_Digit)
+        | ([2] [0-4] F_Digit)
+        | ([2] [5] [0-5])
+    )
 ;
 
 fragment
 F_DecByteTwoDigit
 :
-   [1-9] F_Digit
+    [1-9] F_Digit
 ;
 
 fragment
 F_Digit
 :
-   [0-9]
+    [0-9]
 ;
 
 fragment
 F_IpAddress
 :
-   F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+    F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
 ;
 
 fragment
 F_Newline
 :
     [\r\n] // carriage return or line feed
+;
+
+fragment
+F_SubnetMask
+:
+    (
+        F_Digit
+        | [12] F_Digit
+        | [3] [012]
+    )
 ;
 
 fragment
@@ -153,7 +167,7 @@ F_Whitespace
 fragment
 F_Variable_VarChar
 :
-   ~[ \t\n\r;{}[\]&|()"']
+    ~[ \t\n\r;{}[\]&|()"']
 ;
 
 // Modes

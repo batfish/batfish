@@ -43,7 +43,7 @@ public class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Confirm both dns servers show up
-    assertThat(c.getDnsServers(), containsInAnyOrder("1.1.1.1", "222.222.222.222"));
+    assertThat(c.getDnsServers(), containsInAnyOrder("1.9.10.99", "100.199.200.255"));
   }
 
   @Test
