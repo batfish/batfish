@@ -80,6 +80,9 @@ public class SpecifiersReachabilityQuestionTest {
         forwardingAnalysis.getArpReplies().get("originator").get("FastEthernet0/0"),
         containsIp(ip));
     assertThat(
+        forwardingAnalysis.getArpReplies().get("originator").get("FastEthernet0/0"),
+        containsIp(new Ip("1.1.1.2")));
+    assertThat(
         forwardingAnalysis
             .getNeighborUnreachable()
             .get("listener")
@@ -131,7 +134,6 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testDrop() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    // question.setSourceLocationSpecifierFactory(AllInterfacesLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierFactory(NodeNameRegexInterfaceLocationSpecifierFactory.NAME);
     question.setSourceLocationSpecifierInput("listener");
     question.setActions(
