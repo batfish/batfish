@@ -59,6 +59,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_R
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
@@ -440,6 +441,7 @@ import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_stanzaCon
 import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Failover_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Failover_linkContext;
+import org.batfish.grammar.cisco.CiscoParser.Filter_list_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
@@ -2654,6 +2656,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ? ((ctx.IN() != null) ? BGP_INBOUND_FILTER6_LIST : BGP_OUTBOUND_FILTER6_LIST)
             : ((ctx.IN() != null) ? BGP_INBOUND_FILTER_LIST : BGP_OUTBOUND_FILTER_LIST);
     _configuration.referenceStructure(type, filterList, usage, ctx.getStart().getLine());
+  }
+
+  @Override
+  public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
+    String filterList = ctx.getText();
+    _configuration.referenceStructure(
+        AS_PATH_ACCESS_LIST,
+        filterList,
+        BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
+        ctx.getStart().getLine());
+    // TODO: Handle filter-list in batfish
   }
 
   @Override
