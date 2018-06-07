@@ -32,6 +32,15 @@ SYSTEM
 
 // Complex tokens
 
+LINE_COMMENT
+:
+   (
+      '#'
+      | '!'
+   )
+   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+;
+
 NEWLINE
 :
     F_Newline+
@@ -53,6 +62,12 @@ fragment
 F_Newline
 :
     [\r\n] // carriage return or line feed
+;
+
+fragment
+F_NonNewlineChar
+:
+    ~[\r\n] // carriage return or line feed
 ;
 
 fragment
