@@ -18,10 +18,10 @@ import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
+import org.batfish.question.AclReachabilityQuestionPlugin.AclReachabilityAnswerer;
 
 /**
- * Class to hold methods used by both {@link
- * org.batfish.question.AclReachabilityQuestionPlugin.AclReachabilityAnswerer} and {@link
+ * Class to hold methods used by both {@link AclReachabilityAnswerer} and {@link
  * AclReachability2Answerer}.
  */
 public final class AclReachabilityAnswererUtils {

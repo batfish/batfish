@@ -2,7 +2,7 @@ package org.batfish.datamodel.answers;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
-import com.google.common.collect.ConcurrentHashMultiset;
+import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
 import java.util.List;
@@ -22,7 +22,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
   public static final String COL_DIFF_ACTION = "differentAction";
   public static final String COL_MESSAGE = "message";
 
-  private final Multiset<Row> _rows = ConcurrentHashMultiset.create();
+  private final Multiset<Row> _rows = HashMultiset.create();
 
   @Override
   public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {}
