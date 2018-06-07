@@ -70,12 +70,7 @@ o_null
 
 o_reference_bandwidth
 :
-   REFERENCE_BANDWIDTH base = DEC
-   (
-      K
-      | M
-      | G
-   )?
+   REFERENCE_BANDWIDTH reference_bandwidth
 ;
 
 o_rib_group

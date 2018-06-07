@@ -8,6 +8,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
@@ -92,6 +93,17 @@ final class InterfaceMatchersImpl {
     @Override
     protected String featureValueOf(Interface actual) {
       return actual.getDescription();
+    }
+  }
+
+  static final class HasIsis extends FeatureMatcher<Interface, IsisInterfaceSettings> {
+    HasIsis(@Nonnull Matcher<? super IsisInterfaceSettings> subMatcher) {
+      super(subMatcher, "An Interface with isis:", "isis");
+    }
+
+    @Override
+    protected IsisInterfaceSettings featureValueOf(Interface actual) {
+      return actual.getIsis();
     }
   }
 

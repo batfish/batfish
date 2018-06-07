@@ -17,6 +17,10 @@ public class IsisSettings implements Serializable {
 
   private boolean _noIpv4Routing;
 
+  private Integer _overloadTimeout;
+
+  private Double _referenceBandwidth;
+
   private boolean _trafficEngineeringCredibilityProtocolPreference;
 
   private boolean _trafficEngineeringShortcuts;
@@ -43,6 +47,14 @@ public class IsisSettings implements Serializable {
     return _noIpv4Routing;
   }
 
+  public Integer getOverloadTimeout() {
+    return _overloadTimeout;
+  }
+
+  public Double getReferenceBandwidth() {
+    return _referenceBandwidth;
+  }
+
   public boolean getTrafficEngineeringCredibilityProtocolPreference() {
     return _trafficEngineeringCredibilityProtocolPreference;
   }
@@ -53,6 +65,14 @@ public class IsisSettings implements Serializable {
 
   public void setNoIpv4Routing(boolean noIpv4Routing) {
     _noIpv4Routing = noIpv4Routing;
+  }
+
+  public void setOverloadTimeout(int overloadTimeout) {
+    _overloadTimeout = overloadTimeout;
+  }
+
+  public void setReferenceBandwidth(double referenceBandwidth) {
+    _referenceBandwidth = referenceBandwidth;
   }
 
   public void setTrafficEngineeringCredibilityProtocolPreference(
