@@ -152,7 +152,7 @@ isil_enable
 
 isil_hello_authentication_key
 :
-  HELLO_AUTHENTICATION_KEY key=string
+  HELLO_AUTHENTICATION_KEY key = string
 ;
 
 isil_hello_authentication_type

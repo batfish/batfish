@@ -858,8 +858,8 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonProperty(PROP_ISIS_COST)
   @JsonPropertyDescription("The IS-IS cost of this interface")
+  @Deprecated
   public Integer getIsisCost() {
-    // TODO: deprecate properly
     return null;
   }
 
@@ -867,8 +867,8 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription(
       "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
           + "level 1")
+  @Deprecated
   public IsisInterfaceMode getIsisL1InterfaceMode() {
-    // TODO: deprecate properly
     return null;
   }
 
@@ -876,6 +876,7 @@ public final class Interface extends ComparableStructure<String> {
   @JsonPropertyDescription(
       "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
           + "level 2")
+  @Deprecated
   public IsisInterfaceMode getIsisL2InterfaceMode() {
     // TODO: deprecate properly
     return null;
@@ -1203,16 +1204,19 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ISIS_COST)
+  @Deprecated
   public void setIsisCost(Integer isisCost) {
     // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
+  @Deprecated
   public void setIsisL1InterfaceMode(IsisInterfaceMode mode) {
     // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
+  @Deprecated
   public void setIsisL2InterfaceMode(IsisInterfaceMode mode) {
     // TODO: deprecate properly
   }

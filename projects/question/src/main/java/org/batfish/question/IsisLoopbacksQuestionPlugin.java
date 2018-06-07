@@ -14,6 +14,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IsisInterfaceMode;
+import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -145,8 +146,18 @@ public class IsisLoopbacksQuestionPlugin extends QuestionPlugin {
             .forEach(
                 (interfaceName, iface) -> {
                   if (iface.isLoopback(c.getConfigurationFormat())) {
-                    IsisInterfaceMode l1Mode = iface.getIsisL1InterfaceMode();
-                    IsisInterfaceMode l2Mode = iface.getIsisL2InterfaceMode();
+                    IsisInterfaceSettings ifaceSettings = iface.getIsis();
+                    if (ifaceSettings == null) {
+                      return;
+                    }
+                    IsisInterfaceMode l1Mode =
+                        ifaceSettings.getLevel1() != null
+                            ? ifaceSettings.getLevel1().getMode()
+                            : IsisInterfaceMode.UNSET;
+                    IsisInterfaceMode l2Mode =
+                        ifaceSettings.getLevel2() != null
+                            ? ifaceSettings.getLevel2().getMode()
+                            : IsisInterfaceMode.UNSET;
                     boolean l1 = false;
                     boolean l2 = false;
                     boolean isis = false;

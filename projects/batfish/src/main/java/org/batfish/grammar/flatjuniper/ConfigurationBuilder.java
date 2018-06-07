@@ -553,6 +553,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static final String F_IPV6 = "ipv6 - other";
 
+  private static final String F_ISIS_EXPORT = "protocols - isis - export";
+
   private static final String F_PERMIT_TUNNEL =
       "security - policies - from-zone - to-zone - policy - then - permit - tunnel";
 
@@ -3388,6 +3390,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       policies.add(policy.getText());
     }
     _currentRoutingInstance.getIsisSettings().getExportPolicies().addAll(policies);
+    // Needs data plane implementation
+    todo(ctx, F_ISIS_EXPORT);
   }
 
   @Override

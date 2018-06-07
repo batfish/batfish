@@ -2247,20 +2247,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
         default:
           throw new VendorConversionException("Invalid IS-IS level");
       }
-      IsisInterfaceSettings isisInterfaceSettings = new IsisInterfaceSettings();
-      newIface.setIsis(isisInterfaceSettings);
+      IsisInterfaceSettings.Builder isisInterfaceSettingsBuilder = IsisInterfaceSettings.builder();
       if (level1) {
         IsisInterfaceLevelSettings isisInterfaceLevel1Settings = new IsisInterfaceLevelSettings();
-        isisInterfaceSettings.setLevel1(isisInterfaceLevel1Settings);
+        isisInterfaceSettingsBuilder.setLevel1(isisInterfaceLevel1Settings);
         isisInterfaceLevel1Settings.setCost(iface.getIsisCost());
         isisInterfaceLevel1Settings.setMode(iface.getIsisInterfaceMode());
       }
       if (level2) {
         IsisInterfaceLevelSettings isisInterfaceLevel2Settings = new IsisInterfaceLevelSettings();
-        isisInterfaceSettings.setLevel2(isisInterfaceLevel2Settings);
+        isisInterfaceSettingsBuilder.setLevel2(isisInterfaceLevel2Settings);
         isisInterfaceLevel2Settings.setCost(iface.getIsisCost());
         isisInterfaceLevel2Settings.setMode(iface.getIsisInterfaceMode());
       }
+      newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
     newIface.setOspfCost(iface.getOspfCost());
     newIface.setOspfDeadInterval(iface.getOspfDeadInterval());

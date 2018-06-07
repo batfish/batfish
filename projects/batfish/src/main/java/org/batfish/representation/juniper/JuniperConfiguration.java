@@ -19,8 +19,6 @@ import java.util.NavigableSet;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.BiConsumer;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
@@ -637,83 +635,63 @@ public final class JuniperConfiguration extends VendorConfiguration {
         // TODO: support IS-IS export policy-statements
       }
     }
-    boolean isisEnabled = false;
-    if (settings.getLevel1Settings().getEnabled()) {
+    boolean level1 = settings.getLevel1Settings().getEnabled();
+    boolean level2 = settings.getLevel2Settings().getEnabled();
+    if (!level1 && !level2) {
+      return null;
+    }
+    if (level1) {
       newProc.setLevel1(toIsisLevelSettings(settings.getLevel1Settings()));
-      processIsisInterfaceLevelSettings(
-          routingInstance,
-          IsisInterfaceSettings::getLevel1Settings,
-          org.batfish.datamodel.IsisInterfaceSettings::setLevel1);
-      isisEnabled = true;
     }
-    if (settings.getLevel2Settings().getEnabled()) {
+    if (level2) {
       newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
-      processIsisInterfaceLevelSettings(
-          routingInstance,
-          IsisInterfaceSettings::getLevel2Settings,
-          org.batfish.datamodel.IsisInterfaceSettings::setLevel2);
-      isisEnabled = true;
     }
-    if (isisEnabled) {
-      processIsisInterfaceSettings(routingInstance, settings);
-    }
+    processIsisInterfaceSettings(routingInstance, settings, level1, level2);
     newProc.setOverloadTimeout(settings.getOverloadTimeout());
     newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc;
   }
 
   private void processIsisInterfaceSettings(
-      RoutingInstance routingInstance, IsisSettings settings) {
+      RoutingInstance routingInstance, IsisSettings settings, boolean level1, boolean level2) {
     _c.getVrfs()
         .get(routingInstance.getName())
         .getInterfaces()
         .forEach(
             (ifaceName, newIface) -> {
               Interface iface = routingInstance.getInterfaces().get(ifaceName);
-              applyIsisInterfaceSettings(iface, newIface.getIsis());
+              newIface.setIsis(
+                  toIsisInterfaceSettings(
+                      settings, iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
             });
   }
 
-  private void applyIsisInterfaceSettings(
-      Interface iface, org.batfish.datamodel.IsisInterfaceSettings newSettings) {
-    IsisInterfaceSettings settings = iface.getIsisSettings();
-    newSettings.setBfdLivenessDetectionMinimumInterval(
-        settings.getBfdLivenessDetectionMinimumInterval());
-    newSettings.setBfdLivenessDetectionMultiplier(settings.getBfdLivenessDetectionMultiplier());
-    newSettings.setIsoAddress(iface.getIsoAddress());
-    newSettings.setPointToPoint(settings.getPointToPoint());
-  }
-
-  private void processIsisInterfaceLevelSettings(
-      RoutingInstance routingInstance,
-      Function<IsisInterfaceSettings, IsisInterfaceLevelSettings> getLevel,
-      BiConsumer<
-              org.batfish.datamodel.IsisInterfaceSettings,
-              org.batfish.datamodel.IsisInterfaceLevelSettings>
-          setLevel) {
-    _c.getVrfs()
-        .get(routingInstance.getName())
-        .getInterfaces()
-        .forEach(
-            (ifaceName, newIface) -> {
-              Interface iface = routingInstance.getInterfaces().get(ifaceName);
-              IsisInterfaceSettings interfaceSettings = iface.getIsisSettings();
-              if (interfaceSettings == null) {
-                return;
-              }
-              IsisInterfaceLevelSettings levelSettings = getLevel.apply(interfaceSettings);
-              if (levelSettings == null) {
-                return;
-              }
-              org.batfish.datamodel.IsisInterfaceSettings newInterfaceSettings = newIface.getIsis();
-              if (newInterfaceSettings == null) {
-                newInterfaceSettings = new org.batfish.datamodel.IsisInterfaceSettings();
-                newIface.setIsis(newInterfaceSettings);
-              }
-              setLevel.accept(
-                  newInterfaceSettings,
-                  toIsisInterfaceLevelSettings(interfaceSettings, levelSettings));
-            });
+  private org.batfish.datamodel.IsisInterfaceSettings toIsisInterfaceSettings(
+      IsisSettings settings,
+      IsisInterfaceSettings interfaceSettings,
+      IsoAddress isoAddress,
+      boolean level1,
+      boolean level2) {
+    if (interfaceSettings == null || isoAddress == null) {
+      return null;
+    }
+    org.batfish.datamodel.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
+        org.batfish.datamodel.IsisInterfaceSettings.builder();
+    if (level1) {
+      newInterfaceSettingsBuilder.setLevel1(
+          toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel1Settings()));
+    }
+    if (level2) {
+      newInterfaceSettingsBuilder.setLevel2(
+          toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel2Settings()));
+    }
+    return newInterfaceSettingsBuilder
+        .setBfdLivenessDetectionMinimumInterval(
+            interfaceSettings.getBfdLivenessDetectionMinimumInterval())
+        .setBfdLivenessDetectionMultiplier(interfaceSettings.getBfdLivenessDetectionMultiplier())
+        .setIsoAddress(isoAddress)
+        .setPointToPoint(interfaceSettings.getPointToPoint())
+        .build();
   }
 
   private org.batfish.datamodel.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
@@ -1383,36 +1361,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
-    // isis settings
-    IsisInterfaceSettings isisSettings = iface.getIsisSettings();
-    IsisInterfaceLevelSettings isisL1Settings = isisSettings.getLevel1Settings();
-    newIface.setIsisL1InterfaceMode(IsisInterfaceMode.UNSET);
-    if (isisL1Settings.getEnabled()) {
-      if (isisSettings.getPassive()) {
-        newIface.setIsisL1InterfaceMode(IsisInterfaceMode.PASSIVE);
-      } else if (isisSettings.getEnabled()) {
-        newIface.setIsisL1InterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-    }
-    IsisInterfaceLevelSettings isisL2Settings = isisSettings.getLevel2Settings();
-    newIface.setIsisL2InterfaceMode(IsisInterfaceMode.UNSET);
-    if (isisL2Settings.getEnabled()) {
-      if (isisSettings.getPassive()) {
-        newIface.setIsisL2InterfaceMode(IsisInterfaceMode.PASSIVE);
-      } else if (isisSettings.getEnabled()) {
-        newIface.setIsisL2InterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-    }
-    Integer l1Metric = isisSettings.getLevel1Settings().getMetric();
-    Integer l2Metric = isisSettings.getLevel2Settings().getMetric();
-    if (l1Metric != null && l2Metric != null && (l1Metric.intValue() != l2Metric.intValue())) {
-      _w.unimplemented("distinct metrics for is-is level1 and level2 on an interface");
-    } else if (l1Metric != null) {
-      newIface.setIsisCost(l1Metric);
-    } else if (l2Metric != null) {
-      newIface.setIsisCost(l2Metric);
-    }
-    // TODO: enable/disable individual levels
     return newIface;
   }
 

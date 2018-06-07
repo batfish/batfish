@@ -1,11 +1,65 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.Nullable;
 
 public class IsisInterfaceSettings implements Serializable {
+
+  public static class Builder {
+
+    private Integer _bfdLivenessDetectionMinimumInterval;
+
+    private Integer _bfdLivenessDetectionMultiplier;
+
+    private IsoAddress _isoAddress;
+
+    private IsisInterfaceLevelSettings _level1;
+
+    private IsisInterfaceLevelSettings _level2;
+
+    private boolean _pointToPoint;
+
+    private Builder() {}
+
+    public IsisInterfaceSettings build() {
+      return new IsisInterfaceSettings(this);
+    }
+
+    public Builder setBfdLivenessDetectionMinimumInterval(
+        @Nullable Integer bfdLivenessDetectionMinimumInterval) {
+      _bfdLivenessDetectionMinimumInterval = bfdLivenessDetectionMinimumInterval;
+      return this;
+    }
+
+    public Builder setBfdLivenessDetectionMultiplier(
+        @Nullable Integer bfdLivenessDetectionMultiplier) {
+      _bfdLivenessDetectionMultiplier = bfdLivenessDetectionMultiplier;
+      return this;
+    }
+
+    public Builder setIsoAddress(@Nullable IsoAddress isoAddress) {
+      _isoAddress = isoAddress;
+      return this;
+    }
+
+    public Builder setLevel1(@Nullable IsisInterfaceLevelSettings level1) {
+      _level1 = level1;
+      return this;
+    }
+
+    public Builder setLevel2(@Nullable IsisInterfaceLevelSettings level2) {
+      _level2 = level2;
+      return this;
+    }
+
+    public Builder setPointToPoint(boolean pointToPoint) {
+      _pointToPoint = pointToPoint;
+      return this;
+    }
+  }
 
   private static final String PROP_BFD_LIVENESS_DETECTION_MINIMUM_INTERVAL =
       "bfdLivenessDetectionMinimumInterval";
@@ -23,6 +77,10 @@ public class IsisInterfaceSettings implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   private Integer _bfdLivenessDetectionMinimumInterval;
 
   private Integer _bfdLivenessDetectionMultiplier;
@@ -34,6 +92,33 @@ public class IsisInterfaceSettings implements Serializable {
   private IsisInterfaceLevelSettings _level2;
 
   private boolean _pointToPoint;
+
+  private IsisInterfaceSettings(Builder builder) {
+    _bfdLivenessDetectionMinimumInterval = builder._bfdLivenessDetectionMinimumInterval;
+    _bfdLivenessDetectionMultiplier = builder._bfdLivenessDetectionMultiplier;
+    _isoAddress = builder._isoAddress;
+    _level1 = builder._level1;
+    _level2 = builder._level2;
+    _pointToPoint = builder._pointToPoint;
+  }
+
+  @JsonCreator
+  private IsisInterfaceSettings(
+      @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MINIMUM_INTERVAL)
+          Integer bfdLivenessDetectionMinimumInterval,
+      @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MINIMUM_INTERVAL)
+          Integer bfdLivenessDetectionMultiplier,
+      @JsonProperty(PROP_ISO_ADDRESS) IsoAddress isoAddress,
+      @JsonProperty(PROP_LEVEL1) IsisInterfaceLevelSettings level1,
+      @JsonProperty(PROP_LEVEL2) IsisInterfaceLevelSettings level2,
+      @JsonProperty(PROP_POINT_TO_POINT) boolean pointToPoint) {
+    _bfdLivenessDetectionMinimumInterval = bfdLivenessDetectionMinimumInterval;
+    _bfdLivenessDetectionMultiplier = bfdLivenessDetectionMultiplier;
+    _isoAddress = isoAddress;
+    _level1 = level1;
+    _level2 = level2;
+    _pointToPoint = pointToPoint;
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -92,36 +177,5 @@ public class IsisInterfaceSettings implements Serializable {
         _level1,
         _level2,
         _pointToPoint);
-  }
-
-  @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MINIMUM_INTERVAL)
-  public void setBfdLivenessDetectionMinimumInterval(
-      @Nullable Integer bfdLivenessDetectionMinimumInterval) {
-    _bfdLivenessDetectionMinimumInterval = bfdLivenessDetectionMinimumInterval;
-  }
-
-  @JsonProperty(PROP_BFD_LIVENESS_DETECTION_MULTIPLIER)
-  public void setBfdLivenessDetectionMultiplier(@Nullable Integer bfdLivenessDetectionMultiplier) {
-    _bfdLivenessDetectionMultiplier = bfdLivenessDetectionMultiplier;
-  }
-
-  @JsonProperty(PROP_ISO_ADDRESS)
-  public void setIsoAddress(@Nullable IsoAddress isoAddress) {
-    _isoAddress = isoAddress;
-  }
-
-  @JsonProperty(PROP_LEVEL1)
-  public void setLevel1(@Nullable IsisInterfaceLevelSettings level1) {
-    _level1 = level1;
-  }
-
-  @JsonProperty(PROP_LEVEL2)
-  public void setLevel2(@Nullable IsisInterfaceLevelSettings level2) {
-    _level2 = level2;
-  }
-
-  @JsonProperty(PROP_POINT_TO_POINT)
-  public void setPointToPoint(boolean pointToPoint) {
-    _pointToPoint = pointToPoint;
   }
 }
