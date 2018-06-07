@@ -18,6 +18,14 @@
           ]
         }
       },
+      "undefined:as-path access-list:usage:route-map match as-path access-list:AS_PATH_UNDEF" : {
+        "description" : "Undefined reference to structure of type: 'as-path access-list' with usage: 'route-map match as-path access-list' named 'AS_PATH_UNDEF'",
+        "files" : {
+          "cisco_route_map" : [
+            56
+          ]
+        }
+      },
       "undefined:as-path-set:usage:route-policy as-path in:chill-as-path" : {
         "description" : "Undefined reference to structure of type: 'as-path-set' with usage: 'route-policy as-path in' named 'chill-as-path'",
         "files" : {
@@ -560,7 +568,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'route-map match ipv4 access-list' named 'test'",
         "files" : {
           "cisco_route_map" : [
-            21
+            26
           ]
         }
       },
@@ -682,7 +690,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ipv4 prefix-list' named 'bobble'",
         "files" : {
           "cisco_route_map" : [
-            31
+            36
           ]
         }
       },
@@ -690,7 +698,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 prefix-list' with usage: 'route-map match ipv4 prefix-list' named 'hpr-connector-subnets'",
         "files" : {
           "cisco_route_map" : [
-            5
+            10
           ]
         }
       },
@@ -1249,7 +1257,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 154
+      "numResults" : 155
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1806,22 +1814,29 @@
         }
       },
       "cisco_route_map" : {
+        "as-path access-list" : {
+          "AS_PATH_UNDEF" : {
+            "route-map match as-path access-list" : [
+              56
+            ]
+          }
+        },
         "ipv4 acl" : {
           "test" : {
             "route-map match ipv4 access-list" : [
-              21
+              26
             ]
           }
         },
         "ipv4 prefix-list" : {
           "bobble" : {
             "route-map match ipv4 prefix-list" : [
-              31
+              36
             ]
           },
           "hpr-connector-subnets" : {
             "route-map match ipv4 prefix-list" : [
-              5
+              10
             ]
           }
         }

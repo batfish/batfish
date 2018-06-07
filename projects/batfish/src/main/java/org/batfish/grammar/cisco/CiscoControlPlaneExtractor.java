@@ -148,6 +148,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EV
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
@@ -5587,7 +5588,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       names.add(name.getText());
       _configuration.referenceStructure(
           AS_PATH_ACCESS_LIST, name.getText(),
-          ROUTE_MAP_MATCH_IPV4_ACCESS_LIST, name.getStart().getLine());
+          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST, name.getStart().getLine());
     }
     RouteMapMatchAsPathAccessListLine line =
         new RouteMapMatchAsPathAccessListLine(names, statementLine);

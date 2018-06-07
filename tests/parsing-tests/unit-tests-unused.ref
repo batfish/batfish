@@ -10,6 +10,14 @@
           ]
         }
       },
+      "unused:as-path access-list:AS_PATH_ACL_UNUSED" : {
+        "description" : "Unused structure of type: 'as-path access-list' with name: 'AS_PATH_ACL_UNUSED'",
+        "files" : {
+          "cisco_route_map" : [
+            7
+          ]
+        }
+      },
       "unused:as-path-set:ama-coe-as-path" : {
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
         "files" : {
@@ -1028,13 +1036,33 @@
           ]
         }
       },
+      "unused:route-map:MAP_NAME1" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'MAP_NAME1'",
+        "files" : {
+          "cisco_route_map" : [
+            49,
+            50
+          ]
+        }
+      },
+      "unused:route-map:MAP_NAME2" : {
+        "description" : "Unused structure of type: 'route-map' with name: 'MAP_NAME2'",
+        "files" : {
+          "cisco_route_map" : [
+            52,
+            53,
+            55,
+            56
+          ]
+        }
+      },
       "unused:route-map:MSDP-SA-RP-FILTER" : {
         "description" : "Unused structure of type: 'route-map' with name: 'MSDP-SA-RP-FILTER'",
         "files" : {
           "cisco_route_map" : [
-            19,
-            20,
-            21
+            24,
+            25,
+            26
           ]
         }
       },
@@ -1062,15 +1090,15 @@
         "description" : "Unused structure of type: 'route-map' with name: 'beeble'",
         "files" : {
           "cisco_route_map" : [
-            30,
-            31,
-            32,
-            33,
             35,
             36,
             37,
             38,
-            39
+            40,
+            41,
+            42,
+            43,
+            44
           ]
         }
       },
@@ -1078,13 +1106,13 @@
         "description" : "Unused structure of type: 'route-map' with name: 'connected-to-bgp'",
         "files" : {
           "cisco_route_map" : [
-            4,
-            5,
-            6,
-            7,
-            8,
             9,
-            10
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
           ]
         }
       },
@@ -1222,7 +1250,7 @@
         "description" : "Unused structure of type: 'route-map' with name: 'ijfw$%^&****(((([]grr'",
         "files" : {
           "cisco_route_map" : [
-            17
+            22
           ]
         }
       },
@@ -1230,9 +1258,9 @@
         "description" : "Unused structure of type: 'route-map' with name: 'mgmt'",
         "files" : {
           "cisco_route_map" : [
-            26,
-            27,
-            28
+            31,
+            32,
+            33
           ]
         }
       },
@@ -1240,8 +1268,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'multicaststuff'",
         "files" : {
           "cisco_route_map" : [
-            41,
-            42
+            46,
+            47
           ]
         }
       },
@@ -1249,8 +1277,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'next-hop-null'",
         "files" : {
           "cisco_route_map" : [
-            23,
-            24
+            28,
+            29
           ]
         }
       },
@@ -1276,8 +1304,8 @@
         "description" : "Unused structure of type: 'route-map' with name: 'to_svl-hub-router'",
         "files" : {
           "cisco_route_map" : [
-            12,
-            13
+            17,
+            18
           ]
         }
       },
@@ -1356,7 +1384,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 132
+      "numResults" : 135
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1845,51 +1873,66 @@
         }
       },
       "cisco_route_map" : {
+        "as-path access-list" : {
+          "AS_PATH_ACL_UNUSED" : [
+            7
+          ]
+        },
         "route-map" : {
+          "MAP_NAME1" : [
+            49,
+            50
+          ],
+          "MAP_NAME2" : [
+            52,
+            53,
+            55,
+            56
+          ],
           "MSDP-SA-RP-FILTER" : [
-            19,
-            20,
-            21
+            24,
+            25,
+            26
           ],
           "beeble" : [
-            30,
-            31,
-            32,
-            33,
             35,
             36,
             37,
             38,
-            39
+            40,
+            41,
+            42,
+            43,
+            44
           ],
           "connected-to-bgp" : [
-            4,
-            5,
-            6,
-            7,
-            8,
             9,
-            10
+            10,
+            11,
+            12,
+            13,
+            14,
+            15
           ],
           "ijfw$%^&****(((([]grr" : [
-            17
+            22
           ],
           "mgmt" : [
-            26,
-            27,
-            28
+            31,
+            32,
+            33
           ],
           "multicaststuff" : [
-            41,
-            42
+            46,
+            47
           ],
           "next-hop-null" : [
-            23,
-            24
+            28,
+            29
           ],
           "to_svl-hub-router" : [
-            12,
-            13
+            17,
+            18
           ]
         }
       },

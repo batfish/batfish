@@ -3552,7 +3552,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     markConcreteStructure(
         CiscoStructureType.AS_PATH_ACCESS_LIST,
-        CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST);
+        CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
 
     // record references to defined structures
     recordCommunityLists();
@@ -3560,8 +3560,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     recordStructure(_cf.getDepiTunnels(), CiscoStructureType.DEPI_TUNNEL);
     recordDocsisPolicies();
     recordDocsisPolicyRules();
-    recordStructure(_ipsecProfiles, CiscoStructureType.IPSEC_PROFILE);
-    recordStructure(_ipsecTransformSets, CiscoStructureType.IPSEC_TRANSFORM_SET);
     recordPeerGroups();
     recordPeerSessions();
     recordServiceClasses();
