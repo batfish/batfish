@@ -269,6 +269,12 @@ public class Row implements Comparable<Row> {
     return keyList;
   }
 
+  /** This used to be the old signature, changed now to {@link #getKey(List)} */
+  @Deprecated
+  public List<Object> getKey(TableMetadata metadata) {
+    return getKey(metadata.getColumnMetadata());
+  }
+
   private String getMissingColumnErrorMessage(String columnName) {
     return String.format(
         "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
@@ -288,6 +294,12 @@ public class Row implements Comparable<Row> {
       }
     }
     return valueList;
+  }
+
+  /** This used to be the old signature, changed now to {@link #getValue(List)} */
+  @Deprecated
+  public List<Object> getValue(TableMetadata metadata) {
+    return getValue(metadata.getColumnMetadata());
   }
 
   @Override

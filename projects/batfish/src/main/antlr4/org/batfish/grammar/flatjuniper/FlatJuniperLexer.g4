@@ -3234,6 +3234,11 @@ MGCP_UA
    'mgcp-ua'
 ;
 
+MINIMUM_INTERVAL
+:
+  'minimum-interval'
+;
+
 MS_RPC
 :
    'ms-rpc'

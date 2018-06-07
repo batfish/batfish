@@ -7,6 +7,7 @@ import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilit
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Throwables;
 import com.google.common.base.Verify;
 import com.google.common.cache.Cache;
 import com.google.common.collect.ImmutableList;
@@ -58,7 +59,6 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.configuration2.ImmutableConfiguration;
 import org.apache.commons.lang3.SerializationUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishException.BatfishStackTrace;
@@ -75,7 +75,6 @@ import org.batfish.common.Warnings;
 import org.batfish.common.plugin.BgpTablePlugin;
 import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
-import org.batfish.common.plugin.DataPlanePluginSettings;
 import org.batfish.common.plugin.ExternalBgpAdvertisementPlugin;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.PluginClientType;
@@ -209,11 +208,11 @@ import org.codehaus.jettison.json.JSONObject;
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
 
-  private static final String BASE_TESTRIG_TAG = "BASE";
+  public static final String BASE_TESTRIG_TAG = "BASE";
 
-  private static final String DELTA_TESTRIG_TAG = "DELTA";
+  public static final String DELTA_TESTRIG_TAG = "DELTA";
 
-  private static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
+  public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -1762,11 +1761,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  public DataPlanePluginSettings getDataPlanePluginSettings() {
-    return _settings;
-  }
-
-  @Override
   public String getDifferentialFlowTag() {
     // return _settings.getQuestionName() + ":" +
     // _baseTestrigSettings.getEnvName()
@@ -2783,7 +2777,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         @Nullable String logString = writeLog ? answerString : null;
         writeJsonAnswerWithLog(logString, answerString);
       } catch (Exception e1) {
-        _logger.errorf("Could not serialize failure answer. %s", ExceptionUtils.getStackTrace(e1));
+        _logger.errorf(
+            "Could not serialize failure answer. %s", Throwables.getStackTraceAsString(e1));
       }
       throw be;
     }
@@ -3124,10 +3119,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane baseDataPlane = loadDataPlane();
+    ForwardingAnalysis baseForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), baseDataPlane);
+    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane deltaDataPlane = loadDataPlane();
+    ForwardingAnalysis deltaForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), deltaDataPlane);
+    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3337,7 +3338,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), ignoreAcls);
+    DataPlane dp = loadDataPlane();
+    getDataPlanePlugin()
+        .processFlows(flows, dp, ignoreAcls, loadForwardingAnalysis(loadConfigurations(), dp));
   }
 
   /**
@@ -3642,10 +3645,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane baseDataPlane = loadDataPlane();
+    ForwardingAnalysis baseForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), baseDataPlane);
+    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane deltaDataPlane = loadDataPlane();
+    ForwardingAnalysis deltaForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), deltaDataPlane);
+    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -4329,7 +4338,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
 
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane dp = loadDataPlane();
+    getDataPlanePlugin()
+        .processFlows(flows, dp, false, loadForwardingAnalysis(loadConfigurations(), dp));
 
     AnswerElement answerElement = getHistory();
     return answerElement;

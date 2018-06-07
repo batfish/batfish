@@ -30,7 +30,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.apache.commons.io.FileExistsException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Container;
@@ -104,7 +103,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:autoComplete exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:autoComplete exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -135,7 +134,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:checkApiKey exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:checkApiKey exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -242,7 +241,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:configureAnalysis exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:configureAnalysis exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -290,7 +289,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:configureQuestionTemplates exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:configureQuestionTemplates exception for apikey:%s; exception:%s",
           apiKey, stackTrace);
@@ -336,7 +335,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delAnalysis exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delAnalysis exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -378,7 +377,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delContainer exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delContainer exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -426,7 +425,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delEnvironment exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delEnvironment exception for apikey:%s in container:%s, testrig:%s; exception:%s",
           apiKey, containerName, testrigName, stackTrace);
@@ -471,7 +470,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delQuestion exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delQuestion exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -516,7 +515,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:delTestrig exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:delTestrig exception for apikey:%s in container:%s, testrig:%s; exception:%s",
           apiKey, containerName, testrigName, stackTrace);
@@ -596,7 +595,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:getAnalysisAnswers exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnalsysisAnswers exception for apikey:%s in container:%s, testrig:%s, "
               + "deltatestrig:%s; exception:%s",
@@ -673,7 +672,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:getAnswer exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getAnswer exception for apikey:%s in container:%s, testrig:%s, deltatestrig:%s; "
               + "exception:%s",
@@ -740,7 +739,7 @@ public class WorkMgrService {
           .type(MediaType.TEXT_PLAIN)
           .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:getConfiguration exception: %s", stackTrace);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
           .entity(e.getCause())
@@ -802,7 +801,7 @@ public class WorkMgrService {
           .type(MediaType.TEXT_PLAIN)
           .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getContainer exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -825,7 +824,7 @@ public class WorkMgrService {
 
       return successResponse(map);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:getInfo exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -884,7 +883,7 @@ public class WorkMgrService {
           .type(MediaType.TEXT_PLAIN)
           .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getObject exception for apikey:%s in container:%s, testrig:%s; exception:%s",
           apiKey, containerName, testrigName, stackTrace);
@@ -916,7 +915,7 @@ public class WorkMgrService {
 
       return successResponse(Main.getWorkMgr().getParsingResults(containerName, testrigName));
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:getParsingResults exception for apikey:%s in container:%s, testrig:%s; exception:%s",
           apiKey, containerName, testrigName, stackTrace);
@@ -944,7 +943,7 @@ public class WorkMgrService {
             new JSONObject().put(CoordConsts.SVC_KEY_QUESTION_LIST, questionTemplates));
       }
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:getQuestionTemplates exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -960,7 +959,7 @@ public class WorkMgrService {
       retObject.put("service-version", Version.getVersion());
       return successResponse(retObject);
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:getStatus exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1010,7 +1009,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:getWorkStatus exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:getWorkStatus exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1057,7 +1056,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:initContainer exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:initContainer exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -1105,7 +1104,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:killWork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:killWork exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1163,7 +1162,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listAnalyses exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:listAnalyses exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -1201,7 +1200,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listContainers exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:listContainers exception for apikey:%s, exception:%s", apiKey, stackTrace);
       return failureResponse(e.getMessage());
@@ -1247,7 +1246,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listEnvironments exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:listEnvironments exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1301,7 +1300,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listIncompleteWork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:listIncompleteWork exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1348,7 +1347,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:listQuestions exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:listQuestions exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -1411,7 +1410,7 @@ public class WorkMgrService {
     } catch (Exception e) {
       _logger.errorf(
           "WMS:listTestrigs exception for apikey:%s in container:%s; exception:%s",
-          apiKey, containerName, ExceptionUtils.getStackTrace(e));
+          apiKey, containerName, Throwables.getStackTraceAsString(e));
       return failureResponse(e.getMessage());
     }
   }
@@ -1460,7 +1459,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:putObject exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:putObject exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1510,7 +1509,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:queueWork exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:queueWork exception for apikey:%s; exception:%s", apiKey, stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1555,7 +1554,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:syncTestrigsSyncNow exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:syncTestrigsSyncNow exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -1612,7 +1611,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:syncTestrigsUpdateSettings exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:syncTestrigsUpdateSettings exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -1637,7 +1636,7 @@ public class WorkMgrService {
       // .allow("OPTIONS")
       // .build();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:test exception: %s", stackTrace);
       // return Response.serverError().build();
       return "got error";
@@ -1692,7 +1691,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:uploadEnvironment exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf("WMS:uploadEnvironment exception: %s", stackTrace);
       return failureResponse(e.getMessage());
     }
@@ -1741,7 +1740,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:uploadQuestion exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:uploadQuestion exception for apikey:%s in container:%s; exception:%s",
           apiKey, containerName, stackTrace);
@@ -1803,7 +1802,7 @@ public class WorkMgrService {
       _logger.errorf("WMS:uploadTestrig exception: %s\n", e.getMessage());
       return failureResponse(e.getMessage());
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       _logger.errorf(
           "WMS:uploadTestrig exception for apikey:%s in container:%s, testrig:%s; exception:%s",
           apiKey, containerName, testrigName, stackTrace);

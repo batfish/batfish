@@ -189,7 +189,11 @@ public class NodJobAclTest {
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
-    dpPlugin.processFlows(flows, dataPlane, false);
+    dpPlugin.processFlows(
+        flows,
+        dataPlane,
+        false,
+        new ForwardingAnalysisImpl(configs, dataPlane.getRibs(), dataPlane.getFibs(), topology));
     List<FlowTrace> flowTraces = dpPlugin.getHistoryFlowTraces(dataPlane);
     assertThat(flowTraces, hasSize(2));
     assertThat(
@@ -330,7 +334,11 @@ public class NodJobAclTest {
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
     DataPlanePlugin dpPlugin = batfish.getDataPlanePlugin();
-    dpPlugin.processFlows(flows, dataPlane, false);
+    dpPlugin.processFlows(
+        flows,
+        dataPlane,
+        false,
+        new ForwardingAnalysisImpl(configs, dataPlane.getRibs(), dataPlane.getFibs(), topology));
     List<FlowTrace> flowTraces = dpPlugin.getHistoryFlowTraces(dataPlane);
     assertThat(flowTraces, hasSize(1));
     assertThat(

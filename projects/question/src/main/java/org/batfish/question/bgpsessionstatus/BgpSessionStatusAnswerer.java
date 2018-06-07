@@ -18,11 +18,13 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.pojo.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
@@ -88,16 +90,22 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Network<BgpNeighbor, BgpSession> configuredBgpTopology =
         CommonUtil.initBgpTopology(configurations, ipOwners, true);
 
-    Network<BgpNeighbor, BgpSession> establishedBgpTopology =
-        question.getIncludeEstablishedCount()
-            ? CommonUtil.initBgpTopology(
-                configurations,
-                ipOwners,
-                false,
-                true,
-                _batfish.getDataPlanePlugin().getTracerouteEngine(),
-                _batfish.loadDataPlane())
-            : null;
+    Network<BgpNeighbor, BgpSession> establishedBgpTopology;
+    if (question.getIncludeEstablishedCount()) {
+      DataPlane dp = _batfish.loadDataPlane();
+      establishedBgpTopology =
+          CommonUtil.initBgpTopology(
+              configurations,
+              ipOwners,
+              false,
+              true,
+              _batfish.getDataPlanePlugin().getTracerouteEngine(),
+              dp,
+              new ForwardingAnalysisImpl(
+                  configurations, dp.getRibs(), dp.getFibs(), dp.getTopology()));
+    } else {
+      establishedBgpTopology = null;
+    }
 
     for (BgpNeighbor bgpNeighbor : configuredBgpTopology.nodes()) {
       String hostname = bgpNeighbor.getOwner().getHostname();
@@ -141,7 +149,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
         Optional<org.batfish.datamodel.Interface> iface =
             CommonUtil.getActiveInterfaceWithIp(localIp, configurations.get(hostname));
         bsiBuilder.withLocalInterface(
-            iface.isPresent() ? new Interface(hostname, iface.get().getName()) : null);
+            iface.isPresent() ? new NodeInterfacePair(hostname, iface.get().getName()) : null);
 
         Ip remoteIp = bgpNeighbor.getAddress();
 
@@ -238,7 +246,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
     SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
     Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);
-    Interface localInterface = row.get(COL_LOCAL_INTERFACE, Interface.class);
+    NodeInterfacePair localInterface = row.get(COL_LOCAL_INTERFACE, NodeInterfacePair.class);
     Node node = row.get(COL_NODE, Node.class);
     Node remoteNode = row.get(COL_REMOTE_NODE, Node.class);
     Prefix remotePrefix = row.get(COL_REMOTE_PREFIX, Prefix.class);
