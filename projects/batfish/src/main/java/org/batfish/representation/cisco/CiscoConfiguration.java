@@ -3546,6 +3546,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
     markConcreteStructure(
         CiscoStructureType.AS_PATH_ACCESS_LIST,
+        CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
         CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
 
     // record references to defined structures
