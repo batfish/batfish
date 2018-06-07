@@ -90,7 +90,7 @@ class PrefixTracerAnswerer extends Answerer {
     return rows;
   }
 
-  private static TableMetadata getTableMetadata() {
+  static TableMetadata getTableMetadata() {
     List<ColumnMetadata> columnMetadata =
         ImmutableList.of(
             new ColumnMetadata(COL_NODE, Schema.NODE, "The node where action takes place"),

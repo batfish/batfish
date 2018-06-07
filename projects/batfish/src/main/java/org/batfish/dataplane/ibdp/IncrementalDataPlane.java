@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.Network;
 import java.io.Serializable;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -165,7 +166,7 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
         .stream()
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
-                String::compareTo,
+                Comparator.naturalOrder(),
                 Entry::getKey,
                 e ->
                     e.getValue()
@@ -174,7 +175,7 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
                         .stream()
                         .collect(
                             ImmutableSortedMap.toImmutableSortedMap(
-                                String::compareTo,
+                                Comparator.naturalOrder(),
                                 Entry::getKey,
                                 e2 -> e2.getValue().getPrefixTracer()))));
   }
@@ -191,7 +192,7 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
         .stream()
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
-                String::compareTo,
+                Comparator.naturalOrder(),
                 Entry::getKey,
                 e ->
                     e.getValue()
@@ -200,7 +201,7 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
                         .stream()
                         .collect(
                             ImmutableSortedMap.toImmutableSortedMap(
-                                String::compareTo,
+                                Comparator.naturalOrder(),
                                 Entry::getKey,
                                 e2 -> e2.getValue().getPrefixTracer().summarize()))));
   }

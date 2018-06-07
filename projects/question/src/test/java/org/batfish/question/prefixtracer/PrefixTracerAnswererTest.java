@@ -1,7 +1,14 @@
 package org.batfish.question.prefixtracer;
 
+import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.COL_ACTION;
+import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.COL_NODE;
+import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.COL_PEER;
+import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.COL_PREFIX;
+import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.COL_VRF;
 import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.getRows;
+import static org.batfish.question.prefixtracer.PrefixTracerAnswerer.getTableMetadata;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableMap;
@@ -13,10 +20,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
 import org.junit.Test;
 
+/** Test of {@link PrefixTracerAnswerer} */
 public class PrefixTracerAnswererTest {
 
   // Node -> VRF -> Prefix -> Action -> Set(peer hostname)
@@ -54,5 +63,19 @@ public class PrefixTracerAnswererTest {
     Multiset<Row> answer =
         getRows(_prefixTracingInfo, Prefix.parse("1.1.1.1/32"), new NodesSpecifier("n2"));
     assertThat(answer, hasSize(1));
+  }
+
+  @Test
+  public void testHasColumns() {
+    // Set because order not important
+    Set<String> columnNames =
+        getTableMetadata()
+            .getColumnMetadata()
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableSet.toImmutableSet());
+
+    assertThat(
+        columnNames, equalTo(ImmutableSet.of(COL_NODE, COL_VRF, COL_PEER, COL_ACTION, COL_PREFIX)));
   }
 }

@@ -247,4 +247,18 @@ public class PrefixTracerTest {
     assertThat(
         summary, hasEntry(equalTo(_staticRoutePrefix), hasEntry(equalTo(SENT), contains("n2"))));
   }
+
+  @Test
+  public void testSummarizeDataplaneAccess() throws IOException {
+    Batfish batfish = BatfishTestUtils.getBatfish(twoNodeNetwork(false), _folder);
+    IncrementalDataPlane dp =
+        (IncrementalDataPlane) batfish.getDataPlanePlugin().computeDataPlane(false)._dataPlane;
+
+    // Test: get summary directly from data plane
+    Map<Prefix, Map<String, Set<String>>> summary =
+        dp.getPrefixTracingInfoSummary().get("n1").get(Configuration.DEFAULT_VRF_NAME);
+
+    assertThat(
+        summary, hasEntry(equalTo(_staticRoutePrefix), hasEntry(equalTo(SENT), contains("n2"))));
+  }
 }
