@@ -26,7 +26,6 @@ import java.util.zip.GZIPInputStream;
 import javax.annotation.Nullable;
 import net.jpountz.lz4.LZ4FrameInputStream;
 import net.jpountz.lz4.LZ4FrameOutputStream;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -118,7 +117,7 @@ final class BatfishStorage {
     } catch (BatfishException e) {
       _logger.errorf(
           "Failed to deserialize ConvertConfigurationAnswerElement: %s",
-          ExceptionUtils.getStackTrace(e));
+          Throwables.getStackTraceAsString(e));
       return null;
     }
   }

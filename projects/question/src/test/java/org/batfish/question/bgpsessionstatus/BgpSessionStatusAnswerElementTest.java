@@ -6,7 +6,7 @@ import static org.junit.Assert.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.pojo.Interface;
+import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.table.Row;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
@@ -21,7 +21,7 @@ public class BgpSessionStatusAnswerElementTest {
             SessionStatus.UNKNOWN_REMOTE,
             -1,
             "nodeName",
-            new Interface("nodeName", "eth0"),
+            new NodeInterfacePair("nodeName", "eth0"),
             new Ip("2.2.2.2"),
             "remoteNode",
             new Prefix(new Ip("1.1.1.1"), 32),

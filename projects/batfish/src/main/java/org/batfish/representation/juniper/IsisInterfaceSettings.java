@@ -7,6 +7,10 @@ public class IsisInterfaceSettings implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private Integer _bfdLivenessDetectionMinimumInterval;
+
+  private Integer _bfdLivenessDetectionMultiplier;
+
   private boolean _enabled;
 
   private final IsisInterfaceLevelSettings _level1Settings;
@@ -20,6 +24,14 @@ public class IsisInterfaceSettings implements Serializable {
   public IsisInterfaceSettings() {
     _level1Settings = new IsisInterfaceLevelSettings();
     _level2Settings = new IsisInterfaceLevelSettings();
+  }
+
+  public Integer getBfdLivenessDetectionMinimumInterval() {
+    return _bfdLivenessDetectionMinimumInterval;
+  }
+
+  public Integer getBfdLivenessDetectionMultiplier() {
+    return _bfdLivenessDetectionMultiplier;
   }
 
   public boolean getEnabled() {
@@ -40,6 +52,14 @@ public class IsisInterfaceSettings implements Serializable {
 
   public boolean getPointToPoint() {
     return _pointToPoint;
+  }
+
+  public void setBfdLivenessDetectionMinimumInterval(int bfdLivenessDetectionMinimumInterval) {
+    _bfdLivenessDetectionMinimumInterval = bfdLivenessDetectionMinimumInterval;
+  }
+
+  public void setBfdLivenessDetectionMultiplier(int bfdLivenessDetectionMultiplier) {
+    _bfdLivenessDetectionMultiplier = bfdLivenessDetectionMultiplier;
   }
 
   public void setEnabled(boolean enabled) {

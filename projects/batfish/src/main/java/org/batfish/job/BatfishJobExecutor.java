@@ -1,5 +1,6 @@
 package org.batfish.job;
 
+import com.google.common.base.Throwables;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -8,7 +9,6 @@ import java.util.concurrent.ExecutorCompletionService;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
@@ -222,7 +222,7 @@ public class BatfishJobExecutor {
     }
     // we keep the failure cause and proceed
     result.appendHistory(_logger);
-    _logger.errorf("%s:\n\t%s", failureMessage, ExceptionUtils.getStackTrace(failureCause));
+    _logger.errorf("%s:\n\t%s", failureMessage, Throwables.getStackTraceAsString(failureCause));
     failureCauses.add(bfc);
     if (!haltOnProcessingError) {
       result.applyTo(output, _logger, answerElement);
