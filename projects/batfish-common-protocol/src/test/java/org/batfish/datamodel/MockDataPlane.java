@@ -143,4 +143,10 @@ public class MockDataPlane implements DataPlane {
   public Map<String, Configuration> getConfigurations() {
     return _configurations;
   }
+
+  @Override
+  public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+      getPrefixTracingInfoSummary() {
+    return ImmutableSortedMap.of();
+  }
 }
