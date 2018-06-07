@@ -74,9 +74,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSdsn_ntp_server_address(Sdsn_ntp_server_addressContext ctx) {
     if (_currentNtpServerPrimary) {
-      _configuration.setNtpServerPrimary(ctx.IP_ADDRESS().getText());
+      _configuration.setNtpServerPrimary(ctx.address.getText());
     } else {
-      _configuration.setNtpServerSecondary(ctx.IP_ADDRESS().getText());
+      _configuration.setNtpServerSecondary(ctx.address.getText());
     }
   }
 

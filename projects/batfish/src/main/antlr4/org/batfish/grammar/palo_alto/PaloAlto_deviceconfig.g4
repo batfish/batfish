@@ -48,7 +48,7 @@ sdsd_servers
 
 sds_hostname
 :
-   HOSTNAME name = VARIABLE
+   HOSTNAME name = variable
 ;
 
 sds_ntp_servers
@@ -65,5 +65,5 @@ sds_ntp_servers
 
 sdsn_ntp_server_address
 :
-   NTP_SERVER_ADDRESS IP_ADDRESS
+   NTP_SERVER_ADDRESS address = variable
 ;

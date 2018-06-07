@@ -84,7 +84,7 @@ IP_ADDRESS
 
 IP_PREFIX
 :
-   F_IpAddress '/' F_Digit
+   F_IpAddress '/' F_Digit F_Digit?
 ;
 
 NEWLINE
@@ -108,9 +108,9 @@ fragment
 F_DecByte
 :
    (
-   F_Digit
-   | F_DecByteTwoDigit
-   | F_DecByteThreeDigit
+      F_Digit
+      | F_DecByteTwoDigit
+      | F_DecByteThreeDigit
    )
 ;
 
