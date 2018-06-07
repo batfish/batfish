@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -35,6 +36,15 @@ public class PaloAltoGrammarTest {
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
       throws IOException {
     return getBatfishForConfigurationNames(configurationNames).loadConfigurations();
+  }
+
+  @Test
+  public void testDnsServerInvalid() throws IOException {
+    _thrown.expect(BatfishException.class);
+    String hostname = "dns-server-invalid";
+
+    // This should throw a BatfishException due to a malformed IP address
+    parseConfig(hostname);
   }
 
   @Test
