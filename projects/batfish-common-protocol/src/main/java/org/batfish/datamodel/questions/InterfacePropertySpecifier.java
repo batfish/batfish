@@ -65,13 +65,6 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
           .put(
               "interface-type",
               new PropertyDescriptor<>(Interface::getInterfaceType, Schema.STRING))
-          .put("isis-cost", new PropertyDescriptor<>(Interface::getIsisCost, Schema.INTEGER))
-          .put(
-              "isis-l1-mode",
-              new PropertyDescriptor<>(Interface::getIsisL1InterfaceMode, Schema.STRING))
-          .put(
-              "isis-l2-mode",
-              new PropertyDescriptor<>(Interface::getIsisL2InterfaceMode, Schema.STRING))
           .put("mtu", new PropertyDescriptor<>(Interface::getMtu, Schema.INTEGER))
           .put("native-vlan", new PropertyDescriptor<>(Interface::getNativeVlan, Schema.INTEGER))
           // skip ospf area
