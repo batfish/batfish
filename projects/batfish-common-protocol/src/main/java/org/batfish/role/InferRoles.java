@@ -521,7 +521,7 @@ public final class InferRoles {
 
     Set<String> roles = regexToRoleNodesMap(regex, _nodes).keySet();
     for (String role : roles) {
-      inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex)));
+      inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex), _caseSensitive));
     }
 
     return new NodeRoleDimension(
