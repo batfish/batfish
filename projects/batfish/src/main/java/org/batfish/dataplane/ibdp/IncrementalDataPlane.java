@@ -1,7 +1,5 @@
 package org.batfish.dataplane.ibdp;
 
-import static java.util.Comparator;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.graph.Network;
@@ -80,11 +78,11 @@ public class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs() {
     ImmutableSortedMap.Builder<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs =
-        new ImmutableSortedMap.Builder<>(naturalOrder());
+        new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
     _nodes.forEach(
         (hostname, node) -> {
           ImmutableSortedMap.Builder<String, GenericRib<AbstractRoute>> byVrf =
-              new ImmutableSortedMap.Builder<>(naturalOrder());
+              new ImmutableSortedMap.Builder<>(Comparator.naturalOrder());
           node.getVirtualRouters()
               .forEach(
                   (vrf, virtualRouter) -> {
