@@ -1194,14 +1194,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // ike policy
     String ikePolicyName = oldIkeGateway.getIkePolicy();
     org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies().get(ikePolicyName);
-    if (newIkePolicy == null) {
-      int ikePolicyLine = oldIkeGateway.getIkePolicyLine();
-      undefined(
-          JuniperStructureType.IKE_POLICY,
-          ikePolicyName,
-          JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY,
-          ikePolicyLine);
-    } else {
+    if (newIkePolicy != null) {
       _ikePolicies
           .get(ikePolicyName)
           .getReferers()
@@ -1223,19 +1216,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     oldIkePolicy
         .getProposals()
         .forEach(
-            (ikeProposalName, ikeProposalLine) -> {
+            ikeProposalName -> {
               IkeProposal ikeProposal = _c.getIkeProposals().get(ikeProposalName);
-              if (ikeProposal == null) {
-                undefined(
-                    JuniperStructureType.IKE_PROPOSAL,
-                    ikeProposalName,
-                    JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL,
-                    ikeProposalLine);
-              } else {
-                _ikeProposals
-                    .get(ikeProposalName)
-                    .getReferers()
-                    .put(oldIkePolicy, "IKE proposal for IKE policy: " + oldIkePolicy);
+              if (ikeProposal != null) {
                 newIkePolicy.getProposals().put(ikeProposalName, ikeProposal);
               }
             });
@@ -1622,15 +1605,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // ike gateway
     String ikeGatewayName = oldIpsecVpn.getGateway();
     if (ikeGatewayName != null) {
-      int ikeGatewayLine = oldIpsecVpn.getGatewayLine();
       org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways().get(ikeGatewayName);
-      if (ikeGateway == null) {
-        undefined(
-            JuniperStructureType.IKE_GATEWAY,
-            ikeGatewayName,
-            JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY,
-            ikeGatewayLine);
-      } else {
+      if (ikeGateway != null) {
         _ikeGateways
             .get(ikeGatewayName)
             .getReferers()
@@ -2294,9 +2270,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // record defined structures
     recordDhcpRelayServerGroups();
     recordPolicyStatements();
-    recordIkeProposals();
-    recordIkePolicies();
-    recordIkeGateways();
+    markConcreteStructure(
+        JuniperStructureType.IKE_GATEWAY, JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY);
+    markConcreteStructure(
+        JuniperStructureType.IKE_POLICY, JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY);
+    markConcreteStructure(
+        JuniperStructureType.IKE_PROPOSAL, JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL);
     recordIpsecProposals();
     recordIpsecPolicies();
     recordAndDisableUnreferencedStInterfaces();
@@ -2432,33 +2411,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         recordStructure(
             sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
       }
-    }
-  }
-
-  private void recordIkeGateways() {
-    for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {
-      String name = e.getKey();
-      IkeGateway ikeGateway = e.getValue();
-      recordStructure(
-          ikeGateway, JuniperStructureType.IKE_GATEWAY, name, ikeGateway.getDefinitionLine());
-    }
-  }
-
-  private void recordIkePolicies() {
-    for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
-      String name = e.getKey();
-      IkePolicy ikePolicy = e.getValue();
-      recordStructure(
-          ikePolicy, JuniperStructureType.IKE_POLICY, name, ikePolicy.getDefinitionLine());
-    }
-  }
-
-  private void recordIkeProposals() {
-    for (Entry<String, IkeProposal> e : _ikeProposals.entrySet()) {
-      String name = e.getKey();
-      IkeProposal ikeProposal = e.getValue();
-      recordStructure(
-          ikeProposal, JuniperStructureType.IKE_PROPOSAL, name, ikeProposal.getDefinitionLine());
     }
   }
 

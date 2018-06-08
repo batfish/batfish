@@ -14380,6 +14380,19 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePolicies" : {
+          "1.2.3.4" : {
+            "name" : "1.2.3.4",
+            "proposals" : [
+              "PROPOSAL"
+            ]
+          }
+        },
+        "ikeProposals" : {
+          "PROPOSAL" : {
+            "name" : "PROPOSAL"
+          }
+        },
         "ipAccessLists" : {
           "~EXISTING_CONNECTION~" : {
             "name" : "~EXISTING_CONNECTION~",

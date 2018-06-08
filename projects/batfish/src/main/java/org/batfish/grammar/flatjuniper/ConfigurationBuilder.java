@@ -7,6 +7,9 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
+import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
@@ -16,8 +19,11 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGH
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
@@ -2461,31 +2467,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSeik_gateway(Seik_gatewayContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    _currentIkeGateway =
-        _configuration
-            .getIkeGateways()
-            .computeIfAbsent(name, n -> new IkeGateway(n, definitionLine));
+    _currentIkeGateway = _configuration.getIkeGateways().computeIfAbsent(name, IkeGateway::new);
+    defineStructure(IKE_GATEWAY, name, ctx);
   }
 
   @Override
   public void enterSeik_policy(Seik_policyContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    _currentIkePolicy =
-        _configuration
-            .getIkePolicies()
-            .computeIfAbsent(name, n -> new IkePolicy(n, definitionLine));
+    _currentIkePolicy = _configuration.getIkePolicies().computeIfAbsent(name, IkePolicy::new);
+    defineStructure(IKE_POLICY, name, ctx);
   }
 
   @Override
   public void enterSeik_proposal(Seik_proposalContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    _currentIkeProposal =
-        _configuration
-            .getIkeProposals()
-            .computeIfAbsent(name, n -> new IkeProposal(n, definitionLine));
+    _currentIkeProposal = _configuration.getIkeProposals().computeIfAbsent(name, IkeProposal::new);
+    defineStructure(IKE_PROPOSAL, name, ctx);
   }
 
   @Override
@@ -4191,9 +4188,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSeikg_ike_policy(Seikg_ike_policyContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentIkeGateway.setIkePolicy(name);
-    _currentIkeGateway.setIkePolicyLine(line);
+    _configuration.referenceStructure(
+        IKE_POLICY, name, IKE_GATEWAY_IKE_POLICY, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -4213,15 +4210,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSeikp_proposal_set(Seikp_proposal_setContext ctx) {
     Set<String> proposalsInSet = initIkeProposalSet(ctx.proposal_set_type());
     for (String proposal : proposalsInSet) {
-      _currentIkePolicy.getProposals().put(proposal, -1);
+      _currentIkePolicy.getProposals().add(proposal);
     }
   }
 
   @Override
   public void exitSeikp_proposals(Seikp_proposalsContext ctx) {
-    String proposal = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _currentIkePolicy.getProposals().put(proposal, line);
+    for (VariableContext proposal : ctx.proposals) {
+      String name = proposal.getText();
+      _currentIkePolicy.getProposals().add(name);
+      _configuration.referenceStructure(
+          IKE_PROPOSAL, name, IKE_POLICY_IKE_PROPOSAL, proposal.getStart().getLine());
+    }
   }
 
   @Override
@@ -4334,9 +4334,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSeipvi_gateway(Seipvi_gatewayContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentIpsecVpn.setGateway(name);
-    _currentIpsecVpn.setGatewayLine(line);
+    _configuration.referenceStructure(
+        IKE_GATEWAY, name, IPSEC_VPN_IKE_GATEWAY, ctx.name.getStart().getLine());
   }
 
   @Override
