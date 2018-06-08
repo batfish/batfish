@@ -15,7 +15,7 @@ router bgp 65538
  end
 !
 router bgp 65542
- neighbor 192.168.4.2 filter-list AS_PATH_UNDEF in
+ neighbor 192.168.4.2 filter-list 40 in
  end
 !
 router bgp 1
