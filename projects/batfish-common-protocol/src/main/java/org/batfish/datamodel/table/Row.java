@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -131,8 +132,8 @@ public class Row implements Comparable<Row> {
     } catch (JsonProcessingException e) {
       throw new ClassCastException(
           String.format(
-              "Cannot recover object of type %s from json %s: %s",
-              valueType.getName(), jsonNode, e.getMessage()));
+              "Cannot recover object of type %s from json %s: %s\n%s",
+              valueType.getName(), jsonNode, e.getMessage(), Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -198,8 +199,11 @@ public class Row implements Comparable<Row> {
     } catch (IOException e) {
       throw new ClassCastException(
           String.format(
-              "Cannot recover object of type %s from column %s: %s",
-              valueTypeRef.getClass(), columnName, e.getMessage()));
+              "Cannot recover object of type %s from column %s: %s\n%s",
+              valueTypeRef.getClass(),
+              columnName,
+              e.getMessage(),
+              Throwables.getStackTraceAsString(e)));
     }
   }
 

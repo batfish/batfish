@@ -20,7 +20,7 @@ public class InterfacePropertySpecifierTest {
             .map(s -> s.getText())
             .collect(Collectors.toSet()),
         equalTo(
-            new ImmutableSet.Builder<String>()
+            ImmutableSet.builder()
                 .addAll(InterfacePropertySpecifier.JAVA_MAP.keySet())
                 .add(".*")
                 .build()));

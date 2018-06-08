@@ -8,10 +8,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
@@ -23,6 +26,28 @@ import org.junit.rules.ExpectedException;
 
 public class PropertySpecifierTest {
   @Rule public ExpectedException _thrown = ExpectedException.none();
+
+  @Test
+  public void baseAutoComplete() {
+    Set<String> properties = ImmutableSet.of("abc", "ntp-servers", "ntp-source-interface");
+
+    // null or empty string should yield all options, with .* as the first one
+    assertThat(
+        PropertySpecifier.baseAutoComplete(null, properties)
+            .stream()
+            .map(s -> s.getText())
+            .collect(Collectors.toList()),
+        equalTo(ImmutableList.builder().add(".*").addAll(properties).build()));
+
+    // the capital P shouldn't matter and this should autoComplete to three entries
+    assertThat(
+        PropertySpecifier.baseAutoComplete("ntP", properties).stream().collect(Collectors.toList()),
+        equalTo(
+            ImmutableList.of(
+                new AutocompleteSuggestion(".*ntp.*", false),
+                new AutocompleteSuggestion("ntp-servers", false),
+                new AutocompleteSuggestion("ntp-source-interface", false))));
+  }
 
   @Test
   public void convertTypeIfNeeded() {

@@ -3,8 +3,6 @@ package org.batfish.datamodel.questions;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.google.common.annotations.VisibleForTesting;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -46,11 +44,9 @@ public abstract class PropertySpecifier {
    * as a substring of the property string.
    *
    * @param query The query that came to the concrete child class
-   * @param childClass The child class
    * @return The list of suggestions
    */
-  protected static List<AutocompleteSuggestion> baseAutoComplete(
-      String query, Class<? extends PropertySpecifier> childClass, Set<String> allProperties) {
+  static List<AutocompleteSuggestion> baseAutoComplete(String query, Set<String> allProperties) {
 
     String finalQuery = firstNonNull(query, "").toLowerCase();
     List<AutocompleteSuggestion> suggestions = new LinkedList<>();
@@ -62,40 +58,29 @@ public abstract class PropertySpecifier {
      * match anything as string.contains or regex.matches; so we skip formalities altogether
      */
     if (queryPattern != null) {
-
-      // first add queryWithStars if the original query wasn't a regex and it has non-empty matches
-      if (!isRegex(finalQuery)) {
-        boolean queryWithStarsHasMatches = false;
-        try {
-          Constructor<?> constructor = childClass.getConstructor(String.class);
-          PropertySpecifier instance = (PropertySpecifier) constructor.newInstance(queryWithStars);
-          queryWithStarsHasMatches = !instance.getMatchingProperties().isEmpty();
-        } catch (NoSuchMethodException
-            | InstantiationException
-            | IllegalAccessException
-            | InvocationTargetException e) {
-          // do nothing
-        }
-
-        if (queryWithStarsHasMatches) {
-          suggestions.add(
-              new AutocompleteSuggestion(
-                  queryWithStars, true, "All properties matching regex " + queryWithStars));
-        }
-      }
-
-      // now add all properties that contain the query
-      suggestions.addAll(
+      // 1. check if the pattern matches anything
+      List<AutocompleteSuggestion> propertySuggestions =
           allProperties
               .stream()
               .filter(prop -> queryPattern.matcher(prop).matches())
               .map(prop -> new AutocompleteSuggestion(prop, false))
-              .collect(Collectors.toList()));
+              .collect(Collectors.toList());
+
+      // 2. if it did, add the pattern itself as the first suggestion
+      if (!propertySuggestions.isEmpty()) {
+        suggestions.add(
+            new AutocompleteSuggestion(
+                queryWithStars, false, "All properties matching regex " + queryWithStars));
+      }
+
+      // 3. then add the concrete suggestions
+      suggestions.addAll(propertySuggestions);
     }
     return suggestions;
   }
 
-  public static Object convertTypeIfNeeded(
+  /** Converts the extracted propertyValue to what is specified in the properyDescriptor */
+  static Object convertTypeIfNeeded(
       Object propertyValue, PropertyDescriptor<?> propertyDescriptor) {
 
     // for Maps (e.g., routing policies) we use the list of keys

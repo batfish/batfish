@@ -131,8 +131,7 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
    * PropertySpecifier#baseAutoComplete}.
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(
-        query, InterfacePropertySpecifier.class, JAVA_MAP.keySet());
+    return PropertySpecifier.baseAutoComplete(query, JAVA_MAP.keySet());
   }
 
   @Override

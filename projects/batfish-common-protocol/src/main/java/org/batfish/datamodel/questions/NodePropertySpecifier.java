@@ -151,8 +151,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
    * @return The list of suggestions
    */
   public static List<AutocompleteSuggestion> autoComplete(String query) {
-    return PropertySpecifier.baseAutoComplete(
-        query, NodePropertySpecifier.class, JAVA_MAP.keySet());
+    return PropertySpecifier.baseAutoComplete(query, JAVA_MAP.keySet());
   }
 
   @Override

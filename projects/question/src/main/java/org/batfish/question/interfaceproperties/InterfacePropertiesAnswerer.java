@@ -43,7 +43,7 @@ public class InterfacePropertiesAnswerer extends Answerer {
    */
   static TableMetadata createMetadata(InterfacePropertiesQuestion question) {
     List<ColumnMetadata> columnMetadata =
-        new ImmutableList.Builder<ColumnMetadata>()
+        ImmutableList.<ColumnMetadata>builder()
             .add(new ColumnMetadata(COL_INTERFACE, Schema.INTERFACE, "Interface", true, false))
             .addAll(
                 question
