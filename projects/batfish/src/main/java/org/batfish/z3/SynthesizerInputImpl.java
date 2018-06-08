@@ -76,7 +76,7 @@ public final class SynthesizerInputImpl implements SynthesizerInput {
 
     private boolean _simplify = false;
 
-    private boolean _specialize = false;
+    private boolean _specialize = true;
 
     private Topology _topology;
 

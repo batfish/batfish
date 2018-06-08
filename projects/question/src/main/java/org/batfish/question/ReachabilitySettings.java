@@ -45,7 +45,7 @@ public final class ReachabilitySettings {
 
     private NodesSpecifier _transitNodes;
 
-    private boolean _specialize;
+    private boolean _specialize = true;
 
     private boolean _useCompression;
 
