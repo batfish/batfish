@@ -35,7 +35,6 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -211,8 +210,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private transient Set<String> _unimplementedFeatures;
 
-  private transient Map<String, Integer> _unreferencedBgpGroups;
-
   private ConfigurationFormat _vendor;
 
   private final Map<String, Vlan> _vlanNameToVlan;
@@ -320,21 +317,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
       ig.cascadeInheritance();
-    }
-    _unreferencedBgpGroups = new TreeMap<>();
-    int fakeIpCounter = 0;
-    for (Entry<String, NamedBgpGroup> e : routingInstance.getNamedBgpGroups().entrySet()) {
-      fakeIpCounter++;
-      String name = e.getKey();
-      NamedBgpGroup group = e.getValue();
-      if (!group.getIpv6() && !group.getInherited()) {
-        _unreferencedBgpGroups.put(name, group.getDefinitionLine());
-        Prefix fakeIp = new Prefix(new Ip(-1 * fakeIpCounter), Prefix.MAX_PREFIX_LENGTH);
-        IpBgpGroup dummy = new IpBgpGroup(fakeIp);
-        dummy.setParent(group);
-        dummy.cascadeInheritance();
-        routingInstance.getIpBgpGroups().put(fakeIp, dummy);
-      }
     }
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
@@ -577,9 +559,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         neighbor.setLocalIp(localIp);
       }
-      if (neighbor.getGroup() == null || !_unreferencedBgpGroups.containsKey(neighbor.getGroup())) {
-        proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
-      }
+      proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
     }
     proc.setMultipathEbgp(multipathEbgpSet);
     proc.setMultipathIbgp(multipathIbgp);
@@ -2281,6 +2261,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET);
     markConcreteStructure(
+        JuniperStructureType.BGP_GROUP,
+        JuniperStructureUsage.BGP_ALLOW,
+        JuniperStructureUsage.BGP_NEIGHBOR);
+    markConcreteStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
@@ -2292,7 +2276,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
     // record defined structures
-    recordBgpGroups();
     recordDhcpRelayServerGroups();
     recordPolicyStatements();
     recordIkeProposals();
@@ -2421,27 +2404,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       PrefixList prefixList = e.getValue();
       if (!prefixList.getIpv6() && prefixList.getPrefixes().isEmpty()) {
         _w.redFlag("Empty prefix-list: '" + name + "'");
-      }
-    }
-  }
-
-  private void recordBgpGroups() {
-    for (RoutingInstance ri : _routingInstances.values()) {
-      for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
-        if (_unreferencedBgpGroups != null && _unreferencedBgpGroups.containsKey(group.getName())) {
-          recordStructure(
-              JuniperStructureType.BGP_GROUP,
-              group.getName(),
-              0,
-              _unreferencedBgpGroups.get(group.getName()));
-        } else {
-          recordStructure(
-              JuniperStructureType.BGP_GROUP,
-              group.getName(),
-              // we are not counting references properly for bgp groups
-              DefinedStructureInfo.UNKNOWN_NUM_REFERRERS,
-              group.getDefinitionLine());
-        }
       }
     }
   }

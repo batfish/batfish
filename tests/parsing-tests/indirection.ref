@@ -953,9 +953,12 @@
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
-                5
+                5,
+                6,
+                13,
+                23
               ],
-              "numReferrers" : -1
+              "numReferrers" : 4
             }
           },
           "policy-statement" : {
@@ -989,9 +992,10 @@
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
-                10
+                10,
+                11
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             }
           }
         },
