@@ -39,6 +39,11 @@ public final class InferRoles {
   // the list of nodes that match _regex
   private List<String> _matchingNodes;
 
+  // should role names be case sensitive or not?
+  private boolean _caseSensitive;
+  // indicates whether to compile a pattern as case sensitive or not
+  private int _patternFlags;
+
   // the percentage of nodes that must match a regex for it to be used as
   // the base for determining roles
   private static final double REGEX_THRESHOLD = 0.5;
@@ -52,9 +57,15 @@ public final class InferRoles {
   private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}";
   private static final String DIGIT_REGEX = "\\p{Digit}";
 
-  public InferRoles(Collection<String> nodes, Topology topology) {
+  public InferRoles(Collection<String> nodes, Topology topology, boolean caseSensitive) {
     _nodes = ImmutableSortedSet.copyOf(nodes);
     _topology = topology;
+    _caseSensitive = caseSensitive;
+    _patternFlags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
+  }
+
+  public InferRoles(Collection<String> nodes, Topology topology) {
+    this(nodes, topology, false);
   }
 
   // A node's name is first parsed into a sequence of simple "pretokens",
@@ -197,7 +208,7 @@ public final class InferRoles {
               .stream()
               .map((p) -> p.getSecond().tokenToRegex(p.getFirst()))
               .collect(Collectors.toList());
-      Pattern p = Pattern.compile(String.join("", _regex));
+      Pattern p = Pattern.compile(String.join("", _regex), _patternFlags);
       _matchingNodes =
           nodes.stream().filter((node) -> p.matcher(node).matches()).collect(Collectors.toList());
       // keep this regex if it matches a sufficient fraction of node names; otherwise try again
@@ -320,7 +331,7 @@ public final class InferRoles {
         case ALNUM_PLUS:
           List<String> regexCopy = new ArrayList<>(_regex);
           regexCopy.set(i, group(plus(ALPHABETIC_REGEX)) + star(ALPHANUMERIC_REGEX));
-          Pattern newp = Pattern.compile(regexTokensToRegex(regexCopy));
+          Pattern newp = Pattern.compile(regexTokensToRegex(regexCopy), _patternFlags);
           int numMatches = 0;
           for (String node : _matchingNodes) {
             Matcher newm = newp.matcher(node);
@@ -416,12 +427,12 @@ public final class InferRoles {
     return supportSum / numEdges;
   }
 
-  private static SortedMap<String, SortedSet<String>> regexToRoleNodesMap(
+  private SortedMap<String, SortedSet<String>> regexToRoleNodesMap(
       String regex, Collection<String> nodes) {
     SortedMap<String, SortedSet<String>> roleNodesMap = new TreeMap<>();
     Pattern pattern;
     try {
-      pattern = Pattern.compile(regex);
+      pattern = Pattern.compile(regex, _patternFlags);
     } catch (PatternSyntaxException e) {
       throw new BatfishException("Supplied regex is not a valid Java regex: \"" + regex + "\"", e);
     }
@@ -435,7 +446,9 @@ public final class InferRoles {
                   .mapToObj(matcher::group)
                   .collect(Collectors.toList());
           String role = String.join("-", roleParts);
-
+          if (!_caseSensitive) {
+            role = role.toLowerCase();
+          }
           SortedSet<String> currNodes = roleNodesMap.computeIfAbsent(role, k -> new TreeSet<>());
           currNodes.add(node);
         } catch (IndexOutOfBoundsException e) {
@@ -453,7 +466,7 @@ public final class InferRoles {
   }
 
   // return a map from each node name to the set of roles that it plays
-  private static SortedMap<String, SortedSet<String>> regexToNodeRolesMap(
+  private SortedMap<String, SortedSet<String>> regexToNodeRolesMap(
       String regex, Collection<String> allNodes) {
 
     SortedMap<String, SortedSet<String>> roleNodesMap = regexToRoleNodesMap(regex, allNodes);
@@ -508,7 +521,7 @@ public final class InferRoles {
 
     Set<String> roles = regexToRoleNodesMap(regex, _nodes).keySet();
     for (String role : roles) {
-      inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex)));
+      inferredRoles.add(new NodeRole(role, specializeRegexForRole(role, regex), _caseSensitive));
     }
 
     return new NodeRoleDimension(

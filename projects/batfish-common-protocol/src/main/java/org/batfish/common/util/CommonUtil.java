@@ -64,8 +64,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -871,19 +869,6 @@ public class CommonUtil {
     } catch (IOException e) {
       throw new BatfishException("Failed to get last modified time for '" + path + "'");
     }
-  }
-
-  public static List<String> getMatchingStrings(String regex, Set<String> allStrings) {
-    Pattern pattern;
-    try {
-      pattern = Pattern.compile(regex);
-    } catch (PatternSyntaxException e) {
-      throw new BatfishException("Supplied regex is not a valid java regex: \"" + regex + "\"", e);
-    }
-    return allStrings
-        .stream()
-        .filter(s -> pattern.matcher(s).matches())
-        .collect(Collectors.toList());
   }
 
   public static SortedSet<Path> getSubdirectories(Path directory) {
