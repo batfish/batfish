@@ -14,18 +14,22 @@
           ],
           "roles" : [
             {
+              "caseSensitive" : false,
               "name" : "border",
               "regex" : "\\p{Alnum}+\\Q-\\Eborder\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             },
             {
+              "caseSensitive" : false,
               "name" : "core",
               "regex" : "\\p{Alnum}+\\Q-\\Ecore\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             },
             {
+              "caseSensitive" : false,
               "name" : "leaf",
               "regex" : "\\p{Alnum}+\\Q-\\Eleaf\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             },
             {
+              "caseSensitive" : false,
               "name" : "spine",
               "regex" : "\\p{Alnum}+\\Q-\\Espine\\p{Alnum}*\\Q-\\E\\p{Digit}+"
             }
@@ -39,10 +43,12 @@
           ],
           "roles" : [
             {
+              "caseSensitive" : false,
               "name" : "bb",
               "regex" : "bb\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Digit}+"
             },
             {
+              "caseSensitive" : false,
               "name" : "dc",
               "regex" : "dc\\p{Alnum}*\\Q-\\E\\p{Alnum}+\\Q-\\E\\p{Digit}+"
             }
@@ -54,6 +60,7 @@
   ],
   "question" : {
     "class" : "org.batfish.question.InferRolesQuestionPlugin$InferRolesQuestion",
+    "caseSensitive" : false,
     "differential" : false,
     "includeOneTableKeys" : false,
     "nodeRegex" : ".*"
