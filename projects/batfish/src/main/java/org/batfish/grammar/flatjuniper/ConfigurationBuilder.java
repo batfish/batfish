@@ -5,12 +5,15 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
+import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
@@ -1788,6 +1791,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void enterB_allow(B_allowContext ctx) {
+    if (_currentBgpGroup.getGroupName() != null) {
+      _configuration.referenceStructure(
+          BGP_GROUP, _currentBgpGroup.getGroupName(), BGP_ALLOW, ctx.getStart().getLine());
+    }
     if (ctx.IPV6_PREFIX() != null) {
       _currentBgpGroup.setIpv6(true);
       _currentBgpGroup = DUMMY_BGP_GROUP;
@@ -1812,19 +1819,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterB_group(B_groupContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     Map<String, NamedBgpGroup> namedBgpGroups = _currentRoutingInstance.getNamedBgpGroups();
     NamedBgpGroup namedBgpGroup = namedBgpGroups.get(name);
     if (namedBgpGroup == null) {
-      namedBgpGroup = new NamedBgpGroup(name, definitionLine);
+      namedBgpGroup = new NamedBgpGroup(name);
       namedBgpGroup.setParent(_currentBgpGroup);
       namedBgpGroups.put(name, namedBgpGroup);
     }
     _currentBgpGroup = namedBgpGroup;
+    defineStructure(BGP_GROUP, name, ctx);
   }
 
   @Override
   public void enterB_neighbor(B_neighborContext ctx) {
+    if (_currentBgpGroup.getGroupName() != null) {
+      _configuration.referenceStructure(
+          BGP_GROUP,
+          _currentBgpGroup.getGroupName(),
+          BGP_NEIGHBOR,
+          ctx.NEIGHBOR().getSymbol().getLine());
+    }
     if (ctx.IP_ADDRESS() != null) {
       Prefix remoteAddress =
           new Prefix(new Ip(ctx.IP_ADDRESS().getText()), Prefix.MAX_PREFIX_LENGTH);

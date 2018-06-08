@@ -5931,9 +5931,12 @@
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
-                111
+                111,
+                112,
+                113,
+                114
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             }
           },
           "ike gateway" : {
@@ -6027,9 +6030,11 @@
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
-                91
+                91,
+                92,
+                93
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             }
           },
           "ike gateway" : {
@@ -6117,9 +6122,11 @@
           "bgp group" : {
             "physical" : {
               "definitionLines" : [
-                82
+                82,
+                83,
+                84
               ],
-              "numReferrers" : -1
+              "numReferrers" : 2
             }
           },
           "ike gateway" : {

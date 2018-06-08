@@ -5,15 +5,8 @@ public class NamedBgpGroup extends BgpGroup {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final int _definitionLine;
-
-  public NamedBgpGroup(String name, int definitionLine) {
+  public NamedBgpGroup(String name) {
     _groupName = name;
-    _definitionLine = definitionLine;
-  }
-
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   public boolean getInherited() {
