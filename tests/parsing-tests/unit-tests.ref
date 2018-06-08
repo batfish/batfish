@@ -14440,6 +14440,114 @@
             "      VARIABLE:'cisco_bgp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        DEC:'10'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          DENY:'deny'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' ^65535$'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        DEC:'10'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          DENY:'deny'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' _65535_'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        DEC:'20'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          PERMIT:'permit'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' ^65536$'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        DEC:'30'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          PERMIT:'permit'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' ^4000$'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      procnum = DEC:'50000'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "          ip = IP_ADDRESS:'10.20.2.2'  <== mode:M_NEIGHBOR",
+            "          (filter_list_bgp_tail",
+            "            FILTER_LIST:'filter-list'  <== mode:DEFAULT_MODE",
+            "            num = DEC:'10'  <== mode:DEFAULT_MODE",
+            "            OUT:'out'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        END:'end'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      procnum = DEC:'65538'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "          ip = IP_ADDRESS:'192.168.3.2'  <== mode:M_NEIGHBOR",
+            "          (filter_list_bgp_tail",
+            "            FILTER_LIST:'filter-list'  <== mode:DEFAULT_MODE",
+            "            num = DEC:'20'  <== mode:DEFAULT_MODE",
+            "            IN:'in'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        END:'end'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
+            "    (router_bgp_stanza",
+            "      ROUTER:'router'  <== mode:DEFAULT_MODE",
+            "      BGP:'bgp'  <== mode:DEFAULT_MODE",
+            "      procnum = DEC:'65542'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (router_bgp_stanza_tail",
+            "        (neighbor_flat_rb_stanza",
+            "          NEIGHBOR:'neighbor'  <== mode:DEFAULT_MODE",
+            "          ip = IP_ADDRESS:'192.168.4.2'  <== mode:M_NEIGHBOR",
+            "          (filter_list_bgp_tail",
+            "            FILTER_LIST:'filter-list'  <== mode:DEFAULT_MODE",
+            "            num = DEC:'40'  <== mode:DEFAULT_MODE",
+            "            IN:'in'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (s_null",
+            "      (null_single",
+            "        END:'end'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "  (stanza",
             "    (router_bgp_stanza",
             "      ROUTER:'router'  <== mode:DEFAULT_MODE",
             "      BGP:'bgp'  <== mode:DEFAULT_MODE",
@@ -31540,6 +31648,54 @@
             "      VARIABLE:'cisco_route_map'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        VARIABLE:'AS_PATH_ACL1'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          DENY:'deny'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' ^65535$'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        VARIABLE:'AS_PATH_ACL1'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          DENY:'deny'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' _65535_'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        VARIABLE:'AS_PATH_ACL2'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          PERMIT:'permit'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' ^65536$'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
+            "    (ip_as_path_access_list_stanza",
+            "      IP:'ip'  <== mode:DEFAULT_MODE",
+            "      AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "      ACCESS_LIST:'access-list'  <== mode:M_AsPath",
+            "      name = (variable",
+            "        VARIABLE:'AS_PATH_ACL_UNUSED'  <== mode:M_AsPathAccessList)",
+            "      (ip_as_path_access_list_tail",
+            "        action = (access_list_action",
+            "          PERMIT:'permit'  <== mode:M_AsPathAccessList)",
+            "        as_path_regex = RAW_TEXT:' ^4000$'  <== mode:M_Description",
+            "        NEWLINE:'\\n'  <== mode:M_Description)))",
+            "  (stanza",
             "    (route_map_stanza",
             "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
             "      name = (variable",
@@ -31789,6 +31945,57 @@
             "              GROUP:'group'  <== mode:DEFAULT_MODE",
             "              IP_PREFIX:'239.128.128.0/20'  <== mode:DEFAULT_MODE",
             "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'MAP_NAME1'  <== mode:M_RouteMap)",
+            "      rmt = (access_list_action",
+            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "      num = DEC:'10'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (rm_stanza",
+            "        (match_rm_stanza",
+            "          (match_as_path_access_list_rm_stanza",
+            "            MATCH:'match'  <== mode:DEFAULT_MODE",
+            "            AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              VARIABLE:'AS_PATH_ACL1'  <== mode:M_AsPath)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'MAP_NAME2'  <== mode:M_RouteMap)",
+            "      rmt = (access_list_action",
+            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "      num = DEC:'20'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (rm_stanza",
+            "        (match_rm_stanza",
+            "          (match_as_path_access_list_rm_stanza",
+            "            MATCH:'match'  <== mode:DEFAULT_MODE",
+            "            AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              VARIABLE:'AS_PATH_ACL2'  <== mode:M_AsPath)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "  (stanza",
+            "    (route_map_stanza",
+            "      ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'MAP_NAME2'  <== mode:M_RouteMap)",
+            "      rmt = (access_list_action",
+            "        PERMIT:'permit'  <== mode:DEFAULT_MODE)",
+            "      num = DEC:'20'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "      (rm_stanza",
+            "        (match_rm_stanza",
+            "          (match_as_path_access_list_rm_stanza",
+            "            MATCH:'match'  <== mode:DEFAULT_MODE",
+            "            AS_PATH:'as-path'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              VARIABLE:'AS_PATH_UNDEF'  <== mode:M_AsPath)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  EOF:<EOF>  <== mode:DEFAULT_MODE)"
           ]
         },
@@ -53310,8 +53517,16 @@
         },
         "cisco_bgp" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'",
-            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
+            "1" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.20.2.2'",
+            "2" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '192.168.3.2'",
+            "3" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '192.168.4.2'",
+            "4" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'",
+            "5" : "MISCELLANEOUS: Ignoring reference to undeclared peer group: '10.0.0.1'"
+          }
+        },
+        "cisco_route_map" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Route map 'MAP_NAME2' already contains clause numbered '20'. Duplicate clause will be merged with original clause."
           }
         },
         "cisco_style_acl1" : {
@@ -54096,10 +54311,31 @@
         "cisco_additional_paths" : { },
         "cisco_authentication" : { },
         "cisco_bgp" : {
+          "as-path access-list" : {
+            "10" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "20" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "30" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            }
+          },
           "bgp group" : {
             "p1" : {
               "definitionLines" : [
-                15
+                32
               ],
               "numReferrers" : 0
             }
@@ -54107,25 +54343,25 @@
           "route-map" : {
             "AGGREGATE-MAP" : {
               "definitionLines" : [
-                34
+                51
               ],
               "numReferrers" : 1
             },
             "CONNECTED-TO-BGP" : {
               "definitionLines" : [
-                32
+                49
               ],
               "numReferrers" : 1
             },
             "UNSUPP-MAP" : {
               "definitionLines" : [
-                36
+                53
               ],
               "numReferrers" : 1
             },
             "ospfv3_map" : {
               "definitionLines" : [
-                30
+                47
               ],
               "numReferrers" : 1
             }
@@ -55204,73 +55440,110 @@
         "cisco_rip" : { },
         "cisco_role" : { },
         "cisco_route_map" : {
+          "as-path access-list" : {
+            "AS_PATH_ACL1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "AS_PATH_ACL2" : {
+              "definitionLines" : [
+                6
+              ],
+              "numReferrers" : 1
+            },
+            "AS_PATH_ACL_UNUSED" : {
+              "definitionLines" : [
+                7
+              ],
+              "numReferrers" : 0
+            }
+          },
           "route-map" : {
+            "MAP_NAME1" : {
+              "definitionLines" : [
+                49,
+                50
+              ],
+              "numReferrers" : 0
+            },
+            "MAP_NAME2" : {
+              "definitionLines" : [
+                52,
+                53,
+                55,
+                56
+              ],
+              "numReferrers" : 0
+            },
             "MSDP-SA-RP-FILTER" : {
               "definitionLines" : [
-                19,
-                20,
-                21
+                24,
+                25,
+                26
               ],
               "numReferrers" : 0
             },
             "beeble" : {
               "definitionLines" : [
-                30,
-                31,
-                32,
-                33,
                 35,
                 36,
                 37,
                 38,
-                39
+                40,
+                41,
+                42,
+                43,
+                44
               ],
               "numReferrers" : 0
             },
             "connected-to-bgp" : {
               "definitionLines" : [
-                4,
-                5,
-                6,
-                7,
-                8,
                 9,
-                10
+                10,
+                11,
+                12,
+                13,
+                14,
+                15
               ],
               "numReferrers" : 0
             },
             "ijfw$%^&****(((([]grr" : {
               "definitionLines" : [
-                17
+                22
               ],
               "numReferrers" : 0
             },
             "mgmt" : {
               "definitionLines" : [
-                26,
-                27,
-                28
+                31,
+                32,
+                33
               ],
               "numReferrers" : 0
             },
             "multicaststuff" : {
               "definitionLines" : [
-                41,
-                42
+                46,
+                47
               ],
               "numReferrers" : 0
             },
             "next-hop-null" : {
               "definitionLines" : [
-                23,
-                24
+                28,
+                29
               ],
               "numReferrers" : 0
             },
             "to_svl-hub-router" : {
               "definitionLines" : [
-                12,
-                13
+                17,
+                18
               ],
               "numReferrers" : 0
             }
@@ -56626,27 +56899,34 @@
           }
         },
         "cisco_bgp" : {
+          "as-path access-list" : {
+            "40" : {
+              "bgp neighbor filter-list access-list" : [
+                18
+              ]
+            }
+          },
           "bgp group" : {
             "p3" : {
               "inherited BGP group" : [
-                17
+                34
               ]
             }
           },
           "route-map" : {
             "abcdefg" : {
               "bgp redistribute static route-map" : [
-                13
+                30
               ]
             },
             "blah" : {
               "bgp redistribute rip route-map" : [
-                14
+                31
               ]
             },
             "bloop" : {
               "bgp redistribute connected route-map" : [
-                9
+                26
               ]
             }
           }
@@ -57006,22 +57286,29 @@
           }
         },
         "cisco_route_map" : {
+          "as-path access-list" : {
+            "AS_PATH_UNDEF" : {
+              "route-map match as-path access-list" : [
+                56
+              ]
+            }
+          },
           "ipv4 acl" : {
             "test" : {
               "route-map match ipv4 access-list" : [
-                21
+                26
               ]
             }
           },
           "ipv4 prefix-list" : {
             "bobble" : {
               "route-map match ipv4 prefix-list" : [
-                31
+                36
               ]
             },
             "hpr-connector-subnets" : {
               "route-map match ipv4 prefix-list" : [
-                5
+                10
               ]
             }
           }
