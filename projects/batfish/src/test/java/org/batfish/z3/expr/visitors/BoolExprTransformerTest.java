@@ -40,7 +40,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -88,7 +87,6 @@ public class BoolExprTransformerTest {
                     of(
                         new BasicRuleStatement(_stateExpr),
                         new BasicRuleStatement(_transformationStateExpr)))
-                .setSmtConstraint(SaneExpr.INSTANCE)
                 .build());
   }
 
@@ -292,12 +290,6 @@ public class BoolExprTransformerTest {
             ImmutableSet.of(new SubRange(1, 3), new SubRange(5, 7)));
 
     assertThat(toBoolExpr(expr, _input, _nodContext), instanceOf(BoolExpr.class));
-  }
-
-  @Test
-  public void testVisitSaneExpr() {
-
-    assertThat(toBoolExpr(SaneExpr.INSTANCE, _input, _nodContext), instanceOf(BoolExpr.class));
   }
 
   @Test
