@@ -49,10 +49,8 @@ public class DbAuthorizer implements Authorizer {
    * @param connectionString JDBC string to use for connection to the database
    * @param driverClass specific class name to load as the JDBC driver
    * @param cacheTimeout time after which cache entries should be invalidated, in milliseconds
-   * @throws SQLException if there are issues connecting to the database
    */
-  public DbAuthorizer(String connectionString, @Nullable String driverClass, long cacheTimeout)
-      throws SQLException {
+  public DbAuthorizer(String connectionString, @Nullable String driverClass, long cacheTimeout) {
     _logger = Main.getLogger();
     _cacheTimeout = cacheTimeout;
     _connString = connectionString;
@@ -65,9 +63,8 @@ public class DbAuthorizer implements Authorizer {
    *
    * @param settings coordinator settings
    * @return a new authorizer
-   * @throws SQLException if there are issues connecting to the database
    */
-  public static DbAuthorizer createFromSettings(Settings settings) throws SQLException {
+  public static DbAuthorizer createFromSettings(Settings settings) {
     return new DbAuthorizer(
         settings.getDbAuthorizerConnString(),
         settings.getDriverClass(),
