@@ -68,6 +68,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.codehaus.jettison.json.JSONArray;
+import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -444,23 +445,26 @@ public class Driver {
       rc.register(ServerTracingDynamicFeature.class);
     }
     try {
+      HttpServer server;
       if (_mainSettings.getSslDisable()) {
-        GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
+        server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
       } else {
-        CommonUtil.startSslServer(
-            rc,
-            baseUri,
-            _mainSettings.getSslKeystoreFile(),
-            _mainSettings.getSslKeystorePassword(),
-            _mainSettings.getSslTrustAllCerts(),
-            _mainSettings.getSslTruststoreFile(),
-            _mainSettings.getSslTruststorePassword(),
-            ConfigurationLocator.class,
-            Driver.class);
+        server =
+            CommonUtil.startSslServer(
+                rc,
+                baseUri,
+                _mainSettings.getSslKeystoreFile(),
+                _mainSettings.getSslKeystorePassword(),
+                _mainSettings.getSslTrustAllCerts(),
+                _mainSettings.getSslTruststoreFile(),
+                _mainSettings.getSslTruststorePassword(),
+                ConfigurationLocator.class,
+                Driver.class);
       }
+      int selectedListenPort = server.getListeners().iterator().next().getPort();
       if (_mainSettings.getCoordinatorRegister()) {
         // this function does not return until registration succeeds
-        registerWithCoordinatorPersistent();
+        registerWithCoordinatorPersistent(selectedListenPort);
       }
 
       if (_mainSettings.getParentPid() > 0) {
@@ -490,7 +494,7 @@ public class Driver {
             && new Date().getTime() - _lastPollFromCoordinator.getTime()
                 > COORDINATOR_POLL_TIMEOUT_MS) {
           // this function does not return until registration succeeds
-          registerWithCoordinatorPersistent();
+          registerWithCoordinatorPersistent(selectedListenPort);
         }
       }
     } catch (ProcessingException e) {
@@ -521,18 +525,17 @@ public class Driver {
     }
   }
 
-  private static boolean registerWithCoordinator(String poolRegUrl) {
+  private static boolean registerWithCoordinator(String poolRegUrl, int listenPort) {
     Map<String, String> params = new HashMap<>();
-    params.put(
-        CoordConsts.SVC_KEY_ADD_WORKER,
-        _mainSettings.getServiceHost() + ":" + _mainSettings.getServicePort());
+    params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
     params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
 
     Object response = talkToCoordinator(poolRegUrl, params, _mainLogger);
     return response != null;
   }
 
-  private static void registerWithCoordinatorPersistent() throws InterruptedException {
+  private static void registerWithCoordinatorPersistent(int listenPort)
+      throws InterruptedException {
     boolean registrationSuccess;
 
     String protocol = _mainSettings.getSslDisable() ? "http" : "https";
@@ -546,7 +549,7 @@ public class Driver {
             CoordConsts.SVC_RSC_POOL_UPDATE);
 
     do {
-      registrationSuccess = registerWithCoordinator(poolRegUrl);
+      registrationSuccess = registerWithCoordinator(poolRegUrl, listenPort);
       if (!registrationSuccess) {
         Thread.sleep(COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS);
       }
