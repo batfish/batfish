@@ -1525,7 +1525,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     return tcpFlagsList;
   }
 
-  public static String unquote(String text) {
+  static String unquote(String text) {
     if (text.length() == 0) {
       return text;
     }

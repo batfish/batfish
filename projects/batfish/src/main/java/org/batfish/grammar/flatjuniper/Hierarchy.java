@@ -41,7 +41,7 @@ public class Hierarchy {
       _isHostname = true;
     }
 
-    private static boolean isHostnameStatemet(StatementContext ctx) {
+    private static boolean isHostnameStatement(StatementContext ctx) {
       IsHostnameStatement listener = new IsHostnameStatement();
       ParseTreeWalker walker = new ParseTreeWalker();
       walker.walk(listener, ctx);
@@ -308,7 +308,7 @@ public class Hierarchy {
         newStatement.parent = setLineTail;
 
         setLineTail.children = new ArrayList<ParseTree>();
-        if (!clusterGroup || !IsHostnameStatement.isHostnameStatemet(newStatement)) {
+        if (!clusterGroup || !IsHostnameStatement.isHostnameStatement(newStatement)) {
           setLineTail.children.add(newStatement);
           lines.add(setLine);
         }
