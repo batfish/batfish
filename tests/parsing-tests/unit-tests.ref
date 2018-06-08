@@ -45040,6 +45040,44 @@
             "        (s_common",
             "          (s_security",
             "            SECURITY:'security'  <== mode:DEFAULT_MODE",
+            "            (se_ike",
+            "              IKE:'ike'  <== mode:DEFAULT_MODE",
+            "              (seik_proposal",
+            "                PROPOSAL:'proposal'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = VARIABLE:'PROPOSAL'  <== mode:DEFAULT_MODE)",
+            "                (seikpr_description",
+            "                  DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "                  (null_filler",
+            "                    M_Description_DESCRIPTION:'\"IKE proposal\"'  <== mode:M_Description))))))))",
+            "    NEWLINE:'\\n'  <== mode:M_Description)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'  <== mode:DEFAULT_MODE",
+            "            (se_ike",
+            "              IKE:'ike'  <== mode:DEFAULT_MODE",
+            "              (seik_policy",
+            "                POLICY:'policy'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  text = IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE)",
+            "                (seikp_proposals",
+            "                  PROPOSALS:'proposals'  <== mode:DEFAULT_MODE",
+            "                  OPEN_BRACKET:'['  <== mode:DEFAULT_MODE",
+            "                  (variable",
+            "                    text = VARIABLE:'PROPOSAL'  <== mode:DEFAULT_MODE)",
+            "                  CLOSE_BRACKET:']'  <== mode:DEFAULT_MODE)))))))",
+            "    NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "  (set_line",
+            "    SET:'set'  <== mode:DEFAULT_MODE",
+            "    (set_line_tail",
+            "      (statement",
+            "        (s_common",
+            "          (s_security",
+            "            SECURITY:'security'  <== mode:DEFAULT_MODE",
             "            (se_policies",
             "              POLICIES:'policies'  <== mode:DEFAULT_MODE",
             "              (sep_global",
@@ -56138,7 +56176,24 @@
           }
         },
         "juniper_routing_options" : { },
-        "juniper_security" : { },
+        "juniper_security" : {
+          "ike policy" : {
+            "1.2.3.4" : {
+              "definitionLines" : [
+                9
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "ike proposal" : {
+            "PROPOSAL" : {
+              "definitionLines" : [
+                8
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "juniper_snmp" : { },
         "juniper_syslog" : { },
         "juniper_system" : { },

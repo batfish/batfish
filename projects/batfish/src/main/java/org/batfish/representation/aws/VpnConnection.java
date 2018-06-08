@@ -228,7 +228,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       IkePolicy ikePolicy = new IkePolicy(vpnId);
       vpnGatewayCfgNode.getIkePolicies().put(vpnId, ikePolicy);
       ikeGateway.setIkePolicy(ikePolicy);
-      IkeProposal ikeProposal = new IkeProposal(vpnId, -1);
+      IkeProposal ikeProposal = new IkeProposal(vpnId);
       vpnGatewayCfgNode.getIkeProposals().put(vpnId, ikeProposal);
       ikePolicy.getProposals().put(vpnId, ikeProposal);
       String externalInterfaceName = "external" + idNum;
