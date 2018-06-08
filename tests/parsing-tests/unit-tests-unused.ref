@@ -677,6 +677,14 @@
           ]
         }
       },
+      "unused:ike policy:1.2.3.4" : {
+        "description" : "Unused structure of type: 'ike policy' with name: '1.2.3.4'",
+        "files" : {
+          "juniper_security" : [
+            9
+          ]
+        }
+      },
       "unused:ipv4 prefix-list:A+C" : {
         "description" : "Unused structure of type: 'ipv4 prefix-list' with name: 'A+C'",
         "files" : {
@@ -1392,7 +1400,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 136
+      "numResults" : 137
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -2123,6 +2131,13 @@
           ],
           "route-filter-test-v6" : [
             11
+          ]
+        }
+      },
+      "juniper_security" : {
+        "ike policy" : {
+          "1.2.3.4" : [
+            9
           ]
         }
       },
