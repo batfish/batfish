@@ -8,6 +8,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   AUTHENTICATION_KEY_CHAINS_POLICY("authentication-key-chains policy"),
   BGP_EXPORT_POLICY("bgp export policy-statement"),
   BGP_IMPORT_POLICY("bgp import policy-statement"),
+  BGP_NEIGHBOR("bgp neighbor"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
   FIREWALL_FILTER_DESTINATION_PREFIX_LIST("firewall filter destination prefix-list"),
   FIREWALL_FILTER_PREFIX_LIST("firewall filter prefix-list"),
