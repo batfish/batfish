@@ -23,7 +23,6 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformedVarIntExpr;
@@ -250,10 +249,6 @@ public class ExprPrinter implements ExprVisitor, VoidStatementVisitor {
   }
 
   @Override
-  public void visitSaneExpr(SaneExpr saneExpr) {
-    _sb.append("sane");
-  }
-
   public void visitStateExpr(StateExpr stateExpr) {
     /* TODO: handle vectorized state parameters as variables */
     /* TODO: handle arguments */

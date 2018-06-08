@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.SaneExpr;
+import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.state.AclLineMatch;
 import org.batfish.z3.state.NumberedQuery;
 
@@ -32,7 +32,7 @@ public final class AclReachabilityQuerySynthesizer extends SatQuerySynthesizer<A
       NumberedQuery query = new NumberedQuery(line);
       rules.add(
           new BasicRuleStatement(
-              SaneExpr.INSTANCE,
+              TrueExpr.INSTANCE,
               ImmutableSet.of(new AclLineMatch(_hostname, _aclName, line)),
               new NumberedQuery(line)));
       queries.add(new QueryStatement(query));
