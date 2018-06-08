@@ -10,23 +10,6 @@
           ]
         }
       },
-      "unused:as-path access-list:10" : {
-        "description" : "Unused structure of type: 'as-path access-list' with name: '10'",
-        "files" : {
-          "cisco_bgp" : [
-            4,
-            5
-          ]
-        }
-      },
-      "unused:as-path access-list:20" : {
-        "description" : "Unused structure of type: 'as-path access-list' with name: '20'",
-        "files" : {
-          "cisco_bgp" : [
-            6
-          ]
-        }
-      },
       "unused:as-path access-list:30" : {
         "description" : "Unused structure of type: 'as-path access-list' with name: '30'",
         "files" : {
@@ -1409,7 +1392,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 138
+      "numResults" : 136
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1610,13 +1593,6 @@
       },
       "cisco_bgp" : {
         "as-path access-list" : {
-          "10" : [
-            4,
-            5
-          ],
-          "20" : [
-            6
-          ],
           "30" : [
             7
           ]

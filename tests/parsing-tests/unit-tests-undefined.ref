@@ -18,24 +18,8 @@
           ]
         }
       },
-      "undefined:as-path access-list:usage:bgp neighbor filter-list access-list:filter-list10out\n" : {
-        "description" : "Undefined reference to structure of type: 'as-path access-list' with usage: 'bgp neighbor filter-list access-list' named 'filter-list10out\n'",
-        "files" : {
-          "cisco_bgp" : [
-            10
-          ]
-        }
-      },
-      "undefined:as-path access-list:usage:bgp neighbor filter-list access-list:filter-list20in\n" : {
-        "description" : "Undefined reference to structure of type: 'as-path access-list' with usage: 'bgp neighbor filter-list access-list' named 'filter-list20in\n'",
-        "files" : {
-          "cisco_bgp" : [
-            14
-          ]
-        }
-      },
-      "undefined:as-path access-list:usage:bgp neighbor filter-list access-list:filter-list40in\n" : {
-        "description" : "Undefined reference to structure of type: 'as-path access-list' with usage: 'bgp neighbor filter-list access-list' named 'filter-list40in\n'",
+      "undefined:as-path access-list:usage:bgp neighbor filter-list access-list:40" : {
+        "description" : "Undefined reference to structure of type: 'as-path access-list' with usage: 'bgp neighbor filter-list access-list' named '40'",
         "files" : {
           "cisco_bgp" : [
             18
@@ -1281,7 +1265,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 158
+      "numResults" : 156
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1459,17 +1443,7 @@
       },
       "cisco_bgp" : {
         "as-path access-list" : {
-          "filter-list10out\n" : {
-            "bgp neighbor filter-list access-list" : [
-              10
-            ]
-          },
-          "filter-list20in\n" : {
-            "bgp neighbor filter-list access-list" : [
-              14
-            ]
-          },
-          "filter-list40in\n" : {
+          "40" : {
             "bgp neighbor filter-list access-list" : [
               18
             ]

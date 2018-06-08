@@ -4498,7 +4498,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
-    String filterList = ctx.getText();
+    String filterList = ctx.num.getText();
     _configuration.referenceStructure(
         AS_PATH_ACCESS_LIST,
         filterList,
