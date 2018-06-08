@@ -1,6 +1,23 @@
 !
 hostname cisco_bgp
 !
+ip as-path access-list 10 deny ^65535$
+ip as-path access-list 10 deny _65535_
+ip as-path access-list 20 permit ^65536$
+ip as-path access-list 30 permit ^4000$
+!
+router bgp 50000
+ neighbor 10.20.2.2 filter-list 10 out
+ end
+!
+router bgp 65538
+ neighbor 192.168.3.2 filter-list 20 in
+ end
+!
+router bgp 65542
+ neighbor 192.168.4.2 filter-list AS_PATH_UNDEF in
+ end
+!
 router bgp 1
  reconnect-interval 30
  no bgp fast-external-fallover
