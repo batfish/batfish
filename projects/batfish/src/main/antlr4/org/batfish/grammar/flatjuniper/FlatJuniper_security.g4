@@ -659,7 +659,11 @@ seikp_proposal_set
 
 seikp_proposals
 :
-   PROPOSALS name = variable
+   PROPOSALS OPEN_BRACKET
+   (
+       proposals += variable
+   )+
+   CLOSE_BRACKET
 ;
 
 seikpr_authentication_algorithm

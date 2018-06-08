@@ -5942,13 +5942,17 @@
           "ike gateway" : {
             "gateway-2" : {
               "definitionLines" : [
-                28
+                28,
+                29,
+                30
               ],
               "numReferrers" : 1
             },
             "gateway-3" : {
               "definitionLines" : [
-                25
+                25,
+                26,
+                27
               ],
               "numReferrers" : 1
             }
@@ -5956,23 +5960,10 @@
           "ike policy" : {
             "test-ike-policy" : {
               "definitionLines" : [
-                23
+                23,
+                24
               ],
               "numReferrers" : 2
-            }
-          },
-          "ike proposal" : {
-            "PSK_DES_DH1_MD5" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "PSK_DES_DH1_SHA1" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
             }
           },
           "ipsec policy" : {
@@ -6040,13 +6031,17 @@
           "ike gateway" : {
             "gateway-1" : {
               "definitionLines" : [
-                25
+                25,
+                26,
+                27
               ],
               "numReferrers" : 1
             },
             "gateway-3" : {
               "definitionLines" : [
-                28
+                28,
+                29,
+                30
               ],
               "numReferrers" : 1
             }
@@ -6054,23 +6049,10 @@
           "ike policy" : {
             "test-ike-policy" : {
               "definitionLines" : [
-                23
+                23,
+                24
               ],
               "numReferrers" : 2
-            }
-          },
-          "ike proposal" : {
-            "PSK_DES_DH1_MD5" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "PSK_DES_DH1_SHA1" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
             }
           },
           "ipsec policy" : {
@@ -6132,13 +6114,17 @@
           "ike gateway" : {
             "gateway-1" : {
               "definitionLines" : [
-                28
+                28,
+                29,
+                30
               ],
               "numReferrers" : 0
             },
             "gateway-2" : {
               "definitionLines" : [
-                25
+                25,
+                26,
+                27
               ],
               "numReferrers" : 1
             }
@@ -6146,23 +6132,10 @@
           "ike policy" : {
             "test-ike-policy" : {
               "definitionLines" : [
-                23
+                23,
+                24
               ],
               "numReferrers" : 2
-            }
-          },
-          "ike proposal" : {
-            "PSK_DES_DH1_MD5" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
-            },
-            "PSK_DES_DH1_SHA1" : {
-              "definitionLines" : [
-                -1
-              ],
-              "numReferrers" : 1
             }
           },
           "ipsec policy" : {
