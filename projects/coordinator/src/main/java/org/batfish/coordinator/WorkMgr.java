@@ -1,7 +1,10 @@
 package org.batfish.coordinator;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -71,6 +74,7 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.pojo.Topology;
+import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -302,8 +306,16 @@ public class WorkMgr extends AbstractCoordinator {
       int maxSuggestions)
       throws IOException {
     switch (completionType) {
+      case INTERFACE_PROPERTY:
+        {
+          List<AutocompleteSuggestion> suggestions = InterfacePropertySpecifier.autoComplete(query);
+          return suggestions.subList(0, Integer.min(suggestions.size(), maxSuggestions));
+        }
       case NODE:
         {
+          checkArgument(
+              !Strings.isNullOrEmpty(testrig),
+              "Testrig name should be supplied for 'NODE' autoCompletion");
           List<AutocompleteSuggestion> suggestions =
               NodesSpecifier.autoComplete(
                   query, getNodes(container, testrig), getNodeRolesData(container));
