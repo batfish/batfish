@@ -314,6 +314,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String header) {
     switch (format) {
       case JUNIPER:
+        // Just use the Juniper flattener for PaloAlto for now since the process is identical
+      case PALO_ALTO_NESTED:
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);

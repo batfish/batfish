@@ -10,7 +10,6 @@ import org.batfish.z3.expr.BasicRuleStatement;
 import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -66,8 +65,7 @@ public class ReachEdgeQuerySynthesizer extends BaseQuerySynthesizer {
                                 new VarIntExpr(Field.ORIG_SRC_IP), new VarIntExpr(Field.SRC_IP)),
                             _headerSpace == null
                                 ? TrueExpr.INSTANCE
-                                : new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of()),
-                            SaneExpr.INSTANCE)),
+                                : new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of()))),
                     new OriginateVrf(_originationNode, _ingressVrf)),
                 new BasicRuleStatement(
                     queryPreconditionPreTransformationStates.build(), Query.INSTANCE)))

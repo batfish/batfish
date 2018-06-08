@@ -18,7 +18,6 @@ import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.state.NumberedQuery;
 
 /**
@@ -92,9 +91,7 @@ public class EarliestMoreGeneralReachableLineQuerySynthesizer
           new BasicRuleStatement(
               new AndExpr(
                   ImmutableList.of(
-                      new NotExpr(matchEarlierLineHeaderSpace),
-                      matchUnreachableLineHeaderSpace,
-                      SaneExpr.INSTANCE)),
+                      new NotExpr(matchEarlierLineHeaderSpace), matchUnreachableLineHeaderSpace)),
               queryRel));
       QueryStatement query = new QueryStatement(queryRel);
       queries.add(query);

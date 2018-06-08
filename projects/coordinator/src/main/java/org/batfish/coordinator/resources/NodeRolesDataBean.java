@@ -1,5 +1,6 @@
 package org.batfish.coordinator.resources;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.time.Instant;
 import java.util.Objects;
 import java.util.Optional;
@@ -16,7 +17,7 @@ public class NodeRolesDataBean {
   public String latestSnapshot;
   public Set<NodeRoleDimensionBean> roleDimensions;
 
-  /** Used by Jackson */
+  @JsonCreator
   private NodeRolesDataBean() {}
 
   public NodeRolesDataBean(

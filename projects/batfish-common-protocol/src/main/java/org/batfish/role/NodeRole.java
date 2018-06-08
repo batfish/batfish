@@ -14,6 +14,7 @@ public class NodeRole implements Comparable<NodeRole> {
 
   private static final String PROP_NAME = "name";
   private static final String PROP_REGEX = "regex";
+  private static final String PROP_CASE_SENSITIVE = "caseSensitive";
 
   @Nonnull private final transient Pattern _compiledPattern;
 
@@ -21,17 +22,28 @@ public class NodeRole implements Comparable<NodeRole> {
 
   @Nonnull private final String _regex;
 
+  private final boolean _caseSensitive;
+
   @JsonCreator
-  public NodeRole(@JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_REGEX) String regex) {
+  public NodeRole(
+      @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_REGEX) String regex,
+      @JsonProperty(PROP_CASE_SENSITIVE) boolean caseSensitive) {
     _name = name;
     _regex = regex;
-    _compiledPattern = Pattern.compile(regex);
+    _caseSensitive = caseSensitive;
+    _compiledPattern = Pattern.compile(regex, caseSensitive ? 0 : Pattern.CASE_INSENSITIVE);
+  }
+
+  public NodeRole(@JsonProperty(PROP_NAME) String name, @JsonProperty(PROP_REGEX) String regex) {
+    this(name, regex, false);
   }
 
   @Override
   public int compareTo(NodeRole o) {
     return Comparator.comparing(NodeRole::getName)
         .thenComparing(NodeRole::getRegex)
+        .thenComparing(NodeRole::getCaseSensitive)
         .compare(this, o);
   }
 
@@ -41,7 +53,8 @@ public class NodeRole implements Comparable<NodeRole> {
       return false;
     }
     return Objects.equals(_name, ((NodeRole) o)._name)
-        && Objects.equals(_regex, ((NodeRole) o)._regex);
+        && Objects.equals(_regex, ((NodeRole) o)._regex)
+        && _caseSensitive == ((NodeRole) o)._caseSensitive;
   }
 
   @JsonProperty(PROP_NAME)
@@ -52,6 +65,11 @@ public class NodeRole implements Comparable<NodeRole> {
   @JsonProperty(PROP_REGEX)
   public String getRegex() {
     return _regex;
+  }
+
+  @JsonProperty(PROP_CASE_SENSITIVE)
+  public boolean getCaseSensitive() {
+    return _caseSensitive;
   }
 
   @Override
