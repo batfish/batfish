@@ -132,11 +132,6 @@ public abstract class PropertySpecifier {
     row.build().get(columnName, propertyDescriptor.getSchema());
   }
 
-  // hacky way to check if the query is a regex already
-  private static boolean isRegex(String query) {
-    return query.endsWith("*") || query.startsWith(".*");
-  }
-
   /**
    * Returns all properties that match this specifier object
    *
