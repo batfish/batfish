@@ -120,7 +120,6 @@ public class AllInOne {
 
     if (_settings.getRunClient()) {
       try {
-        _client.getSettings().setCoordinatorPoolPort(bindPortFutures.getPoolPort().get());
         _client.getSettings().setCoordinatorWorkPort(bindPortFutures.getWorkPort().get());
         _client.getSettings().setCoordinatorWorkV2Port(bindPortFutures.getWorkV2Port().get());
       } catch (ExecutionException | InterruptedException e) {
