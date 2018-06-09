@@ -319,6 +319,14 @@ public class Settings extends BaseSettings {
     _batfishLogLevel = logLevel;
   }
 
+  public void setCoordinatorPoolPort(int coordinatorPoolPort) {
+    _coordinatorPoolPort = coordinatorPoolPort;
+  }
+
+  public void setCoordinatorWorkPort(int coordinatorWorkPort) {
+    _coordinatorWorkPort = coordinatorWorkPort;
+  }
+
   public void setLogLevel(String logLevel) {
     _logLevel = logLevel;
   }
