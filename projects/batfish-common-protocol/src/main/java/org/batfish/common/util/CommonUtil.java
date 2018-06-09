@@ -118,6 +118,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -1445,7 +1446,7 @@ public class CommonUtil {
     return Hashing.sha256().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
   }
 
-  public static void startSslServer(
+  public static HttpServer startSslServer(
       ResourceConfig resourceConfig,
       URI mgrUri,
       Path keystorePath,
@@ -1480,7 +1481,7 @@ public class CommonUtil {
       sslCon.setTrustStorePass(truststorePassword);
     }
     boolean verifyClient = !trustAllCerts;
-    GrizzlyHttpServerFactory.createHttpServer(
+    return GrizzlyHttpServerFactory.createHttpServer(
         mgrUri,
         resourceConfig,
         true,
