@@ -43,6 +43,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     _w = warnings;
   }
 
+  @SuppressWarnings("unused")
   private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
     String typeName = type.getSimpleName();
     String txt = getFullText(ctx);
