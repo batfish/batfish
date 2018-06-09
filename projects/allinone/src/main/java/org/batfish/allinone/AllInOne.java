@@ -165,7 +165,7 @@ public class AllInOne {
 
     String batfishArgs =
         String.format(
-            "%s -%s %s -%s %s -%s %s",
+            "%s -%s %s -%s %s -%s %s -%s %s",
             _settings.getBatfishArgs(),
             org.batfish.config.Settings.ARG_RUN_MODE,
             _settings.getBatfishRunMode(),
