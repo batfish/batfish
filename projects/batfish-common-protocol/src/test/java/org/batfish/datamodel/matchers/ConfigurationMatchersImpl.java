@@ -45,6 +45,17 @@ final class ConfigurationMatchersImpl {
     }
   }
 
+  static final class HasHostname extends FeatureMatcher<Configuration, String> {
+    HasHostname(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A Configuration with hostname", "hostname");
+    }
+
+    @Override
+    protected String featureValueOf(Configuration actual) {
+      return actual.getHostname();
+    }
+  }
+
   static final class HasIkeGateway extends FeatureMatcher<Configuration, IkeGateway> {
     private final String _name;
 
