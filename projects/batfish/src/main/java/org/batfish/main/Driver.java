@@ -148,8 +148,7 @@ public class Driver {
 
   private static final int PARENT_CHECK_INTERVAL_MS = 1 * 1000; // 1 sec
 
-  static Logger httpServerLogger =
-      Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
+  static Logger httpServerLogger = Logger.getLogger(HttpServer.class.getName());
 
   private static final int MAX_CACHED_DATA_PLANES = 2;
 
