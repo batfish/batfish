@@ -44,17 +44,17 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 
 public class BfCoordWorkHelper {
 
-  private String _coordWorkMgr;
-  private String _coordWorkMgrV2;
-  private BatfishLogger _logger;
-  private Settings _settings;
-  private Client _client;
+  private final String _coordWorkMgr;
+  private final String _coordWorkMgrV2;
+  private final BatfishLogger _logger;
+  private final Settings _settings;
+  private final Client _client;
 
-  public BfCoordWorkHelper(String workMgr, BatfishLogger logger, Settings settings) {
-    _coordWorkMgr = workMgr;
+  public BfCoordWorkHelper(BatfishLogger logger, Settings settings) {
     _logger = logger;
     _settings = settings;
-    _coordWorkMgrV2 = _settings.getCoordinatorHost() + ":" + CoordConsts.SVC_CFG_WORK_V2_PORT;
+    _coordWorkMgr = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorWorkPort();
+    _coordWorkMgrV2 = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorWorkV2Port();
     try {
       _client = getClientBuilder().build();
     } catch (Exception e) {
