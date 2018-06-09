@@ -58,10 +58,9 @@ public class Main {
   private static @Nullable Settings _settings;
   private static @Nullable WorkMgr _workManager;
 
-  static Logger httpServerLogger =
-      Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
+  static Logger httpServerLogger = Logger.getLogger(HttpServer.class.getName());
   static Logger networkListenerLogger =
-      Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
+      Logger.getLogger(org.glassfish.grizzly.http.server.NetworkListener.class.getName());
 
   public static Authorizer getAuthorizer() {
     checkState(_authorizer != null, "Error: Authorizer has not been configured");
