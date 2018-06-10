@@ -3567,21 +3567,30 @@
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'abcd'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'1234'  <== mode:DEFAULT_MODE",
+            "        seq_num = DEC:'1234'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (cd_set",
             "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
+            "          (cd_set_transform_set",
             "            TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
-            "            DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'foo'  <== mode:DEFAULT_MODE",
-            "            DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE",
-            "            DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'bar'  <== mode:DEFAULT_MODE",
-            "            DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE",
-            "            DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'baz'  <== mode:DEFAULT_MODE",
-            "            DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'foo'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'bar'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'baz'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              DOUBLE_QUOTE:'\"'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "        (cd_null",
             "          VERSION:'version'  <== mode:DEFAULT_MODE",
@@ -17490,16 +17499,20 @@
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'mydefaultcryptomap'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'65534'  <== mode:DEFAULT_MODE",
+            "        seq_num = DEC:'65534'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (cd_set",
             "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            IKEV1:'ikev1'  <== mode:DEFAULT_MODE",
+            "          (cd_set_transform_set",
             "            TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-MD5-trans'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-SHA-TRANS'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-MD5'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-SHA'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-MD5-trans'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-SHA-TRANS'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-MD5'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-SHA'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_crypto",
@@ -17508,12 +17521,14 @@
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'mydefaultcryptomap'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        seq_num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (cd_set",
             "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
+            "          (cd_set_pfs",
             "            PFS:'pfs'  <== mode:DEFAULT_MODE",
-            "            GROUP1:'group1'  <== mode:DEFAULT_MODE",
+            "            (dh_group",
+            "              GROUP1:'group1'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_crypto",
@@ -17522,22 +17537,32 @@
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'mydefaultcryptomap'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        seq_num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (cd_set",
             "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            IKEV1:'ikev1'  <== mode:DEFAULT_MODE",
+            "          (cd_set_transform_set",
             "            TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-MD5'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-AES-128-SHA'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-AES-128-MD5'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-AES-192-SHA'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-AES-192-MD5'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-AES-256-SHA'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-AES-256-MD5'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-SHA'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-DES-SHA'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-DES-MD5'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-MD5'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-AES-128-SHA'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-AES-128-MD5'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-AES-192-SHA'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-AES-192-MD5'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-AES-256-SHA'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-AES-256-MD5'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-SHA'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-DES-SHA'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-DES-MD5'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_crypto",
@@ -17546,15 +17571,17 @@
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'mydefaultcryptomap'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        seq_num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (cd_set",
             "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
+            "          (cd_set_null",
             "            SECURITY_ASSOCIATION:'security-association'  <== mode:DEFAULT_MODE",
-            "            LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
-            "            DEC:'28800'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "            (null_rest_of_line",
+            "              LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
+            "              VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
+            "              DEC:'28800'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
@@ -17562,15 +17589,17 @@
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'mydefaultcryptomap'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        seq_num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (cd_set",
             "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
+            "          (cd_set_null",
             "            SECURITY_ASSOCIATION:'security-association'  <== mode:DEFAULT_MODE",
-            "            LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'kilobytes'  <== mode:DEFAULT_MODE",
-            "            DEC:'4608000'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "            (null_rest_of_line",
+            "              LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
+            "              VARIABLE:'kilobytes'  <== mode:DEFAULT_MODE",
+            "              DEC:'4608000'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
@@ -17578,14 +17607,16 @@
             "        DYNAMIC_MAP:'dynamic-map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'mydynamicmap'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'1'  <== mode:DEFAULT_MODE",
+            "        seq_num = DEC:'1'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
             "        (cd_set",
             "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
+            "          (cd_set_transform_set",
             "            TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-MD5'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'ESP-3DES-SHA'  <== mode:DEFAULT_MODE",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-MD5'  <== mode:DEFAULT_MODE)",
+            "            (variable",
+            "              VARIABLE:'ESP-3DES-SHA'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_crypto",
@@ -18352,12 +18383,13 @@
             "        MAP:'map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'myothermap'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'65535'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_null",
-            "          IPSEC_ISAKMP:'ipsec-isakmp'  <== mode:DEFAULT_MODE",
-            "          DYNAMIC:'dynamic'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            VARIABLE:'mydefaultcryptomap'  <== mode:DEFAULT_MODE",
+            "        (crypto_map_seq_num",
+            "          seq_num = DEC:'65535'  <== mode:DEFAULT_MODE",
+            "          (crypto_map_sn_ipsec_isakmp",
+            "            IPSEC_ISAKMP:'ipsec-isakmp'  <== mode:DEFAULT_MODE",
+            "            DYNAMIC:'dynamic'  <== mode:DEFAULT_MODE",
+            "            crypto_dynamic_map_name = (variable",
+            "              VARIABLE:'mydefaultcryptomap'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_crypto",
@@ -18394,13 +18426,46 @@
             "        MAP:'map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'VPN'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'10'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_null",
-            "          IPSEC_ISAKMP:'ipsec-isakmp'  <== mode:DEFAULT_MODE",
-            "          DYNAMIC:'dynamic'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            VARIABLE:'bippety'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "        (crypto_map_seq_num",
+            "          seq_num = DEC:'5'  <== mode:DEFAULT_MODE",
+            "          (crypto_map_sn_ipsec_isakmp",
+            "            IPSEC_ISAKMP:'ipsec-isakmp'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "            (crypto_map_sn_ii_match_address",
+            "              MATCH:'match'  <== mode:DEFAULT_MODE",
+            "              ADDRESS:'address'  <== mode:DEFAULT_MODE",
+            "              name = (variable",
+            "                VARIABLE:'someacl'  <== mode:DEFAULT_MODE)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_pfs",
+            "                PFS:'pfs'  <== mode:DEFAULT_MODE",
+            "                (dh_group",
+            "                  GROUP14:'group14'  <== mode:DEFAULT_MODE)",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_peer",
+            "                PEER:'peer'  <== mode:DEFAULT_MODE",
+            "                address = IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_transform_set",
+            "                TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  VARIABLE:'bleep'  <== mode:DEFAULT_MODE)",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_null",
+            "                SECURITY_ASSOCIATION:'security-association'  <== mode:DEFAULT_MODE",
+            "                (null_rest_of_line",
+            "                  LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
+            "                  VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
+            "                  DEC:'86400'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))))",
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
@@ -18408,70 +18473,13 @@
             "        MAP:'map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'VPN'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'10'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_null",
-            "          MATCH:'match'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'someacl'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
-            "  (stanza",
-            "    (s_crypto",
-            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
-            "      (crypto_map",
-            "        MAP:'map'  <== mode:DEFAULT_MODE",
-            "        name = (variable",
-            "          VARIABLE:'VPN'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'10'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_null",
-            "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            PFS:'pfs'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
-            "  (stanza",
-            "    (s_crypto",
-            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
-            "      (crypto_map",
-            "        MAP:'map'  <== mode:DEFAULT_MODE",
-            "        name = (variable",
-            "          VARIABLE:'VPN'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'10'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_null",
-            "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            PEER:'peer'  <== mode:DEFAULT_MODE",
-            "            IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
-            "  (stanza",
-            "    (s_crypto",
-            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
-            "      (crypto_map",
-            "        MAP:'map'  <== mode:DEFAULT_MODE",
-            "        name = (variable",
-            "          VARIABLE:'VPN'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'10'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_null",
-            "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            IKEV1:'ikev1'  <== mode:DEFAULT_MODE",
-            "            TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'bleep'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
-            "  (stanza",
-            "    (s_crypto",
-            "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
-            "      (crypto_map",
-            "        MAP:'map'  <== mode:DEFAULT_MODE",
-            "        name = (variable",
-            "          VARIABLE:'VPN'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'10'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_null",
-            "          SET:'set'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            SECURITY_ASSOCIATION:'security-association'  <== mode:DEFAULT_MODE",
-            "            LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
-            "            DEC:'86400'  <== mode:DEFAULT_MODE",
+            "        (crypto_map_seq_num",
+            "          seq_num = DEC:'10'  <== mode:DEFAULT_MODE",
+            "          (crypto_map_sn_ipsec_isakmp",
+            "            IPSEC_ISAKMP:'ipsec-isakmp'  <== mode:DEFAULT_MODE",
+            "            DYNAMIC:'dynamic'  <== mode:DEFAULT_MODE",
+            "            crypto_dynamic_map_name = (variable",
+            "              VARIABLE:'bippety'  <== mode:DEFAULT_MODE)",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
             "  (stanza",
             "    (s_crypto",
@@ -18480,62 +18488,62 @@
             "        MAP:'map'  <== mode:DEFAULT_MODE",
             "        name = (variable",
             "          VARIABLE:'VPNMAP'  <== mode:DEFAULT_MODE)",
-            "        num = DEC:'2'  <== mode:DEFAULT_MODE",
-            "        (crypto_map_ipsec_isakmp",
-            "          IPSEC_ISAKMP:'ipsec-isakmp'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "          (crypto_map_ii_null",
-            "            DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
-            "              RAW_TEXT:' bippety boppety'  <== mode:M_Description",
-            "              NEWLINE:'\\n'  <== mode:M_Description))",
-            "          (crypto_map_ii_match_address",
-            "            MATCH:'match'  <== mode:DEFAULT_MODE",
-            "            ADDRESS:'address'  <== mode:DEFAULT_MODE",
-            "            name = (variable",
-            "              VARIABLE:'myvpnacl'  <== mode:DEFAULT_MODE)",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "          (crypto_map_ii_null",
-            "            REVERSE_ROUTE:'reverse-route'  <== mode:DEFAULT_MODE",
-            "            (null_rest_of_line",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "          (crypto_map_ii_set",
-            "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (crypto_map_ii_set_isakmp_profile",
-            "              ISAKMP_PROFILE:'isakmp-profile'  <== mode:DEFAULT_MODE",
+            "        (crypto_map_seq_num",
+            "          seq_num = DEC:'2'  <== mode:DEFAULT_MODE",
+            "          (crypto_map_sn_ipsec_isakmp",
+            "            IPSEC_ISAKMP:'ipsec-isakmp'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
+            "            (crypto_map_sn_ii_null",
+            "              DESCRIPTION:'description'  <== mode:DEFAULT_MODE",
+            "              (null_rest_of_line",
+            "                RAW_TEXT:' bippety boppety'  <== mode:M_Description",
+            "                NEWLINE:'\\n'  <== mode:M_Description))",
+            "            (crypto_map_sn_ii_match_address",
+            "              MATCH:'match'  <== mode:DEFAULT_MODE",
+            "              ADDRESS:'address'  <== mode:DEFAULT_MODE",
             "              name = (variable",
-            "                VARIABLE:'myisakmpprofile'  <== mode:DEFAULT_MODE)",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "          (crypto_map_ii_set",
-            "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (crypto_map_ii_set_null",
-            "              PEER:'peer'  <== mode:DEFAULT_MODE",
+            "                VARIABLE:'myvpnacl'  <== mode:DEFAULT_MODE)",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "            (crypto_map_sn_ii_null",
+            "              REVERSE_ROUTE:'reverse-route'  <== mode:DEFAULT_MODE",
             "              (null_rest_of_line",
-            "                IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
-            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "          (crypto_map_ii_set",
-            "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (crypto_map_ii_set_null",
-            "              PFS:'pfs'  <== mode:DEFAULT_MODE",
-            "              (null_rest_of_line",
-            "                GROUP2:'group2'  <== mode:DEFAULT_MODE",
-            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "          (crypto_map_ii_set",
-            "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (crypto_map_ii_set_null",
-            "              SECURITY_ASSOCIATION:'security-association'  <== mode:DEFAULT_MODE",
-            "              (null_rest_of_line",
-            "                LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
-            "                VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
-            "                DEC:'14400'  <== mode:DEFAULT_MODE",
-            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
-            "          (crypto_map_ii_set",
-            "            SET:'set'  <== mode:DEFAULT_MODE",
-            "            (crypto_map_ii_set_transform_set",
-            "              TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
-            "              name = (variable",
-            "                VARIABLE:'mytransformset'  <== mode:DEFAULT_MODE)",
-            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))))",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_isakmp_profile",
+            "                ISAKMP_PROFILE:'isakmp-profile'  <== mode:DEFAULT_MODE",
+            "                name = (variable",
+            "                  VARIABLE:'myisakmpprofile'  <== mode:DEFAULT_MODE)",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_peer",
+            "                PEER:'peer'  <== mode:DEFAULT_MODE",
+            "                address = IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_pfs",
+            "                PFS:'pfs'  <== mode:DEFAULT_MODE",
+            "                (dh_group",
+            "                  GROUP2:'group2'  <== mode:DEFAULT_MODE)",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_null",
+            "                SECURITY_ASSOCIATION:'security-association'  <== mode:DEFAULT_MODE",
+            "                (null_rest_of_line",
+            "                  LIFETIME:'lifetime'  <== mode:DEFAULT_MODE",
+            "                  VARIABLE:'seconds'  <== mode:DEFAULT_MODE",
+            "                  DEC:'14400'  <== mode:DEFAULT_MODE",
+            "                  NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "            (crypto_map_sn_ii_set",
+            "              SET:'set'  <== mode:DEFAULT_MODE",
+            "              (crypto_map_sn_ii_set_transform_set",
+            "                TRANSFORM_SET:'transform-set'  <== mode:DEFAULT_MODE",
+            "                (variable",
+            "                  VARIABLE:'mytransformset'  <== mode:DEFAULT_MODE)",
+            "                NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))))",
             "  (stanza",
             "    (s_crypto",
             "      CRYPTO:'crypto'  <== mode:DEFAULT_MODE",
@@ -53507,6 +53515,16 @@
               ],
               "numReferrers" : 1
             }
+          },
+          "crypto-dynamic-map-set" : {
+            "abcd" : {
+              "definitionLines" : [
+                4,
+                5,
+                6
+              ],
+              "numReferrers" : 0
+            }
           }
         },
         "aruba_dhcp" : { },
@@ -54253,11 +54271,11 @@
           "crypto ipsec profile" : {
             "abcdefg" : {
               "definitionLines" : [
-                145,
-                146,
-                147,
-                148,
-                149
+                150,
+                151,
+                152,
+                153,
+                154
               ],
               "numReferrers" : 0
             }
@@ -54265,33 +54283,33 @@
           "crypto ipsec transform-set" : {
             "ESP-3DES-MD5" : {
               "definitionLines" : [
-                154,
-                155,
-                156
+                159,
+                160,
+                161
               ],
               "numReferrers" : 0
             },
             "IPSEC_AES_256" : {
               "definitionLines" : [
-                157
+                162
               ],
               "numReferrers" : 0
             },
             "cipts1" : {
               "definitionLines" : [
-                158
+                163
               ],
               "numReferrers" : 0
             },
             "cipts2" : {
               "definitionLines" : [
-                159
+                164
               ],
               "numReferrers" : 0
             },
             "noAuthHeader" : {
               "definitionLines" : [
-                160
+                165
               ],
               "numReferrers" : 0
             }
@@ -54299,12 +54317,12 @@
           "crypto isakmp policy" : {
             "001" : {
               "definitionLines" : [
-                167,
-                168,
-                169,
-                170,
-                171,
-                172
+                172,
+                173,
+                174,
+                175,
+                176,
+                177
               ],
               "numReferrers" : 1
             }
@@ -54312,12 +54330,12 @@
           "crypto isakmp profile" : {
             "myprofile" : {
               "definitionLines" : [
-                174,
-                175,
-                176,
-                177,
-                178,
-                179
+                179,
+                180,
+                181,
+                182,
+                183,
+                184
               ],
               "numReferrers" : 1
             }
@@ -54325,8 +54343,57 @@
           "crypto keyring" : {
             "VRF:ABC:DEF:GHI:1234" : {
               "definitionLines" : [
-                198,
-                199
+                203,
+                204
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "crypto-dynamic-map-set" : {
+            "mydefaultcryptomap" : {
+              "definitionLines" : [
+                92,
+                93
+              ],
+              "numReferrers" : 1
+            },
+            "mydynamicmap" : {
+              "definitionLines" : [
+                102,
+                103
+              ],
+              "numReferrers" : 0
+            }
+          },
+          "crypto-map-set" : {
+            "VPN" : {
+              "definitionLines" : [
+                209,
+                210,
+                211,
+                212,
+                213,
+                214
+              ],
+              "numReferrers" : 0
+            },
+            "VPNMAP" : {
+              "definitionLines" : [
+                216,
+                217,
+                218,
+                219,
+                220,
+                221,
+                222,
+                223,
+                224
+              ],
+              "numReferrers" : 0
+            },
+            "myothermap" : {
+              "definitionLines" : [
+                206
               ],
               "numReferrers" : 0
             }
@@ -56641,40 +56708,57 @@
         },
         "cisco_crypto" : {
           "crypto ipsec transform-set" : {
+            "bleep" : {
+              "crypto map ipsec-isakmp transform-set" : [
+                213
+              ]
+            },
             "hijklmnop" : {
               "ipsec profile set transform-set" : [
-                146
+                151
               ]
             },
             "mytransformset" : {
               "crypto map ipsec-isakmp transform-set" : [
-                218
+                224
               ]
             }
           },
           "crypto isakmp profile" : {
             "myisakmpprofile" : {
               "crypto map ipsec-isakmp isakmp-profile" : [
-                214
+                220
               ]
             },
             "someOtherprofile" : {
               "ipsec profile set isakmp-profile" : [
-                149
+                154
               ]
             }
           },
           "crypto keyring" : {
             "VRF:MMS:RMT:UPM:1143" : {
               "isakmp profile keyring" : [
-                175
+                180
+              ]
+            }
+          },
+          "crypto-dynamic-map-set" : {
+            "bippety" : {
+              "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
+                215
               ]
             }
           },
           "ipv4/6 acl" : {
             "myvpnacl" : {
               "crypto map ipsec-isakmp acl" : [
-                212
+                218
+              ]
+            },
+            "someacl" : {
+              "crypto map ipsec-isakmp acl" : [
+                210
               ]
             }
           }
@@ -57492,7 +57576,8 @@
         },
         "cisco_crypto" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile"
+            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile",
+            "2" : "MISCELLANEOUS: Dynamic Crypto map set 'bippety' referred by crypto map 'VPN' does not exist"
           }
         },
         "cisco_interface" : {

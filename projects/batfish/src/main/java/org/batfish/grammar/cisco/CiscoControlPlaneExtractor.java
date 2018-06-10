@@ -418,12 +418,12 @@ import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ii_match_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ii_set_isakmp_profileContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ii_set_peerContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ii_set_pfsContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ii_set_transform_setContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_ipsec_isakmpContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_match_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_isakmp_profileContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_peerContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_pfsContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_transform_setContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ipsec_isakmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Cs_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Csc_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_information_originate_rb_stanzaContext;
@@ -1815,21 +1815,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCrypto_map(Crypto_mapContext ctx) {
     String name = ctx.name.getText();
+    // crypto map entry should be created only if seq number is present ahead
+    if (ctx.crypto_map_seq_num() != null
+        && ctx.crypto_map_seq_num().crypto_map_sn_ipsec_isakmp() != null) {
+      _currentCryptoMapEntry =
+          new CryptoMapEntry(name, toInteger(ctx.crypto_map_seq_num().seq_num));
 
-    _currentCryptoMapEntry = new CryptoMapEntry(name, toInteger(ctx.seq_num));
-
-    CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(name);
-    // if this is the first crypto map entry in the crypto map set
-    if (cryptoMapSet == null) {
-      cryptoMapSet = new CryptoMapSet(name);
-      _configuration.getCryptoMapSets().put(name, cryptoMapSet);
-      defineStructure(CRYPTO_MAP_SET, name, ctx);
-    } else if (cryptoMapSet.getDynamic()) {
-      _w.redFlag(
-          String.format("Cannot add static crypto map entry %s to a dynamic crypto map set", name));
-      return;
+      CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(name);
+      // if this is the first crypto map entry in the crypto map set
+      if (cryptoMapSet == null) {
+        cryptoMapSet = new CryptoMapSet(name);
+        _configuration.getCryptoMapSets().put(name, cryptoMapSet);
+        defineStructure(CRYPTO_MAP_SET, name, ctx);
+      } else if (cryptoMapSet.getDynamic()) {
+        _w.redFlag(
+            String.format(
+                "Cannot add static crypto map entry %s to a dynamic crypto map set", name));
+        return;
+      }
+      cryptoMapSet.getCryptoMapEntries().add(_currentCryptoMapEntry);
     }
-    cryptoMapSet.getCryptoMapEntries().add(_currentCryptoMapEntry);
   }
 
   @Override
@@ -1855,7 +1860,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCrypto_map_ipsec_isakmp(Crypto_map_ipsec_isakmpContext ctx) {
+  public void enterCrypto_map_sn_ipsec_isakmp(Crypto_map_sn_ipsec_isakmpContext ctx) {
     if (ctx.crypto_dynamic_map_name != null) {
       String name = ctx.crypto_dynamic_map_name.getText();
       _currentCryptoMapEntry.setReferredDynamicMapSet(name);
@@ -4046,7 +4051,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCrypto_map_ii_match_address(Crypto_map_ii_match_addressContext ctx) {
+  public void exitCrypto_map_sn_ii_match_address(Crypto_map_sn_ii_match_addressContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _currentCryptoMapEntry.setAccessList(name);
@@ -4054,7 +4059,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCrypto_map_ii_set_isakmp_profile(Crypto_map_ii_set_isakmp_profileContext ctx) {
+  public void exitCrypto_map_sn_ii_set_isakmp_profile(
+      Crypto_map_sn_ii_set_isakmp_profileContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _currentCryptoMapEntry.setIsakmpProfile(name);
@@ -4063,17 +4069,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCrypto_map_ii_set_peer(Crypto_map_ii_set_peerContext ctx) {
+  public void exitCrypto_map_sn_ii_set_peer(Crypto_map_sn_ii_set_peerContext ctx) {
     _currentCryptoMapEntry.setPeer(toIp(ctx.address));
   }
 
   @Override
-  public void exitCrypto_map_ii_set_pfs(Crypto_map_ii_set_pfsContext ctx) {
+  public void exitCrypto_map_sn_ii_set_pfs(Crypto_map_sn_ii_set_pfsContext ctx) {
     _currentCryptoMapEntry.setPfsKeyGroup(toDhGroup(ctx.dh_group()));
   }
 
   @Override
-  public void exitCrypto_map_ii_set_transform_set(Crypto_map_ii_set_transform_setContext ctx) {
+  public void exitCrypto_map_sn_ii_set_transform_set(
+      Crypto_map_sn_ii_set_transform_setContext ctx) {
     for (VariableContext transform : ctx.transforms) {
       int line = transform.getStart().getLine();
       String name = transform.getText();

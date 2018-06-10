@@ -696,19 +696,36 @@ crypto_keyring
 
 crypto_map
 :
-   MAP name = variable seq_num = DEC
+   MAP name = variable
    (
-      crypto_map_ipsec_isakmp
-      | crypto_map_null
+      crypto_map_null
+      | crypto_map_seq_num
    )
 ;
 
-crypto_map_ii_match_address
+crypto_map_null
+:
+   (
+      INTERFACE
+      | REDUNDANCY
+   ) null_rest_of_line
+;
+
+crypto_map_seq_num
+:
+   seq_num = DEC
+   (
+      crypto_map_sn_ipsec_isakmp
+      | crypto_map_sn_null
+   )
+;
+
+crypto_map_sn_ii_match_address
 :
    MATCH ADDRESS name = variable NEWLINE
 ;
 
-crypto_map_ii_null
+crypto_map_sn_ii_null
 :
    NO?
    (
@@ -717,42 +734,42 @@ crypto_map_ii_null
    ) null_rest_of_line
 ;
 
-crypto_map_ii_set
+crypto_map_sn_ii_set
 :
     SET
     (
-       crypto_map_ii_set_isakmp_profile
-       | crypto_map_ii_set_null
-       | crypto_map_ii_set_peer
-       | crypto_map_ii_set_pfs
-       | crypto_map_ii_set_transform_set
+       crypto_map_sn_ii_set_isakmp_profile
+       | crypto_map_sn_ii_set_null
+       | crypto_map_sn_ii_set_peer
+       | crypto_map_sn_ii_set_pfs
+       | crypto_map_sn_ii_set_transform_set
 
     )
 ;
 
-crypto_map_ii_set_isakmp_profile
+crypto_map_sn_ii_set_isakmp_profile
 :
     ISAKMP_PROFILE name = variable NEWLINE
 ;
 
-crypto_map_ii_set_null
+crypto_map_sn_ii_set_null
 :
     (
        SECURITY_ASSOCIATION
     ) null_rest_of_line
 ;
 
-crypto_map_ii_set_peer
+crypto_map_sn_ii_set_peer
 :
     PEER address = IP_ADDRESS NEWLINE
 ;
 
-crypto_map_ii_set_pfs
+crypto_map_sn_ii_set_pfs
 :
     PFS dh_group NEWLINE
 ;
 
-crypto_map_ii_set_transform_set
+crypto_map_sn_ii_set_transform_set
 :
    TRANSFORM_SET
    (
@@ -760,7 +777,7 @@ crypto_map_ii_set_transform_set
    )+ NEWLINE
 ;
 
-crypto_map_ipsec_isakmp
+crypto_map_sn_ipsec_isakmp
 :
    IPSEC_ISAKMP
    (
@@ -768,24 +785,15 @@ crypto_map_ipsec_isakmp
    )?
    NEWLINE
    (
-      crypto_map_ii_match_address
-      | crypto_map_ii_null
-      | crypto_map_ii_set
+      crypto_map_sn_ii_match_address
+      | crypto_map_sn_ii_null
+      | crypto_map_sn_ii_set
    )*
 ;
 
-crypto_map_null
+crypto_map_sn_null
 :
-   (
-      INTERFACE
-      |
-      (
-         IPSEC_ISAKMP DYNAMIC
-      )
-      | MATCH
-      | REDUNDANCY
-      | SET
-   ) null_rest_of_line
+   IPSEC_MANUAL
 ;
 
 crypto_pki

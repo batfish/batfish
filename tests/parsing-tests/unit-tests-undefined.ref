@@ -282,11 +282,19 @@
           ]
         }
       },
+      "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:bleep" : {
+        "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'bleep'",
+        "files" : {
+          "cisco_crypto" : [
+            213
+          ]
+        }
+      },
       "undefined:crypto ipsec transform-set:usage:crypto map ipsec-isakmp transform-set:mytransformset" : {
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'crypto map ipsec-isakmp transform-set' named 'mytransformset'",
         "files" : {
           "cisco_crypto" : [
-            218
+            224
           ]
         }
       },
@@ -294,7 +302,7 @@
         "description" : "Undefined reference to structure of type: 'crypto ipsec transform-set' with usage: 'ipsec profile set transform-set' named 'hijklmnop'",
         "files" : {
           "cisco_crypto" : [
-            146
+            151
           ]
         }
       },
@@ -302,7 +310,7 @@
         "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'crypto map ipsec-isakmp isakmp-profile' named 'myisakmpprofile'",
         "files" : {
           "cisco_crypto" : [
-            214
+            220
           ]
         }
       },
@@ -310,7 +318,7 @@
         "description" : "Undefined reference to structure of type: 'crypto isakmp profile' with usage: 'ipsec profile set isakmp-profile' named 'someOtherprofile'",
         "files" : {
           "cisco_crypto" : [
-            149
+            154
           ]
         }
       },
@@ -318,7 +326,15 @@
         "description" : "Undefined reference to structure of type: 'crypto keyring' with usage: 'isakmp profile keyring' named 'VRF:MMS:RMT:UPM:1143'",
         "files" : {
           "cisco_crypto" : [
-            175
+            180
+          ]
+        }
+      },
+      "undefined:crypto-dynamic-map-set:usage:crypto map ipsec-isakmp crypto-dynamic-map-set:bippety" : {
+        "description" : "Undefined reference to structure of type: 'crypto-dynamic-map-set' with usage: 'crypto map ipsec-isakmp crypto-dynamic-map-set' named 'bippety'",
+        "files" : {
+          "cisco_crypto" : [
+            215
           ]
         }
       },
@@ -706,7 +722,15 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'myvpnacl'",
         "files" : {
           "cisco_crypto" : [
-            212
+            218
+          ]
+        }
+      },
+      "undefined:ipv4/6 acl:usage:crypto map ipsec-isakmp acl:someacl" : {
+        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'crypto map ipsec-isakmp acl' named 'someacl'",
+        "files" : {
+          "cisco_crypto" : [
+            210
           ]
         }
       },
@@ -1249,7 +1273,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 154
+      "numResults" : 157
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1481,40 +1505,57 @@
       },
       "cisco_crypto" : {
         "crypto ipsec transform-set" : {
+          "bleep" : {
+            "crypto map ipsec-isakmp transform-set" : [
+              213
+            ]
+          },
           "hijklmnop" : {
             "ipsec profile set transform-set" : [
-              146
+              151
             ]
           },
           "mytransformset" : {
             "crypto map ipsec-isakmp transform-set" : [
-              218
+              224
             ]
           }
         },
         "crypto isakmp profile" : {
           "myisakmpprofile" : {
             "crypto map ipsec-isakmp isakmp-profile" : [
-              214
+              220
             ]
           },
           "someOtherprofile" : {
             "ipsec profile set isakmp-profile" : [
-              149
+              154
             ]
           }
         },
         "crypto keyring" : {
           "VRF:MMS:RMT:UPM:1143" : {
             "isakmp profile keyring" : [
-              175
+              180
+            ]
+          }
+        },
+        "crypto-dynamic-map-set" : {
+          "bippety" : {
+            "crypto map ipsec-isakmp crypto-dynamic-map-set" : [
+              215
             ]
           }
         },
         "ipv4/6 acl" : {
           "myvpnacl" : {
             "crypto map ipsec-isakmp acl" : [
-              212
+              218
+            ]
+          },
+          "someacl" : {
+            "crypto map ipsec-isakmp acl" : [
+              210
             ]
           }
         }

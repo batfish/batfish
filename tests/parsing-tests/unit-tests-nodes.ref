@@ -1199,6 +1199,19 @@
       "aruba_crypto" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "aruba_crypto",
+        "cryptoMapSets" : {
+          "abcd" : {
+            "name" : "abcd",
+            "cryptoMapEntries" : [
+              {
+                "name" : "abcd",
+                "sequenceNumber" : 1234,
+                "dynamic" : true
+              }
+            ],
+            "dynamic" : true
+          }
+        },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
@@ -5676,6 +5689,119 @@
       "cisco_crypto" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_crypto",
+        "cryptoMapSets" : {
+          "VPN" : {
+            "name" : "VPN",
+            "cryptoMapEntries" : [
+              {
+                "name" : "VPN",
+                "sequenceNumber" : 5,
+                "dynamic" : false,
+                "peer" : "1.2.3.4",
+                "pfsKeyGroup" : "GROUP14"
+              }
+            ],
+            "dynamic" : false
+          },
+          "VPNMAP" : {
+            "name" : "VPNMAP",
+            "cryptoMapEntries" : [
+              {
+                "name" : "VPNMAP",
+                "sequenceNumber" : 2,
+                "dynamic" : false,
+                "peer" : "1.2.3.4",
+                "pfsKeyGroup" : "GROUP2"
+              }
+            ],
+            "dynamic" : false
+          },
+          "mydefaultcryptomap" : {
+            "name" : "mydefaultcryptomap",
+            "cryptoMapEntries" : [
+              {
+                "name" : "mydefaultcryptomap",
+                "sequenceNumber" : 65534,
+                "dynamic" : true,
+                "proposals" : [
+                  {
+                    "name" : "ESP-3DES-MD5",
+                    "authenticationAlgorithm" : "HMAC_MD5_96",
+                    "encryptionAlgorithm" : "THREEDES_CBC",
+                    "protocols" : [
+                      "ESP"
+                    ]
+                  }
+                ]
+              },
+              {
+                "name" : "mydefaultcryptomap",
+                "sequenceNumber" : 65535,
+                "dynamic" : true,
+                "pfsKeyGroup" : "GROUP1"
+              },
+              {
+                "name" : "mydefaultcryptomap",
+                "sequenceNumber" : 65535,
+                "dynamic" : true,
+                "proposals" : [
+                  {
+                    "name" : "ESP-3DES-MD5",
+                    "authenticationAlgorithm" : "HMAC_MD5_96",
+                    "encryptionAlgorithm" : "THREEDES_CBC",
+                    "protocols" : [
+                      "ESP"
+                    ]
+                  }
+                ]
+              },
+              {
+                "name" : "mydefaultcryptomap",
+                "sequenceNumber" : 65535,
+                "dynamic" : true
+              },
+              {
+                "name" : "mydefaultcryptomap",
+                "sequenceNumber" : 65535,
+                "dynamic" : true
+              }
+            ],
+            "dynamic" : true
+          },
+          "mydynamicmap" : {
+            "name" : "mydynamicmap",
+            "cryptoMapEntries" : [
+              {
+                "name" : "mydynamicmap",
+                "sequenceNumber" : 1,
+                "dynamic" : true,
+                "proposals" : [
+                  {
+                    "name" : "ESP-3DES-MD5",
+                    "authenticationAlgorithm" : "HMAC_MD5_96",
+                    "encryptionAlgorithm" : "THREEDES_CBC",
+                    "protocols" : [
+                      "ESP"
+                    ]
+                  }
+                ]
+              }
+            ],
+            "dynamic" : true
+          },
+          "myothermap" : {
+            "name" : "myothermap",
+            "cryptoMapEntries" : [
+              {
+                "name" : "myothermap",
+                "sequenceNumber" : 65535,
+                "dynamic" : false,
+                "referredDynamicMapSet" : "mydefaultcryptomap"
+              }
+            ],
+            "dynamic" : false
+          }
+        },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
