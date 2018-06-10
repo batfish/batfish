@@ -8,6 +8,7 @@ import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.matchers.IpsecProposalMatchersImpl.HasAuthenticationAlgorithm;
 import org.batfish.datamodel.matchers.IpsecProposalMatchersImpl.HasEncryptionAlgorithm;
+import org.batfish.datamodel.matchers.IpsecProposalMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.IpsecProposalMatchersImpl.HasProtocols;
 
 public final class IpsecProposalMatchers {
@@ -28,6 +29,14 @@ public final class IpsecProposalMatchers {
   public static HasAuthenticationAlgorithm hasAuthenticationAlgorithm(
       IpsecAuthenticationAlgorithm ipsecAuthenticationAlgorithm) {
     return new HasAuthenticationAlgorithm(equalTo(ipsecAuthenticationAlgorithm));
+  }
+
+  /**
+   * Provides a matcher that matches if the Ipsec Proposal's value of {@code name} matches specified
+   * {@code name}
+   */
+  public static HasName hasName(String name) {
+    return new HasName(equalTo(name));
   }
 
   /**

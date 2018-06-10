@@ -74,6 +74,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasCryptoMap extends FeatureMatcher<Interface, String> {
+    HasCryptoMap(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "an Interface with cryptoMap:", "cryptoMap");
+    }
+
+    @Override
+    protected String featureValueOf(Interface actual) {
+      return actual.getCryptoMap();
+    }
+  }
+
   static final class HasDeclaredNames extends FeatureMatcher<Interface, Set<String>> {
     HasDeclaredNames(@Nonnull Matcher<? super Set<String>> subMatcher) {
       super(subMatcher, "declared names", "declared names");

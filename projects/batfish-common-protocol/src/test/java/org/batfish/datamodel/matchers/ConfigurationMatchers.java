@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.nullValue;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.CryptoMapSet;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
@@ -15,6 +16,7 @@ import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasCryptoMapSet;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeGateway;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeProposal;
@@ -37,6 +39,15 @@ public class ConfigurationMatchers {
   public static HasConfigurationFormat hasConfigurationFormat(
       @Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
     return new HasConfigurationFormat(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * Crypto-Map set with specified name.
+   */
+  public static HasCryptoMapSet hasCryptoMapSet(
+      @Nonnull String name, @Nonnull Matcher<? super CryptoMapSet> subMatcher) {
+    return new HasCryptoMapSet(name, subMatcher);
   }
 
   /** Provides a matcher that matches if the configuration has a default VRF. */
