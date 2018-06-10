@@ -31,8 +31,8 @@ public class Settings extends BaseSettings {
   public static final String ARG_QUESTIONS_DIR = "questionsdir";
   public static final String ARG_RUN_MODE = "runmode";
   public static final String ARG_SERVICE_NAME = "servicename";
-  private static final String ARG_SERVICE_POOL_PORT = "coordinatorpoolport";
   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
+  private static final String ARG_SERVICE_WORK_V2_PORT = "coordinatorworkv2port";
   public static final String ARG_TESTRIG_DIR = "testrigdir";
   public static final String ARG_TESTRIG_ID = "testrigid";
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
@@ -45,8 +45,8 @@ public class Settings extends BaseSettings {
   private String _batfishLogLevel;
   private String _containerId;
   private String _coordinatorHost;
-  private int _coordinatorPoolPort;
   private int _coordinatorWorkPort;
+  private int _coordinatorWorkV2Port;
   private String _datamodelDir;
   private String _logFile;
   private String _logLevel;
@@ -102,12 +102,12 @@ public class Settings extends BaseSettings {
     return _coordinatorHost;
   }
 
-  public int getCoordinatorPoolPort() {
-    return _coordinatorPoolPort;
-  }
-
   public int getCoordinatorWorkPort() {
     return _coordinatorWorkPort;
+  }
+
+  public int getCoordinatorWorkV2Port() {
+    return _coordinatorWorkV2Port;
   }
 
   public String getDatamodelDir() {
@@ -206,8 +206,8 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_PRETTY_PRINT_ANSWERS, true);
     setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
     setDefaultProperty(ARG_SERVICE_NAME, "client-service");
-    setDefaultProperty(ARG_SERVICE_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
     setDefaultProperty(ARG_SERVICE_WORK_PORT, CoordConsts.SVC_CFG_WORK_PORT);
+    setDefaultProperty(ARG_SERVICE_WORK_V2_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
     setDefaultProperty(BfConsts.ARG_SSL_DISABLE, CoordConsts.SVC_CFG_WORK_SSL_DISABLE);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_KEYSTORE_PASSWORD, null);
@@ -251,9 +251,6 @@ public class Settings extends BaseSettings {
     addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive|genquestions)", "run_mode");
 
     addOption(ARG_SERVICE_NAME, "service name", "service_name");
-
-    addOption(
-        ARG_SERVICE_POOL_PORT, "port for pool management service", "port_number_pool_service");
 
     addOption(
         ARG_SERVICE_WORK_PORT, "port for work management service", "port_number_work_service");
@@ -311,12 +308,20 @@ public class Settings extends BaseSettings {
     _testrigId = getStringOptionValue(ARG_TESTRIG_ID);
 
     _coordinatorHost = getStringOptionValue(ARG_COORDINATOR_HOST);
-    _coordinatorPoolPort = getIntegerOptionValue(ARG_SERVICE_POOL_PORT);
     _coordinatorWorkPort = getIntegerOptionValue(ARG_SERVICE_WORK_PORT);
+    _coordinatorWorkV2Port = getIntegerOptionValue(ARG_SERVICE_WORK_V2_PORT);
   }
 
   public void setBatfishLogLevel(String logLevel) {
     _batfishLogLevel = logLevel;
+  }
+
+  public void setCoordinatorWorkPort(int coordinatorWorkPort) {
+    _coordinatorWorkPort = coordinatorWorkPort;
+  }
+
+  public void setCoordinatorWorkV2Port(int port) {
+    _coordinatorWorkV2Port = port;
   }
 
   public void setLogLevel(String logLevel) {

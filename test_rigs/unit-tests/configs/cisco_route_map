@@ -1,6 +1,11 @@
 !
 hostname cisco_route_map
 !
+ip as-path access-list AS_PATH_ACL1 deny ^65535$
+ip as-path access-list AS_PATH_ACL1 deny _65535_
+ip as-path access-list AS_PATH_ACL2 permit ^65536$
+ip as-path access-list AS_PATH_ACL_UNUSED permit ^4000$
+!
 route-map connected-to-bgp permit 10
  match ip address prefix-list hpr-connector-subnets
  set origin igp
@@ -41,4 +46,12 @@ route-map beeble permit 10
 route-map multicaststuff permit 10
  match ip multicast group 239.128.128.0/20
 !
+route-map MAP_NAME1 permit 10
+ match as-path AS_PATH_ACL1
+!
+route-map MAP_NAME2 permit 20
+ match as-path AS_PATH_ACL2
+!
+route-map MAP_NAME2 permit 20
+ match as-path AS_PATH_UNDEF
 !

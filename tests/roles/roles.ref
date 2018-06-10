@@ -5,22 +5,27 @@
       "name" : "default",
       "roles" : [
         {
+          "caseSensitive" : false,
           "name" : "border",
           "regex" : ".*border.*"
         },
         {
+          "caseSensitive" : false,
           "name" : "core",
           "regex" : ".*core.*"
         },
         {
+          "caseSensitive" : false,
           "name" : "dept",
           "regex" : ".*dept.*"
         },
         {
+          "caseSensitive" : false,
           "name" : "dist",
           "regex" : ".*dist.*"
         },
         {
+          "caseSensitive" : false,
           "name" : "host",
           "regex" : ".*host.*"
         }

@@ -3619,11 +3619,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
     markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
+    markConcreteStructure(
+        CiscoStructureType.AS_PATH_ACCESS_LIST,
+        CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
+
     // record references to defined structures
     recordCommunityLists();
     recordDocsisPolicies();
     recordDocsisPolicyRules();
-    recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
     recordPeerGroups();
     recordPeerSessions();
     recordServiceClasses();
