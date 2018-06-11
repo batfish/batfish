@@ -83,7 +83,10 @@ public class LocationSpecifierFactoryTest {
   public void testNameRegexInterfaceLocationSpecifierFactory() {
     Pattern pat = Pattern.compile("foo");
     assertThat(
-        new NameRegexInterfaceLocationSpecifierFactory().buildLocationSpecifierTyped(pat),
+        new NameRegexInterfaceLocationSpecifierFactory().buildLocationSpecifier("foo"),
+        equalTo(new NameRegexInterfaceLocationSpecifier(pat)));
+    assertThat(
+        new NameRegexInterfaceLocationSpecifierFactory().buildLocationSpecifier(pat),
         equalTo(new NameRegexInterfaceLocationSpecifier(pat)));
   }
 
@@ -99,7 +102,10 @@ public class LocationSpecifierFactoryTest {
   public void testNodeNameRegexInterfaceLocationSpecifierFactory() {
     Pattern pat = Pattern.compile("foo");
     assertThat(
-        new NodeNameRegexInterfaceLocationSpecifierFactory().buildLocationSpecifierTyped(pat),
+        new NodeNameRegexInterfaceLocationSpecifierFactory().buildLocationSpecifier("foo"),
+        equalTo(new NodeNameRegexInterfaceLocationSpecifier(pat)));
+    assertThat(
+        new NodeNameRegexInterfaceLocationSpecifierFactory().buildLocationSpecifier(pat),
         equalTo(new NodeNameRegexInterfaceLocationSpecifier(pat)));
   }
 

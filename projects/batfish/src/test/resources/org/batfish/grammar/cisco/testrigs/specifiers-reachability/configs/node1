@@ -1,0 +1,16 @@
+!
+! Real GNS3 config, trimmed
+!
+hostname node1
+!
+interface Loopback0
+  ip address 1.1.1.1 255.255.255.255
+!
+interface FastEthernet0/0
+ ip address 1.1.1.2 255.255.255.254
+ speed auto
+ duplex half
+!
+!
+ip route 2.2.2.2 255.255.255.255 FastEthernet0/0
+!

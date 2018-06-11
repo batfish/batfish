@@ -8,14 +8,22 @@ import java.util.regex.Pattern;
  */
 @AutoService(LocationSpecifierFactory.class)
 public final class NodeNameRegexInterfaceLocationSpecifierFactory
-    extends TypedLocationSpecifierFactory<Pattern> {
-  @Override
-  protected Class<Pattern> getInputClass() {
-    return Pattern.class;
-  }
+    implements LocationSpecifierFactory {
+  public static final String NAME =
+      NodeNameRegexInterfaceLocationSpecifierFactory.class.getSimpleName();
 
   @Override
-  public LocationSpecifier buildLocationSpecifierTyped(Pattern pattern) {
+  public LocationSpecifier buildLocationSpecifier(Object input) {
+    Pattern pattern;
+
+    if (input instanceof Pattern) {
+      pattern = (Pattern) input;
+    } else if (input instanceof String) {
+      pattern = Pattern.compile((String) input);
+    } else {
+      throw new IllegalArgumentException(NAME + " requires input of type Pattern or String");
+    }
+
     return new NodeNameRegexInterfaceLocationSpecifier(pattern);
   }
 
