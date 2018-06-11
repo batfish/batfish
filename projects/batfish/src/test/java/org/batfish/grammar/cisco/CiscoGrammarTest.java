@@ -30,6 +30,7 @@ import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasAccessLis
 import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasPeer;
 import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasProposals;
 import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasReferredDynamicMapSet;
+import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasSequenceNumber;
 import static org.batfish.datamodel.matchers.CryptoMapSetMatchers.hasCryptoMapEntries;
 import static org.batfish.datamodel.matchers.CryptoMapSetMatchers.hasDynamic;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
@@ -1604,7 +1605,7 @@ public class CiscoGrammarTest {
                                     contains(
                                         ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))),
                                 hasAccessList(IpAccessListMatchers.hasName("ACL")),
-                                CryptoMapEntryMatchers.hasSequenceNumber(equalTo(10)))))))));
+                                hasSequenceNumber(equalTo(10)))))))));
   }
 
   @Test
@@ -1635,15 +1636,14 @@ public class CiscoGrammarTest {
                             allOf(
                                 CryptoMapEntryMatchers.hasDynamic(equalTo(false)),
                                 hasReferredDynamicMapSet(equalTo("mydynamicmap")))))))));
-    /* assertThat(
-    c,
-    hasCryptoMapSet(
-        "mymap",
-        allOf(
+    assertThat(
+        c,
+        hasCryptoMapSet(
+            "mymap",
             hasCryptoMapEntries(
                 contains(
                     ImmutableList.of(
-                        hasSequenceNumber(equalTo(10)), hasSequenceNumber(equalTo(30))))))));*/
+                        hasSequenceNumber(equalTo(10)), hasSequenceNumber(equalTo(30)))))));
   }
 
   @Test
