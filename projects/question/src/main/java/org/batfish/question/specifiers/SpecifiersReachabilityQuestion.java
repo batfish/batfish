@@ -59,14 +59,40 @@ public final class SpecifiersReachabilityQuestion extends Question {
   private static final String PROP_REQUIRED_TRANSIT_NODES_SPECIFIER_INPUT =
       "requiredTransitNodesNodeSpecifierInput";
 
-  private static NodeSpecifier getNodeSpecifier(String factory, String input) {
-    if (factory == null && input == null) {
-      return NoNodesNodeSpecifier.INSTANCE;
+  private static LocationSpecifier getLocationSpecifier(
+      String factoryName, String input, LocationSpecifier def) {
+    if (factoryName == null && input == null) {
+      return def;
     }
-    if (factory == null) {
-      return new NameRegexNodeSpecifierFactory().buildNodeSpecifier(input);
+    LocationSpecifierFactory factory =
+        (factoryName == null)
+            ? new NameRegexInterfaceLinkLocationSpecifierFactory()
+            : LocationSpecifierFactory.load(factoryName);
+    return factory.buildLocationSpecifier(input);
+  }
+
+  private static IpSpaceSpecifier getIpSpaceSpecifier(
+      String factoryName, String input, InferFromLocationIpSpaceSpecifier def) {
+    if (factoryName == null && input == null) {
+      return def;
     }
-    return NodeSpecifierFactory.load(factory).buildNodeSpecifier(input);
+    IpSpaceSpecifierFactory factory =
+        (factoryName == null)
+            ? new ConstantWildcardSetIpSpaceSpecifierFactory()
+            : IpSpaceSpecifierFactory.load(factoryName);
+    return factory.buildIpSpaceSpecifier(input);
+  }
+
+  private static NodeSpecifier getNodeSpecifier(
+      String factoryName, String input, NodeSpecifier def) {
+    if (factoryName == null && input == null) {
+      return def;
+    }
+    NodeSpecifierFactory factory =
+        (factoryName == null)
+            ? new NameRegexNodeSpecifierFactory()
+            : NodeSpecifierFactory.load(factoryName);
+    return factory.buildNodeSpecifier(input);
   }
 
   private SortedSet<ForwardingAction> _actions;
@@ -106,14 +132,10 @@ public final class SpecifiersReachabilityQuestion extends Question {
   }
 
   NodeSpecifier getFinalNodesSpecifier() {
-    if (_finalNodesNodeSpecifierFactory == null && _finalNodesNodeSpecifierInput == null) {
-      return AllNodesNodeSpecifier.INSTANCE;
-    }
-    if (_finalNodesNodeSpecifierFactory == null) {
-      return new NameRegexNodeSpecifierFactory().buildNodeSpecifier(_finalNodesNodeSpecifierInput);
-    }
-    return NodeSpecifierFactory.load(_finalNodesNodeSpecifierFactory)
-        .buildNodeSpecifier(_finalNodesNodeSpecifierInput);
+    return getNodeSpecifier(
+        _finalNodesNodeSpecifierFactory,
+        _finalNodesNodeSpecifierInput,
+        AllNodesNodeSpecifier.INSTANCE);
   }
 
   @JsonProperty(PROP_FINAL_NODES_SPECIFIER_FACTORY)
@@ -128,7 +150,9 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   NodeSpecifier getForbiddenTransitNodesSpecifier() {
     return getNodeSpecifier(
-        _forbiddenTransitNodesNodeSpecifierFactory, _forbiddenTransitNodesNodeSpecifierInput);
+        _forbiddenTransitNodesNodeSpecifierFactory,
+        _forbiddenTransitNodesNodeSpecifierInput,
+        NoNodesNodeSpecifier.INSTANCE);
   }
 
   @JsonProperty(PROP_HEADERSPACE)
@@ -156,19 +180,16 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   NodeSpecifier getRequiredTransitNodesSpecifier() {
     return getNodeSpecifier(
-        _requiredTransitNodesNodeSpecifierFactory, _requiredTransitNodesNodeSpecifierInput);
+        _requiredTransitNodesNodeSpecifierFactory,
+        _requiredTransitNodesNodeSpecifierInput,
+        NoNodesNodeSpecifier.INSTANCE);
   }
 
   IpSpaceSpecifier getSourceIpSpaceSpecifier() {
-    if (_sourceIpSpaceSpecifierFactory == null && _sourceIpSpaceSpecifierInput == null) {
-      return InferFromLocationIpSpaceSpecifier.INSTANCE;
-    }
-    if (_sourceIpSpaceSpecifierFactory == null) {
-      return new ConstantWildcardSetIpSpaceSpecifierFactory()
-          .buildIpSpaceSpecifier(_sourceIpSpaceSpecifierInput);
-    }
-    return IpSpaceSpecifierFactory.load(_sourceIpSpaceSpecifierFactory)
-        .buildIpSpaceSpecifier(_sourceIpSpaceSpecifierInput);
+    return getIpSpaceSpecifier(
+        _sourceIpSpaceSpecifierFactory,
+        _sourceIpSpaceSpecifierInput,
+        InferFromLocationIpSpaceSpecifier.INSTANCE);
   }
 
   @JsonProperty(PROP_SOURCE_IP_SPACE_SPECIFIER_FACTORY)
@@ -183,15 +204,10 @@ public final class SpecifiersReachabilityQuestion extends Question {
 
   @VisibleForTesting
   LocationSpecifier getSourceLocationSpecifier() {
-    if (_sourceLocationSpecifierFactory == null && _sourceLocationSpecifierInput == null) {
-      return AllInterfaceLinksLocationSpecifier.INSTANCE;
-    }
-    if (_sourceLocationSpecifierFactory == null) {
-      return new NameRegexInterfaceLinkLocationSpecifierFactory()
-          .buildLocationSpecifier(_sourceLocationSpecifierInput);
-    }
-    return LocationSpecifierFactory.load(_sourceLocationSpecifierFactory)
-        .buildLocationSpecifier(_sourceLocationSpecifierInput);
+    return getLocationSpecifier(
+        _sourceLocationSpecifierFactory,
+        _sourceLocationSpecifierInput,
+        AllInterfaceLinksLocationSpecifier.INSTANCE);
   }
 
   @JsonProperty(PROP_SOURCE_LOCATION_SPECIFIER_FACTORY)
