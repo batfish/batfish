@@ -188,25 +188,22 @@ public abstract class Z3ContextJob<R extends BatfishJobResult<?, ?>> extends Bat
             .stream()
             .map(variablesAsConsts::get)
             .collect(Collectors.toList());
-
-    Expr substitutedSmtConstraint =
-        program.getSmtConstraint().substituteVars(vars.toArray(new Expr[] {}));
-
     List<BitVecExpr> reversedVars = Lists.reverse(vars);
-    Expr substitutedAnswer =
-        answer.getArgs().length == 0
-            ? answer
-            : answer.substituteVars(reversedVars.toArray(new Expr[] {}));
 
-    BoolExpr answerAndSmtConstraint =
-        program
-            .getNodContext()
-            .getContext()
-            .mkAnd((BoolExpr) substitutedAnswer, (BoolExpr) substitutedSmtConstraint);
+    BoolExpr substitutedSmtConstraint =
+        (BoolExpr) program.getSmtConstraint().substituteVars(vars.toArray(new Expr[] {}));
 
-    return negate
-        ? program.getNodContext().getContext().mkNot(answerAndSmtConstraint)
-        : answerAndSmtConstraint;
+    BoolExpr substitutedAnswer =
+        (BoolExpr)
+            (answer.getArgs().length == 0
+                ? answer
+                : answer.substituteVars(reversedVars.toArray(new Expr[] {})));
+
+    Context context = program.getNodContext().getContext();
+
+    BoolExpr finalAnswer = negate ? context.mkNot(substitutedAnswer) : substitutedAnswer;
+
+    return context.mkAnd(finalAnswer, substitutedSmtConstraint);
   }
 
   protected Fixedpoint mkFixedpoint(NodProgram program, boolean printAnswer) {
