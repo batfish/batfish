@@ -39,9 +39,9 @@ public class Settings extends BaseSettings {
   private static final String ARG_QUEUE_TYPE = "qtype";
 
   public static final String ARG_SERVICE_NAME = "servicename";
-  private static final String ARG_SERVICE_POOL_PORT = "poolport";
-  private static final String ARG_SERVICE_WORK_PORT = "workport";
-  private static final String ARG_SERVICE_WORK_V2_PORT = "workv2port";
+  public static final String ARG_SERVICE_POOL_PORT = "poolport";
+  public static final String ARG_SERVICE_WORK_PORT = "workport";
+  public static final String ARG_SERVICE_WORK_V2_PORT = "workv2port";
   private static final String ARG_SSL_POOL_DISABLE = "sslpooldisable";
 
   private static final String ARG_SSL_POOL_KEYSTORE_FILE = "sslpoolkeystorefile";

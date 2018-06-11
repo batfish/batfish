@@ -4865,6 +4865,39 @@
       "cisco_bgp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_bgp",
+        "asPathAccessLists" : {
+          "10" : {
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "regex" : "^65535$"
+              },
+              {
+                "action" : "REJECT",
+                "regex" : "(,|\\{|\\}|^|$| )65535(,|\\{|\\}|^|$| )"
+              }
+            ],
+            "name" : "10"
+          },
+          "20" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^65536$"
+              }
+            ],
+            "name" : "20"
+          },
+          "30" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^4000$"
+              }
+            ],
+            "name" : "30"
+          }
+        },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
@@ -8994,10 +9027,99 @@
       "cisco_route_map" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_route_map",
+        "asPathAccessLists" : {
+          "AS_PATH_ACL1" : {
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "regex" : "^65535$"
+              },
+              {
+                "action" : "REJECT",
+                "regex" : "(,|\\{|\\}|^|$| )65535(,|\\{|\\}|^|$| )"
+              }
+            ],
+            "name" : "AS_PATH_ACL1"
+          },
+          "AS_PATH_ACL2" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^65536$"
+              }
+            ],
+            "name" : "AS_PATH_ACL2"
+          },
+          "AS_PATH_ACL_UNUSED" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^4000$"
+              }
+            ],
+            "name" : "AS_PATH_ACL_UNUSED"
+          }
+        },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
+          "MAP_NAME1" : {
+            "name" : "MAP_NAME1",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "~RMCLAUSE~MAP_NAME1~10~",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedAsPathSet",
+                    "name" : "AS_PATH_ACL1"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
+          "MAP_NAME2" : {
+            "name" : "MAP_NAME2",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "~RMCLAUSE~MAP_NAME2~20~",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedAsPathSet",
+                    "name" : "AS_PATH_ACL2"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
           "MSDP-SA-RP-FILTER" : {
             "name" : "MSDP-SA-RP-FILTER",
             "statements" : [
@@ -14380,6 +14502,19 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePolicies" : {
+          "1.2.3.4" : {
+            "name" : "1.2.3.4",
+            "proposals" : [
+              "PROPOSAL"
+            ]
+          }
+        },
+        "ikeProposals" : {
+          "PROPOSAL" : {
+            "name" : "PROPOSAL"
+          }
+        },
         "ipAccessLists" : {
           "~EXISTING_CONNECTION~" : {
             "name" : "~EXISTING_CONNECTION~",

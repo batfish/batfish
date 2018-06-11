@@ -461,9 +461,6 @@ public class Client extends AbstractClient implements IClient {
 
   WorkItem _polledWorkItem = null;
 
-  @SuppressWarnings("unused")
-  private BfCoordPoolHelper _poolHelper;
-
   private LineReader _reader;
 
   private Settings _settings;
@@ -1655,11 +1652,7 @@ public class Client extends AbstractClient implements IClient {
         return;
     }
 
-    String workMgr = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorWorkPort();
-    String poolMgr = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorPoolPort();
-
-    _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
-    _poolHelper = new BfCoordPoolHelper(poolMgr);
+    _workHelper = new BfCoordWorkHelper(_logger, _settings);
 
     int numTries = 0;
 

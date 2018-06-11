@@ -39,6 +39,7 @@ public class Schema {
       ImmutableMap.<String, String>builder()
           .put("AclTrace", getClassString(AclTrace.class))
           .put("Boolean", getClassString(Boolean.class))
+          .put("Double", getClassString(Double.class))
           .put("Environment", getClassString(Environment.class))
           .put("FileLine", getClassString(FileLinePair.class))
           .put("FileLines", getClassString(FileLines.class))
@@ -56,6 +57,7 @@ public class Schema {
 
   public static final Schema ACL_TRACE = new Schema("AclTrace");
   public static final Schema BOOLEAN = new Schema("Boolean");
+  public static final Schema DOUBLE = new Schema("Double");
   public static final Schema ENVIRONMENT = new Schema("Environment");
   public static final Schema FILE_LINE = new Schema("FileLine");
   public static final Schema FILE_LINES = new Schema("FileLines");
