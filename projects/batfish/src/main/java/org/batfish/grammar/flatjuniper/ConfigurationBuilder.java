@@ -2704,6 +2704,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterS_vlans_named(S_vlans_namedContext ctx) {
     _currentVlanName = ctx.name.getText();
+    defineStructure(VLAN, _currentVlanName, ctx);
   }
 
   @Override
