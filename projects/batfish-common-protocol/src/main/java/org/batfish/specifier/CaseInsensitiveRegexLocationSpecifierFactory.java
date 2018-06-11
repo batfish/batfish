@@ -1,15 +1,14 @@
 package org.batfish.specifier;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.regex.Pattern;
 
 public abstract class CaseInsensitiveRegexLocationSpecifierFactory
     implements LocationSpecifierFactory {
   @Override
   public LocationSpecifier buildLocationSpecifier(Object input) {
-    if (!(input instanceof String)) {
-      throw new IllegalArgumentException(getName() + " requires input of type String");
-    }
-
+    checkArgument(input instanceof String, getName() + " requires input of type String");
     return buildLocationSpecifier(Pattern.compile((String) input, Pattern.CASE_INSENSITIVE));
   }
 
