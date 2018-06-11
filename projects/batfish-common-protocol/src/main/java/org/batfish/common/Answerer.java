@@ -62,12 +62,14 @@ public abstract class Answerer {
     AnswerElement deltaAnswer = create(_question, _batfish).answer();
     _batfish.popEnvironment();
     if (baseAnswer instanceof TableAnswerElement) {
-      AnswerElement diff =
+      TableAnswerElement rawTable =
           TableDiff.diffTables(
               (TableAnswerElement) baseAnswer,
               (TableAnswerElement) deltaAnswer,
               _question.getIncludeOneTableKeys());
-      return diff;
+      TableAnswerElement finalTable = new TableAnswerElement(rawTable.getMetadata());
+      finalTable.postProcessAnswer(_question, rawTable.getRows().getData());
+      return finalTable;
     } else {
       try {
         String beforeJsonStr = BatfishObjectMapper.writePrettyString(baseAnswer);

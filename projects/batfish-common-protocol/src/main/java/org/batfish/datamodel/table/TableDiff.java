@@ -5,9 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,6 +41,21 @@ public final class TableDiff {
   @VisibleForTesting
   static String baseColumnName(String originalColumnName) {
     return "Base_" + originalColumnName;
+  }
+
+  /**
+   * Returns a map over Rows, where the key is the key of the Row and the value is a Row with that
+   * key. If multiple {@link Row}s with the same key exist, (any) one is returned.
+   */
+  @VisibleForTesting
+  static Map<List<Object>, Row> buildMap(Rows rows, List<ColumnMetadata> metadata) {
+    Map<List<Object>, Row> map = new HashMap<>();
+    Iterator<Row> iterator = rows.iterator();
+    while (iterator.hasNext()) {
+      Row row = iterator.next();
+      map.put(row.getKey(metadata), row);
+    }
+    return map;
   }
 
   @VisibleForTesting
@@ -233,6 +250,8 @@ public final class TableDiff {
     Set<Object> processedKeys = new HashSet<>();
 
     Iterator<Row> baseRows = baseTable.getRows().iterator();
+    Map<List<Object>, Row> deltaMap =
+        buildMap(deltaTable.getRows(), inputMetadata.getColumnMetadata());
     while (baseRows.hasNext()) {
       Row baseRow = baseRows.next();
       Object baseKey = baseRow.getKey(inputMetadata.getColumnMetadata());
@@ -240,7 +259,7 @@ public final class TableDiff {
         continue;
       }
       processedKeys.add(baseKey);
-      Row deltaRow = deltaTable.getRows().getRow(baseKey, inputMetadata.getColumnMetadata());
+      Row deltaRow = deltaMap.get(baseKey);
       if ((deltaRow == null && !includeOneTableKeys)
           || (deltaRow != null /* skip if values are equal */
               && baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns)))) {
