@@ -6,19 +6,17 @@ import java.util.regex.Pattern;
 /** A {@link LocationSpecifierFactory} that builds {@link NameRegexInterfaceLocationSpecifier}s. */
 @AutoService(LocationSpecifierFactory.class)
 public final class NameRegexInterfaceLocationSpecifierFactory
-    extends TypedLocationSpecifierFactory<Pattern> {
+    extends CaseInsensitiveRegexLocationSpecifierFactory {
+  public static final String NAME =
+      NameRegexInterfaceLocationSpecifierFactory.class.getSimpleName();
+
   @Override
   public String getName() {
-    return getClass().getSimpleName();
+    return NAME;
   }
 
   @Override
-  protected Class<Pattern> getInputClass() {
-    return Pattern.class;
-  }
-
-  @Override
-  public LocationSpecifier buildLocationSpecifierTyped(Pattern pattern) {
+  public LocationSpecifier buildLocationSpecifier(Pattern pattern) {
     return new NameRegexInterfaceLocationSpecifier(pattern);
   }
 }
