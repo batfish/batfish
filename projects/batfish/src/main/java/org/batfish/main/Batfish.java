@@ -714,22 +714,21 @@ public class Batfish extends PluginConsumer implements IBatfish {
       List<AclSpecs> aclSpecs, AclLinesAnswerElementInterface answerRows) {
 
     for (AclSpecs aclSpec : aclSpecs) {
+      IpAccessList sanitizedAcl = aclSpec.acl.getSanitizedAcl();
 
       // Create phony configuration containing only this ACL and its dependencies
       NavigableMap<String, IpAccessList> aclsMap =
           (new ImmutableSortedMap.Builder<String, IpAccessList>(Comparator.naturalOrder()))
               .putAll(aclSpec.acl.getDependencies())
-              .put(aclSpec.acl.getAclName(), aclSpec.acl.getAcl())
+              .put(aclSpec.acl.getAclName(), sanitizedAcl)
               .build();
       Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
       c.setIpAccessLists(aclsMap);
 
       // Find unreachable lines
-      NodSatJob<AclLine> job = generateUnreachableAclLineJob(aclSpec.acl.getAcl(), c);
+      NodSatJob<AclLine> job = generateUnreachableAclLineJob(sanitizedAcl, c);
       Map<AclLine, Boolean> linesReachableMap = new TreeMap<>();
       computeNodSatOutput(ImmutableList.of(job), linesReachableMap);
-
-      // Find unreachable lines (if any)
       Set<Integer> unreachableLineNums =
           linesReachableMap
               .entrySet()
@@ -754,17 +753,17 @@ public class Batfish extends PluginConsumer implements IBatfish {
       // Produces a map of acl line -> line number of earliest more general reachable line
       List<NodFirstUnsatJob<AclLine, Integer>> step2Jobs =
           generateEarliestMoreGeneralAclLineJobs(
-              c, aclSpec.acl.getAcl(), unreachableLineNums, unmatchableLineNums, aclLines);
+              c, sanitizedAcl, unreachableLineNums, unmatchableLineNums, aclLines);
       Map<AclLine, Integer> blockingLinesMap = new TreeMap<>();
       computeNodFirstUnsatOutput(step2Jobs, blockingLinesMap);
 
       // Report all unreachable lines
       for (AclLine line : aclLines) {
-        String hostname = c.getHostname();
-        IpAccessList acl = aclSpec.acl.getAcl();
-        String aclName = acl.getName();
+        Pair<String, String> hostnameAclnamePair = aclSpec.getRepresentativeHostnameAclPair();
+        String hostname = hostnameAclnamePair.getFirst();
+        String aclName = hostnameAclnamePair.getSecond();
         int lineNumber = line.getLine();
-        IpAccessListLine ipAccessListLine = acl.getLines().get(lineNumber);
+        IpAccessListLine ipAccessListLine = sanitizedAcl.getLines().get(lineNumber);
         String lineName = firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString());
 
         if (unreachableLineNums.contains(lineNumber)) {

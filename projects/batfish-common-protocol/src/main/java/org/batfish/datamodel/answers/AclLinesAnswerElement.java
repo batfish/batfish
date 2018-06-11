@@ -182,7 +182,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   @Override
   public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {
     Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
-    IpAccessList acl = aclSpecs.acl.getOriginal();
+    IpAccessList acl = aclSpecs.acl.getOriginalAcl();
     IpAccessListLine line = acl.getLines().get(lineNumber);
     addLine(
         _reachableLines,
@@ -195,18 +195,15 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   @Override
   public void addUnreachableLine(
       AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
-
-    IpAccessListLine blockedLine = aclSpecs.acl.getAcl().getLines().get(lineNumber);
-    IpAccessListLine originalLine = aclSpecs.acl.getOriginal().getLines().get(lineNumber);
+    IpAccessListLine line = aclSpecs.acl.getOriginalAcl().getLines().get(lineNumber);
     AclReachabilityEntry entry =
-        new AclReachabilityEntry(
-            lineNumber, firstNonNull(originalLine.getName(), originalLine.toString()));
+        new AclReachabilityEntry(lineNumber, firstNonNull(line.getName(), line.toString()));
 
-    if (blockedLine.undefinedReference()) {
+    if (aclSpecs.acl.hasUndefinedRef(lineNumber)) {
       entry.setEarliestMoreGeneralLineIndex(-1);
       entry.setEarliestMoreGeneralLineName(
           "This line will never match any packet because it references an undefined structure.");
-    } else if (blockedLine.inCycle()) {
+    } else if (aclSpecs.acl.inCycle(lineNumber)) {
       entry.setEarliestMoreGeneralLineIndex(-1);
       entry.setEarliestMoreGeneralLineName(
           "This line contains a reference that is part of a circular chain of references.");
@@ -220,11 +217,11 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
           "Multiple earlier lines partially block this line, making it unreachable.");
     } else {
       int blockingLineNum = blockingLines.first();
-      IpAccessListLine blockingLine = aclSpecs.acl.getOriginal().getLines().get(blockingLineNum);
+      IpAccessListLine blockingLine = aclSpecs.acl.getOriginalAcl().getLines().get(blockingLineNum);
       entry.setEarliestMoreGeneralLineIndex(blockingLineNum);
       entry.setEarliestMoreGeneralLineName(
           firstNonNull(blockingLine.getName(), blockingLine.toString()));
-      entry.setDifferentAction(!blockedLine.getAction().equals(blockingLine.getAction()));
+      entry.setDifferentAction(!line.getAction().equals(blockingLine.getAction()));
     }
 
     Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
@@ -232,7 +229,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
         _unreachableLines,
         hostnameAndAcl.getFirst(),
         hostnameAndAcl.getSecond(),
-        aclSpecs.acl.getOriginal(),
+        aclSpecs.acl.getOriginalAcl(),
         entry);
   }
 
@@ -268,7 +265,7 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     }
     return sb.toString();
   }
-  
+
   public void setEquivalenceClasses(
       SortedMap<String, SortedMap<String, SortedSet<String>>> equivalenceClasses) {
     _equivalenceClasses = equivalenceClasses;

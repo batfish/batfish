@@ -1,5 +1,6 @@
 package org.batfish.question.aclreachability2;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +16,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -25,6 +27,221 @@ import org.batfish.question.AclReachabilityQuestionPlugin.AclReachabilityAnswere
  * AclReachability2Answerer}.
  */
 public final class AclReachabilityAnswererUtils {
+
+  private static final class AclNode {
+
+    private final class Dependency {
+      public final AclNode dependency;
+      public final Set<Integer> lineNums = new TreeSet<>();
+
+      public Dependency(AclNode dependency, int lineNum) {
+        this.dependency = dependency;
+        lineNums.add(lineNum);
+      }
+    }
+
+    private final IpAccessList _acl;
+    private final Set<Integer> _linesWithUndefinedRefs = new TreeSet<>();
+    private final Set<Integer> _linesInCycles = new TreeSet<>();
+    private final List<ImmutableList<String>> _cycles = new ArrayList<>();
+    private final List<Dependency> _dependencies = new ArrayList<>();
+    private final List<AclNode> _referencingAcls = new ArrayList<>();
+    private IpAccessList _sanitizedAcl;
+
+    public AclNode(IpAccessList acl) {
+      _acl = acl;
+    }
+
+    public void addCycle(ImmutableList<String> cycleAcls) {
+
+      // Record cycle
+      _cycles.add(cycleAcls);
+
+      // Remove previous ACL from referencing ACLs
+      int aclIndex = cycleAcls.indexOf(_acl.getName());
+      int cycleSize = cycleAcls.size();
+      String prevAclName = cycleAcls.get((aclIndex - 1 + cycleSize) % cycleSize);
+      int referencingAclIndex = 0;
+      while (!_referencingAcls.get(referencingAclIndex).getName().equals(prevAclName)) {
+        referencingAclIndex++;
+      }
+      _referencingAcls.remove(referencingAclIndex);
+
+      // Remove next ACL from dependencies, and record line numbers that reference dependency
+      String nextAclName = cycleAcls.get((aclIndex + 1) % cycleSize);
+      int dependencyIndex = 0;
+      while (!_dependencies.get(dependencyIndex).dependency.getName().equals(nextAclName)) {
+        dependencyIndex++;
+      }
+      _linesInCycles.addAll(_dependencies.get(dependencyIndex).lineNums);
+      _dependencies.remove(dependencyIndex);
+    }
+
+    public List<AclNode> getDependencies() {
+      return _dependencies.stream().map(d -> d.dependency).collect(Collectors.toList());
+    }
+
+    public Map<String, IpAccessList> getFlatDependencies() {
+      Map<String, IpAccessList> ret = new TreeMap<>();
+      for (Dependency d : _dependencies) {
+        ret.put(d.dependency.getName(), d.dependency._sanitizedAcl);
+        ret.putAll(d.dependency.getFlatDependencies());
+      }
+      return ret;
+    }
+
+    public void addDependency(AclNode dependency, int lineNum) {
+      for (Dependency d : _dependencies) {
+        if (d.dependency.getName().equals(dependency.getName())) {
+          d.lineNums.add(lineNum);
+          return;
+        }
+      }
+      _dependencies.add(new Dependency(dependency, lineNum));
+    }
+
+    public void addReferencingAcl(AclNode referencing) {
+      _referencingAcls.add(referencing);
+    }
+
+    public void addUndefinedRef(int lineNum) {
+      _linesWithUndefinedRefs.add(lineNum);
+    }
+
+    public void buildSanitizedAcl() {
+      if (_linesWithUndefinedRefs.isEmpty() && _linesInCycles.isEmpty()) {
+        // No lines need to be sanitized; just use the original IpAccessList as sanitized version
+        _sanitizedAcl = _acl;
+      } else {
+        // Some lines need to be sanitized. Build a new IpAccessList, modifying problematic lines.
+        List<IpAccessListLine> originalLines = _acl.getLines();
+        List<IpAccessListLine> sanitizedLines = new ArrayList<>();
+        for (int i = 0; i < originalLines.size(); i++) {
+          IpAccessListLine oldLine = originalLines.get(i);
+          if (!_linesInCycles.contains(i) && !_linesWithUndefinedRefs.contains(i)) {
+            sanitizedLines.add(oldLine);
+          } else {
+            sanitizedLines.add(
+                IpAccessListLine.builder()
+                    .setMatchCondition(FalseExpr.INSTANCE)
+                    .setAction(oldLine.getAction())
+                    .setName(oldLine.getName())
+                    .build());
+          }
+        }
+        _sanitizedAcl = IpAccessList.builder().setName(getName()).setLines(sanitizedLines).build();
+      }
+    }
+
+    public IpAccessList getAcl() {
+      return _acl;
+    }
+
+    public List<ImmutableList<String>> getCycles() {
+      return _cycles;
+    }
+
+    public Set<Integer> getLinesInCycles() {
+      return _linesInCycles;
+    }
+
+    public Set<Integer> getLinesWithUndefinedRefs() {
+      return _linesWithUndefinedRefs;
+    }
+
+    public IpAccessList getSanitizedAcl() {
+      return _sanitizedAcl;
+    }
+
+    public String getName() {
+      return _acl.getName();
+    }
+  }
+
+  private static void createAclNodeWithDependencies(
+      IpAccessList acl, Map<String, AclNode> aclNodeMap, SortedMap<String, IpAccessList> acls) {
+
+    // Create ACL node for current ACL
+    AclNode node = new AclNode(acl);
+    aclNodeMap.put(acl.getName(), node);
+
+    // Go through lines and add dependencies
+    int index = 0;
+    for (IpAccessListLine line : acl.getLines()) {
+      AclLineMatchExpr matchCondition = line.getMatchCondition();
+      if (matchCondition instanceof PermittedByAcl) {
+        String referencedAclName = ((PermittedByAcl) matchCondition).getAclName();
+        IpAccessList referencedAcl = acls.get(referencedAclName);
+        if (referencedAcl == null) {
+          // Referenced ACL doesn't exist. Mark line as unmatchable.
+          node.addUndefinedRef(index);
+        } else {
+          AclNode referencedAclNode = aclNodeMap.get(referencedAclName);
+          if (referencedAclNode == null) {
+            // Referenced ACL not yet recorded; recurse on it
+            createAclNodeWithDependencies(referencedAcl, aclNodeMap, acls);
+            referencedAclNode = aclNodeMap.get(referencedAclName);
+          }
+          // Referenced ACL has now been recorded; add dependency and reference
+          node.addDependency(referencedAclNode, index);
+          referencedAclNode.addReferencingAcl(node);
+        }
+      }
+      index++;
+    }
+  }
+
+  public static List<ImmutableList<String>> sanitizeNode(
+      AclNode node,
+      List<AclNode> visited,
+      Map<String, AclNode> sanitized,
+      Map<String, AclNode> aclNodeMap) {
+
+    // Mark starting node as visited
+    visited.add(node);
+
+    // Create set to hold cycles found
+    List<ImmutableList<String>> cyclesFound = new ArrayList<>();
+
+    // Go through dependencies (each ACL this one depends on will only appear as one dependency)
+    for (AclNode dependency : node.getDependencies()) {
+      if (sanitized.containsKey(dependency.getName())) {
+        // We've already checked out the dependency. It must not be in a cycle with current ACL.
+        continue;
+      }
+      int dependencyIndex = visited.indexOf(dependency);
+      if (dependencyIndex != -1) {
+        // Found a new cycle.
+        ImmutableList<String> cycleAcls =
+            ImmutableList.copyOf(
+                visited
+                    .subList(dependencyIndex, visited.size())
+                    .stream()
+                    .map(n -> n.getName())
+                    .collect(Collectors.toList()));
+        cyclesFound.add(cycleAcls);
+      } else {
+        // No cycle found; recurse on dependency to see if there is a cycle farther down.
+        cyclesFound.addAll(
+            sanitizeNode(aclNodeMap.get(dependency.getName()), visited, sanitized, aclNodeMap));
+      }
+    }
+    // Remove current node from visited list
+    visited.remove(node);
+
+    // Record found cycles in this node.
+    for (ImmutableList<String> cycleAcls : cyclesFound) {
+      int indexOfThisAcl = cycleAcls.indexOf(node.getName());
+      if (indexOfThisAcl != -1) {
+        node.addCycle(cycleAcls);
+      }
+    }
+
+    // Now that all cycles are recorded, never explore this node again, and sanitize its ACL.
+    node.buildSanitizedAcl();
+    sanitized.put(node.getName(), node);
+    return cyclesFound;
+  }
 
   /**
    * Generates the list of {@link CanonicalAcl} objects to analyze in preparation for some ACL
@@ -54,38 +271,43 @@ public final class AclReachabilityAnswererUtils {
     */
     for (String hostname : configurations.keySet()) {
       if (specifiedNodes.contains(hostname)) {
-        Map<String, IpAccessList> originalAcls = configurations.get(hostname).getIpAccessLists();
+        SortedMap<String, IpAccessList> acls = configurations.get(hostname).getIpAccessLists();
 
-        // Create a copy of the configuration's ACL map
-        SortedMap<String, IpAccessList> acls = new TreeMap<>();
-        acls.putAll(originalAcls);
-        Map<String, Map<String, IpAccessList>> aclDependenciesMap = new TreeMap<>();
-
-        // Break cycles in ACLs specified by aclRegex and their dependencies.
-        // Adds cycles to answer and changes cycle lines to be unmatchable.
-        for (String aclName : acls.keySet()) {
-          if (!aclDependenciesMap.containsKey(aclName) && aclRegex.matcher(aclName).matches()) {
-            breakAndReportCycles(hostname, aclName, new ArrayList<>(), acls, answer);
+        // Build graph of AclNodes containing pointers to dependencies and referencing nodes
+        Map<String, AclNode> aclNodeMap = new TreeMap<>();
+        for (IpAccessList acl : acls.values()) {
+          String aclName = acl.getName();
+          if (!aclNodeMap.containsKey(aclName) && aclRegex.matcher(aclName).matches()) {
+            createAclNodeWithDependencies(acl, aclNodeMap, acls);
           }
         }
 
-        // Create map of (aclName) -> (ACLs upon which it depends)
-        // Include in the map all ACLs specified by aclRegex and all their dependencies
-        for (String aclName : acls.keySet()) {
-          if (aclRegex.matcher(aclName).matches() && !aclDependenciesMap.containsKey(aclName)) {
-            collectDependencies(aclName, acls, aclDependenciesMap);
+        // Sanitize nodes in graph (finds all cycles, creates sanitized versions of IpAccessLists)
+        Map<String, AclNode> sanitizedAcls = new TreeMap<>();
+        for (AclNode node : aclNodeMap.values()) {
+          if (!sanitizedAcls.containsKey(node.getName())) {
+            List<ImmutableList<String>> cycles =
+                sanitizeNode(node, new ArrayList<>(), sanitizedAcls, aclNodeMap);
+            for (ImmutableList<String> cycleAcls : cycles) {
+              answer.addCycle(hostname, cycleAcls);
+            }
           }
         }
 
         // For each ACL specified by aclRegex, create a CanonicalAcl with its dependencies
-        for (Entry<String, Map<String, IpAccessList>> e : aclDependenciesMap.entrySet()) {
+        for (Entry<String, AclNode> e : aclNodeMap.entrySet()) {
           String aclName = e.getKey();
           if (aclRegex.matcher(aclName).matches()) {
+            AclNode node = e.getValue();
             CanonicalAcl currentAcl =
-                new CanonicalAcl(acls.get(aclName), originalAcls.get(aclName), e.getValue());
+                new CanonicalAcl(
+                    node.getSanitizedAcl(),
+                    node.getAcl(),
+                    node.getFlatDependencies(),
+                    node.getLinesWithUndefinedRefs(),
+                    node.getLinesInCycles());
 
-            // If an identical ACL doesn't exist, add it to the set; otherwise, find the existing
-            // version and add current hostname
+            // If an identical ACL exists, add current hostname/aclName pair; otherwise, add new ACL
             boolean added = false;
             for (AclSpecs.Builder aclSpec : aclSpecs) {
               if (aclSpec.getAcl().equals(currentAcl)) {
@@ -101,100 +323,6 @@ public final class AclReachabilityAnswererUtils {
         }
       }
     }
-    List<AclSpecs> finalAclSpecs =
-        aclSpecs.stream().map(aclSpec -> aclSpec.build()).collect(Collectors.toList());
-    return finalAclSpecs;
-  }
-
-  /*
-   Return value is a list of ACLs we've already recursed through that start a cycle we've found.
-   For example, if we have ACLs A, B, C, D, E with dependencies:
-    A -> B
-    B -> C
-    C -> D
-    D -> B, E
-    E -> D
-   and we traverse in alphabetical order, then returning from E the return value will be [B, D].
-  */
-  private static List<String> breakAndReportCycles(
-      String hostname,
-      String aclName,
-      List<String> aclsSoFar,
-      SortedMap<String, IpAccessList> acls,
-      AclLinesAnswerElementInterface answer) {
-
-    aclsSoFar.add(aclName);
-    List<String> firstNodesInCycles = new ArrayList<>();
-
-    // Keep track of dependencies that caused cycles (unlikely to have repeat dependencies in the
-    // same ACL, but don't want to list a cycle twice in answer)
-    Set<String> dependenciesWithCycles = new TreeSet<>();
-
-    // Find lines with dependencies
-    int index = 0;
-    for (IpAccessListLine line : acls.get(aclName).getLines()) {
-      AclLineMatchExpr matchCondition = line.getMatchCondition();
-      if (matchCondition instanceof PermittedByAcl) {
-        String referencedAcl = ((PermittedByAcl) matchCondition).getAclName();
-
-        if (dependenciesWithCycles.contains(referencedAcl)) {
-          // Dependency was already found to cause a cycle. Modify the line but don't record again.
-          acls.put(aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, true, false));
-        } else if (!acls.containsKey(referencedAcl)) {
-          // Referenced ACL doesn't exist. Mark line as unmatchable; will be reported in answer.
-          acls.put(aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, false, true));
-        } else {
-          int referencedAclIndex = aclsSoFar.indexOf(referencedAcl);
-          if (referencedAclIndex != -1) {
-            // Dependency causes a cycle. Record cycle and modify
-            // line to be unmatchable.
-            answer.addCycle(hostname, aclsSoFar.subList(referencedAclIndex, aclsSoFar.size()));
-            acls.put(
-                aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, true, false));
-
-            dependenciesWithCycles.add(referencedAcl);
-            firstNodesInCycles.add(referencedAcl);
-          } else {
-            // Dependency doesn't cause a cycle so far; recurse to check deeper.
-            firstNodesInCycles.addAll(
-                breakAndReportCycles(hostname, referencedAcl, aclsSoFar, acls, answer));
-            if (!firstNodesInCycles.isEmpty()) {
-              acls.put(
-                  aclName, acls.get(aclName).createVersionWithUnmatchableLine(index, true, false));
-            }
-          }
-        }
-      }
-      index++;
-    }
-    aclsSoFar.remove(aclsSoFar.size() - 1);
-    firstNodesInCycles.remove(aclName);
-    return firstNodesInCycles;
-  }
-
-  private static void collectDependencies(
-      String aclName,
-      SortedMap<String, IpAccessList> acls,
-      Map<String, Map<String, IpAccessList>> aclDependencies) {
-    Map<String, IpAccessList> dependencies = new TreeMap<>();
-
-    // Go through lines of ACL to find dependencies
-    for (IpAccessListLine line : acls.get(aclName).getLines()) {
-      AclLineMatchExpr matchCondition = line.getMatchCondition();
-      if (matchCondition instanceof PermittedByAcl) {
-
-        // Found a dependency.
-        String referencedAclName = ((PermittedByAcl) matchCondition).getAclName();
-
-        // Collect dependencies of referencedAcl if it hasn't already been done
-        if (!aclDependencies.containsKey(referencedAclName)) {
-          collectDependencies(referencedAclName, acls, aclDependencies);
-        }
-        // Add referencedAcl and its dependencies to current ACL's dependencies
-        dependencies.put(referencedAclName, acls.get(referencedAclName));
-        dependencies.putAll(aclDependencies.get(referencedAclName));
-      }
-    }
-    aclDependencies.put(aclName, dependencies);
+    return aclSpecs.stream().map(aclSpec -> aclSpec.build()).collect(Collectors.toList());
   }
 }

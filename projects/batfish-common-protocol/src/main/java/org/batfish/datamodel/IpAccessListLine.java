@@ -19,13 +19,9 @@ public final class IpAccessListLine implements Serializable {
 
     private LineAction _action;
 
-    private boolean _inCycle = false;
-
     private AclLineMatchExpr _matchCondition;
 
     private String _name;
-
-    private boolean _undefinedReference = false;
 
     private Builder() {}
 
@@ -35,7 +31,7 @@ public final class IpAccessListLine implements Serializable {
     }
 
     public IpAccessListLine build() {
-      return new IpAccessListLine(_action, _matchCondition, _name, _inCycle, _undefinedReference);
+      return new IpAccessListLine(_action, _matchCondition, _name);
     }
 
     public Builder rejecting() {
@@ -48,11 +44,6 @@ public final class IpAccessListLine implements Serializable {
       return this;
     }
 
-    public Builder setInCycle(boolean inCycle) {
-      _inCycle = inCycle;
-      return this;
-    }
-
     public Builder setMatchCondition(AclLineMatchExpr matchCondition) {
       _matchCondition = matchCondition;
       return this;
@@ -60,11 +51,6 @@ public final class IpAccessListLine implements Serializable {
 
     public Builder setName(String name) {
       _name = name;
-      return this;
-    }
-
-    public Builder setUndefinedReference(boolean undefinedReference) {
-      _undefinedReference = undefinedReference;
       return this;
     }
   }
@@ -105,13 +91,9 @@ public final class IpAccessListLine implements Serializable {
 
   private final LineAction _action;
 
-  private boolean _inCycle = false;
-
   private final AclLineMatchExpr _matchCondition;
 
   private final String _name;
-
-  private boolean _undefinedReference = false;
 
   @JsonCreator
   public IpAccessListLine(
@@ -121,17 +103,6 @@ public final class IpAccessListLine implements Serializable {
     _action = Objects.requireNonNull(action);
     _matchCondition = Objects.requireNonNull(matchCondition);
     _name = name;
-  }
-
-  private IpAccessListLine(
-      @Nonnull LineAction action,
-      @Nonnull AclLineMatchExpr matchCondition,
-      String name,
-      boolean inCycle,
-      boolean undefinedReference) {
-    this(action, matchCondition, name);
-    _inCycle = inCycle;
-    _undefinedReference = undefinedReference;
   }
 
   @Override
@@ -145,23 +116,13 @@ public final class IpAccessListLine implements Serializable {
     IpAccessListLine other = (IpAccessListLine) obj;
     return _action == other._action
         && Objects.equals(_matchCondition, other._matchCondition)
-        && Objects.equals(_name, other._name)
-        && _inCycle == other._inCycle
-        && _undefinedReference == other._undefinedReference;
+        && Objects.equals(_name, other._name);
   }
 
   @JsonPropertyDescription(
       "The action the underlying access-list will take when this line matches an IPV4 packet.")
   public @Nonnull LineAction getAction() {
     return _action;
-  }
-
-  public boolean inCycle() {
-    return _inCycle;
-  }
-
-  public boolean undefinedReference() {
-    return _undefinedReference;
   }
 
   public @Nonnull AclLineMatchExpr getMatchCondition() {

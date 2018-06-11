@@ -8,6 +8,7 @@ import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
@@ -81,9 +82,19 @@ public class CanonicalAclTest {
 
     // Canonical acls for acl1 and acl2 should match
     CanonicalAcl canonicalAcl1 =
-        new CanonicalAcl(acl1, acl1, ImmutableMap.of("referencedAcl", referencedAcl1));
+        new CanonicalAcl(
+            acl1,
+            acl1,
+            ImmutableMap.of("referencedAcl", referencedAcl1),
+            ImmutableSet.of(),
+            ImmutableSet.of());
     CanonicalAcl canonicalAcl2 =
-        new CanonicalAcl(acl2, acl2, ImmutableMap.of("referencedAcl", referencedAcl2));
+        new CanonicalAcl(
+            acl2,
+            acl2,
+            ImmutableMap.of("referencedAcl", referencedAcl2),
+            ImmutableSet.of(),
+            ImmutableSet.of());
 
     assertThat(canonicalAcl1, equalTo(canonicalAcl2));
   }
@@ -113,8 +124,10 @@ public class CanonicalAclTest {
             .build();
 
     // Canonical acls for acl1 and acl2 shouldn't match since they are different
-    CanonicalAcl canonicalAcl1 = new CanonicalAcl(acl1, acl1, ImmutableMap.of());
-    CanonicalAcl canonicalAcl2 = new CanonicalAcl(acl2, acl2, ImmutableMap.of());
+    CanonicalAcl canonicalAcl1 =
+        new CanonicalAcl(acl1, acl1, ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of());
+    CanonicalAcl canonicalAcl2 =
+        new CanonicalAcl(acl2, acl2, ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of());
 
     assertThat(canonicalAcl1, not(equalTo(canonicalAcl2)));
   }
@@ -164,9 +177,19 @@ public class CanonicalAclTest {
 
     // Canonical acls for acl1 and acl2 shouldn't match since references are different
     CanonicalAcl canonicalAcl1 =
-        new CanonicalAcl(acl1, acl1, ImmutableMap.of("referencedAcl", referencedAcl1));
+        new CanonicalAcl(
+            acl1,
+            acl1,
+            ImmutableMap.of("referencedAcl", referencedAcl1),
+            ImmutableSet.of(),
+            ImmutableSet.of());
     CanonicalAcl canonicalAcl2 =
-        new CanonicalAcl(acl2, acl2, ImmutableMap.of("referencedAcl", referencedAcl2));
+        new CanonicalAcl(
+            acl2,
+            acl2,
+            ImmutableMap.of("referencedAcl", referencedAcl2),
+            ImmutableSet.of(),
+            ImmutableSet.of());
 
     assertThat(canonicalAcl1, not(equalTo(canonicalAcl2)));
   }

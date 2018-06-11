@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.table.Row;
 
 /**
@@ -40,17 +42,18 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
   public void addUnreachableLine(
       AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
 
-    IpAccessList acl = aclSpecs.acl.getAcl();
-    IpAccessList original = aclSpecs.acl.getOriginal();
-    IpAccessListLine blockedLine = acl.getLines().get(lineNumber);
-    if (blockedLine.inCycle()) {
+    if (aclSpecs.acl.inCycle(lineNumber)) {
       return;
     }
 
+    IpAccessList acl = aclSpecs.acl.getOriginalAcl();
+    LineAction blockedLineAction = acl.getLines().get(lineNumber).getAction();
     boolean diffAction = false;
-    if (!blockingLines.isEmpty()) {
-      IpAccessListLine blockingLine = acl.getLines().get(blockingLines.first());
-      diffAction = !blockedLine.getAction().equals(blockingLine.getAction());
+    for (int blockingLineIndex : blockingLines) {
+      if (!blockedLineAction.equals(acl.getLines().get(blockingLineIndex).getAction())) {
+        diffAction = true;
+        break;
+      }
     }
 
     // All the host-acl pairs that contain this canonical acl
@@ -67,8 +70,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .put(COL_SOURCES, flatSources)
             .put(
                 COL_LINES,
-                original
-                    .getLines()
+                acl.getLines()
                     .stream()
                     .map(l -> firstNonNull(l.getName(), l.toString()))
                     .collect(Collectors.toList()))
@@ -77,13 +79,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             .put(COL_DIFF_ACTION, diffAction)
             .put(
                 COL_MESSAGE,
-                buildMessage(
-                    original.getLines(),
-                    blockedLine,
-                    lineNumber,
-                    flatSources,
-                    blockingLines,
-                    unmatchable))
+                buildMessage(aclSpecs.acl, lineNumber, flatSources, blockingLines, unmatchable))
             .build());
   }
 
@@ -105,12 +101,12 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
   }
 
   private static String buildMessage(
-      List<IpAccessListLine> lines, // Original lines with unsanitized cycles & ACL references
-      IpAccessListLine modifiedBlockedLine, // Could have sanitized cycle/undefined reference
+      CanonicalAcl canonicalAcl,
       int blockedLineNum,
       List<String> flatSources,
       SortedSet<Integer> blockingLines,
       boolean unmatchable) {
+    List<IpAccessListLine> lines = canonicalAcl.getOriginalAcl().getLines();
     String blockedLineName =
         firstNonNull(lines.get(blockedLineNum).getName(), lines.get(blockedLineNum).toString());
     StringBuilder sb =
@@ -118,7 +114,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
             String.format(
                 "ACL(s) { %s } contain(s) an unreachable line: '%d: %s'. ",
                 String.join("; ", flatSources), blockedLineNum, blockedLineName));
-    if (modifiedBlockedLine.undefinedReference()) {
+    if (canonicalAcl.hasUndefinedRef(blockedLineNum)) {
       sb.append("This line references a structure that is not defined.");
     } else if (unmatchable) {
       sb.append("This line will never match any packet, independent of preceding lines.");

@@ -5,13 +5,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.acl.Evaluator;
-import org.batfish.datamodel.acl.FalseExpr;
 
 @JsonSchemaDescription("An access-list used to filter IPV4 packets")
 public class IpAccessList extends ComparableStructure<String> {
@@ -186,26 +184,5 @@ public class IpAccessList extends ComparableStructure<String> {
       }
     }
     return true;
-  }
-
-  public IpAccessList createVersionWithUnmatchableLine(
-      int lineNumber, boolean inCycle, boolean undefinedReference) {
-    List<IpAccessListLine> newLines = new ArrayList<>();
-    for (int i = 0; i < _lines.size(); i++) {
-      IpAccessListLine oldLine = _lines.get(i);
-      if (i != lineNumber) {
-        newLines.add(oldLine);
-      } else {
-        newLines.add(
-            IpAccessListLine.builder()
-                .setMatchCondition(FalseExpr.INSTANCE)
-                .setAction(oldLine.getAction())
-                .setName(oldLine.getName())
-                .setInCycle(inCycle)
-                .setUndefinedReference(undefinedReference)
-                .build());
-      }
-    }
-    return builder().setName(getName()).setLines(newLines).build();
   }
 }
