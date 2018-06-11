@@ -8,19 +8,17 @@ import java.util.regex.Pattern;
  */
 @AutoService(LocationSpecifierFactory.class)
 public class DescriptionRegexInterfaceLinkLocationSpecifierFactory
-    extends TypedLocationSpecifierFactory<Pattern> {
+    extends CaseInsensitiveRegexLocationSpecifierFactory {
+  public static final String NAME =
+      DescriptionRegexInterfaceLinkLocationSpecifierFactory.class.getSimpleName();
+
+  @Override
+  public LocationSpecifier buildLocationSpecifier(Pattern input) {
+    return new DescriptionRegexInterfaceLinkLocationSpecifier(input);
+  }
+
   @Override
   public String getName() {
-    return getClass().getSimpleName();
-  }
-
-  @Override
-  protected Class<Pattern> getInputClass() {
-    return Pattern.class;
-  }
-
-  @Override
-  public LocationSpecifier buildLocationSpecifierTyped(Pattern input) {
-    return new DescriptionRegexInterfaceLinkLocationSpecifier(input);
+    return NAME;
   }
 }
