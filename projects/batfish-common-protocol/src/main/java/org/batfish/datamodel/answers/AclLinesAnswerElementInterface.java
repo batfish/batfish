@@ -11,10 +11,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Pair;
 import org.batfish.datamodel.acl.CanonicalAcl;
 
-/**
- * Interface for representing answers to aclReachability and aclReachability2. Implemented by {@link
- * AclLinesAnswerElement} and {@link AclLines2Rows}.
- */
+/** Interface for representing answers to aclReachability and aclReachability2. */
 @ParametersAreNonnullByDefault
 public interface AclLinesAnswerElementInterface {
 

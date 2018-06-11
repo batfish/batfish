@@ -140,15 +140,12 @@ public class AclReachability2Test {
   public void test2CircularReferences() throws IOException {
     // acl1 permits anything acl2 permits
     // acl2 permits anything acl1 permits
-    IpAccessList acl1 =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    IpAccessListLine.accepting()
-                        .setMatchCondition(new PermittedByAcl("acl2"))
-                        .build()))
-            .setName("acl1")
-            .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("acl2")).build()))
+        .setName("acl1")
+        .build();
     _aclb
         .setLines(
             ImmutableList.of(
