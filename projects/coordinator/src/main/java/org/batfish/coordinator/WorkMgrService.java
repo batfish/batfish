@@ -70,17 +70,18 @@ public class WorkMgrService {
       @FormDataParam(CoordConsts.SVC_KEY_API_KEY) String apiKey,
       @FormDataParam(CoordConsts.SVC_KEY_VERSION) String clientVersion,
       @FormDataParam(CoordConsts.SVC_KEY_CONTAINER_NAME) String containerName,
+      /* Optional: not needed for some completions */
       @FormDataParam(CoordConsts.SVC_KEY_TESTRIG_NAME) String testrigName,
       @FormDataParam(CoordConsts.SVC_KEY_COMPLETION_TYPE) String completionType,
       @FormDataParam(CoordConsts.SVC_KEY_QUERY) String query,
-      @FormDataParam(CoordConsts.SVC_KEY_MAX_SUGGESTIONS) String maxSuggestions /* optional */) {
+      /* Optional */
+      @FormDataParam(CoordConsts.SVC_KEY_MAX_SUGGESTIONS) String maxSuggestions) {
     try {
       _logger.infof("WMS:autoComplete %s %s %s\n", completionType, query, maxSuggestions);
 
       checkStringParam(apiKey, "API key");
       checkStringParam(clientVersion, "Client version");
       checkStringParam(containerName, "Container name");
-      checkStringParam(testrigName, "Testrig name");
       checkStringParam(completionType, "Completion type");
 
       checkApiKeyValidity(apiKey);

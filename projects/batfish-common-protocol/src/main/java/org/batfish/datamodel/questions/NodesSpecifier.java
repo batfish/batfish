@@ -52,14 +52,19 @@ public class NodesSpecifier {
 
   @Nonnull private final Type _type;
 
-  public NodesSpecifier(String expression) {
+  private final boolean _caseSensitive;
+
+  public NodesSpecifier(String expression, boolean caseSensitive) {
     _expression = expression;
+    _caseSensitive = caseSensitive;
 
     String[] parts = expression.split(":");
 
+    int patternFlags = caseSensitive ? 0 : Pattern.CASE_INSENSITIVE;
+
     if (parts.length == 1) {
       _type = Type.NAME;
-      _regex = Pattern.compile(_expression);
+      _regex = Pattern.compile(_expression, patternFlags);
       _roleDimension = null;
     } else {
       try {
@@ -74,15 +79,19 @@ public class NodesSpecifier {
                     .collect(Collectors.joining(", "))));
       }
       if (parts.length == 2 && _type == Type.NAME) {
-        _regex = Pattern.compile(parts[1]);
+        _regex = Pattern.compile(parts[1], patternFlags);
         _roleDimension = null;
       } else if (parts.length == 3 && _type == Type.ROLE) {
         _roleDimension = parts[1];
-        _regex = Pattern.compile(parts[2]);
+        _regex = Pattern.compile(parts[2], patternFlags);
       } else {
         throw new IllegalArgumentException("Cannot parse NodeSpecifier " + expression);
       }
     }
+  }
+
+  public NodesSpecifier(String expression) {
+    this(expression, false);
   }
 
   @Override
@@ -96,7 +105,8 @@ public class NodesSpecifier {
     NodesSpecifier rhs = (NodesSpecifier) obj;
     return Objects.equals(_expression, rhs._expression)
         && Objects.equals(_regex.pattern(), rhs._regex.pattern())
-        && Objects.equals(_type, rhs._type);
+        && Objects.equals(_type, rhs._type)
+        && _caseSensitive == rhs._caseSensitive;
   }
 
   /**
@@ -270,6 +280,11 @@ public class NodesSpecifier {
   @JsonIgnore
   public Type getType() {
     return _type;
+  }
+
+  @JsonIgnore
+  public boolean getCaseSensitive() {
+    return _caseSensitive;
   }
 
   @Override

@@ -10488,27 +10488,41 @@
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
-                10
+                10,
+                11,
+                12,
+                13,
+                14
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as2" : {
               "definitionLines" : [
-                15
+                15,
+                16,
+                17,
+                18,
+                19
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "bad-ebgp" : {
               "definitionLines" : [
-                24
+                24,
+                25,
+                26,
+                27
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "xanadu" : {
               "definitionLines" : [
-                20
+                20,
+                21,
+                22,
+                23
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "policy-statement" : {
@@ -10564,21 +10578,33 @@
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
-                11
+                11,
+                12,
+                13,
+                14,
+                15
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as3" : {
               "definitionLines" : [
-                16
+                16,
+                17,
+                18,
+                19,
+                20
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             },
             "as4" : {
               "definitionLines" : [
-                21
+                21,
+                22,
+                23,
+                24,
+                25
               ],
-              "numReferrers" : -1
+              "numReferrers" : 1
             }
           },
           "policy-statement" : {

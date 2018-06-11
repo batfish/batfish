@@ -411,7 +411,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
-  private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
+  public static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
 
   public static final String ARG_COORDINATOR_REGISTER = "register";
 
@@ -477,7 +477,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final String ARG_SERVICE_NAME = "servicename";
 
-  private static final String ARG_SERVICE_PORT = "serviceport";
+  public static final String ARG_SERVICE_PORT = "serviceport";
 
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
 

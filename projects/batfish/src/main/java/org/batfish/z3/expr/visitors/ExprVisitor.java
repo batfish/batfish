@@ -16,7 +16,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
@@ -54,8 +53,6 @@ public interface ExprVisitor {
   void visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr);
 
   void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr);
-
-  void visitSaneExpr(SaneExpr saneExpr);
 
   void visitStateExpr(StateExpr stateExpr);
 

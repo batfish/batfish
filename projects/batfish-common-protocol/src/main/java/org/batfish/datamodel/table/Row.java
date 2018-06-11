@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.base.Throwables;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
@@ -119,14 +120,20 @@ public class Row implements Comparable<Row> {
     }
   }
 
+  /**
+   * Converts {@code jsonNode} to class of {@code valueType}
+   *
+   * @return The converted object
+   * @throws ClassCastException if the conversion fails
+   */
   private <T> T convertType(JsonNode jsonNode, Class<T> valueType) {
     try {
       return BatfishObjectMapper.mapper().treeToValue(jsonNode, valueType);
     } catch (JsonProcessingException e) {
-      throw new BatfishException(
+      throw new ClassCastException(
           String.format(
-              "Could not recover object of type %s from json %s", valueType.getName(), jsonNode),
-          e);
+              "Cannot recover object of type %s from json %s: %s\n%s",
+              valueType.getName(), jsonNode, e.getMessage(), Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -157,13 +164,14 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
-   * @throws {@link NoSuchElementException} if this column is not present
+   * @throws NoSuchElementException if this column is not present
+   * @throws ClassCastException if the recovered data cannot be cast to the expected object
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
-    if (_data.get(columnName) == null) {
+    if (_data.get(columnName).isNull()) {
       return null;
     }
     return convertType(_data.get(columnName), valueType);
@@ -174,13 +182,14 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
-   * @throws {@link NoSuchElementException} if this column is not present
+   * @throws NoSuchElementException if this column is not present
+   * @throws ClassCastException if the recovered data cannot be cast to the expected object
    */
   public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
-    if (_data.get(columnName) == null) {
+    if (_data.get(columnName).isNull()) {
       return null;
     }
     try {
@@ -188,11 +197,13 @@ public class Row implements Comparable<Row> {
           .readValue(
               BatfishObjectMapper.mapper().treeAsTokens(_data.get(columnName)), valueTypeRef);
     } catch (IOException e) {
-      throw new BatfishException(
+      throw new ClassCastException(
           String.format(
-              "Could not recover object of type %s from column %s",
-              valueTypeRef.getClass(), columnName),
-          e);
+              "Cannot recover object of type %s from column %s: %s\n%s",
+              valueTypeRef.getClass(),
+              columnName,
+              e.getMessage(),
+              Throwables.getStackTraceAsString(e)));
     }
   }
 
@@ -201,13 +212,14 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The result
-   * @throws {@link NoSuchElementException} if this column is not present
+   * @throws NoSuchElementException if this column is not present
+   * @throws ClassCastException if the recovered data cannot be cast to the expected object
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
       throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
     }
-    if (_data.get(columnName) == null) {
+    if (_data.get(columnName).isNull()) {
       return null;
     }
     switch (columnSchema.getType()) {

@@ -26,7 +26,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.junit.Test;
@@ -319,6 +318,5 @@ public class SimplifierTest {
     assertThat(simplifyBooleanExpr(headerSpaceMatchExpr), not(equalTo(headerSpaceMatchExpr)));
     assertThat(simplifyBooleanExpr(prefixMatchExpr), not(equalTo(prefixMatchExpr)));
     assertThat(simplifyBooleanExpr(rangeMatchExpr), not(equalTo(rangeMatchExpr)));
-    assertThat(simplifyBooleanExpr(SaneExpr.INSTANCE), not(equalTo(SaneExpr.INSTANCE)));
   }
 }

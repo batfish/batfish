@@ -60,6 +60,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INBOUND_R
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NEIGHBOR_REMOTE_AS_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK6_ORIGINATION_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_NETWORK_ORIGINATION_ROUTE_MAP;
@@ -150,6 +151,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EV
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
@@ -441,6 +443,7 @@ import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_stanzaCon
 import org.batfish.grammar.cisco.CiscoParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Failover_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Failover_linkContext;
+import org.batfish.grammar.cisco.CiscoParser.Filter_list_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
@@ -1887,11 +1890,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIp_as_path_access_list_stanza(Ip_as_path_access_list_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     _currentAsPathAcl =
-        _configuration
-            .getAsPathAccessLists()
-            .computeIfAbsent(name, n -> new IpAsPathAccessList(n, definitionLine));
+        _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
     defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
   }
 
@@ -4497,6 +4497,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitFilter_list_bgp_tail(Filter_list_bgp_tailContext ctx) {
+    String filterList = ctx.num.getText();
+    _configuration.referenceStructure(
+        AS_PATH_ACCESS_LIST,
+        filterList,
+        BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
+        ctx.getStart().getLine());
+    // TODO: Handle filter-list in batfish
+  }
+
+  @Override
   public void exitFlan_interface(Flan_interfaceContext ctx) {
     String alias = ctx.name.getText();
     String ifaceName = ctx.iface.getText();
@@ -5590,6 +5601,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Set<String> names = new TreeSet<>();
     for (VariableContext name : ctx.name_list) {
       names.add(name.getText());
+      _configuration.referenceStructure(
+          AS_PATH_ACCESS_LIST, name.getText(),
+          ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST, name.getStart().getLine());
     }
     RouteMapMatchAsPathAccessListLine line =
         new RouteMapMatchAsPathAccessListLine(names, statementLine);

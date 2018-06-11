@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.LinkedList;
+import java.util.List;
 import org.batfish.common.util.ComparableStructure;
 
 public final class IkePolicy extends ComparableStructure<String> {
@@ -9,27 +9,21 @@ public final class IkePolicy extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private final int _definitionLine;
-
   private String _preSharedKeyHash;
 
-  private final Map<String, Integer> _proposals;
+  // In priority order
+  private final List<String> _proposals;
 
-  public IkePolicy(String name, int definitionLine) {
+  public IkePolicy(String name) {
     super(name);
-    _definitionLine = definitionLine;
-    _proposals = new TreeMap<>();
-  }
-
-  public int getDefinitionLine() {
-    return _definitionLine;
+    _proposals = new LinkedList<>();
   }
 
   public String getPreSharedKeyHash() {
     return _preSharedKeyHash;
   }
 
-  public Map<String, Integer> getProposals() {
+  public List<String> getProposals() {
     return _proposals;
   }
 
