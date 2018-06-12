@@ -55,4 +55,15 @@ final class IkeGatewayMatchersImpl {
       return actual.getLocalIp();
     }
   }
+
+  static final class HasName extends FeatureMatcher<IkeGateway, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An IKE gateway with name:", "name");
+    }
+
+    @Override
+    protected String featureValueOf(IkeGateway actual) {
+      return actual.getName();
+    }
+  }
 }

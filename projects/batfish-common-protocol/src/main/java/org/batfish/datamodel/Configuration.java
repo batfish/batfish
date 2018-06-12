@@ -100,6 +100,8 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
 
+  private static final String PROP_CRYPTO_MAP_SETS = "cryptoMapSets";
+
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
 
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
@@ -159,6 +161,8 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, CommunityList> _communityLists;
 
   private final ConfigurationFormat _configurationFormat;
+
+  private NavigableMap<String, CryptoMapSet> _cryptoMapSets;
 
   private LineAction _defaultCrossZoneAction;
 
@@ -255,6 +259,7 @@ public final class Configuration extends ComparableStructure<String> {
       throw new BatfishException("Configuration format cannot be null");
     }
     _configurationFormat = configurationFormat;
+    _cryptoMapSets = new TreeMap<>();
     _dnsServers = new TreeSet<>();
     _domainName = null;
     _ikeGateways = new TreeMap<>();
@@ -357,6 +362,12 @@ public final class Configuration extends ComparableStructure<String> {
           + "costs, etc.")
   public ConfigurationFormat getConfigurationFormat() {
     return _configurationFormat;
+  }
+
+  @JsonProperty(PROP_CRYPTO_MAP_SETS)
+  @JsonPropertyDescription("Dictionary of all crypto map sets for this node")
+  public NavigableMap<String, CryptoMapSet> getCryptoMapSets() {
+    return _cryptoMapSets;
   }
 
   @JsonProperty(PROP_DEFAULT_CROSS_ZONE_ACTION)
@@ -631,6 +642,11 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_COMMUNITY_LISTS)
   public void setCommunityLists(NavigableMap<String, CommunityList> communityLists) {
     _communityLists = communityLists;
+  }
+
+  @JsonProperty(PROP_CRYPTO_MAP_SETS)
+  public void setCryptoMapSets(NavigableMap<String, CryptoMapSet> cryptoMapSets) {
+    _cryptoMapSets = cryptoMapSets;
   }
 
   public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {

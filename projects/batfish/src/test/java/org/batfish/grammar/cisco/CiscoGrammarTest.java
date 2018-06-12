@@ -13,6 +13,7 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEqui
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasCryptoMapSet;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
@@ -25,6 +26,13 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolic
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasAccessList;
+import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasPeer;
+import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasProposals;
+import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasReferredDynamicMapSet;
+import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasSequenceNumber;
+import static org.batfish.datamodel.matchers.CryptoMapSetMatchers.hasCryptoMapEntries;
+import static org.batfish.datamodel.matchers.CryptoMapSetMatchers.hasDynamic;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
@@ -54,6 +62,7 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticati
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasCryptoMap;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -164,7 +173,10 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.CryptoMapEntryMatchers;
+import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
+import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
@@ -1573,6 +1585,71 @@ public class CiscoGrammarTest {
     assertThat(eosRegexStdMulti, not(equalTo(eosRegexExpMulti)));
     assertThat(nxosRegexStd, not(equalTo(nxosRegexExp)));
     assertThat(nxosRegexStdMulti, not(equalTo(nxosRegexExpMulti)));
+  }
+
+  @Test
+  public void testCryptoDynamicMaps() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+    assertThat(
+        c,
+        hasCryptoMapSet(
+            "mydynamicmap",
+            allOf(
+                hasDynamic(equalTo(true)),
+                hasCryptoMapEntries(
+                    contains(
+                        ImmutableList.of(
+                            allOf(
+                                CryptoMapEntryMatchers.hasDynamic(equalTo(true)),
+                                hasProposals(
+                                    contains(
+                                        ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))),
+                                hasAccessList(IpAccessListMatchers.hasName("ACL")),
+                                hasSequenceNumber(equalTo(10)))))))));
+  }
+
+  @Test
+  public void testCryptoMaps() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+    assertThat(
+        c,
+        hasCryptoMapSet(
+            "mymap",
+            allOf(
+                hasDynamic(equalTo(false)),
+                hasCryptoMapEntries(
+                    contains(
+                        ImmutableList.of(
+                            allOf(
+                                CryptoMapEntryMatchers.hasDynamic(equalTo(false)),
+                                hasProposals(
+                                    contains(
+                                        ImmutableList.of(
+                                            IpsecProposalMatchers.hasName("ts1"),
+                                            IpsecProposalMatchers.hasName("ts2")))),
+                                CryptoMapEntryMatchers.hasIkeGateway(
+                                    IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                                hasPeer(equalTo(new Ip("10.0.0.1"))),
+                                CryptoMapEntryMatchers.hasPfsKeyGroup(
+                                    equalTo(DiffieHellmanGroup.GROUP14)),
+                                hasAccessList(IpAccessListMatchers.hasName("ACL"))),
+                            allOf(
+                                CryptoMapEntryMatchers.hasDynamic(equalTo(false)),
+                                hasReferredDynamicMapSet(equalTo("mydynamicmap")))))))));
+    assertThat(
+        c,
+        hasCryptoMapSet(
+            "mymap",
+            hasCryptoMapEntries(
+                contains(
+                    ImmutableList.of(
+                        hasSequenceNumber(equalTo(10)), hasSequenceNumber(equalTo(30)))))));
+  }
+
+  @Test
+  public void testCryptoMapInterface() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+    assertThat(c, hasInterface("TenGigabitEthernet0/0", hasCryptoMap(equalTo("mymap"))));
   }
 
   @Test

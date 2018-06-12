@@ -21,6 +21,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAccessVlan;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAdditionalArpIps;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasCryptoMap;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
@@ -84,6 +85,14 @@ public final class InterfaceMatchers {
   public static HasAdditionalArpIps hasAdditionalArpIps(
       @Nonnull Matcher<? super SortedSet<Ip>> subMatcher) {
     return new HasAdditionalArpIps(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * crypto map.
+   */
+  public static HasCryptoMap hasCryptoMap(@Nonnull Matcher<? super String> subMatcher) {
+    return new HasCryptoMap(subMatcher);
   }
 
   /**

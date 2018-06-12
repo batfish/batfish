@@ -5,6 +5,7 @@ import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.CryptoMapSet;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
@@ -31,6 +32,20 @@ final class ConfigurationMatchersImpl {
     @Override
     protected ConfigurationFormat featureValueOf(Configuration actual) {
       return actual.getConfigurationFormat();
+    }
+  }
+
+  static final class HasCryptoMapSet extends FeatureMatcher<Configuration, CryptoMapSet> {
+    private final String _name;
+
+    HasCryptoMapSet(@Nonnull String name, @Nonnull Matcher<? super CryptoMapSet> subMatcher) {
+      super(subMatcher, "A Configuration with cryptoMapSet " + name + ":", "cryptoMapSet " + name);
+      _name = name;
+    }
+
+    @Override
+    protected CryptoMapSet featureValueOf(Configuration actual) {
+      return actual.getCryptoMapSets().get(_name);
     }
   }
 

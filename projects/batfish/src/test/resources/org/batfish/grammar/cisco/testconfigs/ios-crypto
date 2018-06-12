@@ -32,7 +32,6 @@ crypto isakmp profile ISAKMP-PROFILE-INTERFACE
    keepalive 10 retry 3
    local-address TenGigabitEthernet0/0
 !
-!
 interface TenGigabitEthernet0/0
  ip address 2.3.4.6 255.255.255.0
 !

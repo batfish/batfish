@@ -9,6 +9,7 @@ import org.batfish.datamodel.matchers.IkeGatewayMatchersImpl.HasAddress;
 import org.batfish.datamodel.matchers.IkeGatewayMatchersImpl.HasExternalInterface;
 import org.batfish.datamodel.matchers.IkeGatewayMatchersImpl.HasIkePolicy;
 import org.batfish.datamodel.matchers.IkeGatewayMatchersImpl.HasLocalIp;
+import org.batfish.datamodel.matchers.IkeGatewayMatchersImpl.HasName;
 import org.hamcrest.Matcher;
 
 public final class IkeGatewayMatchers {
@@ -43,6 +44,14 @@ public final class IkeGatewayMatchers {
    */
   public static HasLocalIp hasLocalIp(Ip localIp) {
     return new HasLocalIp(equalTo(localIp));
+  }
+
+  /**
+   * Provides a matcher that matches if the IKE Gateway's value of {@code name} matches specified
+   * {@code name}
+   */
+  public static HasName hasName(String name) {
+    return new HasName(equalTo(name));
   }
 
   private IkeGatewayMatchers() {}

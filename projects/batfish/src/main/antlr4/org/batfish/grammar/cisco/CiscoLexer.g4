@@ -5689,6 +5689,11 @@ IPSEC_ISAKMP
    'ipsec-isakmp'
 ;
 
+IPSEC_MANUAL
+:
+   'ipsec-manual'
+;
+
 IPSEC_OVER_TCP
 :
    'ipsec-over-tcp'

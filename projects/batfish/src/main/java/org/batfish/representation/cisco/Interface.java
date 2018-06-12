@@ -120,6 +120,8 @@ public class Interface extends ComparableStructure<String> {
 
   private String _channelGroup;
 
+  private String _cryptoMap;
+
   private String _description;
 
   private SortedSet<Ip> _dhcpRelayAddresses;
@@ -269,6 +271,10 @@ public class Interface extends ComparableStructure<String> {
 
   public String getChannelGroup() {
     return _channelGroup;
+  }
+
+  public String getCryptoMap() {
+    return _cryptoMap;
   }
 
   public String getDescription() {
@@ -424,6 +430,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setChannelGroup(String channelGroup) {
     _channelGroup = channelGroup;
+  }
+
+  public void setCryptoMap(String cryptoMap) {
+    _cryptoMap = cryptoMap;
   }
 
   public void setDescription(String description) {
