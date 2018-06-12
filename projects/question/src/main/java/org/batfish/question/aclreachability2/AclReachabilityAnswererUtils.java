@@ -1,5 +1,7 @@
 package org.batfish.question.aclreachability2;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,11 +14,15 @@ import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
+import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -43,20 +49,29 @@ public final class AclReachabilityAnswererUtils {
     private final IpAccessList _acl;
     private final Set<Integer> _linesWithUndefinedRefs = new TreeSet<>();
     private final Set<Integer> _linesInCycles = new TreeSet<>();
-    private final List<ImmutableList<String>> _cycles = new ArrayList<>();
     private final List<Dependency> _dependencies = new ArrayList<>();
     private final List<AclNode> _referencingAcls = new ArrayList<>();
     private IpAccessList _sanitizedAcl;
+    private List<IpAccessListLine> _sanitizedLines;
 
     public AclNode(IpAccessList acl) {
       _acl = acl;
     }
 
-    public void addCycle(ImmutableList<String> cycleAcls) {
+    private void sanitizeLine(int lineNum, AclLineMatchExpr newMatchExpr) {
+      _sanitizedLines =
+          firstNonNull(_sanitizedLines, _acl.getLines().stream().collect(Collectors.toList()));
+      IpAccessListLine originalLine = _sanitizedLines.remove(lineNum);
+      _sanitizedLines.add(
+          lineNum,
+          IpAccessListLine.builder()
+              .setMatchCondition(newMatchExpr)
+              .setAction(originalLine.getAction())
+              .setName(originalLine.getName())
+              .build());
+    }
 
-      // Record cycle
-      _cycles.add(cycleAcls);
-
+    public void sanitizeCycle(ImmutableList<String> cycleAcls) {
       // Remove previous ACL from referencing ACLs
       int aclIndex = cycleAcls.indexOf(_acl.getName());
       int cycleSize = cycleAcls.size();
@@ -73,8 +88,11 @@ public final class AclReachabilityAnswererUtils {
       while (!_dependencies.get(dependencyIndex).dependency.getName().equals(nextAclName)) {
         dependencyIndex++;
       }
-      _linesInCycles.addAll(_dependencies.get(dependencyIndex).lineNums);
-      _dependencies.remove(dependencyIndex);
+
+      for (int lineNum : _dependencies.remove(dependencyIndex).lineNums) {
+        _linesInCycles.add(lineNum);
+        sanitizeLine(lineNum, FalseExpr.INSTANCE);
+      }
     }
 
     public List<AclNode> getDependencies() {
@@ -100,45 +118,52 @@ public final class AclReachabilityAnswererUtils {
       _dependencies.add(new Dependency(dependency, lineNum));
     }
 
+    public void addIpSpaceReference(
+        int lineNum, HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
+      HeaderSpace.Builder hsb = headerSpace.toBuilder();
+      IpSpaceReference reference;
+      if (headerSpace.getSrcIps() instanceof IpSpaceReference) {
+        reference = (IpSpaceReference) headerSpace.getSrcIps();
+        hsb.setSrcIps(namedIpSpaces.get(reference.getName()));
+      }
+      if (headerSpace.getDstIps() instanceof IpSpaceReference) {
+        reference = (IpSpaceReference) headerSpace.getDstIps();
+        hsb.setDstIps(namedIpSpaces.get(reference.getName()));
+      }
+      if (headerSpace.getNotSrcIps() instanceof IpSpaceReference) {
+        reference = (IpSpaceReference) headerSpace.getNotSrcIps();
+        hsb.setNotSrcIps(namedIpSpaces.get(reference.getName()));
+      }
+      if (headerSpace.getNotDstIps() instanceof IpSpaceReference) {
+        reference = ((IpSpaceReference) headerSpace.getNotDstIps());
+        hsb.setNotDstIps(namedIpSpaces.get(reference.getName()));
+      }
+      if (headerSpace.getSrcOrDstIps() instanceof IpSpaceReference) {
+        reference = (IpSpaceReference) headerSpace.getSrcOrDstIps();
+        hsb.setSrcOrDstIps(namedIpSpaces.get(reference.getName()));
+      }
+      sanitizeLine(lineNum, new MatchHeaderSpace(hsb.build()));
+    }
+
     public void addReferencingAcl(AclNode referencing) {
       _referencingAcls.add(referencing);
     }
 
     public void addUndefinedRef(int lineNum) {
       _linesWithUndefinedRefs.add(lineNum);
+      sanitizeLine(lineNum, FalseExpr.INSTANCE);
     }
 
     public void buildSanitizedAcl() {
-      if (_linesWithUndefinedRefs.isEmpty() && _linesInCycles.isEmpty()) {
-        // No lines need to be sanitized; just use the original IpAccessList as sanitized version
-        _sanitizedAcl = _acl;
-      } else {
-        // Some lines need to be sanitized. Build a new IpAccessList, modifying problematic lines.
-        List<IpAccessListLine> originalLines = _acl.getLines();
-        List<IpAccessListLine> sanitizedLines = new ArrayList<>();
-        for (int i = 0; i < originalLines.size(); i++) {
-          IpAccessListLine oldLine = originalLines.get(i);
-          if (!_linesInCycles.contains(i) && !_linesWithUndefinedRefs.contains(i)) {
-            sanitizedLines.add(oldLine);
-          } else {
-            sanitizedLines.add(
-                IpAccessListLine.builder()
-                    .setMatchCondition(FalseExpr.INSTANCE)
-                    .setAction(oldLine.getAction())
-                    .setName(oldLine.getName())
-                    .build());
-          }
-        }
-        _sanitizedAcl = IpAccessList.builder().setName(getName()).setLines(sanitizedLines).build();
-      }
+      // If _sanitizedLines was never initialized, just use original ACL for sanitized ACL
+      _sanitizedAcl =
+          _sanitizedLines == null
+              ? _acl
+              : IpAccessList.builder().setName(getName()).setLines(_sanitizedLines).build();
     }
 
     public IpAccessList getAcl() {
       return _acl;
-    }
-
-    public List<ImmutableList<String>> getCycles() {
-      return _cycles;
     }
 
     public Set<Integer> getLinesInCycles() {
@@ -158,8 +183,11 @@ public final class AclReachabilityAnswererUtils {
     }
   }
 
-  private static void createAclNodeWithDependencies(
-      IpAccessList acl, Map<String, AclNode> aclNodeMap, SortedMap<String, IpAccessList> acls) {
+  private static void createAclNode(
+      IpAccessList acl,
+      Map<String, AclNode> aclNodeMap,
+      SortedMap<String, IpAccessList> acls,
+      Map<String, IpSpace> namedIpSpaces) {
 
     // Create ACL node for current ACL
     AclNode node = new AclNode(acl);
@@ -179,19 +207,51 @@ public final class AclReachabilityAnswererUtils {
           AclNode referencedAclNode = aclNodeMap.get(referencedAclName);
           if (referencedAclNode == null) {
             // Referenced ACL not yet recorded; recurse on it
-            createAclNodeWithDependencies(referencedAcl, aclNodeMap, acls);
+            createAclNode(referencedAcl, aclNodeMap, acls, namedIpSpaces);
             referencedAclNode = aclNodeMap.get(referencedAclName);
           }
           // Referenced ACL has now been recorded; add dependency and reference
           node.addDependency(referencedAclNode, index);
           referencedAclNode.addReferencingAcl(node);
         }
+      } else if (matchCondition instanceof MatchHeaderSpace) {
+        HeaderSpace headerSpace = ((MatchHeaderSpace) matchCondition).getHeaderspace();
+        Set<String> referencedIpSpaces = getReferencedIpSpaces(headerSpace);
+        if (!namedIpSpaces.keySet().containsAll(referencedIpSpaces)) {
+          // Header space contains IpSpaceReferences to undefined IpSpaces. Report undefined ref.
+          node.addUndefinedRef(index);
+        } else if (!referencedIpSpaces.isEmpty()) {
+          // Header space contains valid IpSpaceReferences. Record.
+          node.addIpSpaceReference(index, headerSpace, namedIpSpaces);
+        }
       }
       index++;
     }
   }
 
-  public static List<ImmutableList<String>> sanitizeNode(
+  // Returns null if no IpSpaceReferences are used, false if there is an IpSpaceReference to an
+  // undefined IpSpace, or true if IpSpaceReferences are present and all valid
+  private static Set<String> getReferencedIpSpaces(HeaderSpace headerSpace) {
+    Set<String> referencedIpSpaces = new TreeSet<>();
+    if (headerSpace.getSrcIps() instanceof IpSpaceReference) {
+      referencedIpSpaces.add(((IpSpaceReference) headerSpace.getSrcIps()).getName());
+    }
+    if (headerSpace.getDstIps() instanceof IpSpaceReference) {
+      referencedIpSpaces.add(((IpSpaceReference) headerSpace.getDstIps()).getName());
+    }
+    if (headerSpace.getNotSrcIps() instanceof IpSpaceReference) {
+      referencedIpSpaces.add(((IpSpaceReference) headerSpace.getNotSrcIps()).getName());
+    }
+    if (headerSpace.getNotDstIps() instanceof IpSpaceReference) {
+      referencedIpSpaces.add(((IpSpaceReference) headerSpace.getNotSrcIps()).getName());
+    }
+    if (headerSpace.getSrcOrDstIps() instanceof IpSpaceReference) {
+      referencedIpSpaces.add(((IpSpaceReference) headerSpace.getSrcOrDstIps()).getName());
+    }
+    return referencedIpSpaces;
+  }
+
+  private static List<ImmutableList<String>> sanitizeNode(
       AclNode node,
       List<AclNode> visited,
       Map<String, AclNode> sanitized,
@@ -233,7 +293,7 @@ public final class AclReachabilityAnswererUtils {
     for (ImmutableList<String> cycleAcls : cyclesFound) {
       int indexOfThisAcl = cycleAcls.indexOf(node.getName());
       if (indexOfThisAcl != -1) {
-        node.addCycle(cycleAcls);
+        node.sanitizeCycle(cycleAcls);
       }
     }
 
@@ -271,14 +331,16 @@ public final class AclReachabilityAnswererUtils {
     */
     for (String hostname : configurations.keySet()) {
       if (specifiedNodes.contains(hostname)) {
-        SortedMap<String, IpAccessList> acls = configurations.get(hostname).getIpAccessLists();
+        Configuration c = configurations.get(hostname);
+        SortedMap<String, IpAccessList> acls = c.getIpAccessLists();
+        Map<String, IpSpace> namedIpSpaces = c.getIpSpaces();
 
         // Build graph of AclNodes containing pointers to dependencies and referencing nodes
         Map<String, AclNode> aclNodeMap = new TreeMap<>();
         for (IpAccessList acl : acls.values()) {
           String aclName = acl.getName();
           if (!aclNodeMap.containsKey(aclName) && aclRegex.matcher(aclName).matches()) {
-            createAclNodeWithDependencies(acl, aclNodeMap, acls);
+            createAclNode(acl, aclNodeMap, acls, namedIpSpaces);
           }
         }
 
