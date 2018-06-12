@@ -99,7 +99,7 @@ SYSTEM
 
 DEC
 :
-   F_Digit+
+    F_Digit+
 ;
 
 IP_ADDRESS
