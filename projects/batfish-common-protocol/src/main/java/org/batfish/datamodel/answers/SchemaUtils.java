@@ -69,8 +69,8 @@ public final class SchemaUtils {
     } catch (JsonProcessingException e) {
       throw new ClassCastException(
           String.format(
-              "Cannot convert '%s' to type %s: %s\n%s",
-              jsonNode, valueType.getName(), e.getMessage(), Throwables.getStackTraceAsString(e)));
+              "Cannot recover object of type '%s' from json %s: %s\n%s",
+              valueType.getName(), jsonNode, e.getMessage(), Throwables.getStackTraceAsString(e)));
     }
   }
 
