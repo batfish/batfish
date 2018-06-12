@@ -1,6 +1,8 @@
 package org.batfish.grammar.palo_alto;
 
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -15,8 +17,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
-import org.batfish.representation.palo_alto.Server;
-import org.batfish.representation.palo_alto.ServerProfile;
+import org.batfish.representation.palo_alto.SyslogServer;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
@@ -24,9 +25,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private boolean _currentNtpServerPrimary;
 
-  private Server _currentServer;
+  private SyslogServer _currentSyslogServer;
 
-  private ServerProfile _currentServerProfile;
+  private SortedMap<String, SyslogServer> _currentSyslogServerGroup;
 
   private PaloAltoCombinedParser _parser;
 
@@ -101,29 +102,29 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSsl_syslog(Ssl_syslogContext ctx) {
     String profileName = ctx.name.getText();
-    _currentServerProfile =
-        _configuration.getSyslogServerProfiles().computeIfAbsent(profileName, ServerProfile::new);
+    _currentSyslogServerGroup =
+        _configuration.getSyslogServerGroups().computeIfAbsent(profileName, g -> new TreeMap<>());
   }
 
   @Override
   public void exitSsl_syslog(Ssl_syslogContext ctx) {
-    _currentServerProfile = null;
+    _currentSyslogServerGroup = null;
   }
 
   @Override
   public void enterSsls_server(Ssls_serverContext ctx) {
     String serverName = ctx.name.getText();
-    _currentServer = _currentServerProfile.getServers().computeIfAbsent(serverName, Server::new);
+    _currentSyslogServer = _currentSyslogServerGroup.computeIfAbsent(serverName, SyslogServer::new);
   }
 
   @Override
   public void exitSsls_server(Ssls_serverContext ctx) {
-    _currentServer = null;
+    _currentSyslogServer = null;
   }
 
   @Override
   public void exitSslss_server(Sslss_serverContext ctx) {
-    _currentServer.setAddress(ctx.address.getText());
+    _currentSyslogServer.setAddress(ctx.address.getText());
   }
 
   public PaloAltoConfiguration getConfiguration() {

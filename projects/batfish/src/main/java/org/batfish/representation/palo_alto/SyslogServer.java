@@ -2,12 +2,13 @@ package org.batfish.representation.palo_alto;
 
 import org.batfish.common.util.ComparableStructure;
 
-public class Server extends ComparableStructure<String> {
+/** Datamodel component containing server information for a syslog server */
+public class SyslogServer extends ComparableStructure<String> {
   private static final long serialVersionUID = 1L;
 
   private String _address;
 
-  public Server(String name) {
+  public SyslogServer(String name) {
     super(name);
   }
 

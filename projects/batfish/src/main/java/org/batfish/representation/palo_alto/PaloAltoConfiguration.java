@@ -27,14 +27,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  private SortedMap<String, ServerProfile> _syslogServerProfiles;
+  private SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
 
   private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
 
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
-    _syslogServerProfiles = new TreeMap<>();
+    _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
   }
 
@@ -65,8 +65,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  public SortedMap<String, ServerProfile> getSyslogServerProfiles() {
-    return _syslogServerProfiles;
+  public SortedMap<String, SortedMap<String, SyslogServer>> getSyslogServerGroups() {
+    return _syslogServerGroups;
   }
 
   @Override
@@ -110,9 +110,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _c.setNtpServers(getNtpServers());
 
     NavigableSet<String> loggingServers = new TreeSet<>();
-    _syslogServerProfiles
+    _syslogServerGroups
         .values()
-        .forEach(p -> p.getServers().values().forEach(s -> loggingServers.add(s.getAddress())));
+        .forEach(g -> g.values().forEach(s -> loggingServers.add(s.getAddress())));
     _c.setLoggingServers(loggingServers);
     return _c;
   }
