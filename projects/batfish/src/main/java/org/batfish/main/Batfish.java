@@ -3074,6 +3074,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               commonEdgeSynthesizers,
               queries,
               ImmutableMap.of(ingressLocation, srcIpConstraint),
+              reachabilityParameters.getSpecialize(),
               tag);
       jobs.add(job);
     }
@@ -3114,6 +3115,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               missingEdgeSynthesizers,
               queries,
               ImmutableMap.of(ingressLocation, srcIpConstraint),
+              reachabilityParameters.getSpecialize(),
               tag);
       jobs.add(job);
     }
@@ -3568,23 +3570,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Settings settings = getSettings();
     String tag = getDifferentialFlowTag();
 
-    Map<String, Configuration> baseConfigurations = baseParams.getConfigurations();
+    // push environment so we use the right forwarding analysis.
+    pushBaseEnvironment();
+    Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
+    popEnvironment();
 
-    Synthesizer baseDataPlaneSynthesizer =
-        synthesizeDataPlane(baseParams.getConfigurations(), baseParams.getDataPlane());
+    pushDeltaEnvironment();
+    Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParams);
+    popEnvironment();
 
-    Synthesizer diffDataPlaneSynthesizer =
-        synthesizeDataPlane(deltaParams.getConfigurations(), deltaParams.getDataPlane());
-
+    /*
+    // TODO refine dstIp to exclude blacklisted destinations
     pushDeltaEnvironment();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
-
-    BlacklistDstIpQuerySynthesizer blacklistQuery =
-        new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, blacklistEdges, baseConfigurations);
+    */
 
     // compute composite program and flows
     List<Synthesizer> synthesizers =
@@ -3613,34 +3615,34 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       ImmutableMap.of(entry.getKey(), entry.getValue());
                   StandardReachabilityQuerySynthesizer acceptQuery =
                       StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(
-                              ImmutableSet.of(
-                                  ForwardingAction.ACCEPT,
-                                  ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                          .setActions(baseParams.getActions())
                           .setHeaderSpace(baseParams.getHeaderSpace())
-                          .setSrcIpConstraints(srcIpConstraint)
                           .setFinalNodes(ImmutableSet.of())
-                          .setRequiredTransitNodes(ImmutableSet.of())
                           .setForbiddenTransitNodes(ImmutableSet.of())
+                          .setRequiredTransitNodes(ImmutableSet.of())
+                          .setSrcIpConstraints(srcIpConstraint)
                           .setSrcNatted(baseParams.getSrcNatted())
                           .build();
                   StandardReachabilityQuerySynthesizer notAcceptQuery =
                       StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(
-                              ImmutableSet.of(
-                                  ForwardingAction.ACCEPT,
-                                  ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                          .setActions(baseParams.getActions())
+                          .setHeaderSpace(baseParams.getHeaderSpace())
                           .setFinalNodes(ImmutableSet.of())
                           .setForbiddenTransitNodes(ImmutableSet.of())
-                          .setHeaderSpace(baseParams.getHeaderSpace())
                           .setRequiredTransitNodes(ImmutableSet.of())
                           .setSrcIpConstraints(srcIpConstraint)
                           .setSrcNatted(baseParams.getSrcNatted())
                           .build();
                   notAcceptQuery.setNegate(true);
                   List<QuerySynthesizer> queries =
-                      ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
-                  return new CompositeNodJob(settings, synthesizers, queries, srcIpConstraint, tag);
+                      ImmutableList.of(acceptQuery, notAcceptQuery /*, blacklistQuery*/);
+                  return new CompositeNodJob(
+                      settings,
+                      synthesizers,
+                      queries,
+                      srcIpConstraint,
+                      baseParams.getSpecialize(),
+                      tag);
                 })
             .collect(Collectors.toList());
 
