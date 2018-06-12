@@ -68,4 +68,40 @@ public class TypedRowBuilderTest {
     Row row = builder.put("col", null).build();
     assertThat(row.get("col", Schema.INTEGER), Matchers.is(nullValue()));
   }
+
+  @Test
+  public void rowOfCorrect() {
+    assertThat(TypedRowBuilder.rowOf(ImmutableMap.of()), equalTo(Row.of()));
+    assertThat(
+        TypedRowBuilder.rowOf(
+            ImmutableMap.of("a", new ColumnMetadata("a", Schema.INTEGER, "desc")), "a", 5),
+        equalTo(Row.of("a", 5)));
+    assertThat(
+        TypedRowBuilder.rowOf(
+            ImmutableMap.of(
+                "a",
+                new ColumnMetadata("a", Schema.INTEGER, "desc"),
+                "b",
+                new ColumnMetadata("b", Schema.INTEGER, "desc")),
+            "a",
+            5,
+            "b",
+            7),
+        equalTo(Row.of("a", 5, "b", 7)));
+  }
+
+  @Test
+  public void rowOfOddObjects() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("expecting an even number of parameters, not 1");
+    TypedRowBuilder.rowOf(ImmutableMap.of(), "a");
+  }
+
+  @Test
+  public void rowOfArgumentsWrong() {
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("argument 0 must be a string, but is: 5");
+    TypedRowBuilder.rowOf(
+        ImmutableMap.of("a", new ColumnMetadata("a", Schema.INTEGER, "desc")), 5, 10);
+  }
 }
