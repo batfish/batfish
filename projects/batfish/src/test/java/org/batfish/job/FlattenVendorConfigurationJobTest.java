@@ -7,32 +7,40 @@ import java.nio.file.Paths;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
 
 public class FlattenVendorConfigurationJobTest {
+  private static final String JUNIPER_TESTCONFIGS_PREFIX =
+      "org/batfish/grammar/juniper/testconfigs/";
   private static final String PAN_TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
-  @Rule public ExpectedException _thrown = ExpectedException.none();
+  private static String getFlattenedText(String resourcePath) {
+    FlattenVendorConfigurationJob job =
+        new FlattenVendorConfigurationJob(
+            new Settings(),
+            CommonUtil.readResource(resourcePath),
+            Paths.get("input"),
+            Paths.get("output"),
+            new Warnings());
+    FlattenVendorConfigurationResult result = job.call();
+    return result.getFlattenedText();
+  }
 
-  @Rule public TemporaryFolder _folder = new TemporaryFolder();
+  @Test
+  public void testFlattenVendorConfigurationJobJuniper() {
+    String nestedConfig = "nested-config";
+    String flattenedConfig = "nested-config-flattened";
+    assertThat(
+        getFlattenedText(JUNIPER_TESTCONFIGS_PREFIX + nestedConfig),
+        equalTo(CommonUtil.readResource(JUNIPER_TESTCONFIGS_PREFIX + flattenedConfig)));
+  }
 
   @Test
   public void testFlattenVendorConfigurationJobPaloAlto() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
-    FlattenVendorConfigurationJob job =
-        new FlattenVendorConfigurationJob(
-            new Settings(),
-            CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + nestedConfig),
-            Paths.get("input"),
-            Paths.get("output"),
-            new Warnings());
-    FlattenVendorConfigurationResult result = job.call();
     assertThat(
-        result.getFlattenedText(),
+        getFlattenedText(PAN_TESTCONFIGS_PREFIX + nestedConfig),
         equalTo(CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + flattenedConfig)));
   }
 }
