@@ -34,7 +34,7 @@ public class Row implements Comparable<Row> {
 
     private final ObjectNode _data;
 
-    private RowBuilder() {
+    protected RowBuilder() {
       _data = BatfishObjectMapper.mapper().createObjectNode();
     }
 
@@ -82,7 +82,7 @@ public class Row implements Comparable<Row> {
   }
 
   @JsonCreator
-  public Row(ObjectNode data) {
+  private Row(ObjectNode data) {
     _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
   }
 
@@ -154,7 +154,7 @@ public class Row implements Comparable<Row> {
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
     }
     return _data.get(columnName);
   }
@@ -169,7 +169,7 @@ public class Row implements Comparable<Row> {
    */
   public <T> T get(String columnName, Class<T> valueType) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
     }
     if (_data.get(columnName).isNull()) {
       return null;
@@ -187,7 +187,7 @@ public class Row implements Comparable<Row> {
    */
   public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
     }
     if (_data.get(columnName).isNull()) {
       return null;
@@ -217,7 +217,7 @@ public class Row implements Comparable<Row> {
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
     }
     if (_data.get(columnName).isNull()) {
       return null;
@@ -279,9 +279,8 @@ public class Row implements Comparable<Row> {
     return getKey(metadata.getColumnMetadata());
   }
 
-  private String getMissingColumnErrorMessage(String columnName) {
-    return String.format(
-        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
+  public static String getMissingColumnErrorMessage(String columnName, Set<String> columns) {
+    return String.format("Column '%s' is not present. Valid columns are: %s", columnName, columns);
   }
 
   /**
