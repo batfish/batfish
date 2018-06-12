@@ -31,6 +31,7 @@ public class FlattenVendorConfigurationJobTest {
   public void testFlattenVendorConfigurationJobJuniper() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
+    // Confirm Juniper nested config is flattened properly
     assertThat(
         getFlattenedText(JUNIPER_TESTCONFIGS_PREFIX + nestedConfig),
         equalTo(CommonUtil.readResource(JUNIPER_TESTCONFIGS_PREFIX + flattenedConfig)));
@@ -40,15 +41,31 @@ public class FlattenVendorConfigurationJobTest {
   public void testFlattenVendorConfigurationJobPaloAlto() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
+    // Confirm Palo Alto nested config is flattened properly
     assertThat(
         getFlattenedText(PAN_TESTCONFIGS_PREFIX + nestedConfig),
         equalTo(CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + flattenedConfig)));
   }
 
   @Test
+  public void testFlattenVendorConfigurationJobUnknown() {
+    String unknownFileText = "unknown config format {\ntest;\n}\n";
+    FlattenVendorConfigurationJob job =
+        new FlattenVendorConfigurationJob(
+            new Settings(),
+            unknownFileText,
+            Paths.get("input"),
+            Paths.get("output"),
+            new Warnings());
+    // Confirm text from unknown config type is unchanged
+    assertThat(job.call().getFlattenedText(), equalTo(unknownFileText));
+  }
+
+  @Test
   public void testFlattenVendorConfigurationJobVyos() {
     String nestedConfig = "nested-config";
     String flattenedConfig = "nested-config-flattened";
+    // Confirm Vyos nested config is flattened properly
     assertThat(
         getFlattenedText(VYOS_TESTCONFIGS_PREFIX + nestedConfig),
         equalTo(CommonUtil.readResource(VYOS_TESTCONFIGS_PREFIX + flattenedConfig)));
