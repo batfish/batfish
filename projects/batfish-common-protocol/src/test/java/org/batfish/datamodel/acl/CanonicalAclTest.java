@@ -203,7 +203,6 @@ public class CanonicalAclTest {
 
   @Test
   public void testAclsWithDifferentInterfacesNotEqual() {
-    // acl1 and acl2 are identical
     IpAccessList acl1 =
         _aclb
             .setName("acl1")
@@ -214,18 +213,8 @@ public class CanonicalAclTest {
                             .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
                             .build())))
             .build();
-    IpAccessList acl2 =
-        _aclb2
-            .setName("acl2")
-            .setLines(
-                ImmutableList.of(
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                            .build())))
-            .build();
 
-    // Since definitions of "iface" don't match, canonical acls for acl1 and acl2 shouldn't be equal
+    // Since definitions of "iface" don't match, canonical acls shouldn't be equal
     CanonicalAcl canonicalAcl1 =
         new CanonicalAcl(
             acl1,
@@ -236,8 +225,8 @@ public class CanonicalAclTest {
             ImmutableSet.of());
     CanonicalAcl canonicalAcl2 =
         new CanonicalAcl(
-            acl2,
-            acl2,
+            acl1,
+            acl1,
             ImmutableMap.of(),
             ImmutableMap.of("iface", Interface.builder().setName("iface").setActive(false).build()),
             ImmutableSet.of(),

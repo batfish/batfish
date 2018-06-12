@@ -17,6 +17,7 @@ public final class CanonicalAcl {
   private final Set<Integer> _linesInCycles;
   private final Set<Integer> _linesWithUndefinedReferences;
   private final IpAccessList _acl;
+  private int _hashCode;
 
   /**
    * @param sanitizedAcl {@link IpAccessList} represented by this CanonicalAcl with lines containing
@@ -86,9 +87,23 @@ public final class CanonicalAcl {
     if (o == this) {
       return true;
     }
+    if (hashCode() != o.hashCode()) {
+      return false;
+    }
     CanonicalAcl otherAcl = (CanonicalAcl) o;
     return _acl.equals(otherAcl._acl)
         && _dependencies.equals(otherAcl._dependencies)
         && _interfaces.equals(otherAcl._interfaces);
+  }
+
+  @Override
+  public int hashCode() {
+    if (_hashCode == 0) {
+      _hashCode = _acl.getLines().hashCode() + _interfaces.hashCode();
+      for (IpAccessList dependency : _dependencies.values()) {
+        _hashCode += dependency.getLines().hashCode();
+      }
+    }
+    return _hashCode;
   }
 }
