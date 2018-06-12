@@ -30,6 +30,11 @@ HOSTNAME
     'hostname'
 ;
 
+LOG_SETTINGS
+:
+    'log-settings'
+;
+
 NTP_SERVER_ADDRESS
 :
     'ntp-server-address'
@@ -60,6 +65,11 @@ SECONDARY_NTP_SERVER
     'secondary-ntp-server'
 ;
 
+SERVER
+:
+    'server'
+;
+
 SERVERS
 :
     'servers'
@@ -70,12 +80,27 @@ SET
     'set'
 ;
 
+SHARED
+:
+    'shared'
+;
+
+SYSLOG
+:
+    'syslog'
+;
+
 SYSTEM
 :
     'system'
 ;
 
 // Complex tokens
+
+DEC
+:
+   F_Digit+
+;
 
 IP_ADDRESS
 :
