@@ -435,9 +435,6 @@ public class AclReachabilityTest {
 
   @Test
   public void testWithIpSpaceReference() throws IOException {
-
-    _c1.setIpSpaces(ImmutableSortedMap.of("ipSpace", new Ip("1.2.3.4").toIpSpace()));
-
     IpAccessList acl =
         _aclb
             .setLines(

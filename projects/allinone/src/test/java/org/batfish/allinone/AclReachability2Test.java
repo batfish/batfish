@@ -490,9 +490,7 @@ public class AclReachability2Test {
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 
-    /*
-     Construct the expected result. Line 1 should be blocked because "ipSpace" covers 1.2.3.4.
-    */
+    /* Construct the expected result. Line 1 should be blocked because "ipSpace" covers 1.2.3.4. */
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
@@ -530,9 +528,7 @@ public class AclReachability2Test {
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 
-    /*
-     Construct the expected result. Line 1 should be blocked by line 0.
-    */
+    /* Construct the expected result. Line 0 should be unreachable due to undefined reference. */
     Multiset<Row> expected =
         ImmutableMultiset.of(
             Row.builder()
