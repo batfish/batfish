@@ -262,7 +262,7 @@ public class BatfishTestUtils {
         TestrigText.builder().setConfigurationText(configurationTextMap).build(), folder);
   }
 
-  public static Map<String, Configuration> parseTextConfigs(
+  public static SortedMap<String, Configuration> parseTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
     return getBatfishForTextConfigs(folder, configurationNames).loadConfigurations();
   }
