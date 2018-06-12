@@ -15,6 +15,11 @@ AUTHENTICATION_TYPE
     'authentication-type'
 ;
 
+COMMENT
+:
+    'comment'
+;
+
 DEVICECONFIG
 :
     'deviceconfig'
@@ -25,9 +30,39 @@ DNS_SETTING
     'dns-setting'
 ;
 
+ETHERNET
+:
+    'ethernet'
+;
+
 HOSTNAME
 :
     'hostname'
+;
+
+INTERFACE
+:
+    'interface'
+;
+
+IP
+:
+    'ip'
+;
+
+LAYER3
+:
+    'layer3'
+;
+
+MTU
+:
+    'mtu'
+;
+
+NETWORK
+:
+    'network'
 ;
 
 NTP_SERVER_ADDRESS
@@ -76,6 +111,11 @@ SYSTEM
 ;
 
 // Complex tokens
+
+DEC
+:
+    F_Digit+
+;
 
 IP_ADDRESS
 :

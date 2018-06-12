@@ -6,16 +6,24 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
+import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private PaloAltoConfiguration _configuration;
+
+  private Interface _currentInterface;
 
   private boolean _currentNtpServerPrimary;
 
@@ -88,6 +96,34 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     } else if (ctx.secondary_name != null) {
       _configuration.setDnsServerSecondary(ctx.secondary_name.getText());
     }
+  }
+
+  @Override
+  public void enterSni_ethernet(Sni_ethernetContext ctx) {
+    String name = ctx.name.getText();
+    _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+  }
+
+  @Override
+  public void exitSni_ethernet(Sni_ethernetContext ctx) {
+    _currentInterface = null;
+  }
+
+  @Override
+  public void exitSnie_comment(Snie_commentContext ctx) {
+    _currentInterface.setComment(ctx.text.getText());
+  }
+
+  @Override
+  public void exitSniel3_ip(Sniel3_ipContext ctx) {
+    InterfaceAddress address = new InterfaceAddress(ctx.address.getText());
+    _currentInterface.setAddress(address);
+    _currentInterface.getAllAddresses().add(address);
+  }
+
+  @Override
+  public void exitSniel3_mtu(Sniel3_mtuContext ctx) {
+    _currentInterface.setMtu(Integer.parseInt(ctx.mtu.getText()));
   }
 
   public PaloAltoConfiguration getConfiguration() {

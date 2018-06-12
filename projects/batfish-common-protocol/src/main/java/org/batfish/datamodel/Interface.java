@@ -636,6 +636,10 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   public Interface(String name, Configuration owner) {
+    this(name, owner, null);
+  }
+
+  public Interface(String name, Configuration owner, InterfaceType interfaceType) {
     super(name);
     _active = true;
     _autoState = true;
@@ -644,7 +648,7 @@ public final class Interface extends ComparableStructure<String> {
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
-    _interfaceType = InterfaceType.UNKNOWN;
+    _interfaceType = (interfaceType == null) ? computeInterfaceType() : interfaceType;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
     _owner = owner;
@@ -653,18 +657,16 @@ public final class Interface extends ComparableStructure<String> {
     _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
-
-    computeInterfaceType();
   }
 
   public void addAllowedRanges(List<SubRange> ranges) {
     _allowedVlans.addAll(ranges);
   }
 
-  private void computeInterfaceType() {
-    if ((_key != null) && (_owner != null)) {
-      _interfaceType = computeInterfaceType(_key, _owner.getConfigurationFormat());
-    }
+  private InterfaceType computeInterfaceType() {
+    return ((_key == null) || (_owner == null))
+        ? InterfaceType.UNKNOWN
+        : computeInterfaceType(_key, _owner.getConfigurationFormat());
   }
 
   @Override

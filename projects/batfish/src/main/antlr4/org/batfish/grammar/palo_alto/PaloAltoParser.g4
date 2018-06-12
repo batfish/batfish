@@ -2,7 +2,7 @@ parser grammar PaloAltoParser;
 
 /* This is only needed if parser grammar is spread across files */
 import
-PaloAlto_common, PaloAlto_deviceconfig;
+PaloAlto_common, PaloAlto_deviceconfig, PaloAlto_network;
 
 options {
    superClass = 'org.batfish.grammar.BatfishParser';
@@ -25,4 +25,5 @@ set_line
 statement
 :
    s_deviceconfig
+   | s_network
 ;

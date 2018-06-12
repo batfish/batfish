@@ -1,5 +1,9 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -9,6 +13,7 @@ import java.util.Arrays;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -63,6 +68,24 @@ public class PaloAltoGrammarTest {
 
     // Confirm hostname extraction works
     assertThat(parseTextConfigs(filename).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testInterface() throws IOException {
+    String hostname = "interface";
+    String interfaceName = "ethernet1/1";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm interface MTU is extracted
+    assertThat(c, hasInterface(interfaceName, hasMtu(9001)));
+
+    // Confirm address is extracted
+    assertThat(
+        c,
+        hasInterface(interfaceName, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
+
+    // Confirm comment is extracted
+    assertThat(c, hasInterface(interfaceName, hasDescription("description")));
   }
 
   @Test

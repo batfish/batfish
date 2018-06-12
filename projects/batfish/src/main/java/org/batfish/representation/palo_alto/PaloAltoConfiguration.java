@@ -1,11 +1,15 @@
 package org.batfish.representation.palo_alto;
 
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -21,6 +25,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
+  private final Map<String, Interface> _interfaces;
+
   private String _ntpServerPrimary;
 
   private String _ntpServerSecondary;
@@ -30,6 +36,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private ConfigurationFormat _vendor;
 
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
+    _interfaces = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
   }
 
@@ -47,6 +54,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   @Override
   public String getHostname() {
     return _hostname;
+  }
+
+  public Map<String, Interface> getInterfaces() {
+    return _interfaces;
   }
 
   private NavigableSet<String> getNtpServers() {
@@ -91,6 +102,24 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _vendor = format;
   }
 
+  /** Convert Palo Alto specific interface into vendor independent model interface */
+  private org.batfish.datamodel.Interface toInterface(Interface iface) {
+    String name = iface.getName();
+    org.batfish.datamodel.Interface newIface =
+        new org.batfish.datamodel.Interface(name, _c, InterfaceType.PHYSICAL);
+    Integer mtu = iface.getMtu();
+    if (mtu != null) {
+      newIface.setMtu(mtu);
+    }
+    if (iface.getAddress() != null) {
+      newIface.setAddress(iface.getAddress());
+    }
+    newIface.setAllAddresses(iface.getAllAddresses());
+    newIface.setActive(iface.getActive());
+    newIface.setDescription(iface.getComment());
+    return newIface;
+  }
+
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
@@ -99,6 +128,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.ACCEPT);
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
+
+    for (Entry<String, Interface> i : _interfaces.entrySet()) {
+      _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
+    }
     return _c;
   }
 }
