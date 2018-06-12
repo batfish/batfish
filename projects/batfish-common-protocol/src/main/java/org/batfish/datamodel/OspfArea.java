@@ -15,12 +15,19 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
   public static class Builder extends NetworkFactoryBuilder<OspfArea> {
 
+    private NssaSettings _nssa;
+
     private Long _number;
 
     private OspfProcess _ospfProcess;
 
+    private StubSettings _stub;
+
+    private StubType _stubType;
+
     Builder(NetworkFactory networkFactory) {
       super(networkFactory, OspfArea.class);
+      _stubType = StubType.NONE;
     }
 
     @Override
@@ -30,7 +37,24 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
       if (_ospfProcess != null) {
         _ospfProcess.getAreas().put(number, ospfArea);
       }
+      ospfArea._nssa = _nssa;
+      ospfArea._stub = _stub;
+      ospfArea._stubType = _stubType;
       return ospfArea;
+    }
+
+    public Builder setNonStub() {
+      _stubType = StubType.NONE;
+      _nssa = null;
+      _stub = null;
+      return this;
+    }
+
+    public Builder setNssa(NssaSettings nssa) {
+      _nssa = nssa;
+      _stubType = StubType.NSSA;
+      _stub = null;
+      return this;
     }
 
     public Builder setNumber(Long number) {
@@ -40,6 +64,18 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
     public Builder setOspfProcess(OspfProcess ospfProcess) {
       _ospfProcess = ospfProcess;
+      return this;
+    }
+
+    public Builder setStub(StubSettings stub) {
+      _stub = stub;
+      _stubType = StubType.STUB;
+      _nssa = null;
+      return this;
+    }
+
+    public Builder setStubType(StubType stubType) {
+      _stubType = stubType;
       return this;
     }
   }
@@ -53,6 +89,12 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   private static final long serialVersionUID = 1L;
 
   private SortedSet<String> _interfaces;
+
+  private NssaSettings _nssa;
+
+  private StubSettings _stub;
+
+  private StubType _stubType;
 
   private SortedMap<Prefix, OspfAreaSummary> _summaries;
 
@@ -69,6 +111,18 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   @JsonPropertyDescription("The interfaces assigned to this OSPF area")
   public SortedSet<String> getInterfaces() {
     return _interfaces;
+  }
+
+  public NssaSettings getNssa() {
+    return _nssa;
+  }
+
+  public StubSettings getStub() {
+    return _stub;
+  }
+
+  public StubType getStubType() {
+    return _stubType;
   }
 
   @JsonProperty(PROP_SUMMARIES)
