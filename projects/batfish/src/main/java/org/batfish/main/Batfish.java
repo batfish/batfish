@@ -51,6 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -726,7 +727,15 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .build();
       Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
       c.setIpAccessLists(aclsMap);
-      c.setInterfaces(aclSpec.acl.getInterfaces());
+      Set<String> interfaceNames = aclSpec.acl.getInterfaces();
+      c.setInterfaces(
+          ImmutableSortedMap.copyOf(
+              interfaceNames
+                  .stream()
+                  .collect(
+                      Collectors.toMap(
+                          Function.identity(),
+                          iface -> Interface.builder().setName(iface).setOwner(c).build()))));
 
       // Find unreachable lines
       NodSatJob<AclLine> job = generateUnreachableAclLineJob(sanitizedAcl, c);

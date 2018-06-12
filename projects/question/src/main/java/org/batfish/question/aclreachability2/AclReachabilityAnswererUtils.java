@@ -11,7 +11,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
@@ -394,11 +393,6 @@ public final class AclReachabilityAnswererUtils {
             // interface not originating from router" possibility. Needs to have a name different
             // from any referenced interface.
             Set<String> referencedInterfaces = node.getInterfaceDependencies();
-            Map<String, Interface> finalInterfaces =
-                referencedInterfaces
-                    .stream()
-                    .collect(
-                        Collectors.toMap(Function.identity(), iface -> nodeInterfaces.get(iface)));
             if (referencedInterfaces.size() < nodeInterfaces.size()) {
               // At least one interface was not referenced by the ACL. Represent that option.
               String unreferencedIfaceName = "unreferencedInterface";
@@ -407,9 +401,8 @@ public final class AclReachabilityAnswererUtils {
                 unreferencedIfaceName = "unreferencedInterface" + n;
                 n++;
               }
-              finalInterfaces.put(
-                  unreferencedIfaceName,
-                  Interface.builder().setName(unreferencedIfaceName).build());
+              referencedInterfaces = new TreeSet<>(referencedInterfaces);
+              referencedInterfaces.add(unreferencedIfaceName);
             }
 
             CanonicalAcl currentAcl =
@@ -417,7 +410,7 @@ public final class AclReachabilityAnswererUtils {
                     node.getSanitizedAcl(),
                     node.getAcl(),
                     node.getFlatDependencies(),
-                    finalInterfaces,
+                    referencedInterfaces,
                     node.getLinesWithUndefinedRefs(),
                     node.getLinesInCycles());
 

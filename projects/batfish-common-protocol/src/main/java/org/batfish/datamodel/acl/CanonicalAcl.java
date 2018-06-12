@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 
 /** Represents an ACL with all its dependencies for the purpose of detecting identical ACLs. */
@@ -13,7 +12,7 @@ public final class CanonicalAcl {
 
   private final IpAccessList _sanitizedAcl;
   private final ImmutableSortedMap<String, IpAccessList> _dependencies;
-  private final ImmutableSortedMap<String, Interface> _interfaces;
+  private final Set<String> _interfaces;
   private final Set<Integer> _linesInCycles;
   private final Set<Integer> _linesWithUndefinedReferences;
   private final IpAccessList _acl;
@@ -24,8 +23,7 @@ public final class CanonicalAcl {
    *     undefined refs and cycles sanitized to have match condition {@link FalseExpr}
    * @param acl {@link IpAccessList} represented by this CanonicalAcl
    * @param dependencies Map of names to {@link IpAccessList}s of ACLs upon which this ACL depends
-   * @param interfaces Map of interface names to {@link Interface}s of all interfaces referenced by
-   *     this ACL
+   * @param interfaces Set of interface names of all interfaces referenced by this ACL
    * @param linesWithUndefinedRefs Set of line numbers of lines that refer to undefined ACLs
    * @param linesInCycles Set of line numbers of lines that make circular references to another ACL
    */
@@ -33,7 +31,7 @@ public final class CanonicalAcl {
       IpAccessList sanitizedAcl,
       IpAccessList acl,
       Map<String, IpAccessList> dependencies,
-      Map<String, Interface> interfaces,
+      Set<String> interfaces,
       Set<Integer> linesWithUndefinedRefs,
       Set<Integer> linesInCycles) {
     _acl = acl;
@@ -43,7 +41,7 @@ public final class CanonicalAcl {
 
     // ACL and interface dependencies
     _dependencies = ImmutableSortedMap.copyOf(dependencies);
-    _interfaces = ImmutableSortedMap.copyOf(interfaces);
+    _interfaces = ImmutableSet.copyOf(interfaces);
   }
 
   /** @return The sanitized version of the ACL represented by this {@link CanonicalAcl} */
@@ -62,8 +60,8 @@ public final class CanonicalAcl {
     return _dependencies;
   }
 
-  /** @return Map of names to {@link Interface} objects referenced by this ACL. */
-  public NavigableMap<String, Interface> getInterfaces() {
+  /** @return Set of interface names referenced by this ACL. */
+  public Set<String> getInterfaces() {
     return _interfaces;
   }
 
