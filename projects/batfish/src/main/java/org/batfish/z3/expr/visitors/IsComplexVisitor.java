@@ -17,7 +17,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
@@ -111,11 +110,6 @@ public class IsComplexVisitor implements ExprVisitor {
   @Override
   public void visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     rangeMatchExpr.getExpr().accept(this);
-  }
-
-  @Override
-  public void visitSaneExpr(SaneExpr saneExpr) {
-    saneExpr.getExpr().accept(this);
   }
 
   @Override

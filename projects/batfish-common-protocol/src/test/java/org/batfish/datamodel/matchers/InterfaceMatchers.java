@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
@@ -22,6 +23,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllAddresses;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasAllowedVlans;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDeclaredNames;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasDescription;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
@@ -117,6 +119,15 @@ public final class InterfaceMatchers {
    */
   public static Matcher<Interface> hasDescription(String expectedDescription) {
     return new HasDescription(equalTo(expectedDescription));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
+   * isis.
+   */
+  public static @Nonnull Matcher<Interface> hasIsis(
+      @Nonnull Matcher<? super IsisInterfaceSettings> subMatcher) {
+    return new HasIsis(subMatcher);
   }
 
   /** Provides a matcher that matches if the provided value matches the interface's MTU. */

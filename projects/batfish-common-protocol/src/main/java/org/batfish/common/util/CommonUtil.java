@@ -64,8 +64,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -97,6 +95,7 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
+import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -119,6 +118,7 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -872,19 +872,6 @@ public class CommonUtil {
     }
   }
 
-  public static List<String> getMatchingStrings(String regex, Set<String> allStrings) {
-    Pattern pattern;
-    try {
-      pattern = Pattern.compile(regex);
-    } catch (PatternSyntaxException e) {
-      throw new BatfishException("Supplied regex is not a valid java regex: \"" + regex + "\"", e);
-    }
-    return allStrings
-        .stream()
-        .filter(s -> pattern.matcher(s).matches())
-        .collect(Collectors.toList());
-  }
-
   public static SortedSet<Path> getSubdirectories(Path directory) {
     SortedSet<Path> subdirectories = new TreeSet<>();
     try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory)) {
@@ -919,7 +906,8 @@ public class CommonUtil {
       BgpNeighbor src,
       BgpNeighbor dst,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp) {
+      @Nullable DataPlane dp,
+      @Nullable ForwardingAnalysis forwardingAnalysis) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getAddress();
     if (dstAddress == null) {
@@ -947,7 +935,8 @@ public class CommonUtil {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, Set<FlowTrace>> traces =
-        tracerouteEngine.processFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
+        tracerouteEngine.processFlows(
+            dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false, forwardingAnalysis);
 
     SortedSet<FlowTrace> acceptedFlows =
         traces
@@ -984,7 +973,9 @@ public class CommonUtil {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces = tracerouteEngine.processFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
+    traces =
+        tracerouteEngine.processFlows(
+            dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false, forwardingAnalysis);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
@@ -1017,7 +1008,7 @@ public class CommonUtil {
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid) {
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null);
+    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null, null);
   }
 
   /**
@@ -1043,7 +1034,8 @@ public class CommonUtil {
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp) {
+      @Nullable DataPlane dp,
+      @Nullable ForwardingAnalysis forwardingAnalysis) {
 
     // TODO: handle duplicate ips on different vrfs
 
@@ -1128,7 +1120,8 @@ public class CommonUtil {
          * Perform reachability checks.
          */
         if (checkReachability) {
-          if (isReachableBgpNeighbor(neighbor, candidateNeighbor, tracerouteEngine, dp)) {
+          if (isReachableBgpNeighbor(
+              neighbor, candidateNeighbor, tracerouteEngine, dp, forwardingAnalysis)) {
             graph.addEdge(neighbor, candidateNeighbor, new BgpSession(neighbor, candidateNeighbor));
           }
         } else {
@@ -1453,7 +1446,7 @@ public class CommonUtil {
     return Hashing.sha256().hashString(saltedSecret, StandardCharsets.UTF_8).toString();
   }
 
-  public static void startSslServer(
+  public static HttpServer startSslServer(
       ResourceConfig resourceConfig,
       URI mgrUri,
       Path keystorePath,
@@ -1488,7 +1481,7 @@ public class CommonUtil {
       sslCon.setTrustStorePass(truststorePassword);
     }
     boolean verifyClient = !trustAllCerts;
-    GrizzlyHttpServerFactory.createHttpServer(
+    return GrizzlyHttpServerFactory.createHttpServer(
         mgrUri,
         resourceConfig,
         true,

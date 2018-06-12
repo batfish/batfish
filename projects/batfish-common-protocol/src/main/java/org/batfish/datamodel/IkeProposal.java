@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import org.batfish.common.util.ComparableStructure;
@@ -92,8 +91,6 @@ public final class IkeProposal extends ComparableStructure<String> {
 
   private IkeAuthenticationMethod _authenticationMethod;
 
-  private final int _definitionLine;
-
   private DiffieHellmanGroup _diffieHellmanGroup;
 
   private EncryptionAlgorithm _encryptionAlgorithm;
@@ -101,14 +98,8 @@ public final class IkeProposal extends ComparableStructure<String> {
   private Integer _lifetimeSeconds;
 
   @JsonCreator
-  private IkeProposal(@JsonProperty(PROP_NAME) String name) {
+  public IkeProposal(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _definitionLine = -1;
-  }
-
-  public IkeProposal(String name, int definitionLine) {
-    super(name);
-    _definitionLine = definitionLine;
   }
 
   public boolean compatibleWith(IkeProposal rhs) {
@@ -126,11 +117,6 @@ public final class IkeProposal extends ComparableStructure<String> {
   @JsonPropertyDescription("Authentication method to use for connection to IKE gateway")
   public IkeAuthenticationMethod getAuthenticationMethod() {
     return _authenticationMethod;
-  }
-
-  @JsonIgnore
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   @JsonPropertyDescription("Diffie-Hellman group to use for key exchange")

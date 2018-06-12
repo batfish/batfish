@@ -165,7 +165,7 @@ public class VyosConfiguration extends VendorConfiguration {
               ikeGroupName + ":" + Integer.toString(ikeProposalEntry.getKey());
           IkeProposal ikeProposal = ikeProposalEntry.getValue();
           org.batfish.datamodel.IkeProposal newIkeProposal =
-              new org.batfish.datamodel.IkeProposal(newIkeProposalName, -1);
+              new org.batfish.datamodel.IkeProposal(newIkeProposalName);
           _c.getIkeProposals().put(newIkeProposalName, newIkeProposal);
           newIkePolicy.getProposals().put(newIkeProposalName, newIkeProposal);
           newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDhGroup());

@@ -9,19 +9,17 @@ import java.util.regex.Pattern;
  */
 @AutoService(LocationSpecifierFactory.class)
 public final class NodeNameRegexInterfaceLinkLocationSpecifierFactory
-    extends TypedLocationSpecifierFactory<Pattern> {
-  @Override
-  protected Class<Pattern> getInputClass() {
-    return Pattern.class;
-  }
+    extends CaseInsensitiveRegexLocationSpecifierFactory {
+  public static final String NAME =
+      NodeNameRegexInterfaceLinkLocationSpecifierFactory.class.getSimpleName();
 
   @Override
   public String getName() {
-    return getClass().getSimpleName();
+    return NAME;
   }
 
   @Override
-  public LocationSpecifier buildLocationSpecifierTyped(Pattern pattern) {
+  public LocationSpecifier buildLocationSpecifier(Pattern pattern) {
     return new NodeNameRegexInterfaceLinkLocationSpecifier(pattern);
   }
 }

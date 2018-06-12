@@ -13,8 +13,6 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   private String _gateway;
 
-  private int _gatewayLine;
-
   private String _ipsecPolicy;
 
   private int _ipsecPolicyLine;
@@ -35,10 +33,6 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return _gateway;
   }
 
-  public int getGatewayLine() {
-    return _gatewayLine;
-  }
-
   public String getIpsecPolicy() {
     return _ipsecPolicy;
   }
@@ -57,10 +51,6 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   public void setGateway(String gateway) {
     _gateway = gateway;
-  }
-
-  public void setGatewayLine(int gatewayLine) {
-    _gatewayLine = gatewayLine;
   }
 
   public void setIpsecPolicy(String name) {

@@ -311,6 +311,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_INTERFACE_TYPE = "type";
 
+  private static final String PROP_ISIS = "isis";
+
   private static final String PROP_ISIS_COST = "isisCost";
 
   private static final String PROP_ISIS_L1_INTERFACE_MODE = "isisL1InterfaceMode";
@@ -563,11 +565,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private InterfaceType _interfaceType;
 
-  private Integer _isisCost;
-
-  private IsisInterfaceMode _isisL1InterfaceMode;
-
-  private IsisInterfaceMode _isisL2InterfaceMode;
+  private IsisInterfaceSettings _isis;
 
   private int _mtu;
 
@@ -652,8 +650,6 @@ public final class Interface extends ComparableStructure<String> {
     _owner = owner;
     _switchportMode = SwitchportMode.NONE;
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
-    _isisL1InterfaceMode = IsisInterfaceMode.UNSET;
-    _isisL2InterfaceMode = IsisInterfaceMode.UNSET;
     _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
@@ -855,26 +851,35 @@ public final class Interface extends ComparableStructure<String> {
     return _interfaceType;
   }
 
+  @JsonProperty(PROP_ISIS)
+  public @Nullable IsisInterfaceSettings getIsis() {
+    return _isis;
+  }
+
   @JsonProperty(PROP_ISIS_COST)
   @JsonPropertyDescription("The IS-IS cost of this interface")
+  @Deprecated
   public Integer getIsisCost() {
-    return _isisCost;
+    return null;
   }
 
   @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
   @JsonPropertyDescription(
       "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
           + "level 1")
+  @Deprecated
   public IsisInterfaceMode getIsisL1InterfaceMode() {
-    return _isisL1InterfaceMode;
+    return null;
   }
 
   @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
   @JsonPropertyDescription(
       "Specifies whether this interface is active, passive, or unconfigured with respect to IS-IS "
           + "level 2")
+  @Deprecated
   public IsisInterfaceMode getIsisL2InterfaceMode() {
-    return _isisL2InterfaceMode;
+    // TODO: deprecate properly
+    return null;
   }
 
   @JsonProperty(PROP_MTU)
@@ -1193,19 +1198,27 @@ public final class Interface extends ComparableStructure<String> {
     _interfaceType = it;
   }
 
+  @JsonProperty(PROP_ISIS)
+  public void setIsis(@Nullable IsisInterfaceSettings isis) {
+    _isis = isis;
+  }
+
   @JsonProperty(PROP_ISIS_COST)
+  @Deprecated
   public void setIsisCost(Integer isisCost) {
-    _isisCost = isisCost;
+    // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_ISIS_L1_INTERFACE_MODE)
+  @Deprecated
   public void setIsisL1InterfaceMode(IsisInterfaceMode mode) {
-    _isisL1InterfaceMode = mode;
+    // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_ISIS_L2_INTERFACE_MODE)
+  @Deprecated
   public void setIsisL2InterfaceMode(IsisInterfaceMode mode) {
-    _isisL2InterfaceMode = mode;
+    // TODO: deprecate properly
   }
 
   @JsonProperty(PROP_MTU)

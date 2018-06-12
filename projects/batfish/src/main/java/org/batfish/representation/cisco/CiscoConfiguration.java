@@ -58,7 +58,8 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.IsisInterfaceMode;
+import org.batfish.datamodel.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -2246,18 +2247,21 @@ public final class CiscoConfiguration extends VendorConfiguration {
         default:
           throw new VendorConversionException("Invalid IS-IS level");
       }
+      IsisInterfaceSettings.Builder isisInterfaceSettingsBuilder = IsisInterfaceSettings.builder();
+      if (level1) {
+        IsisInterfaceLevelSettings isisInterfaceLevel1Settings = new IsisInterfaceLevelSettings();
+        isisInterfaceSettingsBuilder.setLevel1(isisInterfaceLevel1Settings);
+        isisInterfaceLevel1Settings.setCost(iface.getIsisCost());
+        isisInterfaceLevel1Settings.setMode(iface.getIsisInterfaceMode());
+      }
+      if (level2) {
+        IsisInterfaceLevelSettings isisInterfaceLevel2Settings = new IsisInterfaceLevelSettings();
+        isisInterfaceSettingsBuilder.setLevel2(isisInterfaceLevel2Settings);
+        isisInterfaceLevel2Settings.setCost(iface.getIsisCost());
+        isisInterfaceLevel2Settings.setMode(iface.getIsisInterfaceMode());
+      }
+      newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
-    if (level1) {
-      newIface.setIsisL1InterfaceMode(iface.getIsisInterfaceMode());
-    } else {
-      newIface.setIsisL1InterfaceMode(IsisInterfaceMode.UNSET);
-    }
-    if (level2) {
-      newIface.setIsisL2InterfaceMode(iface.getIsisInterfaceMode());
-    } else {
-      newIface.setIsisL2InterfaceMode(IsisInterfaceMode.UNSET);
-    }
-    newIface.setIsisCost(iface.getIsisCost());
     newIface.setOspfCost(iface.getOspfCost());
     newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
     newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
@@ -3540,11 +3544,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE);
 
     markConcreteStructure(CiscoStructureType.NAT_POOL, CiscoStructureUsage.IP_NAT_SOURCE_POOL);
+    markConcreteStructure(
+        CiscoStructureType.AS_PATH_ACCESS_LIST,
+        CiscoStructureUsage.BGP_NEIGHBOR_FILTER_AS_PATH_ACCESS_LIST,
+        CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST);
+
     // record references to defined structures
     recordCommunityLists();
     recordDocsisPolicies();
     recordDocsisPolicyRules();
-    recordStructure(_asPathAccessLists, CiscoStructureType.AS_PATH_ACCESS_LIST);
     recordPeerGroups();
     recordPeerSessions();
     recordServiceClasses();

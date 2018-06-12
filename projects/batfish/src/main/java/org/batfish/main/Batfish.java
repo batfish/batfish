@@ -208,11 +208,11 @@ import org.codehaus.jettison.json.JSONObject;
 /** This class encapsulates the main control logic for Batfish. */
 public class Batfish extends PluginConsumer implements IBatfish {
 
-  private static final String BASE_TESTRIG_TAG = "BASE";
+  public static final String BASE_TESTRIG_TAG = "BASE";
 
-  private static final String DELTA_TESTRIG_TAG = "DELTA";
+  public static final String DELTA_TESTRIG_TAG = "DELTA";
 
-  private static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
+  public static final String DIFFERENTIAL_FLOW_TAG = "DIFFERENTIAL";
 
   /** The name of the [optional] topology file within a test-rig */
   private static final String TOPOLOGY_FILENAME = "topology.net";
@@ -314,6 +314,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       String header) {
     switch (format) {
       case JUNIPER:
+        // Just use the Juniper flattener for PaloAlto for now since the process is identical
+      case PALO_ALTO_NESTED:
         {
           JuniperCombinedParser parser = new JuniperCombinedParser(input, settings);
           ParserRuleContext tree = parse(parser, logger, settings);
@@ -2965,10 +2967,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane baseDataPlane = loadDataPlane();
+    ForwardingAnalysis baseForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), baseDataPlane);
+    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane deltaDataPlane = loadDataPlane();
+    ForwardingAnalysis deltaForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), deltaDataPlane);
+    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3178,7 +3186,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), ignoreAcls);
+    DataPlane dp = loadDataPlane();
+    getDataPlanePlugin()
+        .processFlows(flows, dp, ignoreAcls, loadForwardingAnalysis(loadConfigurations(), dp));
   }
 
   /**
@@ -3483,10 +3493,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane baseDataPlane = loadDataPlane();
+    ForwardingAnalysis baseForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), baseDataPlane);
+    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
     popEnvironment();
     pushDeltaEnvironment();
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane deltaDataPlane = loadDataPlane();
+    ForwardingAnalysis deltaForwardingAnalysis =
+        loadForwardingAnalysis(loadConfigurations(), deltaDataPlane);
+    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -4170,7 +4186,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // run jobs and get resulting flows
     Set<Flow> flows = computeNodOutput(jobs);
 
-    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
+    DataPlane dp = loadDataPlane();
+    getDataPlanePlugin()
+        .processFlows(flows, dp, false, loadForwardingAnalysis(loadConfigurations(), dp));
 
     AnswerElement answerElement = getHistory();
     return answerElement;

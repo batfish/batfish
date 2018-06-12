@@ -11,7 +11,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.TrueExpr;
 
 public interface GenericBooleanExprVisitor<R> {
@@ -39,8 +38,6 @@ public interface GenericBooleanExprVisitor<R> {
   R visitPrefixMatchExpr(PrefixMatchExpr prefixMatchExpr);
 
   R visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr);
-
-  R visitSaneExpr(SaneExpr saneExpr);
 
   R visitTrueExpr(TrueExpr trueExpr);
 }

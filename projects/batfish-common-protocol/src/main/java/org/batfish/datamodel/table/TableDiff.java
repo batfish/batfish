@@ -3,11 +3,13 @@ package org.batfish.datamodel.table;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,14 +33,29 @@ public final class TableDiff {
   static final String COL_KEY_STATUS_ONLY_DELTA = "Key only in Delta";
 
   static final String NULL_VALUE_BASE = "Value is null in Base";
-  static final String NULL_VALUE_DELTA = "Value is null in Delta";
+  private static final String NULL_VALUE_DELTA = "Value is null in Delta";
 
-  public static final String RESULT_DIFFERENT = "<Different>";
-  public static final String RESULT_SAME = "<Same>";
+  static final String RESULT_DIFFERENT = "<Different>";
+  static final String RESULT_SAME = "<Same>";
 
   @VisibleForTesting
   static String baseColumnName(String originalColumnName) {
     return "Base_" + originalColumnName;
+  }
+
+  /**
+   * Returns a map over Rows, where the key is the key of the Row and the value is a Row with that
+   * key. If multiple {@link Row}s with the same key exist, (any) one is returned.
+   */
+  @VisibleForTesting
+  static Map<List<Object>, Row> buildMap(Rows rows, List<ColumnMetadata> metadata) {
+    Map<List<Object>, Row> map = new HashMap<>();
+    Iterator<Row> iterator = rows.iterator();
+    while (iterator.hasNext()) {
+      Row row = iterator.next();
+      map.put(row.getKey(metadata), row);
+    }
+    return map;
   }
 
   @VisibleForTesting
@@ -85,10 +102,10 @@ public final class TableDiff {
       Sets.SetView<?> removed = Sets.difference((Set<?>) deltaValue, (Set<?>) baseValue);
       StringBuilder diff = new StringBuilder();
       if (!added.isEmpty()) {
-        diff.append("\n + " + Objects.toString(added.immutableCopy()));
+        diff.append("\n + ").append(Objects.toString(added.immutableCopy()));
       }
       if (!removed.isEmpty()) {
-        diff.append("\n - " + Objects.toString(removed.immutableCopy()));
+        diff.append("\n - ").append(Objects.toString(removed.immutableCopy()));
       }
       return resultDifferent(diff.toString());
     } else {
@@ -106,7 +123,7 @@ public final class TableDiff {
    */
   @VisibleForTesting
   static TableMetadata diffMetadata(TableMetadata inputMetadata) {
-    Builder<ColumnMetadata> diffColumnMetatadata = new Builder<ColumnMetadata>();
+    ImmutableList.Builder<ColumnMetadata> diffColumnMetatadata = ImmutableList.builder();
     // 1. Insert all key columns
     for (ColumnMetadata cm : inputMetadata.getColumnMetadata()) {
       if (cm.getIsKey()) {
@@ -121,7 +138,7 @@ public final class TableDiff {
                 diffColumnMetatadata
                     .build()
                     .stream()
-                    .map(cm -> cm.getName())
+                    .map(ColumnMetadata::getName)
                     .collect(Collectors.toList()))
             + "]";
 
@@ -164,9 +181,9 @@ public final class TableDiff {
    */
   @VisibleForTesting
   static void diffRowValues(
-      @Nullable RowBuilder rowBuilder,
+      RowBuilder rowBuilder,
       @Nullable Row baseRow,
-      Row deltaRow,
+      @Nullable Row deltaRow,
       TableMetadata inputMetadata) {
     checkArgument(baseRow != null || deltaRow != null, "Both base and delta rows cannot be null");
     checkArgument(rowBuilder != null, "rowBuilder cannot be null");
@@ -219,8 +236,8 @@ public final class TableDiff {
         inputMetadata
             .getColumnMetadata()
             .stream()
-            .filter(cm -> cm.getIsKey())
-            .map(cm -> cm.getName())
+            .filter(ColumnMetadata::getIsKey)
+            .map(ColumnMetadata::getName)
             .collect(Collectors.toList());
 
     List<ColumnMetadata> valueColumns =
@@ -233,6 +250,8 @@ public final class TableDiff {
     Set<Object> processedKeys = new HashSet<>();
 
     Iterator<Row> baseRows = baseTable.getRows().iterator();
+    Map<List<Object>, Row> deltaMap =
+        buildMap(deltaTable.getRows(), inputMetadata.getColumnMetadata());
     while (baseRows.hasNext()) {
       Row baseRow = baseRows.next();
       Object baseKey = baseRow.getKey(inputMetadata.getColumnMetadata());
@@ -240,7 +259,7 @@ public final class TableDiff {
         continue;
       }
       processedKeys.add(baseKey);
-      Row deltaRow = deltaTable.getRows().getRow(baseKey, inputMetadata.getColumnMetadata());
+      Row deltaRow = deltaMap.get(baseKey);
       if ((deltaRow == null && !includeOneTableKeys)
           || (deltaRow != null /* skip if values are equal */
               && baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns)))) {
