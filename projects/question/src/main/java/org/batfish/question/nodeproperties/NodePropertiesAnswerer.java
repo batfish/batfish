@@ -23,6 +23,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.datamodel.table.TypedRowBuilder;
 
 public class NodePropertiesAnswerer extends Answerer {
 
@@ -75,7 +76,8 @@ public class NodePropertiesAnswerer extends Answerer {
     TableMetadata tableMetadata = createMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
-    Multiset<Row> propertyRows = rawAnswer(question, configurations, nodes);
+    Multiset<Row> propertyRows =
+        rawAnswer(question, configurations, nodes, tableMetadata.toColumnMap());
 
     answer.postProcessAnswer(question, propertyRows);
     return answer;
@@ -85,11 +87,12 @@ public class NodePropertiesAnswerer extends Answerer {
   static Multiset<Row> rawAnswer(
       NodePropertiesQuestion question,
       Map<String, Configuration> configurations,
-      Set<String> nodes) {
+      Set<String> nodes,
+      Map<String, ColumnMetadata> columns) {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
-      RowBuilder row = Row.builder().put(COL_NODE, new Node(nodeName));
+      RowBuilder row = new TypedRowBuilder(columns).put(COL_NODE, new Node(nodeName));
 
       for (String property : question.getPropertySpec().getMatchingProperties()) {
         PropertySpecifier.fillProperty(

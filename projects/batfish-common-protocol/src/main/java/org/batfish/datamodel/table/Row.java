@@ -6,11 +6,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Throwables;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -18,10 +16,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.SchemaUtils;
 import org.batfish.datamodel.questions.Exclusion;
 
 /**
@@ -154,57 +152,9 @@ public class Row implements Comparable<Row> {
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
+      throw new NoSuchElementException(missingColumnErrorMessage(columnName, getColumnNames()));
     }
     return _data.get(columnName);
-  }
-
-  /**
-   * Gets the value of specified column name
-   *
-   * @param columnName The column to fetch
-   * @return The result
-   * @throws NoSuchElementException if this column is not present
-   * @throws ClassCastException if the recovered data cannot be cast to the expected object
-   */
-  public <T> T get(String columnName, Class<T> valueType) {
-    if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
-    }
-    if (_data.get(columnName).isNull()) {
-      return null;
-    }
-    return convertType(_data.get(columnName), valueType);
-  }
-
-  /**
-   * Gets the value of specified column name
-   *
-   * @param columnName The column to fetch
-   * @return The result
-   * @throws NoSuchElementException if this column is not present
-   * @throws ClassCastException if the recovered data cannot be cast to the expected object
-   */
-  public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
-    if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
-    }
-    if (_data.get(columnName).isNull()) {
-      return null;
-    }
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(
-              BatfishObjectMapper.mapper().treeAsTokens(_data.get(columnName)), valueTypeRef);
-    } catch (IOException e) {
-      throw new ClassCastException(
-          String.format(
-              "Cannot recover object of type %s from column %s: %s\n%s",
-              valueTypeRef.getClass(),
-              columnName,
-              e.getMessage(),
-              Throwables.getStackTraceAsString(e)));
-    }
   }
 
   /**
@@ -217,28 +167,12 @@ public class Row implements Comparable<Row> {
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName, getColumnNames()));
+      throw new NoSuchElementException(missingColumnErrorMessage(columnName, getColumnNames()));
     }
     if (_data.get(columnName).isNull()) {
       return null;
     }
-    switch (columnSchema.getType()) {
-      case BASE:
-        return convertType(_data.get(columnName), columnSchema.getBaseType());
-      case LIST:
-        List<JsonNode> list = get(columnName, new TypeReference<List<JsonNode>>() {});
-        return list.stream()
-            .map(in -> convertType(in, columnSchema.getBaseType()))
-            .collect(Collectors.toList());
-      case SET:
-        Set<JsonNode> set = get(columnName, new TypeReference<Set<JsonNode>>() {});
-        return set.stream()
-            .map(in -> convertType(in, columnSchema.getBaseType()))
-            .collect(Collectors.toSet());
-      default:
-        throw new IllegalArgumentException(
-            "Cannot handle Schema of type: " + columnSchema.getType());
-    }
+    return SchemaUtils.convertType(_data.get(columnName), columnSchema);
   }
 
   /**
@@ -279,7 +213,7 @@ public class Row implements Comparable<Row> {
     return getKey(metadata.getColumnMetadata());
   }
 
-  public static String getMissingColumnErrorMessage(String columnName, Set<String> columns) {
+  public static String missingColumnErrorMessage(String columnName, Set<String> columns) {
     return String.format("Column '%s' is not present. Valid columns are: %s", columnName, columns);
   }
 

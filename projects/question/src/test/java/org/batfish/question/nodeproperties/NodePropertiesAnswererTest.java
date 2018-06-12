@@ -15,6 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
+import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.junit.Test;
 
@@ -32,10 +33,13 @@ public class NodePropertiesAnswererTest {
     Configuration conf2 = new Configuration("node2", ConfigurationFormat.HOST);
     conf2.setNtpServers(ImmutableSortedSet.of("sa"));
     Map<String, Configuration> configurations = ImmutableMap.of("node1", conf1, "node2", conf2);
+    Map<String, ColumnMetadata> columns =
+        NodePropertiesAnswerer.createMetadata(question).toColumnMap();
 
     Set<String> nodes = ImmutableSet.of("node1", "node2");
 
-    Multiset<Row> propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes);
+    Multiset<Row> propertyRows =
+        NodePropertiesAnswerer.rawAnswer(question, configurations, nodes, columns);
 
     // we should have exactly these two rows
     Multiset<Row> expected =
@@ -56,7 +60,7 @@ public class NodePropertiesAnswererTest {
     // Using the legacy properties question
     NodePropertiesQuestion questionDeprecated = new NodePropertiesQuestion(null, null);
     questionDeprecated.setProperties(ImmutableList.of(property1, property2));
-    propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes);
+    propertyRows = NodePropertiesAnswerer.rawAnswer(question, configurations, nodes, columns);
     assertThat(propertyRows, equalTo(expected));
   }
 }
