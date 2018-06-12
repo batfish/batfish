@@ -213,10 +213,6 @@ public class Row implements Comparable<Row> {
     return getKey(metadata.getColumnMetadata());
   }
 
-  public static String missingColumnErrorMessage(String columnName, Set<String> columns) {
-    return String.format("Column '%s' is not present. Valid columns are: %s", columnName, columns);
-  }
-
   /**
    * Returns the list of values in all columns declared as value in the metadata.
    *
@@ -252,6 +248,11 @@ public class Row implements Comparable<Row> {
    */
   public boolean isCovered(ObjectNode exclusion) {
     return Exclusion.firstCoversSecond(exclusion, _data);
+  }
+
+  /** Returns a message indicating that {@code columnName} is not present in {@code columns} */
+  public static String missingColumnErrorMessage(String columnName, Set<String> columns) {
+    return String.format("Column '%s' is not present. Valid columns are: %s", columnName, columns);
   }
 
   /**
