@@ -733,7 +733,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               interfaceNames
                   .stream()
                   .collect(
-                      Collectors.toMap(
+                      toMap(
                           Function.identity(),
                           iface -> Interface.builder().setName(iface).setOwner(c).build()))));
 
