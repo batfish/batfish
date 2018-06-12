@@ -3570,8 +3570,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Settings settings = getSettings();
     String tag = getDifferentialFlowTag();
 
+    // push environment so we use the right forwarding analysis.
+    pushBaseEnvironment();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
+    popEnvironment();
+
+    pushDeltaEnvironment();
     Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParams);
+    popEnvironment();
 
     /*
     // TODO refine dstIp to exclude blacklisted destinations
