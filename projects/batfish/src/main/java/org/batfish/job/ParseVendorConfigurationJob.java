@@ -24,6 +24,8 @@ import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
 import org.batfish.grammar.mrv.MrvControlPlaneExtractor;
+import org.batfish.grammar.palo_alto.PaloAltoCombinedParser;
+import org.batfish.grammar.palo_alto.PaloAltoControlPlaneExtractor;
 import org.batfish.main.Batfish;
 import org.batfish.main.ParserBatfishException;
 import org.batfish.representation.host.HostConfiguration;
@@ -165,17 +167,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       case VYOS:
         if (_settings.flattenOnTheFly()) {
-          String msg =
-              "Flattening: '"
-                  + currentPath
-                  + "' on-the-fly; line-numbers reported for this file will be spurious\n";
-          _warnings.pedantic(msg);
-          // _logger
-          // .warn("Flattening: \""
-          // + currentPath
-          // +
-          // "\" on-the-fly; line-numbers reported for this file will be
-          // spurious\n");
+          _warnings.pedantic(
+              String.format(
+                  "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
+                  currentPath));
           _fileText =
               Batfish.flatten(
                   _fileText,
@@ -190,9 +185,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
               _logger.getHistory(),
               _file,
               new BatfishException(
-                  "Vyos configurations must be flattened prior to this stage: '"
-                      + relativePathStr
-                      + "'"));
+                  String.format(
+                      "Vyos configurations must be flattened prior to this stage: '%s'",
+                      relativePathStr)));
         }
         // fall through
       case FLAT_VYOS:
@@ -203,17 +198,10 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
       case JUNIPER:
         if (_settings.flattenOnTheFly()) {
-          String msg =
-              "Flattening: '"
-                  + currentPath
-                  + "' on-the-fly; line-numbers reported for this file will be spurious\n";
-          _warnings.pedantic(msg);
-          // _logger
-          // .warn("Flattening: \""
-          // + currentPath
-          // +
-          // "\" on-the-fly; line-numbers reported for this file will be
-          // spurious\n");
+          _warnings.pedantic(
+              String.format(
+                  "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
+                  currentPath));
           try {
             _fileText =
                 Batfish.flatten(
@@ -223,10 +211,13 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     ConfigurationFormat.JUNIPER,
                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
           } catch (BatfishException e) {
-            String error = "Error flattening configuration file: '" + currentPath + "'";
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(
-                elapsedTime, _logger.getHistory(), _file, new BatfishException(error, e));
+                elapsedTime,
+                _logger.getHistory(),
+                _file,
+                new BatfishException(
+                    String.format("Error flattening configuration file: '%s'", currentPath), e));
           }
         } else {
           elapsedTime = System.currentTimeMillis() - startTime;
@@ -235,9 +226,9 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
               _logger.getHistory(),
               _file,
               new BatfishException(
-                  "Juniper configurations must be flattened prior to this stage: '"
-                      + relativePathStr
-                      + "'"));
+                  String.format(
+                      "Juniper configurations must be flattened prior to this stage: '%s'",
+                      relativePathStr)));
         }
         // fall through
       case FLAT_JUNIPER:
@@ -263,16 +254,57 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         extractor = new MrvControlPlaneExtractor(_fileText, mrvParser, _warnings);
         break;
 
+      case PALO_ALTO_NESTED:
+        if (_settings.flattenOnTheFly()) {
+          _warnings.pedantic(
+              String.format(
+                  "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
+                  currentPath));
+          try {
+            _fileText =
+                Batfish.flatten(
+                    _fileText,
+                    _logger,
+                    _settings,
+                    ConfigurationFormat.PALO_ALTO_NESTED,
+                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+          } catch (BatfishException e) {
+            elapsedTime = System.currentTimeMillis() - startTime;
+            return new ParseVendorConfigurationResult(
+                elapsedTime,
+                _logger.getHistory(),
+                _file,
+                new BatfishException(
+                    String.format("Error flattening configuration file: '%s'", currentPath), e));
+          }
+        } else {
+          elapsedTime = System.currentTimeMillis() - startTime;
+          return new ParseVendorConfigurationResult(
+              elapsedTime,
+              _logger.getHistory(),
+              _file,
+              new BatfishException(
+                  String.format(
+                      "Palo Alto nested configurations must be flattened prior to this stage: '%s'",
+                      relativePathStr)));
+        }
+        // fall through
+      case PALO_ALTO:
+        PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(_fileText, _settings);
+        combinedParser = paParser;
+        extractor =
+            new PaloAltoControlPlaneExtractor(
+                _fileText, paParser, _warnings, _settings.getUnrecognizedAsRedFlag());
+        break;
+
       case ALCATEL_AOS:
       case AWS:
       case BLADENETWORK:
       case F5:
-      case FLAT_PALO_ALTO:
       case JUNIPER_SWITCH:
       case METAMAKO:
       case MRV_COMMANDS:
       case MSS:
-      case PALO_ALTO:
       case VXWORKS:
         String unsupportedError =
             "Unsupported configuration format: '" + format + "' for file: '" + currentPath + "'\n";

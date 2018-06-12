@@ -1,5 +1,6 @@
 package org.batfish.coordinator.resources;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableSet;
 import java.util.Objects;
 import java.util.Set;
@@ -11,7 +12,7 @@ public class NodeRoleBean {
   public Set<String> nodes;
   public String regex;
 
-  /** Used by Jackson */
+  @JsonCreator
   private NodeRoleBean() {}
 
   /**

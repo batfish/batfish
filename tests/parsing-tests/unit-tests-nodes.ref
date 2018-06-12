@@ -798,8 +798,6 @@
               "1.2.3.4",
               "2.3.4.5"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -825,8 +823,6 @@
             "declaredNames" : [
               "Ethernet1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -885,8 +881,6 @@
             "dhcpRelayAddresses" : [
               "5.5.5.5"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -1284,8 +1278,6 @@
             "dhcpRelayAddresses" : [
               "2.3.4.5"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 123,
             "ospfDeadInterval" : 0,
@@ -1718,8 +1710,6 @@
             "declaredNames" : [
               "Ethernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -3453,8 +3443,6 @@
               "ethernet6/0.0"
             ],
             "description" : "\"squeee\"",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3484,8 +3472,6 @@
             "declaredNames" : [
               "ethernet6/0.48"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3512,8 +3498,6 @@
             "declaredNames" : [
               "ethernet6/1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3539,8 +3523,6 @@
             "declaredNames" : [
               "cable-downstream1/2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3567,8 +3549,6 @@
               "cable-downstream1/2/3"
             ],
             "description" : "\"blah\"",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3594,8 +3574,6 @@
             "declaredNames" : [
               "cable-downstream5/0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3622,8 +3600,6 @@
               "cable-mac1"
             ],
             "description" : "\"cable-mac 1\"",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3653,8 +3629,6 @@
               "cable-mac1.1"
             ],
             "description" : "\"foobar\"",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3688,8 +3662,6 @@
               "cable-mac1.2"
             ],
             "description" : "\"bleep\"",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3716,8 +3688,6 @@
             "declaredNames" : [
               "cable-mac2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3743,8 +3713,6 @@
             "declaredNames" : [
               "cable-mac3"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3771,8 +3739,6 @@
               "cable-upstream1/0/0"
             ],
             "description" : "\"bleh\"",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3799,8 +3765,6 @@
               "cable-upstream1/0/0.0"
             ],
             "description" : "\"blarp\"",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3826,8 +3790,6 @@
             "declaredNames" : [
               "cable-upstream1/0/10"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -3853,8 +3815,6 @@
             "declaredNames" : [
               "mgmt6/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -4905,6 +4865,39 @@
       "cisco_bgp" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_bgp",
+        "asPathAccessLists" : {
+          "10" : {
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "regex" : "^65535$"
+              },
+              {
+                "action" : "REJECT",
+                "regex" : "(,|\\{|\\}|^|$| )65535(,|\\{|\\}|^|$| )"
+              }
+            ],
+            "name" : "10"
+          },
+          "20" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^65536$"
+              }
+            ],
+            "name" : "20"
+          },
+          "30" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^4000$"
+              }
+            ],
+            "name" : "30"
+          }
+        },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "ROUTER",
@@ -5576,8 +5569,6 @@
             "declaredNames" : [
               "Cable1/2/3"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -5750,31 +5741,40 @@
             "name" : "ESP-3DES-MD5",
             "authenticationAlgorithm" : "HMAC_MD5_96",
             "encryptionAlgorithm" : "THREEDES_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "IPSEC_AES_256" : {
             "name" : "IPSEC_AES_256",
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "cipts1" : {
             "name" : "cipts1",
             "authenticationAlgorithm" : "HMAC_SHA_256_128",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "cipts2" : {
             "name" : "cipts2",
             "authenticationAlgorithm" : "HMAC_SHA_512",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           },
           "noAuthHeader" : {
             "name" : "noAuthHeader",
-            "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_256_CBC",
-            "protocol" : "ESP"
+            "protocols" : [
+              "ESP"
+            ]
           }
         },
         "vendorFamily" : {
@@ -6135,8 +6135,6 @@
             "declaredNames" : [
               "GigabitEthernet0/1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6207,8 +6205,6 @@
             "declaredNames" : [
               "TenGigE0/0/2/2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6259,8 +6255,6 @@
             "declaredNames" : [
               "Async1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6286,8 +6280,6 @@
             "declaredNames" : [
               "Cable1/2/3:4"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6313,8 +6305,6 @@
             "declaredNames" : [
               "Crypto-Engine1/2/3"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6340,8 +6330,6 @@
             "declaredNames" : [
               "Dot11Radio0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6378,9 +6366,6 @@
               "172.16.0.1",
               "172.17.0.1"
             ],
-            "isisCost" : 12345,
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 6,
             "ospfCost" : 1,
@@ -6409,8 +6394,6 @@
             "declaredNames" : [
               "ethernet1/11"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6436,8 +6419,6 @@
             "declaredNames" : [
               "ethernet1/12"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6466,8 +6447,6 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfCost" : 60,
@@ -6495,8 +6474,6 @@
             "declaredNames" : [
               "Loopback0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6522,8 +6499,6 @@
             "declaredNames" : [
               "Modular-Cable1/2/3:4"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6549,8 +6524,6 @@
             "declaredNames" : [
               "Null0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6576,8 +6549,6 @@
             "declaredNames" : [
               "vlan1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6603,8 +6574,6 @@
             "declaredNames" : [
               "vlan1005"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6630,8 +6599,6 @@
             "declaredNames" : [
               "vlan1006"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6657,8 +6624,6 @@
             "declaredNames" : [
               "Vlan111"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6684,8 +6649,6 @@
             "declaredNames" : [
               "vlan1234"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6711,8 +6674,6 @@
             "declaredNames" : [
               "vlan2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6738,8 +6699,6 @@
             "declaredNames" : [
               "vlan3"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6765,8 +6724,6 @@
             "declaredNames" : [
               "vlan4094"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6792,8 +6749,6 @@
             "declaredNames" : [
               "Vxlan1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6819,8 +6774,6 @@
             "declaredNames" : [
               "Wideband-Cable1/2/3:4"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -6846,8 +6799,6 @@
             "declaredNames" : [
               "tunnel-ip6"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7409,8 +7360,15 @@
             "declaredNames" : [
               "GigabitEthernet0/0"
             ],
-            "isisL1InterfaceMode" : "passive",
-            "isisL2InterfaceMode" : "passive",
+            "isis" : {
+              "level1" : {
+                "mode" : "passive"
+              },
+              "level2" : {
+                "mode" : "passive"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7439,9 +7397,17 @@
             "declaredNames" : [
               "GigabitEthernet0/0/1"
             ],
-            "isisCost" : 15,
-            "isisL1InterfaceMode" : "passive",
-            "isisL2InterfaceMode" : "passive",
+            "isis" : {
+              "level1" : {
+                "cost" : 15,
+                "mode" : "passive"
+              },
+              "level2" : {
+                "cost" : 15,
+                "mode" : "passive"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7468,8 +7434,15 @@
             "declaredNames" : [
               "GigabitEthernet0/1"
             ],
-            "isisL1InterfaceMode" : "active",
-            "isisL2InterfaceMode" : "active",
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7495,8 +7468,15 @@
             "declaredNames" : [
               "HundredGigE0/0/0/0.2302"
             ],
-            "isisL1InterfaceMode" : "active",
-            "isisL2InterfaceMode" : "active",
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7522,8 +7502,15 @@
             "declaredNames" : [
               "Loopback0"
             ],
-            "isisL1InterfaceMode" : "passive",
-            "isisL2InterfaceMode" : "passive",
+            "isis" : {
+              "level1" : {
+                "mode" : "passive"
+              },
+              "level2" : {
+                "mode" : "passive"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -7549,8 +7536,15 @@
             "declaredNames" : [
               "Serial4/0"
             ],
-            "isisL1InterfaceMode" : "active",
-            "isisL2InterfaceMode" : "active",
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -8634,8 +8628,6 @@
             "declaredNames" : [
               "ethernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -8667,8 +8659,6 @@
             "declaredNames" : [
               "loopback0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -9037,10 +9027,99 @@
       "cisco_route_map" : {
         "configurationFormat" : "CISCO_IOS",
         "name" : "cisco_route_map",
+        "asPathAccessLists" : {
+          "AS_PATH_ACL1" : {
+            "lines" : [
+              {
+                "action" : "REJECT",
+                "regex" : "^65535$"
+              },
+              {
+                "action" : "REJECT",
+                "regex" : "(,|\\{|\\}|^|$| )65535(,|\\{|\\}|^|$| )"
+              }
+            ],
+            "name" : "AS_PATH_ACL1"
+          },
+          "AS_PATH_ACL2" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^65536$"
+              }
+            ],
+            "name" : "AS_PATH_ACL2"
+          },
+          "AS_PATH_ACL_UNUSED" : {
+            "lines" : [
+              {
+                "action" : "ACCEPT",
+                "regex" : "^4000$"
+              }
+            ],
+            "name" : "AS_PATH_ACL_UNUSED"
+          }
+        },
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
         "routingPolicies" : {
+          "MAP_NAME1" : {
+            "name" : "MAP_NAME1",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "~RMCLAUSE~MAP_NAME1~10~",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedAsPathSet",
+                    "name" : "AS_PATH_ACL1"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
+          "MAP_NAME2" : {
+            "name" : "MAP_NAME2",
+            "statements" : [
+              {
+                "class" : "org.batfish.datamodel.routing_policy.statement.If",
+                "comment" : "~RMCLAUSE~MAP_NAME2~20~",
+                "falseStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnLocalDefaultAction"
+                  }
+                ],
+                "guard" : {
+                  "class" : "org.batfish.datamodel.routing_policy.expr.MatchAsPath",
+                  "expr" : {
+                    "class" : "org.batfish.datamodel.routing_policy.expr.NamedAsPathSet",
+                    "name" : "AS_PATH_ACL2"
+                  }
+                },
+                "trueStatements" : [
+                  {
+                    "class" : "org.batfish.datamodel.routing_policy.statement.Statements$StaticStatement",
+                    "type" : "ReturnTrue"
+                  }
+                ]
+              }
+            ]
+          },
           "MSDP-SA-RP-FILTER" : {
             "name" : "MSDP-SA-RP-FILTER",
             "statements" : [
@@ -9772,8 +9851,6 @@
             "declaredNames" : [
               "Ethernet0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -10477,8 +10554,6 @@
             "declaredNames" : [
               "ethernet1/15"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -10580,8 +10655,6 @@
               "eth0"
             ],
             "incomingFilter" : "filter::INPUT",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -10863,8 +10936,6 @@
               "eth0"
             ],
             "incomingFilter" : "iptables_Ethernet0_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -10897,8 +10968,6 @@
               "eth1"
             ],
             "incomingFilter" : "iptables_Ethernet1_ingress",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfArea" : 0,
@@ -11307,8 +11376,6 @@
             "declaredNames" : [
               "Vlan303"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 9100,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11342,8 +11409,6 @@
               "10.22.33.111",
               "10.22.33.112"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 9100,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11396,8 +11461,6 @@
             "declaredNames" : [
               "FastEthernet12/13"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11423,8 +11486,6 @@
             "declaredNames" : [
               "HundredGigE0/6/0/8"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11450,8 +11511,6 @@
             "declaredNames" : [
               "Port-channel1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11477,8 +11536,6 @@
             "declaredNames" : [
               "Vlan100"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11533,8 +11590,6 @@
               "Loopback0"
             ],
             "description" : "SLO-AGG1 lo0 (Loopback0 Address)",
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -11935,8 +11990,15 @@
             "declaredNames" : [
               "GigabitEthernet0/2/1/6"
             ],
-            "isisL1InterfaceMode" : "active",
-            "isisL2InterfaceMode" : "active",
+            "isis" : {
+              "level1" : {
+                "mode" : "active"
+              },
+              "level2" : {
+                "mode" : "active"
+              },
+              "pointToPoint" : false
+            },
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12040,8 +12102,6 @@
             "declaredNames" : [
               "Bundle-Ether101"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12067,8 +12127,6 @@
             "declaredNames" : [
               "Bundle-Ether103"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12094,8 +12152,6 @@
             "declaredNames" : [
               "Bundle-Ether201"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfCost" : 1,
@@ -12122,8 +12178,6 @@
             "declaredNames" : [
               "HundredGigE0/2/0/0.292"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12149,8 +12203,6 @@
             "declaredNames" : [
               "HundredGigE0/2/0/3"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12176,8 +12228,6 @@
             "declaredNames" : [
               "Loopback0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12203,8 +12253,6 @@
             "declaredNames" : [
               "TenGigE0/0/0/2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12230,8 +12278,6 @@
             "declaredNames" : [
               "TenGigE0/0/0/4"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12257,8 +12303,6 @@
             "declaredNames" : [
               "TenGigE0/0/0/5"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12566,8 +12610,6 @@
             "declaredNames" : [
               "xe-0/0/1.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12593,8 +12635,6 @@
             "declaredNames" : [
               "xe-0/0/20:0.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -12620,8 +12660,6 @@
             "declaredNames" : [
               "xe-0/0/21:0.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13591,8 +13629,6 @@
             "declaredNames" : [
               "et-0/0/10.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13621,8 +13657,6 @@
             "dhcpRelayAddresses" : [
               "3.4.5.6"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13648,8 +13682,6 @@
             "declaredNames" : [
               "xe-1/0/0.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13697,8 +13729,6 @@
             "declaredNames" : [
               "ae0.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13728,8 +13758,6 @@
             "declaredNames" : [
               "irb.5"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13763,8 +13791,6 @@
             "declaredNames" : [
               "xe-0/0/0:0.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13790,8 +13816,6 @@
             "declaredNames" : [
               "xe-0/0/5:0.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -13840,8 +13864,6 @@
             "declaredNames" : [
               "ge-0/0/0.0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -14175,8 +14197,6 @@
             "dhcpRelayAddresses" : [
               "1.2.3.4"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -14205,8 +14225,6 @@
             "dhcpRelayAddresses" : [
               "1.2.3.4"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -14484,6 +14502,19 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePolicies" : {
+          "1.2.3.4" : {
+            "name" : "1.2.3.4",
+            "proposals" : [
+              "PROPOSAL"
+            ]
+          }
+        },
+        "ikeProposals" : {
+          "PROPOSAL" : {
+            "name" : "PROPOSAL"
+          }
+        },
         "ipAccessLists" : {
           "~EXISTING_CONNECTION~" : {
             "name" : "~EXISTING_CONNECTION~",
@@ -14762,8 +14793,6 @@
             "declaredNames" : [
               "et1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -14789,8 +14818,6 @@
             "declaredNames" : [
               "et2"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -14816,8 +14843,6 @@
             "declaredNames" : [
               "ma1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -14843,8 +14868,6 @@
             "declaredNames" : [
               "ap1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -16325,7 +16348,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
-              "multipathEbgp" : false,
+              "multipathEbgp" : true,
               "multipathEquivalentAsPathMatchMode" : "PATH_LENGTH",
               "multipathIbgp" : false,
               "routerId" : "0.0.0.0",
@@ -16350,8 +16373,6 @@
             "declaredNames" : [
               "Ethernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -16377,8 +16398,6 @@
             "declaredNames" : [
               "nve1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -18374,8 +18393,6 @@
             "declaredNames" : [
               "loopback1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -21846,8 +21863,6 @@
             "declaredNames" : [
               "FastEthernet0/1"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -22347,8 +22362,6 @@
             "declaredNames" : [
               "FastEthernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,
@@ -22399,8 +22412,6 @@
             "declaredNames" : [
               "FastEthernet0/0"
             ],
-            "isisL1InterfaceMode" : "unset",
-            "isisL2InterfaceMode" : "unset",
             "mtu" : 1500,
             "nativeVlan" : 1,
             "ospfDeadInterval" : 0,

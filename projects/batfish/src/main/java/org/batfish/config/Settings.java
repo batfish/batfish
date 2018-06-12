@@ -17,11 +17,10 @@ import org.batfish.common.UnimplementedBatfishException;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
-import org.batfish.dataplane.bdp.BdpSettings;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.main.Driver.RunMode;
 
-public final class Settings extends BaseSettings implements BdpSettings, GrammarSettings {
+public final class Settings extends BaseSettings implements GrammarSettings {
 
   public static final class EnvironmentSettings {
 
@@ -412,7 +411,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_COORDINATOR_HOST = "coordinatorhost";
 
-  private static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
+  public static final String ARG_COORDINATOR_POOL_PORT = "coordinatorpoolport";
 
   public static final String ARG_COORDINATOR_REGISTER = "register";
 
@@ -478,7 +477,7 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public static final String ARG_SERVICE_NAME = "servicename";
 
-  private static final String ARG_SERVICE_PORT = "serviceport";
+  public static final String ARG_SERVICE_PORT = "serviceport";
 
   private static final String ARG_TRACING_AGENT_HOST = "tracingagenthost";
 
@@ -616,36 +615,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public TestrigSettings getBaseTestrigSettings() {
     return _baseTestrigSettings;
-  }
-
-  @Override
-  public boolean getBdpDetail() {
-    return _config.getBoolean(BfConsts.ARG_BDP_DETAIL);
-  }
-
-  @Override
-  public int getBdpMaxOscillationRecoveryAttempts() {
-    return _config.getInt(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
-  }
-
-  @Override
-  public int getBdpMaxRecordedIterations() {
-    return _config.getInt(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS);
-  }
-
-  @Override
-  public boolean getBdpPrintAllIterations() {
-    return _config.getBoolean(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS);
-  }
-
-  @Override
-  public boolean getBdpPrintOscillatingIterations() {
-    return _config.getBoolean(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
-  }
-
-  @Override
-  public boolean getBdpRecordAllIterations() {
-    return _config.getBoolean(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
   }
 
   public boolean getCompileEnvironment() {
@@ -1507,38 +1476,6 @@ public final class Settings extends BaseSettings implements BdpSettings, Grammar
 
   public void setActiveTestrigSettings(TestrigSettings activeTestrigSettings) {
     _activeTestrigSettings = activeTestrigSettings;
-  }
-
-  @Override
-  public void setBdpDetail(boolean bdpDetail) {
-    _config.setProperty(BfConsts.ARG_BDP_DETAIL, bdpDetail);
-  }
-
-  @Override
-  public void setBdpMaxOscillationRecoveryAttempts(int bdpMaxOscillationRecoveryAttempts) {
-    _config.setProperty(
-        BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, bdpMaxOscillationRecoveryAttempts);
-  }
-
-  @Override
-  public void setBdpMaxRecordedIterations(int bdpMaxRecordedIterations) {
-    _config.setProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, bdpMaxRecordedIterations);
-  }
-
-  @Override
-  public void setBdpPrintAllIterations(boolean bdpPrintAllIterations) {
-    _config.setProperty(BfConsts.ARG_BDP_PRINT_ALL_ITERATIONS, bdpPrintAllIterations);
-  }
-
-  @Override
-  public void setBdpPrintOscillatingIterations(boolean bdpPrintOscillatingIterations) {
-    _config.setProperty(
-        BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, bdpPrintOscillatingIterations);
-  }
-
-  @Override
-  public void setBdpRecordAllIterations(boolean bdpRecordAllIterations) {
-    _config.setProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, bdpRecordAllIterations);
   }
 
   public void setCanExecute(boolean canExecute) {

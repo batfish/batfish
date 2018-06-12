@@ -10,6 +10,8 @@ import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
@@ -40,6 +42,17 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Vrf featureValueOf(Configuration actual) {
       return actual.getDefaultVrf();
+    }
+  }
+
+  static final class HasHostname extends FeatureMatcher<Configuration, String> {
+    HasHostname(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "A Configuration with hostname", "hostname");
+    }
+
+    @Override
+    protected String featureValueOf(Configuration actual) {
+      return actual.getHostname();
     }
   }
 
@@ -122,6 +135,21 @@ final class ConfigurationMatchersImpl {
     }
   }
 
+  static final class HasIpsecProposal extends FeatureMatcher<Configuration, IpsecProposal> {
+    private final String _name;
+
+    HasIpsecProposal(@Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
+      super(
+          subMatcher, "A Configuration with ipsecProposal " + name + ":", "ipsecProposal " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecProposal featureValueOf(Configuration actual) {
+      return actual.getIpsecProposals().get(_name);
+    }
+  }
+
   static final class HasIpSpace extends FeatureMatcher<Configuration, IpSpace> {
     private final String _name;
 
@@ -144,6 +172,20 @@ final class ConfigurationMatchersImpl {
     @Override
     protected Map<String, IpSpace> featureValueOf(Configuration actual) {
       return actual.getIpSpaces();
+    }
+  }
+
+  static final class HasIpsecPolicy extends FeatureMatcher<Configuration, IpsecPolicy> {
+    private final String _name;
+
+    HasIpsecPolicy(@Nonnull String name, @Nonnull Matcher<? super IpsecPolicy> subMatcher) {
+      super(subMatcher, "A Configuration with ipsecPolicy " + name + ":", "ipsecPolicy " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecPolicy featureValueOf(Configuration actual) {
+      return actual.getIpsecPolicies().get(_name);
     }
   }
 

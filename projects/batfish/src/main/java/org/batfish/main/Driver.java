@@ -1,5 +1,6 @@
 package org.batfish.main;
 
+import com.google.common.base.Throwables;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
@@ -43,7 +44,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.lang3.SystemUtils;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BfConsts;
@@ -68,6 +68,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.codehaus.jettison.json.JSONArray;
+import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.jettison.JettisonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -147,8 +148,7 @@ public class Driver {
 
   private static final int PARENT_CHECK_INTERVAL_MS = 1 * 1000; // 1 sec
 
-  static Logger httpServerLogger =
-      Logger.getLogger(org.glassfish.grizzly.http.server.HttpServer.class.getName());
+  static Logger httpServerLogger = Logger.getLogger(HttpServer.class.getName());
 
   private static final int MAX_CACHED_DATA_PLANES = 2;
 
@@ -327,7 +327,7 @@ public class Driver {
       httpServerLogger.setLevel(Level.WARNING);
     } catch (Exception e) {
       System.err.println(
-          "batfish: Initialization failed. Reason: " + ExceptionUtils.getStackTrace(e));
+          "batfish: Initialization failed. Reason: " + Throwables.getStackTraceAsString(e));
       System.exit(1);
     }
   }
@@ -393,12 +393,12 @@ public class Driver {
       try {
         process = builder.start();
       } catch (IOException e) {
-        _mainLogger.errorf("Exception starting process: %s", ExceptionUtils.getStackTrace(e));
+        _mainLogger.errorf("Exception starting process: %s", Throwables.getStackTraceAsString(e));
         _mainLogger.errorf("Will try again in 1 second\n");
         try {
           Thread.sleep(1000);
         } catch (InterruptedException e1) {
-          _mainLogger.errorf("Sleep was interrrupted: %s", ExceptionUtils.getStackTrace(e1));
+          _mainLogger.errorf("Sleep was interrrupted: %s", Throwables.getStackTraceAsString(e1));
         }
         continue;
       }
@@ -408,14 +408,14 @@ public class Driver {
         reader.lines().forEach(line -> _mainLogger.output(line + "\n"));
       } catch (IOException e) {
         _mainLogger.errorf(
-            "Interrupted while reading subprocess stream: %s", ExceptionUtils.getStackTrace(e));
+            "Interrupted while reading subprocess stream: %s", Throwables.getStackTraceAsString(e));
       }
 
       try {
         process.waitFor();
       } catch (InterruptedException e) {
         _mainLogger.infof(
-            "Subprocess was killed: %s.\nRestarting", ExceptionUtils.getStackTrace(e));
+            "Subprocess was killed: %s.\nRestarting", Throwables.getStackTraceAsString(e));
       }
     }
   }
@@ -444,23 +444,26 @@ public class Driver {
       rc.register(ServerTracingDynamicFeature.class);
     }
     try {
+      HttpServer server;
       if (_mainSettings.getSslDisable()) {
-        GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
+        server = GrizzlyHttpServerFactory.createHttpServer(baseUri, rc);
       } else {
-        CommonUtil.startSslServer(
-            rc,
-            baseUri,
-            _mainSettings.getSslKeystoreFile(),
-            _mainSettings.getSslKeystorePassword(),
-            _mainSettings.getSslTrustAllCerts(),
-            _mainSettings.getSslTruststoreFile(),
-            _mainSettings.getSslTruststorePassword(),
-            ConfigurationLocator.class,
-            Driver.class);
+        server =
+            CommonUtil.startSslServer(
+                rc,
+                baseUri,
+                _mainSettings.getSslKeystoreFile(),
+                _mainSettings.getSslKeystorePassword(),
+                _mainSettings.getSslTrustAllCerts(),
+                _mainSettings.getSslTruststoreFile(),
+                _mainSettings.getSslTruststorePassword(),
+                ConfigurationLocator.class,
+                Driver.class);
       }
+      int selectedListenPort = server.getListeners().iterator().next().getPort();
       if (_mainSettings.getCoordinatorRegister()) {
         // this function does not return until registration succeeds
-        registerWithCoordinatorPersistent();
+        registerWithCoordinatorPersistent(selectedListenPort);
       }
 
       if (_mainSettings.getParentPid() > 0) {
@@ -490,7 +493,7 @@ public class Driver {
             && new Date().getTime() - _lastPollFromCoordinator.getTime()
                 > COORDINATOR_POLL_TIMEOUT_MS) {
           // this function does not return until registration succeeds
-          registerWithCoordinatorPersistent();
+          registerWithCoordinatorPersistent(selectedListenPort);
         }
       }
     } catch (ProcessingException e) {
@@ -498,7 +501,7 @@ public class Driver {
       _mainLogger.error(msg);
       System.exit(1);
     } catch (Exception ex) {
-      String stackTrace = ExceptionUtils.getStackTrace(ex);
+      String stackTrace = Throwables.getStackTraceAsString(ex);
       _mainLogger.error(stackTrace);
       System.exit(1);
     }
@@ -521,18 +524,17 @@ public class Driver {
     }
   }
 
-  private static boolean registerWithCoordinator(String poolRegUrl) {
+  private static boolean registerWithCoordinator(String poolRegUrl, int listenPort) {
     Map<String, String> params = new HashMap<>();
-    params.put(
-        CoordConsts.SVC_KEY_ADD_WORKER,
-        _mainSettings.getServiceHost() + ":" + _mainSettings.getServicePort());
+    params.put(CoordConsts.SVC_KEY_ADD_WORKER, _mainSettings.getServiceHost() + ":" + listenPort);
     params.put(CoordConsts.SVC_KEY_VERSION, Version.getVersion());
 
     Object response = talkToCoordinator(poolRegUrl, params, _mainLogger);
     return response != null;
   }
 
-  private static void registerWithCoordinatorPersistent() throws InterruptedException {
+  private static void registerWithCoordinatorPersistent(int listenPort)
+      throws InterruptedException {
     boolean registrationSuccess;
 
     String protocol = _mainSettings.getSslDisable() ? "http" : "https";
@@ -546,7 +548,7 @@ public class Driver {
             CoordConsts.SVC_RSC_POOL_UPDATE);
 
     do {
-      registrationSuccess = registerWithCoordinator(poolRegUrl);
+      registrationSuccess = registerWithCoordinator(poolRegUrl, listenPort);
       if (!registrationSuccess) {
         Thread.sleep(COORDINATOR_REGISTRATION_RETRY_INTERVAL_MS);
       }
@@ -603,7 +605,7 @@ public class Driver {
                       e.getClass().getName() + ": " + e.getMessage());
                   answer = Answer.failureAnswer(msg, null);
                 } catch (QuestionException e) {
-                  String stackTrace = ExceptionUtils.getStackTrace(e);
+                  String stackTrace = Throwables.getStackTraceAsString(e);
                   logger.errorf(
                       "Exception in container:%s, testrig:%s; exception:%s",
                       containerName, testrigName, stackTrace);
@@ -612,7 +614,7 @@ public class Driver {
                   answer = e.getAnswer();
                   answer.setStatus(AnswerStatus.FAILURE);
                 } catch (BatfishException e) {
-                  String stackTrace = ExceptionUtils.getStackTrace(e);
+                  String stackTrace = Throwables.getStackTraceAsString(e);
                   logger.errorf(
                       "Exception in container:%s, testrig:%s; exception:%s",
                       containerName, testrigName, stackTrace);
@@ -622,7 +624,7 @@ public class Driver {
                   answer.setStatus(AnswerStatus.FAILURE);
                   answer.addAnswerElement(e.getBatfishStackTrace());
                 } catch (Throwable e) {
-                  String stackTrace = ExceptionUtils.getStackTrace(e);
+                  String stackTrace = Throwables.getStackTraceAsString(e);
                   logger.errorf(
                       "Exception in container:%s, testrig:%s; exception:%s",
                       containerName, testrigName, stackTrace);
@@ -660,7 +662,7 @@ public class Driver {
 
       return batfish.getTerminatingExceptionMessage();
     } catch (Exception e) {
-      String stackTrace = ExceptionUtils.getStackTrace(e);
+      String stackTrace = Throwables.getStackTraceAsString(e);
       logger.error(stackTrace);
       return stackTrace;
     }
@@ -675,7 +677,8 @@ public class Driver {
       // assign taskId for status updates, termination requests
       settings.setTaskId(taskId);
     } catch (Exception e) {
-      return Arrays.asList("failure", "Initialization failed: " + ExceptionUtils.getStackTrace(e));
+      return Arrays.asList(
+          "failure", "Initialization failed: " + Throwables.getStackTraceAsString(e));
     }
 
     try {
@@ -800,10 +803,10 @@ public class Driver {
         throw new BatfishException("Unrecoverable connection error", e);
       }
       logger.errorf("BF: unable to connect to coordinator pool mgr at %s\n", url);
-      logger.debug(ExceptionUtils.getStackTrace(e) + "\n");
+      logger.debug(Throwables.getStackTraceAsString(e) + "\n");
       return null;
     } catch (Exception e) {
-      logger.errorf("exception: " + ExceptionUtils.getStackTrace(e));
+      logger.errorf("exception: " + Throwables.getStackTraceAsString(e));
       return null;
     } finally {
       if (client != null) {

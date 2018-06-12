@@ -1,6 +1,9 @@
 package org.batfish.coordinator.authorizer;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.sql.Connection;
@@ -9,10 +12,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
@@ -20,6 +22,7 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.config.Settings;
 
 /** An {@link Authorizer} backed by an SQL database */
+@ParametersAreNonnullByDefault
 public class DbAuthorizer implements Authorizer {
 
   @VisibleForTesting static final String COLUMN_APIKEY = "ApiKey";
@@ -34,12 +37,11 @@ public class DbAuthorizer implements Authorizer {
   @VisibleForTesting static final String TABLE_PERMISSIONS = "batfish_containerpermissions";
   @VisibleForTesting static final String TABLE_USERS = "batfish_ui_server_userprofile";
 
-  private Map<String, Date> _cacheApiKeys = new HashMap<>();
-  private Map<String, Date> _cachePermissions = new HashMap<>();
+  private final Cache<String, Boolean> _cacheApiKeys;
+  private final Cache<String, Boolean> _cachePermissions;
 
   private Connection _dbConn;
   private BatfishLogger _logger;
-  private long _cacheTimeout;
   private String _connString;
   private String _driverClassName;
 
@@ -49,12 +51,13 @@ public class DbAuthorizer implements Authorizer {
    * @param connectionString JDBC string to use for connection to the database
    * @param driverClass specific class name to load as the JDBC driver
    * @param cacheTimeout time after which cache entries should be invalidated, in milliseconds
-   * @throws SQLException if there are issues connecting to the database
    */
-  public DbAuthorizer(String connectionString, @Nullable String driverClass, long cacheTimeout)
-      throws SQLException {
+  DbAuthorizer(String connectionString, @Nullable String driverClass, long cacheTimeout) {
     _logger = Main.getLogger();
-    _cacheTimeout = cacheTimeout;
+    _cacheApiKeys =
+        CacheBuilder.newBuilder().expireAfterWrite(cacheTimeout, TimeUnit.MILLISECONDS).build();
+    _cachePermissions =
+        CacheBuilder.newBuilder().expireAfterWrite(cacheTimeout, TimeUnit.MILLISECONDS).build();
     _connString = connectionString;
     _driverClassName = driverClass;
     openDbConnection();
@@ -65,9 +68,8 @@ public class DbAuthorizer implements Authorizer {
    *
    * @param settings coordinator settings
    * @return a new authorizer
-   * @throws SQLException if there are issues connecting to the database
    */
-  public static DbAuthorizer createFromSettings(Settings settings) throws SQLException {
+  public static DbAuthorizer createFromSettings(Settings settings) {
     return new DbAuthorizer(
         settings.getDbAuthorizerConnString(),
         settings.getDriverClass(),
@@ -122,7 +124,7 @@ public class DbAuthorizer implements Authorizer {
     }
     if (numRows > 0) {
       String cacheKey = getPermsCacheKey(apiKey, containerName);
-      insertInCache(_cachePermissions, cacheKey);
+      _cachePermissions.put(cacheKey, Boolean.TRUE);
       _logger.infof("Authorization successful\n");
     }
   }
@@ -182,22 +184,15 @@ public class DbAuthorizer implements Authorizer {
     return 0;
   }
 
-  private String getPermsCacheKey(String apiKey, String containerName) {
+  private static String getPermsCacheKey(String apiKey, String containerName) {
     return apiKey + "::" + containerName;
-  }
-
-  private synchronized void insertInCache(Map<String, Date> cache, String key) {
-    cache.put(key, new Date());
   }
 
   @Override
   public boolean isAccessibleContainer(String apiKey, String containerName, boolean logError) {
 
     String cacheKey = getPermsCacheKey(apiKey, containerName);
-
-    boolean validInCache = isValidInCache(_cachePermissions, cacheKey);
-
-    if (validInCache) {
+    if (_cachePermissions.getIfPresent(cacheKey) != null) {
       return true;
     }
 
@@ -220,7 +215,7 @@ public class DbAuthorizer implements Authorizer {
     }
 
     if (authorized) {
-      insertInCache(_cachePermissions, cacheKey);
+      _cachePermissions.put(cacheKey, Boolean.TRUE);
 
       // a valid access was made; update datelastaccessed
       java.sql.Date now = new java.sql.Date(new Date().getTime());
@@ -246,22 +241,9 @@ public class DbAuthorizer implements Authorizer {
     return false;
   }
 
-  private synchronized boolean isValidInCache(Map<String, Date> cache, String key) {
-    if (cache.containsKey(key)) {
-      // check if the entry is expired
-      if (new Date().getTime() - cache.get(key).getTime() > _cacheTimeout) {
-        cache.remove(key);
-        return false;
-      }
-      return true;
-    }
-    return false;
-  }
-
   @Override
   public boolean isValidWorkApiKey(String apiKey) {
-    boolean validInCache = isValidInCache(_cacheApiKeys, apiKey);
-    if (validInCache) {
+    if (_cacheApiKeys.getIfPresent(apiKey) != null) {
       return true;
     }
     String selectApiKeyRowString =
@@ -280,7 +262,7 @@ public class DbAuthorizer implements Authorizer {
       throw new BatfishException("Could not query users table", e);
     }
     if (authorized) {
-      insertInCache(_cacheApiKeys, apiKey);
+      _cacheApiKeys.put(apiKey, Boolean.TRUE);
       return true;
     }
     _logger.infof("Authorizer: %s is NOT a valid key\n", apiKey);
@@ -322,7 +304,7 @@ public class DbAuthorizer implements Authorizer {
           throw new BatfishException("No tries left loading JDBC driver: " + _driverClassName);
         }
         _logger.errorf(
-            "SQLException while opening Db connection: %s\n", ExceptionUtils.getStackTrace(e));
+            "SQLException while opening Db connection: %s\n", Throwables.getStackTraceAsString(e));
         _logger.errorf("Tries left = %d\n", triesLeft);
 
       } catch (ClassNotFoundException e) {

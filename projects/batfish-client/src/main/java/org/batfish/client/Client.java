@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
@@ -51,7 +52,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
@@ -460,9 +460,6 @@ public class Client extends AbstractClient implements IClient {
   BatfishLogger _logger;
 
   WorkItem _polledWorkItem = null;
-
-  @SuppressWarnings("unused")
-  private BfCoordPoolHelper _poolHelper;
 
   private LineReader _reader;
 
@@ -1655,11 +1652,7 @@ public class Client extends AbstractClient implements IClient {
         return;
     }
 
-    String workMgr = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorWorkPort();
-    String poolMgr = _settings.getCoordinatorHost() + ":" + _settings.getCoordinatorPoolPort();
-
-    _workHelper = new BfCoordWorkHelper(workMgr, _logger, _settings);
-    _poolHelper = new BfCoordPoolHelper(poolMgr);
+    _workHelper = new BfCoordWorkHelper(_logger, _settings);
 
     int numTries = 0;
 
@@ -1679,7 +1672,7 @@ public class Client extends AbstractClient implements IClient {
       } catch (Exception e) {
         _logger.errorf(
             "Exeption while checking reachability to coordinator: %s",
-            ExceptionUtils.getStackTrace(e));
+            Throwables.getStackTraceAsString(e));
         System.exit(1);
       }
     }
@@ -3235,10 +3228,10 @@ public class Client extends AbstractClient implements IClient {
         }
       } catch (JsonProcessingException e) {
         _logger.errorf(
-            "Error deserializing answer %s: %s\n", testOutput, ExceptionUtils.getStackTrace(e));
+            "Error deserializing answer %s: %s\n", testOutput, Throwables.getStackTraceAsString(e));
       } catch (Exception e) {
         _logger.errorf(
-            "Exception in comparing test results: %s\n", ExceptionUtils.getStackTrace(e));
+            "Exception in comparing test results: %s\n", Throwables.getStackTraceAsString(e));
       }
     }
 

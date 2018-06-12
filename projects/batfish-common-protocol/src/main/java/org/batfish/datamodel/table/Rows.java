@@ -7,6 +7,7 @@ import com.google.common.collect.Multiset;
 import com.google.common.collect.TreeMultiset;
 import java.io.Serializable;
 import java.util.Iterator;
+import java.util.Objects;
 
 /** Represents data rows insider {@link TableAnswerElement} */
 public class Rows implements Serializable {
@@ -62,5 +63,10 @@ public class Rows implements Serializable {
 
   public int size() {
     return _data.size();
+  }
+
+  @Override
+  public String toString() {
+    return Objects.toString(_data);
   }
 }

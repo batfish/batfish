@@ -1,19 +1,24 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.IpsecPolicy;
+import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasHostname;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeGateway;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterface;
@@ -22,6 +27,8 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessList;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpAccessLists;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpace;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpaces;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPolicy;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
@@ -46,6 +53,22 @@ public class ConfigurationMatchers {
    */
   public static HasDefaultVrf hasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
     return new HasDefaultVrf(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the configuration's hostname is {@code expectedHostname}.
+   */
+  public static @Nonnull Matcher<Configuration> hasHostname(@Nonnull String expectedHostname) {
+    return new HasHostname(equalTo(expectedHostname));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * hostname.
+   */
+  public static @Nonnull Matcher<Configuration> hasHostname(
+      @Nonnull Matcher<? super String> subMatcher) {
+    return new HasHostname(subMatcher);
   }
 
   /**
@@ -104,6 +127,15 @@ public class ConfigurationMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * Ipsec proposal with specified name.
+   */
+  public static HasIpsecProposal hasIpsecProposal(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
+    return new HasIpsecProposal(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
    * IpSpace with specified name.
    */
   public static HasIpSpace hasIpSpace(
@@ -117,6 +149,15 @@ public class ConfigurationMatchers {
    */
   public static HasIpSpaces hasIpSpaces(@Nonnull Matcher<? super Map<String, IpSpace>> subMatcher) {
     return new HasIpSpaces(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * Ipspec policy with the specified name.
+   */
+  public static HasIpsecPolicy hasIpsecPolicy(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecPolicy> subMatcher) {
+    return new HasIpsecPolicy(name, subMatcher);
   }
 
   /**

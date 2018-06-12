@@ -165,7 +165,7 @@ public class VyosConfiguration extends VendorConfiguration {
               ikeGroupName + ":" + Integer.toString(ikeProposalEntry.getKey());
           IkeProposal ikeProposal = ikeProposalEntry.getValue();
           org.batfish.datamodel.IkeProposal newIkeProposal =
-              new org.batfish.datamodel.IkeProposal(newIkeProposalName, -1);
+              new org.batfish.datamodel.IkeProposal(newIkeProposalName);
           _c.getIkeProposals().put(newIkeProposalName, newIkeProposal);
           newIkePolicy.getProposals().put(newIkeProposalName, newIkeProposal);
           newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDhGroup());
@@ -213,14 +213,14 @@ public class VyosConfiguration extends VendorConfiguration {
           String newIpsecProposalName =
               espGroupName + ":" + Integer.toString(espProposalEntry.getKey());
           EspProposal espProposal = espProposalEntry.getValue();
-          IpsecProposal newIpsecProposal = new IpsecProposal(newIpsecProposalName, -1);
+          IpsecProposal newIpsecProposal = new IpsecProposal(newIpsecProposalName);
           _c.getIpsecProposals().put(newIpsecProposalName, newIpsecProposal);
-          newIpsecPolicy.getProposals().put(newIpsecProposalName, newIpsecProposal);
+          newIpsecPolicy.getProposals().add(newIpsecProposal);
           newIpsecProposal.setAuthenticationAlgorithm(
               espProposal.getHashAlgorithm().toIpsecAuthenticationAlgorithm());
           newIpsecProposal.setEncryptionAlgorithm(espProposal.getEncryptionAlgorithm());
           newIpsecProposal.setLifetimeSeconds(espGroup.getLifetimeSeconds());
-          newIpsecProposal.setProtocol(IpsecProtocol.ESP);
+          newIpsecProposal.getProtocols().add(IpsecProtocol.ESP);
         }
       }
     }

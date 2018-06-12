@@ -3,7 +3,6 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
-import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -13,7 +12,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
@@ -64,12 +62,12 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
       InferRolesQuestion question = (InferRolesQuestion) _question;
       InferRolesAnswerElement answerElement = new InferRolesAnswerElement(null, null);
 
-      Map<String, Configuration> configurations = _batfish.loadConfigurations();
       // collect relevant nodes in a list.
       Set<String> nodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
       SortedSet<NodeRoleDimension> roleDimensions =
-          new InferRoles(nodes, configurations, _batfish).call();
+          new InferRoles(nodes, _batfish.getEnvironmentTopology(), question.getCaseSensitive())
+              .inferRoles();
       answerElement.getRoleDimensions().addAll(roleDimensions);
 
       for (NodeRoleDimension dimension : roleDimensions) {
@@ -99,10 +97,15 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
 
     private static final String PROP_NODE_REGEX = "nodeRegex";
 
+    private static final String PROP_CASE_SENSITIVE = "caseSensitive";
+
     private NodesSpecifier _nodeRegex;
+
+    private boolean _caseSensitive;
 
     public InferRolesQuestion() {
       _nodeRegex = NodesSpecifier.ALL;
+      _caseSensitive = false;
     }
 
     @Override
@@ -123,6 +126,16 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
     @JsonProperty(PROP_NODE_REGEX)
     public void setNodeRegex(NodesSpecifier regex) {
       _nodeRegex = regex;
+    }
+
+    @JsonProperty(PROP_CASE_SENSITIVE)
+    public boolean getCaseSensitive() {
+      return _caseSensitive;
+    }
+
+    @JsonProperty(PROP_CASE_SENSITIVE)
+    public void setCaseSensitive(boolean caseSensitive) {
+      _caseSensitive = caseSensitive;
     }
   }
 

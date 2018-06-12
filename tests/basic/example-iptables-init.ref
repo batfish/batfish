@@ -65,13 +65,119 @@
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
         "internet-host" : { },
-        "r1" : { },
-        "r2" : { },
-        "r3" : { },
-        "z1-firewall" : { },
+        "r1" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "r2" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "r3" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                7,
+                8
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet2" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
+        "z1-firewall" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "z1-host1" : { },
         "z1-host2" : { },
-        "z2-firewall" : { },
+        "z2-firewall" : {
+          "interface" : {
+            "Ethernet0" : {
+              "definitionLines" : [
+                4,
+                5
+              ],
+              "numReferrers" : 1
+            },
+            "Ethernet1" : {
+              "definitionLines" : [
+                1,
+                2
+              ],
+              "numReferrers" : 1
+            }
+          }
+        },
         "z2-host1" : { },
         "z2-host2" : { }
       },

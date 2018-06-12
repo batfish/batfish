@@ -1,5 +1,6 @@
 package org.batfish.coordinator.resources;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.util.Objects;
@@ -20,7 +21,7 @@ public class NodeRoleDimensionBean {
   public String snapshot;
   public NodeRoleDimension.Type type;
 
-  /** Used by Jackson */
+  @JsonCreator
   private NodeRoleDimensionBean() {}
 
   public NodeRoleDimensionBean(NodeRoleDimension nrDim, String snapshot, Set<String> fromNodes) {

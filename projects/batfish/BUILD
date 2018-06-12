@@ -29,6 +29,7 @@ java_library(
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/iptables",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/mrv",
+        "//projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/eos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/ios",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/nxos",

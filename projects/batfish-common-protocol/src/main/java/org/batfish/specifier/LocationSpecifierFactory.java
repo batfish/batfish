@@ -1,11 +1,23 @@
 package org.batfish.specifier;
 
+import java.util.ServiceLoader;
+import org.batfish.common.BatfishException;
+
 /**
  * A LocationSpecifierFactory is used by {@link org.batfish.datamodel.questions.Question}s to build
  * {@link LocationSpecifier} objects. The factory can be responsible for parsing and validating the
  * fields from question input.
  */
 public interface LocationSpecifierFactory {
+  static LocationSpecifierFactory load(String name) {
+    for (LocationSpecifierFactory factory : ServiceLoader.load(LocationSpecifierFactory.class)) {
+      if (factory.getName().equals(name)) {
+        return factory;
+      }
+    }
+    throw new BatfishException("Could not find a LocationSpecifierFactory with name " + name);
+  }
+
   String getName();
 
   /**

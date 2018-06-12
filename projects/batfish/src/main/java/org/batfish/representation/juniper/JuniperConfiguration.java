@@ -35,7 +35,6 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -211,8 +210,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private transient Set<String> _unimplementedFeatures;
 
-  private transient Map<String, Integer> _unreferencedBgpGroups;
-
   private ConfigurationFormat _vendor;
 
   private final Map<String, Vlan> _vlanNameToVlan;
@@ -320,21 +317,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     for (IpBgpGroup ig : routingInstance.getIpBgpGroups().values()) {
       ig.cascadeInheritance();
-    }
-    _unreferencedBgpGroups = new TreeMap<>();
-    int fakeIpCounter = 0;
-    for (Entry<String, NamedBgpGroup> e : routingInstance.getNamedBgpGroups().entrySet()) {
-      fakeIpCounter++;
-      String name = e.getKey();
-      NamedBgpGroup group = e.getValue();
-      if (!group.getIpv6() && !group.getInherited()) {
-        _unreferencedBgpGroups.put(name, group.getDefinitionLine());
-        Prefix fakeIp = new Prefix(new Ip(-1 * fakeIpCounter), Prefix.MAX_PREFIX_LENGTH);
-        IpBgpGroup dummy = new IpBgpGroup(fakeIp);
-        dummy.setParent(group);
-        dummy.cascadeInheritance();
-        routingInstance.getIpBgpGroups().put(fakeIp, dummy);
-      }
     }
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
@@ -577,9 +559,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         neighbor.setLocalIp(localIp);
       }
-      if (neighbor.getGroup() == null || !_unreferencedBgpGroups.containsKey(neighbor.getGroup())) {
-        proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
-      }
+      proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
     }
     proc.setMultipathEbgp(multipathEbgpSet);
     proc.setMultipathIbgp(multipathIbgp);
@@ -625,35 +605,95 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private IsisProcess createIsisProcess(RoutingInstance routingInstance, IsoAddress netAddress) {
     IsisProcess newProc = new IsisProcess();
-    // newProc.setNetAddress(netAddress);
-    // IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
-    // for (String policyName : settings.getExportPolicies()) {
-    // PolicyMap policy = _c.getPolicyMaps().get(policyName);
-    // if (policy == null) {
-    // undefined("Reference to undefined is-is export policy-statement: '"
-    // + policyName + "'", POLICY_STATEMENT, policyName);
-    // }
-    // else {
-    // setPolicyStatementReferent(policyName, settings.getExportPolicies(),
-    // "IS-IS export policies");
-    // newProc.getOutboundPolicyMaps().add(policy);
-    // }
-    // }
-    // boolean l1 = settings.getLevel1Settings().getEnabled();
-    // boolean l2 = settings.getLevel2Settings().getEnabled();
-    // if (l1 && l2) {
-    // newProc.setLevel(IsisLevel.LEVEL_1_2);
-    // }
-    // else if (l1) {
-    // newProc.setLevel(IsisLevel.LEVEL_1);
-    // }
-    // else if (l2) {
-    // newProc.setLevel(IsisLevel.LEVEL_2);
-    // }
-    // else {
-    // return null;
-    // }
+    newProc.setNetAddress(netAddress);
+    IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
+    for (String policyName : settings.getExportPolicies()) {
+      RoutingPolicy policy = _c.getRoutingPolicies().get(policyName);
+      if (policy == null) {
+        continue;
+      } else {
+        // TODO: support IS-IS export policy-statements
+      }
+    }
+    boolean level1 = settings.getLevel1Settings().getEnabled();
+    boolean level2 = settings.getLevel2Settings().getEnabled();
+    if (!level1 && !level2) {
+      return null;
+    }
+    if (level1) {
+      newProc.setLevel1(toIsisLevelSettings(settings.getLevel1Settings()));
+    }
+    if (level2) {
+      newProc.setLevel2(toIsisLevelSettings(settings.getLevel2Settings()));
+    }
+    processIsisInterfaceSettings(routingInstance, settings, level1, level2);
+    newProc.setOverloadTimeout(settings.getOverloadTimeout());
+    newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
     return newProc;
+  }
+
+  private void processIsisInterfaceSettings(
+      RoutingInstance routingInstance, IsisSettings settings, boolean level1, boolean level2) {
+    _c.getVrfs()
+        .get(routingInstance.getName())
+        .getInterfaces()
+        .forEach(
+            (ifaceName, newIface) -> {
+              Interface iface = routingInstance.getInterfaces().get(ifaceName);
+              newIface.setIsis(
+                  toIsisInterfaceSettings(
+                      settings, iface.getIsisSettings(), iface.getIsoAddress(), level1, level2));
+            });
+  }
+
+  private org.batfish.datamodel.IsisInterfaceSettings toIsisInterfaceSettings(
+      IsisSettings settings,
+      IsisInterfaceSettings interfaceSettings,
+      IsoAddress isoAddress,
+      boolean level1,
+      boolean level2) {
+    if (interfaceSettings == null || isoAddress == null) {
+      return null;
+    }
+    org.batfish.datamodel.IsisInterfaceSettings.Builder newInterfaceSettingsBuilder =
+        org.batfish.datamodel.IsisInterfaceSettings.builder();
+    if (level1) {
+      newInterfaceSettingsBuilder.setLevel1(
+          toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel1Settings()));
+    }
+    if (level2) {
+      newInterfaceSettingsBuilder.setLevel2(
+          toIsisInterfaceLevelSettings(interfaceSettings, interfaceSettings.getLevel2Settings()));
+    }
+    return newInterfaceSettingsBuilder
+        .setBfdLivenessDetectionMinimumInterval(
+            interfaceSettings.getBfdLivenessDetectionMinimumInterval())
+        .setBfdLivenessDetectionMultiplier(interfaceSettings.getBfdLivenessDetectionMultiplier())
+        .setIsoAddress(isoAddress)
+        .setPointToPoint(interfaceSettings.getPointToPoint())
+        .build();
+  }
+
+  private org.batfish.datamodel.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
+      IsisInterfaceSettings interfaceSettings, IsisInterfaceLevelSettings settings) {
+    org.batfish.datamodel.IsisInterfaceLevelSettings newSettings =
+        new org.batfish.datamodel.IsisInterfaceLevelSettings();
+    newSettings.setCost(settings.getMetric());
+    newSettings.setHelloAuthenticationKey(settings.getHelloAuthenticationKey());
+    newSettings.setHelloAuthenticationType(settings.getHelloAuthenticationType());
+    newSettings.setHelloInterval(settings.getHelloInterval());
+    newSettings.setHoldTime(settings.getHoldTime());
+    newSettings.setMode(
+        interfaceSettings.getPassive() ? IsisInterfaceMode.PASSIVE : IsisInterfaceMode.ACTIVE);
+    return newSettings;
+  }
+
+  private org.batfish.datamodel.IsisLevelSettings toIsisLevelSettings(
+      IsisLevelSettings levelSettings) {
+    org.batfish.datamodel.IsisLevelSettings newLevelSettings =
+        new org.batfish.datamodel.IsisLevelSettings();
+    newLevelSettings.setWideMetricsOnly(levelSettings.getWideMetricsOnly());
+    return newLevelSettings;
   }
 
   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
@@ -1135,14 +1175,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // ike policy
     String ikePolicyName = oldIkeGateway.getIkePolicy();
     org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies().get(ikePolicyName);
-    if (newIkePolicy == null) {
-      int ikePolicyLine = oldIkeGateway.getIkePolicyLine();
-      undefined(
-          JuniperStructureType.IKE_POLICY,
-          ikePolicyName,
-          JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY,
-          ikePolicyLine);
-    } else {
+    if (newIkePolicy != null) {
       _ikePolicies
           .get(ikePolicyName)
           .getReferers()
@@ -1164,19 +1197,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     oldIkePolicy
         .getProposals()
         .forEach(
-            (ikeProposalName, ikeProposalLine) -> {
+            ikeProposalName -> {
               IkeProposal ikeProposal = _c.getIkeProposals().get(ikeProposalName);
-              if (ikeProposal == null) {
-                undefined(
-                    JuniperStructureType.IKE_PROPOSAL,
-                    ikeProposalName,
-                    JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL,
-                    ikeProposalLine);
-              } else {
-                _ikeProposals
-                    .get(ikeProposalName)
-                    .getReferers()
-                    .put(oldIkePolicy, "IKE proposal for IKE policy: " + oldIkePolicy);
+              if (ikeProposal != null) {
                 newIkePolicy.getProposals().put(ikeProposalName, ikeProposal);
               }
             });
@@ -1301,36 +1324,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     newIface.setSwitchportTrunkEncapsulation(swe);
     newIface.setBandwidth(iface.getBandwidth());
-    // isis settings
-    IsisInterfaceSettings isisSettings = iface.getIsisSettings();
-    IsisInterfaceLevelSettings isisL1Settings = isisSettings.getLevel1Settings();
-    newIface.setIsisL1InterfaceMode(IsisInterfaceMode.UNSET);
-    if (isisL1Settings.getEnabled()) {
-      if (isisSettings.getPassive()) {
-        newIface.setIsisL1InterfaceMode(IsisInterfaceMode.PASSIVE);
-      } else if (isisSettings.getEnabled()) {
-        newIface.setIsisL1InterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-    }
-    IsisInterfaceLevelSettings isisL2Settings = isisSettings.getLevel2Settings();
-    newIface.setIsisL2InterfaceMode(IsisInterfaceMode.UNSET);
-    if (isisL2Settings.getEnabled()) {
-      if (isisSettings.getPassive()) {
-        newIface.setIsisL2InterfaceMode(IsisInterfaceMode.PASSIVE);
-      } else if (isisSettings.getEnabled()) {
-        newIface.setIsisL2InterfaceMode(IsisInterfaceMode.ACTIVE);
-      }
-    }
-    Integer l1Metric = isisSettings.getLevel1Settings().getMetric();
-    Integer l2Metric = isisSettings.getLevel2Settings().getMetric();
-    if (l1Metric != null && l2Metric != null && (l1Metric.intValue() != l2Metric.intValue())) {
-      _w.unimplemented("distinct metrics for is-is level1 and level2 on an interface");
-    } else if (l1Metric != null) {
-      newIface.setIsisCost(l1Metric);
-    } else if (l2Metric != null) {
-      newIface.setIsisCost(l2Metric);
-    }
-    // TODO: enable/disable individual levels
     return newIface;
   }
 
@@ -1556,7 +1549,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     .get(ipsecProposalName)
                     .getReferers()
                     .put(oldIpsecPolicy, "IPSEC proposal for IPSEC policy: " + oldIpsecPolicy);
-                newIpsecPolicy.getProposals().put(ipsecProposalName, ipsecProposal);
+                newIpsecPolicy.getProposals().add(ipsecProposal);
               }
             });
 
@@ -1593,15 +1586,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // ike gateway
     String ikeGatewayName = oldIpsecVpn.getGateway();
     if (ikeGatewayName != null) {
-      int ikeGatewayLine = oldIpsecVpn.getGatewayLine();
       org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways().get(ikeGatewayName);
-      if (ikeGateway == null) {
-        undefined(
-            JuniperStructureType.IKE_GATEWAY,
-            ikeGatewayName,
-            JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY,
-            ikeGatewayLine);
-      } else {
+      if (ikeGateway != null) {
         _ikeGateways
             .get(ikeGatewayName)
             .getReferers()
@@ -2196,16 +2182,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // create is-is process
       // is-is runs only if iso address is configured on lo0 unit 0
       Interface loopback0 =
-          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME);
+          _defaultRoutingInstance.getInterfaces().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
       if (loopback0 != null) {
-        Interface loopback0unit0 = loopback0.getUnits().get(FIRST_LOOPBACK_INTERFACE_NAME + ".0");
-        if (loopback0unit0 != null) {
-          IsoAddress isisNet = loopback0unit0.getIsoAddress();
-          if (isisNet != null) {
-            // now we should create is-is process
-            IsisProcess proc = createIsisProcess(ri, isisNet);
-            vrf.setIsisProcess(proc);
-          }
+        IsoAddress isisNet = loopback0.getIsoAddress();
+        if (isisNet != null) {
+          // now we should create is-is process
+          IsisProcess proc = createIsisProcess(ri, isisNet);
+          vrf.setIsisProcess(proc);
         }
       }
 
@@ -2254,6 +2237,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureType.APPLICATION_SET,
         JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET);
     markConcreteStructure(
+        JuniperStructureType.BGP_GROUP,
+        JuniperStructureUsage.BGP_ALLOW,
+        JuniperStructureUsage.BGP_NEIGHBOR);
+    markConcreteStructure(
         JuniperStructureType.FIREWALL_FILTER, JuniperStructureUsage.INTERFACE_FILTER);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
@@ -2265,12 +2252,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
     // record defined structures
-    recordBgpGroups();
     recordDhcpRelayServerGroups();
     recordPolicyStatements();
-    recordIkeProposals();
-    recordIkePolicies();
-    recordIkeGateways();
+    markConcreteStructure(
+        JuniperStructureType.IKE_GATEWAY, JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY);
+    markConcreteStructure(
+        JuniperStructureType.IKE_POLICY, JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY);
+    markConcreteStructure(
+        JuniperStructureType.IKE_PROPOSAL, JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL);
     recordIpsecProposals();
     recordIpsecPolicies();
     recordAndDisableUnreferencedStInterfaces();
@@ -2398,27 +2387,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  private void recordBgpGroups() {
-    for (RoutingInstance ri : _routingInstances.values()) {
-      for (NamedBgpGroup group : ri.getNamedBgpGroups().values()) {
-        if (_unreferencedBgpGroups != null && _unreferencedBgpGroups.containsKey(group.getName())) {
-          recordStructure(
-              JuniperStructureType.BGP_GROUP,
-              group.getName(),
-              0,
-              _unreferencedBgpGroups.get(group.getName()));
-        } else {
-          recordStructure(
-              JuniperStructureType.BGP_GROUP,
-              group.getName(),
-              // we are not counting references properly for bgp groups
-              DefinedStructureInfo.UNKNOWN_NUM_REFERRERS,
-              group.getDefinitionLine());
-        }
-      }
-    }
-  }
-
   private void recordDhcpRelayServerGroups() {
     for (RoutingInstance ri : _routingInstances.values()) {
       for (Entry<String, DhcpRelayServerGroup> e : ri.getDhcpRelayServerGroups().entrySet()) {
@@ -2427,33 +2395,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         recordStructure(
             sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
       }
-    }
-  }
-
-  private void recordIkeGateways() {
-    for (Entry<String, IkeGateway> e : _ikeGateways.entrySet()) {
-      String name = e.getKey();
-      IkeGateway ikeGateway = e.getValue();
-      recordStructure(
-          ikeGateway, JuniperStructureType.IKE_GATEWAY, name, ikeGateway.getDefinitionLine());
-    }
-  }
-
-  private void recordIkePolicies() {
-    for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
-      String name = e.getKey();
-      IkePolicy ikePolicy = e.getValue();
-      recordStructure(
-          ikePolicy, JuniperStructureType.IKE_POLICY, name, ikePolicy.getDefinitionLine());
-    }
-  }
-
-  private void recordIkeProposals() {
-    for (Entry<String, IkeProposal> e : _ikeProposals.entrySet()) {
-      String name = e.getKey();
-      IkeProposal ikeProposal = e.getValue();
-      recordStructure(
-          ikeProposal, JuniperStructureType.IKE_PROPOSAL, name, ikeProposal.getDefinitionLine());
     }
   }
 

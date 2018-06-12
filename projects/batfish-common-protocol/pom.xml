@@ -34,7 +34,13 @@
               </goals>
               <configuration>
                 <ignoredUnusedDeclaredDependencies>
+                  <ignoredUnusedDeclaredDependency>com.google.auto.service:auto-service
+                  </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>commons-beanutils:commons-beanutils
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:guava-eea
+                  </ignoredUnusedDeclaredDependency>
+                  <ignoredUnusedDeclaredDependency>org.lastnpe.eea:jdk-eea
                   </ignoredUnusedDeclaredDependency>
                   <ignoredUnusedDeclaredDependency>org.slf4j:slf4j-jdk14
                   </ignoredUnusedDeclaredDependency>
@@ -141,6 +147,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.google.auto.service</groupId>
+      <artifactId>auto-service</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
     </dependency>
@@ -222,6 +233,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.glassfish.grizzly</groupId>
+      <artifactId>grizzly-http-server</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.lz4</groupId>
       <artifactId>lz4-java</artifactId>
     </dependency>
@@ -269,6 +285,19 @@
     <dependency>
       <groupId>org.skyscreamer</groupId>
       <artifactId>jsonassert</artifactId>
+    </dependency>
+
+    <!-- Provided dependencies to be available at compile time only -->
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>guava-eea</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.lastnpe.eea</groupId>
+      <artifactId>jdk-eea</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Test dependencies. -->

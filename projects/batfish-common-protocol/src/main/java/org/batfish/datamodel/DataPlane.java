@@ -33,4 +33,7 @@ public interface DataPlane extends Serializable {
   Topology getTopology();
 
   SortedSet<Edge> getTopologyEdges();
+
+  SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+      getPrefixTracingInfoSummary();
 }

@@ -146,7 +146,7 @@ public class BatfishCompressionTest {
         .build();
     // Interface iBA
     ib.setOwner(cB)
-        .setVrf(vA)
+        .setVrf(vB)
         .setAddress(new InterfaceAddress(pAB.getEndIp(), pAB.getPrefixLength()))
         .build();
     // Interface iAC
