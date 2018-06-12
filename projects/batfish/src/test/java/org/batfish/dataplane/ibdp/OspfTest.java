@@ -34,7 +34,9 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.StubSettings;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
@@ -44,6 +46,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -442,7 +445,30 @@ public class OspfTest {
     // R6
     Configuration r6 = cb.setHostname(r6Name).build();
     Vrf v6 = vb.setOwner(r6).build();
-    OspfProcess op6 = opb.setVrf(v6).build();
+    v6.getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(Prefix.parse("10.10.10.10/32"))
+                .setAdministrativeCost(1)
+                .setMetric(0)
+                .setNextHopInterface(Interface.NULL_INTERFACE_NAME)
+                .setTag(Route.UNSET_ROUTE_TAG)
+                .build());
+    RoutingPolicy exportStatic =
+        nf.routingPolicyBuilder()
+            .setOwner(r6)
+            .setName("exportStatic")
+            .setStatements(
+                ImmutableList.<Statement>of(
+                    new If(
+                        new MatchProtocol(RoutingProtocol.STATIC),
+                        ImmutableList.of(
+                            new SetOspfMetricType(OspfMetricType.E2),
+                            new SetMetric(new LiteralLong(33L)),
+                            Statements.ExitAccept.toStaticStatement()),
+                        ImmutableList.of(Statements.ExitReject.toStaticStatement()))))
+            .build();
+    OspfProcess op6 = opb.setVrf(v6).setExportPolicy(exportStatic).build();
     oab.setOspfProcess(op6);
     OspfArea oaR6A03 = oab.setNumber(3L).setNonStub().build();
     ib.setOwner(r6).setVrf(v6);
@@ -758,37 +784,28 @@ public class OspfTest {
   }
 
   @Test
-  public void testOspfStubBehaviorStubRoutes() {
+  public void testOspfStubBehaviorBackboneRoutes() {
     // NSSA args don't really matter
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesWithSummaries =
-        getOspfStubBehavior(false, true, OspfDefaultOriginateType.NONE);
+        getOspfStubBehavior(true, true, OspfDefaultOriginateType.INTER_AREA);
+    assertNoRoute(routesWithSummaries, "R0", Prefix.ZERO);
+    assertRoute(routesWithSummaries, RoutingProtocol.OSPF, "R0", Prefix.parse("10.2.3.0/24"), 20L);
+    assertRoute(routesWithSummaries, RoutingProtocol.OSPF, "R0", Prefix.parse("10.4.5.0/24"), 20L);
     assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.0.1.0/24"), 20L);
+        routesWithSummaries, RoutingProtocol.OSPF_E2, "R0", Prefix.parse("10.10.10.10/32"), 33L);
+    assertNoRoute(routesWithSummaries, "R1", Prefix.ZERO);
     assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.0.4.0/24"), 10L);
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R1", Prefix.parse("10.0.2.0/24"), 20L);
     assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.4.5.0/24"), 10L);
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R1", Prefix.parse("10.2.3.0/24"), 30L);
     assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.0.6.0/24"), 10L);
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R1", Prefix.parse("10.0.4.0/24"), 20L);
     assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.0.1.0/24"), 10L);
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R1", Prefix.parse("10.4.5.0/24"), 30L);
     assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.0.4.0/24"), 10L);
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R1", Prefix.parse("10.0.6.0/24"), 20L);
     assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.4.5.0/24"), 10L);
-    assertRoute(
-        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.0.6.0/24"), 10L);
-
-    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesWithoutSummaries =
-        getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
-    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.1.0/24"));
-    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.4.0/24"));
-    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.4.5.0/24"));
-    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.6.0/24"));
-    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.0.1.0/24"));
-    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.0.4.0/24"));
-    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.4.5.0/24"));
-    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.0.6.0/24"));
+        routesWithSummaries, RoutingProtocol.OSPF_E2, "R1", Prefix.parse("10.10.10.10/32"), 33L);
   }
 
   @Test
@@ -796,21 +813,127 @@ public class OspfTest {
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesInterArea =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.INTER_AREA);
     assertRoute(routesInterArea, RoutingProtocol.OSPF_IA, "R4", Prefix.ZERO, 10L);
-    assertRoute(routesInterArea, RoutingProtocol.OSPF_IA, "R5", Prefix.ZERO, 10L);
+    assertRoute(routesInterArea, RoutingProtocol.OSPF_IA, "R5", Prefix.ZERO, 20L);
 
+    /*
+     * TODO: Re-enable tests when non-IA NSSA default origination is implemented
+     * https://github.com/batfish/batfish/issues/1644
+     */
+    /*
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesExternalType1 =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.EXTERNAL_TYPE1);
     assertRoute(routesExternalType1, RoutingProtocol.OSPF_E1, "R4", Prefix.ZERO, 10L);
-    assertRoute(routesExternalType1, RoutingProtocol.OSPF_E1, "R5", Prefix.ZERO, 10L);
+    assertRoute(routesExternalType1, RoutingProtocol.OSPF_E1, "R5", Prefix.ZERO, 20L);
 
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesExternalType2 =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.EXTERNAL_TYPE2);
     assertRoute(routesExternalType2, RoutingProtocol.OSPF_E2, "R4", Prefix.ZERO, 10L);
     assertRoute(routesExternalType2, RoutingProtocol.OSPF_E2, "R5", Prefix.ZERO, 10L);
+    */
 
     SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesNone =
         getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
     assertNoRoute(routesNone, "R4", Prefix.ZERO);
     assertNoRoute(routesNone, "R5", Prefix.ZERO);
+  }
+
+  @Test
+  public void testOspfStubBehaviorNssaRoutes() {
+    // stub args don't really matter
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesWithSummaries =
+        getOspfStubBehavior(true, false, OspfDefaultOriginateType.NONE);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R4", Prefix.parse("10.0.1.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R4", Prefix.parse("10.0.2.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R4", Prefix.parse("10.2.3.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R4", Prefix.parse("10.0.6.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_E2, "R4", Prefix.parse("10.10.10.10/32"), 33L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R5", Prefix.parse("10.0.1.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R5", Prefix.parse("10.0.2.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R5", Prefix.parse("10.2.3.0/24"), 40L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R5", Prefix.parse("10.0.6.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_E2, "R5", Prefix.parse("10.10.10.10/32"), 33L);
+
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesWithoutSummaries =
+        getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
+    assertNoRoute(routesWithoutSummaries, "R4", Prefix.parse("10.0.1.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R4", Prefix.parse("10.0.2.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R4", Prefix.parse("10.2.3.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R4", Prefix.parse("10.0.6.0/24"));
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_E2, "R4", Prefix.parse("10.10.10.10/32"), 33L);
+    assertNoRoute(routesWithoutSummaries, "R5", Prefix.parse("10.0.1.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R5", Prefix.parse("10.0.2.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R5", Prefix.parse("10.2.3.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R5", Prefix.parse("10.0.6.0/24"));
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_E2, "R5", Prefix.parse("10.10.10.10/32"), 33L);
+  }
+
+  @Test
+  public void testOspfStubBehaviorRegularAreaRoutes() {
+    // NSSA args don't really matter
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesWithSummaries =
+        getOspfStubBehavior(true, true, OspfDefaultOriginateType.NONE);
+    assertNoRoute(routesWithSummaries, "R6", Prefix.ZERO);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R6", Prefix.parse("10.0.1.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R6", Prefix.parse("10.0.2.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R6", Prefix.parse("10.2.3.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R6", Prefix.parse("10.0.4.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R6", Prefix.parse("10.4.5.0/24"), 30L);
+  }
+
+  @Test
+  public void testOspfStubBehaviorStubRoutes() {
+    // NSSA args don't really matter
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesWithSummaries =
+        getOspfStubBehavior(false, false, OspfDefaultOriginateType.NONE);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.0.1.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.0.4.0/24"), 20L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.4.5.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.parse("10.0.6.0/24"), 20L);
+    assertRoute(routesWithSummaries, RoutingProtocol.OSPF_IA, "R2", Prefix.ZERO, 10L);
+    assertNoRoute(routesWithSummaries, "R2", Prefix.parse("10.10.10.10/32"));
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.0.1.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.0.4.0/24"), 30L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.4.5.0/24"), 40L);
+    assertRoute(
+        routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.parse("10.0.6.0/24"), 30L);
+    assertRoute(routesWithSummaries, RoutingProtocol.OSPF_IA, "R3", Prefix.ZERO, 20L);
+    assertNoRoute(routesWithSummaries, "R3", Prefix.parse("10.10.10.10/32"));
+
+    SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesWithoutSummaries =
+        getOspfStubBehavior(true, false, OspfDefaultOriginateType.NONE);
+    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.1.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.4.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.4.5.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R2", Prefix.parse("10.0.6.0/24"));
+    assertNoRoute(routesWithSummaries, "R2", Prefix.parse("10.10.10.10/32"));
+    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.0.1.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.0.4.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.4.5.0/24"));
+    assertNoRoute(routesWithoutSummaries, "R3", Prefix.parse("10.0.6.0/24"));
+    assertNoRoute(routesWithSummaries, "R3", Prefix.parse("10.10.10.10/32"));
   }
 }

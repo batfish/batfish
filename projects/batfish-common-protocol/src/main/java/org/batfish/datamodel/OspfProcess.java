@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -308,5 +309,11 @@ public class OspfProcess implements Serializable {
 
   public void setRouterId(Ip id) {
     _routerId = id;
+  }
+
+  @JsonIgnore
+  public boolean isAreaBorderRouter() {
+    Set<Long> areas = _areas.keySet();
+    return areas.contains(0L) && areas.stream().anyMatch(area -> area != 0L);
   }
 }
