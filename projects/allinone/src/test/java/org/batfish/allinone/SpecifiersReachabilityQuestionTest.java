@@ -202,7 +202,8 @@ public class SpecifiersReachabilityQuestionTest {
   @Test
   public void testRequiredTransitNodes() {
     SpecifiersReachabilityQuestion question = new SpecifiersReachabilityQuestion();
-    question.setSourceLocationSpecifierFactory(AllInterfacesLocationSpecifierFactory.NAME);
+    question.setSourceLocationSpecifierFactory(NameRegexInterfaceLocationSpecifierFactory.NAME);
+    question.setSourceLocationSpecifierInput(LOOPBACK);
     question.setRequiredTransitNodesNodeSpecifierInput(".*");
     AnswerElement answer = new SpecifiersReachabilityAnswerer(question, _batfish).answer();
     assertThat(answer, instanceOf(FlowHistory.class));
