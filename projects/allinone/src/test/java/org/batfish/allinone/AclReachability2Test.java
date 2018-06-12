@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLines2Rows;
 import org.batfish.datamodel.table.Row;
@@ -57,6 +59,13 @@ public class AclReachability2Test {
     _aclb = nf.aclBuilder().setOwner(_c1);
     _aclb2 = nf.aclBuilder().setOwner(_c2);
     _c1.setIpSpaces(ImmutableSortedMap.of("ipSpace", new Ip("1.2.3.4").toIpSpace()));
+    _c1.setInterfaces(
+        ImmutableSortedMap.of(
+            "iface",
+            Interface.builder().setName("iface").build(),
+            "iface2",
+            Interface.builder().setName("iface2").build()));
+    _c2.setInterfaces(ImmutableSortedMap.of("iface", Interface.builder().setName("iface").build()));
   }
 
   @Test
@@ -543,6 +552,101 @@ public class AclReachability2Test {
                     AclLines2Rows.COL_MESSAGE,
                     "ACL(s) { c1: acl } contain(s) an unreachable line: '0: IpAccessListLine{action=REJECT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpSpaceReference{name=???}}}}'."
+                        + " This line references a structure that is not defined.")
+                .build());
+
+    assertThat(answer.getRows().getData(), equalTo(expected));
+  }
+
+  @Test
+  public void testWithSrcInterfaceReference() throws IOException {
+    List<IpAccessListLine> aclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setMatchCondition(new MatchSrcInterface(ImmutableList.of("iface", "iface2")))
+                .build(),
+            IpAccessListLine.accepting()
+                .setMatchCondition(new MatchSrcInterface(ImmutableList.of("iface")))
+                .build());
+    IpAccessList acl = _aclb.setLines(aclLines).setName("acl").build();
+    List<String> lineNames = aclLines.stream().map(l -> l.toString()).collect(Collectors.toList());
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    /* Construct the expected result. Line 1 should be blocked by line 0. */
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            Row.builder()
+                .put(
+                    AclLines2Rows.COL_SOURCES,
+                    ImmutableList.of(_c1.getName() + ": " + acl.getName()))
+                .put(AclLines2Rows.COL_LINES, lineNames)
+                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 1)
+                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of(0))
+                .put(AclLines2Rows.COL_DIFF_ACTION, false)
+                .put(
+                    AclLines2Rows.COL_MESSAGE,
+                    "ACL(s) { c1: acl } contain(s) an unreachable line: '1: IpAccessListLine{action=ACCEPT,"
+                        + " matchCondition=MatchSrcInterface{srcInterfaces=[iface]}}'. Blocking line(s):\n"
+                        + "  [index 0] IpAccessListLine{action=ACCEPT,"
+                        + " matchCondition=MatchSrcInterface{srcInterfaces=[iface, iface2]}}")
+                .build());
+
+    assertThat(answer.getRows().getData(), equalTo(expected));
+  }
+
+  @Test
+  public void testReferencedAclUsesSrcInterface() throws IOException {
+    // Create ACL that references an ACL that references an interface
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new PermittedByAcl("referencedAcl"))
+                        .build()))
+            .setName("acl")
+            .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new MatchSrcInterface(ImmutableList.of("iface")))
+                    .build()))
+        .setName("referencedAcl")
+        .build();
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    /* Nothing should be blocked; goal is just to ensure no NullPointerException on iface. */
+    assertThat(answer.getRows().getData(), equalTo(ImmutableMultiset.of()));
+  }
+
+  @Test
+  public void testWithUndefinedSrcInterfaceReference() throws IOException {
+    IpAccessListLine aclLine =
+        IpAccessListLine.accepting()
+            .setMatchCondition(new MatchSrcInterface(ImmutableList.of("???")))
+            .build();
+    IpAccessList acl = _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    /* Line 1 should be unreachable due to undefined reference. */
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            Row.builder()
+                .put(
+                    AclLines2Rows.COL_SOURCES,
+                    ImmutableList.of(_c1.getName() + ": " + acl.getName()))
+                .put(AclLines2Rows.COL_LINES, ImmutableList.of(aclLine.toString()))
+                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 0)
+                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(AclLines2Rows.COL_DIFF_ACTION, false)
+                .put(
+                    AclLines2Rows.COL_MESSAGE,
+                    "ACL(s) { c1: acl } contain(s) an unreachable line: '0: IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchSrcInterface{srcInterfaces=[???]}}'."
                         + " This line references a structure that is not defined.")
                 .build());
 

@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.NetworkFactory;
@@ -40,7 +41,7 @@ public class CanonicalAclTest {
 
   @Test
   public void testIdenticalAclsWithIdenticalDependenciesEqual() {
-    // acl1 and acl2 are identical acls on different configs that both reference referencedAcl
+    // acl1 & acl2 are identical acls on different hosts that reference identical ACLs & interfaces
     IpAccessList acl1 =
         _aclb
             .setName("acl1")
@@ -86,6 +87,7 @@ public class CanonicalAclTest {
             acl1,
             acl1,
             ImmutableMap.of("referencedAcl", referencedAcl1),
+            ImmutableMap.of("iface", Interface.builder().setName("iface").build()),
             ImmutableSet.of(),
             ImmutableSet.of());
     CanonicalAcl canonicalAcl2 =
@@ -93,6 +95,7 @@ public class CanonicalAclTest {
             acl2,
             acl2,
             ImmutableMap.of("referencedAcl", referencedAcl2),
+            ImmutableMap.of("iface", Interface.builder().setName("iface").build()),
             ImmutableSet.of(),
             ImmutableSet.of());
 
@@ -125,9 +128,11 @@ public class CanonicalAclTest {
 
     // Canonical acls for acl1 and acl2 shouldn't match since they are different
     CanonicalAcl canonicalAcl1 =
-        new CanonicalAcl(acl1, acl1, ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of());
+        new CanonicalAcl(
+            acl1, acl1, ImmutableMap.of(), ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of());
     CanonicalAcl canonicalAcl2 =
-        new CanonicalAcl(acl2, acl2, ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of());
+        new CanonicalAcl(
+            acl2, acl2, ImmutableMap.of(), ImmutableMap.of(), ImmutableSet.of(), ImmutableSet.of());
 
     assertThat(canonicalAcl1, not(equalTo(canonicalAcl2)));
   }
@@ -181,6 +186,7 @@ public class CanonicalAclTest {
             acl1,
             acl1,
             ImmutableMap.of("referencedAcl", referencedAcl1),
+            ImmutableMap.of(),
             ImmutableSet.of(),
             ImmutableSet.of());
     CanonicalAcl canonicalAcl2 =
@@ -188,6 +194,52 @@ public class CanonicalAclTest {
             acl2,
             acl2,
             ImmutableMap.of("referencedAcl", referencedAcl2),
+            ImmutableMap.of(),
+            ImmutableSet.of(),
+            ImmutableSet.of());
+
+    assertThat(canonicalAcl1, not(equalTo(canonicalAcl2)));
+  }
+
+  @Test
+  public void testAclsWithDifferentInterfacesNotEqual() {
+    // acl1 and acl2 are identical
+    IpAccessList acl1 =
+        _aclb
+            .setName("acl1")
+            .setLines(
+                ImmutableList.of(
+                    acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                            .build())))
+            .build();
+    IpAccessList acl2 =
+        _aclb2
+            .setName("acl2")
+            .setLines(
+                ImmutableList.of(
+                    acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                            .build())))
+            .build();
+
+    // Since definitions of "iface" don't match, canonical acls for acl1 and acl2 shouldn't be equal
+    CanonicalAcl canonicalAcl1 =
+        new CanonicalAcl(
+            acl1,
+            acl1,
+            ImmutableMap.of(),
+            ImmutableMap.of("iface", Interface.builder().setName("iface").setActive(true).build()),
+            ImmutableSet.of(),
+            ImmutableSet.of());
+    CanonicalAcl canonicalAcl2 =
+        new CanonicalAcl(
+            acl2,
+            acl2,
+            ImmutableMap.of(),
+            ImmutableMap.of("iface", Interface.builder().setName("iface").setActive(false).build()),
             ImmutableSet.of(),
             ImmutableSet.of());
 

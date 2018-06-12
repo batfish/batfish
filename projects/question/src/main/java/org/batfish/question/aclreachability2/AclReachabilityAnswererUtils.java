@@ -11,10 +11,12 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
@@ -23,6 +25,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
@@ -51,6 +54,7 @@ public final class AclReachabilityAnswererUtils {
     private final Set<Integer> _linesInCycles = new TreeSet<>();
     private final List<Dependency> _dependencies = new ArrayList<>();
     private final List<AclNode> _referencingAcls = new ArrayList<>();
+    private final Set<String> _interfaces = new TreeSet<>();
     private IpAccessList _sanitizedAcl;
     private List<IpAccessListLine> _sanitizedLines;
 
@@ -108,6 +112,14 @@ public final class AclReachabilityAnswererUtils {
       return ret;
     }
 
+    public Set<String> getInterfaceDependencies() {
+      Set<String> interfaceDependencies = new TreeSet<>(_interfaces);
+      for (Dependency d : _dependencies) {
+        interfaceDependencies.addAll(d.dependency.getInterfaceDependencies());
+      }
+      return interfaceDependencies;
+    }
+
     public void addDependency(AclNode dependency, int lineNum) {
       for (Dependency d : _dependencies) {
         if (d.dependency.getName().equals(dependency.getName())) {
@@ -116,6 +128,10 @@ public final class AclReachabilityAnswererUtils {
         }
       }
       _dependencies.add(new Dependency(dependency, lineNum));
+    }
+
+    public void addInterfaces(Set<String> newInterfaces) {
+      _interfaces.addAll(newInterfaces);
     }
 
     public void addIpSpaceReference(
@@ -187,7 +203,8 @@ public final class AclReachabilityAnswererUtils {
       IpAccessList acl,
       Map<String, AclNode> aclNodeMap,
       SortedMap<String, IpAccessList> acls,
-      Map<String, IpSpace> namedIpSpaces) {
+      Map<String, IpSpace> namedIpSpaces,
+      Set<String> nodeInterfaces) {
 
     // Create ACL node for current ACL
     AclNode node = new AclNode(acl);
@@ -207,7 +224,7 @@ public final class AclReachabilityAnswererUtils {
           AclNode referencedAclNode = aclNodeMap.get(referencedAclName);
           if (referencedAclNode == null) {
             // Referenced ACL not yet recorded; recurse on it
-            createAclNode(referencedAcl, aclNodeMap, acls, namedIpSpaces);
+            createAclNode(referencedAcl, aclNodeMap, acls, namedIpSpaces, nodeInterfaces);
             referencedAclNode = aclNodeMap.get(referencedAclName);
           }
           // Referenced ACL has now been recorded; add dependency and reference
@@ -223,6 +240,15 @@ public final class AclReachabilityAnswererUtils {
         } else if (!referencedIpSpaces.isEmpty()) {
           // Header space contains valid IpSpaceReferences. Record.
           node.addIpSpaceReference(index, headerSpace, namedIpSpaces);
+        }
+      } else if (matchCondition instanceof MatchSrcInterface) {
+        Set<String> referencedInterfaces = ((MatchSrcInterface) matchCondition).getSrcInterfaces();
+        if (!nodeInterfaces.containsAll(referencedInterfaces)) {
+          // Line references an undefined source interface. Report undefined ref.
+          node.addUndefinedRef(index);
+        } else {
+          // Line interfaces are valid. Record.
+          node.addInterfaces(referencedInterfaces);
         }
       }
       index++;
@@ -304,18 +330,18 @@ public final class AclReachabilityAnswererUtils {
   }
 
   /**
-   * Generates the list of {@link CanonicalAcl} objects to analyze in preparation for some ACL
-   * reachability question. Besides returning the {@link CanonicalAcl}s, this method can add cycle
-   * results to the answer and modify {@link IpAccessListLine}s to fix cycles and undefined
-   * references.
+   * Generates the list of {@link AclSpecs} objects to analyze in preparation for some ACL
+   * reachability question. Besides returning the {@link AclSpecs}, this method adds cycle results
+   * to the answer and provides sanitized {@link IpAccessList}s without cycles, undefined
+   * references, or dependence on named IP spaces.
    *
    * @param configurations Mapping of all hostnames to their {@link Configuration}s
    * @param specifiedNodes Nodes from which to collect ACLs
    * @param aclRegex Regex specifying which ACLs to canonicalize from the ACLs in the given node set
-   * @param answer Answer for ACL reachability question for which these {@link CanonicalAcl}s are
-   *     being generated
-   * @return List of {@link CanonicalAcl} objects to analyze for an ACL reachability question with
-   *     the given specified nodes and ACL regex.
+   * @param answer Answer for ACL reachability question for which these {@link AclSpecs} are being
+   *     generated
+   * @return List of {@link AclSpecs} objects to analyze for an ACL reachability question with the
+   *     given specified nodes and ACL regex.
    */
   public static List<AclSpecs> getAclSpecs(
       SortedMap<String, Configuration> configurations,
@@ -325,8 +351,8 @@ public final class AclReachabilityAnswererUtils {
     List<AclSpecs.Builder> aclSpecs = new ArrayList<>();
 
     /*
-     - For each ACL, build a CanonicalAcl structure with that ACL and its referenced ACLs
-     - Deal with any references to ACLs we don't know about
+     - For each ACL, build a CanonicalAcl structure with that ACL and referenced ACLs & interfaces
+     - Deal with any references to undefined ACLs, IpSpaces, or interfaces
      - Deal with any cycles in ACL references
     */
     for (String hostname : configurations.keySet()) {
@@ -334,13 +360,14 @@ public final class AclReachabilityAnswererUtils {
         Configuration c = configurations.get(hostname);
         SortedMap<String, IpAccessList> acls = c.getIpAccessLists();
         Map<String, IpSpace> namedIpSpaces = c.getIpSpaces();
+        Map<String, Interface> nodeInterfaces = c.getInterfaces();
 
         // Build graph of AclNodes containing pointers to dependencies and referencing nodes
         Map<String, AclNode> aclNodeMap = new TreeMap<>();
         for (IpAccessList acl : acls.values()) {
           String aclName = acl.getName();
           if (!aclNodeMap.containsKey(aclName) && aclRegex.matcher(aclName).matches()) {
-            createAclNode(acl, aclNodeMap, acls, namedIpSpaces);
+            createAclNode(acl, aclNodeMap, acls, namedIpSpaces, nodeInterfaces.keySet());
           }
         }
 
@@ -361,11 +388,36 @@ public final class AclReachabilityAnswererUtils {
           String aclName = e.getKey();
           if (aclRegex.matcher(aclName).matches()) {
             AclNode node = e.getValue();
+
+            // Finalize interfaces. If ACL references all interfaces on the device, keep interfaces
+            // list as-is; otherwise, add one extra interface to represent the "unreferenced
+            // interface not originating from router" possibility. Needs to have a name different
+            // from any referenced interface.
+            Set<String> referencedInterfaces = node.getInterfaceDependencies();
+            Map<String, Interface> finalInterfaces =
+                referencedInterfaces
+                    .stream()
+                    .collect(
+                        Collectors.toMap(Function.identity(), iface -> nodeInterfaces.get(iface)));
+            if (referencedInterfaces.size() < nodeInterfaces.size()) {
+              // At least one interface was not referenced by the ACL. Represent that option.
+              String unreferencedIfaceName = "unreferencedInterface";
+              int n = 0;
+              while (referencedInterfaces.contains(unreferencedIfaceName)) {
+                unreferencedIfaceName = "unreferencedInterface" + n;
+                n++;
+              }
+              finalInterfaces.put(
+                  unreferencedIfaceName,
+                  Interface.builder().setName(unreferencedIfaceName).build());
+            }
+
             CanonicalAcl currentAcl =
                 new CanonicalAcl(
                     node.getSanitizedAcl(),
                     node.getAcl(),
                     node.getFlatDependencies(),
+                    finalInterfaces,
                     node.getLinesWithUndefinedRefs(),
                     node.getLinesInCycles());
 

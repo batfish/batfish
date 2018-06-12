@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
@@ -27,6 +28,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElement;
 import org.batfish.datamodel.answers.AclLinesAnswerElement.AclReachabilityEntry;
@@ -59,6 +61,13 @@ public class AclReachabilityTest {
     _aclb = nf.aclBuilder().setOwner(_c1);
     _aclb2 = nf.aclBuilder().setOwner(_c2);
     _c1.setIpSpaces(ImmutableSortedMap.of("ipSpace", new Ip("1.2.3.4").toIpSpace()));
+    _c1.setInterfaces(
+        ImmutableSortedMap.of(
+            "iface",
+            Interface.builder().setName("iface").build(),
+            "iface2",
+            Interface.builder().setName("iface2").build()));
+    _c2.setInterfaces(ImmutableSortedMap.of("iface", Interface.builder().setName("iface").build()));
   }
 
   @Test
@@ -95,14 +104,15 @@ public class AclReachabilityTest {
     AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
 
     // Should find only one result.
+    assertThat(answer.getUnreachableLines().size(), equalTo(1));
     assertThat(
         answer.getUnreachableLines(),
         hasEntry(equalTo(_c1.getName()), hasEntry(equalTo("acl1"), hasSize(1))));
-    AclReachabilityEntry blockedLine =
+    AclReachabilityEntry entry =
         answer.getUnreachableLines().get(_c1.getName()).get("acl1").first();
-    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
-    assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
-    assertThat("Same action", blockedLine.getDifferentAction(), equalTo(true));
+    assertThat("Line 0 is blocking", entry.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 1 is blocked", entry.getIndex(), equalTo(1));
+    assertThat(entry.getDifferentAction(), equalTo(true));
   }
 
   @Test
@@ -485,18 +495,99 @@ public class AclReachabilityTest {
     assertThat(
         answer.getUnreachableLines(),
         hasEntry(equalTo(_c1.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
-    AclReachabilityEntry entry0 =
-        answer.getUnreachableLines().get(_c1.getName()).get("acl").first();
-    assertThat(entry0.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    AclReachabilityEntry entry = answer.getUnreachableLines().get(_c1.getName()).get("acl").first();
+    assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
     assertThat(
-        entry0.getEarliestMoreGeneralLineName(),
+        entry.getEarliestMoreGeneralLineName(),
+        equalTo(
+            "This line will never match any packet because it references an undefined structure."));
+  }
+
+  @Test
+  public void testWithSrcInterfaceReference() throws IOException {
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(
+                            new MatchSrcInterface(ImmutableList.of("iface", "iface2")))
+                        .build(),
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new MatchSrcInterface(ImmutableList.of("iface")))
+                        .build()))
+            .setName("acl")
+            .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    /* Line 1 should be blocked by line 0. */
+    assertThat(
+        answer.getUnreachableLines(),
+        hasEntry(equalTo(_c1.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    AclReachabilityEntry entry = answer.getUnreachableLines().get(_c1.getName()).get("acl").first();
+    assertThat("Line 0 is blocking", entry.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 1 is blocked", entry.getIndex(), equalTo(1));
+    assertThat("Same action", entry.getDifferentAction(), equalTo(false));
+  }
+
+  @Test
+  public void testReferencedAclUsesSrcInterface() throws IOException {
+    // Create ACL that references an ACL that references an interface
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new PermittedByAcl("referencedAcl"))
+                        .build()))
+            .setName("acl")
+            .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(new MatchSrcInterface(ImmutableList.of("iface")))
+                    .build()))
+        .setName("referencedAcl")
+        .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    /* Nothing should be blocked; goal is just to avoid NullPointerException on iface. */
+    assertThat(answer.getUnreachableLines().isEmpty(), equalTo(true));
+  }
+
+  @Test
+  public void testWithUndefinedSrcInterfaceReference() throws IOException {
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(new MatchSrcInterface(ImmutableList.of("???")))
+                        .build()))
+            .setName("acl")
+            .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    /* Line 1 should be unreachable due to undefined reference. */
+    assertThat(
+        answer.getUnreachableLines(),
+        hasEntry(equalTo(_c1.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    AclReachabilityEntry entry = answer.getUnreachableLines().get(_c1.getName()).get("acl").first();
+    assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry.getEarliestMoreGeneralLineName(),
         equalTo(
             "This line will never match any packet because it references an undefined structure."));
   }
 
   private AclLinesAnswerElement answer(AclReachabilityQuestion q) throws IOException {
     Batfish batfish =
-        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(_c1.getName(), _c1), _folder);
+        BatfishTestUtils.getBatfish(
+            ImmutableSortedMap.of(_c1.getName(), _c1, _c2.getName(), _c2), _folder);
     AclReachabilityAnswerer answerer = new AclReachabilityAnswerer(q, batfish);
     return (AclLinesAnswerElement) answerer.answer();
   }

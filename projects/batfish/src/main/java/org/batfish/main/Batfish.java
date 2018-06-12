@@ -726,6 +726,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               .build();
       Configuration c = new Configuration("h", ConfigurationFormat.CISCO_IOS);
       c.setIpAccessLists(aclsMap);
+      c.setInterfaces(aclSpec.acl.getInterfaces());
 
       // Find unreachable lines
       NodSatJob<AclLine> job = generateUnreachableAclLineJob(sanitizedAcl, c);

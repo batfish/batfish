@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Set;
-import java.util.TreeMap;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 
 /** Represents an ACL with all its dependencies for the purpose of detecting identical ACLs. */
@@ -13,7 +13,7 @@ public final class CanonicalAcl {
 
   private final IpAccessList _sanitizedAcl;
   private final ImmutableSortedMap<String, IpAccessList> _dependencies;
-  private final int _hashCode;
+  private final ImmutableSortedMap<String, Interface> _interfaces;
   private final Set<Integer> _linesInCycles;
   private final Set<Integer> _linesWithUndefinedReferences;
   private final IpAccessList _acl;
@@ -23,6 +23,8 @@ public final class CanonicalAcl {
    *     undefined refs and cycles sanitized to have match condition {@link FalseExpr}
    * @param acl {@link IpAccessList} represented by this CanonicalAcl
    * @param dependencies Map of names to {@link IpAccessList}s of ACLs upon which this ACL depends
+   * @param interfaces Map of interface names to {@link Interface}s of all interfaces referenced by
+   *     this ACL
    * @param linesWithUndefinedRefs Set of line numbers of lines that refer to undefined ACLs
    * @param linesInCycles Set of line numbers of lines that make circular references to another ACL
    */
@@ -30,6 +32,7 @@ public final class CanonicalAcl {
       IpAccessList sanitizedAcl,
       IpAccessList acl,
       Map<String, IpAccessList> dependencies,
+      Map<String, Interface> interfaces,
       Set<Integer> linesWithUndefinedRefs,
       Set<Integer> linesInCycles) {
     _acl = acl;
@@ -37,19 +40,9 @@ public final class CanonicalAcl {
     _linesWithUndefinedReferences = ImmutableSet.copyOf(linesWithUndefinedRefs);
     _linesInCycles = ImmutableSet.copyOf(linesInCycles);
 
-    // _dependencies is a map of aclName to ACL all ACLs it upon which this ACL depends
+    // ACL and interface dependencies
     _dependencies = ImmutableSortedMap.copyOf(dependencies);
-
-    // Build hashcode. This hashcode will match another CanonicalAcl hashcode if that CanonicalAcl's
-    // _acl and dependencies all match this one syntactically. Ignores the acl name (though
-    // not the dependencies' names, since the ACL text will refer to those).
-    // Ignores other fields (_sanitizedAcl, _linesInCycles, _linesWithUndefinedReferences) because
-    // those fields are all determined by _acl and _dependencies.
-    Map<Integer, IpAccessList> relatedAclsHashCodeMap = new TreeMap<>();
-    for (IpAccessList ipAccessList : dependencies.values()) {
-      relatedAclsHashCodeMap.put(ipAccessList.getLines().hashCode(), ipAccessList);
-    }
-    _hashCode = _acl.getLines().hashCode() + relatedAclsHashCodeMap.hashCode();
+    _interfaces = ImmutableSortedMap.copyOf(interfaces);
   }
 
   /** @return The sanitized version of the ACL represented by this {@link CanonicalAcl} */
@@ -62,10 +55,15 @@ public final class CanonicalAcl {
   }
 
   /**
-   * @return Map of names to {@link IpAccessList} objects containing main ACL and its dependencies.
+   * @return Map of names to {@link IpAccessList} objects representing ACLs referenced by this ACL.
    */
   public NavigableMap<String, IpAccessList> getDependencies() {
     return _dependencies;
+  }
+
+  /** @return Map of names to {@link Interface} objects referenced by this ACL. */
+  public NavigableMap<String, Interface> getInterfaces() {
+    return _interfaces;
   }
 
   /**
@@ -88,15 +86,9 @@ public final class CanonicalAcl {
     if (o == this) {
       return true;
     }
-    if (!(o instanceof CanonicalAcl) || hashCode() != o.hashCode()) {
-      return false;
-    }
     CanonicalAcl otherAcl = (CanonicalAcl) o;
-    return _acl.equals(otherAcl._acl) && _dependencies.equals(otherAcl._dependencies);
-  }
-
-  @Override
-  public int hashCode() {
-    return _hashCode;
+    return _acl.equals(otherAcl._acl)
+        && _dependencies.equals(otherAcl._dependencies)
+        && _interfaces.equals(otherAcl._interfaces);
   }
 }
