@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.common.util.DefinedStructure;
 import org.batfish.datamodel.IkeProposal;
 
 public class IsakmpPolicy extends ComparableStructure<String> {
@@ -13,7 +12,7 @@ public class IsakmpPolicy extends ComparableStructure<String> {
 
   public IsakmpPolicy(String name) {
     super(name);
-    _proposal = new IkeProposal(name, DefinedStructure.IGNORED_DEFINITION_LINE);
+    _proposal = new IkeProposal(name);
   }
 
   public IkeProposal getProposal() {

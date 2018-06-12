@@ -1,10 +1,12 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
@@ -16,6 +18,7 @@ import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasHostname;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeGateway;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterface;
@@ -50,6 +53,22 @@ public class ConfigurationMatchers {
    */
   public static HasDefaultVrf hasDefaultVrf(@Nonnull Matcher<? super Vrf> subMatcher) {
     return new HasDefaultVrf(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the configuration's hostname is {@code expectedHostname}.
+   */
+  public static @Nonnull Matcher<Configuration> hasHostname(@Nonnull String expectedHostname) {
+    return new HasHostname(equalTo(expectedHostname));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * hostname.
+   */
+  public static @Nonnull Matcher<Configuration> hasHostname(
+      @Nonnull Matcher<? super String> subMatcher) {
+    return new HasHostname(subMatcher);
   }
 
   /**

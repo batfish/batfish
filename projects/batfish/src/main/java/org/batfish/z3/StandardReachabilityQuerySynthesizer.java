@@ -18,7 +18,6 @@ import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -244,7 +243,6 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
                         ? TrueExpr.INSTANCE
                         : new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
                     getSrcNattedConstraint(),
-                    SaneExpr.INSTANCE,
                     transitNodesConstraint)))
         .build();
   }

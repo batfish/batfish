@@ -19,7 +19,6 @@ import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.TransformedVarIntExpr;
 import org.batfish.z3.expr.TrueExpr;
 import org.batfish.z3.expr.VarIntExpr;
@@ -115,11 +114,6 @@ public class TransformedVarCollector
   @Override
   public Set<Field> visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     return rangeMatchExpr.getExpr().accept(this);
-  }
-
-  @Override
-  public Set<Field> visitSaneExpr(SaneExpr saneExpr) {
-    return ImmutableSet.of();
   }
 
   @Override

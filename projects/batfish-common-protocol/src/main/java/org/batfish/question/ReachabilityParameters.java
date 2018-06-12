@@ -39,7 +39,7 @@ public final class ReachabilityParameters {
 
     private @Nonnull SrcNattedConstraint _srcNatted = SrcNattedConstraint.UNCONSTRAINED;
 
-    private boolean _specialize = false;
+    private boolean _specialize = true;
 
     private boolean _useCompression = false;
 

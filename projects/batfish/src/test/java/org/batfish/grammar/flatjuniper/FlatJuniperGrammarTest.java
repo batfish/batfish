@@ -1,12 +1,12 @@
 package org.batfish.grammar.flatjuniper;
 
-import static java.util.Collections.emptyMap;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
@@ -1222,9 +1222,13 @@ public class FlatJuniperGrammarTest {
             JuniperStructureUsage.INTERFACE_VLAN));
 
     /*
-     * VLAN should not contribute to defined structures
+     * Named VLANs
      */
-    assertThat(ccae.getDefinedStructures().get(hostname), equalTo(emptyMap()));
+    assertThat(
+        ccae.getDefinedStructures()
+            .get(hostname)
+            .getOrDefault(JuniperStructureType.VLAN.getDescription(), Collections.emptySortedMap()),
+        allOf(hasKey("VLAN_TEST"), hasKey("VLAN_TEST_UNUSED")));
   }
 
   @Test
@@ -1435,6 +1439,39 @@ public class FlatJuniperGrammarTest {
 
     // Blacklisted source address should be denied
     assertThat(incomingFilter, rejects(blackListedDst, "fw-s-add.0", c));
+  }
+
+  @Test
+  public void testJuniperApplyGroupsNode() throws IOException {
+    String filename = "juniper-apply-groups-node";
+
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Configuration c = batfish.loadConfigurations().entrySet().iterator().next().getValue();
+
+    /* hostname should not be overwritten from node0 nor node1 group */
+    assertThat(c, hasHostname(filename));
+    /* other lines from node0 and node1 groups should be applied */
+    assertThat(
+        c, hasInterface("lo0.1", hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/32")))));
+    assertThat(
+        c, hasInterface("lo0.2", hasAllAddresses(contains(new InterfaceAddress("2.2.2.2/32")))));
+  }
+
+  @Test
+  public void testJuniperApplyGroupsNodeNoHostname() throws IOException {
+    String filename = "juniper-apply-groups-node-no-hostname";
+
+    Batfish batfish = getBatfishForConfigurationNames(filename);
+    Configuration c = batfish.loadConfigurations().entrySet().iterator().next().getValue();
+
+    /* hostname should be generated, and not gotten from node0 nor node1 group */
+    assertThat(c, hasHostname(not(equalTo("juniper-apply-groups-node0"))));
+    assertThat(c, hasHostname(not(equalTo("juniper-apply-groups-node1"))));
+    /* other lines from node0 and node1 groups should be applied */
+    assertThat(
+        c, hasInterface("lo0.1", hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/32")))));
+    assertThat(
+        c, hasInterface("lo0.2", hasAllAddresses(contains(new InterfaceAddress("2.2.2.2/32")))));
   }
 
   @Test

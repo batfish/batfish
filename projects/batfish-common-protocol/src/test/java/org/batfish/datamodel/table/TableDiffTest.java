@@ -3,10 +3,14 @@ package org.batfish.datamodel.table;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNull;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.table.Row.RowBuilder;
@@ -36,6 +40,44 @@ public class TableDiffTest {
 
   private static Row mixRow(String key, String both, String value, String neither) {
     return Row.of("key", key, "both", both, "value", value, "neither", neither);
+  }
+
+  @Test
+  public void buildMapNoKeyColumn() {
+    // Column metadata has no keys; so all rows should match
+    List<ColumnMetadata> columns =
+        ImmutableList.of(new ColumnMetadata("k1", Schema.STRING, "desc", false, true));
+
+    // empty maps is returned when there are no Rows
+    assertThat(TableDiff.buildMap(new Rows(), columns), equalTo(ImmutableMap.of()));
+
+    assertThat(
+        TableDiff.buildMap(new Rows().add(Row.of("k1", "a")), columns),
+        equalTo(ImmutableMap.of(new LinkedList<>(), Row.of("k1", "a"))));
+  }
+
+  @Test
+  public void buildMapMixKeyValueColumns() {
+    List<ColumnMetadata> columns =
+        ImmutableList.of(
+            new ColumnMetadata("key", Schema.STRING, "desc", true, false),
+            new ColumnMetadata("both", Schema.STRING, "desc", true, true),
+            new ColumnMetadata("value", Schema.STRING, "desc", false, true));
+
+    Row row1 = Row.of("key", "key1", "both", "both1", "value", "value1");
+    Row row2 = Row.of("key", "key2", "both", "both2", "value", "value2");
+    Rows rows = new Rows().add(row1).add(row2);
+
+    Map<List<Object>, Row> map = TableDiff.buildMap(rows, columns);
+
+    // row1 should be returned
+    assertThat(map.get(ImmutableList.of("key1", "both1")), equalTo(row1));
+
+    // nothing should be returned since the key is "partial"
+    assertNull(map.get(ImmutableList.of("key1")));
+
+    // nothing should be returned since there is no matching key
+    assertNull(map.get(ImmutableList.of("key1", "both2")));
   }
 
   @Test

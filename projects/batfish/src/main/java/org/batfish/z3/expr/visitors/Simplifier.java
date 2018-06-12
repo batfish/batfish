@@ -27,7 +27,6 @@ import org.batfish.z3.expr.OrExpr;
 import org.batfish.z3.expr.PrefixMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RangeMatchExpr;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.StateExpr;
 import org.batfish.z3.expr.Statement;
 import org.batfish.z3.expr.TransformedVarIntExpr;
@@ -324,11 +323,6 @@ public class Simplifier
   @Override
   public BooleanExpr visitRangeMatchExpr(RangeMatchExpr rangeMatchExpr) {
     return simplifyBooleanExpr(rangeMatchExpr.getExpr());
-  }
-
-  @Override
-  public BooleanExpr visitSaneExpr(SaneExpr saneExpr) {
-    return simplifyBooleanExpr(saneExpr.getExpr());
   }
 
   @Override

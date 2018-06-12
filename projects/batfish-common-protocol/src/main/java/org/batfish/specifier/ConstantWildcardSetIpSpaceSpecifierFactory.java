@@ -9,7 +9,13 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 
-public class ConstantWildcardSetIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
+/* An {@link IpSpaceSpecifierFactory} for a {@link ConstantIpSpaceSpecifier} where the
+ * {@link IpSpace} is a string representation of an {@link IpWildcardSetIpSpace}. Expects inputs in
+ * the format {@code w1,w2,...wn-wn+1,wn+2,...}. Wildcards to the left of - are whitelisted (at
+ * least 1 is required). Wildcards to the right of the dash (-), if present, are blacklisted. Can
+ * also use backslash (\) instead of dash.
+ */
+public final class ConstantWildcardSetIpSpaceSpecifierFactory implements IpSpaceSpecifierFactory {
   public static final String NAME =
       ConstantWildcardSetIpSpaceSpecifierFactory.class.getSimpleName();
 
@@ -18,11 +24,6 @@ public class ConstantWildcardSetIpSpaceSpecifierFactory implements IpSpaceSpecif
     return NAME;
   }
 
-  /**
-   * Parse the following format w1,w2,...wn-wn+1,wn+2,... Wildcards to the left of - are whitelisted
-   * (at least 1 required). Wildcards to the right of - (if present) are blacklisted. Can also use \
-   * instead of -.
-   */
   @VisibleForTesting
   static IpWildcardSetIpSpace parseIpSpace(@Nonnull String input) {
     String[] strs = input.split("-|\\\\");

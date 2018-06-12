@@ -20,7 +20,6 @@ import org.batfish.z3.expr.EqExpr;
 import org.batfish.z3.expr.LitIntExpr;
 import org.batfish.z3.expr.NotExpr;
 import org.batfish.z3.expr.QueryStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.expr.VarIntExpr;
 import org.batfish.z3.state.Query;
 
@@ -90,7 +89,6 @@ public class BlacklistDstIpQuerySynthesizer extends BaseQuerySynthesizer {
   @Override
   public ReachabilityProgram getReachabilityProgram(SynthesizerInput input) {
     ImmutableList.Builder<BooleanExpr> queryConditionsBuilder = ImmutableList.builder();
-    queryConditionsBuilder.add(SaneExpr.INSTANCE);
     for (Ip blacklistIp : _blacklistIps) {
       BooleanExpr blacklistIpCondition =
           new NotExpr(new EqExpr(new VarIntExpr(Field.DST_IP), new LitIntExpr(blacklistIp)));

@@ -15,7 +15,6 @@ import org.batfish.z3.expr.BooleanExpr;
 import org.batfish.z3.expr.HeaderSpaceMatchExpr;
 import org.batfish.z3.expr.QueryStatement;
 import org.batfish.z3.expr.RuleStatement;
-import org.batfish.z3.expr.SaneExpr;
 import org.batfish.z3.state.Accept;
 import org.batfish.z3.state.Drop;
 import org.batfish.z3.state.NeighborUnreachable;
@@ -86,8 +85,7 @@ public class MultipathInconsistencyQuerySynthesizer extends ReachabilityQuerySyn
             new AndExpr(
                 ImmutableList.of(
                     new HeaderSpaceMatchExpr(_headerSpace, ImmutableMap.of(), true),
-                    getSrcNattedConstraint(),
-                    SaneExpr.INSTANCE)))
+                    getSrcNattedConstraint())))
         .build();
   }
 }
