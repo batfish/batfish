@@ -72,4 +72,4 @@ test tests/basic/example-iptables-protection.ref get reachability notIngressNode
 # z3 timeout - 1 millisecond
 add-batfish-option z3timeout 1
 init-testrig test_rigs/fattree-examples/fattree2
-test tests/basic/z3timeout.ref -error get reachability dstIps=['70.0.2.0']
+test tests/basic/z3timeout.ref -error get reachability dstIps=['70.0.2.0'], specialize=false
