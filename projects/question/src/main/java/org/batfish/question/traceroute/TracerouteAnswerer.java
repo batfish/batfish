@@ -22,6 +22,7 @@ import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -71,35 +72,42 @@ public class TracerouteAnswerer extends Answerer {
   }
 
   /**
-   * Converts a flowHistory object into a Row. Expects that only one flow's trace is embedded in the
-   * history.
+   * Converts {@code FlowHistoryInfo} into {@Row}. Expects that the history object contains traces
+   * for only one environment
+   */
+  static Row flowHistoryToRow(FlowHistoryInfo historyInfo) {
+    // there should be only environment in this object
+    checkArgument(
+        historyInfo.getPaths().size() == 1,
+        String.format(
+            "Expect only one environment in flow history info. Found %d",
+            historyInfo.getPaths().size()));
+    Set<FlowTrace> paths = historyInfo.getPaths().values().stream().findAny().get();
+    Set<String> results =
+        paths.stream().map(path -> path.getDisposition().toString()).collect(Collectors.toSet());
+    return Row.of(
+        COL_NODE,
+        new Node(historyInfo.getFlow().getIngressNode()),
+        COL_DST_IP,
+        historyInfo.getFlow().getDstIp(),
+        COL_FLOW,
+        historyInfo.getFlow(),
+        COL_NUM_PATHS,
+        paths.size(),
+        COL_RESULTS,
+        results,
+        COL_PATHS,
+        paths);
+  }
+
+  /**
+   * Converts a flowHistory object into a set of Rows. Expects that the traces correspond to only
+   * one environment.
    */
   static Multiset<Row> flowHistoryToRows(FlowHistory flowHistory) {
     Multiset<Row> rows = LinkedHashMultiset.create();
     for (FlowHistoryInfo historyInfo : flowHistory.getTraces().values()) {
-      // there should be only environment in this object
-      checkArgument(
-          historyInfo.getPaths().size() == 1,
-          String.format(
-              "Expect only one environment in flow history info. Found %d",
-              historyInfo.getPaths().size()));
-      Set<FlowTrace> paths = historyInfo.getPaths().values().stream().findAny().get();
-      Set<String> results =
-          paths.stream().map(path -> path.getDisposition().toString()).collect(Collectors.toSet());
-      rows.add(
-          Row.of(
-              COL_NODE,
-              historyInfo.getFlow().getIngressNode(),
-              COL_DST_IP,
-              historyInfo.getFlow().getDstIp(),
-              COL_FLOW,
-              historyInfo.getFlow(),
-              COL_NUM_PATHS,
-              paths.size(),
-              COL_RESULTS,
-              results,
-              COL_PATHS,
-              paths));
+      rows.add(flowHistoryToRow(historyInfo));
     }
     return rows;
   }
