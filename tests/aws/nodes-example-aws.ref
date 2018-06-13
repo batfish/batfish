@@ -1827,7 +1827,8 @@
                     "Ethernet1/0",
                     "Ethernet1/1",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",

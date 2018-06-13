@@ -59,8 +59,8 @@ public class OspfProtocolHelper {
    *
    * @param neighborVirtualRouter The {@link VirtualRouter} of the neighbor hosting the adjacent
    *     {@link OspfProcess}
-   * @param neighborArea The
-   * @return
+   * @param neighborArea The propagator's OSPF area configuration
+   * @return {@code true} iff the route should be considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaDefaultOriginationAllowed(
       VirtualRouter neighborVirtualRouter, OspfArea neighborArea) {
@@ -86,8 +86,8 @@ public class OspfProtocolHelper {
    * @param neighborVirtualRouter The {@link VirtualRouter} of the neighbor hosting the adjacent
    *     {@link OspfProcess}
    * @param neighborRoute {@link OspfInternalRoute} in questions
-   * @param neighborArea neighbor's area number
-   * @return true if the route should considered for installation into the OSPF RIB
+   * @param neighborArea The propagator's OSPF area configuration
+   * @return {@code true} iff the route should be considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaFromInterAreaPropagationAllowed(
       OspfProcess proc,
@@ -148,8 +148,8 @@ public class OspfProtocolHelper {
    * @param neighborVirtualRouter The {@link VirtualRouter} of the neighbor hosting the adjacent
    *     {@link OspfProcess}
    * @param neighborRoute {@link OspfInternalRoute} in questions
-   * @param neighborArea neighbor's area number
-   * @return true if the route should considered for installation into the OSPF RIB
+   * @param neighborArea The propagator's OSPF area configuration
+   * @return {@code true} iff the route should considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaFromIntraAreaPropagationAllowed(
       long linkAreaNum,
