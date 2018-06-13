@@ -132,7 +132,7 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(DataPlane dp) {
-    return _engine.getRoutes((IncrementalDataPlane) dp);
+    return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp);
   }
 
   @Override
