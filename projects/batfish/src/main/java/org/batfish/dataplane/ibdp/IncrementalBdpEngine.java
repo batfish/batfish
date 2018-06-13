@@ -98,13 +98,7 @@ public class IncrementalBdpEngine {
 
     Network<BgpNeighbor, BgpSession> bgpTopology =
         initBgpTopology(
-            configurations,
-            ipOwners,
-            false,
-            true,
-            TracerouteEngineImpl.getInstance(),
-            dp,
-            dp.getForwardingAnalysis());
+            configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
 
     boolean isOscillating =
         computeNonMonotonicPortionOfDataPlane(
@@ -122,13 +116,7 @@ public class IncrementalBdpEngine {
       computeFibs(nodes);
       bgpTopology =
           initBgpTopology(
-              configurations,
-              ipOwners,
-              false,
-              true,
-              TracerouteEngineImpl.getInstance(),
-              dp,
-              dp.getForwardingAnalysis());
+              configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
       // Update queues (if necessary) based on new neighbor relationships
       final Network<BgpNeighbor, BgpSession> finalBgpTopology = bgpTopology;
       nodes

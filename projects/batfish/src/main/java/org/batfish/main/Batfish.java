@@ -96,7 +96,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -3102,13 +3101,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
     DataPlane baseDataPlane = loadDataPlane();
-    ForwardingAnalysis baseForwardingAnalysis = baseDataPlane.getForwardingAnalysis();
-    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, baseDataPlane, false);
     popEnvironment();
     pushDeltaEnvironment();
     DataPlane deltaDataPlane = loadDataPlane();
-    ForwardingAnalysis deltaForwardingAnalysis = deltaDataPlane.getForwardingAnalysis();
-    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3319,7 +3316,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
     DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, ignoreAcls, dp.getForwardingAnalysis());
+    getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
   }
 
   /**
@@ -3624,14 +3621,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    DataPlane baseDataPlane = loadDataPlane();
-    ForwardingAnalysis baseForwardingAnalysis = baseDataPlane.getForwardingAnalysis();
-    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    DataPlane deltaDataPlane = loadDataPlane();
-    ForwardingAnalysis deltaForwardingAnalysis = deltaDataPlane.getForwardingAnalysis();
-    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -4260,7 +4253,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         synthesizeDataPlane(
             configurations,
             dataPlane,
-            dataPlane.getForwardingAnalysis(),
             headerSpace,
             forbiddenTransitNodes,
             requiredTransitNodes,
@@ -4316,7 +4308,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<Flow> flows = computeNodOutput(jobs);
 
     DataPlane dp = loadDataPlane();
-    getDataPlanePlugin().processFlows(flows, dp, false, dp.getForwardingAnalysis());
+    getDataPlanePlugin().processFlows(flows, dp, false);
 
     AnswerElement answerElement = getHistory();
     return answerElement;
@@ -4434,11 +4426,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations, DataPlane dataPlane) {
-    ForwardingAnalysis forwardingAnalysis = dataPlane.getForwardingAnalysis();
     return synthesizeDataPlane(
         configurations,
         dataPlane,
-        forwardingAnalysis,
         new HeaderSpace(),
         ImmutableSet.of(),
         ImmutableSet.of(),
@@ -4453,7 +4443,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return synthesizeDataPlane(
         configs,
         dataPlane,
-        dataPlane.getForwardingAnalysis(),
         parameters.getHeaderSpace(),
         parameters.getForbiddenTransitNodes(),
         parameters.getRequiredTransitNodes(),
@@ -4465,7 +4454,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       Set<String> nonTransitNodes,
       Set<String> transitNodes,
@@ -4481,7 +4469,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             computeSynthesizerInput(
                 configurations,
                 dataPlane,
-                forwardingAnalysis,
                 headerSpace,
                 ipSpaceAssignment,
                 transitNodes,
@@ -4505,7 +4492,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static SynthesizerInputImpl computeSynthesizerInput(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       IpSpaceAssignment ipSpaceAssignment,
       Set<String> transitNodes,
@@ -4532,7 +4518,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
-        .setForwardingAnalysis(forwardingAnalysis)
+        .setForwardingAnalysis(dataPlane.getForwardingAnalysis())
         .setHeaderSpace(headerSpace)
         .setSrcIpConstraints(ipSpacePerLocation)
         .setNonTransitNodes(nonTransitNodes)

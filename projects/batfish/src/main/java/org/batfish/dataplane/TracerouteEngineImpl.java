@@ -8,7 +8,6 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Fib;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAnalysis;
 
 public class TracerouteEngineImpl implements ITracerouteEngine {
   private static ITracerouteEngine _instance = new TracerouteEngineImpl();
@@ -24,9 +23,7 @@ public class TracerouteEngineImpl implements ITracerouteEngine {
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreAcls,
-      ForwardingAnalysis forwardingAnalysis) {
-    return new TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls, forwardingAnalysis)
-        .processFlows();
+      boolean ignoreAcls) {
+    return new TracerouteEngineImplContext(dataPlane, flows, fibs, ignoreAcls).processFlows();
   }
 }
