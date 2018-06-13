@@ -11,13 +11,21 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.batfish.representation.palo_alto.SyslogServer;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private PaloAltoConfiguration _configuration;
 
   private boolean _currentNtpServerPrimary;
+
+  private SyslogServer _currentSyslogServer;
+
+  private String _currentSyslogServerGroupName;
 
   private PaloAltoCombinedParser _parser;
 
@@ -88,6 +96,32 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     } else if (ctx.secondary_name != null) {
       _configuration.setDnsServerSecondary(ctx.secondary_name.getText());
     }
+  }
+
+  @Override
+  public void enterSsl_syslog(Ssl_syslogContext ctx) {
+    _currentSyslogServerGroupName = ctx.name.getText();
+  }
+
+  @Override
+  public void exitSsl_syslog(Ssl_syslogContext ctx) {
+    _currentSyslogServerGroupName = null;
+  }
+
+  @Override
+  public void enterSsls_server(Ssls_serverContext ctx) {
+    _currentSyslogServer =
+        _configuration.getSyslogServer(_currentSyslogServerGroupName, ctx.name.getText());
+  }
+
+  @Override
+  public void exitSsls_server(Ssls_serverContext ctx) {
+    _currentSyslogServer = null;
+  }
+
+  @Override
+  public void exitSslss_server(Sslss_serverContext ctx) {
+    _currentSyslogServer.setAddress(ctx.address.getText());
   }
 
   public PaloAltoConfiguration getConfiguration() {

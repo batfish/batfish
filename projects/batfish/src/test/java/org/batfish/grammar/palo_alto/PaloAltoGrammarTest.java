@@ -66,6 +66,15 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testLogSettingsSyslog() throws IOException {
+    String hostname = "log-settings-syslog";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm all the defined syslog servers show up in VI model
+    assertThat(c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3"));
+  }
+
+  @Test
   public void testNestedConfig() throws IOException {
     String hostname = "nested-config";
 
