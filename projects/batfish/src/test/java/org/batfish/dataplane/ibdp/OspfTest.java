@@ -499,7 +499,7 @@ public class OspfTest {
         engine.computeDataPlane(
             false, configurations, topology, Collections.emptySet(), new BdpAnswerElement());
 
-    return engine.getRoutes(dp);
+    return IncrementalBdpEngine.getRoutes(dp);
   }
 
   @Test
