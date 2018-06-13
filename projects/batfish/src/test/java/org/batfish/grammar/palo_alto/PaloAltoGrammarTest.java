@@ -91,7 +91,8 @@ public class PaloAltoGrammarTest {
 
     // Confirm comments are extracted
     assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
-    assertThat(c, hasInterface(interfaceName2, hasDescription("\"long description\"")));
+    assertThat(c, hasInterface(interfaceName2, hasDescription("interface's long description")));
+    assertThat(c, hasInterface(interfaceName3, hasDescription("single quoted description")));
 
     // Confirm link status is extracted
     assertThat(c, hasInterface(interfaceName1, isActive()));

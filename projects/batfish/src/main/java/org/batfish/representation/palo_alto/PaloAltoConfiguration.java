@@ -1,9 +1,9 @@
 package org.batfish.representation.palo_alto;
 
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.VendorConversionException;
@@ -25,7 +25,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _hostname;
 
-  private final Map<String, Interface> _interfaces;
+  private final SortedMap<String, Interface> _interfaces;
 
   private String _ntpServerPrimary;
 
@@ -56,7 +56,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _hostname;
   }
 
-  public Map<String, Interface> getInterfaces() {
+  public SortedMap<String, Interface> getInterfaces() {
     return _interfaces;
   }
 
@@ -111,9 +111,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (mtu != null) {
       newIface.setMtu(mtu);
     }
-    if (iface.getAddress() != null) {
-      newIface.setAddress(iface.getAddress());
-    }
+    newIface.setAddress(iface.getAddress());
     newIface.setAllAddresses(iface.getAllAddresses());
     newIface.setActive(iface.getActive());
     newIface.setDescription(iface.getComment());

@@ -5,7 +5,7 @@ import java.util.Set;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.InterfaceAddress;
 
-/** Datamodel component containing interface configuration */
+/** PAN datamodel component containing interface configuration */
 public class Interface extends ComparableStructure<String> {
   private static final int DEFAULT_INTERFACE_MTU = 1500;
 

@@ -66,6 +66,27 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return text;
   }
 
+  /** Return token text with enclosing quotes removed, if applicable */
+  private String getText(ParserRuleContext ctx) {
+    return unquote(ctx.getText());
+  }
+
+  private String unquote(String text) {
+    if (text.length() < 2) {
+      return text;
+    }
+    char leading = text.charAt(0);
+    char trailing = text.charAt(text.length() - 1);
+    if (leading == '\'' || leading == '"') {
+      if (leading == trailing) {
+        return text.substring(1, text.length() - 1);
+      } else {
+        _w.redFlag("Improperly-quoted string: " + text);
+      }
+    }
+    return text;
+  }
+
   @Override
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _configuration = new PaloAltoConfiguration(_unimplementedFeatures);
@@ -112,7 +133,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnie_comment(Snie_commentContext ctx) {
-    _currentInterface.setComment(ctx.text.getText());
+    _currentInterface.setComment(getText(ctx.text));
   }
 
   @Override

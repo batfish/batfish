@@ -166,6 +166,11 @@ NEWLINE
     F_Newline+
 ;
 
+SINGLE_QUOTED_STRING
+:
+   '\'' ~'\''* '\''
+;
+
 VARIABLE
 :
     F_Variable_VarChar+

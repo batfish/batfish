@@ -636,7 +636,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   public Interface(String name, Configuration owner) {
-    this(name, owner, null);
+    this(name, owner, InterfaceType.UNKNOWN);
   }
 
   public Interface(String name, Configuration owner, InterfaceType interfaceType) {
@@ -658,7 +658,8 @@ public final class Interface extends ComparableStructure<String> {
     _vrrpGroups = new TreeMap<>();
 
     // Set interface type after setting owner
-    _interfaceType = (interfaceType == null) ? computeInterfaceType() : interfaceType;
+    _interfaceType =
+        (interfaceType == InterfaceType.UNKNOWN) ? computeInterfaceType() : interfaceType;
   }
 
   public void addAllowedRanges(List<SubRange> ranges) {
