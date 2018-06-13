@@ -10,14 +10,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpSpace;
 
 public interface IpSpaceRepresentative {
-  static Optional<Ip> representative(IpSpace ipSpace) {
+  static IpSpaceRepresentative load() {
     List<IpSpaceRepresentative> impls =
         ImmutableList.copyOf(ServiceLoader.load(IpSpaceRepresentative.class));
     checkState(!impls.isEmpty(), "No IpSpaceRepresentative implementation found");
     checkState(
         impls.size() == 1,
         String.format("Only 1 IpSpaceRepresentative allowed. Found %d", impls.size()));
-    return impls.get(0).getRepresentative(ipSpace);
+    return impls.get(0);
   }
 
   Optional<Ip> getRepresentative(IpSpace ipSpace);
