@@ -13,7 +13,7 @@ palo_alto_configuration
 :
     NEWLINE?
     (
-        set_line_config_device
+        set_line_config_devices
         | set_line_config_general
     )+ NEWLINE? EOF
 ;
@@ -22,9 +22,9 @@ palo_alto_configuration
  * The distinction between config device and general config statements is needed in order to handle
  * syntax differences in filesystem-style config dumps
  */
-set_line_config_device
+set_line_config_devices
 :
-    SET (CONFIG DEVICES name = variable)? statement_config_device NEWLINE
+    SET (CONFIG DEVICES name = variable)? statement_config_devices NEWLINE
 ;
 
 set_line_config_general
@@ -35,7 +35,7 @@ set_line_config_general
 /*
  * These are settings that show up on the device under /config/devices/<DEV>/...
  */
-statement_config_device
+statement_config_devices
 :
     s_deviceconfig
     | s_network
