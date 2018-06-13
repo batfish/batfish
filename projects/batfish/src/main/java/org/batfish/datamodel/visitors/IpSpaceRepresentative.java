@@ -10,7 +10,11 @@ import org.batfish.symbolic.bdd.BDDInteger;
 import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
-/** Finds a representative {@link Ip} contained in an input {@link IpSpace}, if any exists. */
+/**
+ * Finds a representative {@link Ip} contained in an input {@link IpSpace}, if any exists. Prefers
+ * 0s to 1s in the representative, though this is a greedy choice, starting with the high-order
+ * bits, so of course we may end up with more than the minimal number of 1s.
+ */
 public final class IpSpaceRepresentative {
 
   private final BDDFactory _factory;
@@ -19,7 +23,7 @@ public final class IpSpaceRepresentative {
 
   private IpSpaceRepresentative() {
     _factory = BDDUtils.bddFactory(Prefix.MAX_PREFIX_LENGTH);
-    _ipAddrBdd = BDDInteger.makeFromIndex(_factory, Prefix.MAX_PREFIX_LENGTH, 0, true);
+    _ipAddrBdd = BDDInteger.makeFromIndex(_factory, Prefix.MAX_PREFIX_LENGTH, 0, false);
   }
 
   /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */

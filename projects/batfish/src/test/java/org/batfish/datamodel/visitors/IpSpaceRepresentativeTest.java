@@ -40,16 +40,24 @@ public class IpSpaceRepresentativeTest {
     assertThat(getRepresentative(ipSpace), equalTo(Optional.empty()));
   }
 
+  /**
+   * Test that the representative is chosen to prefer 0s. It's a greedy choice, starting with the
+   * high-order bits, so of course we may end up with more than the minimal number of 1s.
+   */
   @Test
-  public void testAclIpSpace_twoIps() {
+  public void testAclIpSpace_fourIps() {
     Ip ip1 = new Ip("1.0.0.0");
     Ip ip2 = new Ip("0.1.0.0");
+    Ip ip3 = new Ip("0.0.1.0");
+    Ip ip4 = new Ip("0.0.0.3");
     IpSpace ipSpace =
         AclIpSpace.builder()
             .thenPermitting(ip1.toIpSpace())
             .thenPermitting(ip2.toIpSpace())
+            .thenPermitting(ip3.toIpSpace())
+            .thenPermitting(ip4.toIpSpace())
             .build();
-    assertThat(getRepresentative(ipSpace), equalTo(Optional.of(ip1)));
+    assertThat(getRepresentative(ipSpace), equalTo(Optional.of(ip4)));
   }
 
   @Test
