@@ -28,11 +28,10 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
-import org.batfish.question.AclReachabilityQuestionPlugin.AclReachabilityAnswerer;
 
 /**
- * Class to hold methods used by both {@link AclReachabilityAnswerer} and {@link
- * AclReachability2Answerer}.
+ * Class to hold methods used by both {@link AclReachability2Answerer} and the original ACL
+ * reachability question plugin.
  */
 public final class AclReachabilityAnswererUtils {
 
@@ -265,10 +264,7 @@ public final class AclReachabilityAnswererUtils {
   }
 
   private static List<ImmutableList<String>> sanitizeNode(
-      AclNode node,
-      List<AclNode> visited,
-      Map<String, AclNode> sanitized,
-      Map<String, AclNode> aclNodeMap) {
+      AclNode node, List<AclNode> visited, Set<String> sanitized, Map<String, AclNode> aclNodeMap) {
 
     // Mark starting node as visited
     visited.add(node);
@@ -278,7 +274,7 @@ public final class AclReachabilityAnswererUtils {
 
     // Go through dependencies (each ACL this one depends on will only appear as one dependency)
     for (AclNode dependency : node.getDependencies()) {
-      if (sanitized.containsKey(dependency.getName())) {
+      if (sanitized.contains(dependency.getName())) {
         // We've already checked out the dependency. It must not be in a cycle with current ACL.
         continue;
       }
@@ -312,7 +308,7 @@ public final class AclReachabilityAnswererUtils {
 
     // Now that all cycles are recorded, never explore this node again, and sanitize its ACL.
     node.buildSanitizedAcl();
-    sanitized.put(node.getName(), node);
+    sanitized.add(node.getName());
     return cyclesFound;
   }
 
@@ -359,9 +355,9 @@ public final class AclReachabilityAnswererUtils {
         }
 
         // Sanitize nodes in graph (finds all cycles, creates sanitized versions of IpAccessLists)
-        Map<String, AclNode> sanitizedAcls = new TreeMap<>();
+        Set<String> sanitizedAcls = new TreeSet<>();
         for (AclNode node : aclNodeMap.values()) {
-          if (!sanitizedAcls.containsKey(node.getName())) {
+          if (!sanitizedAcls.contains(node.getName())) {
             List<ImmutableList<String>> cycles =
                 sanitizeNode(node, new ArrayList<>(), sanitizedAcls, aclNodeMap);
             for (ImmutableList<String> cycleAcls : cycles) {
