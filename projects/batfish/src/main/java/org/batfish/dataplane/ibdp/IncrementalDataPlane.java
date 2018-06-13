@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 
+import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.Network;
 import java.io.Serializable;
@@ -11,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
+import java.util.function.Supplier;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpSession;
@@ -84,11 +86,11 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final transient Network<BgpNeighbor, BgpSession> _bgpTopology;
 
-  private transient Map<String, Configuration> _configurations;
+  private transient Supplier<Map<String, Configuration>> _configurations;
 
-  private transient Map<String, Map<String, Fib>> _fibs;
+  private transient Supplier<Map<String, Map<String, Fib>>> _fibs;
 
-  private transient ForwardingAnalysis _forwardingAnalysis;
+  private transient Supplier<ForwardingAnalysis> _forwardingAnalysis;
 
   private final Map<Ip, Set<String>> _ipOwners;
 
@@ -111,6 +113,39 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     _topology = builder._topology;
   }
 
+  private Map<String, Configuration> computeConfigurations() {
+    return _nodes
+        .entrySet()
+        .stream()
+        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
+  }
+
+  private Map<String, Map<String, Fib>> computeFibs() {
+    return toImmutableMap(
+        _nodes,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableMap(
+                nodeEntry.getValue().getVirtualRouters(),
+                Entry::getKey,
+                vrfEntry -> vrfEntry.getValue().getFib()));
+  }
+
+  private ForwardingAnalysis computeForwardingAnalysis() {
+    return new ForwardingAnalysisImpl(getConfigurations(), getRibs(), getFibs(), getTopology());
+  }
+
+  private SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> computeRibs() {
+    return toImmutableSortedMap(
+        _nodes,
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableSortedMap(
+                nodeEntry.getValue().getVirtualRouters(),
+                Entry::getKey,
+                vrfEntry -> vrfEntry.getValue().getMainRib()));
+  }
+
   @Override
   public Network<BgpNeighbor, BgpSession> getBgpTopology() {
     return _bgpTopology;
@@ -119,25 +154,25 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public Map<String, Configuration> getConfigurations() {
     if (_configurations == null) {
-      _configurations = initConfigurations();
+      _configurations = Suppliers.memoize(this::computeConfigurations);
     }
-    return _configurations;
+    return _configurations.get();
   }
 
   @Override
   public Map<String, Map<String, Fib>> getFibs() {
     if (_fibs == null) {
-      _fibs = initFibs();
+      _fibs = Suppliers.memoize(this::computeFibs);
     }
-    return _fibs;
+    return _fibs.get();
   }
 
   @Override
   public ForwardingAnalysis getForwardingAnalysis() {
     if (_forwardingAnalysis == null) {
-      _forwardingAnalysis = initForwardingAnalysis();
+      _forwardingAnalysis = Suppliers.memoize(this::computeForwardingAnalysis);
     }
-    return _forwardingAnalysis;
+    return _forwardingAnalysis.get();
   }
 
   @Override
@@ -197,7 +232,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs() {
     if (_ribs == null) {
-      _ribs = initRibs();
+      _ribs = computeRibs();
     }
     return _ribs;
   }
@@ -210,38 +245,5 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public SortedSet<Edge> getTopologyEdges() {
     return _topology.getEdges();
-  }
-
-  private Map<String, Configuration> initConfigurations() {
-    return _nodes
-        .entrySet()
-        .stream()
-        .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
-  }
-
-  private Map<String, Map<String, Fib>> initFibs() {
-    return toImmutableMap(
-        _nodes,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableMap(
-                nodeEntry.getValue().getVirtualRouters(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().getFib()));
-  }
-
-  private ForwardingAnalysis initForwardingAnalysis() {
-    return new ForwardingAnalysisImpl(getConfigurations(), getRibs(), getFibs(), getTopology());
-  }
-
-  private SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> initRibs() {
-    return toImmutableSortedMap(
-        _nodes,
-        Entry::getKey,
-        nodeEntry ->
-            toImmutableSortedMap(
-                nodeEntry.getValue().getVirtualRouters(),
-                Entry::getKey,
-                vrfEntry -> vrfEntry.getValue().getMainRib()));
   }
 }

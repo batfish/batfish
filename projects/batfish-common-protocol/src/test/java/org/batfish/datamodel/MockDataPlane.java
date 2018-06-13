@@ -21,7 +21,7 @@ public class MockDataPlane implements DataPlane {
 
     private Map<String, Map<String, Fib>> _fibs;
 
-    public ForwardingAnalysis _forwardingAnalysis;
+    private ForwardingAnalysis _forwardingAnalysis;
 
     private SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> _ribs;
 
