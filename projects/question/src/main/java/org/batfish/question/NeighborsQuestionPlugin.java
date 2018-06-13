@@ -719,7 +719,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       if (!_remoteBgpNeighborsInitialized) {
         Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
         _bgpTopology =
-            CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null, null);
+            CommonUtil.initBgpTopology(configurations, ipOwners, false, false, null, null);
         _remoteBgpNeighborsInitialized = true;
       }
     }
