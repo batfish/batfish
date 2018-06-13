@@ -216,12 +216,7 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("1.0.0.10").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    _dataPlanePlugin.processFlows(
-        flows,
-        _dataPlane,
-        false,
-        new ForwardingAnalysisImpl(
-            _configs, _dataPlane.getRibs(), _dataPlane.getFibs(), _dataPlane.getTopology()));
+    _dataPlanePlugin.processFlows(flows, _dataPlane, false);
     List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
     flowTraces.forEach(
@@ -285,12 +280,7 @@ public class NodJobTest {
     assertThat(fieldConstraints, hasEntry(Field.SRC_IP.getName(), new Ip("3.0.0.1").asLong()));
 
     Set<Flow> flows = nodJob.getFlows(ingressLocationConstraints);
-    _dataPlanePlugin.processFlows(
-        flows,
-        _dataPlane,
-        false,
-        new ForwardingAnalysisImpl(
-            _configs, _dataPlane.getRibs(), _dataPlane.getFibs(), _dataPlane.getTopology()));
+    _dataPlanePlugin.processFlows(flows, _dataPlane, false);
     List<FlowTrace> flowTraces = _dataPlanePlugin.getHistoryFlowTraces(_dataPlane);
 
     flowTraces.forEach(

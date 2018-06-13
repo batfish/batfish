@@ -17,8 +17,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.batfish.representation.palo_alto.SyslogServer;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
@@ -27,6 +31,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private Interface _currentInterface;
 
   private boolean _currentNtpServerPrimary;
+
+  private SyslogServer _currentSyslogServer;
+
+  private String _currentSyslogServerGroupName;
 
   private PaloAltoCombinedParser _parser;
 
@@ -151,6 +159,32 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3_mtu(Sniel3_mtuContext ctx) {
     _currentInterface.setMtu(Integer.parseInt(ctx.mtu.getText()));
+  }
+
+  @Override
+  public void enterSsl_syslog(Ssl_syslogContext ctx) {
+    _currentSyslogServerGroupName = ctx.name.getText();
+  }
+
+  @Override
+  public void exitSsl_syslog(Ssl_syslogContext ctx) {
+    _currentSyslogServerGroupName = null;
+  }
+
+  @Override
+  public void enterSsls_server(Ssls_serverContext ctx) {
+    _currentSyslogServer =
+        _configuration.getSyslogServer(_currentSyslogServerGroupName, ctx.name.getText());
+  }
+
+  @Override
+  public void exitSsls_server(Ssls_serverContext ctx) {
+    _currentSyslogServer = null;
+  }
+
+  @Override
+  public void exitSslss_server(Sslss_serverContext ctx) {
+    _currentSyslogServer.setAddress(ctx.address.getText());
   }
 
   public PaloAltoConfiguration getConfiguration() {

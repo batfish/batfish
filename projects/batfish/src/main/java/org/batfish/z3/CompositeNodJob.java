@@ -16,6 +16,8 @@ public class CompositeNodJob extends AbstractNodJob {
 
   private int _numPrograms;
 
+  private final boolean _optimize;
+
   private List<QuerySynthesizer> _querySynthesizers;
 
   public CompositeNodJob(
@@ -23,8 +25,10 @@ public class CompositeNodJob extends AbstractNodJob {
       List<Synthesizer> dataPlaneSynthesizer,
       List<QuerySynthesizer> querySynthesizer,
       Map<IngressLocation, BooleanExpr> srcIpConstraints,
+      boolean optimize,
       String tag) {
     super(settings, srcIpConstraints, tag);
+    _optimize = optimize;
     _numPrograms = dataPlaneSynthesizer.size();
     if (_numPrograms != querySynthesizer.size()) {
       throw new BatfishException("mismatch between number of programs and number of queries");
@@ -46,9 +50,12 @@ public class CompositeNodJob extends AbstractNodJob {
           instrumentReachabilityProgram(
               querySynthesizer.getReachabilityProgram(dataPlaneSynthesizer.getInput()));
 
-      NodProgram program = new NodProgram(ctx, baseProgram, queryProgram);
+      NodProgram program =
+          _optimize
+              ? optimizedProgram(ctx, baseProgram, queryProgram)
+              : new NodProgram(ctx, baseProgram, queryProgram);
       variablesAsConsts.putAll(program.getNodContext().getVariablesAsConsts());
-      answers[i] = computeSmtConstraintsViaNod(program, _querySynthesizers.get(i).getNegate());
+      answers[i] = computeSmtConstraintsViaNod(program, querySynthesizer.getNegate());
     }
     return new SmtInput(ctx.mkAnd(answers), variablesAsConsts);
   }

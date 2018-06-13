@@ -70,6 +70,11 @@ LINK_STATUS
     'link-status'
 ;
 
+LOG_SETTINGS
+:
+    'log-settings'
+;
+
 MTU
 :
     'mtu'
@@ -110,6 +115,11 @@ SECONDARY_NTP_SERVER
     'secondary-ntp-server'
 ;
 
+SERVER
+:
+    'server'
+;
+
 SERVERS
 :
     'servers'
@@ -118,6 +128,16 @@ SERVERS
 SET
 :
     'set'
+;
+
+SHARED
+:
+    'shared'
+;
+
+SYSLOG
+:
+    'syslog'
 ;
 
 SYSTEM

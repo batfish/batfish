@@ -95,7 +95,6 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -906,8 +905,7 @@ public class CommonUtil {
       BgpNeighbor src,
       BgpNeighbor dst,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp,
-      @Nullable ForwardingAnalysis forwardingAnalysis) {
+      @Nullable DataPlane dp) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getAddress();
     if (dstAddress == null) {
@@ -935,8 +933,7 @@ public class CommonUtil {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, Set<FlowTrace>> traces =
-        tracerouteEngine.processFlows(
-            dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false, forwardingAnalysis);
+        tracerouteEngine.processFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
 
     SortedSet<FlowTrace> acceptedFlows =
         traces
@@ -973,9 +970,7 @@ public class CommonUtil {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces =
-        tracerouteEngine.processFlows(
-            dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false, forwardingAnalysis);
+    traces = tracerouteEngine.processFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
@@ -1008,7 +1003,7 @@ public class CommonUtil {
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid) {
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null, null);
+    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null);
   }
 
   /**
@@ -1034,8 +1029,7 @@ public class CommonUtil {
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp,
-      @Nullable ForwardingAnalysis forwardingAnalysis) {
+      @Nullable DataPlane dp) {
 
     // TODO: handle duplicate ips on different vrfs
 
@@ -1120,8 +1114,7 @@ public class CommonUtil {
          * Perform reachability checks.
          */
         if (checkReachability) {
-          if (isReachableBgpNeighbor(
-              neighbor, candidateNeighbor, tracerouteEngine, dp, forwardingAnalysis)) {
+          if (isReachableBgpNeighbor(neighbor, candidateNeighbor, tracerouteEngine, dp)) {
             graph.addEdge(neighbor, candidateNeighbor, new BgpSession(neighbor, candidateNeighbor));
           }
         } else {
