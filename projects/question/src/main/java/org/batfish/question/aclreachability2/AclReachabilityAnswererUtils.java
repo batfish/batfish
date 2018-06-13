@@ -52,7 +52,6 @@ public final class AclReachabilityAnswererUtils {
     private final Set<Integer> _linesWithUndefinedRefs = new TreeSet<>();
     private final Set<Integer> _linesInCycles = new TreeSet<>();
     private final List<Dependency> _dependencies = new ArrayList<>();
-    private final List<AclNode> _referencingAcls = new ArrayList<>();
     private final Set<String> _interfaces = new TreeSet<>();
     private IpAccessList _sanitizedAcl;
     private List<IpAccessListLine> _sanitizedLines;
@@ -78,12 +77,6 @@ public final class AclReachabilityAnswererUtils {
       // Remove previous ACL from referencing ACLs
       int aclIndex = cycleAcls.indexOf(_acl.getName());
       int cycleSize = cycleAcls.size();
-      String prevAclName = cycleAcls.get((aclIndex - 1 + cycleSize) % cycleSize);
-      int referencingAclIndex = 0;
-      while (!_referencingAcls.get(referencingAclIndex).getName().equals(prevAclName)) {
-        referencingAclIndex++;
-      }
-      _referencingAcls.remove(referencingAclIndex);
 
       // Remove next ACL from dependencies, and record line numbers that reference dependency
       String nextAclName = cycleAcls.get((aclIndex + 1) % cycleSize);
@@ -160,10 +153,6 @@ public final class AclReachabilityAnswererUtils {
       sanitizeLine(lineNum, new MatchHeaderSpace(hsb.build()));
     }
 
-    public void addReferencingAcl(AclNode referencing) {
-      _referencingAcls.add(referencing);
-    }
-
     public void addUndefinedRef(int lineNum) {
       _linesWithUndefinedRefs.add(lineNum);
       sanitizeLine(lineNum, FalseExpr.INSTANCE);
@@ -226,9 +215,8 @@ public final class AclReachabilityAnswererUtils {
             createAclNode(referencedAcl, aclNodeMap, acls, namedIpSpaces, nodeInterfaces);
             referencedAclNode = aclNodeMap.get(referencedAclName);
           }
-          // Referenced ACL has now been recorded; add dependency and reference
+          // Referenced ACL has now been recorded; add dependency
           node.addDependency(referencedAclNode, index);
-          referencedAclNode.addReferencingAcl(node);
         }
       } else if (matchCondition instanceof MatchHeaderSpace) {
         HeaderSpace headerSpace = ((MatchHeaderSpace) matchCondition).getHeaderspace();
