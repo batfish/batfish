@@ -27,10 +27,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
-  /**
-   * Map of group name to server group, where each server group is a map of server name to server
-   * configuration
-   */
   private SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
 
   private transient Set<String> _unimplementedFeatures;
@@ -69,6 +65,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
+  /**
+   * Returns a map of group name to server group, where each server group is a map of server name to
+   * server configuration
+   */
   public SortedMap<String, SortedMap<String, SyslogServer>> getSyslogServerGroups() {
     return _syslogServerGroups;
   }
