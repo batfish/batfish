@@ -65,14 +65,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return servers;
   }
 
-  /**
-   * Returns a map of group name to server group, where each server group is a map of server name to
-   * server configuration
-   */
-  public SortedMap<String, SortedMap<String, SyslogServer>> getSyslogServerGroups() {
-    return _syslogServerGroups;
-  }
-
   @Override
   public Set<String> getUnimplementedFeatures() {
     return _unimplementedFeatures;
@@ -97,6 +89,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   public void setNtpServerSecondary(String ntpServerSecondary) {
     _ntpServerSecondary = ntpServerSecondary;
+  }
+
+  /**
+   * Returns a syslog server with the specified name in the specified server group. If a matching
+   * server does not exist, one is created.
+   */
+  public SyslogServer getSyslogServer(String serverGroupName, String serverName) {
+    SortedMap<String, SyslogServer> serverGroup =
+        _syslogServerGroups.computeIfAbsent(serverGroupName, g -> new TreeMap<>());
+    return serverGroup.computeIfAbsent(serverName, SyslogServer::new);
   }
 
   @Override

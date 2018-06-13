@@ -1,8 +1,6 @@
 package org.batfish.grammar.palo_alto;
 
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
@@ -27,7 +25,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private SyslogServer _currentSyslogServer;
 
-  private SortedMap<String, SyslogServer> _currentSyslogServerGroup;
+  private String _currentSyslogServerGroupName;
 
   private PaloAltoCombinedParser _parser;
 
@@ -101,20 +99,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSsl_syslog(Ssl_syslogContext ctx) {
-    String profileName = ctx.name.getText();
-    _currentSyslogServerGroup =
-        _configuration.getSyslogServerGroups().computeIfAbsent(profileName, g -> new TreeMap<>());
+    _currentSyslogServerGroupName = ctx.name.getText();
   }
 
   @Override
   public void exitSsl_syslog(Ssl_syslogContext ctx) {
-    _currentSyslogServerGroup = null;
+    _currentSyslogServerGroupName = null;
   }
 
   @Override
   public void enterSsls_server(Ssls_serverContext ctx) {
-    String serverName = ctx.name.getText();
-    _currentSyslogServer = _currentSyslogServerGroup.computeIfAbsent(serverName, SyslogServer::new);
+    _currentSyslogServer =
+        _configuration.getSyslogServer(_currentSyslogServerGroupName, ctx.name.getText());
   }
 
   @Override
