@@ -3,5 +3,6 @@ set network interface ethernet ethernet1/1 layer3 mtu 9001
 set network interface ethernet ethernet1/1 layer3 ip 1.1.1.1/24
 set network interface ethernet ethernet1/1 comment description
 set network interface ethernet ethernet1/2 link-status down
+set network interface ethernet ethernet1/2 comment "long description"
 set network interface ethernet ethernet1/3 link-status down
 set network interface ethernet ethernet1/3 link-status up

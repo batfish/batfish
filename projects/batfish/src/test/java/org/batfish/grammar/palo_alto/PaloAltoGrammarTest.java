@@ -89,8 +89,9 @@ public class PaloAltoGrammarTest {
         hasInterface(
             interfaceName1, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
 
-    // Confirm comment is extracted
+    // Confirm comments are extracted
     assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
+    assertThat(c, hasInterface(interfaceName2, hasDescription("\"long description\"")));
 
     // Confirm link status is extracted
     assertThat(c, hasInterface(interfaceName1, isActive()));

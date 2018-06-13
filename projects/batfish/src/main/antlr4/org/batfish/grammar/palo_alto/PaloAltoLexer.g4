@@ -137,6 +137,11 @@ DEC
     F_Digit+
 ;
 
+DOUBLE_QUOTED_STRING
+:
+   '"' ~'"'* '"'
+;
+
 IP_ADDRESS
 :
     F_IpAddress
