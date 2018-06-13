@@ -648,7 +648,6 @@ public final class Interface extends ComparableStructure<String> {
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
-    _interfaceType = (interfaceType == null) ? computeInterfaceType() : interfaceType;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
     _owner = owner;
@@ -657,6 +656,9 @@ public final class Interface extends ComparableStructure<String> {
     _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
+
+    // Set interface type after setting owner
+    _interfaceType = (interfaceType == null) ? computeInterfaceType() : interfaceType;
   }
 
   public void addAllowedRanges(List<SubRange> ranges) {
