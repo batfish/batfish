@@ -23,6 +23,7 @@ import java.util.function.BiFunction;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
+import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpNeighbor;
@@ -34,14 +35,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.answers.BdpAnswerElement;
+import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.RibDelta;
 
-public class IncrementalBdpEngine {
+class IncrementalBdpEngine {
 
   private int _numIterations;
 
@@ -51,7 +52,7 @@ public class IncrementalBdpEngine {
 
   private final IncrementalDataPlaneSettings _settings;
 
-  public IncrementalBdpEngine(
+  IncrementalBdpEngine(
       IncrementalDataPlaneSettings settings,
       BatfishLogger logger,
       BiFunction<String, Integer, AtomicInteger> newBatch) {
@@ -60,12 +61,11 @@ public class IncrementalBdpEngine {
     _newBatch = newBatch;
   }
 
-  IncrementalDataPlane computeDataPlane(
+  ComputeDataPlaneResult computeDataPlane(
       boolean differentialContext,
       Map<String, Configuration> configurations,
       Topology topology,
-      Set<BgpAdvertisement> externalAdverts,
-      BdpAnswerElement ae) {
+      Set<BgpAdvertisement> externalAdverts) {
     _bfLogger.resetTimer();
     IncrementalDataPlane.Builder dpBuilder = IncrementalDataPlane.builder();
     _bfLogger.info("\nComputing Data Plane using iBDP\n");
@@ -91,7 +91,8 @@ public class IncrementalBdpEngine {
      * - Third, let the EGP routes converge
      * - Finally, compute FIBs, return answer
      */
-    computeIgpDataPlane(nodes, topology, ae);
+    IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
+    computeIgpDataPlane(nodes, topology, answerElement);
     computeFibs(nodes);
 
     IncrementalDataPlane dp = dpBuilder.build();
@@ -102,7 +103,7 @@ public class IncrementalBdpEngine {
 
     boolean isOscillating =
         computeNonMonotonicPortionOfDataPlane(
-            nodes, topology, dp, externalAdverts, ae, true, bgpTopology);
+            nodes, topology, dp, externalAdverts, answerElement, true, bgpTopology);
     if (isOscillating) {
       // If we are oscillating here, network has no stable solution.
       throw new BdpOscillationException("Network has no stable solution");
@@ -127,13 +128,13 @@ public class IncrementalBdpEngine {
                   n.getVirtualRouters().values().forEach(vr -> vr.initBgpQueues(finalBgpTopology)));
       // Do another pass on EGP computation in case any new sessions have been established
       computeNonMonotonicPortionOfDataPlane(
-          nodes, topology, dp, externalAdverts, ae, false, bgpTopology);
+          nodes, topology, dp, externalAdverts, answerElement, false, bgpTopology);
     }
     // Generate the answers from the computation, compute final FIBs
     computeFibs(nodes);
-    ae.setVersion(Version.getVersion());
+    answerElement.setVersion(Version.getVersion());
     _bfLogger.printElapsedTime();
-    return dp;
+    return new ComputeDataPlaneResult(answerElement, dp);
   }
 
   /**
@@ -322,7 +323,7 @@ public class IncrementalBdpEngine {
    *     contains the current recovery iteration.
    */
   private void computeIgpDataPlane(
-      SortedMap<String, Node> nodes, Topology topology, BdpAnswerElement ae) {
+      SortedMap<String, Node> nodes, Topology topology, IncrementalBdpAnswerElement ae) {
 
     int numOspfInternalIterations;
 
@@ -385,7 +386,7 @@ public class IncrementalBdpEngine {
       Topology topology,
       IncrementalDataPlane dp,
       Set<BgpAdvertisement> externalAdverts,
-      BdpAnswerElement ae,
+      IncrementalBdpAnswerElement ae,
       boolean firstPass,
       Network<BgpNeighbor, BgpSession> bgpTopology) {
 
@@ -550,9 +551,9 @@ public class IncrementalBdpEngine {
   }
 
   /**
-   * Compute the hashcode that uniquely identifies the state of hte network at a given iteration
+   * Compute the hashcode that uniquely identifies the state of the network at a given iteration
    *
-   * @param nodes map of nodes
+   * @param nodes map of nodes, keyed by hostname
    * @return integer hashcode
    */
   private static int computeIterationHashCode(Map<String, Node> nodes) {
@@ -564,8 +565,8 @@ public class IncrementalBdpEngine {
         .sum();
   }
 
-  private void computeIterationStatistics(
-      Map<String, Node> nodes, BdpAnswerElement ae, int dependentRoutesIterations) {
+  private static void computeIterationStatistics(
+      Map<String, Node> nodes, IncrementalBdpAnswerElement ae, int dependentRoutesIterations) {
     int numBgpBestPathRibRoutes =
         nodes
             .values()
