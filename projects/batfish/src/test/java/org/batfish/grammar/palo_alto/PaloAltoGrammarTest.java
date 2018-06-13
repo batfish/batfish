@@ -4,9 +4,11 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.not;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -73,19 +75,27 @@ public class PaloAltoGrammarTest {
   @Test
   public void testInterface() throws IOException {
     String hostname = "interface";
-    String interfaceName = "ethernet1/1";
+    String interfaceName1 = "ethernet1/1";
+    String interfaceName2 = "ethernet1/2";
+    String interfaceName3 = "ethernet1/3";
     Configuration c = parseConfig(hostname);
 
     // Confirm interface MTU is extracted
-    assertThat(c, hasInterface(interfaceName, hasMtu(9001)));
+    assertThat(c, hasInterface(interfaceName1, hasMtu(9001)));
 
     // Confirm address is extracted
     assertThat(
         c,
-        hasInterface(interfaceName, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
+        hasInterface(
+            interfaceName1, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
 
     // Confirm comment is extracted
-    assertThat(c, hasInterface(interfaceName, hasDescription("description")));
+    assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
+
+    // Confirm link status is extracted
+    assertThat(c, hasInterface(interfaceName1, isActive()));
+    assertThat(c, hasInterface(interfaceName2, not(isActive())));
+    assertThat(c, hasInterface(interfaceName3, isActive()));
   }
 
   @Test

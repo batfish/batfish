@@ -28,6 +28,7 @@ sni_ethernet
     (
         snie_comment
         | snie_layer3
+        | snie_link_status
     )
 ;
 
@@ -42,6 +43,16 @@ snie_layer3
     (
         sniel3_ip
         | sniel3_mtu
+    )
+;
+
+snie_link_status
+:
+    LINK_STATUS
+    (
+        AUTO
+        | DOWN
+        | UP
     )
 ;
 

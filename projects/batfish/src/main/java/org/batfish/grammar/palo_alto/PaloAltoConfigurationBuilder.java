@@ -14,6 +14,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.representation.palo_alto.Interface;
@@ -112,6 +113,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnie_comment(Snie_commentContext ctx) {
     _currentInterface.setComment(ctx.text.getText());
+  }
+
+  @Override
+  public void exitSnie_link_status(Snie_link_statusContext ctx) {
+    _currentInterface.setActive((ctx.DOWN() == null));
   }
 
   @Override

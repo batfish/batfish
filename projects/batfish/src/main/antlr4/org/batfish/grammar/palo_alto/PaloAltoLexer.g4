@@ -15,6 +15,11 @@ AUTHENTICATION_TYPE
     'authentication-type'
 ;
 
+AUTO
+:
+    'auto'
+;
+
 COMMENT
 :
     'comment'
@@ -28,6 +33,11 @@ DEVICECONFIG
 DNS_SETTING
 :
     'dns-setting'
+;
+
+DOWN
+:
+    'down'
 ;
 
 ETHERNET
@@ -53,6 +63,11 @@ IP
 LAYER3
 :
     'layer3'
+;
+
+LINK_STATUS
+:
+    'link-status'
 ;
 
 MTU
@@ -108,6 +123,11 @@ SET
 SYSTEM
 :
     'system'
+;
+
+UP
+:
+    'up'
 ;
 
 // Complex tokens
