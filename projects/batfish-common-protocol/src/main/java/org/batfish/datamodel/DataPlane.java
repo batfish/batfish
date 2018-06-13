@@ -15,6 +15,8 @@ public interface DataPlane extends Serializable {
 
   Map<String, Map<String, Fib>> getFibs();
 
+  ForwardingAnalysis getForwardingAnalysis();
+
   /**
    * Return the map of Ip owners (as computed during dataplane computation). Map structure: Ip ->
    * Set of hostnames

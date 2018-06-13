@@ -78,8 +78,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
           settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
@@ -122,8 +121,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
       Batfish.serializeAsJson(
@@ -197,8 +195,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     registerDataPlanePlugins(batfish);
     return batfish;
   }

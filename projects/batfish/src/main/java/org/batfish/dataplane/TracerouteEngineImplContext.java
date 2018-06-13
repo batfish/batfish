@@ -179,15 +179,14 @@ class TracerouteEngineImplContext {
       DataPlane dataPlane,
       Set<Flow> flows,
       Map<String, Map<String, Fib>> fibs,
-      boolean ignoreAcls,
-      ForwardingAnalysis forwardingAnalysis) {
+      boolean ignoreAcls) {
     _configurations = dataPlane.getConfigurations();
     _dataPlane = dataPlane;
     _flows = flows;
     _flowTraces = new ConcurrentHashMap<>();
     _fibs = fibs;
     _ignoreAcls = ignoreAcls;
-    _forwardingAnalysis = forwardingAnalysis;
+    _forwardingAnalysis = _dataPlane.getForwardingAnalysis();
   }
 
   private void collectFlowTraces(
