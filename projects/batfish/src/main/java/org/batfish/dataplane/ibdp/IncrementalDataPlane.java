@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.common.util.CommonUtil.toImmutableMap;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.Network;
@@ -12,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
-import java.util.function.Supplier;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpSession;
@@ -80,17 +80,51 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     }
   }
 
+  public class ConfigurationsSupplier
+      implements Serializable, Supplier<Map<String, Configuration>> {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Map<String, Configuration> get() {
+      return computeConfigurations();
+    }
+  }
+
+  public class FibsSupplier implements Serializable, Supplier<Map<String, Map<String, Fib>>> {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public Map<String, Map<String, Fib>> get() {
+      return computeFibs();
+    }
+  }
+
+  public class ForwardingAnalysisSupplier implements Serializable, Supplier<ForwardingAnalysis> {
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public ForwardingAnalysis get() {
+      return computeForwardingAnalysis();
+    }
+  }
+
   public static Builder builder() {
     return new Builder();
   }
 
   private final transient Network<BgpNeighbor, BgpSession> _bgpTopology;
 
-  private transient Supplier<Map<String, Configuration>> _configurations;
+  private final Supplier<Map<String, Configuration>> _configurations =
+      Suppliers.memoize(new ConfigurationsSupplier());
 
-  private transient Supplier<Map<String, Map<String, Fib>>> _fibs;
+  private final Supplier<Map<String, Map<String, Fib>>> _fibs =
+      Suppliers.memoize(new FibsSupplier());
 
-  private transient Supplier<ForwardingAnalysis> _forwardingAnalysis;
+  private final Supplier<ForwardingAnalysis> _forwardingAnalysis =
+      Suppliers.memoize(new ForwardingAnalysisSupplier());
 
   private final Map<Ip, Set<String>> _ipOwners;
 
@@ -153,25 +187,16 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   @Override
   public Map<String, Configuration> getConfigurations() {
-    if (_configurations == null) {
-      _configurations = Suppliers.memoize(this::computeConfigurations);
-    }
     return _configurations.get();
   }
 
   @Override
   public Map<String, Map<String, Fib>> getFibs() {
-    if (_fibs == null) {
-      _fibs = Suppliers.memoize(this::computeFibs);
-    }
     return _fibs.get();
   }
 
   @Override
   public ForwardingAnalysis getForwardingAnalysis() {
-    if (_forwardingAnalysis == null) {
-      _forwardingAnalysis = Suppliers.memoize(this::computeForwardingAnalysis);
-    }
     return _forwardingAnalysis.get();
   }
 
