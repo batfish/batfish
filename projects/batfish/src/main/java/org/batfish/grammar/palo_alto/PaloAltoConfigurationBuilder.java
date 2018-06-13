@@ -163,7 +163,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSsl_syslog(Ssl_syslogContext ctx) {
-    _currentSyslogServerGroupName = ctx.name.getText();
+    _currentSyslogServerGroupName = getText(ctx.name);
   }
 
   @Override
@@ -174,7 +174,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void enterSsls_server(Ssls_serverContext ctx) {
     _currentSyslogServer =
-        _configuration.getSyslogServer(_currentSyslogServerGroupName, ctx.name.getText());
+        _configuration.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
   }
 
   @Override

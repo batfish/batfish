@@ -6,7 +6,7 @@ import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.InterfaceAddress;
 
 /** PAN datamodel component containing interface configuration */
-public class Interface extends ComparableStructure<String> {
+public final class Interface extends ComparableStructure<String> {
   private static final int DEFAULT_INTERFACE_MTU = 1500;
 
   private static final long serialVersionUID = 1L;
