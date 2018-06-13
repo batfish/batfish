@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import org.apache.commons.collections4.list.TreeList;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AuthenticationKey;
@@ -52,7 +53,6 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
@@ -735,8 +735,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
               }
             });
     // areas
-    Map<Long, OspfArea> newAreas = newProc.getAreas();
-    newAreas.putAll(routingInstance.getOspfAreas());
+    Map<Long, org.batfish.datamodel.OspfArea> newAreas = newProc.getAreas();
+    newAreas.putAll(
+        CommonUtil.toImmutableMap(
+            routingInstance.getOspfAreas(), Entry::getKey, e -> toOspfArea(e.getValue())));
     // place interfaces into areas
     for (Entry<String, Interface> e : routingInstance.getInterfaces().entrySet()) {
       String name = e.getKey();
@@ -746,6 +748,34 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newProc.setRouterId(getOspfRouterId(routingInstance));
     newProc.setReferenceBandwidth(routingInstance.getOspfReferenceBandwidth());
     return newProc;
+  }
+
+  private org.batfish.datamodel.OspfArea toOspfArea(OspfArea area) {
+    org.batfish.datamodel.OspfArea newArea = new org.batfish.datamodel.OspfArea(area.getName());
+    newArea.setNssa(toNssaSettings(area.getNssaSettings()));
+    newArea.setStub(toStubSettings(area.getStubSettings()));
+    newArea.setStubType(area.getStubType());
+    newArea.setSummaries(area.getSummaries());
+    return newArea;
+  }
+
+  private org.batfish.datamodel.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
+    if (nssaSettings == null) {
+      return null;
+    }
+    return org.batfish.datamodel.NssaSettings.builder()
+        .setDefaultOriginateType(nssaSettings.getDefaultLsaType())
+        .setSuppressType3(nssaSettings.getNoSummaries())
+        .build();
+  }
+
+  private org.batfish.datamodel.StubSettings toStubSettings(StubSettings stubSettings) {
+    if (stubSettings == null) {
+      return null;
+    }
+    return org.batfish.datamodel.StubSettings.builder()
+        .setSuppressType3(stubSettings.getNoSummaries())
+        .build();
   }
 
   public static String computeOspfExportPolicyName(String vrfName) {
@@ -947,7 +977,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void placeInterfaceIntoArea(
-      Map<Long, OspfArea> newAreas, String name, Interface iface, String vrfName) {
+      Map<Long, org.batfish.datamodel.OspfArea> newAreas,
+      String name,
+      Interface iface,
+      String vrfName) {
     Vrf vrf = _c.getVrfs().get(vrfName);
     org.batfish.datamodel.Interface newIface = vrf.getInterfaces().get(name);
     Ip ospfArea = iface.getOspfActiveArea();
@@ -961,7 +994,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         setCost = true;
         long ospfAreaLong = ospfArea.asLong();
-        OspfArea newArea = newAreas.get(ospfAreaLong);
+        org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
         newArea.getInterfaces().add(name);
         newIface.setOspfArea(newArea);
         newIface.setOspfEnabled(true);
@@ -977,7 +1010,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       setCost = true;
       long ospfAreaLong = passiveArea.asLong();
-      OspfArea newArea = newAreas.get(ospfAreaLong);
+      org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
       newArea.getInterfaces().add(name);
       newIface.setOspfEnabled(true);
       newIface.setOspfPassive(true);

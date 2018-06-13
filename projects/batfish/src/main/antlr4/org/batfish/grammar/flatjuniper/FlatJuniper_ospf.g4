@@ -250,7 +250,8 @@ oan_default_lsa
 :
    DEFAULT_LSA
    (
-      oand_default_metric
+      apply
+      | oand_default_metric
       | oand_metric_type
       | oand_type_7
    )

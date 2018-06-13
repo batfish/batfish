@@ -79,8 +79,8 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
+import org.batfish.datamodel.OspfDefaultOriginateType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -88,6 +88,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpHost;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.StubType;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
@@ -229,6 +230,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_metric_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_type_7Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oas_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.P_bgpContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_policy_statementContext;
@@ -476,6 +484,8 @@ import org.batfish.representation.juniper.JunosApplicationSet;
 import org.batfish.representation.juniper.JunosApplicationSetReference;
 import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.NodeDevice;
+import org.batfish.representation.juniper.NssaSettings;
+import org.batfish.representation.juniper.OspfArea;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFrom;
@@ -534,6 +544,7 @@ import org.batfish.representation.juniper.RouteFilter;
 import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.StaticRoute;
+import org.batfish.representation.juniper.StubSettings;
 import org.batfish.representation.juniper.Vlan;
 import org.batfish.representation.juniper.Zone;
 import org.batfish.vendor.StructureType;
@@ -1679,6 +1690,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private ApplicationSet _currentApplicationSet;
 
+  private NssaSettings _currentNssaSettings;
+
+  private StubSettings _currentStubSettings;
+
   public ConfigurationBuilder(
       FlatJuniperCombinedParser parser,
       String text,
@@ -2124,6 +2139,70 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       }
       _currentOspfInterface.setOspfActiveArea(currentArea);
     }
+  }
+
+  @Override
+  public void enterOa_nssa(Oa_nssaContext ctx) {
+    _currentNssaSettings = _currentArea.getNssaSettings();
+    if (_currentNssaSettings == null) {
+      _currentNssaSettings = new NssaSettings();
+      _currentArea.setNssaSettings(_currentNssaSettings);
+    }
+    _currentArea.setStubType(StubType.NSSA);
+  }
+
+  @Override
+  public void exitOa_nssa(Oa_nssaContext ctx) {
+    _currentNssaSettings = null;
+  }
+
+  @Override
+  public void enterOa_stub(Oa_stubContext ctx) {
+    _currentStubSettings = _currentArea.getStubSettings();
+    if (_currentStubSettings == null) {
+      _currentStubSettings = new StubSettings();
+      _currentArea.setStubSettings(_currentStubSettings);
+    }
+    _currentArea.setStubType(StubType.STUB);
+  }
+
+  @Override
+  public void exitOa_stub(Oa_stubContext ctx) {
+    _currentStubSettings = null;
+  }
+
+  @Override
+  public void enterOan_default_lsa(Oan_default_lsaContext ctx) {
+    if (_currentNssaSettings.getDefaultLsaType() == OspfDefaultOriginateType.NONE) {
+      _currentNssaSettings.setDefaultLsaType(OspfDefaultOriginateType.INTER_AREA);
+    }
+  }
+
+  @Override
+  public void exitOand_metric_type(Oand_metric_typeContext ctx) {
+    if (ctx.METRIC_TYPE_1() != null) {
+      _currentNssaSettings.setDefaultLsaType(OspfDefaultOriginateType.EXTERNAL_TYPE1);
+    }
+    if (ctx.METRIC_TYPE_2() != null) {
+      _currentNssaSettings.setDefaultLsaType(OspfDefaultOriginateType.EXTERNAL_TYPE2);
+    }
+  }
+
+  @Override
+  public void exitOand_type_7(Oand_type_7Context ctx) {
+    if (_currentNssaSettings.getDefaultLsaType() != OspfDefaultOriginateType.EXTERNAL_TYPE1) {
+      _currentNssaSettings.setDefaultLsaType(OspfDefaultOriginateType.EXTERNAL_TYPE2);
+    }
+  }
+
+  @Override
+  public void exitOan_no_summaries(Oan_no_summariesContext ctx) {
+    _currentNssaSettings.setNoSummaries(true);
+  }
+
+  @Override
+  public void exitOas_no_summaries(Oas_no_summariesContext ctx) {
+    _currentStubSettings.setNoSummaries(true);
   }
 
   @Override
