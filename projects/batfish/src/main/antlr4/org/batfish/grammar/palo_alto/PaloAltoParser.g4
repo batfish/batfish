@@ -13,18 +13,38 @@ palo_alto_configuration
 :
     NEWLINE?
     (
-        set_line
+        set_line_config_device
+        | set_line_config_general
     )+ NEWLINE? EOF
 ;
 
-set_line
+/*
+ * The distinction between config device and general config statements is needed in order to handle
+ * syntax differences in filesystem-style config dumps
+ */
+set_line_config_device
 :
-    SET statement NEWLINE
+    SET (CONFIG DEVICES name = variable)? statement_config_device NEWLINE
 ;
 
-statement
+set_line_config_general
+:
+    SET CONFIG? statement_config_general NEWLINE
+;
+
+/*
+ * These are settings that show up on the device under /config/devices/<DEV>/...
+ */
+statement_config_device
 :
     s_deviceconfig
     | s_network
-    | s_shared
+;
+
+/*
+ * These are settings that show up on the device under /config/... (NOT under the devices/ dir)
+ */
+statement_config_general
+:
+    s_shared
 ;
