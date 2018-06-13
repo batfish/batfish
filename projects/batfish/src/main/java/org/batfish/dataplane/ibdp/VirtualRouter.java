@@ -1714,19 +1714,15 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   boolean propagateOspfInterAreaRouteFromIntraAreaRoute(
-      Node neighbor,
-      VirtualRouter neighborVirtualRouter,
+      Configuration neighbor,
+      OspfProcess neighborProc,
       OspfIntraAreaRoute neighborRoute,
       long incrementalCost,
       Interface neighborInterface,
       int adminCost,
       long linkAreaNum) {
     return OspfProtocolHelper.isOspfInterAreaFromIntraAreaPropagationAllowed(
-            linkAreaNum,
-            neighbor,
-            neighborVirtualRouter,
-            neighborRoute,
-            neighborInterface.getOspfArea())
+            linkAreaNum, neighbor, neighborProc, neighborRoute, neighborInterface.getOspfArea())
         && stageOspfInterAreaRoute(
             neighborRoute,
             neighborInterface.getVrf().getOspfProcess().getMaxMetricSummaryNetworks(),
@@ -1776,8 +1772,11 @@ public class VirtualRouter extends ComparableStructure<String> {
             ? proc.getMaxMetricTransitLinks()
             : connectingInterfaceCost;
     Long linkAreaNum = area.getName();
-    VirtualRouter neighborVirtualRouter =
-        neighbor.getVirtualRouters().get(neighborInterface.getVrfName());
+    Configuration neighborConfiguration = neighbor.getConfiguration();
+    String neighborVrfName = neighborInterface.getVrfName();
+    OspfProcess neighborProc =
+        neighborConfiguration.getVrfs().get(neighborVrfName).getOspfProcess();
+    VirtualRouter neighborVirtualRouter = neighbor.getVirtualRouters().get(neighborVrfName);
     boolean changed = false;
     for (OspfIntraAreaRoute neighborRoute : neighborVirtualRouter._ospfIntraAreaRib.getRoutes()) {
       changed |=
@@ -1785,8 +1784,8 @@ public class VirtualRouter extends ComparableStructure<String> {
               neighborRoute, incrementalCost, neighborInterface, adminCost, linkAreaNum);
       changed |=
           propagateOspfInterAreaRouteFromIntraAreaRoute(
-              neighbor,
-              neighborVirtualRouter,
+              neighborConfiguration,
+              neighborProc,
               neighborRoute,
               incrementalCost,
               neighborInterface,
@@ -1797,8 +1796,8 @@ public class VirtualRouter extends ComparableStructure<String> {
       changed |=
           propagateOspfInterAreaRouteFromInterAreaRoute(
               proc,
-              neighbor,
-              neighborVirtualRouter,
+              neighborConfiguration,
+              neighborProc,
               neighborRoute,
               incrementalCost,
               neighborInterface,
@@ -1807,15 +1806,14 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
     changed |=
         originateOspfStubAreaDefaultRoute(
-            neighborVirtualRouter, incrementalCost, neighborInterface, adminCost, linkAreaNum);
+            neighborProc, incrementalCost, neighborInterface, adminCost, linkAreaNum);
     return changed;
   }
 
   /**
    * If neighbor is an ABR and this is a stub area link, propagate
    *
-   * @param neighborVirtualRouter The {@link VirtualRouter} of the neighbor hosting the adjacent
-   *     {@link OspfProcess}
+   * @param neighborProc The adjacent {@link OspfProcess}
    * @param incrementalCost The cost to reach the propagator
    * @param neighborInterface The propagator's interface on the link
    * @param adminCost The administrative cost of the route to be installed
@@ -1823,13 +1821,13 @@ public class VirtualRouter extends ComparableStructure<String> {
    * @return whether this route changed the RIB into which we merged it
    */
   private boolean originateOspfStubAreaDefaultRoute(
-      VirtualRouter neighborVirtualRouter,
+      OspfProcess neighborProc,
       long incrementalCost,
       Interface neighborInterface,
       int adminCost,
       Long linkAreaNum) {
     return OspfProtocolHelper.isOspfInterAreaDefaultOriginationAllowed(
-            neighborVirtualRouter, neighborInterface.getOspfArea())
+            neighborProc, neighborInterface.getOspfArea())
         && _ospfInterAreaStagingRib.mergeRoute(
             new OspfInterAreaRoute(
                 Prefix.ZERO,
@@ -1841,8 +1839,8 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   boolean propagateOspfInterAreaRouteFromInterAreaRoute(
       OspfProcess proc,
-      Node neighbor,
-      VirtualRouter neighborVirtualRouter,
+      Configuration neighbor,
+      OspfProcess neighborProc,
       OspfInterAreaRoute neighborRoute,
       long incrementalCost,
       Interface neighborInterface,
@@ -1852,7 +1850,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             proc,
             linkAreaNum,
             neighbor,
-            neighborVirtualRouter,
+            neighborProc,
             neighborRoute,
             neighborInterface.getOspfArea())
         && stageOspfInterAreaRoute(

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 
+/** OSPF Area settings specific to a regular stub area */
 public class StubSettings implements Serializable {
 
   public static class Builder {

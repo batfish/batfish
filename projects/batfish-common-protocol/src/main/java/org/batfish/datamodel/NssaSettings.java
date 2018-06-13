@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 
+/** OSPF Area settings specific to a not-so-stubby stub area */
 public class NssaSettings implements Serializable {
 
   public static class Builder {

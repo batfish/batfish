@@ -1,6 +1,7 @@
 package org.batfish.dataplane.protocols;
 
 import javax.annotation.Nullable;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfDefaultOriginateType;
 import org.batfish.datamodel.OspfInternalRoute;
@@ -8,8 +9,6 @@ import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.StubType;
-import org.batfish.dataplane.ibdp.Node;
-import org.batfish.dataplane.ibdp.VirtualRouter;
 
 /** Helper class with functions that implement various bits of OSPF protocol logic. */
 public class OspfProtocolHelper {
@@ -57,19 +56,12 @@ public class OspfProtocolHelper {
   /**
    * Decide whether a default inter-area OSPF route should be originated by neighbor
    *
-   * @param neighborVirtualRouter The {@link VirtualRouter} of the neighbor hosting the adjacent
-   *     {@link OspfProcess}
+   * @param neighborProc The adjacent {@link OspfProcess}
    * @param neighborArea The propagator's OSPF area configuration
    * @return {@code true} iff the route should be considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaDefaultOriginationAllowed(
-      VirtualRouter neighborVirtualRouter, OspfArea neighborArea) {
-    OspfProcess neighborProc =
-        neighborVirtualRouter
-            .getConfiguration()
-            .getVrfs()
-            .get(neighborVirtualRouter.getName())
-            .getOspfProcess();
+      OspfProcess neighborProc, OspfArea neighborArea) {
     return neighborProc.isAreaBorderRouter()
         && (neighborArea.getStubType() == StubType.STUB
             || (neighborArea.getStubType() == StubType.NSSA
@@ -82,9 +74,8 @@ public class OspfProtocolHelper {
    *
    * @param proc The process of the receiver
    * @param linkAreaNum The area ID of the link
-   * @param neighbor an adjacent {@link Node} with which route exchange is happening
-   * @param neighborVirtualRouter The {@link VirtualRouter} of the neighbor hosting the adjacent
-   *     {@link OspfProcess}
+   * @param neighbor The adjacent node with which route exchange is happening
+   * @param neighborProc The adjacent {@link OspfProcess}
    * @param neighborRoute {@link OspfInternalRoute} in questions
    * @param neighborArea The propagator's OSPF area configuration
    * @return {@code true} iff the route should be considered for installation into the OSPF RIB
@@ -92,17 +83,11 @@ public class OspfProtocolHelper {
   public static boolean isOspfInterAreaFromInterAreaPropagationAllowed(
       OspfProcess proc,
       long linkAreaNum,
-      Node neighbor,
-      VirtualRouter neighborVirtualRouter,
+      Configuration neighbor,
+      OspfProcess neighborProc,
       OspfInternalRoute neighborRoute,
       OspfArea neighborArea) {
     long neighborRouteAreaNum = neighborRoute.getArea();
-    OspfProcess neighborProc =
-        neighborVirtualRouter
-            .getConfiguration()
-            .getVrfs()
-            .get(neighborVirtualRouter.getName())
-            .getOspfProcess();
     /*
      * Once an inter-area route has been propagated across a link of a given area, it may continue to propagate throughout that area.
      * To propagate into a different area, the propagator must be an ABR, and type-3 LSAs must be allowed across the link.
@@ -134,7 +119,7 @@ public class OspfProtocolHelper {
     // If there is a summary filter, run the route through it
     if (hasSummaryFilter) {
       RouteFilterList neighborSummaryFilter =
-          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
+          neighbor.getRouteFilterLists().get(neighborSummaryFilterName);
       allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
     }
     return allowed;
@@ -144,17 +129,16 @@ public class OspfProtocolHelper {
    * Decide whether an intra-area OSPF route can be sent from neighbor's area to given area.
    *
    * @param linkAreaNum The area ID of the link
-   * @param neighbor an adjacent {@link Node} with which route exchange is happening
-   * @param neighborVirtualRouter The {@link VirtualRouter} of the neighbor hosting the adjacent
-   *     {@link OspfProcess}
+   * @param neighbor The adjacent node with which route exchange is happening
+   * @param neighborProc The adjacent {@link OspfProcess}
    * @param neighborRoute {@link OspfInternalRoute} in questions
    * @param neighborArea The propagator's OSPF area configuration
    * @return {@code true} iff the route should considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaFromIntraAreaPropagationAllowed(
       long linkAreaNum,
-      Node neighbor,
-      VirtualRouter neighborVirtualRouter,
+      Configuration neighbor,
+      OspfProcess neighborProc,
       OspfInternalRoute neighborRoute,
       OspfArea neighborArea) {
     long neighborRouteAreaNum = neighborRoute.getArea();
@@ -162,13 +146,6 @@ public class OspfProtocolHelper {
     if (linkAreaNum == neighborRouteAreaNum) {
       return false;
     }
-
-    OspfProcess neighborProc =
-        neighborVirtualRouter
-            .getConfiguration()
-            .getVrfs()
-            .get(neighborVirtualRouter.getName())
-            .getOspfProcess();
 
     // Only ABR (router with some link in area 0 and some link not in area 0) is allowed to
     // create inter-area route from intra-area route in another area.
@@ -192,7 +169,7 @@ public class OspfProtocolHelper {
     // If there is a summary filter, run the route through it
     if (hasSummaryFilter) {
       RouteFilterList neighborSummaryFilter =
-          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
+          neighbor.getRouteFilterLists().get(neighborSummaryFilterName);
       allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
     }
     return allowed;
