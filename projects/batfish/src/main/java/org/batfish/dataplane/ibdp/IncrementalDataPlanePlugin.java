@@ -20,7 +20,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.BdpAnswerElement;
@@ -132,19 +131,15 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
   @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(DataPlane dp) {
-    return _engine.getRoutes((IncrementalDataPlane) dp);
+    return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp);
   }
 
   @Override
-  public void processFlows(
-      Set<Flow> flows,
-      DataPlane dataPlane,
-      boolean ignoreAcls,
-      ForwardingAnalysis forwardingAnalysis) {
+  public void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
     _flowTraces.put(
         (IncrementalDataPlane) dataPlane,
         TracerouteEngineImpl.getInstance()
-            .processFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls, forwardingAnalysis));
+            .processFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls));
   }
 
   private IncrementalDataPlane loadDataPlane() {

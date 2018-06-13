@@ -2,6 +2,8 @@ package org.batfish.representation.palo_alto;
 
 import java.util.NavigableSet;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.Configuration;
@@ -9,7 +11,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 
-public class PaloAltoConfiguration extends VendorConfiguration {
+public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
@@ -25,11 +27,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
+  private SortedMap<String, SortedMap<String, SyslogServer>> _syslogServerGroups;
+
   private transient Set<String> _unimplementedFeatures;
 
   private ConfigurationFormat _vendor;
 
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
+    _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
   }
 
@@ -86,6 +91,16 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _ntpServerSecondary = ntpServerSecondary;
   }
 
+  /**
+   * Returns a syslog server with the specified name in the specified server group. If a matching
+   * server does not exist, one is created.
+   */
+  public SyslogServer getSyslogServer(String serverGroupName, String serverName) {
+    SortedMap<String, SyslogServer> serverGroup =
+        _syslogServerGroups.computeIfAbsent(serverGroupName, g -> new TreeMap<>());
+    return serverGroup.computeIfAbsent(serverName, SyslogServer::new);
+  }
+
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
@@ -99,6 +114,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _c.setDefaultInboundAction(LineAction.ACCEPT);
     _c.setDnsServers(getDnsServers());
     _c.setNtpServers(getNtpServers());
+
+    NavigableSet<String> loggingServers = new TreeSet<>();
+    _syslogServerGroups
+        .values()
+        .forEach(g -> g.values().forEach(s -> loggingServers.add(s.getAddress())));
+    _c.setLoggingServers(loggingServers);
     return _c;
   }
 }

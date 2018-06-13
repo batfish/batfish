@@ -62,7 +62,6 @@ import org.batfish.config.Settings.EnvironmentSettings;
 import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
@@ -137,9 +136,6 @@ public class Driver {
   private static final Cache<Snapshot, SortedMap<String, Configuration>>
       CACHED_COMPRESSED_TESTRIGS = buildTestrigCache();
 
-  private static final Cache<TestrigSettings, ForwardingAnalysis> CACHED_FORWARDING_ANALYSES =
-      buildForwardingAnalysisCache();
-
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
 
   private static final int COORDINATOR_POLL_TIMEOUT_MS = 30 * 1000; // 30 secs
@@ -155,8 +151,6 @@ public class Driver {
   private static final int MAX_CACHED_ENVIRONMENT_BGP_TABLES = 4;
 
   private static final int MAX_CACHED_ENVIRONMENT_ROUTING_TABLES = 4;
-
-  private static final int MAX_CACHED_FORWARDING_ANALYSES = 5;
 
   private static final int MAX_CACHED_TESTRIGS = 5;
 
@@ -179,10 +173,6 @@ public class Driver {
     return Collections.synchronizedMap(
         new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(
             MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
-  }
-
-  private static Cache<TestrigSettings, ForwardingAnalysis> buildForwardingAnalysisCache() {
-    return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_FORWARDING_ANALYSES).build();
   }
 
   private static Cache<Snapshot, SortedMap<String, Configuration>> buildTestrigCache() {
@@ -569,8 +559,7 @@ public class Driver {
               CACHED_COMPRESSED_DATA_PLANES,
               CACHED_DATA_PLANES,
               CACHED_ENVIRONMENT_BGP_TABLES,
-              CACHED_ENVIRONMENT_ROUTING_TABLES,
-              CACHED_FORWARDING_ANALYSES);
+              CACHED_ENVIRONMENT_ROUTING_TABLES);
 
       @Nullable
       SpanContext runBatfishSpanContext =

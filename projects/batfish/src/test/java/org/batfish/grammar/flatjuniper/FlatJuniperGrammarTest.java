@@ -1,6 +1,5 @@
 package org.batfish.grammar.flatjuniper;
 
-import static java.util.Collections.emptyMap;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
@@ -1231,9 +1230,13 @@ public class FlatJuniperGrammarTest {
             JuniperStructureUsage.INTERFACE_VLAN));
 
     /*
-     * VLAN should not contribute to defined structures
+     * Named VLANs
      */
-    assertThat(ccae.getDefinedStructures().get(hostname), equalTo(emptyMap()));
+    assertThat(
+        ccae.getDefinedStructures()
+            .get(hostname)
+            .getOrDefault(JuniperStructureType.VLAN.getDescription(), Collections.emptySortedMap()),
+        allOf(hasKey("VLAN_TEST"), hasKey("VLAN_TEST_UNUSED")));
   }
 
   @Test
