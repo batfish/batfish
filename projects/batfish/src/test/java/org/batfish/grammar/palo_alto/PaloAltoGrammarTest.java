@@ -71,7 +71,7 @@ public class PaloAltoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     // Confirm alternate config format is parsed and extracted properly
-    // Confirm config device set-line extraction works
+    // Confirm config devices set-line extraction works
     assertThat(c, hasHostname(equalTo(hostname)));
     // Confirm general config set-line extraction works
     assertThat(c.getLoggingServers(), contains("2.2.2.2"));
