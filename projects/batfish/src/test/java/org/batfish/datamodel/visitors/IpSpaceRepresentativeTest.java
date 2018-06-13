@@ -12,11 +12,19 @@ import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.junit.Before;
 import org.junit.Test;
 
 public class IpSpaceRepresentativeTest {
   private static final IpWildcard EVEN_IPS =
       new IpWildcard(new Ip("0.0.0.0"), new Ip("255.255.255.254"));
+
+  private IpSpaceRepresentative _ipSpaceRepresentative;
+
+  @Before
+  public void setup() {
+    _ipSpaceRepresentative = IpSpaceRepresentative.load();
+  }
 
   @Test
   public void testAclIpSpace() {
@@ -26,8 +34,7 @@ public class IpSpaceRepresentativeTest {
             .thenPermitting(Prefix.parse("1.2.3.0/24").toIpSpace())
             .build();
     assertThat(
-        IpSpaceRepresentative.load().getRepresentative(ipSpace),
-        equalTo(Optional.of(new Ip("1.2.3.1"))));
+        _ipSpaceRepresentative.getRepresentative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
   }
 
   @Test
@@ -38,14 +45,10 @@ public class IpSpaceRepresentativeTest {
             .thenRejecting(Prefix.parse("0.0.0.1/32").toIpSpace())
             .thenPermitting(Prefix.parse("0.0.0.0/31").toIpSpace())
             .build();
-    assertThat(IpSpaceRepresentative.load().getRepresentative(ipSpace), equalTo(Optional.empty()));
+    assertThat(_ipSpaceRepresentative.getRepresentative(ipSpace), equalTo(Optional.empty()));
   }
 
-  /**
-   * Test that the IpSpaceRepresentative.load().getRepresentative is chosen to prefer 0s. It's a
-   * greedy choice, starting with the high-order bits, so of course we may end up with more than the
-   * minimal number of 1s.
-   */
+  /** Test that the representative is the numerically smallest IP. */
   @Test
   public void testAclIpSpace_fourIps() {
     Ip ip1 = new Ip("1.0.0.0");
@@ -59,21 +62,19 @@ public class IpSpaceRepresentativeTest {
             .thenPermitting(ip3.toIpSpace())
             .thenPermitting(ip4.toIpSpace())
             .build();
-    assertThat(IpSpaceRepresentative.load().getRepresentative(ipSpace), equalTo(Optional.of(ip4)));
+    assertThat(_ipSpaceRepresentative.getRepresentative(ipSpace), equalTo(Optional.of(ip4)));
   }
 
   @Test
   public void testEmptyIpSpace() {
     assertThat(
-        IpSpaceRepresentative.load().getRepresentative(EmptyIpSpace.INSTANCE),
-        equalTo(Optional.empty()));
+        _ipSpaceRepresentative.getRepresentative(EmptyIpSpace.INSTANCE), equalTo(Optional.empty()));
   }
 
   @Test
   public void testIpIpSpace() {
     Ip ip = new Ip("1.2.3.4");
-    assertThat(
-        IpSpaceRepresentative.load().getRepresentative(ip.toIpSpace()), equalTo(Optional.of(ip)));
+    assertThat(_ipSpaceRepresentative.getRepresentative(ip.toIpSpace()), equalTo(Optional.of(ip)));
   }
 
   @Test
@@ -81,8 +82,7 @@ public class IpSpaceRepresentativeTest {
     Ip ip = new Ip("1.0.2.0");
     Ip mask = new Ip("0.255.0.255");
     IpWildcard wc = new IpWildcard(ip, mask);
-    assertThat(
-        IpSpaceRepresentative.load().getRepresentative(wc.toIpSpace()), equalTo(Optional.of(ip)));
+    assertThat(_ipSpaceRepresentative.getRepresentative(wc.toIpSpace()), equalTo(Optional.of(ip)));
   }
 
   @Test
@@ -93,22 +93,21 @@ public class IpSpaceRepresentativeTest {
             .excluding(EVEN_IPS)
             .build();
     assertThat(
-        IpSpaceRepresentative.load().getRepresentative(ipSpace),
-        equalTo(Optional.of(new Ip("1.2.3.1"))));
+        _ipSpaceRepresentative.getRepresentative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
   }
 
   @Test
   public void testPrefixIpSpace() {
     Prefix prefix = Prefix.parse("1.2.0.0/16");
     assertThat(
-        IpSpaceRepresentative.load().getRepresentative(prefix.toIpSpace()),
+        _ipSpaceRepresentative.getRepresentative(prefix.toIpSpace()),
         equalTo(Optional.of(prefix.getStartIp())));
   }
 
   @Test
   public void testUniverseIpSpace() {
     assertThat(
-        IpSpaceRepresentative.load().getRepresentative(UniverseIpSpace.INSTANCE),
+        _ipSpaceRepresentative.getRepresentative(UniverseIpSpace.INSTANCE),
         equalTo(Optional.of(new Ip("0.0.0.0"))));
   }
 }

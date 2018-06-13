@@ -12,9 +12,8 @@ import org.batfish.symbolic.bdd.BDDUtils;
 import org.batfish.symbolic.bdd.IpSpaceToBDD;
 
 /**
- * Finds a representative {@link Ip} contained in an input {@link IpSpace}, if any exists. Prefers
- * 0s to 1s in the representative, though this is a greedy choice, starting with the high-order
- * bits, so of course we may end up with more than the minimal number of 1s.
+ * Finds a representative {@link Ip} contained in an input {@link IpSpace}, if any exists. In
+ * particular, it finds the numerically smallest representative.
  */
 @AutoService(IpSpaceRepresentative.class)
 public final class IpSpaceRepresentativeImpl implements IpSpaceRepresentative {
