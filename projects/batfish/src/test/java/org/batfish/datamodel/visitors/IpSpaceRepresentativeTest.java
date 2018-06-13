@@ -1,6 +1,6 @@
 package org.batfish.datamodel.visitors;
 
-import static org.batfish.datamodel.visitors.IpSpaceRepresentative.getRepresentative;
+import static org.batfish.datamodel.visitors.IpSpaceRepresentative.representative;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -26,7 +26,7 @@ public class IpSpaceRepresentativeTest {
             .thenRejecting(EVEN_IPS.toIpSpace())
             .thenPermitting(Prefix.parse("1.2.3.0/24").toIpSpace())
             .build();
-    assertThat(getRepresentative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
+    assertThat(representative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
   }
 
   @Test
@@ -37,7 +37,7 @@ public class IpSpaceRepresentativeTest {
             .thenRejecting(Prefix.parse("0.0.0.1/32").toIpSpace())
             .thenPermitting(Prefix.parse("0.0.0.0/31").toIpSpace())
             .build();
-    assertThat(getRepresentative(ipSpace), equalTo(Optional.empty()));
+    assertThat(representative(ipSpace), equalTo(Optional.empty()));
   }
 
   /**
@@ -57,18 +57,18 @@ public class IpSpaceRepresentativeTest {
             .thenPermitting(ip3.toIpSpace())
             .thenPermitting(ip4.toIpSpace())
             .build();
-    assertThat(getRepresentative(ipSpace), equalTo(Optional.of(ip4)));
+    assertThat(representative(ipSpace), equalTo(Optional.of(ip4)));
   }
 
   @Test
   public void testEmptyIpSpace() {
-    assertThat(getRepresentative(EmptyIpSpace.INSTANCE), equalTo(Optional.empty()));
+    assertThat(representative(EmptyIpSpace.INSTANCE), equalTo(Optional.empty()));
   }
 
   @Test
   public void testIpIpSpace() {
     Ip ip = new Ip("1.2.3.4");
-    assertThat(getRepresentative(ip.toIpSpace()), equalTo(Optional.of(ip)));
+    assertThat(representative(ip.toIpSpace()), equalTo(Optional.of(ip)));
   }
 
   @Test
@@ -76,7 +76,7 @@ public class IpSpaceRepresentativeTest {
     Ip ip = new Ip("1.0.2.0");
     Ip mask = new Ip("0.255.0.255");
     IpWildcard wc = new IpWildcard(ip, mask);
-    assertThat(getRepresentative(wc.toIpSpace()), equalTo(Optional.of(ip)));
+    assertThat(representative(wc.toIpSpace()), equalTo(Optional.of(ip)));
   }
 
   @Test
@@ -86,18 +86,17 @@ public class IpSpaceRepresentativeTest {
             .including(new IpWildcard("1.2.3.0/24"))
             .excluding(EVEN_IPS)
             .build();
-    assertThat(getRepresentative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
+    assertThat(representative(ipSpace), equalTo(Optional.of(new Ip("1.2.3.1"))));
   }
 
   @Test
   public void testPrefixIpSpace() {
     Prefix prefix = Prefix.parse("1.2.0.0/16");
-    assertThat(getRepresentative(prefix.toIpSpace()), equalTo(Optional.of(prefix.getStartIp())));
+    assertThat(representative(prefix.toIpSpace()), equalTo(Optional.of(prefix.getStartIp())));
   }
 
   @Test
   public void testUniverseIpSpace() {
-    assertThat(
-        getRepresentative(UniverseIpSpace.INSTANCE), equalTo(Optional.of(new Ip("0.0.0.0"))));
+    assertThat(representative(UniverseIpSpace.INSTANCE), equalTo(Optional.of(new Ip("0.0.0.0"))));
   }
 }

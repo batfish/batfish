@@ -1,5 +1,6 @@
 package org.batfish.datamodel.visitors;
 
+import com.google.auto.service.AutoService;
 import java.util.Optional;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -15,25 +16,17 @@ import org.batfish.symbolic.bdd.IpSpaceToBDD;
  * 0s to 1s in the representative, though this is a greedy choice, starting with the high-order
  * bits, so of course we may end up with more than the minimal number of 1s.
  */
-public final class IpSpaceRepresentative {
-
-  private final BDDFactory _factory;
-
-  private final BDDInteger _ipAddrBdd;
-
-  private IpSpaceRepresentative() {
-    _factory = BDDUtils.bddFactory(Prefix.MAX_PREFIX_LENGTH);
-    _ipAddrBdd = BDDInteger.makeFromIndex(_factory, Prefix.MAX_PREFIX_LENGTH, 0, false);
-  }
+@AutoService(IpSpaceRepresentative.class)
+public final class IpSpaceRepresentativeImpl implements IpSpaceRepresentative {
 
   /** Returns some representative element of an {@link IpSpace ip space}, if any exists. */
-  public static Optional<Ip> getRepresentative(IpSpace ipSpace) {
-    IpSpaceRepresentative obj = new IpSpaceRepresentative();
-    BDD bdd = ipSpace.accept(new IpSpaceToBDD(obj._factory, obj._ipAddrBdd));
-    return obj.getIp(bdd);
-  }
+  @Override
+  public Optional<Ip> getRepresentative(IpSpace ipSpace) {
+    BDDFactory factory = BDDUtils.bddFactory(Prefix.MAX_PREFIX_LENGTH);
+    BDDInteger ipAddrBdd = BDDInteger.makeFromIndex(factory, Prefix.MAX_PREFIX_LENGTH, 0, false);
 
-  private Optional<Ip> getIp(BDD bdd) {
+    BDD bdd = ipSpace.accept(new IpSpaceToBDD(factory, ipAddrBdd));
+
     if (bdd.isZero()) {
       // unsatisfiable
       return Optional.empty();
@@ -42,7 +35,7 @@ public final class IpSpaceRepresentative {
     BDD satAssignment = bdd.fullSatOne();
     long ip = 0;
     for (int i = 0; i < 32; i++) {
-      BDD bitBDD = _ipAddrBdd.getBitvec()[31 - i];
+      BDD bitBDD = ipAddrBdd.getBitvec()[31 - i];
       if (!satAssignment.and(bitBDD).isZero()) {
         ip += 1 << i;
       }
