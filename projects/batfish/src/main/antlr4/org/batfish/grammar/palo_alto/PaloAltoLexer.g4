@@ -159,7 +159,7 @@ DEC
 
 DOUBLE_QUOTED_STRING
 :
-   '"' ~'"'* '"'
+    '"' ~'"'* '"'
 ;
 
 IP_ADDRESS
@@ -174,11 +174,11 @@ IP_PREFIX
 
 LINE_COMMENT
 :
-   (
-      '#'
-      | '!'
-   )
-   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+    (
+        '#'
+        | '!'
+    )
+    F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
 ;
 
 NEWLINE
@@ -188,7 +188,7 @@ NEWLINE
 
 SINGLE_QUOTED_STRING
 :
-   '\'' ~'\''* '\''
+    '\'' ~'\''* '\''
 ;
 
 VARIABLE
