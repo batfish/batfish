@@ -30,14 +30,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
 
   private final Multiset<Row> _rows = HashMultiset.create();
 
-  /**
-   * Not used in this class because reachable lines are not recorded for aclReachability2. Having
-   * this method in {@link AclLinesAnswerElementInterface} allows Batfish to use it to report
-   * reachable lines for aclReachability.
-   */
-  @Override
-  public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {}
-
   @Override
   public void addUnreachableLine(
       AclSpecs aclSpecs, int lineNumber, boolean unmatchable, SortedSet<Integer> blockingLines) {
@@ -112,7 +104,7 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     StringBuilder sb =
         new StringBuilder(
             String.format(
-                "ACL(s) { %s } contain(s) an unreachable line: '%d: %s'. ",
+                "ACLs { %s } contain an unreachable line:\n  [index %d] %s\n",
                 String.join("; ", flatSources), blockedLineNum, blockedLineName));
     if (canonicalAcl.hasUndefinedRef(blockedLineNum)) {
       sb.append("This line references a structure that is not defined.");
@@ -121,11 +113,6 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
     } else if (blockingLines.isEmpty()) {
       sb.append("Multiple earlier lines partially block this line, making it unreachable.");
     } else {
-      List<String> blockingLineNames =
-          blockingLines
-              .stream()
-              .map(i -> firstNonNull(lines.get(i).getName(), lines.get(i).toString()))
-              .collect(Collectors.toList());
       sb.append(
           String.format(
               "Blocking line(s):\n%s",
@@ -133,7 +120,12 @@ public class AclLines2Rows implements AclLinesAnswerElementInterface {
                   "\n",
                   blockingLines
                       .stream()
-                      .map(i -> String.format("  [index %d] %s", i, blockingLineNames.get(i)))
+                      .map(
+                          i -> {
+                            String blockingLineName =
+                                firstNonNull(lines.get(i).getName(), lines.get(i).toString());
+                            return String.format("  [index %d] %s", i, blockingLineName);
+                          })
                       .collect(Collectors.toList()))));
     }
     return sb.toString();

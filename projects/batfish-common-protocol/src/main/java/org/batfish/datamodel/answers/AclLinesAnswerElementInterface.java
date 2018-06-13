@@ -64,14 +64,6 @@ public interface AclLinesAnswerElementInterface {
   }
 
   /**
-   * Records line as reachable.
-   *
-   * @param aclSpecs Definition of ACL in which to report line
-   * @param lineNumber Which line to report reachable
-   */
-  void addReachableLine(AclSpecs aclSpecs, int lineNumber);
-
-  /**
    * Records line as unreachable (possibly unmatchable).
    *
    * @param aclSpecs Definition of ACL in which to report line

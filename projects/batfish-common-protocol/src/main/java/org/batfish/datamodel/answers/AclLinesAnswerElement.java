@@ -3,9 +3,7 @@ package org.batfish.datamodel.answers;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -140,9 +138,6 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
   private SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> _unreachableLines;
 
   public AclLinesAnswerElement() {
-    _acls = new TreeMap<>();
-    _equivalenceClasses = new TreeMap<>();
-    _reachableLines = new TreeMap<>();
     _unreachableLines = new TreeMap<>();
   }
 
@@ -154,43 +149,6 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
    */
   @Override
   public void addCycle(String hostname, List<String> aclsInCycle) {}
-
-  private void addEquivalenceClass(
-      String aclName, String hostname, SortedSet<String> eqClassNodes) {
-    SortedMap<String, SortedSet<String>> byRep =
-        _equivalenceClasses.computeIfAbsent(aclName, k -> new TreeMap<>());
-    byRep.put(hostname, eqClassNodes);
-  }
-
-  private void addLine(
-      SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> lines,
-      String hostname,
-      String aclName,
-      IpAccessList ipAccessList,
-      AclReachabilityEntry entry) {
-    SortedMap<String, IpAccessList> aclsByHostname =
-        _acls.computeIfAbsent(hostname, k -> new TreeMap<>());
-    if (!aclsByHostname.containsKey(aclName)) {
-      aclsByHostname.put(aclName, ipAccessList);
-    }
-    lines
-        .computeIfAbsent(hostname, k -> new TreeMap<>())
-        .computeIfAbsent(aclName, k -> new TreeSet<>())
-        .add(entry);
-  }
-
-  @Override
-  public void addReachableLine(AclSpecs aclSpecs, int lineNumber) {
-    Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
-    IpAccessList acl = aclSpecs.acl.getOriginalAcl();
-    IpAccessListLine line = acl.getLines().get(lineNumber);
-    addLine(
-        _reachableLines,
-        hostnameAndAcl.getFirst(),
-        hostnameAndAcl.getSecond(),
-        acl,
-        new AclReachabilityEntry(lineNumber, firstNonNull(line.getName(), line.toString())));
-  }
 
   @Override
   public void addUnreachableLine(
@@ -225,22 +183,23 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     }
 
     Pair<String, String> hostnameAndAcl = aclSpecs.getRepresentativeHostnameAclPair();
-    addLine(
-        _unreachableLines,
-        hostnameAndAcl.getFirst(),
-        hostnameAndAcl.getSecond(),
-        aclSpecs.acl.getOriginalAcl(),
-        entry);
+    _unreachableLines
+        .computeIfAbsent(hostnameAndAcl.getFirst(), k -> new TreeMap<>())
+        .computeIfAbsent(hostnameAndAcl.getSecond(), k -> new TreeSet<>())
+        .add(entry);
   }
 
+  @Deprecated
   public SortedMap<String, SortedMap<String, IpAccessList>> getAcls() {
     return _acls;
   }
 
+  @Deprecated
   public SortedMap<String, SortedMap<String, SortedSet<String>>> getEquivalenceClasses() {
     return _equivalenceClasses;
   }
 
+  @Deprecated
   public SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> getReachableLines() {
     return _reachableLines;
   }
@@ -266,29 +225,19 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     return sb.toString();
   }
 
-  public void setEquivalenceClasses(
-      SortedMap<String, SortedMap<String, SortedSet<String>>> equivalenceClasses) {
-    _equivalenceClasses = equivalenceClasses;
-  }
+  @Deprecated
+  public void setAcls(SortedMap<String, SortedMap<String, IpAccessList>> acls) {}
 
+  @Deprecated
+  public void setEquivalenceClasses(
+      SortedMap<String, SortedMap<String, SortedSet<String>>> equivalenceClasses) {}
+
+  @Deprecated
   public void setReachableLines(
-      SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> reachableLines) {
-    _reachableLines = reachableLines;
-  }
+      SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> reachableLines) {}
 
   public void setUnreachableLines(
       SortedMap<String, SortedMap<String, SortedSet<AclReachabilityEntry>>> unreachableLines) {
     _unreachableLines = unreachableLines;
-  }
-
-  @JsonIgnore
-  public void setAcls(List<AclSpecs> acls) {
-    for (AclSpecs specs : acls) {
-      Pair<String, String> representativeSource = specs.getRepresentativeHostnameAclPair();
-      addEquivalenceClass(
-          representativeSource.getSecond(),
-          representativeSource.getFirst(),
-          ImmutableSortedSet.copyOf(specs.sources.keySet()));
-    }
   }
 }

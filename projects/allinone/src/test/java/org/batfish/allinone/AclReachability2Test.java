@@ -104,9 +104,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, true)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl1; c2: acl2 } contain(s) an unreachable line: '1: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'."
-                        + " Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
+                    "ACLs { c1: acl1; c2: acl2 } contain an unreachable line:\n  [index 1] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}\n"
+                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
@@ -259,9 +259,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '0: "
-                        + "IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=???, defaultAccept=false}}'."
-                        + " This line references a structure that is not defined.")
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 0] IpAccessListLine{action=ACCEPT,"
+                        + " matchCondition=PermittedByAcl{aclName=???, defaultAccept=false}}"
+                        + "\nThis line references a structure that is not defined.")
                 .build());
     assertThat(answer.getRows().getData(), equalTo(expected));
   }
@@ -312,9 +312,10 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl2 } contain(s) an unreachable line: '1: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
-                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, matchCondition=PermittedByAcl{aclName=acl1, defaultAccept=false}}")
+                    "ACLs { c1: acl2 } contain an unreachable line:\n  [index 1] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"
+                        + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=PermittedByAcl{aclName=acl1, defaultAccept=false}}")
                 .build());
 
     assertThat(generalAnswer.getRows().getData(), equalTo(expected));
@@ -359,9 +360,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '2: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}'."
-                        + " Multiple earlier lines partially block this line, making it unreachable.")
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 2] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpWildcardIpSpace{ipWildcard=1.0.0.0/31}}}}"
+                        + "\nMultiple earlier lines partially block this line, making it unreachable.")
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));
@@ -406,9 +407,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, true)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '1: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}'. "
-                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}"
+                        + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
                 .build(),
             Row.builder()
@@ -421,8 +422,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '2: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=FalseExpr{}}'. This line will never match any packet, independent of preceding lines.")
+                    "ACLs { c1: acl } contain an unreachable line:\n"
+                        + "  [index 2] IpAccessListLine{action=ACCEPT, matchCondition=FalseExpr{}}\n"
+                        + "This line will never match any packet, independent of preceding lines.")
                 .build(),
             Row.builder()
                 .put(
@@ -434,9 +436,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, true)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '3: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/32}}}}'. "
-                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 3] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/32}}}}"
+                        + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.0.0.0/24}}}}")
                 .build());
 
@@ -512,9 +514,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, true)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '1: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.2.3.4/32}}}}'."
-                        + " Blocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=PrefixIpSpace{prefix=1.2.3.4/32}}}}"
+                        + "\nBlocking line(s):\n  [index 0] IpAccessListLine{action=REJECT, "
                         + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpSpaceReference{name=ipSpace}}}}")
                 .build());
 
@@ -550,9 +552,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '0: IpAccessListLine{action=REJECT, "
-                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpSpaceReference{name=???}}}}'."
-                        + " This line references a structure that is not defined.")
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 0] IpAccessListLine{action=REJECT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpSpaceReference{name=???}}}}"
+                        + "\nThis line references a structure that is not defined.")
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));
@@ -586,9 +588,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '1: IpAccessListLine{action=ACCEPT,"
-                        + " matchCondition=MatchSrcInterface{srcInterfaces=[iface]}}'. Blocking line(s):\n"
-                        + "  [index 0] IpAccessListLine{action=ACCEPT,"
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 1] IpAccessListLine{action=ACCEPT,"
+                        + " matchCondition=MatchSrcInterface{srcInterfaces=[iface]}}\n"
+                        + "Blocking line(s):\n  [index 0] IpAccessListLine{action=ACCEPT,"
                         + " matchCondition=MatchSrcInterface{srcInterfaces=[iface, iface2]}}")
                 .build());
 
@@ -645,9 +647,9 @@ public class AclReachability2Test {
                 .put(AclLines2Rows.COL_DIFF_ACTION, false)
                 .put(
                     AclLines2Rows.COL_MESSAGE,
-                    "ACL(s) { c1: acl } contain(s) an unreachable line: '0: IpAccessListLine{action=ACCEPT, "
-                        + "matchCondition=MatchSrcInterface{srcInterfaces=[???]}}'."
-                        + " This line references a structure that is not defined.")
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 0] "
+                        + "IpAccessListLine{action=ACCEPT, matchCondition=MatchSrcInterface{srcInterfaces=[???]}}"
+                        + "\nThis line references a structure that is not defined.")
                 .build());
 
     assertThat(answer.getRows().getData(), equalTo(expected));

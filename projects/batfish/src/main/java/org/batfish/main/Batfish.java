@@ -1,6 +1,5 @@
 package org.batfish.main;
 
-import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.stream.Collectors.toMap;
 import static org.batfish.main.ReachabilityParametersResolver.resolveReachabilityParameters;
 
@@ -107,7 +106,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.OspfProcess;
@@ -770,31 +768,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
       computeNodFirstUnsatOutput(step2Jobs, blockingLinesMap);
 
       // Report all unreachable lines
-      for (AclLine line : aclLines) {
-        Pair<String, String> hostnameAclnamePair = aclSpec.getRepresentativeHostnameAclPair();
-        String hostname = hostnameAclnamePair.getFirst();
-        String aclName = hostnameAclnamePair.getSecond();
-        int lineNumber = line.getLine();
-        IpAccessListLine ipAccessListLine = sanitizedAcl.getLines().get(lineNumber);
-        String lineName = firstNonNull(ipAccessListLine.getName(), ipAccessListLine.toString());
-
-        if (unreachableLineNums.contains(lineNumber)) {
-          _logger.debugf(
-              "%s:%s:%d:'%s' is UNREACHABLE\n\t%s\n",
-              hostname, aclName, lineNumber, lineName, ipAccessListLine.toString());
-
-          boolean unmatchable = unmatchableLineNums.contains(lineNumber);
-          SortedSet<Integer> blockingLines = new TreeSet<>();
-
-          Integer blockingLineNumber = blockingLinesMap.get(aclLines.get(lineNumber));
-          if (blockingLineNumber != null) {
-            blockingLines.add(blockingLineNumber);
-          }
-          answerRows.addUnreachableLine(aclSpec, lineNumber, unmatchable, blockingLines);
-        } else {
-          _logger.debugf("%s:%s:%d:'%s' is REACHABLE\n", hostname, aclName, lineNumber, lineName);
-          answerRows.addReachableLine(aclSpec, lineNumber);
+      for (int lineNumber : unreachableLineNums) {
+        boolean unmatchable = unmatchableLineNums.contains(lineNumber);
+        SortedSet<Integer> blockingLines = new TreeSet<>();
+        Integer blockingLineNumber = blockingLinesMap.get(aclLines.get(lineNumber));
+        if (blockingLineNumber != null) {
+          blockingLines.add(blockingLineNumber);
         }
+        answerRows.addUnreachableLine(aclSpec, lineNumber, unmatchable, blockingLines);
       }
     }
   }

@@ -51,7 +51,6 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
       List<AclSpecs> aclSpecs =
           AclReachabilityAnswererUtils.getAclSpecs(
               configurations, specifiedNodes, aclRegex, answer);
-      answer.setAcls(aclSpecs);
       _batfish.answerAclReachability(aclSpecs, answer);
       return answer;
     }
@@ -66,10 +65,8 @@ public class AclReachabilityQuestionPlugin extends QuestionPlugin {
    * Unreachable lines can indicate erroneous configuration.
    *
    * @type AclReachability onefile
-   * @param aclNameRegex Regular expression for names of the ACLs to analyze. Default value is '.*'
-   *     (i.e., all ACLs).
-   * @param nodeRegex Regular expression for names of nodes to include. Default value is '.*' (all
-   *     nodes).
+   * @param aclNameRegex Regular expression for names of ACLs to analyze. Defaults to '.*'.
+   * @param nodeRegex Regular expression for names of nodes to include. Defaults to '.*'.
    * @example bf_answer("AclReachability", aclNameRegex='OUTSIDE_TO_INSIDE.*') Analyzes only ACLs
    *     whose names start with 'OUTSIDE_TO_INSIDE'.
    */
