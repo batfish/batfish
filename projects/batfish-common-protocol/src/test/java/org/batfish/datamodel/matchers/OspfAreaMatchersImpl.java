@@ -2,9 +2,12 @@ package org.batfish.datamodel.matchers;
 
 import java.util.Set;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.NssaSettings;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StubSettings;
+import org.batfish.datamodel.StubType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
@@ -18,6 +21,40 @@ final class OspfAreaMatchersImpl {
     @Override
     protected Set<String> featureValueOf(OspfArea actual) {
       return actual.getInterfaces();
+    }
+  }
+
+  static final class HasNssa extends FeatureMatcher<OspfArea, NssaSettings> {
+    public HasNssa(@Nonnull Matcher<? super NssaSettings> subMatcher) {
+      super(subMatcher, "An OspfArea with nssa:", "nssa");
+    }
+
+    @Override
+    protected NssaSettings featureValueOf(OspfArea actual) {
+      return actual.getNssa();
+    }
+  }
+
+  static final class HasStub extends FeatureMatcher<OspfArea, StubSettings> {
+    public HasStub(@Nonnull Matcher<? super StubSettings> subMatcher) {
+      super(subMatcher, "An OspfArea with stub:", "stub");
+    }
+
+    @Override
+    protected StubSettings featureValueOf(OspfArea actual) {
+      return actual.getStub();
+    }
+  }
+
+  static final class HasStubType extends FeatureMatcher<OspfArea, StubType> {
+
+    public HasStubType(@Nonnull Matcher<? super StubType> subMatcher) {
+      super(subMatcher, "An OspfArea with stubType:", "stubType");
+    }
+
+    @Override
+    protected StubType featureValueOf(OspfArea actual) {
+      return actual.getStubType();
     }
   }
 
@@ -38,4 +75,6 @@ final class OspfAreaMatchersImpl {
       return actual.getSummaries().get(_summaryPrefix);
     }
   }
+
+  private OspfAreaMatchersImpl() {}
 }

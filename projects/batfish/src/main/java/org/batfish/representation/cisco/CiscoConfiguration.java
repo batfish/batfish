@@ -65,6 +65,7 @@ import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.OspfAreaSummary;
+import org.batfish.datamodel.OspfDefaultOriginateType;
 import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -79,6 +80,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SourceNat;
+import org.batfish.datamodel.StubType;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Zone;
@@ -2499,6 +2501,25 @@ public final class CiscoConfiguration extends VendorConfiguration {
           (areaNum, interfacesBuilder) ->
               areas.get(areaNum).setInterfaces(interfacesBuilder.build()));
     }
+    proc.getNssas()
+        .forEach(
+            (areaId, nssaSettings) -> {
+              if (!areas.containsKey(areaId)) {
+                return;
+              }
+              areas.get(areaId).setStubType(StubType.NSSA);
+              areas.get(areaId).setNssa(toNssaSettings(nssaSettings));
+            });
+
+    proc.getStubs()
+        .forEach(
+            (areaId, stubSettings) -> {
+              if (!areas.containsKey(areaId)) {
+                return;
+              }
+              areas.get(areaId).setStubType(StubType.STUB);
+              areas.get(areaId).setStub(toStubSettings(stubSettings));
+            });
 
     // create summarization filters for inter-area routes
     for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
@@ -2655,6 +2676,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newProcess.setRouterId(routerId);
     return newProcess;
+  }
+
+  private org.batfish.datamodel.StubSettings toStubSettings(StubSettings stubSettings) {
+    return org.batfish.datamodel.StubSettings.builder()
+        .setSuppressType3(stubSettings.getNoSummary())
+        .build();
+  }
+
+  private org.batfish.datamodel.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
+    return org.batfish.datamodel.NssaSettings.builder()
+        .setDefaultOriginateType(
+            nssaSettings.getDefaultInformationOriginate()
+                ? OspfDefaultOriginateType.INTER_AREA
+                : OspfDefaultOriginateType.NONE)
+        .setSuppressType3(nssaSettings.getNoSummary())
+        .build();
   }
 
   private org.batfish.datamodel.RipProcess toRipProcess(

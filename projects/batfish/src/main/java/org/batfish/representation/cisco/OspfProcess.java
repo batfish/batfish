@@ -67,7 +67,9 @@ public class OspfProcess extends ComparableStructure<String> {
 
   private Set<OspfNetwork> _networks;
 
-  private Map<Long, Boolean> _nssas;
+  private Map<Long, NssaSettings> _nssas;
+
+  private Map<Long, StubSettings> _stubs;
 
   private boolean _passiveInterfaceDefault;
 
@@ -146,6 +148,7 @@ public class OspfProcess extends ComparableStructure<String> {
     _nssas = new HashMap<>();
     _interfaceBlacklist = new HashSet<>();
     _interfaceWhitelist = new HashSet<>();
+    _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
     _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
     _summaries = new TreeMap<>();
@@ -228,7 +231,7 @@ public class OspfProcess extends ComparableStructure<String> {
     return _networks;
   }
 
-  public Map<Long, Boolean> getNssas() {
+  public Map<Long, NssaSettings> getNssas() {
     return _nssas;
   }
 
@@ -254,6 +257,10 @@ public class OspfProcess extends ComparableStructure<String> {
 
   public Ip getRouterId() {
     return _routerId;
+  }
+
+  public Map<Long, StubSettings> getStubs() {
+    return _stubs;
   }
 
   public Map<Long, Map<Prefix, OspfAreaSummary>> getSummaries() {

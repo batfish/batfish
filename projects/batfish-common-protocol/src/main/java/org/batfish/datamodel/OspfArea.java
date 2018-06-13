@@ -82,6 +82,12 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
   private static final String PROP_INTERFACES = "interfaces";
 
+  private static final String PROP_NSSA = "nssa";
+
+  private static final String PROP_STUB = "stub";
+
+  private static final String PROP_STUB_TYPE = "stubType";
+
   private static final String PROP_SUMMARIES = "summaries";
 
   private static final String PROP_SUMMARY_FILTER = "summaryFilter";
@@ -104,6 +110,7 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   public OspfArea(@JsonProperty(PROP_NAME) Long number) {
     super(number);
     _interfaces = new TreeSet<>();
+    _stubType = StubType.NONE;
     _summaries = new TreeMap<>();
   }
 
@@ -113,14 +120,17 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
     return _interfaces;
   }
 
+  @JsonProperty(PROP_NSSA)
   public NssaSettings getNssa() {
     return _nssa;
   }
 
+  @JsonProperty(PROP_STUB)
   public StubSettings getStub() {
     return _stub;
   }
 
+  @JsonProperty(PROP_STUB_TYPE)
   public StubType getStubType() {
     return _stubType;
   }
@@ -138,6 +148,21 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
   @JsonProperty(PROP_INTERFACES)
   public void setInterfaces(SortedSet<String> interfaces) {
     _interfaces = interfaces;
+  }
+
+  @JsonProperty(PROP_NSSA)
+  public void setNssa(NssaSettings nssa) {
+    _nssa = nssa;
+  }
+
+  @JsonProperty(PROP_STUB)
+  public void setStub(StubSettings stub) {
+    _stub = stub;
+  }
+
+  @JsonProperty(PROP_STUB_TYPE)
+  public void setStubType(StubType stubType) {
+    _stubType = stubType;
   }
 
   @JsonProperty(PROP_SUMMARIES)
