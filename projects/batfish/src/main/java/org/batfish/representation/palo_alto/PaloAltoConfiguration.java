@@ -11,7 +11,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.VendorConfiguration;
 
-public class PaloAltoConfiguration extends VendorConfiguration {
+public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private static final long serialVersionUID = 1L;
 
