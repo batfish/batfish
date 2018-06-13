@@ -80,7 +80,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     }
   }
 
-  public class ConfigurationsSupplier
+  private final class ConfigurationsSupplier
       implements Serializable, Supplier<Map<String, Configuration>> {
 
     private static final long serialVersionUID = 1L;
@@ -91,7 +91,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     }
   }
 
-  public class FibsSupplier implements Serializable, Supplier<Map<String, Map<String, Fib>>> {
+  private final class FibsSupplier
+      implements Serializable, Supplier<Map<String, Map<String, Fib>>> {
 
     private static final long serialVersionUID = 1L;
 
@@ -101,7 +102,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     }
   }
 
-  public class ForwardingAnalysisSupplier implements Serializable, Supplier<ForwardingAnalysis> {
+  private final class ForwardingAnalysisSupplier
+      implements Serializable, Supplier<ForwardingAnalysis> {
 
     private static final long serialVersionUID = 1L;
 
