@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nullable;
 import org.batfish.common.util.BatfishObjectMapper;
 
 public final class SchemaUtils {
@@ -20,6 +21,7 @@ public final class SchemaUtils {
    * @return The converted object
    * @throws ClassCastException if the conversion fails
    */
+  @Nullable
   public static Object convertType(JsonNode jsonNode, Schema schema) {
     if (jsonNode == null) {
       return null;
