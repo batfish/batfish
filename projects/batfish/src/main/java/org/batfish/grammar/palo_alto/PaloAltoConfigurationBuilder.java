@@ -28,8 +28,6 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.SyslogServer;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
-  private static final String DEFAULT_DEVICE_NAME = "localhost.localdomain";
-
   private PaloAltoConfiguration _configuration;
 
   private String _currentDeviceName;
