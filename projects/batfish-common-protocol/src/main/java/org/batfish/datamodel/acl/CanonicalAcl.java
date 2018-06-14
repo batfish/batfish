@@ -1,17 +1,19 @@
 package org.batfish.datamodel.acl;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
-import java.util.NavigableMap;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.batfish.datamodel.IpAccessList;
 
 /** Represents an ACL with all its dependencies for the purpose of detecting identical ACLs. */
 public final class CanonicalAcl {
 
   private final IpAccessList _sanitizedAcl;
-  private final ImmutableSortedMap<String, IpAccessList> _dependencies;
+  private final Map<String, IpAccessList> _dependencies;
   private final Set<String> _interfaces;
   private final Set<Integer> _linesInCycles;
   private final Set<Integer> _linesWithUndefinedReferences;
@@ -40,7 +42,7 @@ public final class CanonicalAcl {
     _linesInCycles = ImmutableSet.copyOf(linesInCycles);
 
     // ACL and interface dependencies
-    _dependencies = ImmutableSortedMap.copyOf(dependencies);
+    _dependencies = ImmutableMap.copyOf(dependencies);
     _interfaces = ImmutableSet.copyOf(interfaces);
   }
 
@@ -56,7 +58,7 @@ public final class CanonicalAcl {
   /**
    * @return Map of names to {@link IpAccessList} objects representing ACLs referenced by this ACL.
    */
-  public NavigableMap<String, IpAccessList> getDependencies() {
+  public Map<String, IpAccessList> getDependencies() {
     return _dependencies;
   }
 
@@ -97,10 +99,14 @@ public final class CanonicalAcl {
   @Override
   public int hashCode() {
     if (_hashCode == 0) {
-      _hashCode = _acl.getLines().hashCode() + _interfaces.hashCode();
-      for (IpAccessList dependency : _dependencies.values()) {
-        _hashCode += dependency.getLines().hashCode();
-      }
+      _hashCode =
+          Objects.hash(
+              _acl.getLines(),
+              _interfaces,
+              _dependencies
+                  .entrySet()
+                  .stream()
+                  .collect(Collectors.toMap(Entry::getKey, e -> e.getValue().getLines())));
     }
     return _hashCode;
   }
