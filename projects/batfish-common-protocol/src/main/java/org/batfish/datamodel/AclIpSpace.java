@@ -83,8 +83,14 @@ public class AclIpSpace extends IpSpace {
     return new Builder();
   }
 
-  /** Set-theoretic difference between two IpSpaces. */
-  public static @Nullable IpSpace difference(IpSpace ipSpace1, IpSpace ipSpace2) {
+  /**
+   * Set-theoretic difference between two IpSpaces.<br>
+   * If both arguments are {@code null}, returns {@code null}.<br>
+   * If just {@code ipSpace1} is {@code null}, treat it as {@link UniverseIpSpace}.<br>
+   * If just {@code ipSpace2} is {@code null}, treat it as {@link EmptyIpSpace}.
+   */
+  public static @Nullable IpSpace difference(
+      @Nullable IpSpace ipSpace1, @Nullable IpSpace ipSpace2) {
     if (ipSpace1 == null && ipSpace2 == null) {
       return null;
     } else if (ipSpace2 == null) {

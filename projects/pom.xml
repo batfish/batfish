@@ -77,7 +77,7 @@
     <lz4.version>1.4.1</lz4.version>
     <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
-		<pmd.version>6.4.0</pmd.version>
+    <pmd.version>6.4.0</pmd.version>
     <puppycrawl.version>8.0</puppycrawl.version>
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.21.0</sqlite-jdbc.version>

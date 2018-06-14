@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -1071,10 +1072,8 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
-    String newContainerName = containerName;
-    if (newContainerName == null || newContainerName.equals("")) {
-      newContainerName = containerPrefix + "_" + UUID.randomUUID();
-    }
+    String newContainerName =
+        isNullOrEmpty(containerName) ? containerPrefix + "_" + UUID.randomUUID() : containerName;
     Path containerDir = Main.getSettings().getContainersLocation().resolve(newContainerName);
     if (Files.exists(containerDir)) {
       throw new BatfishException("Container '" + newContainerName + "' already exists!");
