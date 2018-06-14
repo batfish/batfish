@@ -48,6 +48,7 @@ public class WorkStatus {
     return _workStatusCode;
   }
 
+  @Override
   public String toString() {
     return String.format("[%s %s %s]", _workItem, _workStatusCode, _task);
   }

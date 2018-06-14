@@ -183,7 +183,7 @@ public final class InferRoles {
       candidateRegexes =
           possibleSecondRoleGroups(candidateRegexes.get(bestRegexAndScore.getFirst()));
 
-      if (candidateRegexes.size() != 0) {
+      if (!candidateRegexes.isEmpty()) {
         // determine the best one according to our metric, even if it's below threshold
         allDims.add(
             toNodeRoleDimension(

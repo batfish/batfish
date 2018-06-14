@@ -158,9 +158,7 @@ public class NodesSpecifier {
 
     if (!finalQuery.contains(":") || finalQuery.toUpperCase().startsWith("NAME:")) { // NAME query
       String namePrefix =
-          finalQuery.toUpperCase().equals("NAME:")
-              ? ""
-              : (parts.length == 1 ? finalQuery : parts[1]);
+          finalQuery.equalsIgnoreCase("NAME:") ? "" : (parts.length == 1 ? finalQuery : parts[1]);
       List<AutocompleteSuggestion> nameSuggestions =
           nodes
               .stream()
@@ -210,7 +208,7 @@ public class NodesSpecifier {
           }
         }
       } else {
-        String roleDimPrefix = finalQuery.toUpperCase().equals("ROLE:") ? "" : parts[1];
+        String roleDimPrefix = finalQuery.equalsIgnoreCase("ROLE:") ? "" : parts[1];
         suggestions.addAll(
             nodeRoleData
                 .getNodeRoleDimensions()

@@ -307,25 +307,25 @@ public class HeaderQuestion extends Question {
   protected String prettyPrintParams() {
     try {
       String retString = String.format("%sactions=%s", prettyPrintBase(), _actions.toString());
-      if (getDstPorts() != null && getDstPorts().size() != 0) {
+      if (getDstPorts() != null && !getDstPorts().isEmpty()) {
         retString += String.format(", dstPorts=%s", getDstPorts());
       }
       if (getDstIps() != null) {
         retString += String.format(", dstIps=%s", getDstIps());
       }
-      if (getFragmentOffsets() != null && getFragmentOffsets().size() != 0) {
+      if (getFragmentOffsets() != null && !getFragmentOffsets().isEmpty()) {
         retString += String.format(", fragmentOffsets=%s", getFragmentOffsets());
       }
-      if (getIcmpCodes() != null && getIcmpCodes().size() != 0) {
+      if (getIcmpCodes() != null && !getIcmpCodes().isEmpty()) {
         retString += String.format(", icmpCodes=%s", getIcmpCodes());
       }
-      if (getIcmpTypes() != null && getIcmpTypes().size() != 0) {
+      if (getIcmpTypes() != null && !getIcmpTypes().isEmpty()) {
         retString += String.format(", icmpTypes=%s", getIcmpTypes());
       }
-      if (getIpProtocols() != null && getIpProtocols().size() != 0) {
+      if (getIpProtocols() != null && !getIpProtocols().isEmpty()) {
         retString += String.format(", ipProtocols=%s", getIpProtocols().toString());
       }
-      if (getSrcOrDstPorts() != null && getSrcOrDstPorts().size() != 0) {
+      if (getSrcOrDstPorts() != null && !getSrcOrDstPorts().isEmpty()) {
         retString += String.format(", srcOrDstPorts=%s", getSrcOrDstPorts());
       }
       if (getSrcOrDstIps() != null) {
@@ -334,31 +334,31 @@ public class HeaderQuestion extends Question {
       if (getSrcIps() != null) {
         retString += String.format(", srcIps=%s", getSrcIps());
       }
-      if (getSrcPorts() != null && getSrcPorts().size() != 0) {
+      if (getSrcPorts() != null && !getSrcPorts().isEmpty()) {
         retString += String.format(", srcPorts=%s", getSrcPorts());
       }
-      if (getNotDstPorts() != null && getNotDstPorts().size() != 0) {
+      if (getNotDstPorts() != null && !getNotDstPorts().isEmpty()) {
         retString += String.format(", notDstPorts=%s", getNotDstPorts());
       }
       if (getNotDstIps() != null) {
         retString += String.format(", notDstIps=%s", getNotDstIps());
       }
-      if (getNotFragmentOffsets() != null && getNotFragmentOffsets().size() != 0) {
+      if (getNotFragmentOffsets() != null && !getNotFragmentOffsets().isEmpty()) {
         retString += String.format(", notFragmentOffsets=%s", getNotFragmentOffsets());
       }
-      if (getNotIcmpCodes() != null && getNotIcmpCodes().size() != 0) {
+      if (getNotIcmpCodes() != null && !getNotIcmpCodes().isEmpty()) {
         retString += String.format(", notIcmpCodes=%s", getNotIcmpCodes());
       }
-      if (getNotIcmpTypes() != null && getNotIcmpTypes().size() != 0) {
+      if (getNotIcmpTypes() != null && !getNotIcmpTypes().isEmpty()) {
         retString += String.format(", notIcmpTypes=%s", getNotIcmpTypes());
       }
-      if (getNotIpProtocols() != null && getNotIpProtocols().size() != 0) {
+      if (getNotIpProtocols() != null && !getNotIpProtocols().isEmpty()) {
         retString += String.format(", notIpProtocols=%s", getNotIpProtocols().toString());
       }
       if (getNotSrcIps() != null) {
         retString += String.format(", notSrcIps=%s", getNotSrcIps());
       }
-      if (getNotSrcPorts() != null && getNotSrcPorts().size() != 0) {
+      if (getNotSrcPorts() != null && !getNotSrcPorts().isEmpty()) {
         retString += String.format(", notSrcPorts=%s", getNotSrcPorts());
       }
       return retString;

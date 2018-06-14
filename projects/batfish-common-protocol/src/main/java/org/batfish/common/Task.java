@@ -9,7 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 import org.batfish.common.BfConsts.TaskStatus;
 
-public class Task {
+public final class Task {
 
   public static class Batch {
 
@@ -191,6 +191,7 @@ public class Task {
     _terminated = terminated;
   }
 
+  @Override
   public String toString() {
     return String.format(
         "[Status: %s LastBatch: %s]",

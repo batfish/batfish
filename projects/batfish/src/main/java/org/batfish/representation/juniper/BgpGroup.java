@@ -108,13 +108,13 @@ public class BgpGroup implements Serializable {
       if (_ebgpMultihop == null) {
         _ebgpMultihop = _parent._ebgpMultihop;
       }
-      if (_exportPolicies.size() == 0) {
+      if (_exportPolicies.isEmpty()) {
         _exportPolicies.putAll(_parent._exportPolicies);
       }
       if (_groupName == null) {
         _groupName = _parent._groupName;
       }
-      if (_importPolicies.size() == 0) {
+      if (_importPolicies.isEmpty()) {
         _importPolicies.putAll(_parent._importPolicies);
       }
       if (_localAs == null) {

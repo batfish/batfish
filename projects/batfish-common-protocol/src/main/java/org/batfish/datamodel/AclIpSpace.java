@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
@@ -81,16 +83,23 @@ public class AclIpSpace extends IpSpace {
     return new Builder();
   }
 
-  /** Set-theoretic difference between two IpSpaces. */
-  public static @Nullable IpSpace difference(IpSpace ipSpace1, IpSpace ipSpace2) {
+  /**
+   * Set-theoretic difference between two IpSpaces.<br>
+   * If both arguments are {@code null}, returns {@code null}.<br>
+   * If just {@code ipSpace1} is {@code null}, treat it as {@link UniverseIpSpace}.<br>
+   * If just {@code ipSpace2} is {@code null}, treat it as {@link EmptyIpSpace}.
+   */
+  public static @Nullable IpSpace difference(
+      @Nullable IpSpace ipSpace1, @Nullable IpSpace ipSpace2) {
     if (ipSpace1 == null && ipSpace2 == null) {
       return null;
-    } else if (ipSpace1 == null) {
-      ipSpace1 = UniverseIpSpace.INSTANCE;
     } else if (ipSpace2 == null) {
       return ipSpace1;
     }
-    return builder().thenRejecting(ipSpace2).thenPermitting(ipSpace1).build();
+    return builder()
+        .thenRejecting(ipSpace2)
+        .thenPermitting(firstNonNull(ipSpace1, UniverseIpSpace.INSTANCE))
+        .build();
   }
 
   /** Set-theoretic intersection of multiple IpSpaces */
@@ -216,6 +225,7 @@ public class AclIpSpace extends IpSpace {
     return _lines;
   }
 
+  @Override
   public int hashCode() {
     return _lines.hashCode();
   }

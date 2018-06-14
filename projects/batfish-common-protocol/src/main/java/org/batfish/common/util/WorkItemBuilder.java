@@ -143,7 +143,7 @@ public class WorkItemBuilder {
       throw new BatfishException("deltaEnv not specified for deltaTestrig " + deltaTestrig);
     }
     if (reqParams.containsKey(BfConsts.ARG_DIFF_ACTIVE)
-        && !reqParams.get(BfConsts.ARG_DIFF_ACTIVE).toLowerCase().equals("false")) {
+        && !reqParams.get(BfConsts.ARG_DIFF_ACTIVE).equalsIgnoreCase("false")) {
       if (deltaTestrig == null) {
         throw new BatfishException("delta settings not specified when diff_active is on");
       }
