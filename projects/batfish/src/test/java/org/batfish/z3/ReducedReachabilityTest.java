@@ -43,7 +43,7 @@ public class ReducedReachabilityTest {
   private static final Ip NODE1_LOOPBACK_IP = new Ip("1.1.1.1");
   private static final Ip NODE2_LOOPBACK_IP = new Ip("2.2.2.2");
   private static final String TESTRIGS_PREFIX =
-      "org/batfish/grammar/cisco/testrigs/reduced-reachability/";
+      "org/batfish/grammar/cisco/testrigs/reduced-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
   private static final String REMOVED_STATIC_ROUTE_TESTRIG_NAME = "removed-static-route";
 
