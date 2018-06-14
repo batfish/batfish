@@ -3,6 +3,8 @@ package org.batfish.datamodel;
 import java.util.HashMap;
 import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 public class NetworkFactory {

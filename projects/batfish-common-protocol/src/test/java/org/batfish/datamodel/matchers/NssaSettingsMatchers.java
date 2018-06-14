@@ -3,10 +3,10 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.NssaSettings;
-import org.batfish.datamodel.OspfDefaultOriginateType;
 import org.batfish.datamodel.matchers.NssaSettingsMatchersImpl.HasDefaultOriginateType;
 import org.batfish.datamodel.matchers.NssaSettingsMatchersImpl.HasSuppressType3;
+import org.batfish.datamodel.ospf.NssaSettings;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.hamcrest.Matcher;
 
 public final class NssaSettingsMatchers {

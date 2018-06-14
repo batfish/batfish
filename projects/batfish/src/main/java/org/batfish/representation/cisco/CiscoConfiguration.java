@@ -63,10 +63,6 @@ import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfAreaSummary;
-import org.batfish.datamodel.OspfDefaultOriginateType;
-import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Prefix6Range;
@@ -80,7 +76,6 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SourceNat;
-import org.batfish.datamodel.StubType;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.Zone;
@@ -91,6 +86,11 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -2436,9 +2436,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ImmutableList.of());
   }
 
-  private org.batfish.datamodel.OspfProcess toOspfProcess(
+  private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.OspfProcess newProcess = new org.batfish.datamodel.OspfProcess();
+    org.batfish.datamodel.ospf.OspfProcess newProcess =
+        new org.batfish.datamodel.ospf.OspfProcess();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getMaxMetricRouterLsa()) {
@@ -2678,14 +2679,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newProcess;
   }
 
-  private org.batfish.datamodel.StubSettings toStubSettings(StubSettings stubSettings) {
-    return org.batfish.datamodel.StubSettings.builder()
+  private org.batfish.datamodel.ospf.StubSettings toStubSettings(StubSettings stubSettings) {
+    return org.batfish.datamodel.ospf.StubSettings.builder()
         .setSuppressType3(stubSettings.getNoSummary())
         .build();
   }
 
-  private org.batfish.datamodel.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
-    return org.batfish.datamodel.NssaSettings.builder()
+  private org.batfish.datamodel.ospf.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
+    return org.batfish.datamodel.ospf.NssaSettings.builder()
         .setDefaultOriginateType(
             nssaSettings.getDefaultInformationOriginate()
                 ? OspfDefaultOriginateType.INTER_AREA
@@ -3362,7 +3363,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert ospf process
           OspfProcess ospfProcess = vrf.getOspfProcess();
           if (ospfProcess != null) {
-            org.batfish.datamodel.OspfProcess newOspfProcess =
+            org.batfish.datamodel.ospf.OspfProcess newOspfProcess =
                 toOspfProcess(ospfProcess, vrfName, c, this);
             newVrf.setOspfProcess(newOspfProcess);
           }

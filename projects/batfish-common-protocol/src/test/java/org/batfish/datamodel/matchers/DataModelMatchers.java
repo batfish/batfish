@@ -16,7 +16,6 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IsisProcess;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Route6FilterList;
@@ -55,6 +54,7 @@ import org.batfish.datamodel.matchers.PermittedByAclIpSpaceLineMatchersImpl.IsPe
 import org.batfish.datamodel.matchers.PermittedByIpAccessListLineMatchersImpl.IsPermittedByIpAccessListLineThat;
 import org.batfish.datamodel.matchers.PermittedByNamedIpSpaceMatchers.IsPermittedByNamedIpSpaceThat;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasIsisProcess;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.vendor.StructureType;
 import org.batfish.vendor.StructureUsage;
 import org.hamcrest.Matcher;

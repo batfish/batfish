@@ -1,6 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
-import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.ospf.OspfArea;
 
 class OspfLink {
 

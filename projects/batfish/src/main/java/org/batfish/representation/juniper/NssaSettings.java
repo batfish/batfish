@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import org.batfish.datamodel.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 
 public class NssaSettings implements Serializable {
 

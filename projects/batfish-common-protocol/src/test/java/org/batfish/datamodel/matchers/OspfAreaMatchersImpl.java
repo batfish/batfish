@@ -2,12 +2,12 @@ package org.batfish.datamodel.matchers;
 
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.NssaSettings;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StubSettings;
-import org.batfish.datamodel.StubType;
+import org.batfish.datamodel.ospf.NssaSettings;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.datamodel.ospf.StubType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

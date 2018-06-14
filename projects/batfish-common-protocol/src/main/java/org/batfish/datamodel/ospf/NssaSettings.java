@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.ospf;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
@@ -15,6 +15,8 @@ public class NssaSettings implements Serializable {
     private OspfDefaultOriginateType _defaultOriginateType;
 
     private boolean _suppressType3;
+
+    private Builder() {}
 
     public NssaSettings build() {
       return new NssaSettings(this);

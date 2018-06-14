@@ -1,8 +1,8 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.NssaSettings;
-import org.batfish.datamodel.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.NssaSettings;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

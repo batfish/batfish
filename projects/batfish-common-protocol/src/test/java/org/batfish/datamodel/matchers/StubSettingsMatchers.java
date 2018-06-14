@@ -3,8 +3,8 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.StubSettings;
 import org.batfish.datamodel.matchers.StubSettingsMatchersImpl.HasSuppressType3;
+import org.batfish.datamodel.ospf.StubSettings;
 import org.hamcrest.Matcher;
 
 public final class StubSettingsMatchers {

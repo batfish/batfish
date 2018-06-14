@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.datamodel.ospf.OspfMetricType;
 
 public class OspfExternalType2Route extends OspfExternalRoute {
 

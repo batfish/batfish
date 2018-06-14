@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.ospf;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,7 +13,14 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpLink;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 @JsonSchemaDescription("An OSPF routing process")
@@ -311,9 +318,13 @@ public class OspfProcess implements Serializable {
     _routerId = id;
   }
 
+  /**
+   * An ABR (Area Border Router) has at least one interface in area 0, and at least one interface in
+   * another area.
+   */
   @JsonIgnore
   public boolean isAreaBorderRouter() {
     Set<Long> areas = _areas.keySet();
-    return areas.contains(0L) && areas.stream().anyMatch(area -> area != 0L);
+    return areas.contains(0L) && areas.size() > 1;
   }
 }

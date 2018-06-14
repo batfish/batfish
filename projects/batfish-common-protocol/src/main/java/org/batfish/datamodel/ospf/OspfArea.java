@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.ospf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,7 +9,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.Prefix;
 
 public class OspfArea extends ComparableStructure<Long> implements Serializable {
 

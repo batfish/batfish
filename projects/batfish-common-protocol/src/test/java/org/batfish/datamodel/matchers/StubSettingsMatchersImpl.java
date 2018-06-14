@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.StubSettings;
+import org.batfish.datamodel.ospf.StubSettings;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

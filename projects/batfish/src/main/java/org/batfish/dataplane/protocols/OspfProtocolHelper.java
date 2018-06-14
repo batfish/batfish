@@ -2,13 +2,13 @@ package org.batfish.dataplane.protocols;
 
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfDefaultOriginateType;
 import org.batfish.datamodel.OspfInternalRoute;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.datamodel.StubType;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.StubType;
 
 /** Helper class with functions that implement various bits of OSPF protocol logic. */
 public class OspfProtocolHelper {

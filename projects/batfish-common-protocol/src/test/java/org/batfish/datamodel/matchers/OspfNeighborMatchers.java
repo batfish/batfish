@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
-import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.matchers.OspfNeighborMatchersImpl.HasRemoteOspfNeighbor;
+import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.hamcrest.Matcher;
 
 public class OspfNeighborMatchers {

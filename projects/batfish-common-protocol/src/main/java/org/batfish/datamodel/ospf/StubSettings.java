@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.ospf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,6 +10,8 @@ public class StubSettings implements Serializable {
   public static class Builder {
 
     private boolean _suppressType3;
+
+    private Builder() {}
 
     public StubSettings build() {
       return new StubSettings(this);

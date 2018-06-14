@@ -4,12 +4,12 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfNeighbor;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasArea;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasAreas;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasOspfNeighbors;
 import org.batfish.datamodel.matchers.OspfProcessMatchersImpl.HasRouterId;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.hamcrest.Matcher;
 
 public class OspfProcessMatchers {

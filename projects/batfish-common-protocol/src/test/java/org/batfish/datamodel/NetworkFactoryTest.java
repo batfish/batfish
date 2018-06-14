@@ -10,6 +10,8 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.junit.Test;
 
 public class NetworkFactoryTest {

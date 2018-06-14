@@ -4,17 +4,17 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Set;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.NssaSettings;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StubSettings;
-import org.batfish.datamodel.StubType;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasNssa;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasStub;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasStubType;
 import org.batfish.datamodel.matchers.OspfAreaMatchersImpl.HasSummary;
+import org.batfish.datamodel.ospf.NssaSettings;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.StubSettings;
+import org.batfish.datamodel.ospf.StubType;
 import org.hamcrest.Matcher;
 
 public final class OspfAreaMatchers {

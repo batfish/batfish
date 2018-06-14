@@ -3,9 +3,9 @@ package org.batfish.representation.juniper;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.common.util.ComparableStructure;
-import org.batfish.datamodel.OspfAreaSummary;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.StubType;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.StubType;
 
 public class OspfArea extends ComparableStructure<Long> {
 

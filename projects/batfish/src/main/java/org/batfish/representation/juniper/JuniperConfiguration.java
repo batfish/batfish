@@ -53,8 +53,6 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfMetricType;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
@@ -75,6 +73,8 @@ import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -735,7 +735,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
               }
             });
     // areas
-    Map<Long, org.batfish.datamodel.OspfArea> newAreas = newProc.getAreas();
+    Map<Long, org.batfish.datamodel.ospf.OspfArea> newAreas = newProc.getAreas();
     newAreas.putAll(
         CommonUtil.toImmutableMap(
             routingInstance.getOspfAreas(), Entry::getKey, e -> toOspfArea(e.getValue())));
@@ -750,8 +750,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newProc;
   }
 
-  private org.batfish.datamodel.OspfArea toOspfArea(OspfArea area) {
-    org.batfish.datamodel.OspfArea newArea = new org.batfish.datamodel.OspfArea(area.getName());
+  private org.batfish.datamodel.ospf.OspfArea toOspfArea(OspfArea area) {
+    org.batfish.datamodel.ospf.OspfArea newArea =
+        new org.batfish.datamodel.ospf.OspfArea(area.getName());
     newArea.setNssa(toNssaSettings(area.getNssaSettings()));
     newArea.setStub(toStubSettings(area.getStubSettings()));
     newArea.setStubType(area.getStubType());
@@ -759,21 +760,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newArea;
   }
 
-  private org.batfish.datamodel.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
+  private org.batfish.datamodel.ospf.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
     if (nssaSettings == null) {
       return null;
     }
-    return org.batfish.datamodel.NssaSettings.builder()
+    return org.batfish.datamodel.ospf.NssaSettings.builder()
         .setDefaultOriginateType(nssaSettings.getDefaultLsaType())
         .setSuppressType3(nssaSettings.getNoSummaries())
         .build();
   }
 
-  private org.batfish.datamodel.StubSettings toStubSettings(StubSettings stubSettings) {
+  private org.batfish.datamodel.ospf.StubSettings toStubSettings(StubSettings stubSettings) {
     if (stubSettings == null) {
       return null;
     }
-    return org.batfish.datamodel.StubSettings.builder()
+    return org.batfish.datamodel.ospf.StubSettings.builder()
         .setSuppressType3(stubSettings.getNoSummaries())
         .build();
   }
@@ -977,7 +978,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private void placeInterfaceIntoArea(
-      Map<Long, org.batfish.datamodel.OspfArea> newAreas,
+      Map<Long, org.batfish.datamodel.ospf.OspfArea> newAreas,
       String name,
       Interface iface,
       String vrfName) {
@@ -994,7 +995,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         setCost = true;
         long ospfAreaLong = ospfArea.asLong();
-        org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
+        org.batfish.datamodel.ospf.OspfArea newArea = newAreas.get(ospfAreaLong);
         newArea.getInterfaces().add(name);
         newIface.setOspfArea(newArea);
         newIface.setOspfEnabled(true);
@@ -1010,7 +1011,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       setCost = true;
       long ospfAreaLong = passiveArea.asLong();
-      org.batfish.datamodel.OspfArea newArea = newAreas.get(ospfAreaLong);
+      org.batfish.datamodel.ospf.OspfArea newArea = newAreas.get(ospfAreaLong);
       newArea.getInterfaces().add(name);
       newIface.setOspfEnabled(true);
       newIface.setOspfPassive(true);
