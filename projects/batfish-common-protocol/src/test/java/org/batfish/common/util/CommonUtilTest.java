@@ -171,13 +171,13 @@ public class CommonUtilTest {
                 iface("shut-black", "1.1.1.1/32", false, true)));
 
     assertThat(
-        CommonUtil.computeIpInterfaceOwners(nodeInterfaces, true),
+        computeIpInterfaceOwners(nodeInterfaces, true),
         equalTo(
             ImmutableMap.of(
                 new Ip("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
 
     assertThat(
-        CommonUtil.computeIpInterfaceOwners(nodeInterfaces, false),
+        computeIpInterfaceOwners(nodeInterfaces, false),
         equalTo(
             ImmutableMap.of(
                 new Ip("1.1.1.1"),
