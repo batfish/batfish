@@ -30,6 +30,17 @@ public final class FlowMatchersImpl {
     }
   }
 
+  public static class HasIngressInterface extends FeatureMatcher<Flow, String> {
+    HasIngressInterface(Matcher<? super String> subMatcher) {
+      super(subMatcher, "ingressInterface", "ingressInterface");
+    }
+
+    @Override
+    protected String featureValueOf(Flow flow) {
+      return flow.getIngressInterface();
+    }
+  }
+
   public static class HasSrcIp extends FeatureMatcher<Flow, Ip> {
     HasSrcIp(Matcher<? super Ip> subMatcher) {
       super(subMatcher, "srcIp", "srcIp");
