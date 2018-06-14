@@ -2819,7 +2819,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.peer.getText();
     _currentBgpNxVrfNeighbor =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeer(name);
-    _configuration.recordStructure(BGP_TEMPLATE_PEER, name, 0, ctx.getStart().getLine());
+    defineStructure(BGP_TEMPLATE_PEER, name, ctx);
   }
 
   @Override
@@ -2832,7 +2832,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.policy.getText();
     _currentBgpNxVrfNeighborAddressFamily =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerPolicy(name);
-    _configuration.recordStructure(BGP_TEMPLATE_PEER_POLICY, name, 0, ctx.getStart().getLine());
+    defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
   }
 
   @Override
@@ -2845,7 +2845,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.session.getText();
     _currentBgpNxVrfNeighbor =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerSession(name);
-    _configuration.recordStructure(BGP_TEMPLATE_PEER_SESSION, name, 0, ctx.getStart().getLine());
+    defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
   }
 
   @Override
