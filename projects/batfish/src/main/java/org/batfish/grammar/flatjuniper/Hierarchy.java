@@ -516,7 +516,7 @@ public class Hierarchy {
       HierarchyNode currentGroupNode = _root;
       HierarchyChildNode matchNode = null;
       HierarchyPath partialMatch = new HierarchyPath();
-      if (path._nodes.size() == 0) {
+      if (path._nodes.isEmpty()) {
         addGroupPaths(
             null,
             _root.getChildren().values(),
@@ -530,7 +530,7 @@ public class Hierarchy {
           matchNode = currentGroupNode.getFirstMatchingChildNode(currentPathNode);
           if (matchNode == null) {
             String message = "No matching path";
-            if (partialMatch._nodes.size() > 0) {
+            if (!partialMatch._nodes.isEmpty()) {
               message +=
                   ": Partial path match within applied group: \""
                       + partialMatch.pathString()

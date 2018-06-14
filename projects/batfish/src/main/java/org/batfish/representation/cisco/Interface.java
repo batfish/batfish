@@ -112,7 +112,7 @@ public class Interface extends ComparableStructure<String> {
 
   private boolean _active;
 
-  private ArrayList<SubRange> _allowedVlans;
+  private List<SubRange> _allowedVlans;
 
   private boolean _autoState;
 

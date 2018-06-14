@@ -30,9 +30,9 @@ public class QuestionHelper {
   public static JSONObject fillTemplate(
       JSONObject questionJson, Map<String, JsonNode> parameters, String questionName)
       throws JSONException, IOException {
-    questionJson = new JSONObject(questionJson.toString()); // deep copy
+    JSONObject clonedQuestionJson = new JSONObject(questionJson.toString()); // deep copy
 
-    JSONObject instanceJson = questionJson.getJSONObject(BfConsts.PROP_INSTANCE);
+    JSONObject instanceJson = clonedQuestionJson.getJSONObject(BfConsts.PROP_INSTANCE);
     instanceJson.put(BfConsts.PROP_INSTANCE_NAME, questionName);
     String instanceDataStr = instanceJson.toString();
     InstanceData instanceData =
@@ -45,9 +45,9 @@ public class QuestionHelper {
 
     JSONObject modifiedInstanceData =
         new JSONObject(BatfishObjectMapper.writePrettyString(instanceData));
-    questionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
+    clonedQuestionJson.put(BfConsts.PROP_INSTANCE, modifiedInstanceData);
 
-    return questionJson;
+    return clonedQuestionJson;
   }
 
   public static Question getQuestion(

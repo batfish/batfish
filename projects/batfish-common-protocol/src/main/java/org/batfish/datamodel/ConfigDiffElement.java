@@ -78,7 +78,7 @@ public class ConfigDiffElement extends AnswerElement {
     _inAfterOnly = CommonUtil.difference(after, before, TreeSet::new);
   }
 
-  public Set<String> common() {
+  public final Set<String> common() {
     return CommonUtil.intersection(_before, _after, TreeSet::new);
   }
 

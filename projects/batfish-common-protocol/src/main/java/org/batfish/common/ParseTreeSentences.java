@@ -17,7 +17,7 @@ public class ParseTreeSentences implements Serializable {
   }
 
   public void appendToLastSentence(String appendStr) {
-    if (_sentences.size() == 0) {
+    if (_sentences.isEmpty()) {
       _sentences.add(appendStr);
     } else {
       String finalStr = _sentences.get(_sentences.size() - 1) + appendStr;

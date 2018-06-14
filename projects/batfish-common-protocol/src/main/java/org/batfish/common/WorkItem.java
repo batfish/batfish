@@ -126,6 +126,7 @@ public class WorkItem {
     tracer.inject(activeSpan.context(), Builtin.TEXT_MAP, new TextMapInjectAdapter(_spanData));
   }
 
+  @Override
   public String toString() {
     return String.format("[%s %s %s %s]", _id, _containerName, _testrigName, _requestParams);
   }

@@ -96,6 +96,7 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     _routableIps = ImmutableMap.copyOf(builder._routableIps);
   }
 
+  @Override
   public Map<String, Map<String, IpSpace>> getArpReplies() {
     return _arpReplies;
   }
@@ -105,18 +106,22 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     return _arpRequests;
   }
 
+  @Override
   public Map<Edge, IpSpace> getArpTrueEdge() {
     return _arpTrueEdge;
   }
 
+  @Override
   public Map<String, Map<String, Map<String, IpSpace>>> getNeighborUnreachable() {
     return _neighborUnreachable;
   }
 
+  @Override
   public Map<String, Map<String, IpSpace>> getNullRoutedIps() {
     return _nullRoutedIps;
   }
 
+  @Override
   public Map<String, Map<String, IpSpace>> getRoutableIps() {
     return _routableIps;
   }

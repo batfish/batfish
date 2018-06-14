@@ -44,7 +44,7 @@ public class Interface extends ComparableStructure<String> {
 
   private final Set<Ip> _allAddressIps;
 
-  private final ArrayList<SubRange> _allowedVlans;
+  private final List<SubRange> _allowedVlans;
 
   private double _bandwidth;
 

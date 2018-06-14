@@ -124,20 +124,6 @@ public class DefaultTransitionGenerator implements StateVisitor {
         : noSrcInterfaceConstraint();
   }
 
-  private @Nonnull BooleanExpr srcInterfaceConstraint(
-      @Nonnull String hostname,
-      @Nonnull String iface,
-      @Nonnull IntExpr srcInterfaceVar,
-      @Nonnull BooleanExpr defaultExpr) {
-    boolean nodeHasSrcInterfaceConstraint =
-        _input.getNodesWithSrcInterfaceConstraints().contains(hostname);
-
-    return nodeHasSrcInterfaceConstraint
-        ? new EqExpr(
-            srcInterfaceVar, _input.getSourceInterfaceFieldValues().get(hostname).get(iface))
-        : defaultExpr;
-  }
-
   @Override
   public void visitAccept(Accept.State accept) {
     // ProjectNodeAccept

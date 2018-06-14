@@ -63,6 +63,7 @@ public class BasicRuleStatement extends RuleStatement {
     visitor.visitBasicRuleStatement(this);
   }
 
+  @Override
   public StateExpr getPostconditionState() {
     return _postconditionState;
   }
@@ -71,6 +72,7 @@ public class BasicRuleStatement extends RuleStatement {
     return _preconditionStateIndependentConstraints;
   }
 
+  @Override
   public Set<StateExpr> getPreconditionStates() {
     return _preconditionStates;
   }
