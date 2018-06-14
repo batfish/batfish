@@ -46,7 +46,7 @@ public class SpecifiersReachabilityQuestionTest {
   private static final Ip NODE1_LOOPBACK_IP = new Ip("1.1.1.1");
   private static final Ip NODE2_FAST_ETHERNET_IP = new Ip("1.1.1.3");
   private static final Ip NODE2_LOOPBACK_IP = new Ip("2.2.2.2");
-  private static final String TESTRIGS_PREFIX = "org/batfish/grammar/cisco/testrigs/";
+  private static final String TESTRIGS_PREFIX = "org/batfish/allinone/testrigs/";
   private static final String TESTRIG_NAME = "specifiers-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
   private static final String VRF = "default";

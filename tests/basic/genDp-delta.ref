@@ -1,7 +1,7 @@
 {
   "answerElements" : [
     {
-      "class" : "org.batfish.datamodel.answers.BdpAnswerElement",
+      "class" : "org.batfish.datamodel.answers.IncrementalBdpAnswerElement",
       "bgpBestPathRibRoutesByIteration" : {
         "1" : 26,
         "2" : 61,
@@ -20,7 +20,6 @@
         "6" : 127,
         "7" : 127
       },
-      "completedOscillationRecoveryAttempts" : 0,
       "dependentRoutesIterations" : 7,
       "mainRibRoutesByIteration" : {
         "1" : 213,
@@ -32,7 +31,8 @@
         "7" : 342
       },
       "ospfInternalIterations" : 3,
-      "version" : "0.36.0"
+      "version" : "0.36.0",
+      "warnings" : { }
     }
   ],
   "status" : "SUCCESS",

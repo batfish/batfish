@@ -305,8 +305,9 @@ public class OspfTest {
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     IncrementalDataPlane dp =
-        engine.computeDataPlane(
-            false, configurations, topology, Collections.emptySet(), new BdpAnswerElement());
+        (IncrementalDataPlane)
+            engine.computeDataPlane(false, configurations, topology, Collections.emptySet())
+                ._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
   }
