@@ -11,6 +11,8 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +38,16 @@ public class CommonUtilTest {
   @Before
   public void setup() {
     _nf = new NetworkFactory();
+  }
+
+  /** Make an interface with the specified parameters */
+  private Interface iface(String interfaceName, String ip, boolean active, boolean blacklisted) {
+    return _nf.interfaceBuilder()
+        .setName(interfaceName)
+        .setActive(active)
+        .setAddress(new InterfaceAddress(ip))
+        .setBlacklisted(blacklisted)
+        .build();
   }
 
   /**
@@ -141,5 +153,35 @@ public class CommonUtilTest {
         hasEntry(
             equalTo(_virtInterfaceAddr.getIp()),
             hasEntry(equalTo(_i2.getOwner().getName()), contains(_i2.getName()))));
+  }
+
+  /**
+   * Tests that inactive and blacklisted interfaces are properly included or excluded from the
+   * output of {@link CommonUtil#computeIpInterfaceOwners(Map, boolean)}
+   */
+  @Test
+  public void testIpInterfaceOwnersActiveInclusion() {
+    Map<String, Set<Interface>> nodeInterfaces =
+        ImmutableMap.of(
+            "node",
+            ImmutableSet.of(
+                iface("active", "1.1.1.1/32", true, false),
+                iface("shut", "1.1.1.1/32", false, false),
+                iface("active-black", "1.1.1.1/32", true, true),
+                iface("shut-black", "1.1.1.1/32", false, true)));
+
+    assertThat(
+        computeIpInterfaceOwners(nodeInterfaces, true),
+        equalTo(
+            ImmutableMap.of(
+                new Ip("1.1.1.1"), ImmutableMap.of("node", ImmutableSet.of("active")))));
+
+    assertThat(
+        computeIpInterfaceOwners(nodeInterfaces, false),
+        equalTo(
+            ImmutableMap.of(
+                new Ip("1.1.1.1"),
+                ImmutableMap.of(
+                    "node", ImmutableSet.of("active", "shut", "active-black", "shut-black")))));
   }
 }
