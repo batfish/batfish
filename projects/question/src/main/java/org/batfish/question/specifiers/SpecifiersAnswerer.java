@@ -12,9 +12,9 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.questions.DisplayHints;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
+import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.datamodel.table.TypedRowBuilder;
 import org.batfish.specifier.IpSpaceAssignment;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.SpecifierContext;
@@ -39,7 +39,7 @@ public final class SpecifiersAnswerer extends Answerer {
     Map<String, ColumnMetadata> columns = table.getMetadata().toColumnMap();
     for (IpSpaceAssignment.Entry entry : ipSpaceAssignment.getEntries()) {
       table.addRow(
-          TypedRowBuilder.rowOf(
+          Row.of(
               columns,
               "Locations",
               entry.getLocations().toString(),

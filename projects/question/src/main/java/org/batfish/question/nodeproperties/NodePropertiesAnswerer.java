@@ -23,7 +23,6 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.datamodel.table.TypedRowBuilder;
 
 public class NodePropertiesAnswerer extends Answerer {
 
@@ -92,7 +91,7 @@ public class NodePropertiesAnswerer extends Answerer {
     Multiset<Row> rows = HashMultiset.create();
 
     for (String nodeName : nodes) {
-      RowBuilder row = new TypedRowBuilder(columns).put(COL_NODE, new Node(nodeName));
+      RowBuilder row = Row.builder(columns).put(COL_NODE, new Node(nodeName));
 
       for (String property : question.getPropertySpec().getMatchingProperties()) {
         PropertySpecifier.fillProperty(
