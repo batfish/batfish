@@ -63,7 +63,8 @@ public class NodeRolesData {
     return _lastModifiedTime;
   }
 
-  private Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+  /** Returns the specified dimension in this NodeRolesData object */
+  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
     return _roleDimensions.stream().filter(d -> d.getName().equals(dimension)).findFirst();
   }
 

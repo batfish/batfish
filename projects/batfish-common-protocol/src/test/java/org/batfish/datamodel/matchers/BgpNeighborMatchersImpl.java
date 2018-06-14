@@ -7,6 +7,17 @@ import org.hamcrest.Matcher;
 
 final class BgpNeighborMatchersImpl {
 
+  static final class HasClusterId extends FeatureMatcher<BgpNeighbor, Long> {
+    HasClusterId(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "A BgpNeighbor with clusterId:", "clusterId");
+    }
+
+    @Override
+    protected Long featureValueOf(BgpNeighbor actual) {
+      return actual.getClusterId();
+    }
+  }
+
   static final class HasLocalAs extends FeatureMatcher<BgpNeighbor, Long> {
     HasLocalAs(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "A BgpNeighbor with localAs:", "localAs");

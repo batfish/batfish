@@ -207,7 +207,7 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
       int idNum = i + 1;
       String vpnId = _vpnConnectionId + "-" + idNum;
       IpsecTunnel ipsecTunnel = _ipsecTunnels.get(i);
-      if (ipsecTunnel.getCgwBgpAsn() != -1 && (_staticRoutesOnly || _routes.size() != 0)) {
+      if (ipsecTunnel.getCgwBgpAsn() != -1 && (_staticRoutesOnly || !_routes.isEmpty())) {
         throw new BatfishException(
             "Unexpected combination of BGP and static routes for VPN connection: \""
                 + _vpnConnectionId

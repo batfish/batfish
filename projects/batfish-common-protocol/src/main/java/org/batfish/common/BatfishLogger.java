@@ -11,7 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class BatfishLogger {
+public final class BatfishLogger {
 
   public static class BatfishLoggerHistory extends ArrayList<HistoryItem> {
     /** */
@@ -334,7 +334,7 @@ public class BatfishLogger {
         // FileNotFoundException
         // this should not happen since we know that logFile can be created
         // in case it does happen, we cannot log this error to the log :)
-        System.err.print("Could not rotate log" + e.getMessage());
+        System.err.println("Could not rotate log" + e.getMessage());
       }
     }
   }

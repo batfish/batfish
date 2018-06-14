@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import org.batfish.datamodel.EnvironmentMetadata.ProcessingStatus;
 
-public class TestrigMetadata {
+public final class TestrigMetadata {
 
   private static final String PROP_CREATIONTIMESTAMP = "creationTimestamp";
   private static final String PROP_ENVIRONMENTS = "environments";

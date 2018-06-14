@@ -793,7 +793,7 @@ public class CommonUtil {
     try {
       return Paths.get(path.toFile().getCanonicalPath());
     } catch (IOException e) {
-      throw new BatfishException("Could not get canonical path from: '" + path + "'");
+      throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
     }
   }
 
@@ -867,7 +867,7 @@ public class CommonUtil {
     try {
       return Files.getLastModifiedTime(path);
     } catch (IOException e) {
-      throw new BatfishException("Failed to get last modified time for '" + path + "'");
+      throw new BatfishException("Failed to get last modified time for '" + path + "'", e);
     }
   }
 
@@ -1396,7 +1396,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to read and output lines of file: '" + downloadedFile + "'");
+          "Failed to read and output lines of file: '" + downloadedFile + "'", e);
     }
   }
 
@@ -1603,7 +1603,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to write input stream to output file: '" + outputFile + "'");
+          "Failed to write input stream to output file: '" + outputFile + "'", e);
     }
   }
 }

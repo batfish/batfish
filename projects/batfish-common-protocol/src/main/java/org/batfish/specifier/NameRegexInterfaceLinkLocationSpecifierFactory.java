@@ -1,7 +1,9 @@
 package org.batfish.specifier;
 
+import com.google.auto.service.AutoService;
 import java.util.regex.Pattern;
 
+@AutoService(LocationSpecifierFactory.class)
 public class NameRegexInterfaceLinkLocationSpecifierFactory
     extends CaseInsensitiveRegexLocationSpecifierFactory {
   public static final String NAME =

@@ -150,6 +150,7 @@ public class HeaderLocationQuestion extends HeaderQuestion {
     return String.format("headerlocation %s", prettyPrintParams());
   }
 
+  @Override
   protected String prettyPrintParams() {
     try {
       String retString = super.prettyPrintParams();
