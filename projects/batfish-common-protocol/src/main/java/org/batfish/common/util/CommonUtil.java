@@ -373,7 +373,7 @@ public class CommonUtil {
         (hostname, interfaces) ->
             interfaces.forEach(
                 i -> {
-                  if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+                  if ((!i.getActive() || i.getBlacklisted()) && excludeInactive) {
                     return;
                   }
                   // collect vrrp info
