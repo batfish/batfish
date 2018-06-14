@@ -1895,17 +1895,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentDhcpRelayGroup =
         _currentRoutingInstance
             .getDhcpRelayGroups()
-            .computeIfAbsent(
-                DhcpRelayGroup.MASTER_DHCP_RELAY_GROUP_NAME, k -> new DhcpRelayGroup(k));
+            .computeIfAbsent(DhcpRelayGroup.MASTER_DHCP_RELAY_GROUP_NAME, DhcpRelayGroup::new);
   }
 
   @Override
   public void enterFod_group(Fod_groupContext ctx) {
     String name = ctx.name.getText();
     _currentDhcpRelayGroup =
-        _currentRoutingInstance
-            .getDhcpRelayGroups()
-            .computeIfAbsent(name, k -> new DhcpRelayGroup(k));
+        _currentRoutingInstance.getDhcpRelayGroups().computeIfAbsent(name, DhcpRelayGroup::new);
   }
 
   @Override
@@ -2683,10 +2680,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     String hostname = ctx.hostname.getText();
     _configuration.getTacplusServers().add(hostname);
     _currentTacplusServer =
-        _configuration
-            .getJf()
-            .getTacplusServers()
-            .computeIfAbsent(hostname, k -> new TacplusServer(k));
+        _configuration.getJf().getTacplusServers().computeIfAbsent(hostname, TacplusServer::new);
   }
 
   @Override
@@ -2704,6 +2698,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterS_vlans_named(S_vlans_namedContext ctx) {
     _currentVlanName = ctx.name.getText();
+    defineStructure(VLAN, _currentVlanName, ctx);
   }
 
   @Override

@@ -1,7 +1,7 @@
 package org.batfish.grammar.flatjuniper;
 
-import static java.util.Collections.emptyMap;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
+import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasClusterId;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasEnforceFirstAs;
 import static org.batfish.datamodel.matchers.BgpNeighborMatchers.hasLocalAs;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
@@ -150,8 +150,6 @@ import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
-import org.hamcrest.FeatureMatcher;
-import org.hamcrest.Matcher;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
@@ -165,24 +163,9 @@ import org.junit.rules.TemporaryFolder;
  */
 public class FlatJuniperGrammarTest {
 
-  private static class HasClusterId extends FeatureMatcher<BgpNeighbor, Long> {
-    public HasClusterId(Matcher<? super Long> subMatcher) {
-      super(subMatcher, "clusterId", "clusterId");
-    }
-
-    @Override
-    protected Long featureValueOf(BgpNeighbor actual) {
-      return actual.getClusterId();
-    }
-  }
-
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/juniper/testconfigs/";
 
   private static String TESTRIGS_PREFIX = "org/batfish/grammar/juniper/testrigs/";
-
-  private static HasClusterId hasClusterId(long expectedClusterId) {
-    return new HasClusterId(equalTo(expectedClusterId));
-  }
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -1223,9 +1206,13 @@ public class FlatJuniperGrammarTest {
             JuniperStructureUsage.INTERFACE_VLAN));
 
     /*
-     * VLAN should not contribute to defined structures
+     * Named VLANs
      */
-    assertThat(ccae.getDefinedStructures().get(hostname), equalTo(emptyMap()));
+    assertThat(
+        ccae.getDefinedStructures()
+            .get(hostname)
+            .getOrDefault(JuniperStructureType.VLAN.getDescription(), Collections.emptySortedMap()),
+        allOf(hasKey("VLAN_TEST"), hasKey("VLAN_TEST_UNUSED")));
   }
 
   @Test

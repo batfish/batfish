@@ -155,7 +155,7 @@ public class If extends Statement {
       _simplified = simpleTrueStatements;
     } else if (simpleGuard.equals(BooleanExprs.FALSE)) {
       _simplified = simpleFalseStatements;
-    } else if (simpleTrueStatements.size() == 0 && simpleFalseStatements.size() == 0) {
+    } else if (simpleTrueStatements.isEmpty() && simpleFalseStatements.isEmpty()) {
       _simplified = Collections.emptyList();
     } else {
       If simple = new If(getComment(), simpleGuard, simpleTrueStatements, simpleFalseStatements);

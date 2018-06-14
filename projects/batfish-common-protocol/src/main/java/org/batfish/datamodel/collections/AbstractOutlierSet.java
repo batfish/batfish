@@ -59,6 +59,7 @@ public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
     }
   }
 
+  @Override
   public boolean equals(Object other) {
     if (other == this) {
       return true;
@@ -72,21 +73,25 @@ public abstract class AbstractOutlierSet implements RoleBasedOutlierSet {
   }
 
   @JsonProperty(PROP_CONFORMERS)
+  @Override
   public SortedSet<String> getConformers() {
     return _conformers;
   }
 
   @JsonProperty(PROP_OUTLIERS)
+  @Override
   public SortedSet<String> getOutliers() {
     return _outliers;
   }
 
   @JsonProperty(PROP_ROLE)
+  @Override
   public Optional<String> getRole() {
     return Optional.ofNullable(_role);
   }
 
   @JsonProperty(PROP_ROLE)
+  @Override
   public void setRole(String role) {
     _role = role;
   }

@@ -334,7 +334,7 @@ public class JsonPathToTableAnswerer extends Answerer {
         default:
           throw new BatfishException("Unknown extraction method " + extraction.getMethod());
       }
-      if (extractedList.size() == 0) {
+      if (extractedList.isEmpty()) {
         throw new BatfishException(
             String.format(
                 "Got no results after filtering suffix values of the answer.%nFilter: %s%nJson: %s",
@@ -346,7 +346,7 @@ public class JsonPathToTableAnswerer extends Answerer {
         || extraction.getSchema().getType() == Type.SET) {
       answerValues.set(varName, BatfishObjectMapper.mapper().valueToTree(extractedList));
     } else {
-      if (extractedList.size() == 0) {
+      if (extractedList.isEmpty()) {
         answerValues.set(varName, null);
       } else if (extractedList.size() > 1) {
         throw new BatfishException(

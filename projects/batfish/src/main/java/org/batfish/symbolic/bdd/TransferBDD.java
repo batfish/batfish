@@ -231,7 +231,7 @@ class TransferBDD {
         BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
         conjuncts.add(be);
       }
-      if (conjuncts.size() == 0) {
+      if (conjuncts.isEmpty()) {
         TransferReturn ret = new TransferReturn(p.getData(), factory.one());
         return fromExpr(ret);
       } else {
@@ -262,7 +262,7 @@ class TransferBDD {
         BooleanExpr be = new CallExpr(p.getDefaultPolicy().getDefaultPolicy());
         disjuncts.add(be);
       }
-      if (disjuncts.size() == 0) {
+      if (disjuncts.isEmpty()) {
         TransferReturn ret = new TransferReturn(p.getData(), factory.zero());
         return fromExpr(ret);
       } else {
@@ -332,8 +332,10 @@ class TransferBDD {
         return r;
       }
       RoutingPolicy pol = _conf.getRoutingPolicies().get(name);
-      p = p.setCallContext(TransferParam.CallContext.EXPR_CALL);
-      r = compute(pol.getStatements(), p.indent().enterScope(name));
+      r =
+          compute(
+              pol.getStatements(),
+              p.setCallContext(TransferParam.CallContext.EXPR_CALL).indent().enterScope(name));
       CACHE.put(router, name, r);
       return r;
 
@@ -393,12 +395,13 @@ class TransferBDD {
    */
   private TransferResult<TransferReturn, BDD> compute(
       List<Statement> statements, TransferParam<BDDRoute> p) {
+    TransferParam<BDDRoute> curP = p;
     boolean doesReturn = false;
 
     TransferResult<TransferReturn, BDD> result = new TransferResult<>();
     result =
         result
-            .setReturnValue(new TransferReturn(p.getData(), factory.zero()))
+            .setReturnValue(new TransferReturn(curP.getData(), factory.zero()))
             .setFallthroughValue(factory.zero())
             .setReturnAssignedValue(factory.zero());
 
@@ -410,52 +413,52 @@ class TransferBDD {
         switch (ss.getType()) {
           case ExitAccept:
             doesReturn = true;
-            p.debug("ExitAccept");
+            curP.debug("ExitAccept");
             result = returnValue(result, true);
             break;
 
           case ReturnTrue:
             doesReturn = true;
-            p.debug("ReturnTrue");
+            curP.debug("ReturnTrue");
             result = returnValue(result, true);
             break;
 
           case ExitReject:
             doesReturn = true;
-            p.debug("ExitReject");
+            curP.debug("ExitReject");
             result = returnValue(result, false);
             break;
 
           case ReturnFalse:
             doesReturn = true;
-            p.debug("ReturnFalse");
+            curP.debug("ReturnFalse");
             result = returnValue(result, false);
             break;
 
           case SetDefaultActionAccept:
-            p.debug("SetDefaulActionAccept");
-            p = p.setDefaultAccept(true);
+            curP.debug("SetDefaulActionAccept");
+            curP = curP.setDefaultAccept(true);
             break;
 
           case SetDefaultActionReject:
-            p.debug("SetDefaultActionReject");
-            p = p.setDefaultAccept(false);
+            curP.debug("SetDefaultActionReject");
+            curP = curP.setDefaultAccept(false);
             break;
 
           case SetLocalDefaultActionAccept:
-            p.debug("SetLocalDefaultActionAccept");
-            p = p.setDefaultAcceptLocal(true);
+            curP.debug("SetLocalDefaultActionAccept");
+            curP = curP.setDefaultAcceptLocal(true);
             break;
 
           case SetLocalDefaultActionReject:
-            p.debug("SetLocalDefaultActionReject");
-            p = p.setDefaultAcceptLocal(false);
+            curP.debug("SetLocalDefaultActionReject");
+            curP = curP.setDefaultAcceptLocal(false);
             break;
 
           case ReturnLocalDefaultAction:
-            p.debug("ReturnLocalDefaultAction");
+            curP.debug("ReturnLocalDefaultAction");
             // TODO: need to set local default action in an environment
-            if (p.getDefaultAcceptLocal()) {
+            if (curP.getDefaultAcceptLocal()) {
               result = returnValue(result, true);
             } else {
               result = returnValue(result, false);
@@ -463,17 +466,17 @@ class TransferBDD {
             break;
 
           case FallThrough:
-            p.debug("Fallthrough");
+            curP.debug("Fallthrough");
             result = fallthrough(result);
             break;
 
           case Return:
             // TODO: assumming this happens at the end of the function, so it is ignored for now.
-            p.debug("Return");
+            curP.debug("Return");
             break;
 
           case RemovePrivateAs:
-            p.debug("RemovePrivateAs");
+            curP.debug("RemovePrivateAs");
             // System.out.println("Warning: use of unimplemented feature RemovePrivateAs");
             break;
 
@@ -482,22 +485,22 @@ class TransferBDD {
         }
 
       } else if (stmt instanceof If) {
-        p.debug("If");
+        curP.debug("If");
         If i = (If) stmt;
-        TransferResult<TransferReturn, BDD> r = compute(i.getGuard(), p.indent());
+        TransferResult<TransferReturn, BDD> r = compute(i.getGuard(), curP.indent());
         BDD guard = r.getReturnValue().getSecond();
-        p.debug("guard: ");
+        curP.debug("guard: ");
 
         BDDRoute current = result.getReturnValue().getFirst();
 
-        TransferParam<BDDRoute> pTrue = p.indent().setData(current.deepCopy());
-        TransferParam<BDDRoute> pFalse = p.indent().setData(current.deepCopy());
-        p.debug("True Branch");
+        TransferParam<BDDRoute> pTrue = curP.indent().setData(current.deepCopy());
+        TransferParam<BDDRoute> pFalse = curP.indent().setData(current.deepCopy());
+        curP.debug("True Branch");
         TransferResult<TransferReturn, BDD> trueBranch = compute(i.getTrueStatements(), pTrue);
-        p.debug("True Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
-        p.debug("False Branch");
+        curP.debug("True Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
+        curP.debug("False Branch");
         TransferResult<TransferReturn, BDD> falseBranch = compute(i.getFalseStatements(), pFalse);
-        p.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
+        curP.debug("False Branch: " + trueBranch.getReturnValue().getFirst().hashCode());
 
         BDDRoute r1 = trueBranch.getReturnValue().getFirst();
         BDDRoute r2 = falseBranch.getReturnValue().getFirst();
@@ -528,79 +531,81 @@ class TransferBDD {
                 .setReturnAssignedValue(returnAss)
                 .setFallthroughValue(fallThrough);
 
-        p.debug("If return: " + result.getReturnValue().getFirst().hashCode());
+        curP.debug("If return: " + result.getReturnValue().getFirst().hashCode());
 
       } else if (stmt instanceof SetDefaultPolicy) {
-        p.debug("SetDefaultPolicy");
-        p = p.setDefaultPolicy((SetDefaultPolicy) stmt);
+        curP.debug("SetDefaultPolicy");
+        curP = curP.setDefaultPolicy((SetDefaultPolicy) stmt);
 
       } else if (stmt instanceof SetMetric) {
-        p.debug("SetMetric");
+        curP.debug("SetMetric");
         SetMetric sm = (SetMetric) stmt;
         LongExpr ie = sm.getMetric();
-        BDD isBGP = p.getData().getProtocolHistory().value(Protocol.BGP);
+        BDD isBGP = curP.getData().getProtocolHistory().value(Protocol.BGP);
         BDD updateMed = isBGP.and(result.getReturnAssignedValue());
         BDD updateMet = isBGP.not().and(result.getReturnAssignedValue());
-        BDDInteger newValue = applyLongExprModification(p.indent(), p.getData().getMetric(), ie);
-        BDDInteger med = ite(updateMed, p.getData().getMed(), newValue);
-        BDDInteger met = ite(updateMet, p.getData().getMetric(), newValue);
-        p.getData().setMetric(met);
-        p.getData().setMetric(med);
+        BDDInteger newValue =
+            applyLongExprModification(curP.indent(), curP.getData().getMetric(), ie);
+        BDDInteger med = ite(updateMed, curP.getData().getMed(), newValue);
+        BDDInteger met = ite(updateMet, curP.getData().getMetric(), newValue);
+        curP.getData().setMetric(met);
+        curP.getData().setMetric(med);
 
       } else if (stmt instanceof SetOspfMetricType) {
-        p.debug("SetOspfMetricType");
+        curP.debug("SetOspfMetricType");
         SetOspfMetricType somt = (SetOspfMetricType) stmt;
         OspfMetricType mt = somt.getMetricType();
         BDDDomain<OspfType> current = result.getReturnValue().getFirst().getOspfMetric();
         BDDDomain<OspfType> newValue = new BDDDomain<>(current);
         if (mt == OspfMetricType.E1) {
-          p.indent().debug("Value: E1");
+          curP.indent().debug("Value: E1");
           newValue.setValue(OspfType.E1);
         } else {
-          p.indent().debug("Value: E2");
+          curP.indent().debug("Value: E2");
           newValue.setValue(OspfType.E1);
         }
-        newValue = ite(result.getReturnAssignedValue(), p.getData().getOspfMetric(), newValue);
-        p.getData().setOspfMetric(newValue);
+        newValue = ite(result.getReturnAssignedValue(), curP.getData().getOspfMetric(), newValue);
+        curP.getData().setOspfMetric(newValue);
 
       } else if (stmt instanceof SetLocalPreference) {
-        p.debug("SetLocalPreference");
+        curP.debug("SetLocalPreference");
         SetLocalPreference slp = (SetLocalPreference) stmt;
         IntExpr ie = slp.getLocalPreference();
-        BDDInteger newValue = applyIntExprModification(p.indent(), p.getData().getLocalPref(), ie);
-        newValue = ite(result.getReturnAssignedValue(), p.getData().getLocalPref(), newValue);
-        p.getData().setLocalPref(newValue);
+        BDDInteger newValue =
+            applyIntExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
+        newValue = ite(result.getReturnAssignedValue(), curP.getData().getLocalPref(), newValue);
+        curP.getData().setLocalPref(newValue);
 
       } else if (stmt instanceof AddCommunity) {
-        p.debug("AddCommunity");
+        curP.debug("AddCommunity");
         AddCommunity ac = (AddCommunity) stmt;
         Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
         for (CommunityVar cvar : comms) {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            p.indent().debug("Value: " + cvar);
-            BDD comm = p.getData().getCommunities().get(cvar);
+            curP.indent().debug("Value: " + cvar);
+            BDD comm = curP.getData().getCommunities().get(cvar);
             BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-            p.indent().debug("New Value: " + newValue);
-            p.getData().getCommunities().put(cvar, newValue);
+            curP.indent().debug("New Value: " + newValue);
+            curP.getData().getCommunities().put(cvar, newValue);
           }
         }
 
       } else if (stmt instanceof SetCommunity) {
-        p.debug("SetCommunity");
+        curP.debug("SetCommunity");
         SetCommunity sc = (SetCommunity) stmt;
         Set<CommunityVar> comms = _graph.findAllCommunities(_conf, sc.getExpr());
         for (CommunityVar cvar : comms) {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            p.indent().debug("Value: " + cvar);
-            BDD comm = p.getData().getCommunities().get(cvar);
+            curP.indent().debug("Value: " + cvar);
+            BDD comm = curP.getData().getCommunities().get(cvar);
             BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.one());
-            p.indent().debug("New Value: " + newValue);
-            p.getData().getCommunities().put(cvar, newValue);
+            curP.indent().debug("New Value: " + newValue);
+            curP.getData().getCommunities().put(cvar, newValue);
           }
         }
 
       } else if (stmt instanceof DeleteCommunity) {
-        p.debug("DeleteCommunity");
+        curP.debug("DeleteCommunity");
         DeleteCommunity ac = (DeleteCommunity) stmt;
         Set<CommunityVar> comms = _graph.findAllCommunities(_conf, ac.getExpr());
         Set<CommunityVar> toDelete = new HashSet<>();
@@ -615,35 +620,35 @@ class TransferBDD {
         // Delete the comms
         for (CommunityVar cvar : toDelete) {
           if (!_policyQuotient.getCommsAssignedButNotMatched().contains(cvar)) {
-            p.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
-            BDD comm = p.getData().getCommunities().get(cvar);
+            curP.indent().debug("Value: " + cvar.getValue() + ", " + cvar.getType());
+            BDD comm = curP.getData().getCommunities().get(cvar);
             BDD newValue = ite(result.getReturnAssignedValue(), comm, factory.zero());
-            p.indent().debug("New Value: " + newValue);
-            p.getData().getCommunities().put(cvar, newValue);
+            curP.indent().debug("New Value: " + newValue);
+            curP.getData().getCommunities().put(cvar, newValue);
           }
         }
 
       } else if (stmt instanceof RetainCommunity) {
-        p.debug("RetainCommunity");
+        curP.debug("RetainCommunity");
         // no op
 
       } else if (stmt instanceof PrependAsPath) {
-        p.debug("PrependAsPath");
+        curP.debug("PrependAsPath");
         PrependAsPath pap = (PrependAsPath) stmt;
         Integer prependCost = prependLength(pap.getExpr());
-        p.indent().debug("Cost: " + prependCost);
-        BDDInteger met = p.getData().getMetric();
+        curP.indent().debug("Cost: " + prependCost);
+        BDDInteger met = curP.getData().getMetric();
         BDDInteger newValue = met.add(BDDInteger.makeFromValue(met.getFactory(), 32, prependCost));
-        newValue = ite(result.getReturnAssignedValue(), p.getData().getMetric(), newValue);
-        p.getData().setMetric(newValue);
+        newValue = ite(result.getReturnAssignedValue(), curP.getData().getMetric(), newValue);
+        curP.getData().setMetric(newValue);
 
       } else if (stmt instanceof SetOrigin) {
-        p.debug("SetOrigin");
+        curP.debug("SetOrigin");
         // System.out.println("Warning: use of unimplemented feature SetOrigin");
         // TODO: implement me
 
       } else if (stmt instanceof SetNextHop) {
-        p.debug("SetNextHop");
+        curP.debug("SetNextHop");
         // System.out.println("Warning: use of unimplemented feature SetNextHop");
         // TODO: implement me
 
@@ -653,12 +658,12 @@ class TransferBDD {
     }
 
     // If this is the outermost call, then we relate the variables
-    if (p.getInitialCall()) {
-      p.debug("InitialCall finalizing");
+    if (curP.getInitialCall()) {
+      curP.debug("InitialCall finalizing");
       // Apply the default action
       if (!doesReturn) {
-        p.debug("Applying default action: " + p.getDefaultAccept());
-        if (p.getDefaultAccept()) {
+        curP.debug("Applying default action: " + curP.getDefaultAccept());
+        if (curP.getDefaultAccept()) {
           result = returnValue(result, true);
         } else {
           result = returnValue(result, false);

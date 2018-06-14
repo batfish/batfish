@@ -15,6 +15,26 @@ AUTHENTICATION_TYPE
     'authentication-type'
 ;
 
+AUTO
+:
+    'auto'
+;
+
+COMMENT
+:
+    'comment'
+;
+
+CONFIG
+:
+    'config'
+;
+
+DEVICES
+:
+    'devices'
+;
+
 DEVICECONFIG
 :
     'deviceconfig'
@@ -25,9 +45,54 @@ DNS_SETTING
     'dns-setting'
 ;
 
+DOWN
+:
+    'down'
+;
+
+ETHERNET
+:
+    'ethernet'
+;
+
 HOSTNAME
 :
     'hostname'
+;
+
+INTERFACE
+:
+    'interface'
+;
+
+IP
+:
+    'ip'
+;
+
+LAYER3
+:
+    'layer3'
+;
+
+LINK_STATUS
+:
+    'link-status'
+;
+
+LOG_SETTINGS
+:
+    'log-settings'
+;
+
+MTU
+:
+    'mtu'
+;
+
+NETWORK
+:
+    'network'
 ;
 
 NTP_SERVER_ADDRESS
@@ -60,6 +125,11 @@ SECONDARY_NTP_SERVER
     'secondary-ntp-server'
 ;
 
+SERVER
+:
+    'server'
+;
+
 SERVERS
 :
     'servers'
@@ -70,12 +140,37 @@ SET
     'set'
 ;
 
+SHARED
+:
+    'shared'
+;
+
+SYSLOG
+:
+    'syslog'
+;
+
 SYSTEM
 :
     'system'
 ;
 
+UP
+:
+    'up'
+;
+
 // Complex tokens
+
+DEC
+:
+    F_Digit+
+;
+
+DOUBLE_QUOTED_STRING
+:
+    '"' ~'"'* '"'
+;
 
 IP_ADDRESS
 :
@@ -89,16 +184,21 @@ IP_PREFIX
 
 LINE_COMMENT
 :
-   (
-      '#'
-      | '!'
-   )
-   F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
+    (
+        '#'
+        | '!'
+    )
+    F_NonNewlineChar* F_Newline+ -> channel ( HIDDEN )
 ;
 
 NEWLINE
 :
     F_Newline+
+;
+
+SINGLE_QUOTED_STRING
+:
+    '\'' ~'\''* '\''
 ;
 
 VARIABLE

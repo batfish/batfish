@@ -22,7 +22,7 @@ public abstract class NodeRoleRegexLocationSpecifierFactory
       throw new BatfishException("required input format is <role dimension>:<role name regex>");
     }
 
-    return buildLocationSpecifier(parts[0], Pattern.compile(parts[1]));
+    return buildLocationSpecifier(parts[0], Pattern.compile(parts[1], Pattern.CASE_INSENSITIVE));
   }
 
   public abstract LocationSpecifier buildLocationSpecifier(

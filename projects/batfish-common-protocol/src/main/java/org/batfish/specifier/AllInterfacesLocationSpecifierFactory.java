@@ -3,10 +3,12 @@ package org.batfish.specifier;
 import com.google.auto.service.AutoService;
 
 @AutoService(LocationSpecifierFactory.class)
-public class AllInterfacesLocationSpecifierFactory implements LocationSpecifierFactory {
+public final class AllInterfacesLocationSpecifierFactory implements LocationSpecifierFactory {
+  public static final String NAME = AllInterfacesLocationSpecifierFactory.class.getSimpleName();
+
   @Override
   public String getName() {
-    return getClass().getSimpleName();
+    return NAME;
   }
 
   @Override

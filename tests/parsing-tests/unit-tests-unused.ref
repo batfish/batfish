@@ -1451,12 +1451,21 @@
             5
           ]
         }
+      },
+      "unused:vlan:unused-vlan" : {
+        "description" : "Unused structure of type: 'vlan' with name: 'unused-vlan'",
+        "files" : {
+          "juniper_interfaces" : [
+            15,
+            16
+          ]
+        }
       }
     },
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 142
+      "numResults" : 143
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -2202,6 +2211,14 @@
           ],
           "test2" : [
             26
+          ]
+        }
+      },
+      "juniper_interfaces" : {
+        "vlan" : {
+          "unused-vlan" : [
+            15,
+            16
           ]
         }
       },

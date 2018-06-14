@@ -20,13 +20,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.answers.Answer;
-import org.batfish.datamodel.answers.BdpAnswerElement;
-import org.batfish.datamodel.collections.IbgpTopology;
+import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.dataplane.TracerouteEngineImpl;
 
+/** A batfish plugin that registers the Incremental Batfish Data Plane (ibdp) Engine. */
 @AutoService(Plugin.class)
 public class IncrementalDataPlanePlugin extends DataPlanePlugin {
 
@@ -50,15 +48,12 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   @Override
   public ComputeDataPlaneResult computeDataPlane(
       boolean differentialContext, Map<String, Configuration> configurations, Topology topology) {
-    Answer answer = new Answer();
-    BdpAnswerElement ae = new BdpAnswerElement();
-    answer.addAnswerElement(ae);
     Set<BgpAdvertisement> externalAdverts = _batfish.loadExternalBgpAnnouncements(configurations);
-    IncrementalDataPlane dp =
-        _engine.computeDataPlane(
-            differentialContext, configurations, topology, externalAdverts, ae);
+    ComputeDataPlaneResult answer =
+        _engine.computeDataPlane(differentialContext, configurations, topology, externalAdverts);
     double averageRoutes =
-        dp.getNodes()
+        ((IncrementalDataPlane) answer._dataPlane)
+            .getNodes()
             .values()
             .stream()
             .flatMap(n -> n.getVirtualRouters().values().stream())
@@ -67,8 +62,10 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
             .orElse(0.00d);
     _logger.infof(
         "Generated data-plane for testrig:%s; iterations:%s, avg entries per node:%.2f\n",
-        _batfish.getTestrigName(), ae.getDependentRoutesIterations(), averageRoutes);
-    return new ComputeDataPlaneResult(ae, dp);
+        _batfish.getTestrigName(),
+        ((IncrementalBdpAnswerElement) answer._answerElement).getDependentRoutesIterations(),
+        averageRoutes);
+    return answer;
   }
 
   @Override
@@ -125,26 +122,16 @@ public class IncrementalDataPlanePlugin extends DataPlanePlugin {
   }
 
   @Override
-  public IbgpTopology getIbgpNeighbors() {
-    throw new UnsupportedOperationException("no implementation for generated method");
-    // TODO Auto-generated method stub
-  }
-
-  @Override
   public SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(DataPlane dp) {
-    return _engine.getRoutes((IncrementalDataPlane) dp);
+    return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dp);
   }
 
   @Override
-  public void processFlows(
-      Set<Flow> flows,
-      DataPlane dataPlane,
-      boolean ignoreAcls,
-      ForwardingAnalysis forwardingAnalysis) {
+  public void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls) {
     _flowTraces.put(
         (IncrementalDataPlane) dataPlane,
         TracerouteEngineImpl.getInstance()
-            .processFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls, forwardingAnalysis));
+            .processFlows(dataPlane, flows, dataPlane.getFibs(), ignoreAcls));
   }
 
   private IncrementalDataPlane loadDataPlane() {

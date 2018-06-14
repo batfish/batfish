@@ -56199,7 +56199,17 @@
             }
           }
         },
-        "juniper_interfaces" : { },
+        "juniper_interfaces" : {
+          "vlan" : {
+            "unused-vlan" : {
+              "definitionLines" : [
+                15,
+                16
+              ],
+              "numReferrers" : 0
+            }
+          }
+        },
         "juniper_isis" : { },
         "juniper_l2_learning" : { },
         "juniper_misc" : { },

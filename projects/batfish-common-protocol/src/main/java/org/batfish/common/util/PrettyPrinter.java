@@ -1,8 +1,8 @@
 package org.batfish.common.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import java.util.LinkedList;
-import java.util.TreeMap;
+import java.util.List;
+import java.util.Map;
 
 public class PrettyPrinter {
 
@@ -22,10 +22,10 @@ public class PrettyPrinter {
         sb.append(print(prefixStr + "  ", value));
       } else if (key.startsWith(JsonDiff.CHANGED_ITEM_CODE)) {
         sb.append(prefixStr + "~[" + JsonDiff.getStringWithoutCode(key) + "]\n");
-        TreeMap<?, ?> treeMap = (TreeMap<?, ?>) value;
+        Map<?, ?> map = (Map<?, ?>) value;
 
-        Object baseValue = treeMap.get(JsonDiff.CHANGED_ITEM_BASE);
-        Object deltaValue = treeMap.get(JsonDiff.CHANGED_ITEM_DELTA);
+        Object baseValue = map.get(JsonDiff.CHANGED_ITEM_BASE);
+        Object deltaValue = map.get(JsonDiff.CHANGED_ITEM_DELTA);
 
         sb.append(prefixStr + "BASE\n");
         sb.append(print(prefixStr + " ", baseValue));
@@ -40,7 +40,7 @@ public class PrettyPrinter {
     return sb.toString();
   }
 
-  private static String print(String prefixStr, LinkedList<?> list) {
+  private static String print(String prefixStr, List<?> list) {
     final StringBuilder sb = new StringBuilder();
     for (Object obj : list) {
       sb.append(print(prefixStr, obj));
@@ -52,10 +52,10 @@ public class PrettyPrinter {
     final StringBuilder sb = new StringBuilder();
     if (value instanceof JsonDiff) {
       sb.append(((JsonDiff) value).prettyPrint(prefixStr + "  "));
-    } else if (value instanceof TreeMap<?, ?>) {
-      sb.append(print(prefixStr + "  ", (TreeMap<?, ?>) value));
-    } else if (value instanceof LinkedList<?>) {
-      sb.append(print(prefixStr + "  ", (LinkedList<?>) value));
+    } else if (value instanceof Map<?, ?>) {
+      sb.append(print(prefixStr + "  ", (Map<?, ?>) value));
+    } else if (value instanceof List<?>) {
+      sb.append(print(prefixStr + "  ", (List<?>) value));
     } else if (value instanceof String) {
       sb.append(prefixStr + "  " + value + "\n");
     } else {
@@ -68,11 +68,11 @@ public class PrettyPrinter {
     return sb.toString();
   }
 
-  private static String print(String prefixStr, TreeMap<?, ?> treeMap) {
+  private static String print(String prefixStr, Map<?, ?> map) {
     final StringBuilder sb = new StringBuilder();
-    for (Object keyObject : treeMap.keySet()) {
+    for (Object keyObject : map.keySet()) {
       String key = (String) keyObject;
-      Object value = treeMap.get(key);
+      Object value = map.get(key);
 
       sb.append(prefixStr + key + "\n");
       sb.append(print(prefixStr + "  ", value));
