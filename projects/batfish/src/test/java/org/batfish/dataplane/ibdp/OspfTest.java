@@ -35,7 +35,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.ospf.NssaSettings;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
@@ -497,8 +496,9 @@ public class OspfTest {
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     IncrementalDataPlane dp =
-        engine.computeDataPlane(
-            false, configurations, topology, Collections.emptySet(), new BdpAnswerElement());
+        (IncrementalDataPlane)
+            engine.computeDataPlane(false, configurations, topology, Collections.emptySet())
+                ._dataPlane;
 
     return IncrementalBdpEngine.getRoutes(dp);
   }

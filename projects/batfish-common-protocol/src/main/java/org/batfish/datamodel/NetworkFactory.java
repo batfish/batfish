@@ -31,7 +31,7 @@ public class NetworkFactory {
       }
     }
 
-    long generateLong() {
+    protected long generateLong() {
       checkNetworkFactory("long");
       return _networkFactory.generateLong(_outputClass);
     }
@@ -85,11 +85,11 @@ public class NetworkFactory {
   }
 
   public OspfArea.Builder ospfAreaBuilder() {
-    return new OspfArea.Builder(this);
+    return OspfArea.builder(this);
   }
 
   public OspfProcess.Builder ospfProcessBuilder() {
-    return new OspfProcess.Builder(this);
+    return OspfProcess.builder(this);
   }
 
   public RipProcess.Builder ripProcessBuilder() {

@@ -96,6 +96,10 @@ public class OspfArea extends ComparableStructure<Long> implements Serializable 
 
   private static final long serialVersionUID = 1L;
 
+  public static Builder builder(NetworkFactory networkFactory) {
+    return new Builder(networkFactory);
+  }
+
   private SortedSet<String> _interfaces;
 
   private NssaSettings _nssa;

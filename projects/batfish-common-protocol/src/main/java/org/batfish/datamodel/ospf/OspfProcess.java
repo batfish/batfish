@@ -117,6 +117,10 @@ public class OspfProcess implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  public static Builder builder(NetworkFactory networkFactory) {
+    return new Builder(networkFactory);
+  }
+
   private SortedMap<Long, OspfArea> _areas;
 
   private String _exportPolicy;
@@ -257,6 +261,16 @@ public class OspfProcess implements Serializable {
     }
   }
 
+  /**
+   * An ABR (Area Border Router) has at least one interface in area 0, and at least one interface in
+   * another area.
+   */
+  @JsonIgnore
+  public boolean isAreaBorderRouter() {
+    Set<Long> areas = _areas.keySet();
+    return areas.contains(0L) && areas.size() > 1;
+  }
+
   public void setAreas(SortedMap<Long, OspfArea> areas) {
     _areas = areas;
   }
@@ -316,15 +330,5 @@ public class OspfProcess implements Serializable {
 
   public void setRouterId(Ip id) {
     _routerId = id;
-  }
-
-  /**
-   * An ABR (Area Border Router) has at least one interface in area 0, and at least one interface in
-   * another area.
-   */
-  @JsonIgnore
-  public boolean isAreaBorderRouter() {
-    Set<Long> areas = _areas.keySet();
-    return areas.contains(0L) && areas.size() > 1;
   }
 }
