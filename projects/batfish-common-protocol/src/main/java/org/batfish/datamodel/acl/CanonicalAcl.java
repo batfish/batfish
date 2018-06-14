@@ -99,6 +99,8 @@ public final class CanonicalAcl {
   @Override
   public int hashCode() {
     if (_hashCode == 0) {
+      // Unfortunately IpAccessList's hashcode method only hashes the ACL's name, so it's necessary
+      // to hash each IpAccessList's lines rather than the object itself.
       _hashCode =
           Objects.hash(
               _acl.getLines(),
