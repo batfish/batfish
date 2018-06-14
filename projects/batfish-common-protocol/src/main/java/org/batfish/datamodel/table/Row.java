@@ -18,8 +18,12 @@ import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SchemaUtils;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Exclusion;
 
 /**
@@ -191,6 +195,10 @@ public class Row implements Comparable<Row> {
     return _data;
   }
 
+  public Integer getInteger(String column) {
+    return (Integer) get(column, Schema.INTEGER);
+  }
+
   /**
    * Returns the list of values in all columns declared as key in the metadata.
    *
@@ -211,6 +219,26 @@ public class Row implements Comparable<Row> {
   @Deprecated
   public List<Object> getKey(TableMetadata metadata) {
     return getKey(metadata.getColumnMetadata());
+  }
+
+  public NodeInterfacePair getInterface(String column) {
+    return (NodeInterfacePair) get(column, Schema.INTERFACE);
+  }
+
+  public Ip getIp(String column) {
+    return (Ip) get(column, Schema.IP);
+  }
+
+  public Node getNode(String column) {
+    return (Node) get(column, Schema.NODE);
+  }
+
+  public Prefix getPrefix(String column) {
+    return (Prefix) get(column, Schema.PREFIX);
+  }
+
+  public String getString(String column) {
+    return (String) get(column, Schema.STRING);
   }
 
   /**

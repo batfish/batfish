@@ -31,7 +31,6 @@ import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
-import org.batfish.datamodel.table.RowUtils;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.BgpSessionInfoBuilder;
@@ -244,16 +243,15 @@ public class BgpSessionStatusAnswerer extends Answerer {
    * @return The output object
    */
   public static BgpSessionInfo fromRow(Row row) {
-    Ip localIp = RowUtils.getIp(row, COL_LOCAL_IP);
-    SessionStatus configuredStatus =
-        SessionStatus.valueOf(RowUtils.getString(row, COL_CONFIGURED_STATUS));
-    Integer establishedNeighbors = RowUtils.getInteger(row, COL_ESTABLISHED_NEIGHBORS);
-    NodeInterfacePair localInterface = RowUtils.getInterface(row, COL_LOCAL_INTERFACE);
-    Node node = RowUtils.getNode(row, COL_NODE);
-    Node remoteNode = RowUtils.getNode(row, COL_REMOTE_NODE);
-    Prefix remotePrefix = RowUtils.getPrefix(row, COL_REMOTE_PREFIX);
-    SessionType sessionType = SessionType.valueOf(RowUtils.getString(row, COL_SESSION_TYPE));
-    String vrfName = RowUtils.getString(row, COL_VRF_NAME);
+    Ip localIp = row.getIp(COL_LOCAL_IP);
+    SessionStatus configuredStatus = SessionStatus.valueOf(row.getString(COL_CONFIGURED_STATUS));
+    Integer establishedNeighbors = row.getInteger(COL_ESTABLISHED_NEIGHBORS);
+    NodeInterfacePair localInterface = row.getInterface(COL_LOCAL_INTERFACE);
+    Node node = row.getNode(COL_NODE);
+    Node remoteNode = row.getNode(COL_REMOTE_NODE);
+    Prefix remotePrefix = row.getPrefix(COL_REMOTE_PREFIX);
+    SessionType sessionType = SessionType.valueOf(row.getString(COL_SESSION_TYPE));
+    String vrfName = row.getString(COL_VRF_NAME);
 
     return new BgpSessionInfo(
         configuredStatus,
