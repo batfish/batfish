@@ -1,15 +1,15 @@
 package org.batfish.dataplane.ibdp;
 
+import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
+import static org.batfish.common.util.CommonUtil.computeIpOwnersSimple;
 import static org.batfish.common.util.CommonUtil.computeIpVrfOwners;
 import static org.batfish.common.util.CommonUtil.computeNodeInterfaces;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
+import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
-import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Ordering;
 import com.google.common.graph.Network;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -23,7 +23,7 @@ import java.util.function.BiFunction;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.BdpOscillationException;
 import org.batfish.common.Version;
-import org.batfish.common.util.CommonUtil;
+import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpNeighbor;
@@ -31,19 +31,18 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.answers.BdpAnswerElement;
+import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.RibDelta;
 
-public class IncrementalBdpEngine {
+class IncrementalBdpEngine {
 
   private int _numIterations;
 
@@ -53,7 +52,7 @@ public class IncrementalBdpEngine {
 
   private final IncrementalDataPlaneSettings _settings;
 
-  public IncrementalBdpEngine(
+  IncrementalBdpEngine(
       IncrementalDataPlaneSettings settings,
       BatfishLogger logger,
       BiFunction<String, Integer, AtomicInteger> newBatch) {
@@ -62,29 +61,28 @@ public class IncrementalBdpEngine {
     _newBatch = newBatch;
   }
 
-  IncrementalDataPlane computeDataPlane(
+  ComputeDataPlaneResult computeDataPlane(
       boolean differentialContext,
       Map<String, Configuration> configurations,
       Topology topology,
-      Set<BgpAdvertisement> externalAdverts,
-      BdpAnswerElement ae) {
+      Set<BgpAdvertisement> externalAdverts) {
     _bfLogger.resetTimer();
-    IncrementalDataPlane dp = new IncrementalDataPlane();
+    IncrementalDataPlane.Builder dpBuilder = IncrementalDataPlane.builder();
     _bfLogger.info("\nComputing Data Plane using iBDP\n");
 
-    Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    Map<Ip, String> ipOwnersSimple = CommonUtil.computeIpOwnersSimple(ipOwners);
+    Map<Ip, Set<String>> ipOwners = computeIpNodeOwners(configurations, true);
+    Map<Ip, String> ipOwnersSimple = computeIpOwnersSimple(ipOwners);
     Map<Ip, Map<String, Set<String>>> ipVrfOwners =
         computeIpVrfOwners(true, computeNodeInterfaces(configurations));
-    dp.initIpOwners(ipOwners, ipOwnersSimple, ipVrfOwners);
+    dpBuilder.setIpOwners(ipOwners);
+    dpBuilder.setIpOwnersSimple(ipOwnersSimple);
+    dpBuilder.setIpVrfOwners(ipVrfOwners);
 
     // Generate our nodes, keyed by name, sorted for determinism
-    ImmutableSortedMap.Builder<String, Node> builder =
-        new ImmutableSortedMap.Builder<>(Ordering.natural());
-    configurations.values().forEach(c -> builder.put(c.getHostname(), new Node(c)));
-    ImmutableSortedMap<String, Node> nodes = builder.build();
-    dp.setNodes(nodes);
-    dp.setTopology(topology);
+    SortedMap<String, Node> nodes =
+        toImmutableSortedMap(configurations.values(), Configuration::getHostname, Node::new);
+    dpBuilder.setNodes(nodes);
+    dpBuilder.setTopology(topology);
 
     /*
      * Run the data plane computation here:
@@ -93,40 +91,33 @@ public class IncrementalBdpEngine {
      * - Third, let the EGP routes converge
      * - Finally, compute FIBs, return answer
      */
-    computeIgpDataPlane(nodes, topology, ae);
+    IncrementalBdpAnswerElement answerElement = new IncrementalBdpAnswerElement();
+    computeIgpDataPlane(nodes, topology, answerElement);
     computeFibs(nodes);
+
+    IncrementalDataPlane dp = dpBuilder.build();
 
     Network<BgpNeighbor, BgpSession> bgpTopology =
         initBgpTopology(
-            configurations,
-            dp.getIpOwners(),
-            false,
-            true,
-            TracerouteEngineImpl.getInstance(),
-            dp,
-            new ForwardingAnalysisImpl(
-                dp.getConfigurations(), dp.getRibs(), dp.getFibs(), dp.getTopology()));
+            configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
 
     boolean isOscillating =
         computeNonMonotonicPortionOfDataPlane(
-            nodes, topology, dp, externalAdverts, ae, true, bgpTopology);
+            nodes, topology, dp, externalAdverts, answerElement, true, bgpTopology);
     if (isOscillating) {
       // If we are oscillating here, network has no stable solution.
       throw new BdpOscillationException("Network has no stable solution");
     }
 
+    // update the dataplane with bgpTopology.
+    // this will cause forwarding analysis, etc to be reinitialized
+    dp = dpBuilder.setBgpTopology(bgpTopology).build();
+
     if (_settings.getCheckBgpSessionReachability()) {
       computeFibs(nodes);
       bgpTopology =
           initBgpTopology(
-              configurations,
-              dp.getIpOwners(),
-              false,
-              true,
-              TracerouteEngineImpl.getInstance(),
-              dp,
-              new ForwardingAnalysisImpl(
-                  dp.getConfigurations(), dp.getRibs(), dp.getFibs(), topology));
+              configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
       // Update queues (if necessary) based on new neighbor relationships
       final Network<BgpNeighbor, BgpSession> finalBgpTopology = bgpTopology;
       nodes
@@ -137,13 +128,13 @@ public class IncrementalBdpEngine {
                   n.getVirtualRouters().values().forEach(vr -> vr.initBgpQueues(finalBgpTopology)));
       // Do another pass on EGP computation in case any new sessions have been established
       computeNonMonotonicPortionOfDataPlane(
-          nodes, topology, dp, externalAdverts, ae, false, bgpTopology);
+          nodes, topology, dp, externalAdverts, answerElement, false, bgpTopology);
     }
     // Generate the answers from the computation, compute final FIBs
     computeFibs(nodes);
-    ae.setVersion(Version.getVersion());
+    answerElement.setVersion(Version.getVersion());
     _bfLogger.printElapsedTime();
-    return dp;
+    return new ComputeDataPlaneResult(answerElement, dp);
   }
 
   /**
@@ -332,7 +323,7 @@ public class IncrementalBdpEngine {
    *     contains the current recovery iteration.
    */
   private void computeIgpDataPlane(
-      SortedMap<String, Node> nodes, Topology topology, BdpAnswerElement ae) {
+      SortedMap<String, Node> nodes, Topology topology, IncrementalBdpAnswerElement ae) {
 
     int numOspfInternalIterations;
 
@@ -395,7 +386,7 @@ public class IncrementalBdpEngine {
       Topology topology,
       IncrementalDataPlane dp,
       Set<BgpAdvertisement> externalAdverts,
-      BdpAnswerElement ae,
+      IncrementalBdpAnswerElement ae,
       boolean firstPass,
       Network<BgpNeighbor, BgpSession> bgpTopology) {
 
@@ -508,12 +499,11 @@ public class IncrementalBdpEngine {
               computeBgpAdvertisementsToOutsideCompleted.incrementAndGet();
             });
 
-    dp.setBgpTopology(bgpTopology);
     ae.setDependentRoutesIterations(_numIterations);
     return false; // No oscillations
   }
 
-  private void compareToPreviousIteration(
+  private static void compareToPreviousIteration(
       Map<String, Node> nodes,
       AtomicBoolean dependentRoutesChanged,
       AtomicInteger checkFixedPointCompleted) {
@@ -561,9 +551,9 @@ public class IncrementalBdpEngine {
   }
 
   /**
-   * Compute the hashcode that uniquely identifies the state of hte network at a given iteration
+   * Compute the hashcode that uniquely identifies the state of the network at a given iteration
    *
-   * @param nodes map of nodes
+   * @param nodes map of nodes, keyed by hostname
    * @return integer hashcode
    */
   private static int computeIterationHashCode(Map<String, Node> nodes) {
@@ -575,8 +565,8 @@ public class IncrementalBdpEngine {
         .sum();
   }
 
-  private void computeIterationStatistics(
-      Map<String, Node> nodes, BdpAnswerElement ae, int dependentRoutesIterations) {
+  private static void computeIterationStatistics(
+      Map<String, Node> nodes, IncrementalBdpAnswerElement ae, int dependentRoutesIterations) {
     int numBgpBestPathRibRoutes =
         nodes
             .values()
@@ -607,29 +597,18 @@ public class IncrementalBdpEngine {
   /**
    * Return the main RIB routes for each node. Map structure: Hostname -> VRF name -> Set of routes
    */
-  SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
+  static SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       IncrementalDataPlane dp) {
     // Scan through all Nodes and their virtual routers, retrieve main rib routes
-    return dp.getNodes()
-        .entrySet()
-        .stream()
-        .collect(
-            ImmutableSortedMap.toImmutableSortedMap(
-                Comparator.naturalOrder(),
+    return toImmutableSortedMap(
+        dp.getNodes(),
+        Entry::getKey,
+        nodeEntry ->
+            toImmutableSortedMap(
+                nodeEntry.getValue().getVirtualRouters(),
                 Entry::getKey,
-                nodeEntry ->
-                    nodeEntry
-                        .getValue()
-                        .getVirtualRouters()
-                        .entrySet()
-                        .stream()
-                        .collect(
-                            ImmutableSortedMap.toImmutableSortedMap(
-                                Comparator.naturalOrder(),
-                                Entry::getKey,
-                                vrfEntry ->
-                                    ImmutableSortedSet.copyOf(
-                                        vrfEntry.getValue().getMainRib().getRoutes())))));
+                vrfEntry ->
+                    ImmutableSortedSet.copyOf(vrfEntry.getValue().getMainRib().getRoutes())));
   }
 
   /**
@@ -639,7 +618,7 @@ public class IncrementalBdpEngine {
    * @param topology the network topology
    * @return the number of iterations it took for internal OSPF routes to converge
    */
-  int initOspfInternalRoutes(Map<String, Node> nodes, Topology topology) {
+  private int initOspfInternalRoutes(Map<String, Node> nodes, Topology topology) {
     AtomicBoolean ospfInternalChanged = new AtomicBoolean(true);
     int ospfInternalIterations = 0;
     while (ospfInternalChanged.get()) {

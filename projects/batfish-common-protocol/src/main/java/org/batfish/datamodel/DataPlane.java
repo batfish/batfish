@@ -15,6 +15,8 @@ public interface DataPlane extends Serializable {
 
   Map<String, Map<String, Fib>> getFibs();
 
+  ForwardingAnalysis getForwardingAnalysis();
+
   /**
    * Return the map of Ip owners (as computed during dataplane computation). Map structure: Ip ->
    * Set of hostnames
@@ -30,10 +32,16 @@ public interface DataPlane extends Serializable {
   /** Return the set of all (main) RIBs. Map structure: hostname -> VRF name -> GenericRib */
   SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> getRibs();
 
+  /** Return the network (i.e., layer 3) topology */
   Topology getTopology();
 
+  /** Get a set of all layer 3 edges in the network */
   SortedSet<Edge> getTopologyEdges();
 
+  /**
+   * Return the summary of route prefix propagation. Map structure: Hostname -> VRF name -> Prefix
+   * -> action taken -> set of hostnames (peers).
+   */
   SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary();
 }

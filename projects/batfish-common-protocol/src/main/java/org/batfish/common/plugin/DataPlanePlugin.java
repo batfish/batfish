@@ -11,11 +11,13 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.DataPlaneAnswerElement;
-import org.batfish.datamodel.collections.IbgpTopology;
 
+/**
+ * Abstract class that defines the behavior expected for a Batfish plugin that implements data plane
+ * capabilities.
+ */
 public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlanePlugin {
 
   private static DataPlanePlugin DATA_PLANE_PLUGIN;
@@ -39,6 +41,10 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
     DATA_PLANE_PLUGIN_CLASS = dataPlanePlugin;
   }
 
+  /**
+   * Result of computing the dataplane. Combines a {@link DataPlane} with a {@link
+   * DataPlaneAnswerElement}
+   */
   public static final class ComputeDataPlaneResult {
     public final DataPlaneAnswerElement _answerElement;
     public final DataPlane _dataPlane;
@@ -68,18 +74,13 @@ public abstract class DataPlanePlugin extends BatfishPlugin implements IDataPlan
 
   public abstract List<FlowTrace> getHistoryFlowTraces(DataPlane dataPlane);
 
-  public abstract IbgpTopology getIbgpNeighbors();
-
   public abstract ITracerouteEngine getTracerouteEngine();
 
   public abstract SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> getRoutes(
       DataPlane dataPlane);
 
-  public abstract void processFlows(
-      Set<Flow> flows,
-      DataPlane dataPlane,
-      boolean ignoreAcls,
-      ForwardingAnalysis forwardingAnalysis);
+  public abstract void processFlows(Set<Flow> flows, DataPlane dataPlane, boolean ignoreAcls);
 
+  /** Return the name of this plugin */
   public abstract String getName();
 }

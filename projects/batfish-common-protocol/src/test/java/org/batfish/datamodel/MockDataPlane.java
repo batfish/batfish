@@ -21,6 +21,8 @@ public class MockDataPlane implements DataPlane {
 
     private Map<String, Map<String, Fib>> _fibs;
 
+    private ForwardingAnalysis _forwardingAnalysis;
+
     private SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> _ribs;
 
     @Nullable private Topology _topology;
@@ -54,6 +56,11 @@ public class MockDataPlane implements DataPlane {
       return this;
     }
 
+    public Builder setForwardingAnalysis(ForwardingAnalysis forwardingAnalysis) {
+      _forwardingAnalysis = forwardingAnalysis;
+      return this;
+    }
+
     public Builder setRibs(SortedMap<String, SortedMap<String, GenericRib<AbstractRoute>>> ribs) {
       _ribs = ribs;
       return this;
@@ -82,6 +89,8 @@ public class MockDataPlane implements DataPlane {
 
   private final Map<String, Map<String, Fib>> _fibs;
 
+  private final ForwardingAnalysis _forwardingAnalysis;
+
   private final Map<Ip, Set<String>> _ipOwners;
 
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
@@ -96,6 +105,7 @@ public class MockDataPlane implements DataPlane {
     _bgpTopology = builder._bgpTopology;
     _configurations = builder._configurations;
     _fibs = builder._fibs;
+    _forwardingAnalysis = builder._forwardingAnalysis;
     _ipOwners = builder._ipOwners;
     _ipVrfOwners = builder._ipVrfOwners;
     _ribs = ImmutableSortedMap.copyOf(builder._ribs);
@@ -106,6 +116,11 @@ public class MockDataPlane implements DataPlane {
   @Override
   public Map<String, Map<String, Fib>> getFibs() {
     return _fibs;
+  }
+
+  @Override
+  public ForwardingAnalysis getForwardingAnalysis() {
+    return _forwardingAnalysis;
   }
 
   @Override

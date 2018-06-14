@@ -35,7 +35,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
@@ -284,10 +283,11 @@ public class OspfTest {
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     IncrementalDataPlane dp =
-        engine.computeDataPlane(
-            false, configurations, topology, Collections.emptySet(), new BdpAnswerElement());
+        (IncrementalDataPlane)
+            engine.computeDataPlane(false, configurations, topology, Collections.emptySet())
+                ._dataPlane;
 
-    return engine.getRoutes(dp);
+    return IncrementalBdpEngine.getRoutes(dp);
   }
 
   @Test

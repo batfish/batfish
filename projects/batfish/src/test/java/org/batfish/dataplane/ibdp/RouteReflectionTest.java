@@ -15,6 +15,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
@@ -34,7 +35,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -226,7 +226,7 @@ public class RouteReflectionTest {
             new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
-    IncrementalDataPlane dp =
+    ComputeDataPlaneResult dpResult =
         engine.computeDataPlane(
             false,
             configurations,
@@ -249,9 +249,8 @@ public class RouteReflectionTest {
                     .setOriginatorIp(as3PeeringIp)
                     .setSrcIp(as3PeeringIp)
                     .setSrcNode("as3Edge")
-                    .build()),
-            new BdpAnswerElement());
-    return engine.getRoutes(dp);
+                    .build()));
+    return IncrementalBdpEngine.getRoutes((IncrementalDataPlane) dpResult._dataPlane);
   }
 
   private SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>>
@@ -361,22 +360,23 @@ public class RouteReflectionTest {
             (s, i) -> new AtomicInteger());
     Topology topology = CommonUtil.synthesizeTopology(configurations);
     IncrementalDataPlane dp =
-        engine.computeDataPlane(
-            false,
-            configurations,
-            topology,
-            ImmutableSet.of(
-                _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
-                    .setDstIp(edge1EbgpIfaceIp)
-                    .setDstNode(edge1.getName())
-                    .setNetwork(AS1_PREFIX)
-                    .setNextHopIp(as1PeeringIp)
-                    .setOriginatorIp(as1PeeringIp)
-                    .setSrcIp(as1PeeringIp)
-                    .setSrcNode("as1Edge")
-                    .build()),
-            new BdpAnswerElement());
-    return engine.getRoutes(dp);
+        (IncrementalDataPlane)
+            engine.computeDataPlane(
+                    false,
+                    configurations,
+                    topology,
+                    ImmutableSet.of(
+                        _ab.setAsPath(AsPath.ofSingletonAsSets(1L))
+                            .setDstIp(edge1EbgpIfaceIp)
+                            .setDstNode(edge1.getName())
+                            .setNetwork(AS1_PREFIX)
+                            .setNextHopIp(as1PeeringIp)
+                            .setOriginatorIp(as1PeeringIp)
+                            .setSrcIp(as1PeeringIp)
+                            .setSrcNode("as1Edge")
+                            .build()))
+                ._dataPlane;
+    return IncrementalBdpEngine.getRoutes(dp);
   }
 
   /** Initialize builders with values common to all tests */

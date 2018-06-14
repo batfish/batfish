@@ -59,7 +59,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.BdpAnswerElement;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
@@ -732,16 +731,12 @@ public class IncrementalDataPlanePluginTest {
             new BatfishLogger(BatfishLogger.LEVELSTR_DEBUG, false),
             (a, b) -> new AtomicInteger());
     Topology topology = new Topology(Collections.emptySortedSet());
-    IncrementalDataPlane dp =
+    ComputeDataPlaneResult dp =
         engine.computeDataPlane(
-            false,
-            ImmutableMap.of(c.getName(), c),
-            topology,
-            Collections.emptySet(),
-            new BdpAnswerElement());
+            false, ImmutableMap.of(c.getName(), c), topology, Collections.emptySet());
 
     // generating fibs should not crash
-    dp.getFibs();
+    dp._dataPlane.getFibs();
   }
 
   @Test

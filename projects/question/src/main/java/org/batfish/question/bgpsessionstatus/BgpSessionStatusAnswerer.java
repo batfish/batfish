@@ -19,7 +19,6 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
@@ -100,9 +99,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
               false,
               true,
               _batfish.getDataPlanePlugin().getTracerouteEngine(),
-              dp,
-              new ForwardingAnalysisImpl(
-                  configurations, dp.getRibs(), dp.getFibs(), dp.getTopology()));
+              dp);
     } else {
       establishedBgpTopology = null;
     }
