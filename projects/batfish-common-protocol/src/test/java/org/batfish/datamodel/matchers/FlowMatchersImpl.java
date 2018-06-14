@@ -21,7 +21,7 @@ public final class FlowMatchersImpl {
 
   public static class HasIngressNode extends FeatureMatcher<Flow, String> {
     HasIngressNode(Matcher<? super String> subMatcher) {
-      super(subMatcher, "ingressNode", "ingressNode");
+      super(subMatcher, "A Flow with ingressNode:", "ingressNode");
     }
 
     @Override
@@ -32,7 +32,7 @@ public final class FlowMatchersImpl {
 
   public static class HasIngressInterface extends FeatureMatcher<Flow, String> {
     HasIngressInterface(Matcher<? super String> subMatcher) {
-      super(subMatcher, "ingressInterface", "ingressInterface");
+      super(subMatcher, "A Flow with ingressInterface:", "ingressInterface");
     }
 
     @Override

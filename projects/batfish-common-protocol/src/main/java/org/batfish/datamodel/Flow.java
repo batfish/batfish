@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -476,32 +477,31 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   private final int _tcpFlagsUrg;
 
-  @JsonCreator
-  public Flow(
-      @Nonnull @JsonProperty(PROP_INGRESS_NODE) String ingressNode,
-      @Nullable @JsonProperty(PROP_INGRESS_INTERFACE) String ingressInterface,
-      @Nullable @JsonProperty(PROP_INGRESS_VRF) String ingressVrf,
-      @Nonnull @JsonProperty(PROP_SRC_IP) Ip srcIp,
-      @Nonnull @JsonProperty(PROP_DST_IP) Ip dstIp,
-      @JsonProperty(PROP_SRC_PORT) int srcPort,
-      @JsonProperty(PROP_DST_PORT) int dstPort,
-      @Nonnull @JsonProperty(PROP_IP_PROTOCOL) IpProtocol ipProtocol,
-      @JsonProperty(PROP_DSCP) int dscp,
-      @JsonProperty(PROP_ECN) int ecn,
-      @JsonProperty(PROP_FRAGMENT_OFFSET) int fragmentOffset,
-      @JsonProperty(PROP_ICMP_TYPE) int icmpType,
-      @JsonProperty(PROP_ICMP_CODE) int icmpCode,
-      @JsonProperty(PROP_PACKET_LENGTH) int packetLength,
-      @Nonnull @JsonProperty(PROP_STATE) State state,
-      @JsonProperty(PROP_TCP_FLAGS_CWR) int tcpFlagsCwr,
-      @JsonProperty(PROP_TCP_FLAGS_ECE) int tcpFlagsEce,
-      @JsonProperty(PROP_TCP_FLAGS_URG) int tcpFlagsUrg,
-      @JsonProperty(PROP_TCP_FLAGS_ACK) int tcpFlagsAck,
-      @JsonProperty(PROP_TCP_FLAGS_PSH) int tcpFlagsPsh,
-      @JsonProperty(PROP_TCP_FLAGS_RST) int tcpFlagsRst,
-      @JsonProperty(PROP_TCP_FLAGS_SYN) int tcpFlagsSyn,
-      @JsonProperty(PROP_TCP_FLAGS_FIN) int tcpFlagsFin,
-      @Nonnull @JsonProperty(PROP_TAG) String tag) {
+  private Flow(
+      @Nonnull String ingressNode,
+      @Nullable String ingressInterface,
+      @Nullable String ingressVrf,
+      @Nonnull Ip srcIp,
+      @Nonnull Ip dstIp,
+      int srcPort,
+      int dstPort,
+      @Nonnull IpProtocol ipProtocol,
+      int dscp,
+      int ecn,
+      int fragmentOffset,
+      int icmpType,
+      int icmpCode,
+      int packetLength,
+      @Nonnull State state,
+      int tcpFlagsCwr,
+      int tcpFlagsEce,
+      int tcpFlagsUrg,
+      int tcpFlagsAck,
+      int tcpFlagsPsh,
+      int tcpFlagsRst,
+      int tcpFlagsSyn,
+      int tcpFlagsFin,
+      @Nonnull String tag) {
     checkArgument(
         ingressInterface != null || ingressVrf != null,
         "Either ingressInterface or ingressVrf must not be null.");
@@ -532,6 +532,59 @@ public final class Flow implements Comparable<Flow>, Serializable {
     _tcpFlagsSyn = tcpFlagsSyn;
     _tcpFlagsFin = tcpFlagsFin;
     _tag = tag;
+  }
+
+  @JsonCreator
+  public static Flow createFlow(
+      @JsonProperty(PROP_INGRESS_NODE) String ingressNode,
+      @JsonProperty(PROP_INGRESS_INTERFACE) String ingressInterface,
+      @JsonProperty(PROP_INGRESS_VRF) String ingressVrf,
+      @JsonProperty(PROP_SRC_IP) Ip srcIp,
+      @JsonProperty(PROP_DST_IP) Ip dstIp,
+      @JsonProperty(PROP_SRC_PORT) int srcPort,
+      @JsonProperty(PROP_DST_PORT) int dstPort,
+      @JsonProperty(PROP_IP_PROTOCOL) IpProtocol ipProtocol,
+      @JsonProperty(PROP_DSCP) int dscp,
+      @JsonProperty(PROP_ECN) int ecn,
+      @JsonProperty(PROP_FRAGMENT_OFFSET) int fragmentOffset,
+      @JsonProperty(PROP_ICMP_TYPE) int icmpType,
+      @JsonProperty(PROP_ICMP_CODE) int icmpCode,
+      @JsonProperty(PROP_PACKET_LENGTH) int packetLength,
+      @JsonProperty(PROP_STATE) State state,
+      @JsonProperty(PROP_TCP_FLAGS_CWR) int tcpFlagsCwr,
+      @JsonProperty(PROP_TCP_FLAGS_ECE) int tcpFlagsEce,
+      @JsonProperty(PROP_TCP_FLAGS_URG) int tcpFlagsUrg,
+      @JsonProperty(PROP_TCP_FLAGS_ACK) int tcpFlagsAck,
+      @JsonProperty(PROP_TCP_FLAGS_PSH) int tcpFlagsPsh,
+      @JsonProperty(PROP_TCP_FLAGS_RST) int tcpFlagsRst,
+      @JsonProperty(PROP_TCP_FLAGS_SYN) int tcpFlagsSyn,
+      @JsonProperty(PROP_TCP_FLAGS_FIN) int tcpFlagsFin,
+      @JsonProperty(PROP_TAG) String tag) {
+    return new Flow(
+        requireNonNull(ingressNode, PROP_INGRESS_NODE + " must not be null"),
+        ingressInterface,
+        ingressVrf,
+        requireNonNull(srcIp, PROP_SRC_IP + " must not be null"),
+        requireNonNull(dstIp, PROP_DST_IP + " must not be null"),
+        srcPort,
+        dstPort,
+        requireNonNull(ipProtocol, PROP_IP_PROTOCOL + " must not be null"),
+        dscp,
+        ecn,
+        fragmentOffset,
+        icmpType,
+        icmpCode,
+        packetLength,
+        requireNonNull(state, PROP_STATE + " must not be null"),
+        tcpFlagsCwr,
+        tcpFlagsEce,
+        tcpFlagsUrg,
+        tcpFlagsAck,
+        tcpFlagsPsh,
+        tcpFlagsRst,
+        tcpFlagsSyn,
+        tcpFlagsFin,
+        requireNonNull(tag, PROP_TAG + " must not be null"));
   }
 
   @Override
