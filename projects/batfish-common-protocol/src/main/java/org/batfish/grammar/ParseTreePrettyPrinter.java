@@ -49,12 +49,10 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     StringBuilder sb = new StringBuilder();
 
     // A limit of <= 0 is treated as effectively no limit
-    if (maxStringLength <= 0) {
-      maxStringLength = Integer.MAX_VALUE;
-    }
+    int effectiveMaxStringLength = maxStringLength <= 0 ? Integer.MAX_VALUE : maxStringLength;
 
     ListIterator<String> iter = strings.listIterator();
-    while (maxStringLength > sb.length() && iter.hasNext()) {
+    while (effectiveMaxStringLength > sb.length() && iter.hasNext()) {
       String string = iter.next();
 
       // Assume we're okay adding the whole string even if it pushes us over the maxStringLength

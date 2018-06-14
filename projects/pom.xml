@@ -38,7 +38,7 @@
     <maven-jar-plugin.version>3.0.2</maven-jar-plugin.version>
     <maven-jxr-plugin.version>2.5</maven-jxr-plugin.version>
     <maven-license-plugin.version>1.13</maven-license-plugin.version>
-    <maven-pmd-plugin.version>3.8</maven-pmd-plugin.version>
+    <maven-pmd-plugin.version>3.10.0</maven-pmd-plugin.version>
     <maven-project-info-reports-plugin.version>2.9</maven-project-info-reports-plugin.version>
     <maven-shade-plugin.version>3.0.0</maven-shade-plugin.version>
 
@@ -77,6 +77,7 @@
     <lz4.version>1.4.1</lz4.version>
     <opentracing-jaxrs2.version>0.0.9</opentracing-jaxrs2.version>
     <opentracing.version>0.30.0</opentracing.version>
+		<pmd.version>6.4.0</pmd.version>
     <puppycrawl.version>8.0</puppycrawl.version>
     <slf4j.version>1.7.25</slf4j.version>
     <sqlite-jdbc.version>3.21.0</sqlite-jdbc.version>
@@ -228,6 +229,16 @@
               <groupId>org.batfish</groupId>
               <artifactId>build-tools</artifactId>
               <version>${project.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>net.sourceforge.pmd</groupId>
+              <artifactId>pmd-core</artifactId>
+              <version>${pmd.version}</version>
+            </dependency>
+            <dependency>
+              <groupId>net.sourceforge.pmd</groupId>
+              <artifactId>pmd-java</artifactId>
+              <version>${pmd.version}</version>
             </dependency>
           </dependencies>
         </plugin>

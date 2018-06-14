@@ -1141,8 +1141,9 @@ public class WorkMgrService {
 
       JSONObject retObject = new JSONObject();
 
-      analysisType = firstNonNull(analysisType, AnalysisType.USER);
-      for (String analysisName : Main.getWorkMgr().listAnalyses(containerName, analysisType)) {
+      for (String analysisName :
+          Main.getWorkMgr()
+              .listAnalyses(containerName, firstNonNull(analysisType, AnalysisType.USER))) {
 
         JSONObject analysisJson = new JSONObject();
 

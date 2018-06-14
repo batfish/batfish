@@ -287,7 +287,7 @@ class TracerouteEngineImplContext {
                     .get(nextHopInterface.getInterface());
 
             // Apply any relevant source NAT rules.
-            transformedFlow =
+            Flow newTransformedFlow =
                 applySourceNat(
                     transformedFlow,
                     srcInterface,
@@ -306,7 +306,7 @@ class TracerouteEngineImplContext {
                     namedIpSpaces,
                     originalFlow,
                     routesForThisNextHopInterface,
-                    transformedFlow);
+                    newTransformedFlow);
             if (edges != null) {
               processCurrentNextHopInterfaceEdges(
                   visitedEdges,
@@ -346,7 +346,7 @@ class TracerouteEngineImplContext {
                         routesForThisNextHopInterface,
                         null,
                         null,
-                        hopFlow(originalFlow, transformedFlow));
+                        hopFlow(originalFlow, newTransformedFlow));
                 neighborUnreachableHop.setFilterOut(transmissionContext._filterOutNotes);
                 hopsSoFar.add(neighborUnreachableHop);
                 FlowTrace trace =

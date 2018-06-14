@@ -13,7 +13,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-public class Topology implements Serializable {
+public final class Topology implements Serializable {
 
   private static final long serialVersionUID = 1L;
 

@@ -2,7 +2,6 @@ package org.batfish.coordinator;
 
 import com.google.common.base.Throwables;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +66,7 @@ public class PoolMgrService {
   public JSONArray getStatus() {
     try {
       _logger.info("PMS:getStatus\n");
-      HashMap<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
+      Map<String, String> poolStatus = Main.getPoolMgr().getPoolStatus();
       JSONObject obj = new JSONObject(poolStatus);
       return new JSONArray(Arrays.asList(CoordConsts.SVC_KEY_SUCCESS, obj.toString()));
     } catch (Exception e) {
@@ -128,7 +127,7 @@ public class PoolMgrService {
         Main.getPoolMgr().deleteFromPool(worker);
       }
 
-      if (workersToAdd.size() > 0) {
+      if (!workersToAdd.isEmpty()) {
         if (workerVersion == null) {
           return new JSONArray(
               Arrays.asList(CoordConsts.SVC_KEY_FAILURE, "Worker version not specified"));

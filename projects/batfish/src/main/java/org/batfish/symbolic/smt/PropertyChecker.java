@@ -250,7 +250,7 @@ public class PropertyChecker {
       System.out.println("Created destination classes");
       System.out.println("Num Classes: " + dcs.getHeaderspaceMap().size());
       long l = System.currentTimeMillis();
-      ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
+      List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, numFailures);
       l = System.currentTimeMillis() - l;
       System.out.println("Created BDDs");
       return new Tuple<>(ecs.parallelStream(), l);

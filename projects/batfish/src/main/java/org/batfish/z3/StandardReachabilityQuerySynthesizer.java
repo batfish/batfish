@@ -113,7 +113,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
     for (ForwardingAction action : _actions) {
       switch (action) {
         case ACCEPT:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr accept = new NodeAccept(finalNode);
               finalActionsBuilder.add(accept);
@@ -128,7 +128,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDrop(finalNode);
               finalActionsBuilder.add(drop);
@@ -139,7 +139,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_ACL:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAcl(finalNode);
               finalActionsBuilder.add(drop);
@@ -150,7 +150,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_ACL_IN:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAclIn(finalNode);
               finalActionsBuilder.add(drop);
@@ -161,7 +161,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_ACL_OUT:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropAclOut(finalNode);
               finalActionsBuilder.add(drop);
@@ -172,7 +172,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_NO_ROUTE:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropNoRoute(finalNode);
               finalActionsBuilder.add(drop);
@@ -183,7 +183,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case DROP_NULL_ROUTE:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeDropNullRoute(finalNode);
               finalActionsBuilder.add(drop);
@@ -194,7 +194,7 @@ public class StandardReachabilityQuerySynthesizer extends ReachabilityQuerySynth
           break;
 
         case NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK:
-          if (_finalNodes.size() > 0) {
+          if (!_finalNodes.isEmpty()) {
             for (String finalNode : _finalNodes) {
               StateExpr drop = new NodeNeighborUnreachable(finalNode);
               finalActionsBuilder.add(drop);

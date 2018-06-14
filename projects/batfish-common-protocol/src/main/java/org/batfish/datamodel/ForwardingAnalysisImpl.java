@@ -15,7 +15,7 @@ import java.util.function.Function;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 
-public class ForwardingAnalysisImpl implements ForwardingAnalysis {
+public final class ForwardingAnalysisImpl implements ForwardingAnalysis {
 
   private final Map<String, Map<String, IpSpace>> _arpReplies;
 

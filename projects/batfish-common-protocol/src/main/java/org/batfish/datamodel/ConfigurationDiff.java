@@ -35,7 +35,7 @@ public class ConfigurationDiff extends AnswerElement {
 
   private VrfsDiff _vrfsDiff;
 
-  @JsonCreator()
+  @JsonCreator
   private ConfigurationDiff() {}
 
   public ConfigurationDiff(Configuration before, Configuration after) {
