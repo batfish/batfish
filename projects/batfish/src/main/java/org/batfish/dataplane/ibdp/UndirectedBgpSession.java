@@ -19,7 +19,8 @@ public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
    * equals
    */
   private static final Comparator<BgpNeighbor> COMPARATOR =
-      Comparator.comparing(BgpNeighbor::getPrefix).thenComparing(BgpNeighbor::getOwner);
+      Comparator.comparing(BgpNeighbor::getPrefix)
+          .thenComparing(bgpNeighbor -> bgpNeighbor.getOwner().getName());
 
   UndirectedBgpSession(@Nonnull BgpNeighbor n1, @Nonnull BgpNeighbor n2) {
     if (COMPARATOR.compare(n1, n2) < 0) {

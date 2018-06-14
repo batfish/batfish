@@ -2,6 +2,7 @@ package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -468,9 +469,9 @@ class AbstractionBuilder {
     abstractConf.setRoutingPolicies(conf.getRoutingPolicies());
     abstractConf.setRoute6FilterLists(conf.getRoute6FilterLists());
 
-    SortedSet<Interface> toRetain = new TreeSet<>();
+    SortedSet<Interface> toRetain = new TreeSet<>(Comparator.comparing(Interface::getName));
     SortedSet<IpLink> ipNeighbors = new TreeSet<>();
-    SortedSet<BgpNeighbor> bgpNeighbors = new TreeSet<>();
+    SortedSet<BgpNeighbor> bgpNeighbors = new TreeSet<>(Comparator.comparing(BgpNeighbor::getName));
 
     List<GraphEdge> edges = _graph.getEdgeMap().get(conf.getName());
     for (GraphEdge ge : edges) {

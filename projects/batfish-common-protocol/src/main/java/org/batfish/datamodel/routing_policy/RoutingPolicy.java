@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
@@ -152,6 +153,11 @@ public class RoutingPolicy extends ComparableStructure<String> {
   @JsonPropertyDescription("The list of routing-policy statements to execute")
   public List<Statement> getStatements() {
     return _statements;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_statements);
   }
 
   public boolean process(

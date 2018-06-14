@@ -1081,6 +1081,29 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _accessVlan,
+        _active,
+        _address,
+        _allowedVlans,
+        _allAddresses,
+        _autoState,
+        _bandwidth,
+        _inboundFilter,
+        _incomingFilter,
+        _interfaceType,
+        _key,
+        _mtu,
+        _nativeVlan,
+        _outgoingFilter,
+        _proxyArp,
+        _routingPolicy,
+        _switchportMode,
+        _zone);
+  }
+
   public boolean isLoopback(ConfigurationFormat vendor) {
     String name = _key.toLowerCase();
     if (vendor == ConfigurationFormat.JUNIPER || vendor == ConfigurationFormat.FLAT_JUNIPER) {

@@ -1,7 +1,9 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,6 +21,17 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 
 public class Interface extends ComparableStructure<String> {
+
+  private static class NameComparator implements Comparator<Interface>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public int compare(Interface o1, Interface o2) {
+      return o1._key.compareTo(o2._key);
+    }
+  }
+
+  public static final Comparator<Interface> NAME_COMPARATOR = new NameComparator();
 
   private static final long serialVersionUID = 1L;
 

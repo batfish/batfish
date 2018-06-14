@@ -11,6 +11,7 @@ import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -90,6 +91,11 @@ public class RouteFilterList extends ComparableStructure<String> {
       _deniedCache.get().add(prefix);
     }
     return accept;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_lines);
   }
 
   public boolean permits(Prefix prefix) {

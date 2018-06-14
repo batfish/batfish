@@ -32,7 +32,6 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
     "A Configuration represents an autonomous network device, such as a router, host, switch, or "
         + "firewall.")
 public final class Configuration extends ComparableStructure<String> {
-
   public static class Builder extends NetworkFactoryBuilder<Configuration> {
 
     private ConfigurationFormat _configurationFormat;

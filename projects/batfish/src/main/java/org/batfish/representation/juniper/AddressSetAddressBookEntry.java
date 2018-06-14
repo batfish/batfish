@@ -15,7 +15,7 @@ public final class AddressSetAddressBookEntry extends AddressBookEntry {
 
   public AddressSetAddressBookEntry(String name) {
     super(name);
-    _entries = new TreeSet<>();
+    _entries = new TreeSet<>(AddressSetEntry.NAME_COMPARATOR);
   }
 
   @Override
