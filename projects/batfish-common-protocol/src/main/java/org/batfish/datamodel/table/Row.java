@@ -128,8 +128,8 @@ public class Row implements Comparable<Row> {
   /**
    * Returns a new {@link Row} with the given entries.
    *
-   * <p>{@code objects should be an even number of parameters, where the 0th and every even parameter
-   * is a {@link String} representing the name of a column.
+   * <p>{@code objects} should be an even number of parameters, where the 0th and every even
+   * parameter is a {@link String} representing the name of a column.
    */
   public static Row of(Object... objects) {
     return builder().rowOf(objects);
@@ -138,12 +138,12 @@ public class Row implements Comparable<Row> {
   /**
    * Returns a new {@link Row} with the given entries.
    *
-   * <p>{@code objects should be an even number of parameters, where the 0th and every even
+   * <p>{@code objects} should be an even number of parameters, where the 0th and every even
    * parameter is a {@link String} representing the name of a column. The columns names and the
-   * actual objects (in odd parameters) must be compliant with the metadata map in {@code columns).
+   * actual objects (in odd parameters) must be compliant with the metadata map in {@code columns}.
    */
   public static Row of(Map<String, ColumnMetadata> columns, Object... objects) {
-    return builder(columns).rowOf();
+    return builder(columns).rowOf(objects);
   }
 
   @JsonCreator
