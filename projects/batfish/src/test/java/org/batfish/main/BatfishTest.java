@@ -30,7 +30,9 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Edge;
@@ -40,6 +42,9 @@ import org.batfish.datamodel.answers.Answer;
 import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.vendor.VendorConfiguration;
 import org.junit.Rule;
@@ -49,6 +54,7 @@ import org.junit.rules.TemporaryFolder;
 
 /** Tests for {@link Batfish}. */
 public class BatfishTest {
+  private static final String PAN_TESTCONFIGS_PREFIX = "org/batfish/grammar/palo_alto/testconfigs/";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 
@@ -87,6 +93,46 @@ public class BatfishTest {
     assertThat(
         answer.getAnswerElements().get(0).prettyPrint(),
         containsString("Could not parse question"));
+  }
+
+  @Test
+  public void testFlattenConfig() throws IOException {
+    String nestedConfig = "nested-config-line-tracking";
+    Flattener flattener =
+        Batfish.flatten(
+            CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + nestedConfig),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            ConfigurationFormat.PALO_ALTO_NESTED,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+
+    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    assertThat(lineMap.getOriginalLine(2, 24), equalTo(4));
+    assertThat(lineMap.getOriginalLine(3, 24), equalTo(5));
+    assertThat(lineMap.getOriginalLine(3, 52), equalTo(7));
+    assertThat(lineMap.getOriginalLine(4, 54), equalTo(8));
+  }
+
+  @Test
+  public void testFlattenConfigBogus() throws IOException {
+    String nestedConfig = "nested-config-line-tracking-bogus";
+    Flattener flattener =
+        Batfish.flatten(
+            CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + nestedConfig),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            ConfigurationFormat.PALO_ALTO_NESTED,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+
+    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    assertThat(lineMap.getOriginalLine(2, 4), equalTo(2));
+    assertThat(lineMap.getOriginalLine(2, 33), equalTo(4));
+    assertThat(lineMap.getOriginalLine(3, 24), equalTo(5));
+    assertThat(lineMap.getOriginalLine(4, 52), equalTo(8));
+    assertThat(lineMap.getOriginalLine(6, 11), equalTo(15));
+    assertThat(lineMap.getOriginalLine(6, 21), equalTo(16));
+    assertThat(lineMap.getOriginalLine(7, 11), equalTo(15));
+    assertThat(lineMap.getOriginalLine(7, 21), equalTo(16));
   }
 
   @Test

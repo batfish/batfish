@@ -1,0 +1,12 @@
+# comment
+deviceconfig {
+    system {
+        hostname nested-config;
+        dns-setting {
+            servers {
+                primary 1.1.1.1;
+                secondary 2.2.2.2;
+            }
+        }
+    }
+}
