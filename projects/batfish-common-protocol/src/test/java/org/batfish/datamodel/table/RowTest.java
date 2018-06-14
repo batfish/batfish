@@ -131,11 +131,11 @@ public class RowTest {
 
   @Rule public ExpectedException _thrown = ExpectedException.none();
 
-  Row initRowThree() {
+  private Row initRowThree() {
     return Row.builder().put("col1", "value1").put("col2", "value2").put("col3", "value3").build();
   }
 
-  List<ColumnMetadata> initMetadataThree(
+  private List<ColumnMetadata> initMetadataThree(
       boolean keyCol1,
       boolean keyCol2,
       boolean keyCol3,
@@ -199,5 +199,20 @@ public class RowTest {
     assertThat(row.getValue(metadataNoValues), equalTo(ImmutableList.of()));
     assertThat(row.getValue(metadataOneValue), equalTo(ImmutableList.of("value2")));
     assertThat(row.getValue(metadataTwoValues), equalTo(ImmutableList.of("value1", "value3")));
+  }
+
+  @Test
+  public void ofUntyped() {
+    assertThat(Row.of("a", 5), equalTo(Row.builder().put("a", 5).build()));
+  }
+
+  @Test
+  public void ofTyped() {
+    assertThat(
+        Row.of(ImmutableMap.of("a", new ColumnMetadata("a", Schema.INTEGER, "desc")), "a", 5),
+        equalTo(Row.builder().put("a", 5).build()));
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage("Column 'b' is not present");
+    Row.of(ImmutableMap.of("a", new ColumnMetadata("a", Schema.INTEGER, "desc")), "b", 5);
   }
 }
