@@ -476,6 +476,83 @@ public class AclReachabilityTest {
   }
 
   @Test
+  public void testWithIpSpaceReferenceChain() throws IOException {
+    // Make sure it correctly dereferences a whole chain of IpSpaceReferences
+    _c1.setIpSpaces(
+        ImmutableSortedMap.of(
+            "ipSpace1",
+            new IpSpaceReference("ipSpace2"),
+            "ipSpace2",
+            new IpSpaceReference("ipSpace3"),
+            "ipSpace3",
+            new Ip("1.2.3.4").toIpSpace()));
+
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(new IpSpaceReference("ipSpace1"))
+                                    .build()))
+                        .build(),
+                    acceptingHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(Prefix.parse("1.2.3.4/32").toIpSpace())
+                            .build())))
+            .setName("acl")
+            .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    // Line 1 should be blocked by line 0
+    assertThat(
+        answer.getUnreachableLines(),
+        hasEntry(equalTo(_c1.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    AclReachabilityEntry blockedLine =
+        answer.getUnreachableLines().get(_c1.getName()).get(acl.getName()).first();
+    assertThat("Line 0 is blocking", blockedLine.getEarliestMoreGeneralLineIndex(), equalTo(0));
+    assertThat("Line 1 is blocked", blockedLine.getIndex(), equalTo(1));
+    assertThat("Same action", blockedLine.getDifferentAction(), equalTo(false));
+  }
+
+  @Test
+  public void testWithCircularIpSpaceReferenceChain() throws IOException {
+    // Make sure it identifies an undefined reference for a circular chain of IpSpaceReferences
+    _c1.setIpSpaces(
+        ImmutableSortedMap.of(
+            "ipSpace1",
+            new IpSpaceReference("ipSpace2"),
+            "ipSpace2",
+            new IpSpaceReference("ipSpace3"),
+            "ipSpace3",
+            new IpSpaceReference("ipSpace1")));
+
+    IpAccessListLine line =
+        IpAccessListLine.rejecting()
+            .setMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setSrcIps(new IpSpaceReference("ipSpace1")).build()))
+            .build();
+    IpAccessList acl = _aclb.setLines(ImmutableList.of(line)).setName("acl").build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    /* Line 0 should be unreachable due to undefined reference. */
+    assertThat(
+        answer.getUnreachableLines(),
+        hasEntry(equalTo(_c1.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    AclReachabilityEntry entry = answer.getUnreachableLines().get(_c1.getName()).get("acl").first();
+    assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry.getEarliestMoreGeneralLineName(),
+        equalTo(
+            "This line will never match any packet because it references an undefined structure."));
+  }
+
+  @Test
   public void testWithUndefinedIpSpaceReference() throws IOException {
     List<IpAccessListLine> aclLines =
         ImmutableList.of(
@@ -529,6 +606,44 @@ public class AclReachabilityTest {
     assertThat("Line 0 is blocking", entry.getEarliestMoreGeneralLineIndex(), equalTo(0));
     assertThat("Line 1 is blocked", entry.getIndex(), equalTo(1));
     assertThat("Same action", entry.getDifferentAction(), equalTo(false));
+  }
+
+  @Test
+  public void testWithUndefinedIpSpaceReferenceChain() throws IOException {
+    // Make sure it correctly interprets a chain of IpSpaceReferences ending with an undefined ref
+    _c1.setIpSpaces(
+        ImmutableSortedMap.of(
+            "ipSpace1",
+            new IpSpaceReference("ipSpace2"),
+            "ipSpace2",
+            new IpSpaceReference("ipSpace3")));
+
+    IpAccessList acl =
+        _aclb
+            .setLines(
+                ImmutableList.of(
+                    IpAccessListLine.accepting()
+                        .setMatchCondition(
+                            new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                    .setSrcIps(new IpSpaceReference("ipSpace1"))
+                                    .build()))
+                        .build()))
+            .setName("acl")
+            .build();
+
+    AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
+
+    // Line 0 should be unmatchable due to undefined reference
+    assertThat(
+        answer.getUnreachableLines(),
+        hasEntry(equalTo(_c1.getName()), hasEntry(equalTo(acl.getName()), hasSize(1))));
+    AclReachabilityEntry entry = answer.getUnreachableLines().get(_c1.getName()).get("acl").first();
+    assertThat(entry.getEarliestMoreGeneralLineIndex(), equalTo(-1));
+    assertThat(
+        entry.getEarliestMoreGeneralLineName(),
+        equalTo(
+            "This line will never match any packet because it references an undefined structure."));
   }
 
   @Test
