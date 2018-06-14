@@ -1,5 +1,6 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
@@ -8,6 +9,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
 import java.io.IOException;
@@ -61,6 +63,18 @@ public class PaloAltoGrammarTest {
 
     // Confirm both dns servers show up
     assertThat(c.getDnsServers(), containsInAnyOrder("1.9.10.99", "100.199.200.255"));
+  }
+
+  @Test
+  public void testFilesystemConfigFormat() throws IOException {
+    String hostname = "config-filesystem-format";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm alternate config format is parsed and extracted properly
+    // Confirm config devices set-line extraction works
+    assertThat(c, hasHostname(equalTo(hostname)));
+    // Confirm general config set-line extraction works
+    assertThat(c.getLoggingServers(), contains("2.2.2.2"));
   }
 
   @Test
