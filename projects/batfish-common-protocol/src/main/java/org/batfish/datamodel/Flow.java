@@ -535,7 +535,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   @JsonCreator
-  public static Flow createFlow(
+  private static Flow createFlow(
       @JsonProperty(PROP_INGRESS_NODE) String ingressNode,
       @JsonProperty(PROP_INGRESS_INTERFACE) String ingressInterface,
       @JsonProperty(PROP_INGRESS_VRF) String ingressVrf,
