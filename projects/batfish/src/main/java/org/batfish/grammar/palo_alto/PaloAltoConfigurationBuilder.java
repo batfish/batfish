@@ -1,5 +1,7 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+
 import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
@@ -12,6 +14,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
@@ -25,8 +28,9 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.SyslogServer;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
-
   private PaloAltoConfiguration _configuration;
+
+  private String _currentDeviceName;
 
   private Interface _currentInterface;
 
@@ -52,9 +56,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       Warnings warnings,
       Set<String> unimplementedFeatures,
       boolean unrecognizedAsRedFlag) {
+    _configuration = new PaloAltoConfiguration(unimplementedFeatures);
     _parser = parser;
     _text = text;
-    _configuration = new PaloAltoConfiguration(unimplementedFeatures);
     _unimplementedFeatures = unimplementedFeatures;
     _unrecognizedAsRedFlag = unrecognizedAsRedFlag;
     _w = warnings;
@@ -125,6 +129,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
       _configuration.setDnsServerPrimary(ctx.primary_name.getText());
     } else if (ctx.secondary_name != null) {
       _configuration.setDnsServerSecondary(ctx.secondary_name.getText());
+    }
+  }
+
+  @Override
+  public void enterSet_line_config_devices(Set_line_config_devicesContext ctx) {
+    if (ctx.name != null) {
+      String deviceName = ctx.name.getText();
+      _currentDeviceName = firstNonNull(_currentDeviceName, deviceName);
+      if (!_currentDeviceName.equals(deviceName)) {
+        /* Do not currently handle multiple device names, which presumably happens only if multiple
+         * physical devices are configured from a single config */
+        _w.redFlag("Multiple devices encountered: " + deviceName);
+      }
     }
   }
 

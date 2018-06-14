@@ -25,6 +25,16 @@ COMMENT
     'comment'
 ;
 
+CONFIG
+:
+    'config'
+;
+
+DEVICES
+:
+    'devices'
+;
+
 DEVICECONFIG
 :
     'deviceconfig'
