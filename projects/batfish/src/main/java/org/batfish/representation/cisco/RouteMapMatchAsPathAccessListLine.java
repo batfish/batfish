@@ -30,7 +30,6 @@ public class RouteMapMatchAsPathAccessListLine extends RouteMapMatchLine {
     for (String listName : _listNames) {
       IpAsPathAccessList list = cc.getAsPathAccessLists().get(listName);
       if (list != null) {
-        list.getReferers().put(this, "route-map match ip as-path access-list");
         disjuncts.add(new MatchAsPath(new NamedAsPathSet(listName)));
       }
     }

@@ -7,7 +7,6 @@ import java.io.Serializable;
 import org.batfish.common.BatfishException;
 
 public abstract class ComparableStructure<KeyT extends Comparable<? super KeyT>>
-    extends ReferenceCountedStructure
     implements Comparable<ComparableStructure<? extends KeyT>>, Serializable {
 
   protected static final String PROP_NAME = "name";
