@@ -1,16 +1,14 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serializable;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
-import org.batfish.common.util.ReferenceCountedStructure;
 
-public final class FirewallFilter extends ReferenceCountedStructure {
+public final class FirewallFilter implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
-
-  private final int _definitionLine;
 
   private final Family _family;
 
@@ -26,16 +24,11 @@ public final class FirewallFilter extends ReferenceCountedStructure {
 
   private final Map<String, FwTerm> _terms;
 
-  public FirewallFilter(String name, Family family, int definitionLine) {
-    _definitionLine = definitionLine;
+  public FirewallFilter(String name, Family family) {
     _family = family;
     _fromZone = null;
     _name = name;
     _terms = new LinkedHashMap<>();
-  }
-
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   public Family getFamily() {
