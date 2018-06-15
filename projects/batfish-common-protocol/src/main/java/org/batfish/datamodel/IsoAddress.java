@@ -1,49 +1,87 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.io.BaseEncoding;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.regex.Pattern;
+import javax.annotation.Nonnull;
+import org.batfish.common.BatfishException;
 
+/**
+ * First byte - AFI<br>
+ * Next 0-12 bytes - Area ID<br>
+ * Next 6 bytes - System ID<br>
+ * Last byte - NSEL<br>
+ *
+ * <p>A - AFI<br>
+ * B - Area ID<br>
+ * C - System ID<br>
+ * D - NSEL<br>
+ *
+ * <p>If odd number of bytes, canonical text format is:<br>
+ * AA.(BBBB.)^[0,6].CCCC.CCDD<br>
+ *
+ * <p>If even number of bytes, canonical text format is:<br>
+ * AA.(BBBB.)^[0,5].BBCC.CCCC.DD
+ */
 public final class IsoAddress implements Serializable {
 
   /** */
   private static final long serialVersionUID = 1L;
 
+  private static final int SYSTEM_ID_SIZE = 6;
+
+  private static final int AREA_ID_OFFSET = 1;
+
   private final byte _afi;
 
-  private final BigInteger _areaId;
+  private final byte[] _areaId;
 
   private final byte _nSel;
 
-  private final String _str;
-
-  private final long _systemId;
+  private final byte[] _systemId;
 
   @JsonCreator
-  public IsoAddress(String isoAddressStr) {
-    _str = isoAddressStr;
-    String[] parts = isoAddressStr.split("\\.");
-    int areaEndOffset = parts.length - 5;
-    BigInteger areaId = BigInteger.ZERO;
-    for (int i = areaEndOffset, shift = 0; i >= 1; i--) {
-      int currentIntVal = Integer.parseInt(parts[i], 16);
-      int currentNumBits = parts[i].length() * 4;
-      areaId = areaId.add(BigInteger.valueOf(currentIntVal).shiftLeft(shift));
-      shift += currentNumBits;
+  private static @Nonnull IsoAddress create(String isoAddressStr) {
+    return new IsoAddress(requireNonNull(isoAddressStr));
+  }
+
+  /**
+   * Create an ISO address from hexadecimal digits, optionally interspersed with period (.)
+   * characters that are ignored. See {@link IsoAddres} documentation for canonical text format.
+   */
+  public IsoAddress(@Nonnull String isoAddressStr) {
+    String trimmed = isoAddressStr.replaceAll(Pattern.quote("."), "");
+    int numChars = trimmed.length();
+    if (numChars % 2 != 0 || numChars < 16 || 40 < numChars) {
+      throw new BatfishException(
+          String.format(
+              "Expected an even number of hexadecimal digits representing 8-20 octets, but got: '%s' after trimming: '%s'",
+              trimmed, isoAddressStr));
     }
-    long systemId = 0L;
-    for (int i = parts.length - 2, shift = 0; i >= parts.length - 4; i--) {
-      long currentLongVal = Long.parseLong(parts[i], 16);
-      int currentNumBits = parts[i].length() * 4;
-      systemId += (currentLongVal << shift);
-      shift += currentNumBits;
+    byte[] all;
+    try {
+      all = BaseEncoding.base16().decode(trimmed);
+    } catch (IllegalArgumentException e) {
+      throw new BatfishException(
+          String.format(
+              "Expected only hexadecimal and period (.) characters, but got: '%s' after trimming '%s'",
+              trimmed, isoAddressStr),
+          e);
     }
-    _systemId = systemId;
-    _afi = BaseEncoding.base16().decode(parts[0])[0];
-    _areaId = areaId;
-    _nSel = BaseEncoding.base16().decode(parts[parts.length - 1])[0];
+    int numBytes = all.length;
+    int nSelOffset = numBytes - 1;
+    int systemIdOffset = nSelOffset - SYSTEM_ID_SIZE;
+    _afi = all[0];
+    _areaId = Arrays.copyOfRange(all, AREA_ID_OFFSET, systemIdOffset);
+    _systemId = Arrays.copyOfRange(all, systemIdOffset, nSelOffset);
+    _nSel = all[nSelOffset];
   }
 
   @Override
@@ -51,27 +89,18 @@ public final class IsoAddress implements Serializable {
     if (this == obj) {
       return true;
     }
-    IsoAddress other = (IsoAddress) obj;
-    if (_afi != other._afi) {
-      return false;
-    }
-    if (!_areaId.equals(other._areaId)) {
-      return false;
-    }
-    if (_nSel != other._nSel) {
-      return false;
-    }
-    if (_systemId != other._systemId) {
-      return false;
-    }
-    return true;
+    IsoAddress rhs = (IsoAddress) obj;
+    return _afi == rhs._afi
+        && Arrays.equals(_areaId, rhs._areaId)
+        && _nSel == rhs._nSel
+        && Arrays.equals(_systemId, rhs._systemId);
   }
 
   public byte getAfi() {
     return _afi;
   }
 
-  public BigInteger getAreaId() {
+  public @Nonnull byte[] getAreaId() {
     return _areaId;
   }
 
@@ -94,37 +123,21 @@ public final class IsoAddress implements Serializable {
     return _nSel;
   }
 
-  public long getSystemId() {
+  public @Nonnull byte[] getSystemId() {
     return _systemId;
-  }
-
-  public String getSystemIdStr() {
-    String systemIdStr = Long.toHexString(_systemId);
-    int leadingZeros = 12 - systemIdStr.length();
-    for (int i = 0; i < leadingZeros; i++) {
-      systemIdStr = "0" + systemIdStr;
-    }
-    String[] parts = new String[3];
-    parts[0] = systemIdStr.substring(0, 4);
-    parts[1] = systemIdStr.substring(4, 8);
-    parts[2] = systemIdStr.substring(8, 12);
-    return parts[0] + "." + parts[1] + "." + parts[2];
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _afi;
-    result = prime * result + _areaId.hashCode();
-    result = prime * result + _nSel;
-    result = prime * result + (int) (_systemId ^ (_systemId >>> 32));
-    return result;
+    return Objects.hash(_afi, _areaId, _nSel, _systemId);
   }
 
   @Override
   @JsonValue
   public String toString() {
-    return _str;
+    StringBuilder sb = new StringBuilder("")
+    if (_areaId.length %2 == 0) {
+      
+    }
   }
 }
