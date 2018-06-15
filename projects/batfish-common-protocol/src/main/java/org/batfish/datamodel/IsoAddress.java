@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.io.BaseEncoding;
 import java.io.Serializable;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -32,12 +31,17 @@ import org.batfish.common.BatfishException;
  */
 public final class IsoAddress implements Serializable {
 
+  private static final int AREA_ID_OFFSET = 1;
+
   /** */
   private static final long serialVersionUID = 1L;
 
   private static final int SYSTEM_ID_SIZE = 6;
 
-  private static final int AREA_ID_OFFSET = 1;
+  @JsonCreator
+  private static @Nonnull IsoAddress create(String isoAddressStr) {
+    return new IsoAddress(requireNonNull(isoAddressStr));
+  }
 
   private final byte _afi;
 
@@ -46,11 +50,6 @@ public final class IsoAddress implements Serializable {
   private final byte _nSel;
 
   private final byte[] _systemId;
-
-  @JsonCreator
-  private static @Nonnull IsoAddress create(String isoAddressStr) {
-    return new IsoAddress(requireNonNull(isoAddressStr));
-  }
 
   /**
    * Create an ISO address from hexadecimal digits, optionally interspersed with period (.)
@@ -67,7 +66,7 @@ public final class IsoAddress implements Serializable {
     }
     byte[] all;
     try {
-      all = BaseEncoding.base16().decode(trimmed);
+      all = BaseEncoding.base16().decode(trimmed.toUpperCase());
     } catch (IllegalArgumentException e) {
       throw new BatfishException(
           String.format(
@@ -104,21 +103,6 @@ public final class IsoAddress implements Serializable {
     return _areaId;
   }
 
-  public String getAreaIdStr() {
-    String areaIdStr = _areaId.toString(16);
-    int leadingZeros = (4 - (areaIdStr.length() % 4) % 4);
-    for (int i = 0; i < leadingZeros; i++) {
-      areaIdStr = "0" + areaIdStr;
-    }
-    StringBuilder sb = new StringBuilder();
-    for (int i = 0; i < areaIdStr.length(); i += 4) {
-      String currentPart = areaIdStr.substring(i, i + 4);
-      sb.append(currentPart + ".");
-    }
-    String ret = sb.substring(0, sb.length() - 1);
-    return ret;
-  }
-
   public byte getNSelector() {
     return _nSel;
   }
@@ -135,9 +119,40 @@ public final class IsoAddress implements Serializable {
   @Override
   @JsonValue
   public String toString() {
-    StringBuilder sb = new StringBuilder("")
-    if (_areaId.length %2 == 0) {
-      
+    // AA
+    StringBuilder sb = new StringBuilder(String.format("%02X", _afi));
+    if ((_areaId.length & 0x1) == 0) {
+      // even number of bytes
+      for (int i = 0; i < _areaId.length; i += 2) {
+        // .BBBB
+        sb.append(String.format(".%02X%02X", _areaId[i], _areaId[i + 1]));
+      }
+      for (int i = 0; i < SYSTEM_ID_SIZE; i += 2) {
+        // .CCCC
+        sb.append(String.format(".%02X%02X", _systemId[i], _systemId[i + 1]));
+      }
+      // .DD
+      sb.append(String.format(".%02X", _nSel));
+    } else {
+      // odd number of bytes
+      int areaIdOffset = 0;
+      for (areaIdOffset = 0; areaIdOffset < _areaId.length - 1; areaIdOffset += 2) {
+        // .BBBB
+        sb.append(String.format(".%02X%02X", _areaId[areaIdOffset], _areaId[areaIdOffset + 1]));
+      }
+      // .BB
+      sb.append(String.format(".%02X", _areaId[areaIdOffset]));
+      // CC
+      sb.append(String.format("%02X", _systemId[0]));
+      for (int i = 1; i < SYSTEM_ID_SIZE - 2; i += 2) {
+        // .CCCC
+        sb.append(String.format(".%02X%02X", _systemId[i], _systemId[i + 1]));
+      }
+      // .CC
+      sb.append(String.format(".%02X", _systemId[SYSTEM_ID_SIZE - 1]));
+      // DD
+      sb.append(String.format("%02X", _nSel));
     }
+    return sb.toString();
   }
 }

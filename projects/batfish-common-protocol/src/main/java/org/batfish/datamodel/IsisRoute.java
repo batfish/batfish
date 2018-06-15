@@ -13,7 +13,7 @@ public class IsisRoute extends AbstractRoute {
 
   public static class Builder extends AbstractRouteBuilder<Builder, IsisRoute> {
 
-    private Integer _area;
+    private String _area;
 
     private Boolean _down;
 
@@ -39,8 +39,23 @@ public class IsisRoute extends AbstractRoute {
       return this;
     }
 
+    public Builder setArea(@Nonnull String area) {
+      _area = area;
+      return this;
+    }
+
+    public Builder setDown(boolean down) {
+      _down = down;
+      return this;
+    }
+
     public Builder setLevel(@Nonnull IsisLevel level) {
       _level = level;
+      return this;
+    }
+
+    public Builder setProtocol(@Nonnull RoutingProtocol protocol) {
+      _protocol = protocol;
       return this;
     }
   }
@@ -56,7 +71,7 @@ public class IsisRoute extends AbstractRoute {
   @JsonCreator
   private static @Nonnull IsisRoute createIsisRoute(
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
-      @JsonProperty(PROP_AREA) int area,
+      @JsonProperty(PROP_AREA) String area,
       @JsonProperty(PROP_DOWN) boolean down,
       @JsonProperty(PROP_LEVEL) IsisLevel level,
       @JsonProperty(PROP_METRIC) long metric,
@@ -65,7 +80,7 @@ public class IsisRoute extends AbstractRoute {
       @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol) {
     return new IsisRoute(
         administrativeCost,
-        area,
+        requireNonNull(area),
         down,
         requireNonNull(level),
         metric,
@@ -76,7 +91,7 @@ public class IsisRoute extends AbstractRoute {
 
   private final int _administrativeCost;
 
-  private final int _area;
+  private final String _area;
 
   private final boolean _down;
 
@@ -90,7 +105,7 @@ public class IsisRoute extends AbstractRoute {
 
   private IsisRoute(
       int administrativeCost,
-      int area,
+      @Nonnull String area,
       boolean down,
       @Nonnull IsisLevel level,
       long metric,
@@ -134,7 +149,7 @@ public class IsisRoute extends AbstractRoute {
   }
 
   @JsonProperty(PROP_AREA)
-  public int getArea() {
+  public @Nonnull String getArea() {
     return _area;
   }
 
