@@ -42,9 +42,9 @@ public interface GrammarSettings {
   boolean getPrintParseTree();
 
   /**
-   * Controls whether parse tree line numbers are stored in parse trees.
+   * Controls whether parse tree line numbers are printed in parse trees.
    *
-   * @return true iff parse trees should be include line numbers
+   * @return true iff parse trees should include line numbers
    */
   boolean getPrintParseTreeLineNums();
 

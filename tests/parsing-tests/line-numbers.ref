@@ -3,13 +3,13 @@
     {
       "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
       "fileMap" : {
-        "as1core1" : "n1"
+        "n1" : "n1"
       },
       "parseStatus" : {
-        "as1core1" : "PASSED"
+        "n1" : "PASSED"
       },
       "parseTrees" : {
-        "as1core1" : {
+        "n1" : {
           "sentences" : [
             "(cisco_configuration",
             "  (stanza",
@@ -45,7 +45,7 @@
             "  (stanza",
             "    (s_hostname",
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE line:6",
-            "      VARIABLE:'as1core1'  <== mode:DEFAULT_MODE line:6",
+            "      VARIABLE:'n1'  <== mode:DEFAULT_MODE line:6",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE line:6))",
             "  (stanza",
             "    (s_null",
@@ -503,7 +503,7 @@
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
       "definedStructures" : {
-        "as1core1" : {
+        "n1" : {
           "bgp group" : {
             "as1" : {
               "definitionLines" : [
@@ -556,7 +556,7 @@
     {
       "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement",
       "parseStatus" : {
-        "as1core1" : "PASSED"
+        "n1" : "PASSED"
       }
     }
   ],

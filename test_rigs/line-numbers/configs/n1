@@ -3,7 +3,7 @@ version 15.2
 service timestamps debug datetime msec
 service timestamps log datetime msec
 !
-hostname as1core1
+hostname n1
 !
 boot-start-marker
 boot-end-marker
