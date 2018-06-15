@@ -1,6 +1,5 @@
 package org.batfish.datamodel.matchers;
 
-
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;

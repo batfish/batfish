@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfNeighbor;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

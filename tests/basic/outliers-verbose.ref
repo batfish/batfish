@@ -2496,7 +2496,8 @@
                 "interfaces" : [
                   "GigabitEthernet0/0",
                   "Loopback0"
-                ]
+                ],
+                "stubType" : "NONE"
               }
             },
             "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",

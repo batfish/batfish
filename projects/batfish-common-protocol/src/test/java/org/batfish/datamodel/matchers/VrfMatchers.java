@@ -2,13 +2,13 @@ package org.batfish.datamodel.matchers;
 
 import java.util.SortedSet;
 import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasBgpProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasInterfaces;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasOspfProcess;
 import org.batfish.datamodel.matchers.VrfMatchersImpl.HasStaticRoutes;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.hamcrest.Matcher;
 
 public class VrfMatchers {

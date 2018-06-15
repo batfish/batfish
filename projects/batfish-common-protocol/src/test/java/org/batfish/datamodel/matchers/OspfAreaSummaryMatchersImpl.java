@@ -1,7 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

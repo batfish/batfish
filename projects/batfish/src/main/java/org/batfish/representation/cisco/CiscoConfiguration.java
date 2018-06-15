@@ -65,9 +65,6 @@ import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfAreaSummary;
-import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Prefix6Range;
@@ -92,6 +89,11 @@ import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -2603,9 +2605,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
         ImmutableList.of());
   }
 
-  private org.batfish.datamodel.OspfProcess toOspfProcess(
+  private org.batfish.datamodel.ospf.OspfProcess toOspfProcess(
       OspfProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.OspfProcess newProcess = new org.batfish.datamodel.OspfProcess();
+    org.batfish.datamodel.ospf.OspfProcess newProcess =
+        new org.batfish.datamodel.ospf.OspfProcess();
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
 
     if (proc.getMaxMetricRouterLsa()) {
@@ -2668,6 +2671,25 @@ public final class CiscoConfiguration extends VendorConfiguration {
           (areaNum, interfacesBuilder) ->
               areas.get(areaNum).setInterfaces(interfacesBuilder.build()));
     }
+    proc.getNssas()
+        .forEach(
+            (areaId, nssaSettings) -> {
+              if (!areas.containsKey(areaId)) {
+                return;
+              }
+              areas.get(areaId).setStubType(StubType.NSSA);
+              areas.get(areaId).setNssa(toNssaSettings(nssaSettings));
+            });
+
+    proc.getStubs()
+        .forEach(
+            (areaId, stubSettings) -> {
+              if (!areas.containsKey(areaId)) {
+                return;
+              }
+              areas.get(areaId).setStubType(StubType.STUB);
+              areas.get(areaId).setStub(toStubSettings(stubSettings));
+            });
 
     // create summarization filters for inter-area routes
     for (Entry<Long, Map<Prefix, OspfAreaSummary>> e1 : proc.getSummaries().entrySet()) {
@@ -2824,6 +2846,22 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
     newProcess.setRouterId(routerId);
     return newProcess;
+  }
+
+  private org.batfish.datamodel.ospf.StubSettings toStubSettings(StubSettings stubSettings) {
+    return org.batfish.datamodel.ospf.StubSettings.builder()
+        .setSuppressType3(stubSettings.getNoSummary())
+        .build();
+  }
+
+  private org.batfish.datamodel.ospf.NssaSettings toNssaSettings(NssaSettings nssaSettings) {
+    return org.batfish.datamodel.ospf.NssaSettings.builder()
+        .setDefaultOriginateType(
+            nssaSettings.getDefaultInformationOriginate()
+                ? OspfDefaultOriginateType.INTER_AREA
+                : OspfDefaultOriginateType.NONE)
+        .setSuppressType3(nssaSettings.getNoSummary())
+        .build();
   }
 
   private org.batfish.datamodel.RipProcess toRipProcess(
@@ -3499,7 +3537,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           // convert ospf process
           OspfProcess ospfProcess = vrf.getOspfProcess();
           if (ospfProcess != null) {
-            org.batfish.datamodel.OspfProcess newOspfProcess =
+            org.batfish.datamodel.ospf.OspfProcess newOspfProcess =
                 toOspfProcess(ospfProcess, vrfName, c, this);
             newVrf.setOspfProcess(newOspfProcess);
           }

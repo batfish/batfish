@@ -9,11 +9,11 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IsisInterfaceSettings;
-import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

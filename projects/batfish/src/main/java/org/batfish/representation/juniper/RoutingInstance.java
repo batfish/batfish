@@ -6,7 +6,6 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnmpServer;
 

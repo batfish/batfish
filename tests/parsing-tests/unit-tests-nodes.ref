@@ -1752,7 +1752,8 @@
                   "name" : 0,
                   "interfaces" : [
                     "Ethernet0/0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -8801,6 +8802,11 @@
                   "interfaces" : [
                     "Ethernet0/0"
                   ],
+                  "nssa" : {
+                    "defaultOriginateType" : "INTER_AREA",
+                    "suppressType3" : true
+                  },
+                  "stubType" : "NSSA",
                   "summaries" : {
                     "1.2.3.0/24" : {
                       "advertise" : true,
@@ -8811,6 +8817,7 @@
                 },
                 "16909056" : {
                   "name" : 16909056,
+                  "stubType" : "NONE",
                   "summaries" : {
                     "1.2.3.0/24" : {
                       "advertise" : false
@@ -11089,7 +11096,8 @@
                   "interfaces" : [
                     "Ethernet0",
                     "Ethernet1"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -12418,6 +12426,7 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
+                  "stubType" : "NONE",
                   "summaries" : {
                     "10.0.0.0/15" : {
                       "advertise" : true
@@ -12748,6 +12757,11 @@
               "areas" : {
                 "66051" : {
                   "name" : 66051,
+                  "nssa" : {
+                    "defaultOriginateType" : "INTER_AREA",
+                    "suppressType3" : true
+                  },
+                  "stubType" : "NSSA",
                   "summaries" : {
                     "1.2.0.0/16" : {
                       "advertise" : true,
@@ -14014,10 +14028,18 @@
             "ospfProcess" : {
               "areas" : {
                 "7" : {
-                  "name" : 7
+                  "name" : 7,
+                  "stub" : {
+                    "suppressType3" : false
+                  },
+                  "stubType" : "STUB"
                 },
                 "46" : {
-                  "name" : 46
+                  "name" : 46,
+                  "stub" : {
+                    "suppressType3" : true
+                  },
+                  "stubType" : "STUB"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
