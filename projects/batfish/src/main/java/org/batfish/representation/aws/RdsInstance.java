@@ -47,7 +47,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
     _availabilityZone = jObj.getString("AvailabilityZone");
     _vpcId = jObj.getJSONObject(JSON_KEY_DB_SUBNET_GROUP).getString(JSON_KEY_VPC_ID);
     _multiAz = jObj.getBoolean(JSON_KEY_MULTI_AZ);
-    if (jObj.getString(JSON_KEY_DB_INSTANCE_STATUS).toLowerCase().equals("available")) {
+    if (jObj.getString(JSON_KEY_DB_INSTANCE_STATUS).equalsIgnoreCase("available")) {
       _dbInstanceStatus = Status.AVAILABLE;
     }
     initSubnets(
@@ -92,7 +92,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
       throws JSONException {
     for (int index = 0; index < securityGroupsArray.length(); index++) {
       JSONObject securityGroup = securityGroupsArray.getJSONObject(index);
-      if (securityGroup.getString(JSON_KEY_STATUS).toLowerCase().equals("active")) {
+      if (securityGroup.getString(JSON_KEY_STATUS).equalsIgnoreCase("active")) {
         _securityGroups.add(securityGroup.getString(JSON_KEY_VPC_SECURITY_GROUP_ID));
       }
     }
@@ -101,7 +101,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
   private void initSubnets(JSONArray subnetsArray, BatfishLogger logger) throws JSONException {
     for (int i = 0; i < subnetsArray.length(); i++) {
       JSONObject subnet = subnetsArray.getJSONObject(i);
-      if (subnet.getString(JSON_KEY_SUBNET_STATUS).toLowerCase().equals("active")) {
+      if (subnet.getString(JSON_KEY_SUBNET_STATUS).equalsIgnoreCase("active")) {
         _azsSubnetIds.put(
             subnet.getJSONObject(JSON_KEY_SUBNET_AVAILABILITY_ZONE).getString("Name"),
             subnet.getString(JSON_KEY_SUBNET_IDENTIFIER));

@@ -158,6 +158,7 @@ public class FiltersSpecifier {
   }
 
   @JsonValue
+  @Override
   public String toString() {
     return _expression;
   }

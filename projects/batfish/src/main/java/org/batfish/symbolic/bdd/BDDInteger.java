@@ -71,15 +71,16 @@ public class BDDInteger {
    * Create a BDD representing the exact value
    */
   public BDD value(int val) {
+    int currentVal = val;
     BDD bdd = _factory.one();
     for (int i = this._bitvec.length - 1; i >= 0; i--) {
       BDD b = this._bitvec[i];
-      if ((val & 1) != 0) {
+      if ((currentVal & 1) != 0) {
         bdd = bdd.and(b);
       } else {
         bdd = bdd.and(b.not());
       }
-      val >>= 1;
+      currentVal >>= 1;
     }
     return bdd;
   }
@@ -88,17 +89,18 @@ public class BDDInteger {
    * Less than or equal to on integers
    */
   public BDD leq(int val) {
+    int currentVal = val;
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] less = new BDD[_bitvec.length];
     for (int i = _bitvec.length - 1; i >= 0; i--) {
-      if ((val & 1) != 0) {
+      if ((currentVal & 1) != 0) {
         eq[i] = _bitvec[i];
         less[i] = _bitvec[i].not();
       } else {
         eq[i] = _bitvec[i].not();
         less[i] = _factory.zero();
       }
-      val >>= 1;
+      currentVal >>= 1;
     }
     BDD acc = _factory.one();
     for (int i = _bitvec.length - 1; i >= 0; i--) {
@@ -111,17 +113,18 @@ public class BDDInteger {
    * Less than or equal to on integers
    */
   public BDD geq(int val) {
+    int currentVal = val;
     BDD[] eq = new BDD[_bitvec.length];
     BDD[] greater = new BDD[_bitvec.length];
     for (int i = _bitvec.length - 1; i >= 0; i--) {
-      if ((val & 1) != 0) {
+      if ((currentVal & 1) != 0) {
         eq[i] = _bitvec[i];
         greater[i] = _factory.zero();
       } else {
         eq[i] = _bitvec[i].not();
         greater[i] = _bitvec[i];
       }
-      val >>= 1;
+      currentVal >>= 1;
     }
     BDD acc = _factory.one();
     for (int i = _bitvec.length - 1; i >= 0; i--) {
@@ -134,13 +137,14 @@ public class BDDInteger {
    * Set this BDD to have an exact value
    */
   public void setValue(long val) {
+    long currentVal = val;
     for (int i = this._bitvec.length - 1; i >= 0; i--) {
-      if ((val & 1) != 0) {
+      if ((currentVal & 1) != 0) {
         this._bitvec[i] = _factory.one();
       } else {
         this._bitvec[i] = _factory.zero();
       }
-      val >>= 1;
+      currentVal >>= 1;
     }
   }
 

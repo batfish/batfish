@@ -75,7 +75,7 @@ public class PoolMgr {
     return _workerPool.size();
   }
 
-  public synchronized HashMap<String, String> getPoolStatus() {
+  public synchronized Map<String, String> getPoolStatus() {
     HashMap<String, String> copy = new HashMap<>();
 
     for (Entry<String, WorkerStatus> entry : _workerPool.entrySet()) {

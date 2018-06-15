@@ -22,7 +22,6 @@ import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.datamodel.collections.RoutesByVrf;
@@ -45,10 +44,6 @@ public class BatfishTestUtils {
   }
 
   private static Cache<TestrigSettings, DataPlane> makeDataPlaneCache() {
-    return CacheBuilder.newBuilder().maximumSize(2).build();
-  }
-
-  private static Cache<TestrigSettings, ForwardingAnalysis> makeForwardingAnalysisCache() {
     return CacheBuilder.newBuilder().maximumSize(2).build();
   }
 
@@ -78,8 +73,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     if (!configurations.isEmpty()) {
       Batfish.serializeAsJson(
           settings.getBaseTestrigSettings().getEnvironmentSettings().getSerializedTopologyPath(),
@@ -122,8 +116,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     batfish.getSettings().setDiffQuestion(true);
     if (!baseConfigs.isEmpty()) {
       Batfish.serializeAsJson(
@@ -197,8 +190,7 @@ public class BatfishTestUtils {
             makeDataPlaneCache(),
             makeDataPlaneCache(),
             makeEnvBgpCache(),
-            makeEnvRouteCache(),
-            makeForwardingAnalysisCache());
+            makeEnvRouteCache());
     registerDataPlanePlugins(batfish);
     return batfish;
   }
@@ -262,7 +254,7 @@ public class BatfishTestUtils {
         TestrigText.builder().setConfigurationText(configurationTextMap).build(), folder);
   }
 
-  public static Map<String, Configuration> parseTextConfigs(
+  public static SortedMap<String, Configuration> parseTextConfigs(
       TemporaryFolder folder, String... configurationNames) throws IOException {
     return getBatfishForTextConfigs(folder, configurationNames).loadConfigurations();
   }

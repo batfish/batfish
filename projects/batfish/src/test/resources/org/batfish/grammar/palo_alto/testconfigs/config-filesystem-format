@@ -1,0 +1,7 @@
+# Filesystem format config
+# Other configs use show format (format seen on the device after issuing `show` command)
+
+# Config devices set-line
+set config devices localhost.localdomain deviceconfig system hostname config-filesystem-format
+# General config set-line
+set config shared log-settings syslog SLFILESYSTEM server SNAME server 2.2.2.2

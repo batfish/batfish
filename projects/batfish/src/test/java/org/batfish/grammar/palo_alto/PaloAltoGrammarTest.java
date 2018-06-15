@@ -1,14 +1,23 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.isActive;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -57,12 +66,61 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testFilesystemConfigFormat() throws IOException {
+    String hostname = "config-filesystem-format";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm alternate config format is parsed and extracted properly
+    // Confirm config devices set-line extraction works
+    assertThat(c, hasHostname(equalTo(hostname)));
+    // Confirm general config set-line extraction works
+    assertThat(c.getLoggingServers(), contains("2.2.2.2"));
+  }
+
+  @Test
   public void testHostname() throws IOException {
     String filename = "basic-parsing";
     String hostname = "my-hostname";
 
     // Confirm hostname extraction works
     assertThat(parseTextConfigs(filename).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testInterface() throws IOException {
+    String hostname = "interface";
+    String interfaceName1 = "ethernet1/1";
+    String interfaceName2 = "ethernet1/2";
+    String interfaceName3 = "ethernet1/3";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm interface MTU is extracted
+    assertThat(c, hasInterface(interfaceName1, hasMtu(9001)));
+
+    // Confirm address is extracted
+    assertThat(
+        c,
+        hasInterface(
+            interfaceName1, hasAllAddresses(contains(new InterfaceAddress("1.1.1.1/24")))));
+
+    // Confirm comments are extracted
+    assertThat(c, hasInterface(interfaceName1, hasDescription("description")));
+    assertThat(c, hasInterface(interfaceName2, hasDescription("interface's long description")));
+    assertThat(c, hasInterface(interfaceName3, hasDescription("single quoted description")));
+
+    // Confirm link status is extracted
+    assertThat(c, hasInterface(interfaceName1, isActive()));
+    assertThat(c, hasInterface(interfaceName2, not(isActive())));
+    assertThat(c, hasInterface(interfaceName3, isActive()));
+  }
+
+  @Test
+  public void testLogSettingsSyslog() throws IOException {
+    String hostname = "log-settings-syslog";
+    Configuration c = parseConfig(hostname);
+
+    // Confirm all the defined syslog servers show up in VI model
+    assertThat(c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3"));
   }
 
   @Test

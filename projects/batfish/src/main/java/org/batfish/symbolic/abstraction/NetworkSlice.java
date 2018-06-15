@@ -32,7 +32,7 @@ public class NetworkSlice {
     this._isDefaultCase = isDefaultCase;
   }
 
-  public static ArrayList<Supplier<NetworkSlice>> allSlices(DestinationClasses dcs, int fails) {
+  public static List<Supplier<NetworkSlice>> allSlices(DestinationClasses dcs, int fails) {
     BDDNetwork network = BDDNetwork.create(dcs.getGraph());
     ArrayList<Supplier<NetworkSlice>> classes = new ArrayList<>();
     for (Entry<Set<String>, Tuple<HeaderSpace, Tuple<List<Prefix>, Boolean>>> entry :

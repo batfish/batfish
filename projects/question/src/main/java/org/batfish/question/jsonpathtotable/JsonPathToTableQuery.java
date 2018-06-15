@@ -41,7 +41,7 @@ public class JsonPathToTableQuery {
     if (_path == null) {
       throw new IllegalArgumentException("Path cannot be null in JsonPathToTableQuery");
     }
-    if (_extractions.size() == 0 && _compositions.size() == 0) {
+    if (_extractions.isEmpty() && _compositions.isEmpty()) {
       throw new IllegalArgumentException("No compositions or extractions in JsonPathToTableQuery");
     }
 

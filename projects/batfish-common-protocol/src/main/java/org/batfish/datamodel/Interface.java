@@ -17,10 +17,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
@@ -636,6 +639,16 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   public Interface(String name, Configuration owner) {
+    this(name, owner, InterfaceType.UNKNOWN);
+
+    // Determine interface type after setting owner
+    _interfaceType =
+        ((_key == null) || (_owner == null))
+            ? InterfaceType.UNKNOWN
+            : computeInterfaceType(_key, _owner.getConfigurationFormat());
+  }
+
+  public Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
     super(name);
     _active = true;
     _autoState = true;
@@ -644,7 +657,7 @@ public final class Interface extends ComparableStructure<String> {
     _channelGroupMembers = ImmutableSortedSet.of();
     _declaredNames = ImmutableSortedSet.of();
     _dhcpRelayAddresses = new ArrayList<>();
-    _interfaceType = InterfaceType.UNKNOWN;
+    _interfaceType = interfaceType;
     _mtu = DEFAULT_MTU;
     _nativeVlan = 1;
     _owner = owner;
@@ -653,18 +666,10 @@ public final class Interface extends ComparableStructure<String> {
     _sourceNats = Collections.emptyList();
     _vrfName = Configuration.DEFAULT_VRF_NAME;
     _vrrpGroups = new TreeMap<>();
-
-    computeInterfaceType();
   }
 
   public void addAllowedRanges(List<SubRange> ranges) {
     _allowedVlans.addAll(ranges);
-  }
-
-  private void computeInterfaceType() {
-    if ((_key != null) && (_owner != null)) {
-      _interfaceType = computeInterfaceType(_key, _owner.getConfigurationFormat());
-    }
   }
 
   @Override

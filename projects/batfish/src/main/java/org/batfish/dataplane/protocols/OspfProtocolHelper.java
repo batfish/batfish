@@ -1,11 +1,14 @@
 package org.batfish.dataplane.protocols;
 
 import javax.annotation.Nullable;
-import org.batfish.datamodel.OspfArea;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.OspfInternalRoute;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RouteFilterList;
-import org.batfish.dataplane.ibdp.Node;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.StubType;
 
 /** Helper class with functions that implement various bits of OSPF protocol logic. */
 public class OspfProtocolHelper {
@@ -51,21 +54,63 @@ public class OspfProtocolHelper {
   }
 
   /**
+   * Decide whether a default inter-area OSPF route should be originated by neighbor
+   *
+   * @param neighborProc The adjacent {@link OspfProcess}
+   * @param neighborArea The propagator's OSPF area configuration
+   * @return {@code true} iff the route should be considered for installation into the OSPF RIB
+   */
+  public static boolean isOspfInterAreaDefaultOriginationAllowed(
+      OspfProcess neighborProc, OspfArea neighborArea) {
+    return neighborProc.isAreaBorderRouter()
+        && (neighborArea.getStubType() == StubType.STUB
+            || (neighborArea.getStubType() == StubType.NSSA
+                && neighborArea.getNssa().getDefaultOriginateType()
+                    == OspfDefaultOriginateType.INTER_AREA));
+  }
+
+  /**
    * Decide whether an inter-area OSPF route can be sent from neighbor's area to given area.
    *
-   * @param areaNum "Our" area number
-   * @param neighbor an adjacent {@link Node} with which route exchange is happening
+   * @param proc The process of the receiver
+   * @param linkAreaNum The area ID of the link
+   * @param neighbor The adjacent node with which route exchange is happening
+   * @param neighborProc The adjacent {@link OspfProcess}
    * @param neighborRoute {@link OspfInternalRoute} in questions
-   * @param neighborArea neighbor's area number
-   * @return true if the route should considered for installation into the OSPF RIB
+   * @param neighborArea The propagator's OSPF area configuration
+   * @return {@code true} iff the route should be considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaFromInterAreaPropagationAllowed(
-      long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
+      OspfProcess proc,
+      long linkAreaNum,
+      Configuration neighbor,
+      OspfProcess neighborProc,
+      OspfInternalRoute neighborRoute,
+      OspfArea neighborArea) {
     long neighborRouteAreaNum = neighborRoute.getArea();
-    // May only propagate to or from area 0
-    if (areaNum != neighborRouteAreaNum && areaNum != 0L && neighborRouteAreaNum != 0L) {
+    /*
+     * Once an inter-area route has been propagated across a link of a given area, it may continue to propagate throughout that area.
+     * To propagate into a different area, the propagator must be an ABR, and type-3 LSAs must be allowed across the link.
+     */
+    if (linkAreaNum != neighborRouteAreaNum) {
+      if (!neighborProc.isAreaBorderRouter()) {
+        return false;
+      }
+      // Don't propagate inter-area routes into a [not-so-stubby-]stub area for which type-3 LSAs
+      // are
+      // suppressed.
+      if ((neighborArea.getStubType() == StubType.STUB && neighborArea.getStub().getSuppressType3())
+          || (neighborArea.getStubType() == StubType.NSSA
+              && neighborArea.getNssa().getSuppressType3())) {
+        return false;
+      }
+    }
+
+    // ABR should not accept OSPF internal default route
+    if (proc.isAreaBorderRouter() && neighborRoute.getNetwork().equals(Prefix.ZERO)) {
       return false;
     }
+
     Prefix neighborRouteNetwork = neighborRoute.getNetwork();
     String neighborSummaryFilterName = neighborArea.getSummaryFilter();
     boolean hasSummaryFilter = neighborSummaryFilterName != null;
@@ -74,7 +119,7 @@ public class OspfProtocolHelper {
     // If there is a summary filter, run the route through it
     if (hasSummaryFilter) {
       RouteFilterList neighborSummaryFilter =
-          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
+          neighbor.getRouteFilterLists().get(neighborSummaryFilterName);
       allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
     }
     return allowed;
@@ -83,19 +128,39 @@ public class OspfProtocolHelper {
   /**
    * Decide whether an intra-area OSPF route can be sent from neighbor's area to given area.
    *
-   * @param areaNum "Our" area number
-   * @param neighbor an adjacent {@link Node} with which route exchange is happening
+   * @param linkAreaNum The area ID of the link
+   * @param neighbor The adjacent node with which route exchange is happening
+   * @param neighborProc The adjacent {@link OspfProcess}
    * @param neighborRoute {@link OspfInternalRoute} in questions
-   * @param neighborArea neighbor's area number
-   * @return true if the route should considered for installation into the OSPF RIB
+   * @param neighborArea The propagator's OSPF area configuration
+   * @return {@code true} iff the route should considered for installation into the OSPF RIB
    */
   public static boolean isOspfInterAreaFromIntraAreaPropagationAllowed(
-      long areaNum, Node neighbor, OspfInternalRoute neighborRoute, OspfArea neighborArea) {
+      long linkAreaNum,
+      Configuration neighbor,
+      OspfProcess neighborProc,
+      OspfInternalRoute neighborRoute,
+      OspfArea neighborArea) {
     long neighborRouteAreaNum = neighborRoute.getArea();
-    // May only propagate to or from area 0
-    if (areaNum == neighborRouteAreaNum || (areaNum != 0L && neighborRouteAreaNum != 0L)) {
+    // Not inter-area if link area and route area are same
+    if (linkAreaNum == neighborRouteAreaNum) {
       return false;
     }
+
+    // Only ABR (router with some link in area 0 and some link not in area 0) is allowed to
+    // create inter-area route from intra-area route in another area.
+    if (!neighborProc.isAreaBorderRouter()) {
+      return false;
+    }
+
+    // Don't propagate inter-area routes into a [not-so-stubby-]stub area for which type-3 LSAs are
+    // suppressed.
+    if ((neighborArea.getStubType() == StubType.STUB && neighborArea.getStub().getSuppressType3())
+        || (neighborArea.getStubType() == StubType.NSSA
+            && neighborArea.getNssa().getSuppressType3())) {
+      return false;
+    }
+
     Prefix neighborRouteNetwork = neighborRoute.getNetwork();
     String neighborSummaryFilterName = neighborArea.getSummaryFilter();
     boolean hasSummaryFilter = neighborSummaryFilterName != null;
@@ -104,7 +169,7 @@ public class OspfProtocolHelper {
     // If there is a summary filter, run the route through it
     if (hasSummaryFilter) {
       RouteFilterList neighborSummaryFilter =
-          neighbor.getConfiguration().getRouteFilterLists().get(neighborSummaryFilterName);
+          neighbor.getRouteFilterLists().get(neighborSummaryFilterName);
       allowed = neighborSummaryFilter.permits(neighborRouteNetwork);
     }
     return allowed;

@@ -95,7 +95,6 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.FlowTrace;
-import org.batfish.datamodel.ForwardingAnalysis;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
@@ -108,9 +107,6 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfNeighbor;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SubRange;
@@ -118,6 +114,9 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -165,6 +164,19 @@ public class CommonUtil {
 
   public static <C extends Collection<?>> C nullIfEmpty(C collection) {
     return collection == null ? null : collection.isEmpty() ? null : collection;
+  }
+
+  /** Compare two nullable comparable objects. null is considered less than non-null. */
+  public static <T extends Comparable<T>> int compareNullable(@Nullable T a, @Nullable T b) {
+    if (a == b) {
+      return 0;
+    } else if (a == null) {
+      return -1;
+    } else if (b == null) {
+      return 1;
+    } else {
+      return a.compareTo(b);
+    }
   }
 
   private static class TrustAllHostNameVerifier implements HostnameVerifier {
@@ -374,7 +386,7 @@ public class CommonUtil {
         (hostname, interfaces) ->
             interfaces.forEach(
                 i -> {
-                  if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+                  if ((!i.getActive() || i.getBlacklisted()) && excludeInactive) {
                     return;
                   }
                   // collect vrrp info
@@ -794,7 +806,7 @@ public class CommonUtil {
     try {
       return Paths.get(path.toFile().getCanonicalPath());
     } catch (IOException e) {
-      throw new BatfishException("Could not get canonical path from: '" + path + "'");
+      throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
     }
   }
 
@@ -868,7 +880,7 @@ public class CommonUtil {
     try {
       return Files.getLastModifiedTime(path);
     } catch (IOException e) {
-      throw new BatfishException("Failed to get last modified time for '" + path + "'");
+      throw new BatfishException("Failed to get last modified time for '" + path + "'", e);
     }
   }
 
@@ -906,8 +918,7 @@ public class CommonUtil {
       BgpNeighbor src,
       BgpNeighbor dst,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp,
-      @Nullable ForwardingAnalysis forwardingAnalysis) {
+      @Nullable DataPlane dp) {
     Ip srcAddress = src.getLocalIp();
     Ip dstAddress = src.getAddress();
     if (dstAddress == null) {
@@ -935,8 +946,7 @@ public class CommonUtil {
 
     // Execute the "initiate connection" traceroute
     SortedMap<Flow, Set<FlowTrace>> traces =
-        tracerouteEngine.processFlows(
-            dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false, forwardingAnalysis);
+        tracerouteEngine.processFlows(dp, ImmutableSet.of(forwardFlow), dp.getFibs(), false);
 
     SortedSet<FlowTrace> acceptedFlows =
         traces
@@ -973,9 +983,7 @@ public class CommonUtil {
     fb.setSrcPort(forwardFlow.getDstPort());
     fb.setDstPort(forwardFlow.getSrcPort());
     Flow backwardFlow = fb.build();
-    traces =
-        tracerouteEngine.processFlows(
-            dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false, forwardingAnalysis);
+    traces = tracerouteEngine.processFlows(dp, ImmutableSet.of(backwardFlow), dp.getFibs(), false);
 
     /*
      * If backward traceroutes fail, do not consider the neighbor reachable
@@ -1008,7 +1016,7 @@ public class CommonUtil {
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid) {
-    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null, null);
+    return initBgpTopology(configurations, ipOwners, keepInvalid, false, null, null);
   }
 
   /**
@@ -1034,8 +1042,7 @@ public class CommonUtil {
       boolean keepInvalid,
       boolean checkReachability,
       @Nullable ITracerouteEngine tracerouteEngine,
-      @Nullable DataPlane dp,
-      @Nullable ForwardingAnalysis forwardingAnalysis) {
+      @Nullable DataPlane dp) {
 
     // TODO: handle duplicate ips on different vrfs
 
@@ -1120,8 +1127,7 @@ public class CommonUtil {
          * Perform reachability checks.
          */
         if (checkReachability) {
-          if (isReachableBgpNeighbor(
-              neighbor, candidateNeighbor, tracerouteEngine, dp, forwardingAnalysis)) {
+          if (isReachableBgpNeighbor(neighbor, candidateNeighbor, tracerouteEngine, dp)) {
             graph.addEdge(neighbor, candidateNeighbor, new BgpSession(neighbor, candidateNeighbor));
           }
         } else {
@@ -1403,7 +1409,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to read and output lines of file: '" + downloadedFile + "'");
+          "Failed to read and output lines of file: '" + downloadedFile + "'", e);
     }
   }
 
@@ -1610,7 +1616,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to write input stream to output file: '" + outputFile + "'");
+          "Failed to write input stream to output file: '" + outputFile + "'", e);
     }
   }
 }

@@ -47,7 +47,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -98,8 +97,6 @@ import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowHistory;
 import org.batfish.datamodel.FlowTrace;
 import org.batfish.datamodel.ForwardingAction;
-import org.batfish.datamodel.ForwardingAnalysis;
-import org.batfish.datamodel.ForwardingAnalysisImpl;
 import org.batfish.datamodel.GenericConfigObject;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -108,7 +105,6 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
@@ -142,6 +138,7 @@ import org.batfish.datamodel.collections.MultiSet;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -469,8 +466,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
       _cachedEnvironmentRoutingTables;
 
-  private final Cache<TestrigSettings, ForwardingAnalysis> _cachedForwardingAnalyses;
-
   private TestrigSettings _deltaTestrigSettings;
 
   private Set<ExternalBgpAdvertisementPlugin> _externalBgpAdvertisementPlugins;
@@ -499,8 +494,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       Cache<TestrigSettings, DataPlane> cachedDataPlanes,
       Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
           cachedEnvironmentBgpTables,
-      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables,
-      Cache<TestrigSettings, ForwardingAnalysis> cachedForwardingAnalyses) {
+      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
@@ -510,7 +504,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _cachedDataPlanes = cachedDataPlanes;
     _cachedEnvironmentBgpTables = cachedEnvironmentBgpTables;
     _cachedEnvironmentRoutingTables = cachedEnvironmentRoutingTables;
-    _cachedForwardingAnalyses = cachedForwardingAnalyses;
     _externalBgpAdvertisementPlugins = new TreeSet<>();
     _testrigSettings = settings.getActiveTestrigSettings();
     _baseTestrigSettings = settings.getBaseTestrigSettings();
@@ -2410,20 +2403,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return environmentRoutingTables;
   }
 
-  private ForwardingAnalysis loadForwardingAnalysis(
-      Map<String, Configuration> configurations, DataPlane dataPlane) {
-    Topology topology = new Topology(dataPlane.getTopologyEdges());
-    try {
-      return _cachedForwardingAnalyses.get(
-          _testrigSettings,
-          () ->
-              new ForwardingAnalysisImpl(
-                  configurations, dataPlane.getRibs(), dataPlane.getFibs(), topology));
-    } catch (ExecutionException e) {
-      throw new BatfishException("error loading ForwardingAnalysis", e);
-    }
-  }
-
   @Override
   public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement() {
     return loadParseEnvironmentBgpTablesAnswerElement(true);
@@ -2911,6 +2890,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               commonEdgeSynthesizers,
               queries,
               ImmutableMap.of(ingressLocation, srcIpConstraint),
+              reachabilityParameters.getSpecialize(),
               tag);
       jobs.add(job);
     }
@@ -2951,6 +2931,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
               missingEdgeSynthesizers,
               queries,
               ImmutableMap.of(ingressLocation, srcIpConstraint),
+              reachabilityParameters.getSpecialize(),
               tag);
       jobs.add(job);
     }
@@ -2959,15 +2940,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
     DataPlane baseDataPlane = loadDataPlane();
-    ForwardingAnalysis baseForwardingAnalysis =
-        loadForwardingAnalysis(loadConfigurations(), baseDataPlane);
-    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, baseDataPlane, false);
     popEnvironment();
     pushDeltaEnvironment();
     DataPlane deltaDataPlane = loadDataPlane();
-    ForwardingAnalysis deltaForwardingAnalysis =
-        loadForwardingAnalysis(loadConfigurations(), deltaDataPlane);
-    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -3178,8 +3155,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public void processFlows(Set<Flow> flows, boolean ignoreAcls) {
     DataPlane dp = loadDataPlane();
-    getDataPlanePlugin()
-        .processFlows(flows, dp, ignoreAcls, loadForwardingAnalysis(loadConfigurations(), dp));
+    getDataPlanePlugin().processFlows(flows, dp, ignoreAcls);
   }
 
   /**
@@ -3405,23 +3381,23 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Settings settings = getSettings();
     String tag = getDifferentialFlowTag();
 
-    Map<String, Configuration> baseConfigurations = baseParams.getConfigurations();
+    // push environment so we use the right forwarding analysis.
+    pushBaseEnvironment();
+    Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
+    popEnvironment();
 
-    Synthesizer baseDataPlaneSynthesizer =
-        synthesizeDataPlane(baseParams.getConfigurations(), baseParams.getDataPlane());
+    pushDeltaEnvironment();
+    Synthesizer diffDataPlaneSynthesizer = synthesizeDataPlane(deltaParams);
+    popEnvironment();
 
-    Synthesizer diffDataPlaneSynthesizer =
-        synthesizeDataPlane(deltaParams.getConfigurations(), deltaParams.getDataPlane());
-
+    /*
+    // TODO refine dstIp to exclude blacklisted destinations
     pushDeltaEnvironment();
     SortedSet<String> blacklistNodes = getNodeBlacklist();
     Set<NodeInterfacePair> blacklistInterfaces = getInterfaceBlacklist();
     SortedSet<Edge> blacklistEdges = getEdgeBlacklist();
     popEnvironment();
-
-    BlacklistDstIpQuerySynthesizer blacklistQuery =
-        new BlacklistDstIpQuerySynthesizer(
-            null, blacklistNodes, blacklistInterfaces, blacklistEdges, baseConfigurations);
+    */
 
     // compute composite program and flows
     List<Synthesizer> synthesizers =
@@ -3450,50 +3426,44 @@ public class Batfish extends PluginConsumer implements IBatfish {
                       ImmutableMap.of(entry.getKey(), entry.getValue());
                   StandardReachabilityQuerySynthesizer acceptQuery =
                       StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(
-                              ImmutableSet.of(
-                                  ForwardingAction.ACCEPT,
-                                  ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                          .setActions(baseParams.getActions())
                           .setHeaderSpace(baseParams.getHeaderSpace())
-                          .setSrcIpConstraints(srcIpConstraint)
                           .setFinalNodes(ImmutableSet.of())
-                          .setRequiredTransitNodes(ImmutableSet.of())
                           .setForbiddenTransitNodes(ImmutableSet.of())
+                          .setRequiredTransitNodes(ImmutableSet.of())
+                          .setSrcIpConstraints(srcIpConstraint)
                           .setSrcNatted(baseParams.getSrcNatted())
                           .build();
                   StandardReachabilityQuerySynthesizer notAcceptQuery =
                       StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(
-                              ImmutableSet.of(
-                                  ForwardingAction.ACCEPT,
-                                  ForwardingAction.NEIGHBOR_UNREACHABLE_OR_EXITS_NETWORK))
+                          .setActions(baseParams.getActions())
+                          .setHeaderSpace(baseParams.getHeaderSpace())
                           .setFinalNodes(ImmutableSet.of())
                           .setForbiddenTransitNodes(ImmutableSet.of())
-                          .setHeaderSpace(baseParams.getHeaderSpace())
                           .setRequiredTransitNodes(ImmutableSet.of())
                           .setSrcIpConstraints(srcIpConstraint)
                           .setSrcNatted(baseParams.getSrcNatted())
                           .build();
                   notAcceptQuery.setNegate(true);
                   List<QuerySynthesizer> queries =
-                      ImmutableList.of(acceptQuery, notAcceptQuery, blacklistQuery);
-                  return new CompositeNodJob(settings, synthesizers, queries, srcIpConstraint, tag);
+                      ImmutableList.of(acceptQuery, notAcceptQuery /*, blacklistQuery*/);
+                  return new CompositeNodJob(
+                      settings,
+                      synthesizers,
+                      queries,
+                      srcIpConstraint,
+                      baseParams.getSpecialize(),
+                      tag);
                 })
             .collect(Collectors.toList());
 
     // TODO: maybe do something with nod answer element
     Set<Flow> flows = computeCompositeNodOutput(jobs, new NodAnswerElement());
     pushBaseEnvironment();
-    DataPlane baseDataPlane = loadDataPlane();
-    ForwardingAnalysis baseForwardingAnalysis =
-        loadForwardingAnalysis(loadConfigurations(), baseDataPlane);
-    getDataPlanePlugin().processFlows(flows, baseDataPlane, false, baseForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
     pushDeltaEnvironment();
-    DataPlane deltaDataPlane = loadDataPlane();
-    ForwardingAnalysis deltaForwardingAnalysis =
-        loadForwardingAnalysis(loadConfigurations(), deltaDataPlane);
-    getDataPlanePlugin().processFlows(flows, deltaDataPlane, false, deltaForwardingAnalysis);
+    getDataPlanePlugin().processFlows(flows, loadDataPlane(), false);
     popEnvironment();
 
     AnswerElement answerElement = getHistory();
@@ -4122,7 +4092,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
         synthesizeDataPlane(
             configurations,
             dataPlane,
-            loadForwardingAnalysis(configurations, dataPlane),
             headerSpace,
             forbiddenTransitNodes,
             requiredTransitNodes,
@@ -4178,8 +4147,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Set<Flow> flows = computeNodOutput(jobs);
 
     DataPlane dp = loadDataPlane();
-    getDataPlanePlugin()
-        .processFlows(flows, dp, false, loadForwardingAnalysis(loadConfigurations(), dp));
+    getDataPlanePlugin().processFlows(flows, dp, false);
 
     AnswerElement answerElement = getHistory();
     return answerElement;
@@ -4297,11 +4265,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations, DataPlane dataPlane) {
-    ForwardingAnalysis forwardingAnalysis = loadForwardingAnalysis(configurations, dataPlane);
     return synthesizeDataPlane(
         configurations,
         dataPlane,
-        forwardingAnalysis,
         new HeaderSpace(),
         ImmutableSet.of(),
         ImmutableSet.of(),
@@ -4316,7 +4282,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return synthesizeDataPlane(
         configs,
         dataPlane,
-        loadForwardingAnalysis(configs, dataPlane),
         parameters.getHeaderSpace(),
         parameters.getForbiddenTransitNodes(),
         parameters.getRequiredTransitNodes(),
@@ -4328,7 +4293,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public Synthesizer synthesizeDataPlane(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       Set<String> nonTransitNodes,
       Set<String> transitNodes,
@@ -4344,7 +4308,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             computeSynthesizerInput(
                 configurations,
                 dataPlane,
-                forwardingAnalysis,
                 headerSpace,
                 ipSpaceAssignment,
                 transitNodes,
@@ -4368,7 +4331,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static SynthesizerInputImpl computeSynthesizerInput(
       Map<String, Configuration> configurations,
       DataPlane dataPlane,
-      ForwardingAnalysis forwardingAnalysis,
       HeaderSpace headerSpace,
       IpSpaceAssignment ipSpaceAssignment,
       Set<String> transitNodes,
@@ -4395,7 +4357,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     return SynthesizerInputImpl.builder()
         .setConfigurations(configurations)
-        .setForwardingAnalysis(forwardingAnalysis)
+        .setForwardingAnalysis(dataPlane.getForwardingAnalysis())
         .setHeaderSpace(headerSpace)
         .setSrcIpConstraints(ipSpacePerLocation)
         .setNonTransitNodes(nonTransitNodes)

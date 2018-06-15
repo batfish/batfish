@@ -83,10 +83,12 @@ public abstract class PropertySpecifier {
   static Object convertTypeIfNeeded(
       Object propertyValue, PropertyDescriptor<?> propertyDescriptor) {
 
+    Object outputPropertyValue = propertyValue;
+
     // for Maps (e.g., routing policies) we use the list of keys
-    if (propertyValue instanceof Map<?, ?>) {
-      propertyValue =
-          ((Map<?, ?>) propertyValue)
+    if (outputPropertyValue instanceof Map<?, ?>) {
+      outputPropertyValue =
+          ((Map<?, ?>) outputPropertyValue)
               .keySet()
               .stream()
               .map(k -> k.toString())
@@ -95,16 +97,16 @@ public abstract class PropertySpecifier {
 
     // check if a conversion to String is needed for complex objects (e.g., VRF)
     if (propertyDescriptor.getSchema().equals(Schema.STRING)
-        && propertyValue != null
-        && !(propertyValue instanceof String)) {
-      if (propertyValue instanceof ComparableStructure) {
-        propertyValue = ((ComparableStructure<?>) propertyValue).getName();
+        && outputPropertyValue != null
+        && !(outputPropertyValue instanceof String)) {
+      if (outputPropertyValue instanceof ComparableStructure) {
+        outputPropertyValue = ((ComparableStructure<?>) outputPropertyValue).getName();
       } else {
-        propertyValue = propertyValue.toString();
+        outputPropertyValue = outputPropertyValue.toString();
       }
     }
 
-    return propertyValue;
+    return outputPropertyValue;
   }
 
   /**

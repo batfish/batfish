@@ -1,33 +1,21 @@
 package org.batfish.coordinator.resources;
 
+import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.OK;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Date;
-import java.util.Optional;
+import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import org.batfish.common.BfConsts;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
-import org.batfish.common.util.BatfishObjectMapper;
-import org.batfish.common.util.CommonUtil;
 import org.batfish.coordinator.Main;
-import org.batfish.coordinator.TestrigMetadataMgr;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
-import org.batfish.datamodel.TestrigMetadata;
-import org.batfish.datamodel.pojo.Node;
-import org.batfish.datamodel.pojo.Topology;
-import org.batfish.role.NodeRole;
-import org.batfish.role.NodeRoleDimension;
 import org.batfish.role.NodeRolesData;
 import org.junit.Before;
 import org.junit.Rule;
@@ -51,57 +39,39 @@ public class NodeRolesResourceTest extends WorkMgrServiceV2TestBase {
   }
 
   @Test
-  public void getNodeRolesWithTestrig() throws IOException {
+  public void addNodeRoleDimension() throws IOException {
     String container = "someContainer";
     Main.getWorkMgr().initContainer(container, null);
 
-    // create a testrig with a topology file
-    Path containerDir =
-        Main.getSettings().getContainersLocation().resolve(container).toAbsolutePath();
-    Files.createDirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR).resolve("testrig"));
-    TestrigMetadataMgr.writeMetadata(
-        new TestrigMetadata(new Date().toInstant(), "env"), container, "testrig");
-    Topology topology = new Topology("testrig");
-    topology.setNodes(ImmutableSet.of(new Node("a1"), new Node("b1")));
-    CommonUtil.writeFile(
-        Main.getWorkMgr()
-            .getdirTestrig(container, "testrig")
-            .resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH),
-        BatfishObjectMapper.mapper().writeValueAsString(topology));
+    NodeRoleDimensionBean dimBean = new NodeRoleDimensionBean("dimension1", null, null, null);
+    Response response =
+        getNodeRolesTarget(container)
+            .request()
+            .post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
 
-    // write node roles data to in the right place
-    NodeRolesData data =
-        new NodeRolesData(
-            null,
-            null,
-            ImmutableSortedSet.of(
-                new NodeRoleDimension(
-                    "someDimension",
-                    ImmutableSortedSet.of(new NodeRole("someRole", "a.*")),
-                    null,
-                    null)));
-    NodeRolesData.write(data, containerDir.resolve(BfConsts.RELPATH_NODE_ROLES_PATH));
-
-    // we should get OK and the expected bean
-    Response response = getNodeRolesTarget(container).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
-    assertThat(
-        response.readEntity(NodeRolesDataBean.class),
-        equalTo(new NodeRolesDataBean(data, Optional.of("testrig"), ImmutableSet.of("a1", "b1"))));
+    NodeRolesData nrData = Main.getWorkMgr().getNodeRolesData(container);
+    assertThat(nrData.getNodeRoleDimension("dimension1").isPresent(), equalTo(true));
+
+    Response response2 =
+        getNodeRolesTarget(container)
+            .request()
+            .post(Entity.entity(dimBean, MediaType.APPLICATION_JSON));
+    assertThat(response2.getStatus(), equalTo(BAD_REQUEST.getStatusCode()));
   }
 
   @Test
-  public void getNodeRolesEmptyContainer() throws JsonProcessingException {
+  public void getNodeRoles() {
     String container = "someContainer";
     Main.getWorkMgr().initContainer(container, null);
-    Response response = getNodeRolesTarget(container).request().get();
 
-    // got OK and what we got back equalled what we wrote
+    // we only check that the right type of object is returned at the expected URL target
+    // we rely on NodeRolesDataBean to have created the object with the right content
+    Response response = getNodeRolesTarget(container).request().get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(
         response.readEntity(NodeRolesDataBean.class),
         equalTo(
-            new NodeRolesDataBean(
-                new NodeRolesData(null, null, null), Optional.empty(), ImmutableSet.of())));
+            new NodeRolesDataBean(new NodeRolesData(null, null, null), null, ImmutableSet.of())));
   }
 }

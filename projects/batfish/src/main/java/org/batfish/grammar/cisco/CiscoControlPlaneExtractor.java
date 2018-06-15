@@ -228,8 +228,6 @@ import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
-import org.batfish.datamodel.OspfAreaSummary;
-import org.batfish.datamodel.OspfMetricType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.Prefix6Range;
@@ -246,6 +244,8 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
+import org.batfish.datamodel.ospf.OspfAreaSummary;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetElem;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
@@ -700,6 +700,7 @@ import org.batfish.grammar.cisco.CiscoParser.Remove_private_as_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_areaContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_filterlistContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_area_nssaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_area_stubContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_auto_costContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_informationContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_default_metricContext;
@@ -910,6 +911,7 @@ import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NatPool;
 import org.batfish.representation.cisco.NetworkObjectGroup;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
+import org.batfish.representation.cisco.NssaSettings;
 import org.batfish.representation.cisco.OspfNetwork;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
@@ -1013,6 +1015,7 @@ import org.batfish.representation.cisco.StandardCommunityListLine;
 import org.batfish.representation.cisco.StandardIpv6AccessList;
 import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
+import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.Tunnel;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
@@ -1063,9 +1066,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String F_IP_DEFAULT_GATEWAY = "ip default-gateway";
 
   private static final String F_IP_ROUTE_VRF = "ip route vrf / vrf - ip route";
-
-  private static final String F_OSPF_AREA_NSSA_DEFAULT_ORIGINATE =
-      "ospf - not-so-stubby areas - default-originate";
 
   private static final String F_OSPF_AREA_NSSA_NO_REDISTRIBUTION =
       "ospf - not-so-stubby areas - no-redistribution";
@@ -2819,7 +2819,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.peer.getText();
     _currentBgpNxVrfNeighbor =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeer(name);
-    _configuration.recordStructure(BGP_TEMPLATE_PEER, name, 0, ctx.getStart().getLine());
+    defineStructure(BGP_TEMPLATE_PEER, name, ctx);
   }
 
   @Override
@@ -2832,7 +2832,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.policy.getText();
     _currentBgpNxVrfNeighborAddressFamily =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerPolicy(name);
-    _configuration.recordStructure(BGP_TEMPLATE_PEER_POLICY, name, 0, ctx.getStart().getLine());
+    defineStructure(BGP_TEMPLATE_PEER_POLICY, name, ctx);
   }
 
   @Override
@@ -2845,7 +2845,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.session.getText();
     _currentBgpNxVrfNeighbor =
         _configuration.getNxBgpGlobalConfiguration().getOrCreateTemplatePeerSession(name);
-    _configuration.recordStructure(BGP_TEMPLATE_PEER_SESSION, name, 0, ctx.getStart().getLine());
+    defineStructure(BGP_TEMPLATE_PEER_SESSION, name, ctx);
   }
 
   @Override
@@ -6452,16 +6452,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRo_area_nssa(Ro_area_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
-    boolean noSummary = ctx.NO_SUMMARY() != null;
-    boolean defaultOriginate = ctx.DEFAULT_INFORMATION_ORIGINATE() != null;
-    boolean noRedstribution = ctx.NO_REDISTRIBUTION() != null;
-    if (defaultOriginate) {
-      todo(ctx, F_OSPF_AREA_NSSA_DEFAULT_ORIGINATE);
+    NssaSettings settings = proc.getNssas().computeIfAbsent(area, a -> new NssaSettings());
+    if (ctx.default_information_originate != null) {
+      settings.setDefaultInformationOriginate(true);
     }
-    if (noRedstribution) {
+    if (ctx.no_redistribution != null) {
       todo(ctx, F_OSPF_AREA_NSSA_NO_REDISTRIBUTION);
+      settings.setNoRedistribution(true);
     }
-    proc.getNssas().put(area, noSummary);
+    if (ctx.no_summary != null) {
+      settings.setNoSummary(true);
+    }
   }
 
   @Override
@@ -6479,6 +6480,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Map<Prefix, OspfAreaSummary> area =
         currentVrf().getOspfProcess().getSummaries().computeIfAbsent(areaNum, k -> new TreeMap<>());
     area.put(prefix, new OspfAreaSummary(advertise, cost));
+  }
+
+  @Override
+  public void exitRo_area_stub(Ro_area_stubContext ctx) {
+    OspfProcess proc = _currentOspfProcess;
+    long area = (ctx.area_int != null) ? toLong(ctx.area_int) : toIp(ctx.area_ip).asLong();
+    StubSettings settings = proc.getStubs().computeIfAbsent(area, a -> new StubSettings());
+    if (ctx.no_summary != null) {
+      settings.setNoSummary(true);
+    }
   }
 
   @Override
