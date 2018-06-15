@@ -42,6 +42,13 @@ public interface GrammarSettings {
   boolean getPrintParseTree();
 
   /**
+   * Controls whether parse tree line numbers are stored in parse trees.
+   *
+   * @return true iff parse trees should be include line numbers
+   */
+  boolean getPrintParseTreeLineNums();
+
+  /**
    * Whether or not to throw an exception immediately upon a report of an error to the {@link
    * BatfishLexerErrorListener}, ceasing processing for the given text.
    *
@@ -74,6 +81,14 @@ public interface GrammarSettings {
    *     GrammarSettings#getPrintParseTree()}
    */
   void setPrintParseTree(boolean printParseTree);
+
+  /**
+   * See {@link GrammarSettings#getPrintParseTreeLineNums()}
+   *
+   * @param printParseTreeLineNums The new value to be returned by subsequent calls to {@link
+   *     GrammarSettings#getPrintParseTreeLineNums()}
+   */
+  void setPrintParseTreeLineNums(boolean printParseTreeLineNums);
 
   /**
    * See {@link GrammarSettings#getThrowOnLexerError()}

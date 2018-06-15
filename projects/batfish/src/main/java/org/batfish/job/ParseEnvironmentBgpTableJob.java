@@ -110,7 +110,9 @@ public class ParseEnvironmentBgpTableJob extends BatfishJob<ParseEnvironmentBgpT
       extractor = plugin.extractor(_hostname, _fileText, combinedParser, _warnings);
       tree = Batfish.parse(combinedParser, _logger, _settings);
       if (_settings.getPrintParseTree()) {
-        _ptSentences = ParseTreePrettyPrinter.getParseTreeSentences(tree, combinedParser);
+        _ptSentences =
+            ParseTreePrettyPrinter.getParseTreeSentences(
+                tree, combinedParser, _settings.getPrintParseTreeLineNums());
       }
       _logger.info("\tPost-processing...");
       extractor.processParseTree(tree);
