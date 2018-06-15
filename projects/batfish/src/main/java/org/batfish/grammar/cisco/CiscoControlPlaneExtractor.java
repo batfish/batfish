@@ -182,6 +182,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -743,6 +744,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rr_passive_interface_defaultContext
 import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
+import org.batfish.grammar.cisco.CiscoParser.S_access_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
 import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
@@ -1455,11 +1457,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (!methods.isEmpty()) {
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.linetype.getText();
+      AaaAuthenticationLoginList authList = new AaaAuthenticationLoginList(methods);
+
+      if (_configuration.getCf().getLines().get(name) == null) {
+        _configuration.getCf().getLines().put(name, new Line(name));
+      }
+      _configuration.getCf().getLines().get(name).setAaaAuthenticationLoginList(authList);
 
       // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
       // rather than put so we only accept the first login list
-      _currentAaaAuthenticationLoginList =
-          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
+      _currentAaaAuthenticationLoginList = login.getLists().computeIfAbsent(name, k -> authList);
     }
   }
 
@@ -2995,6 +3002,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_access_line(S_access_lineContext ctx) {
+    String name = ctx.linetype.getText();
+    if (_configuration.getCf().getLines().get(name) == null) {
+      Line line = new Line(name);
+      _configuration.getCf().getLines().put(name, line);
+    }
+  }
+
+  @Override
   public void enterS_cable(S_cableContext ctx) {
     if (_configuration.getCf().getCable() == null) {
       _configuration.getCf().setCable(new Cable());
@@ -3154,10 +3170,30 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       names.add(nameBase);
     }
+
+    AaaAuthenticationLoginList defaultList =
+        Optional.ofNullable(_configuration.getCf().getAaa())
+            .map(Aaa::getAuthentication)
+            .map(AaaAuthentication::getLogin)
+            .map(AaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
+            .orElse(null);
+
     for (String name : names) {
       if (_configuration.getCf().getLines().get(name) == null) {
         Line line = new Line(name);
-        line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        if (defaultList != null) {
+          // if default list defined, apply it to all lines
+          line.setAaaAuthenticationLoginList(defaultList);
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        } else if (_configuration.getCf().getAaa() != null
+            && _configuration.getCf().getAaa().getNewModel()
+            && !name.equals("con0")) {
+          // if default list not defined but aaa new-model, apply to all lines except con0
+          line.setAaaAuthenticationLoginList(
+              new AaaAuthenticationLoginList(Collections.singletonList("local")));
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        }
         _configuration.getCf().getLines().put(name, line);
       }
     }
@@ -5431,7 +5467,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("Invalid list name");
     }
     for (String line : _currentLineNames) {
-      _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
+      AaaAuthenticationLoginList authList =
+          _configuration.getCf().getAaa().getAuthentication().getLogin().getLists().get(list);
+      if (authList != null) {
+        _configuration.getCf().getLines().get(line).setAaaAuthenticationLoginList(authList);
+        _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
+      }
     }
   }
 

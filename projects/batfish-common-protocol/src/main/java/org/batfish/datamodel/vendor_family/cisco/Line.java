@@ -12,6 +12,8 @@ public class Line extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private AaaAuthenticationLoginList _aaaAuthenticationLoginList;
+
   private int _execTimeoutMinutes;
 
   private int _execTimeoutSeconds;
@@ -38,6 +40,10 @@ public class Line extends ComparableStructure<String> {
     _transportInput = new TreeSet<>();
     _transportOutput = new TreeSet<>();
     _transportPreferred = new TreeSet<>();
+  }
+
+  public AaaAuthenticationLoginList getAaaAuthenticationLoginList() {
+    return _aaaAuthenticationLoginList;
   }
 
   public Integer getExecTimeoutMinutes() {
@@ -78,6 +84,25 @@ public class Line extends ComparableStructure<String> {
 
   public SortedSet<String> getTransportPreferred() {
     return _transportPreferred;
+  }
+
+  public boolean requiresAuthentication() {
+    boolean authenticated = false;
+
+    if (_aaaAuthenticationLoginList != null) {
+      for (String method : _aaaAuthenticationLoginList.getMethods()) {
+        if (method.equals("none")) {
+          return false;
+        }
+        authenticated = true;
+      }
+    }
+
+    return authenticated;
+  }
+
+  public void setAaaAuthenticationLoginList(AaaAuthenticationLoginList aaaAuthenticationLoginList) {
+    _aaaAuthenticationLoginList = aaaAuthenticationLoginList;
   }
 
   public void setExecTimeoutMinutes(Integer execTimeoutMinutes) {

@@ -100,6 +100,16 @@ allow_iimgp_stanza
    ALLOW null_rest_of_line aiimgp_stanza*
 ;
 
+allowed_ip
+:
+   (
+      (
+         hostname = IP_ADDRESS mask = IP_ADDRESS
+      )
+      | hostname = IPV6_ADDRESS
+   ) iname = variable NEWLINE
+;
+
 ap_null
 :
    NO?
@@ -2067,6 +2077,15 @@ router_multicast_tail
    )*
 ;
 
+s_access_line
+:
+   (
+      linetype = HTTP
+      | linetype = SSH
+      | linetype = TELNET
+   ) allowed_ip
+;
+
 s_airgroupservice
 :
    AIRGROUPSERVICE null_rest_of_line
@@ -3408,6 +3427,7 @@ stanza
    | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
+   | s_access_line
    | s_airgroupservice
    | s_ap
    | s_ap_group

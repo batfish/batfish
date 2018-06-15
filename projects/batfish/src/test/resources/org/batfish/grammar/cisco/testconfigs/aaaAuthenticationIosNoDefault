@@ -1,9 +1,8 @@
 !
-hostname aaaAuthenticationIos
+hostname aaaAuthenticationIosNoDefault
 !
 aaa new-model
 !
-aaa authentication login default group tacacs+ local
 aaa authentication login noAuth local none
 aaa authentication login hasAuth local
 !

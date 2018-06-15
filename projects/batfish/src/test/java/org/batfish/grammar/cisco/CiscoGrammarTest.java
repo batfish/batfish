@@ -69,6 +69,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
@@ -168,6 +169,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -211,6 +213,16 @@ public class CiscoGrammarTest {
   public void testAaaAuthenticationLogin() throws IOException {
     // test ASA config
     Configuration aaaAuthAsaConfiguration = parseConfig("aaaAuthenticationAsa");
+    SortedMap<String, Line> asaLines =
+        aaaAuthAsaConfiguration.getVendorFamily().getCisco().getLines();
+    for (Line line : asaLines.values()) {
+      if (line.getName().equals("http")) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
+
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
@@ -226,13 +238,15 @@ public class CiscoGrammarTest {
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
-                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod("LOCAL"), "http")))))));
+                hasAaa(
+                    hasAuthentication(hasLogin(not(hasListForKey(hasMethod("LOCAL"), "http"))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod("authServer"), "http")))))));
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod("authServer"), "http"))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
@@ -262,6 +276,18 @@ public class CiscoGrammarTest {
 
     // test IOS config
     Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
+
+    SortedMap<String, Line> iosLines =
+        aaaAuthIosConfiguration.getVendorFamily().getCisco().getLines();
+
+    for (Line line : iosLines.values()) {
+      if (line.getName().equals("aux0")) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
+
     assertThat(
         aaaAuthIosConfiguration,
         hasVendorFamily(
@@ -289,6 +315,20 @@ public class CiscoGrammarTest {
                 hasAaa(
                     hasAuthentication(
                         hasLogin(not(hasListForKey(hasMethod("grouptacacs+"), "ssh"))))))));
+
+    // test IOS config with no default login list defined
+    Configuration aaaAuthIosConfigNoDefault = parseConfig("aaaAuthenticationIosNoDefault");
+
+    SortedMap<String, Line> iosNoDefaultLines =
+        aaaAuthIosConfigNoDefault.getVendorFamily().getCisco().getLines();
+
+    for (Line line : iosNoDefaultLines.values()) {
+      if (line.getName().equals("aux0") || line.getName().equals("con0")) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
   }
 
   @Test

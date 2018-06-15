@@ -3059,6 +3059,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // remove line login authentication lists if they don't exist
     for (Line line : _cf.getLines().values()) {
       String list = line.getLoginAuthentication();
+      if (list == null) {
+        continue;
+      }
       boolean found = false;
       Aaa aaa = _cf.getAaa();
       if (aaa != null) {
