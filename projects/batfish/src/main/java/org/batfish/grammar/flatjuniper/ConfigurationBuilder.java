@@ -6,6 +6,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.APPLICATIO
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.AUTHENTICATION_KEY_CHAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
+import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
@@ -23,6 +24,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
+import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
@@ -1938,13 +1940,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterFod_server_group(Fod_server_groupContext ctx) {
     String name = ctx.name.getText();
-    final int line = ctx.name.getStart().getLine();
     DhcpRelayServerGroup serverGroup =
         _currentRoutingInstance
             .getDhcpRelayServerGroups()
-            .computeIfAbsent(name, k -> new DhcpRelayServerGroup(k, line));
+            .computeIfAbsent(name, DhcpRelayServerGroup::new);
     Ip ip = new Ip(ctx.address.getText());
     serverGroup.getServers().add(ip);
+    defineStructure(DHCP_RELAY_SERVER_GROUP, name, ctx);
   }
 
   @Override
@@ -3305,9 +3307,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitFod_active_server_group(Fod_active_server_groupContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentDhcpRelayGroup.setActiveServerGroup(name);
-    _currentDhcpRelayGroup.setActiveServerGroupLine(line);
+    _configuration.referenceStructure(
+        DHCP_RELAY_SERVER_GROUP,
+        name,
+        DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP,
+        ctx.name.getStart().getLine());
   }
 
   @Override

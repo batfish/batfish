@@ -2081,14 +2081,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         String asgName = rg.getActiveServerGroup();
         if (asgName != null) {
           DhcpRelayServerGroup asg = ri.getDhcpRelayServerGroups().get(asgName);
-          if (asg == null) {
-            int asgLine = rg.getActiveServerGroupLine();
-            undefined(
-                JuniperStructureType.DHCP_RELAY_SERVER_GROUP,
-                asgName,
-                JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP,
-                asgLine);
-          } else {
+          if (asg != null) {
             for (org.batfish.datamodel.Interface iface : interfaces) {
               iface.getDhcpRelayAddresses().addAll(asg.getServers());
             }
@@ -2220,8 +2213,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER);
     markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
+    markConcreteStructure(
+        JuniperStructureType.DHCP_RELAY_SERVER_GROUP,
+        JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP);
     // record defined structures
-    recordDhcpRelayServerGroups();
     markConcreteStructure(
         JuniperStructureType.IKE_GATEWAY, JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY);
     markConcreteStructure(
@@ -2331,17 +2326,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       PrefixList prefixList = e.getValue();
       if (!prefixList.getIpv6() && prefixList.getPrefixes().isEmpty()) {
         _w.redFlag("Empty prefix-list: '" + name + "'");
-      }
-    }
-  }
-
-  private void recordDhcpRelayServerGroups() {
-    for (RoutingInstance ri : _routingInstances.values()) {
-      for (Entry<String, DhcpRelayServerGroup> e : ri.getDhcpRelayServerGroups().entrySet()) {
-        String name = e.getKey();
-        DhcpRelayServerGroup sg = e.getValue();
-        recordStructure(
-            sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
       }
     }
   }
