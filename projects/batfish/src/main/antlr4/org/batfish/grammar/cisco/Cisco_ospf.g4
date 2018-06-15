@@ -33,8 +33,7 @@ ro_area_default_cost
    (
       area_int = DEC
       | area_ip = IP_ADDRESS
-   )
-   DEFAULT_COST cost = DEC NEWLINE
+   ) DEFAULT_COST cost = DEC NEWLINE
 ;
 
 ro_area_filterlist
@@ -43,9 +42,11 @@ ro_area_filterlist
    (
       area_int = DEC
       | area_ip = IP_ADDRESS
-   )
-   FILTER_LIST PREFIX list = variable (IN | OUT)
-   NEWLINE
+   ) FILTER_LIST PREFIX list = variable
+   (
+      IN
+      | OUT
+   ) NEWLINE
 ;
 
 ro_area_nssa
@@ -57,7 +58,7 @@ ro_area_nssa
    ) NSSA
    (
       (
-         DEFAULT_INFORMATION_ORIGINATE
+         default_information_originate = DEFAULT_INFORMATION_ORIGINATE
          (
             (
                METRIC metric = DEC
@@ -68,8 +69,8 @@ ro_area_nssa
             )
          )*
       )
-      | NO_REDISTRIBUTION
-      | NO_SUMMARY
+      | no_redistribution = NO_REDISTRIBUTION
+      | no_summary = NO_SUMMARY
    )* NEWLINE
 ;
 
@@ -92,8 +93,7 @@ ro_area_range
    )?
    (
       COST cost = DEC
-   )?
-   NEWLINE
+   )? NEWLINE
 ;
 
 ro_area_stub
@@ -104,7 +104,7 @@ ro_area_stub
       | area_ip = IP_ADDRESS
    ) STUB
    (
-      NO_SUMMARY
+      no_summary = NO_SUMMARY
    )* NEWLINE
 ;
 
@@ -115,7 +115,11 @@ ro_authentication
 
 ro_auto_cost
 :
-   AUTO_COST REFERENCE_BANDWIDTH DEC (GBPS | MBPS)? NEWLINE
+   AUTO_COST REFERENCE_BANDWIDTH DEC
+   (
+      GBPS
+      | MBPS
+   )? NEWLINE
 ;
 
 ro_common
@@ -502,9 +506,8 @@ roa_range
       | NOT_ADVERTISE
    )?
    (
-      COST cost=DEC
-   )?
-   NEWLINE
+      COST cost = DEC
+   )? NEWLINE
 ;
 
 roa_network_null

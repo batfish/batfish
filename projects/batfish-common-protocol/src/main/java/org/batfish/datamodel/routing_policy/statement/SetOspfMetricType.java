@@ -3,7 +3,7 @@ package org.batfish.datamodel.routing_policy.statement;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.OspfExternalRoute;
-import org.batfish.datamodel.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 

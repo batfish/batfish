@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfNeighbor;
 
 public final class VerboseOspfEdge implements Serializable, Comparable<VerboseOspfEdge> {
 
