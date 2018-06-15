@@ -3517,6 +3517,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement reducedReachability(ReachabilityParameters params) {
+    /* This always should be (and has to be) true, but the question doesn't enforce it. */
+    _settings.setDiffQuestion(true);
+
     checkDifferentialDataPlaneQuestionDependencies();
     pushBaseEnvironment();
     ResolvedReachabilityParameters baseParams;
@@ -3587,7 +3590,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 entry -> {
                   Map<IngressLocation, BooleanExpr> srcIpConstraint =
                       ImmutableMap.of(entry.getKey(), entry.getValue());
-                  StandardReachabilityQuerySynthesizer acceptQuery =
+                  // build the query for the base testrig
+                  StandardReachabilityQuerySynthesizer baseQuery =
                       StandardReachabilityQuerySynthesizer.builder()
                           .setActions(baseParams.getActions())
                           .setHeaderSpace(baseParams.getHeaderSpace())
@@ -3597,7 +3601,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           .setSrcIpConstraints(srcIpConstraint)
                           .setSrcNatted(baseParams.getSrcNatted())
                           .build();
-                  StandardReachabilityQuerySynthesizer notAcceptQuery =
+                  // build the query for the delta testrig
+                  StandardReachabilityQuerySynthesizer deltaQuery =
                       StandardReachabilityQuerySynthesizer.builder()
                           .setActions(baseParams.getActions())
                           .setHeaderSpace(baseParams.getHeaderSpace())
@@ -3607,9 +3612,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           .setSrcIpConstraints(srcIpConstraint)
                           .setSrcNatted(baseParams.getSrcNatted())
                           .build();
-                  notAcceptQuery.setNegate(true);
+                  /*
+                   * "Reduced" means flows that match the constraints on the base testrig,
+                   * bot not on the delta testrig.
+                   */
+                  deltaQuery.setNegate(true);
                   List<QuerySynthesizer> queries =
-                      ImmutableList.of(acceptQuery, notAcceptQuery /*, blacklistQuery*/);
+                      ImmutableList.of(baseQuery, deltaQuery /*, blacklistQuery*/);
                   return new CompositeNodJob(
                       settings,
                       synthesizers,
