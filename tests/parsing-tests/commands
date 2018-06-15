@@ -44,8 +44,8 @@ test tests/parsing-tests/unit-tests-unused.ref get unusedstructures
 test tests/parsing-tests/unit-tests-nodes.ref get nodes summary=false
 
 
-#now enable printing parse tree line numbers
+#parsing tests with parse tree line numbers
 add-batfish-option printparsetreelinenums
 
-#line-numbers
+#make sure line-numbers show up when that option is set
 test -compareall tests/parsing-tests/line-numbers.ref init-testrig test_rigs/line-numbers
