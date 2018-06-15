@@ -1,12 +1,18 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.IsoAddress.invalidCharsMessage;
+import static org.batfish.datamodel.IsoAddress.invalidLengthMessage;
+import static org.batfish.datamodel.IsoAddress.trim;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-import org.batfish.common.BatfishException;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
-public class IsoAddressTest {
+public final class IsoAddressTest {
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 
   @Test
   public void testCanonicalization() {
@@ -24,23 +30,38 @@ public class IsoAddressTest {
     assertThat(new IsoAddress(oddCanonical).toString(), equalTo(oddCanonical));
   }
 
-  @Test(expected = BatfishException.class)
+  @Test
   public void testRejectInvalidChar() {
-    new IsoAddress("AA.CCCC.CCCC.CCCC.GG");
+    String invalidIsoAddressStr = "AA.CCCC.CCCC.CCCC.GG";
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(invalidCharsMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
+    new IsoAddress(invalidIsoAddressStr);
   }
 
-  @Test(expected = BatfishException.class)
+  @Test
   public void testRejectOddDigits() {
-    new IsoAddress("AA.BBBC.CCCC.CCCC.CDD");
+    String invalidIsoAddressStr = "AA.BBBC.CCCC.CCCC.CDD";
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
+    new IsoAddress(invalidIsoAddressStr);
   }
 
-  @Test(expected = BatfishException.class)
+  @Test
   public void testRejectTooLarge() {
-    new IsoAddress("AA.BBBB.BBBB.BBBB.BBBB.BBBB.BBBB.BBCC.CCCC.CCCC.CCDD");
+    String invalidIsoAddressStr = "AA.BBBB.BBBB.BBBB.BBBB.BBBB.BBBB.BBCC.CCCC.CCCC.CCDD";
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
+    new IsoAddress(invalidIsoAddressStr);
   }
 
-  @Test(expected = BatfishException.class)
+  @Test
   public void testRejectTooSmall() {
-    new IsoAddress("AA.CCCC.CCCC.CCDD");
+    String invalidIsoAddressStr = "AA.CCCC.CCCC.CCDD";
+
+    _thrown.expect(IllegalArgumentException.class);
+    _thrown.expectMessage(invalidLengthMessage(invalidIsoAddressStr, trim(invalidIsoAddressStr)));
+    new IsoAddress(invalidIsoAddressStr);
   }
 }

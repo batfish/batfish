@@ -4,13 +4,13 @@ import static java.util.Objects.requireNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.io.BaseEncoding;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 
 /**
  * First byte - AFI<br>
@@ -43,6 +43,27 @@ public final class IsoAddress implements Serializable {
     return new IsoAddress(requireNonNull(isoAddressStr));
   }
 
+  @VisibleForTesting
+  static @Nonnull String invalidCharsMessage(
+      @Nonnull String isoAddressStr, @Nonnull String trimmed) {
+    return String.format(
+        "Expected only hexadecimal and period (.) characters, but got: '%s' after trimming '%s'",
+        trimmed, isoAddressStr);
+  }
+
+  @VisibleForTesting
+  static @Nonnull String invalidLengthMessage(
+      @Nonnull String isoAddressStr, @Nonnull String trimmed) {
+    return String.format(
+        "Expected an even number of hexadecimal digits representing 8-20 octets, but got: '%s' after trimming: '%s'",
+        trimmed, isoAddressStr);
+  }
+
+  @VisibleForTesting
+  static @Nonnull String trim(@Nonnull String isoAddressStr) {
+    return isoAddressStr.replaceAll(Pattern.quote("."), "");
+  }
+
   private final byte _afi;
 
   private final byte[] _areaId;
@@ -56,23 +77,17 @@ public final class IsoAddress implements Serializable {
    * characters that are ignored. See {@link IsoAddres} documentation for canonical text format.
    */
   public IsoAddress(@Nonnull String isoAddressStr) {
-    String trimmed = isoAddressStr.replaceAll(Pattern.quote("."), "");
+    String trimmed = trim(isoAddressStr);
+
     int numChars = trimmed.length();
     if (numChars % 2 != 0 || numChars < 16 || 40 < numChars) {
-      throw new BatfishException(
-          String.format(
-              "Expected an even number of hexadecimal digits representing 8-20 octets, but got: '%s' after trimming: '%s'",
-              trimmed, isoAddressStr));
+      throw new IllegalArgumentException(invalidLengthMessage(isoAddressStr, trimmed));
     }
     byte[] all;
     try {
       all = BaseEncoding.base16().decode(trimmed.toUpperCase());
     } catch (IllegalArgumentException e) {
-      throw new BatfishException(
-          String.format(
-              "Expected only hexadecimal and period (.) characters, but got: '%s' after trimming '%s'",
-              trimmed, isoAddressStr),
-          e);
+      throw new IllegalArgumentException(invalidCharsMessage(isoAddressStr, trimmed), e);
     }
     int numBytes = all.length;
     int nSelOffset = numBytes - 1;
