@@ -57,7 +57,6 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.State;
 import org.batfish.datamodel.SubRange;
@@ -2099,26 +2098,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // snmp
       SnmpServer snmpServer = ri.getSnmpServer();
       vrf.setSnmpServer(snmpServer);
-      if (snmpServer != null) {
-        for (SnmpCommunity community : snmpServer.getCommunities().values()) {
-          String listName = community.getAccessList();
-          if (listName != null) {
-            int listLine = community.getAccessListLine();
-            PrefixList prefixList = _prefixLists.get(listName);
-            if (prefixList != null) {
-              prefixList
-                  .getReferers()
-                  .put(community, "prefix-list for community: " + community.getName());
-            } else {
-              undefined(
-                  JuniperStructureType.PREFIX_LIST,
-                  listName,
-                  JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST,
-                  listLine);
-            }
-          }
-        }
-      }
 
       // static routes
       for (StaticRoute route :
@@ -2217,7 +2196,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST,
         JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST,
-        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER);
+        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER,
+        JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST);
     markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
     // record defined structures
