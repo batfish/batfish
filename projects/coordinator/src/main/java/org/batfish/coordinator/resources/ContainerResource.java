@@ -36,6 +36,12 @@ public class ContainerResource {
     _uriInfo = uriInfo;
   }
 
+  /** Relocate the request to {@link AddressLibrary}. */
+  @Path(CoordConstsV2.RSC_ADDRESS_LIBRARY)
+  public AddressLibraryResource getAddressBooksResource() {
+    return new AddressLibraryResource(_uriInfo, _name);
+  }
+
   /** Returns information about the given {@link Container}, provided this user can access it. */
   @GET
   public Response getContainer() {
