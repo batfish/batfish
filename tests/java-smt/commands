@@ -94,8 +94,9 @@ init-testrig test_rigs/smt-examples/AGGREGATION2
 test tests/java-smt/aggregation2-forwarding.ref get smt-forwarding dstIps=["42.42.42.1"], fullModel=True
 
 # Proper handling of import prefix-list and route-map
-init-testrig test_rigs/smt-examples/ENV3 tr-smt-env3
-test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True, minimize=True 
+# Commented out due to nondeterminism
+# init-testrig test_rigs/smt-examples/ENV3 tr-smt-env3
+# test tests/java-smt/env3-local.ref get smt-local-consistency fullModel=True, minimize=True 
 
 # Ensure ACLs are applied to data forwarding
 init-testrig test_rigs/smt-examples/ACL1 tr-smt-acl1
