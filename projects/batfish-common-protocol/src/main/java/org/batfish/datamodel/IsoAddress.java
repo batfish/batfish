@@ -24,10 +24,10 @@ import org.batfish.common.BatfishException;
  * D - NSEL<br>
  *
  * <p>If odd number of bytes, canonical text format is:<br>
- * AA.(BBBB.)^[0,6].CCCC.CCDD<br>
+ * AA.(BBBB.)^[0,5].BBCC.CCCC.CCCC.CCDD<br>
  *
  * <p>If even number of bytes, canonical text format is:<br>
- * AA.(BBBB.)^[0,5].BBCC.CCCC.DD
+ * AA.(BBBB.)^[0,6].CCCC.CCCC.CCCC.DD
  */
 public final class IsoAddress implements Serializable {
 
