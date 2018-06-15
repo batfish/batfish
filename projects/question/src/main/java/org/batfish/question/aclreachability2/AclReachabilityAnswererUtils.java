@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -135,49 +136,49 @@ public final class AclReachabilityAnswererUtils {
       // dereferenced IpSpaces. If any IpSpaceReference is found to point to an undefined IP space,
       // stop and record this line as having an undefined reference.
       if (headerSpace.getSrcIps() instanceof IpSpaceReference) {
-        IpSpace referencedSpace =
+        Optional<IpSpace> referencedSpace =
             dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getSrcIps());
-        if (referencedSpace == null) {
+        if (!referencedSpace.isPresent()) {
           addUndefinedRef(lineNum);
           return;
         }
-        hsb.setSrcIps(referencedSpace);
+        hsb.setSrcIps(referencedSpace.get());
       }
       if (headerSpace.getDstIps() instanceof IpSpaceReference) {
-        IpSpace referencedSpace =
+        Optional<IpSpace> referencedSpace =
             dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getDstIps());
-        if (referencedSpace == null) {
+        if (!referencedSpace.isPresent()) {
           addUndefinedRef(lineNum);
           return;
         }
-        hsb.setDstIps(referencedSpace);
+        hsb.setDstIps(referencedSpace.get());
       }
       if (headerSpace.getNotSrcIps() instanceof IpSpaceReference) {
-        IpSpace referencedSpace =
+        Optional<IpSpace> referencedSpace =
             dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getNotSrcIps());
-        if (referencedSpace == null) {
+        if (!referencedSpace.isPresent()) {
           addUndefinedRef(lineNum);
           return;
         }
-        hsb.setNotSrcIps(referencedSpace);
+        hsb.setNotSrcIps(referencedSpace.get());
       }
       if (headerSpace.getNotDstIps() instanceof IpSpaceReference) {
-        IpSpace referencedSpace =
+        Optional<IpSpace> referencedSpace =
             dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getNotDstIps());
-        if (referencedSpace == null) {
+        if (!referencedSpace.isPresent()) {
           addUndefinedRef(lineNum);
           return;
         }
-        hsb.setNotDstIps(referencedSpace);
+        hsb.setNotDstIps(referencedSpace.get());
       }
       if (headerSpace.getSrcOrDstIps() instanceof IpSpaceReference) {
-        IpSpace referencedSpace =
+        Optional<IpSpace> referencedSpace =
             dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getSrcOrDstIps());
-        if (referencedSpace == null) {
+        if (!referencedSpace.isPresent()) {
           addUndefinedRef(lineNum);
           return;
         }
-        hsb.setSrcOrDstIps(referencedSpace);
+        hsb.setSrcOrDstIps(referencedSpace.get());
       }
       sanitizeLine(lineNum, new MatchHeaderSpace(hsb.build()));
     }

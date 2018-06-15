@@ -1,9 +1,9 @@
 package org.batfish.datamodel.visitors;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
-import javax.annotation.Nullable;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.IpIpSpace;
@@ -15,7 +15,7 @@ import org.batfish.datamodel.PrefixIpSpace;
 import org.batfish.datamodel.UniverseIpSpace;
 
 /** Returns the non-IpSpaceReference IpSpace that the given IpSpace points to. */
-public class IpSpaceReferenceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
+public class IpSpaceReferenceDereferencer implements GenericIpSpaceVisitor<Optional<IpSpace>> {
 
   private final Map<String, IpSpace> _namedIpSpaces;
 
@@ -24,23 +24,23 @@ public class IpSpaceReferenceDereferencer implements GenericIpSpaceVisitor<IpSpa
   }
 
   @Override
-  public IpSpace castToGenericIpSpaceVisitorReturnType(Object o) {
-    return (IpSpace) o;
+  public Optional<IpSpace> castToGenericIpSpaceVisitorReturnType(Object o) {
+    return (Optional<IpSpace>) o;
   }
 
   @Override
-  public IpSpace visitAclIpSpace(AclIpSpace aclIpSpace) {
-    return aclIpSpace;
+  public Optional<IpSpace> visitAclIpSpace(AclIpSpace aclIpSpace) {
+    return Optional.of(aclIpSpace);
   }
 
   @Override
-  public IpSpace visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
-    return emptyIpSpace;
+  public Optional<IpSpace> visitEmptyIpSpace(EmptyIpSpace emptyIpSpace) {
+    return Optional.of(emptyIpSpace);
   }
 
   @Override
-  public IpSpace visitIpIpSpace(IpIpSpace ipIpSpace) {
-    return ipIpSpace;
+  public Optional<IpSpace> visitIpIpSpace(IpIpSpace ipIpSpace) {
+    return Optional.of(ipIpSpace);
   }
 
   /**
@@ -50,46 +50,42 @@ public class IpSpaceReferenceDereferencer implements GenericIpSpaceVisitor<IpSpa
    *     chain of references or ultimately references an undefined {@link IpSpace}.
    */
   @Override
-  public @Nullable IpSpace visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    return visitIpSpaceReferenceHelper(ipSpaceReference, new TreeSet<>());
-  }
-
-  private IpSpace visitIpSpaceReferenceHelper(
-      IpSpaceReference ipSpace, Set<String> referencedSoFar) {
-    String name = ipSpace.getName();
-    if (referencedSoFar.contains(name)) {
-      // Circular reference; no base IpSpace to dereference.
-      return null;
+  public Optional<IpSpace> visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
+    Set<String> referencedIpSpaces = new TreeSet<>();
+    IpSpace referenced = ipSpaceReference;
+    while (referenced instanceof IpSpaceReference) {
+      ipSpaceReference = (IpSpaceReference) referenced;
+      String name = ipSpaceReference.getName();
+      if (!referencedIpSpaces.add(name)) {
+        // Reference cycle; no base IpSpace to dereference.
+        return Optional.empty();
+      }
+      referenced = _namedIpSpaces.get(name);
+      if (referenced == null) {
+        // Undefined IP space referenced.
+        return Optional.empty();
+      }
     }
-    referencedSoFar.add(name);
-    IpSpace referenced = _namedIpSpaces.get(name);
-    if (referenced instanceof IpSpaceReference) {
-      // The given reference references another reference. Keep going down the rabbit hole
-      return visitIpSpaceReferenceHelper((IpSpaceReference) referenced, referencedSoFar);
-    } else {
-      // The given reference did not reference another reference. If it referenced a valid IP space,
-      // this will return that IP space; if the referenced IP space is undefined, it returns null.
-      return referenced;
-    }
+    return Optional.of(referenced);
   }
 
   @Override
-  public IpSpace visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
-    return ipWildcardIpSpace;
+  public Optional<IpSpace> visitIpWildcardIpSpace(IpWildcardIpSpace ipWildcardIpSpace) {
+    return Optional.of(ipWildcardIpSpace);
   }
 
   @Override
-  public IpSpace visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
-    return ipWildcardSetIpSpace;
+  public Optional<IpSpace> visitIpWildcardSetIpSpace(IpWildcardSetIpSpace ipWildcardSetIpSpace) {
+    return Optional.of(ipWildcardSetIpSpace);
   }
 
   @Override
-  public IpSpace visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
-    return prefixIpSpace;
+  public Optional<IpSpace> visitPrefixIpSpace(PrefixIpSpace prefixIpSpace) {
+    return Optional.of(prefixIpSpace);
   }
 
   @Override
-  public IpSpace visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
-    return universeIpSpace;
+  public Optional<IpSpace> visitUniverseIpSpace(UniverseIpSpace universeIpSpace) {
+    return Optional.of(universeIpSpace);
   }
 }
