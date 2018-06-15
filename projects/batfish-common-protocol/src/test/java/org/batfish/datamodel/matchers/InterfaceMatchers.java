@@ -12,7 +12,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisInterfaceSettings;
-import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.SourceNat;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
@@ -36,6 +35,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsActive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPassive;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsOspfPointToPoint;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.IsProxyArp;
+import org.batfish.datamodel.ospf.OspfArea;
 import org.hamcrest.Matcher;
 
 public final class InterfaceMatchers {

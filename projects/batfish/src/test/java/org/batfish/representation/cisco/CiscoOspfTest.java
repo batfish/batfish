@@ -11,7 +11,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Collections;
 import java.util.List;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.OspfMetricType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;

@@ -1,4 +1,4 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.ospf;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,13 +6,21 @@ import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.GeneratedRoute;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpLink;
+import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 
 @JsonSchemaDescription("An OSPF routing process")
@@ -108,6 +116,10 @@ public class OspfProcess implements Serializable {
   private static final String PROP_PROCESS_ID = "processId";
 
   private static final long serialVersionUID = 1L;
+
+  public static Builder builder(NetworkFactory networkFactory) {
+    return new Builder(networkFactory);
+  }
 
   private SortedMap<Long, OspfArea> _areas;
 
@@ -247,6 +259,16 @@ public class OspfProcess implements Serializable {
         }
       }
     }
+  }
+
+  /**
+   * An ABR (Area Border Router) has at least one interface in area 0, and at least one interface in
+   * another area.
+   */
+  @JsonIgnore
+  public boolean isAreaBorderRouter() {
+    Set<Long> areas = _areas.keySet();
+    return areas.contains(0L) && areas.size() > 1;
   }
 
   public void setAreas(SortedMap<Long, OspfArea> areas) {
