@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
@@ -75,8 +74,6 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
 
-  private final int _definitionLine;
-
   private EncryptionAlgorithm _encryptionAlgorithm;
 
   private Integer _lifetimeKilobytes;
@@ -88,19 +85,6 @@ public class IpsecProposal extends ComparableStructure<String> {
   @JsonCreator
   public IpsecProposal(@JsonProperty(PROP_NAME) String name) {
     super(name);
-    _definitionLine = -1;
-    _protocols = new TreeSet<>();
-  }
-
-  /*
-   * TODO: Currently IpsecProposal() is used in Juniper ConfigurationBuilder and
-   * hence when fixing the reference tracking for juniper's configuration, this
-   * can be removed.
-   */
-
-  public IpsecProposal(String name, int definitionLine) {
-    super(name);
-    _definitionLine = definitionLine;
     _protocols = new TreeSet<>();
   }
 
@@ -112,11 +96,6 @@ public class IpsecProposal extends ComparableStructure<String> {
 
   public IpsecAuthenticationAlgorithm getAuthenticationAlgorithm() {
     return _authenticationAlgorithm;
-  }
-
-  @JsonIgnore
-  public int getDefinitionLine() {
-    return _definitionLine;
   }
 
   public EncryptionAlgorithm getEncryptionAlgorithm() {
