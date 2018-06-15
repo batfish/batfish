@@ -5978,13 +5978,15 @@
           "policy-statement" : {
             "bgp_export" : {
               "definitionLines" : [
-                115
+                115,
+                116
               ],
               "numReferrers" : 1
             },
             "loadbal" : {
               "definitionLines" : [
-                117
+                117,
+                118
               ],
               "numReferrers" : 1
             }
@@ -6040,7 +6042,8 @@
           "policy-statement" : {
             "bgp_export" : {
               "definitionLines" : [
-                98
+                98,
+                99
               ],
               "numReferrers" : 1
             }
@@ -6096,7 +6099,8 @@
           "policy-statement" : {
             "bgp_export" : {
               "definitionLines" : [
-                89
+                89,
+                90
               ],
               "numReferrers" : 1
             }

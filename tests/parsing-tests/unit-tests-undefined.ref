@@ -918,7 +918,9 @@
         "files" : {
           "juniper_bgp" : [
             8,
-            22
+            15,
+            22,
+            31
           ]
         }
       },
@@ -927,7 +929,9 @@
         "files" : {
           "juniper_bgp" : [
             10,
-            24
+            17,
+            24,
+            33
           ]
         }
       },
@@ -2055,13 +2059,17 @@
           "someexportpolicy" : {
             "bgp export policy-statement" : [
               8,
-              22
+              15,
+              22,
+              31
             ]
           },
           "someimportpolicy" : {
             "bgp import policy-statement" : [
               10,
-              24
+              17,
+              24,
+              33
             ]
           }
         }

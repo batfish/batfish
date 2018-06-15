@@ -975,7 +975,22 @@
         "description" : "Unused structure of type: 'policy-statement' with name: 'POLICY-NAME'",
         "files" : {
           "juniper_policy_statement" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
           ]
         }
       },
@@ -983,7 +998,12 @@
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
         "files" : {
           "juniper_route_filter" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
           ]
         }
       },
@@ -991,7 +1011,12 @@
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v6'",
         "files" : {
           "juniper_route_filter" : [
-            11
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
           ]
         }
       },
@@ -2117,7 +2142,22 @@
       "juniper_policy_statement" : {
         "policy-statement" : {
           "POLICY-NAME" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
           ]
         }
       },
@@ -2131,10 +2171,20 @@
       "juniper_route_filter" : {
         "policy-statement" : {
           "route-filter-test-v4" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
           ],
           "route-filter-test-v6" : [
-            11
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
           ]
         }
       },

@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 import org.batfish.datamodel.Prefix;
 
 public class GeneratedRoute implements Serializable {
@@ -12,7 +12,7 @@ public class GeneratedRoute implements Serializable {
 
   private Integer _metric;
 
-  private final Map<String, Integer> _policies;
+  private final List<String> _policies;
 
   private Integer _preference;
 
@@ -20,14 +20,14 @@ public class GeneratedRoute implements Serializable {
 
   public GeneratedRoute(Prefix prefix) {
     _prefix = prefix;
-    _policies = new LinkedHashMap<>();
+    _policies = new LinkedList<>();
   }
 
   public Integer getMetric() {
     return _metric;
   }
 
-  public Map<String, Integer> getPolicies() {
+  public List<String> getPolicies() {
     return _policies;
   }
 
