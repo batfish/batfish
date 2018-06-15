@@ -14,14 +14,11 @@ crypto isakmp profile ISAKMP-PROFILE
 crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
  mode tunnel
 !
-crypto ipsec transform-set ts2 esp-3des ah-sha-hmac
- mode tunnel
-!
 crypto map mymap 10 ipsec-isakmp
  match address ACL
- set transform-set ts1 ts2
+ set transform-set ts1
  set isakmp-profile ISAKMP-PROFILE
- set peer 10.0.0.1
+ set peer 1.2.3.4
  set pfs group14
 crypto map mymap 30 ipsec-isakmp dynamic mydynamicmap
 !
@@ -30,9 +27,14 @@ crypto dynamic-map mydynamicmap 10
  set transform-set ts1
 !
 ip access-list extended ACL
- permit ip any any
+ permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0
 !
 interface TenGigabitEthernet0/0
  ip address 2.3.4.6 255.255.255.0
  crypto map mymap
+!
+interface Tunnel1
+ ip address 6.7.8.9 255.255.255.252
+ tunnel source TenGigabitEthernet0/0
+ tunnel destination 1.2.3.4
 !

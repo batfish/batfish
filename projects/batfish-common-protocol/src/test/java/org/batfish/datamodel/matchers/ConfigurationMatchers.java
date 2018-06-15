@@ -8,7 +8,6 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.CryptoMapSet;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
@@ -16,9 +15,9 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
-import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasCryptoMapSet;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasHostname;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeGateway;
@@ -31,6 +30,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpace;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpaces;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPolicy;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecProposal;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecVpn;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
@@ -42,15 +42,6 @@ public class ConfigurationMatchers {
   public static HasConfigurationFormat hasConfigurationFormat(
       @Nonnull Matcher<? super ConfigurationFormat> subMatcher) {
     return new HasConfigurationFormat(subMatcher);
-  }
-
-  /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
-   * Crypto-Map set with specified name.
-   */
-  public static HasCryptoMapSet hasCryptoMapSet(
-      @Nonnull String name, @Nonnull Matcher<? super CryptoMapSet> subMatcher) {
-    return new HasCryptoMapSet(name, subMatcher);
   }
 
   /** Provides a matcher that matches if the configuration has a default VRF. */
@@ -143,6 +134,15 @@ public class ConfigurationMatchers {
   public static HasIpsecProposal hasIpsecProposal(
       @Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
     return new HasIpsecProposal(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * Ipsec vpn with specified name.
+   */
+  public static HasIpsecVpn hasIpsecVpn(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecVpn> subMatcher) {
+    return new HasIpsecVpn(name, subMatcher);
   }
 
   /**

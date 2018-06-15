@@ -9,6 +9,7 @@ import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasIkeGateway;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasIpsecProposals;
+import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasPfsKeyGroup;
 import org.hamcrest.Matcher;
 
@@ -32,11 +33,18 @@ public final class IpsecPolicyMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
+   * Provides a matcher that matches if the provided {@code pfsKeyGroup} matches the Ipsec policy's
    * PfsKeyGroupy
    */
   public static HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
     return new HasPfsKeyGroup(equalTo(pfsKeyGroup));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code name} matches the Ipsec policy's name
+   */
+  public static HasName hasName(String name) {
+    return new HasName(equalTo(name));
   }
 
   private IpsecPolicyMatchers() {}

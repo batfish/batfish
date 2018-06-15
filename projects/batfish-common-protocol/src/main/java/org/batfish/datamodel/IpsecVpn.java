@@ -17,6 +17,8 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   private static final String PROP_IPSEC_POLICY = "ipsecPolicy";
 
+  private static final String PROP_POLICY = "policy";
+
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -37,6 +39,8 @@ public final class IpsecVpn extends ComparableStructure<String> {
   private Configuration _owner;
 
   private transient IpsecVpn _remoteIpsecVpn;
+
+  private IpAccessList _policy;
 
   @JsonCreator
   public IpsecVpn(@JsonProperty(PROP_NAME) String name) {
@@ -174,6 +178,11 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return _remoteIpsecVpn;
   }
 
+  @JsonProperty(PROP_POLICY)
+  public IpAccessList getPolicy() {
+    return _policy;
+  }
+
   public void initCandidateRemoteVpns() {
     if (_candidateRemoteIpsecVpns == null) {
       _candidateRemoteIpsecVpns = new TreeSet<>();
@@ -229,5 +238,10 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   public void setRemoteIpsecVpn(IpsecVpn remoteIpsecVpn) {
     _remoteIpsecVpn = remoteIpsecVpn;
+  }
+
+  @JsonProperty(PROP_POLICY)
+  public void setPolicy(IpAccessList policy) {
+    _policy = policy;
   }
 }

@@ -5,7 +5,6 @@ import java.util.NavigableMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.CryptoMapSet;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
@@ -13,6 +12,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Route6FilterList;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.Vrf;
@@ -32,20 +32,6 @@ final class ConfigurationMatchersImpl {
     @Override
     protected ConfigurationFormat featureValueOf(Configuration actual) {
       return actual.getConfigurationFormat();
-    }
-  }
-
-  static final class HasCryptoMapSet extends FeatureMatcher<Configuration, CryptoMapSet> {
-    private final String _name;
-
-    HasCryptoMapSet(@Nonnull String name, @Nonnull Matcher<? super CryptoMapSet> subMatcher) {
-      super(subMatcher, "A Configuration with cryptoMapSet " + name + ":", "cryptoMapSet " + name);
-      _name = name;
-    }
-
-    @Override
-    protected CryptoMapSet featureValueOf(Configuration actual) {
-      return actual.getCryptoMapSets().get(_name);
     }
   }
 
@@ -162,6 +148,20 @@ final class ConfigurationMatchersImpl {
     @Override
     protected IpsecProposal featureValueOf(Configuration actual) {
       return actual.getIpsecProposals().get(_name);
+    }
+  }
+
+  static final class HasIpsecVpn extends FeatureMatcher<Configuration, IpsecVpn> {
+    private final String _name;
+
+    HasIpsecVpn(@Nonnull String name, @Nonnull Matcher<? super IpsecVpn> subMatcher) {
+      super(subMatcher, "A Configuration with ipsecVpn " + name + ":", "ipsecVpn " + name);
+      _name = name;
+    }
+
+    @Override
+    protected IpsecVpn featureValueOf(Configuration actual) {
+      return actual.getIpsecVpns().get(_name);
     }
   }
 

@@ -45,7 +45,7 @@ if_channel_group
 
 if_crypto_map
 :
-   CRYPTO MAP name = variable
+   CRYPTO MAP name = variable NEWLINE
 ;
 
 if_default_gw

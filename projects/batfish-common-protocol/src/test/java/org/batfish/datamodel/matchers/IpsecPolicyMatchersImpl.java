@@ -44,4 +44,15 @@ final class IpsecPolicyMatchersImpl {
       return actual.getIkeGateway();
     }
   }
+
+  static final class HasName extends FeatureMatcher<IpsecPolicy, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Ipsec policy with Name:", "Name");
+    }
+
+    @Override
+    protected String featureValueOf(IpsecPolicy actual) {
+      return actual.getName();
+    }
+  }
 }

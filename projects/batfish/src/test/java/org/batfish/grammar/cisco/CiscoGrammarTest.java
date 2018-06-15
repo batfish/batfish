@@ -13,7 +13,6 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathEqui
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasConfigurationFormat;
-import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasCryptoMapSet;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeGateway;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
@@ -24,15 +23,9 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecVpn;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
-import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasAccessList;
-import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasPeer;
-import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasProposals;
-import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasReferredDynamicMapSet;
-import static org.batfish.datamodel.matchers.CryptoMapEntryMatchers.hasSequenceNumber;
-import static org.batfish.datamodel.matchers.CryptoMapSetMatchers.hasCryptoMapEntries;
-import static org.batfish.datamodel.matchers.CryptoMapSetMatchers.hasDynamic;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
@@ -62,7 +55,6 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticati
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
-import static org.batfish.datamodel.matchers.InterfaceMatchers.hasCryptoMap;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -76,8 +68,12 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
@@ -150,6 +146,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Interface;
@@ -157,7 +154,9 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -171,14 +170,14 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
-import org.batfish.datamodel.matchers.CryptoMapEntryMatchers;
 import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
-import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
+import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -1588,68 +1587,89 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoDynamicMaps() throws IOException {
-    Configuration c = parseConfig("ios-crypto-map");
-    assertThat(
-        c,
-        hasCryptoMapSet(
-            "mydynamicmap",
-            allOf(
-                hasDynamic(equalTo(true)),
-                hasCryptoMapEntries(
-                    contains(
-                        ImmutableList.of(
-                            allOf(
-                                CryptoMapEntryMatchers.hasDynamic(equalTo(true)),
-                                hasProposals(
-                                    contains(
-                                        ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))),
-                                hasAccessList(IpAccessListMatchers.hasName("ACL")),
-                                hasSequenceNumber(equalTo(10)))))))));
-  }
-
-  @Test
   public void testCryptoMaps() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
-    assertThat(
-        c,
-        hasCryptoMapSet(
-            "mymap",
-            allOf(
-                hasDynamic(equalTo(false)),
-                hasCryptoMapEntries(
-                    contains(
-                        ImmutableList.of(
-                            allOf(
-                                CryptoMapEntryMatchers.hasDynamic(equalTo(false)),
-                                hasProposals(
-                                    contains(
-                                        ImmutableList.of(
-                                            IpsecProposalMatchers.hasName("ts1"),
-                                            IpsecProposalMatchers.hasName("ts2")))),
-                                CryptoMapEntryMatchers.hasIkeGateway(
-                                    IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-                                hasPeer(equalTo(new Ip("10.0.0.1"))),
-                                CryptoMapEntryMatchers.hasPfsKeyGroup(
-                                    equalTo(DiffieHellmanGroup.GROUP14)),
-                                hasAccessList(IpAccessListMatchers.hasName("ACL"))),
-                            allOf(
-                                CryptoMapEntryMatchers.hasDynamic(equalTo(false)),
-                                hasReferredDynamicMapSet(equalTo("mydynamicmap")))))))));
-    assertThat(
-        c,
-        hasCryptoMapSet(
-            "mymap",
-            hasCryptoMapEntries(
-                contains(
-                    ImmutableList.of(
-                        hasSequenceNumber(equalTo(10)), hasSequenceNumber(equalTo(30)))))));
-  }
 
-  @Test
-  public void testCryptoMapInterface() throws IOException {
-    Configuration c = parseConfig("ios-crypto-map");
-    assertThat(c, hasInterface("TenGigabitEthernet0/0", hasCryptoMap(equalTo("mymap"))));
+    assertThat(
+        c,
+        allOf(
+            hasIpsecPolicy(
+                "mymap:10",
+                allOf(
+                    IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                    hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
+                    hasIpsecProposals(
+                        contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))),
+            hasIpsecPolicy(
+                "mymap:30",
+                allOf(
+                    hasIpsecProposals(
+                        contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))))));
+
+    assertThat(
+        c,
+        allOf(
+            hasIpsecVpn(
+                "mymap:10:TenGigabitEthernet0/0",
+                allOf(
+                    hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                    IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
+                    hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                    hasPolicy(
+                        hasLines(
+                            equalTo(
+                                ImmutableList.of(
+                                    IpAccessListLine.accepting()
+                                        .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                                        .setMatchCondition(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        new IpWildcard("1.1.1.1").toIpSpace())
+                                                    .setDstIps(
+                                                        new IpWildcard("2.2.2.2").toIpSpace())
+                                                    .build()))
+                                        .build(),
+                                    IpAccessListLine.accepting()
+                                        .setMatchCondition(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        new IpWildcard("2.2.2.2").toIpSpace())
+                                                    .setDstIps(
+                                                        new IpWildcard("1.1.1.1").toIpSpace())
+                                                    .build()))
+                                        .build())))))),
+            hasIpsecVpn(
+                "mymap:30:TenGigabitEthernet0/0",
+                allOf(
+                    hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                    IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30")),
+                    hasPolicy(
+                        hasLines(
+                            equalTo(
+                                ImmutableList.of(
+                                    IpAccessListLine.accepting()
+                                        .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                                        .setMatchCondition(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        new IpWildcard("1.1.1.1").toIpSpace())
+                                                    .setDstIps(
+                                                        new IpWildcard("2.2.2.2").toIpSpace())
+                                                    .build()))
+                                        .build(),
+                                    IpAccessListLine.accepting()
+                                        .setMatchCondition(
+                                            new MatchHeaderSpace(
+                                                HeaderSpace.builder()
+                                                    .setSrcIps(
+                                                        new IpWildcard("2.2.2.2").toIpSpace())
+                                                    .setDstIps(
+                                                        new IpWildcard("1.1.1.1").toIpSpace())
+                                                    .build()))
+                                        .build()))))))));
   }
 
   @Test
@@ -1809,7 +1829,7 @@ public class CiscoGrammarTest {
             allOf(
                 IpsecPolicyMatchers.hasIkeGateway(
                     allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
-                IpsecPolicyMatchers.hasIpsecProposals(
+                hasIpsecProposals(
                     contains(
                         ImmutableList.of(
                             allOf(
