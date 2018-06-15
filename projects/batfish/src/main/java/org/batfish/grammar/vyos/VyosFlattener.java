@@ -90,7 +90,6 @@ public class VyosFlattener extends VyosParserBaseListener implements Flattener {
 
   @Override
   public FlattenerLineMap getOriginalLineMap() {
-    throw new UnsupportedOperationException(
-        "getOriginalLines() is not supported for VyosFlattener");
+    throw new UnsupportedOperationException("getOriginalLines is not supported for VyosFlattener");
   }
 }

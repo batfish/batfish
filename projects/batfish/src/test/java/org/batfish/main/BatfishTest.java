@@ -105,34 +105,34 @@ public class BatfishTest {
             new Settings(),
             ConfigurationFormat.PALO_ALTO_NESTED,
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
-
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
-    assertThat(lineMap.getOriginalLine(2, 24), equalTo(4));
-    assertThat(lineMap.getOriginalLine(3, 24), equalTo(5));
-    assertThat(lineMap.getOriginalLine(3, 52), equalTo(7));
-    assertThat(lineMap.getOriginalLine(4, 54), equalTo(8));
-  }
 
-  @Test
-  public void testFlattenConfigBogus() throws IOException {
-    String nestedConfig = "nested-config-line-tracking-bogus";
-    Flattener flattener =
-        Batfish.flatten(
-            CommonUtil.readResource(PAN_TESTCONFIGS_PREFIX + nestedConfig),
-            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
-            new Settings(),
-            ConfigurationFormat.PALO_ALTO_NESTED,
-            VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
-
-    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    // Confirm looking up different characters results in the correct original line numbers
+    // Lookup deviceconfig
     assertThat(lineMap.getOriginalLine(2, 4), equalTo(2));
+    // Lookup nested-config
     assertThat(lineMap.getOriginalLine(2, 33), equalTo(4));
+    // Lookup blah
     assertThat(lineMap.getOriginalLine(3, 24), equalTo(5));
+    // Lookup 1.1.1.1
     assertThat(lineMap.getOriginalLine(4, 52), equalTo(8));
+    // Lookup stuff
     assertThat(lineMap.getOriginalLine(6, 11), equalTo(15));
+    // Lookup bar
     assertThat(lineMap.getOriginalLine(6, 21), equalTo(16));
+    // Lookup stuff
     assertThat(lineMap.getOriginalLine(7, 11), equalTo(15));
+    // Lookup baz
     assertThat(lineMap.getOriginalLine(7, 21), equalTo(16));
+
+    // Confirm looking up a character not corresponding to an original line results in the last
+    // original line number for that constructed line
+    // Lookup 's' in set
+    assertThat(lineMap.getOriginalLine(2, 0), equalTo(4));
+    // Lookup 'e' in set
+    assertThat(lineMap.getOriginalLine(5, 1), equalTo(9));
+    // Lookup 't' in set
+    assertThat(lineMap.getOriginalLine(6, 2), equalTo(16));
   }
 
   @Test

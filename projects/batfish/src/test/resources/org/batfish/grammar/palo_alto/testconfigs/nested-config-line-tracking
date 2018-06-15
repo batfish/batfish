@@ -2,11 +2,17 @@
 deviceconfig {
     system {
         hostname nested-config;
+        blah;
         dns-setting {
             servers {
                 primary 1.1.1.1;
                 secondary 2.2.2.2;
             }
         }
+    }
+}
+shared {
+    stuff {
+        foo [bar baz];
     }
 }
