@@ -101,6 +101,7 @@ public final class CanonicalAcl {
     if (_hashCode == 0) {
       // Unfortunately IpAccessList's hashcode method only hashes the ACL's name, so it's necessary
       // to hash each IpAccessList's lines rather than the object itself.
+      // Should be fixed after https://github.com/batfish/batfish/issues/1672 is resolved.
       _hashCode =
           Objects.hash(
               _acl.getLines(),
