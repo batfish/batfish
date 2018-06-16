@@ -21,12 +21,23 @@ public final class FlowMatchersImpl {
 
   public static class HasIngressNode extends FeatureMatcher<Flow, String> {
     HasIngressNode(Matcher<? super String> subMatcher) {
-      super(subMatcher, "ingressNode", "ingressNode");
+      super(subMatcher, "A Flow with ingressNode:", "ingressNode");
     }
 
     @Override
     protected String featureValueOf(Flow flow) {
       return flow.getIngressNode();
+    }
+  }
+
+  public static class HasIngressInterface extends FeatureMatcher<Flow, String> {
+    HasIngressInterface(Matcher<? super String> subMatcher) {
+      super(subMatcher, "A Flow with ingressInterface:", "ingressInterface");
+    }
+
+    @Override
+    protected String featureValueOf(Flow flow) {
+      return flow.getIngressInterface();
     }
   }
 

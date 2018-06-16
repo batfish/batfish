@@ -320,11 +320,11 @@ public class Main {
         bindPortFutures.getWorkV2Port());
   }
 
-  public static void main(String[] args, BindPortFutures portFutures) {
+  public static void main(String[] args) {
     main(
         args,
         new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, true),
-        portFutures);
+        new BindPortFutures());
   }
 
   public static void main(String[] args, BatfishLogger logger, BindPortFutures portFutures) {

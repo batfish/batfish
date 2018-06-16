@@ -4,9 +4,9 @@ import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.IsisProcess;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
