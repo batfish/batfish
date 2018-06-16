@@ -3,33 +3,30 @@ package org.batfish.main;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
-import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.TableAnswerElementMatchers;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.question.specifiers.SpecifiersAnswerer;
 import org.batfish.question.specifiers.SpecifiersQuestion;
 import org.batfish.specifier.InterfaceLocation;
-import org.batfish.specifier.Location;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -74,15 +71,13 @@ public class SpecifiersQuestionTest {
     assertThat(
         table,
         TableAnswerElementMatchers.hasRows(
-            contains(
+            Matchers.contains(
                 allOf(
                     hasColumn(
-                        "IpSpace",
-                        equalTo(UniverseIpSpace.INSTANCE),
-                        new TypeReference<IpSpace>() {}),
+                        "IpSpace", equalTo(UniverseIpSpace.INSTANCE.toString()), Schema.STRING),
                     hasColumn(
                         "Locations",
-                        equalTo(ImmutableSet.of(_interfaceLocation)),
-                        new TypeReference<Set<Location>>() {})))));
+                        equalTo(ImmutableSet.of(_interfaceLocation).toString()),
+                        Schema.STRING)))));
   }
 }
