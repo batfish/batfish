@@ -19,7 +19,6 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.Row;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,7 +74,7 @@ public class IpOwnersAnswererTest {
     assertThat(rows, hasSize(3));
     Map<Ip, Long> counts =
         rows.stream()
-            .map(r -> (Ip) r.get(IpOwnersAnswerer.COL_IP, Schema.IP))
+            .map(r -> r.getIp(IpOwnersAnswerer.COL_IP))
             .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
     assertThat(counts, hasEntry(_uniqueIp, 1L));
     assertThat(counts, hasEntry(_duplicateIp, 2L));
@@ -88,7 +87,7 @@ public class IpOwnersAnswererTest {
     Multiset<Row> rows = IpOwnersAnswerer.generateRows(_ownersMap, _interfaceMap, true);
     assertThat(rows, hasSize(2));
     for (Row row : rows) {
-      assertThat(row.get(IpOwnersAnswerer.COL_IP, Schema.IP), equalTo(_duplicateIp));
+      assertThat(row.getIp(IpOwnersAnswerer.COL_IP), equalTo(_duplicateIp));
     }
   }
 }
