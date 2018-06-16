@@ -1908,20 +1908,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           inboundPrefixList
               .getReferers()
               .put(lpg, "inbound prefix-list for neighbor: '" + lpg.getName() + "'");
-        } else {
-          if (ipv4) {
-            undefined(
-                CiscoStructureType.PREFIX_LIST,
-                inboundPrefixListName,
-                CiscoStructureUsage.BGP_INBOUND_PREFIX_LIST,
-                lpg.getInboundPrefixListLine());
-          } else {
-            undefined(
-                CiscoStructureType.PREFIX6_LIST,
-                inboundPrefixListName,
-                CiscoStructureUsage.BGP_INBOUND_PREFIX6_LIST,
-                lpg.getInboundPrefixListLine());
-          }
         }
       }
       String outboundPrefixListName = lpg.getOutboundPrefixList();
@@ -1936,20 +1922,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           outboundPrefixList
               .getReferers()
               .put(lpg, "outbound prefix-list for neighbor: '" + lpg.getName() + "'");
-        } else {
-          if (ipv4) {
-            undefined(
-                CiscoStructureType.PREFIX_LIST,
-                outboundPrefixListName,
-                CiscoStructureUsage.BGP_OUTBOUND_PREFIX_LIST,
-                lpg.getOutboundPrefixListLine());
-          } else {
-            undefined(
-                CiscoStructureType.PREFIX6_LIST,
-                outboundPrefixListName,
-                CiscoStructureUsage.BGP_OUTBOUND_PREFIX6_LIST,
-                lpg.getOutboundPrefixListLine());
-          }
         }
       }
       String description = lpg.getDescription();
