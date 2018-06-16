@@ -20,7 +20,6 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.CanonicalAcl;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -29,7 +28,7 @@ import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface;
 import org.batfish.datamodel.answers.AclLinesAnswerElementInterface.AclSpecs;
-import org.batfish.datamodel.visitors.IpSpaceReferenceDereferencer;
+import org.batfish.datamodel.visitors.IpSpaceDereferencer;
 
 /**
  * Class to hold methods used by both {@link AclReachability2Answerer} and the original ACL
@@ -127,60 +126,84 @@ public final class AclReachabilityAnswererUtils {
       _interfaces.addAll(newInterfaces);
     }
 
-    public void sanitizeIpSpaceReferences(
+    private IpSpace dereference(int lineNum, IpSpace original, IpSpaceDereferencer dereferencer) {
+      Optional<IpSpace> dereferenced = original.accept(dereferencer);
+      if (!dereferenced.isPresent()) {
+        addUndefinedRef(lineNum);
+        return null;
+      }
+      return dereferenced.get();
+    }
+
+    public void sanitizeHeaderSpace(
         int lineNum, HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
       HeaderSpace.Builder hsb = headerSpace.toBuilder();
-      IpSpaceReferenceDereferencer dereferencer = new IpSpaceReferenceDereferencer(namedIpSpaces);
+      IpSpaceDereferencer dereferencer = new IpSpaceDereferencer(namedIpSpaces);
+      boolean sanitizedHeaderSpaceDifferent = false;
 
       // Construct a sanitized HeaderSpace where all IpSpaceReferences are replaced with their
       // dereferenced IpSpaces. If any IpSpaceReference is found to point to an undefined IP space,
       // stop and record this line as having an undefined reference.
-      if (headerSpace.getSrcIps() instanceof IpSpaceReference) {
-        Optional<IpSpace> referencedSpace =
-            dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getSrcIps());
-        if (!referencedSpace.isPresent()) {
+      IpSpace original = headerSpace.getSrcIps();
+      Optional<IpSpace> dereferenced;
+      if (original != null) {
+        dereferenced = original.accept(dereferencer);
+        if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
+        } else if (dereferenced.get() != original) {
+          hsb.setSrcIps(dereferenced.get());
+          sanitizedHeaderSpaceDifferent = true;
         }
-        hsb.setSrcIps(referencedSpace.get());
       }
-      if (headerSpace.getDstIps() instanceof IpSpaceReference) {
-        Optional<IpSpace> referencedSpace =
-            dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getDstIps());
-        if (!referencedSpace.isPresent()) {
+      original = headerSpace.getDstIps();
+      if (original != null) {
+        dereferenced = original.accept(dereferencer);
+        if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
+        } else if (dereferenced.get() != original) {
+          hsb.setDstIps(dereferenced.get());
+          sanitizedHeaderSpaceDifferent = true;
         }
-        hsb.setDstIps(referencedSpace.get());
       }
-      if (headerSpace.getNotSrcIps() instanceof IpSpaceReference) {
-        Optional<IpSpace> referencedSpace =
-            dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getNotSrcIps());
-        if (!referencedSpace.isPresent()) {
+      original = headerSpace.getNotSrcIps();
+      if (original != null) {
+        dereferenced = original.accept(dereferencer);
+        if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
+        } else if (dereferenced.get() != original) {
+          hsb.setNotSrcIps(dereferenced.get());
+          sanitizedHeaderSpaceDifferent = true;
         }
-        hsb.setNotSrcIps(referencedSpace.get());
       }
-      if (headerSpace.getNotDstIps() instanceof IpSpaceReference) {
-        Optional<IpSpace> referencedSpace =
-            dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getNotDstIps());
-        if (!referencedSpace.isPresent()) {
+      original = headerSpace.getNotDstIps();
+      if (original != null) {
+        dereferenced = original.accept(dereferencer);
+        if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
+        } else if (dereferenced.get() != original) {
+          hsb.setNotDstIps(dereferenced.get());
+          sanitizedHeaderSpaceDifferent = true;
         }
-        hsb.setNotDstIps(referencedSpace.get());
       }
-      if (headerSpace.getSrcOrDstIps() instanceof IpSpaceReference) {
-        Optional<IpSpace> referencedSpace =
-            dereferencer.visitIpSpaceReference((IpSpaceReference) headerSpace.getSrcOrDstIps());
-        if (!referencedSpace.isPresent()) {
+      original = headerSpace.getSrcOrDstIps();
+      if (original != null) {
+        dereferenced = original.accept(dereferencer);
+        if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
+        } else if (dereferenced.get() != original) {
+          hsb.setSrcOrDstIps(dereferenced.get());
+          sanitizedHeaderSpaceDifferent = true;
         }
-        hsb.setSrcOrDstIps(referencedSpace.get());
       }
-      sanitizeLine(lineNum, new MatchHeaderSpace(hsb.build()));
+
+      if (sanitizedHeaderSpaceDifferent) {
+        sanitizeLine(lineNum, new MatchHeaderSpace(hsb.build()));
+      }
     }
 
     public void addUndefinedRef(int lineNum) {
@@ -249,11 +272,9 @@ public final class AclReachabilityAnswererUtils {
           node.addDependency(referencedAclNode, index);
         }
       } else if (matchCondition instanceof MatchHeaderSpace) {
+        // Sanitize IP space references, or mark the line unmatchable if it has invalid references
         HeaderSpace headerSpace = ((MatchHeaderSpace) matchCondition).getHeaderspace();
-        if (hasIpSpaceReferences(headerSpace)) {
-          // Sanitize IP space references, or mark the line unmatchable if it has invalid references
-          node.sanitizeIpSpaceReferences(index, headerSpace, namedIpSpaces);
-        }
+        node.sanitizeHeaderSpace(index, headerSpace, namedIpSpaces);
       } else if (matchCondition instanceof MatchSrcInterface) {
         Set<String> referencedInterfaces = ((MatchSrcInterface) matchCondition).getSrcInterfaces();
         if (!nodeInterfaces.containsAll(referencedInterfaces)) {
@@ -266,14 +287,6 @@ public final class AclReachabilityAnswererUtils {
       }
       index++;
     }
-  }
-
-  private static boolean hasIpSpaceReferences(HeaderSpace headerSpace) {
-    return headerSpace.getSrcIps() instanceof IpSpaceReference
-        || headerSpace.getDstIps() instanceof IpSpaceReference
-        || headerSpace.getNotSrcIps() instanceof IpSpaceReference
-        || headerSpace.getNotDstIps() instanceof IpSpaceReference
-        || headerSpace.getSrcOrDstIps() instanceof IpSpaceReference;
   }
 
   private static List<ImmutableList<String>> sanitizeNode(

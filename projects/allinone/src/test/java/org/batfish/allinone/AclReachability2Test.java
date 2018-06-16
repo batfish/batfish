@@ -12,6 +12,8 @@ import com.google.common.collect.Multiset;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
@@ -781,6 +783,52 @@ public class AclReachability2Test {
                     AclLines2Rows.COL_MESSAGE,
                     "ACLs { c1: acl } contain an unreachable line:\n  [index 0] "
                         + "IpAccessListLine{action=ACCEPT, matchCondition=MatchSrcInterface{srcInterfaces=[???]}}"
+                        + "\nThis line references a structure that is not defined.")
+                .build());
+
+    assertThat(answer.getRows().getData(), equalTo(expected));
+  }
+
+  @Test
+  public void testWithAclIpSpaceWithCircularRef() throws IOException {
+    // Named IP spaces includes AclIpSpace "aclIpSpace".
+    // "aclIpSpace" contains an IpSpaceReference to itself. Sad!
+    _c1.setIpSpaces(
+        ImmutableSortedMap.of(
+            "aclIpSpace",
+            AclIpSpace.builder()
+                .setLines(
+                    ImmutableList.of(
+                        AclIpSpaceLine.builder()
+                            .setIpSpace(new IpSpaceReference("aclIpSpace"))
+                            .build()))
+                .build()));
+
+    IpAccessListLine aclLine =
+        IpAccessListLine.accepting()
+            .setMatchCondition(
+                new MatchHeaderSpace(
+                    HeaderSpace.builder().setSrcIps(new IpSpaceReference("aclIpSpace")).build()))
+            .build();
+    IpAccessList acl = _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
+
+    TableAnswerElement answer = answer(new AclReachability2Question());
+
+    /* Line 1 should be unreachable due to undefined reference. */
+    Multiset<Row> expected =
+        ImmutableMultiset.of(
+            Row.builder()
+                .put(
+                    AclLines2Rows.COL_SOURCES,
+                    ImmutableList.of(_c1.getName() + ": " + acl.getName()))
+                .put(AclLines2Rows.COL_LINES, ImmutableList.of(aclLine.toString()))
+                .put(AclLines2Rows.COL_BLOCKED_LINE_NUM, 0)
+                .put(AclLines2Rows.COL_BLOCKING_LINE_NUMS, ImmutableList.of())
+                .put(AclLines2Rows.COL_DIFF_ACTION, false)
+                .put(
+                    AclLines2Rows.COL_MESSAGE,
+                    "ACLs { c1: acl } contain an unreachable line:\n  [index 0] IpAccessListLine{action=ACCEPT, "
+                        + "matchCondition=MatchHeaderSpace{headerSpace=HeaderSpace{srcIps=IpSpaceReference{name=aclIpSpace}}}}"
                         + "\nThis line references a structure that is not defined.")
                 .build());
 
