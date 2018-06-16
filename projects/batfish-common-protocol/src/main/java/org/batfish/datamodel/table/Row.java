@@ -22,10 +22,13 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SchemaUtils;
+import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Exclusion;
@@ -237,6 +240,10 @@ public class Row implements Comparable<Row> {
     return SchemaUtils.convertType(_data.get(columnName), columnSchema);
   }
 
+  public Boolean getBoolean(String column) {
+    return (Boolean) get(column, Schema.BOOLEAN);
+  }
+
   /**
    * Fetch the names of the columns in this Row
    *
@@ -251,6 +258,18 @@ public class Row implements Comparable<Row> {
   @JsonValue
   private ObjectNode getData() {
     return _data;
+  }
+
+  public Double getDouble(String column) {
+    return (Double) get(column, Schema.DOUBLE);
+  }
+
+  public FileLines getFileLines(String column) {
+    return (FileLines) get(column, Schema.FILE_LINES);
+  }
+
+  public Flow getFlow(String column) {
+    return (Flow) get(column, Schema.FLOW);
   }
 
   public Integer getInteger(String column) {
@@ -287,8 +306,16 @@ public class Row implements Comparable<Row> {
     return (Ip) get(column, Schema.IP);
   }
 
+  public Issue getIssue(String column) {
+    return (Issue) get(column, Schema.ISSUE);
+  }
+
   public Node getNode(String column) {
     return (Node) get(column, Schema.NODE);
+  }
+
+  public Object getObject(String column) {
+    return (Object) get(column, Schema.OBJECT);
   }
 
   public Prefix getPrefix(String column) {
