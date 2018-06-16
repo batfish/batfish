@@ -98,6 +98,7 @@ import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
+import org.batfish.dataplane.topology.IsisEdge;
 
 public class VirtualRouter extends ComparableStructure<String> {
 
@@ -367,8 +368,9 @@ public class VirtualRouter extends ComparableStructure<String> {
       Set<BgpAdvertisement> externalAdverts,
       final Map<String, Node> allNodes,
       Topology topology,
-      Network<BgpNeighbor, BgpSession> bgpTopology) {
-    initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology);
+      Network<BgpNeighbor, BgpSession> bgpTopology,
+      Network<Vrf, IsisEdge> isisTopology) {
+    initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, isisTopology);
   }
 
   /**
@@ -382,11 +384,14 @@ public class VirtualRouter extends ComparableStructure<String> {
   void initQueuesAndDeltaBuilders(
       final Map<String, Node> allNodes,
       final Topology topology,
-      Network<BgpNeighbor, BgpSession> bgpTopology) {
+      Network<BgpNeighbor, BgpSession> bgpTopology,
+      Network<Vrf, IsisEdge> isisTopology) {
 
     // Initialize message queues for each BGP neighbor
     initBgpQueues(bgpTopology);
 
+    initIsisQueues(isisTopology);
+    
     // Initialize message queues for each Ospf neighbor
     if (_vrf.getOspfProcess() == null) {
       _ospfExternalIncomingRoutes = ImmutableSortedMap.of();
@@ -405,6 +410,15 @@ public class VirtualRouter extends ComparableStructure<String> {
                         Function.identity(),
                         p -> new ConcurrentLinkedQueue<>()));
       }
+    }    
+  }
+
+  private void initIsisQueues(Network<Vrf, IsisEdge> isisTopology) {
+    // Initialize message queues for each IS-IS circuit
+    if (_vrf.getIsisProcess()  == null) {
+      _isisIncomingRoutes = ImmutableSortedMap.of();
+    }
+    else {
     }
   }
 
@@ -2482,7 +2496,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
     return ImmutableSortedMap.copyOf(neighbors);
   }
-
+  
   public Configuration getConfiguration() {
     return _c;
   }

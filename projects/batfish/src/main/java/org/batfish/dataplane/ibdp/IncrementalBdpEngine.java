@@ -8,10 +8,12 @@ import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.graph.Network;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
@@ -35,12 +37,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.RibDelta;
+import org.batfish.dataplane.topology.IsisEdge;
 
 class IncrementalBdpEngine {
 
@@ -101,9 +105,11 @@ class IncrementalBdpEngine {
         initBgpTopology(
             configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
 
+    Network<VirtualRouter, IsisEdge> isisTopology = initIsisTopology(nodes, topology);
+
     boolean isOscillating =
         computeNonMonotonicPortionOfDataPlane(
-            nodes, topology, dp, externalAdverts, answerElement, true, bgpTopology);
+            nodes, topology, dp, externalAdverts, answerElement, true, bgpTopology, isisTopology);
     if (isOscillating) {
       // If we are oscillating here, network has no stable solution.
       throw new BdpOscillationException("Network has no stable solution");
@@ -128,13 +134,24 @@ class IncrementalBdpEngine {
                   n.getVirtualRouters().values().forEach(vr -> vr.initBgpQueues(finalBgpTopology)));
       // Do another pass on EGP computation in case any new sessions have been established
       computeNonMonotonicPortionOfDataPlane(
-          nodes, topology, dp, externalAdverts, answerElement, false, bgpTopology);
+          nodes, topology, dp, externalAdverts, answerElement, false, bgpTopology, isisTopology);
     }
     // Generate the answers from the computation, compute final FIBs
     computeFibs(nodes);
     answerElement.setVersion(Version.getVersion());
     _bfLogger.printElapsedTime();
     return new ComputeDataPlaneResult(answerElement, dp);
+  }
+
+  private Network<VirtualRouter, IsisEdge> initIsisTopology(
+      Map<String, Node> nodes, Topology topology) {
+    Set<IsisEdge> edges =
+        topology
+            .getEdges()
+            .stream()
+            .map(edge -> IsisEdge.newEdge(edge, nodes))
+            .filter(Objects::nonNull)
+            .collect(ImmutableSet.toImmutableSet());
   }
 
   /**
@@ -388,7 +405,8 @@ class IncrementalBdpEngine {
       Set<BgpAdvertisement> externalAdverts,
       IncrementalBdpAnswerElement ae,
       boolean firstPass,
-      Network<BgpNeighbor, BgpSession> bgpTopology) {
+      Network<BgpNeighbor, BgpSession> bgpTopology,
+      Network<VirtualRouter, IsisEdge> isisTopology) {
 
     /*
      * Initialize all routers and their message queues (can be done as parallel as possible)
@@ -402,7 +420,8 @@ class IncrementalBdpEngine {
           .forEach(
               n -> {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                  vr.initForEgpComputation(externalAdverts, nodes, topology, bgpTopology);
+                  vr.initForEgpComputation(
+                      externalAdverts, nodes, topology, bgpTopology, isisTopology);
                 }
                 setupCompleted.incrementAndGet();
               });

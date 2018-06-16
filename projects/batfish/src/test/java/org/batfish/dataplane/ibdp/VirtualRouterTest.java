@@ -81,6 +81,7 @@ import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
+import org.batfish.dataplane.topology.IsisEdge;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -754,6 +755,7 @@ public class VirtualRouterTest {
         ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration());
     Network<BgpNeighbor, BgpSession> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    Network<Vrf, IsisEdge> isisTopology = initIsisTopology(configs, topology);
 
     Map<String, Node> nodes = ImmutableMap.of("r1", n1, "r2", n2);
     Map<String, VirtualRouter> vrs =
@@ -768,7 +770,7 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(Configuration.DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology);
+          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, isisTopology);
     }
     // Assert that queues are empty as there is no OSPF or BGP processes
     vrs.values()
@@ -792,7 +794,7 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(Configuration.DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology);
+          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, isisTopology);
     }
     // Assert that queues are initialized
     vrs.values()

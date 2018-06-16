@@ -1,4 +1,4 @@
-package org.batfish.datamodel.isis;
+package org.batfish.dataplane.topology;
 
 import static org.batfish.datamodel.IsisLevel.LEVEL_1;
 import static org.batfish.datamodel.IsisLevel.LEVEL_1_2;
@@ -6,6 +6,7 @@ import static org.batfish.datamodel.IsisLevel.LEVEL_2;
 
 import java.util.Arrays;
 import java.util.Map;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Edge;
@@ -13,6 +14,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisProcess;
+import org.batfish.datamodel.Vrf;
+import org.batfish.dataplane.ibdp.Node;
+import org.batfish.dataplane.ibdp.VirtualRouter;
 
 public class IsisEdge {
 
@@ -40,11 +44,13 @@ public class IsisEdge {
     return null;
   }
 
-  static @Nullable IsisEdge newEdge(Edge edge, Map<String, Configuration> configurations) {
+  static @Nullable public IsisEdge newEdge(Edge edge, Map<String, Node> nodes) {
     // vertex1
-    Configuration node1 = configurations.get(edge.getNode1());
-    Interface iface1 = node1.getInterfaces().get(edge.getInt1());
-    IsisProcess proc1 = iface1.getVrf().getIsisProcess();
+    Node n1 = nodes.get(edge.getNode1());
+    Configuration c1 = n1.getConfiguration();
+    Interface iface1 = c1.getInterfaces().get(edge.getInt1());
+    Vrf vrf1 = iface1.getVrf();
+    IsisProcess proc1 = vrf1.getIsisProcess();
     if (proc1 == null) {
       return null;
     }
@@ -55,9 +61,11 @@ public class IsisEdge {
     }
 
     // vertex2
-    Configuration node2 = configurations.get(edge.getNode2());
-    Interface iface2 = node2.getInterfaces().get(edge.getInt2());
-    IsisProcess proc2 = iface2.getVrf().getIsisProcess();
+    Node n2 = nodes.get(edge.getNode2());
+    Configuration c2 = n2.getConfiguration();
+    Interface iface2 = c2.getInterfaces().get(edge.getInt2());
+    Vrf vrf2 = iface2.getVrf();
+    IsisProcess proc2 = vrf2.getIsisProcess();
     if (proc2 == null) {
       return null;
     }
@@ -78,7 +86,12 @@ public class IsisEdge {
     if (circuitType == null) {
       return null;
     }
-    return new IsisEdge(circuitType, iface1, iface2, proc1, proc2);
+    return new IsisEdge(
+        circuitType,
+        iface1,
+        iface2,
+        n1.getVirtualRouters().get(vrf1.getName()),
+        n2.getVirtualRouters().get(vrf2.getName()));
   }
 
   private static @Nullable IsisLevel union(@Nullable IsisLevel level1, @Nullable IsisLevel level2) {
@@ -106,40 +119,40 @@ public class IsisEdge {
 
   private final Interface _interface2;
 
-  private final IsisProcess _proc1;
+  private final VirtualRouter _VirtualRouter1;
 
-  private final IsisProcess _proc2;
+  private final VirtualRouter _VirtualRouter2;
 
   private IsisEdge(
       IsisLevel circuitType,
       Interface interface1,
       Interface interface2,
-      IsisProcess proc1,
-      IsisProcess proc2) {
+      VirtualRouter VirtualRouter1,
+      VirtualRouter VirtualRouter2) {
     _circuitType = circuitType;
     _interface1 = interface1;
     _interface2 = interface2;
-    _proc1 = proc1;
-    _proc2 = proc2;
+    _VirtualRouter1 = VirtualRouter1;
+    _VirtualRouter2 = VirtualRouter2;
   }
 
-  public IsisLevel getCircuitType() {
+  public @Nonnull IsisLevel getCircuitType() {
     return _circuitType;
   }
 
-  public Interface getInterface1() {
+  public @Nonnull Interface getInterface1() {
     return _interface1;
   }
 
-  public Interface getInterface2() {
+  public @Nonnull Interface getInterface2() {
     return _interface2;
   }
 
-  public IsisProcess getProc1() {
-    return _proc1;
+  public @Nonnull VirtualRouter getProc1() {
+    return _VirtualRouter1;
   }
 
-  public IsisProcess getProc2() {
-    return _proc2;
+  public @Nonnull VirtualRouter getProc2() {
+    return _VirtualRouter2;
   }
 }
