@@ -315,7 +315,7 @@ public class Row implements Comparable<Row> {
   }
 
   public Object getObject(String column) {
-    return (Object) get(column, Schema.OBJECT);
+    return get(column, Schema.OBJECT);
   }
 
   public Prefix getPrefix(String column) {
