@@ -10,7 +10,10 @@ import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.ImmutableNetwork;
+import com.google.common.graph.MutableNetwork;
 import com.google.common.graph.Network;
+import com.google.common.graph.NetworkBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -37,14 +40,14 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
-import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.IncrementalBdpAnswerElement;
 import org.batfish.dataplane.TracerouteEngineImpl;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.RibDelta;
-import org.batfish.dataplane.topology.IsisEdge;
+import org.batfish.dataplane.topology.DirectedIsisEdge;
+import org.batfish.dataplane.topology.IsisNode;
 
 class IncrementalBdpEngine {
 
@@ -105,7 +108,7 @@ class IncrementalBdpEngine {
         initBgpTopology(
             configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
 
-    Network<VirtualRouter, IsisEdge> isisTopology = initIsisTopology(nodes, topology);
+    Network<IsisNode, DirectedIsisEdge> isisTopology = initIsisTopology(configurations, topology);
 
     boolean isOscillating =
         computeNonMonotonicPortionOfDataPlane(
@@ -143,15 +146,31 @@ class IncrementalBdpEngine {
     return new ComputeDataPlaneResult(answerElement, dp);
   }
 
-  private Network<VirtualRouter, IsisEdge> initIsisTopology(
-      Map<String, Node> nodes, Topology topology) {
-    Set<IsisEdge> edges =
+  static Network<IsisNode, DirectedIsisEdge> initIsisTopology(
+      Map<String, Configuration> configurations, Topology topology) {
+    Set<DirectedIsisEdge> edges =
         topology
             .getEdges()
             .stream()
-            .map(edge -> IsisEdge.newEdge(edge, nodes))
+            .map(edge -> DirectedIsisEdge.newEdge(edge, configurations))
             .filter(Objects::nonNull)
             .collect(ImmutableSet.toImmutableSet());
+    MutableNetwork<IsisNode, DirectedIsisEdge> graph =
+        NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+    edges
+        .stream()
+        .forEach(
+            edge -> {
+              graph.addNode(edge.getNode1());
+              graph.addNode(edge.getNode2());
+            });
+    edges
+        .stream()
+        .forEach(
+            edge -> {
+              graph.addEdge(edge.getNode1(), edge.getNode2(), edge);
+            });
+    return ImmutableNetwork.copyOf(graph);
   }
 
   /**
@@ -406,7 +425,7 @@ class IncrementalBdpEngine {
       IncrementalBdpAnswerElement ae,
       boolean firstPass,
       Network<BgpNeighbor, BgpSession> bgpTopology,
-      Network<VirtualRouter, IsisEdge> isisTopology) {
+      Network<IsisNode, DirectedIsisEdge> isisTopology) {
 
     /*
      * Initialize all routers and their message queues (can be done as parallel as possible)

@@ -1,6 +1,7 @@
 package org.batfish.dataplane.ibdp;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
@@ -53,6 +54,7 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginType;
@@ -98,7 +100,9 @@ import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
-import org.batfish.dataplane.topology.IsisEdge;
+import org.batfish.dataplane.topology.DirectedIsisEdge;
+import org.batfish.dataplane.topology.IsisNode;
+import org.batfish.dataplane.topology.UndirectedIsisEdge;
 
 public class VirtualRouter extends ComparableStructure<String> {
 
@@ -156,6 +160,9 @@ public class VirtualRouter extends ComparableStructure<String> {
    * iterations (hence, independent).
    */
   transient Rib _independentRib;
+
+  /** Incoming messages into this router from each IS-IS circuit */
+  transient SortedMap<UndirectedIsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
 
   transient LocalRib _localRib;
 
@@ -369,7 +376,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       final Map<String, Node> allNodes,
       Topology topology,
       Network<BgpNeighbor, BgpSession> bgpTopology,
-      Network<Vrf, IsisEdge> isisTopology) {
+      Network<IsisNode, DirectedIsisEdge> isisTopology) {
     initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, isisTopology);
   }
 
@@ -385,13 +392,13 @@ public class VirtualRouter extends ComparableStructure<String> {
       final Map<String, Node> allNodes,
       final Topology topology,
       Network<BgpNeighbor, BgpSession> bgpTopology,
-      Network<Vrf, IsisEdge> isisTopology) {
+      Network<IsisNode, DirectedIsisEdge> isisTopology) {
 
     // Initialize message queues for each BGP neighbor
     initBgpQueues(bgpTopology);
 
     initIsisQueues(isisTopology);
-    
+
     // Initialize message queues for each Ospf neighbor
     if (_vrf.getOspfProcess() == null) {
       _ospfExternalIncomingRoutes = ImmutableSortedMap.of();
@@ -410,15 +417,6 @@ public class VirtualRouter extends ComparableStructure<String> {
                         Function.identity(),
                         p -> new ConcurrentLinkedQueue<>()));
       }
-    }    
-  }
-
-  private void initIsisQueues(Network<Vrf, IsisEdge> isisTopology) {
-    // Initialize message queues for each IS-IS circuit
-    if (_vrf.getIsisProcess()  == null) {
-      _isisIncomingRoutes = ImmutableSortedMap.of();
-    }
-    else {
     }
   }
 
@@ -438,6 +436,23 @@ public class VirtualRouter extends ComparableStructure<String> {
                   }
                 }
               });
+    }
+  }
+
+  private void initIsisQueues(Network<IsisNode, DirectedIsisEdge> isisTopology) {
+    // Initialize message queues for each IS-IS circuit
+    if (_vrf.getIsisProcess() == null) {
+      _isisIncomingRoutes = ImmutableSortedMap.of();
+    } else {
+      _isisIncomingRoutes =
+          _vrf.getInterfaceNames()
+              .stream()
+              .map(ifaceName -> new IsisNode(_c.getHostname(), ifaceName))
+              .filter(isisTopology.nodes()::contains)
+              .flatMap(n -> isisTopology.incidentEdges(n).stream())
+              .map(DirectedIsisEdge::toUndirectedEdge)
+              .collect(
+                  toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
   }
 
@@ -2496,7 +2511,7 @@ public class VirtualRouter extends ComparableStructure<String> {
 
     return ImmutableSortedMap.copyOf(neighbors);
   }
-  
+
   public Configuration getConfiguration() {
     return _c;
   }

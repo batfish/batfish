@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
@@ -21,17 +22,17 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private Integer _cost;
+  private final Integer _cost;
 
-  private String _helloAuthenticationKey;
+  private final String _helloAuthenticationKey;
 
-  private IsisHelloAuthenticationType _helloAuthenticationType;
+  private final IsisHelloAuthenticationType _helloAuthenticationType;
 
-  private Integer _helloInterval;
+  private final Integer _helloInterval;
 
-  private Integer _holdTime;
+  private final Integer _holdTime;
 
-  private IsisInterfaceMode _mode;
+  private final IsisInterfaceMode _mode;
 
   @Override
   public boolean equals(Object obj) {
@@ -96,29 +97,18 @@ public class IsisInterfaceLevelSettings implements Serializable {
     _cost = cost;
   }
 
-  @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY)
-  public void setHelloAuthenticationKey(@Nullable String helloAuthenticationKey) {
+  @JsonCreator
+  private IsisInterfaceLevelSettings(
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY) @Nullable String helloAuthenticationKey,
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE) @Nullable
+          IsisHelloAuthenticationType helloAuthenticationType,
+      @JsonProperty(PROP_HELLO_INTERVAL) @Nullable Integer helloInterval,
+      @JsonProperty(PROP_HOLD_TIME) @Nullable Integer holdTime,
+      @JsonProperty(PROP_MODE) @Nullable IsisInterfaceMode mode) {
     _helloAuthenticationKey = helloAuthenticationKey;
-  }
-
-  @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE)
-  public void setHelloAuthenticationType(
-      @Nullable IsisHelloAuthenticationType helloAuthenticationType) {
     _helloAuthenticationType = helloAuthenticationType;
-  }
-
-  @JsonProperty(PROP_HELLO_INTERVAL)
-  public void setHelloInterval(@Nullable Integer helloInterval) {
     _helloInterval = helloInterval;
-  }
-
-  @JsonProperty(PROP_HOLD_TIME)
-  public void setHoldTime(@Nullable Integer holdTime) {
     _holdTime = holdTime;
-  }
-
-  @JsonProperty(PROP_MODE)
-  public void setMode(@Nullable IsisInterfaceMode mode) {
     _mode = mode;
   }
 }

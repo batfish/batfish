@@ -42,6 +42,8 @@ public final class Interface extends ComparableStructure<String> {
 
     private IpAccessList _incomingFilter;
 
+    private IsisInterfaceSettings _isis;
+
     private String _name;
 
     private OspfArea _ospfArea;
@@ -95,6 +97,7 @@ public final class Interface extends ComparableStructure<String> {
       iface.setBlacklisted(_blacklisted);
       iface.setDeclaredNames(_declaredNames);
       iface.setIncomingFilter(_incomingFilter);
+      iface.setIsis(_isis);
       iface.setOspfArea(_ospfArea);
       if (_ospfArea != null) {
         _ospfArea.getInterfaces().add(name);
@@ -152,11 +155,11 @@ public final class Interface extends ComparableStructure<String> {
      * Set the primary address and secondary addresses of the interface. <br>
      * The {@link Interface#getAllAddresses()} method of the built {@link Interface} will return a
      * set containing the primary address and secondary addresses.<br>
-     * The node will accept traffic whose destination IP belongs is among any of the addresses of
-     * any of the interfaces. The primary address is the one used by default as the source IP for
-     * traffic sent out the interface. A secondary address is another address potentially associated
-     * with a different subnet living on the interface. The interface will reply to ARP for the
-     * primary or any secondary IP.
+     * The node will accept traffic whose destination IP is among any of the addresses of any of the
+     * interfaces. The primary address is the one used by default as the source IP for traffic sent
+     * out the interface. A secondary address is another address potentially associated with a
+     * different subnet living on the interface. The interface will reply to ARP for the primary or
+     * any secondary IP.
      */
     public Builder setAddresses(
         InterfaceAddress primaryAddress, InterfaceAddress... secondaryAddresses) {
@@ -197,6 +200,11 @@ public final class Interface extends ComparableStructure<String> {
 
     public Builder setIncomingFilter(IpAccessList incomingFilter) {
       _incomingFilter = incomingFilter;
+      return this;
+    }
+
+    public Builder setIsis(IsisInterfaceSettings isis) {
+      _isis = isis;
       return this;
     }
 
