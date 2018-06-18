@@ -34,6 +34,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEW
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_INCOMING_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_OUTGOING_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE;
@@ -1903,14 +1905,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterF_filter(F_filterContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     Map<String, FirewallFilter> filters = _configuration.getFirewallFilters();
     _currentFilter = filters.get(name);
     if (_currentFirewallFamily == null) {
       _currentFirewallFamily = Family.INET;
     }
     if (_currentFilter == null) {
-      _currentFilter = new FirewallFilter(name, _currentFirewallFamily, definitionLine);
+      _currentFilter = new FirewallFilter(name, _currentFirewallFamily);
       filters.put(name, _currentFilter);
     }
     defineStructure(FIREWALL_FILTER, name, ctx);
@@ -2639,7 +2640,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         // Policy for traffic originating from this device
         _currentFilter = _currentToZone.getFromHostFilter();
         if (_currentFilter == null) {
-          _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
+          _currentFilter = new FirewallFilter(policyName, Family.INET);
           _configuration.getFirewallFilters().put(policyName, _currentFilter);
           _currentToZone.setFromHostFilter(_currentFilter);
         }
@@ -2647,7 +2648,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         // Policy for traffic destined for this device
         _currentFilter = _currentFromZone.getToHostFilter();
         if (_currentFilter == null) {
-          _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
+          _currentFilter = new FirewallFilter(policyName, Family.INET);
           _configuration.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.setToHostFilter(_currentFilter);
         }
@@ -2655,7 +2656,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
         // Policy for thru traffic
         _currentFilter = _currentFromZone.getToZonePolicies().get(toName);
         if (_currentFilter == null) {
-          _currentFilter = new FirewallFilter(policyName, Family.INET, -1);
+          _currentFilter = new FirewallFilter(policyName, Family.INET);
           _configuration.getFirewallFilters().put(policyName, _currentFilter);
           _currentFromZone.getToZonePolicies().put(toName, _currentFilter);
         }
@@ -2678,9 +2679,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     _currentFilter =
         _configuration
             .getFirewallFilters()
-            .computeIfAbsent(
-                ACL_NAME_GLOBAL_POLICY,
-                n -> new FirewallFilter(n, Family.INET, ctx.start.getLine()));
+            .computeIfAbsent(ACL_NAME_GLOBAL_POLICY, n -> new FirewallFilter(n, Family.INET));
   }
 
   @Override
@@ -2724,7 +2723,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
                 + _currentZone.getName()
                 + "~INTERFACE~"
                 + _currentZoneInterface.getName();
-        _currentZoneInboundFilter = new FirewallFilter(name, Family.INET, -1);
+        _currentZoneInboundFilter = new FirewallFilter(name, Family.INET);
         _configuration.getFirewallFilters().put(name, _currentZoneInboundFilter);
         _currentZone
             .getInboundInterfaceFilters()
@@ -3398,18 +3397,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitIfi_filter(Ifi_filterContext ctx) {
     FilterContext filter = ctx.filter();
     String name = filter.name.getText();
-    int line = filter.name.getStart().getLine();
+    JuniperStructureUsage usage = INTERFACE_FILTER;
     if (filter.direction() != null) {
       DirectionContext direction = filter.direction();
       if (direction.INPUT() != null) {
         _currentInterface.setIncomingFilter(name);
-        _currentInterface.setIncomingFilterLine(line);
+        usage = INTERFACE_INCOMING_FILTER;
       } else if (direction.OUTPUT() != null) {
         _currentInterface.setOutgoingFilter(name);
-        _currentInterface.setOutgoingFilterLine(line);
+        usage = INTERFACE_OUTGOING_FILTER;
       }
     }
-    _configuration.referenceStructure(FIREWALL_FILTER, name, INTERFACE_FILTER, line);
+    _configuration.referenceStructure(
+        FIREWALL_FILTER, name, usage, filter.name.getStart().getLine());
   }
 
   @Override

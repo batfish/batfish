@@ -38,7 +38,7 @@ public class JuniperConfigurationTest {
   @Test
   public void testToIpAccessList() {
     JuniperConfiguration config = createConfig();
-    FirewallFilter filter = new FirewallFilter("filter", Family.INET, -1);
+    FirewallFilter filter = new FirewallFilter("filter", Family.INET);
     IpAccessList emptyAcl = config.toIpAccessList(filter);
 
     FwTerm term = new FwTerm("term");
