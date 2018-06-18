@@ -7,13 +7,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -126,82 +126,19 @@ public final class AclReachabilityAnswererUtils {
       _interfaces.addAll(newInterfaces);
     }
 
-    private IpSpace dereference(int lineNum, IpSpace original, IpSpaceDereferencer dereferencer) {
-      Optional<IpSpace> dereferenced = original.accept(dereferencer);
-      if (!dereferenced.isPresent()) {
-        addUndefinedRef(lineNum);
-        return null;
-      }
-      return dereferenced.get();
-    }
-
     public void sanitizeHeaderSpace(
         int lineNum, HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
-      HeaderSpace.Builder hsb = headerSpace.toBuilder();
-      boolean sanitizedHeaderSpaceDifferent = false;
-
-      // Construct a sanitized HeaderSpace where all IpSpaceReferences are replaced with their
-      // dereferenced IpSpaces. If any IpSpaceReference is found to point to an undefined IP space,
-      // stop and record this line as having an undefined reference.
-      IpSpace original = headerSpace.getSrcIps();
-      Optional<IpSpace> dereferenced;
-      if (original != null) {
-        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
-        if (!dereferenced.isPresent()) {
-          addUndefinedRef(lineNum);
-          return;
-        } else if (dereferenced.get() != original) {
-          hsb.setSrcIps(dereferenced.get());
-          sanitizedHeaderSpaceDifferent = true;
+      try {
+        // Try dereferencing all IpSpace fields in header space. If that results in a header space
+        // different from the original, sanitize the line.
+        HeaderSpace dereferenced =
+            IpSpaceDereferencer.dereferenceHeaderSpace(headerSpace, namedIpSpaces);
+        if (!dereferenced.equals(headerSpace)) {
+          sanitizeLine(lineNum, new MatchHeaderSpace(dereferenced));
         }
-      }
-      original = headerSpace.getDstIps();
-      if (original != null) {
-        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
-        if (!dereferenced.isPresent()) {
-          addUndefinedRef(lineNum);
-          return;
-        } else if (dereferenced.get() != original) {
-          hsb.setDstIps(dereferenced.get());
-          sanitizedHeaderSpaceDifferent = true;
-        }
-      }
-      original = headerSpace.getNotSrcIps();
-      if (original != null) {
-        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
-        if (!dereferenced.isPresent()) {
-          addUndefinedRef(lineNum);
-          return;
-        } else if (dereferenced.get() != original) {
-          hsb.setNotSrcIps(dereferenced.get());
-          sanitizedHeaderSpaceDifferent = true;
-        }
-      }
-      original = headerSpace.getNotDstIps();
-      if (original != null) {
-        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
-        if (!dereferenced.isPresent()) {
-          addUndefinedRef(lineNum);
-          return;
-        } else if (dereferenced.get() != original) {
-          hsb.setNotDstIps(dereferenced.get());
-          sanitizedHeaderSpaceDifferent = true;
-        }
-      }
-      original = headerSpace.getSrcOrDstIps();
-      if (original != null) {
-        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
-        if (!dereferenced.isPresent()) {
-          addUndefinedRef(lineNum);
-          return;
-        } else if (dereferenced.get() != original) {
-          hsb.setSrcOrDstIps(dereferenced.get());
-          sanitizedHeaderSpaceDifferent = true;
-        }
-      }
-
-      if (sanitizedHeaderSpaceDifferent) {
-        sanitizeLine(lineNum, new MatchHeaderSpace(hsb.build()));
+      } catch (BatfishException e) {
+        // If dereferencing causes an error, one of the IpSpaces was a cycle or undefined ref.
+        addUndefinedRef(lineNum);
       }
     }
 
