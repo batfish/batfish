@@ -9,13 +9,9 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   private Interface _bindInterface;
 
-  private int _bindInterfaceLine;
-
   private String _gateway;
 
   private String _ipsecPolicy;
-
-  private int _ipsecPolicyLine;
 
   public IpsecVpn(String name) {
     super(name);
@@ -23,10 +19,6 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   public Interface getBindInterface() {
     return _bindInterface;
-  }
-
-  public int getBindInterfaceLine() {
-    return _bindInterfaceLine;
   }
 
   public String getGateway() {
@@ -37,16 +29,8 @@ public final class IpsecVpn extends ComparableStructure<String> {
     return _ipsecPolicy;
   }
 
-  public int getIpsecPolicyLine() {
-    return _ipsecPolicyLine;
-  }
-
   public void setBindInterface(Interface iface) {
     _bindInterface = iface;
-  }
-
-  public void setBindInterfaceLine(int bindInterfaceLine) {
-    _bindInterfaceLine = bindInterfaceLine;
   }
 
   public void setGateway(String gateway) {
@@ -55,9 +39,5 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   public void setIpsecPolicy(String name) {
     _ipsecPolicy = name;
-  }
-
-  public void setIpsecPolicyLine(int ipsecPolicyLine) {
-    _ipsecPolicyLine = ipsecPolicyLine;
   }
 }

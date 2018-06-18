@@ -12,8 +12,6 @@ public class IkeGateway extends ComparableStructure<String> {
 
   private Interface _externalInterface;
 
-  private int _externalInterfaceLine;
-
   private String _ikePolicy;
 
   private Ip _localAddress;
@@ -30,10 +28,6 @@ public class IkeGateway extends ComparableStructure<String> {
     return _externalInterface;
   }
 
-  public int getExternalInterfaceLine() {
-    return _externalInterfaceLine;
-  }
-
   public String getIkePolicy() {
     return _ikePolicy;
   }
@@ -48,10 +42,6 @@ public class IkeGateway extends ComparableStructure<String> {
 
   public void setExternalInterface(Interface externalInterface) {
     _externalInterface = externalInterface;
-  }
-
-  public void setExternalInterfaceLine(int externalInterfaceLine) {
-    _externalInterfaceLine = externalInterfaceLine;
   }
 
   public void setIkePolicy(String ikePolicy) {
