@@ -1,7 +1,10 @@
 package org.batfish.dataplane.topology;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
@@ -64,5 +67,18 @@ public class IsisNode implements Comparable<IsisNode> {
       return null;
     }
     return i.getVrf().getIsisProcess();
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_hostname, _interfaceName);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add("hostname", _hostname)
+        .add("interfaceName", _interfaceName)
+        .toString();
   }
 }

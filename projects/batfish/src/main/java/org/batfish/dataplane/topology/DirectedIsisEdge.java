@@ -24,6 +24,12 @@ public final class DirectedIsisEdge extends IsisEdge {
         settings.getLevel2() != null ? IsisLevel.LEVEL_2 : null);
   }
 
+  private static IsisLevel processLevel(IsisProcess isisProcess) {
+    return union(
+        isisProcess.getLevel1() != null ? IsisLevel.LEVEL_1 : null,
+        isisProcess.getLevel2() != null ? IsisLevel.LEVEL_2 : null);
+  }
+
   private static @Nullable IsisLevel intersection(IsisLevel... levels) {
     return levels.length == 0
         ? null
@@ -54,7 +60,6 @@ public final class DirectedIsisEdge extends IsisEdge {
     if (proc1 == null) {
       return null;
     }
-    IsisLevel proc1Level = proc1.getLevel();
     IsisInterfaceSettings is1 = iface1.getIsis();
     if (is1 == null) {
       return null;
@@ -68,7 +73,6 @@ public final class DirectedIsisEdge extends IsisEdge {
     if (proc2 == null) {
       return null;
     }
-    IsisLevel proc2Level = proc2.getLevel();
     IsisInterfaceSettings is2 = iface2.getIsis();
     if (is2 == null) {
       return null;
@@ -76,15 +80,24 @@ public final class DirectedIsisEdge extends IsisEdge {
 
     boolean sameArea =
         Arrays.equals(proc1.getNetAddress().getAreaId(), proc2.getNetAddress().getAreaId());
-    IsisLevel circuitTypeModuloArea =
+
+    // make sure system IDs are distinct
+    if (Arrays.equals(proc1.getNetAddress().getSystemId(), proc2.getNetAddress().getSystemId())) {
+      return null;
+    }
+
+    /* Compute level. If areas are distinct, only level 2 is allowed. */
+    IsisLevel circuitType =
         intersection(
-            proc1Level, proc2Level, interfaceSettingsLevel(is1), interfaceSettingsLevel(is2));
-    IsisLevel level1Component = intersection(sameArea ? LEVEL_1 : null, circuitTypeModuloArea);
-    IsisLevel level2Component = intersection(LEVEL_2, circuitTypeModuloArea);
-    IsisLevel circuitType = union(level1Component, level2Component);
+            processLevel(proc1),
+            interfaceSettingsLevel(is1),
+            processLevel(proc2),
+            interfaceSettingsLevel(is2),
+            sameArea ? LEVEL_1_2 : LEVEL_1);
     if (circuitType == null) {
       return null;
     }
+
     return new DirectedIsisEdge(
         circuitType,
         new IsisNode(c1.getHostname(), iface1.getName()),

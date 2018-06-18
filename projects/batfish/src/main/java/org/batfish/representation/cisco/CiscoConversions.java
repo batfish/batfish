@@ -33,6 +33,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IsisLevelSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -209,12 +210,23 @@ class CiscoConversions {
 
   static org.batfish.datamodel.IsisProcess toIsisProcess(
       IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.IsisProcess newProcess = new org.batfish.datamodel.IsisProcess();
-
+    org.batfish.datamodel.IsisProcess.Builder newProcess =
+        org.batfish.datamodel.IsisProcess.builder();
     newProcess.setNetAddress(proc.getNetAddress());
-    newProcess.setLevel(proc.getLevel());
-
-    return newProcess;
+    IsisLevelSettings settings = IsisLevelSettings.builder().build();
+    switch (proc.getLevel()) {
+      case LEVEL_1:
+        newProcess.setLevel1(settings);
+        break;
+      case LEVEL_1_2:
+        newProcess.setLevel1(settings);
+        newProcess.setLevel2(settings);
+        break;
+      case LEVEL_2:
+        newProcess.setLevel2(settings);
+        break;
+    }
+    return newProcess.build();
   }
 
   static Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {

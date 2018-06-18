@@ -16,8 +16,8 @@ import com.google.common.graph.Network;
 import com.google.common.graph.NetworkBuilder;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -157,13 +157,15 @@ class IncrementalBdpEngine {
             .collect(ImmutableSet.toImmutableSet());
     MutableNetwork<IsisNode, DirectedIsisEdge> graph =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
+    ImmutableSet.Builder<IsisNode> nodes = ImmutableSet.builder();
     edges
         .stream()
         .forEach(
             edge -> {
-              graph.addNode(edge.getNode1());
-              graph.addNode(edge.getNode2());
+              nodes.add(edge.getNode1());
+              nodes.add(edge.getNode2());
             });
+    nodes.build().forEach(graph::addNode);
     edges
         .stream()
         .forEach(

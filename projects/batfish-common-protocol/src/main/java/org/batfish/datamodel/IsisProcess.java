@@ -1,16 +1,90 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.io.Serializable;
-import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @JsonSchemaDescription("An IS-IS routing process")
 public class IsisProcess implements Serializable {
+
+  public static class Builder {
+
+    private Set<GeneratedRoute> _generatedRoutes;
+
+    private IsisLevelSettings _level1;
+
+    private IsisLevelSettings _level2;
+
+    private IsoAddress _netAddress;
+
+    private Integer _overloadTimeout;
+
+    private Double _referenceBandwidth;
+
+    private Vrf _vrf;
+
+    private Builder() {
+      _generatedRoutes = ImmutableSet.of();
+    }
+
+    public IsisProcess build() {
+      IsisProcess proc =
+          new IsisProcess(
+              _generatedRoutes,
+              _level1,
+              _level2,
+              requireNonNull(_netAddress),
+              _overloadTimeout,
+              _referenceBandwidth);
+      if (_vrf != null) {
+        _vrf.setIsisProcess(proc);
+      }
+      return proc;
+    }
+
+    public @Nonnull Builder setGeneratedRoutes(@Nonnull Set<GeneratedRoute> generatedRoutes) {
+      _generatedRoutes = generatedRoutes;
+      return this;
+    }
+
+    public @Nonnull Builder setLevel1(@Nullable IsisLevelSettings level1) {
+      _level1 = level1;
+      return this;
+    }
+
+    public @Nonnull Builder setLevel2(@Nullable IsisLevelSettings level2) {
+      _level2 = level2;
+      return this;
+    }
+
+    public @Nonnull Builder setNetAddress(@Nonnull IsoAddress netAddress) {
+      _netAddress = netAddress;
+      return this;
+    }
+
+    public @Nonnull Builder setOverloadTimeout(@Nullable Integer overloadTimeout) {
+      _overloadTimeout = overloadTimeout;
+      return this;
+    }
+
+    public @Nonnull Builder setReferenceBandwidth(@Nullable Double referenceBandwidth) {
+      _referenceBandwidth = referenceBandwidth;
+      return this;
+    }
+
+    public @Nonnull Builder setVrf(@Nonnull Vrf vrf) {
+      _vrf = vrf;
+      return this;
+    }
+  }
 
   public static final int DEFAULT_ISIS_INTERFACE_COST = 10;
 
@@ -29,9 +103,11 @@ public class IsisProcess implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
-  private Set<GeneratedRoute> _generatedRoutes;
+  public static @Nonnull Builder builder() {
+    return new Builder();
+  }
 
-  private IsisLevel _level;
+  private Set<GeneratedRoute> _generatedRoutes;
 
   private IsisLevelSettings _level1;
 
@@ -43,8 +119,19 @@ public class IsisProcess implements Serializable {
 
   private Double _referenceBandwidth;
 
-  public IsisProcess() {
-    _generatedRoutes = new LinkedHashSet<>();
+  private IsisProcess(
+      @JsonProperty(PROP_GENERATED_ROUTES) @Nonnull Set<GeneratedRoute> generatedRoutes,
+      @JsonProperty(PROP_LEVEL1) @Nullable IsisLevelSettings level1,
+      @JsonProperty(PROP_LEVEL2) @Nullable IsisLevelSettings level2,
+      @JsonProperty(PROP_NET_ADDRESS) @Nonnull IsoAddress netAddress,
+      @JsonProperty(PROP_OVERLOAD_TIMEOUT) @Nullable Integer overloadTimeout,
+      @JsonProperty(PROP_REFERENCE_BANDWIDTH) @Nullable Double referenceBandwidth) {
+    _generatedRoutes = generatedRoutes;
+    _level1 = level1;
+    _level2 = level2;
+    _netAddress = netAddress;
+    _overloadTimeout = overloadTimeout;
+    _referenceBandwidth = referenceBandwidth;
   }
 
   @Override
@@ -70,11 +157,6 @@ public class IsisProcess implements Serializable {
   @JsonProperty(PROP_GENERATED_ROUTES)
   public Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
-  }
-
-  @JsonPropertyDescription("The IS-IS level(s) for this process")
-  public IsisLevel getLevel() {
-    return _level;
   }
 
   @JsonProperty(PROP_LEVEL1)
@@ -112,10 +194,6 @@ public class IsisProcess implements Serializable {
   @JsonProperty(PROP_GENERATED_ROUTES)
   public void setGeneratedRoutes(Set<GeneratedRoute> generatedRoutes) {
     _generatedRoutes = generatedRoutes;
-  }
-
-  public void setLevel(IsisLevel level) {
-    _level = level;
   }
 
   @JsonProperty(PROP_LEVEL1)

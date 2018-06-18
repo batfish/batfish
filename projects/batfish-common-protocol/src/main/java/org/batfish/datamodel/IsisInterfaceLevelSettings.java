@@ -4,9 +4,66 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class IsisInterfaceLevelSettings implements Serializable {
+
+  public static class Builder {
+
+    private Integer _cost;
+
+    private String _helloAuthenticationKey;
+
+    private IsisHelloAuthenticationType _helloAuthenticationType;
+
+    private Integer _helloInterval;
+
+    private Integer _holdTime;
+
+    private IsisInterfaceMode _mode;
+
+    public IsisInterfaceLevelSettings build() {
+      return new IsisInterfaceLevelSettings(
+          _cost,
+          _helloAuthenticationKey,
+          _helloAuthenticationType,
+          _helloInterval,
+          _holdTime,
+          _mode);
+    }
+
+    public @Nonnull Builder setCost(@Nullable Integer cost) {
+      _cost = cost;
+      return this;
+    }
+
+    public @Nonnull Builder setHelloAuthenticationKey(@Nullable String helloAuthenticationKey) {
+      _helloAuthenticationKey = helloAuthenticationKey;
+      return this;
+    }
+
+    public @Nonnull Builder setHelloAuthenticationType(
+        @Nullable IsisHelloAuthenticationType helloAuthenticationType) {
+      _helloAuthenticationType = helloAuthenticationType;
+      return this;
+    }
+
+    public @Nonnull Builder setHelloInterval(@Nullable Integer helloInterval) {
+      _helloInterval = helloInterval;
+      return this;
+    }
+
+    public @Nonnull Builder setHoldTime(@Nullable Integer holdTime) {
+      _holdTime = holdTime;
+      return this;
+    }
+
+    public @Nonnull Builder setMode(@Nullable IsisInterfaceMode mode) {
+      _mode = mode;
+      return this;
+    }
+  }
 
   private static final String PROP_COST = "cost";
 
@@ -22,6 +79,22 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
+  @JsonCreator
+  private static @Nonnull IsisInterfaceLevelSettings create(
+      Integer cost,
+      String helloAuthenticationKey,
+      IsisHelloAuthenticationType helloAuthenticationType,
+      Integer helloInterval,
+      Integer holdTime,
+      IsisInterfaceMode mode) {
+    return new IsisInterfaceLevelSettings(
+        cost, helloAuthenticationKey, helloAuthenticationType, helloInterval, holdTime, mode);
+  }
+
   private final Integer _cost;
 
   private final String _helloAuthenticationKey;
@@ -33,6 +106,22 @@ public class IsisInterfaceLevelSettings implements Serializable {
   private final Integer _holdTime;
 
   private final IsisInterfaceMode _mode;
+
+  private IsisInterfaceLevelSettings(
+      @JsonProperty(PROP_COST) @Nullable Integer cost,
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY) @Nullable String helloAuthenticationKey,
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE) @Nullable
+          IsisHelloAuthenticationType helloAuthenticationType,
+      @JsonProperty(PROP_HELLO_INTERVAL) @Nullable Integer helloInterval,
+      @JsonProperty(PROP_HOLD_TIME) @Nullable Integer holdTime,
+      @JsonProperty(PROP_MODE) @Nullable IsisInterfaceMode mode) {
+    _cost = cost;
+    _helloAuthenticationKey = helloAuthenticationKey;
+    _helloAuthenticationType = helloAuthenticationType;
+    _helloInterval = helloInterval;
+    _holdTime = holdTime;
+    _mode = mode;
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -90,25 +179,5 @@ public class IsisInterfaceLevelSettings implements Serializable {
         _helloInterval,
         _holdTime,
         _mode != null ? _mode.ordinal() : -1);
-  }
-
-  @JsonProperty(PROP_COST)
-  public void setCost(@Nullable Integer cost) {
-    _cost = cost;
-  }
-
-  @JsonCreator
-  private IsisInterfaceLevelSettings(
-      @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY) @Nullable String helloAuthenticationKey,
-      @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE) @Nullable
-          IsisHelloAuthenticationType helloAuthenticationType,
-      @JsonProperty(PROP_HELLO_INTERVAL) @Nullable Integer helloInterval,
-      @JsonProperty(PROP_HOLD_TIME) @Nullable Integer holdTime,
-      @JsonProperty(PROP_MODE) @Nullable IsisInterfaceMode mode) {
-    _helloAuthenticationKey = helloAuthenticationKey;
-    _helloAuthenticationType = helloAuthenticationType;
-    _helloInterval = helloInterval;
-    _holdTime = holdTime;
-    _mode = mode;
   }
 }

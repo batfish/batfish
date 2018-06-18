@@ -451,6 +451,8 @@ public class VirtualRouter extends ComparableStructure<String> {
               .filter(isisTopology.nodes()::contains)
               .flatMap(n -> isisTopology.incidentEdges(n).stream())
               .map(DirectedIsisEdge::toUndirectedEdge)
+              .collect(ImmutableSet.toImmutableSet())
+              .stream()
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }

@@ -1,5 +1,7 @@
 package org.batfish.dataplane.topology;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
@@ -57,5 +59,14 @@ public abstract class IsisEdge implements Comparable<IsisEdge> {
   @Override
   public final int hashCode() {
     return Objects.hash(_circuitType.ordinal(), _node1, _node2);
+  }
+
+  @Override
+  public String toString() {
+    return toStringHelper(getClass())
+        .add("node1", _node1)
+        .add("node2", _node2)
+        .add("circuitType", _circuitType)
+        .toString();
   }
 }
