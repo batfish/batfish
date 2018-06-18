@@ -402,23 +402,8 @@
         "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'dhcpgrp'",
         "files" : {
           "juniper_forwarding_options" : [
-            24
-          ]
-        }
-      },
-      "unused:dhcp-relay server-group:site-dhcp" : {
-        "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'site-dhcp'",
-        "files" : {
-          "juniper_relay" : [
-            4
-          ]
-        }
-      },
-      "unused:dhcp-relay server-group:test2" : {
-        "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'test2'",
-        "files" : {
-          "juniper_forwarding_options" : [
-            26
+            24,
+            25
           ]
         }
       },
@@ -1426,7 +1411,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 137
+      "numResults" : 135
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -2124,10 +2109,8 @@
       "juniper_forwarding_options" : {
         "dhcp-relay server-group" : {
           "dhcpgrp" : [
-            24
-          ],
-          "test2" : [
-            26
+            24,
+            25
           ]
         }
       },
@@ -2158,13 +2141,6 @@
             17,
             18,
             19
-          ]
-        }
-      },
-      "juniper_relay" : {
-        "dhcp-relay server-group" : {
-          "site-dhcp" : [
-            4
           ]
         }
       },

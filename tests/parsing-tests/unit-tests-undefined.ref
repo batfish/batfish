@@ -350,6 +350,7 @@
         "description" : "Undefined reference to structure of type: 'dhcp-relay server-group' with usage: 'dhcp relay group active-server-group' named 'site-dhcp'",
         "files" : {
           "juniper_forwarding_options" : [
+            8,
             13
           ]
         }
@@ -2087,6 +2088,7 @@
         "dhcp-relay server-group" : {
           "site-dhcp" : {
             "dhcp relay group active-server-group" : [
+              8,
               13
             ]
           }

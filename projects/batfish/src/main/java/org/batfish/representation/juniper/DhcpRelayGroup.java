@@ -13,8 +13,6 @@ public class DhcpRelayGroup extends ComparableStructure<String> {
 
   private String _activeServerGroup;
 
-  private int _activeServerGroupLine;
-
   private boolean _allInterfaces;
 
   private SortedSet<String> _interfaces;
@@ -28,10 +26,6 @@ public class DhcpRelayGroup extends ComparableStructure<String> {
     return _activeServerGroup;
   }
 
-  public int getActiveServerGroupLine() {
-    return _activeServerGroupLine;
-  }
-
   public boolean getAllInterfaces() {
     return _allInterfaces;
   }
@@ -42,10 +36,6 @@ public class DhcpRelayGroup extends ComparableStructure<String> {
 
   public void setActiveServerGroup(String activeServerGroup) {
     _activeServerGroup = activeServerGroup;
-  }
-
-  public void setActiveServerGroupLine(int activeServerGroupLine) {
-    _activeServerGroupLine = activeServerGroupLine;
   }
 
   public void setAllInterfaces(boolean allInterfaces) {
