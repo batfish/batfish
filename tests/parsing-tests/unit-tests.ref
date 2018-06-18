@@ -56120,7 +56120,8 @@
           "dhcp-relay server-group" : {
             "dhcpgrp" : {
               "definitionLines" : [
-                24
+                24,
+                25
               ],
               "numReferrers" : 0
             },
@@ -56128,7 +56129,7 @@
               "definitionLines" : [
                 26
               ],
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           }
         },
@@ -56180,7 +56181,7 @@
               "definitionLines" : [
                 4
               ],
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           }
         },
@@ -57633,6 +57634,7 @@
           "dhcp-relay server-group" : {
             "site-dhcp" : {
               "dhcp relay group active-server-group" : [
+                8,
                 13
               ]
             }
