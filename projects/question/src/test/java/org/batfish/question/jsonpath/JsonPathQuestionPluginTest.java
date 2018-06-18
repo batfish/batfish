@@ -29,6 +29,7 @@ public class JsonPathQuestionPluginTest {
             JsonPathAssertionType.equals, mapper.readValue("[true]", JsonNode.class));
     JsonPathQuery query = new JsonPathQuery("ll", false, null, null, oldExceptions, oldAssertion);
     JsonPathQuestion oldQuestion = new JsonPathQuestion();
+    oldQuestion.setInnerQuestion(new ReachabilityQuestion());
     oldQuestion.setPaths(Collections.singletonList(query));
 
     Set<JsonPathException> newExceptions =
@@ -58,6 +59,7 @@ public class JsonPathQuestionPluginTest {
             JsonPathAssertionType.equals, mapper.readValue("[true]", JsonNode.class));
     JsonPathQuery query = new JsonPathQuery("ll", false, null, null, oldExceptions, oldAssertion);
     JsonPathQuestion oldQuestion = new JsonPathQuestion();
+    oldQuestion.setInnerQuestion(new ReachabilityQuestion());
     oldQuestion.setPaths(Collections.singletonList(query));
 
     Set<JsonPathException> newExceptions =
