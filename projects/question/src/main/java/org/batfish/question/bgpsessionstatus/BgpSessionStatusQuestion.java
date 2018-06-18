@@ -1,30 +1,21 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.questions.NodesSpecifier;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
-/**
- * Returns the status of BGP sessions.
- *
- * <p>Based on config data, determines the status of IBGP and EBGP sessions
- *
- * @type BgpSessionCheck multifile
- * @param foreignBgpGroups Details coming.
- * @param node1Regex Regular expression to match the nodes names for one end of the sessions.
- *     Default is '.*' (all nodes).
- * @param node2Regex Regular expression to match the nodes names for the other end of the sessions.
- *     Default is '.*' (all nodes).
- * @example bf_answer("BgpSessionCheck", node1Regex="as1.*", node2Regex="as2.*") Checks all BGP
- *     sessions between nodes that start with as1 and those that start with as2.
- */
+/** Based on node configurations, determines the status of IBGP and EBGP sessions. */
 public class BgpSessionStatusQuestion extends Question {
 
   private static final String PROP_FOREIGN_BGP_GROUPS = "foreignBgpGroups";
@@ -41,7 +32,7 @@ public class BgpSessionStatusQuestion extends Question {
 
   @Nonnull private SortedSet<String> _foreignBgpGroups;
 
-  @Nonnull private boolean _includeEstablishedCount;
+  private boolean _includeEstablishedCount;
 
   @Nonnull private NodesSpecifier _node1Regex;
 
@@ -51,17 +42,37 @@ public class BgpSessionStatusQuestion extends Question {
 
   @Nonnull private Pattern _typeRegex;
 
+  /** Create a new BGP Session question with default parameters. */
+  public BgpSessionStatusQuestion() {
+    this(null, false, null, null, null, null);
+  }
+
+  /**
+   * Create a new BGP Session question.
+   *
+   * @param foreignBgpGroups only look at peers that belong to a given named BGP group.
+   * @param includeEstablishedCount run post-dataplane analysis to see how many seesions get
+   *     actually established.
+   * @param regex1 Regular expression to match the nodes names for one end of the sessions. Default
+   *     is '.*' (all nodes).
+   * @param regex2 Regular expression to match the nodes names for the other end of the sessions.
+   *     Default is '.*' (all nodes).
+   * @param statusRegex Regular expression to match status type (see {@link
+   *     BgpSessionInfo.SessionStatus})
+   * @param type Regular expression to match session type (see {@link BgpSessionInfo.SessionType})
+   */
+  @JsonCreator
   public BgpSessionStatusQuestion(
-      @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
-      @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT) Boolean includeEstablishedCount,
-      @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier regex1,
-      @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier regex2,
-      @JsonProperty(PROP_STATUS) String statusRegex,
-      @JsonProperty(PROP_TYPE_REGEX) String type) {
-    _foreignBgpGroups = foreignBgpGroups == null ? new TreeSet<>() : foreignBgpGroups;
-    _includeEstablishedCount = includeEstablishedCount != null && includeEstablishedCount;
-    _node1Regex = regex1 == null ? NodesSpecifier.ALL : regex1;
-    _node2Regex = regex2 == null ? NodesSpecifier.ALL : regex2;
+      @Nullable @JsonProperty(PROP_FOREIGN_BGP_GROUPS) SortedSet<String> foreignBgpGroups,
+      @Nullable @JsonProperty(PROP_INCLUDE_ESTABLISHED_COUNT) Boolean includeEstablishedCount,
+      @Nullable @JsonProperty(PROP_NODE1_REGEX) NodesSpecifier regex1,
+      @Nullable @JsonProperty(PROP_NODE2_REGEX) NodesSpecifier regex2,
+      @Nullable @JsonProperty(PROP_STATUS) String statusRegex,
+      @Nullable @JsonProperty(PROP_TYPE_REGEX) String type) {
+    _foreignBgpGroups = firstNonNull(foreignBgpGroups, ImmutableSortedSet.of());
+    _includeEstablishedCount = firstNonNull(includeEstablishedCount, Boolean.FALSE);
+    _node1Regex = firstNonNull(regex1, NodesSpecifier.ALL);
+    _node2Regex = firstNonNull(regex2, NodesSpecifier.ALL);
     _statusRegex =
         Strings.isNullOrEmpty(statusRegex)
             ? Pattern.compile(".*")
@@ -114,8 +125,8 @@ public class BgpSessionStatusQuestion extends Question {
     return _foreignBgpGroups.contains(group);
   }
 
-  boolean matchesStatus(SessionStatus status) {
-    return _statusRegex.matcher(status.toString()).matches();
+  boolean matchesStatus(@Nullable SessionStatus status) {
+    return status != null && _statusRegex.matcher(status.toString()).matches();
   }
 
   boolean matchesType(SessionType type) {

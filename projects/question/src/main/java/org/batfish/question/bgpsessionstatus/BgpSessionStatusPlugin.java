@@ -17,6 +17,6 @@ public class BgpSessionStatusPlugin extends QuestionPlugin {
 
   @Override
   protected Question createQuestion() {
-    return new BgpSessionStatusQuestion(null, null, null, null, null, null);
+    return new BgpSessionStatusQuestion();
   }
 }
