@@ -840,12 +840,14 @@ public class VirtualRouterTest {
 
     Configuration c1 = cb.build();
     Vrf v1 = vb.setOwner(c1).build();
+    // Area: 0001, SystemID: 0100.0000.0000
     isb.setVrf(v1).setNetAddress(new IsoAddress("49.0001.0100.0000.0000.00")).build();
     Interface i1 =
         ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("10.0.0.0/31")).build();
 
     Configuration c2 = cb.build();
     Vrf v2 = vb.setOwner(c2).build();
+    // Area: 0001, SystemID: 0100.0000.0001
     isb.setVrf(v2).setNetAddress(new IsoAddress("49.0001.0100.0000.0001.00")).build();
     Interface i2 =
         ib.setOwner(c2).setVrf(v2).setAddress(new InterfaceAddress("10.0.0.1/31")).build();
