@@ -2003,13 +2003,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     /* source nat acl */
     IpAccessList sourceNatAcl = ipAccessLists.get(sourceNatAclName);
-    if (sourceNatAcl == null) {
-      undefined(
-          CiscoStructureType.IP_ACCESS_LIST,
-          sourceNatAclName,
-          CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
-          nat.getAclNameLine());
-    } else {
+    if (sourceNatAcl != null) {
       convertedNat.setAcl(sourceNatAcl);
       String msg = "source nat acl for interface: " + iface.getName();
       ExtendedAccessList sourceNatExtendedAccessList = _extendedAccessLists.get(sourceNatAclName);
@@ -2034,12 +2028,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
           convertedNat.setPoolIpFirst(firstIp);
           convertedNat.setPoolIpLast(lastIp);
         }
-      } else {
-        undefined(
-            CiscoStructureType.NAT_POOL,
-            sourceNatPoolName,
-            CiscoStructureUsage.IP_NAT_SOURCE_POOL,
-            nat.getNatPoolLine());
       }
     }
 
