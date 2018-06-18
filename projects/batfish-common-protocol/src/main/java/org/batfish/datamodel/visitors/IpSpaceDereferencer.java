@@ -28,7 +28,7 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<Optional<IpSpa
 
   @Override
   public Optional<IpSpace> castToGenericIpSpaceVisitorReturnType(Object o) {
-    return (Optional<IpSpace>) o;
+    return o == null ? Optional.empty() : Optional.of((IpSpace) o);
   }
 
   /**
