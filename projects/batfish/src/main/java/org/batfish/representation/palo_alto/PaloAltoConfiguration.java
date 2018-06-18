@@ -83,6 +83,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return _unimplementedFeatures;
   }
 
+  public SortedMap<String, VirtualRouter> getVirtualRouters() {
+    return _virtualRouters;
+  }
+
   public void setDnsServerPrimary(String dnsServerPrimary) {
     _dnsServerPrimary = dnsServerPrimary;
   }
@@ -138,6 +142,27 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
   private Vrf toVrf(VirtualRouter vr) {
     Vrf vrf = new Vrf(vr.getName());
+
+    for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
+      StaticRoute sr = e.getValue();
+      String srName = e.getKey();
+
+      // Can only construct a static route if it has a destination
+      if (sr.getDestination() != null) {
+        vrf.getStaticRoutes()
+            .add(
+                org.batfish.datamodel.StaticRoute.builder()
+                    .setNextHopInterface(sr.getNextHopInterface())
+                    .setAdministrativeCost(sr.getAdminDistance())
+                    .setMetric(sr.getMetric())
+                    .setNetwork(sr.getDestination())
+                    .build());
+      } else {
+        _w.redFlag(
+            String.format(
+                "Cannot convert static route %s, as it does not have a destination.", srName));
+      }
+    }
     return vrf;
   }
 
