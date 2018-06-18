@@ -3547,6 +3547,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Settings settings = getSettings();
     String tag = getDifferentialFlowTag();
 
+    /* Invaraint: baseParams should agree with deltaParams on all params
+     * other than those that are computed by resolution (i.e. those determined
+     * by specifiers).
+     */
+    assert baseParams.getActions().equals(deltaParams.getActions());
+    assert baseParams.getHeaderSpace() == deltaParams.getHeaderSpace()
+        || baseParams.getHeaderSpace().equals(deltaParams.getHeaderSpace());
+    assert baseParams.getSpecialize() == deltaParams.getSpecialize();
+    assert baseParams.getSrcNatted().equals(deltaParams.getSrcNatted());
+
     // push environment so we use the right forwarding analysis.
     pushBaseEnvironment();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
@@ -3604,13 +3614,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
                   // build the query for the delta testrig
                   StandardReachabilityQuerySynthesizer deltaQuery =
                       StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(baseParams.getActions())
-                          .setHeaderSpace(baseParams.getHeaderSpace())
+                          .setActions(deltaParams.getActions())
+                          .setHeaderSpace(deltaParams.getHeaderSpace())
                           .setFinalNodes(ImmutableSet.of())
                           .setForbiddenTransitNodes(ImmutableSet.of())
                           .setRequiredTransitNodes(ImmutableSet.of())
                           .setSrcIpConstraints(srcIpConstraint)
-                          .setSrcNatted(baseParams.getSrcNatted())
+                          .setSrcNatted(deltaParams.getSrcNatted())
                           .build();
                   /*
                    * "Reduced" means flows that match the constraints on the base testrig,
