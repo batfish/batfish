@@ -345,7 +345,6 @@ import org.batfish.grammar.cisco.CiscoParser.Apply_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
-import org.batfish.grammar.cisco.CiscoParser.As_path_set_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
@@ -7854,18 +7853,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  private AsPathSetExpr toAsPathSetExpr(As_path_set_exprContext ctx) {
-    if (ctx.named != null) {
-      return new NamedAsPathSet(ctx.named.getText());
-    } else if (ctx.rpvar != null) {
-      return new VarAsPathSet(ctx.rpvar.getText());
-    } else if (ctx.inline != null) {
-      return toAsPathSetExpr(ctx.inline);
-    } else {
-      throw convError(AsPathSetExpr.class, ctx);
-    }
-  }
-
   private AsPathSetExpr toAsPathSetExpr(As_path_set_inlineContext ctx) {
     List<AsPathSetElem> elems =
         ctx.elems.stream().map(e -> toAsPathSetElem(e)).collect(Collectors.toList());
@@ -8636,13 +8623,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_path_in_rp_stanzaContext ctx) {
-    AsPathSetExpr asPathSetExpr = toAsPathSetExpr(ctx.expr);
-    if (asPathSetExpr instanceof NamedAsPathSet) {
+    AsPathSetExpr asPathSetExpr;
+    if (ctx.expr.named != null) {
+      String name = ctx.expr.named.getText();
+      asPathSetExpr = new NamedAsPathSet(name);
       _configuration.referenceStructure(
-          AS_PATH_SET,
-          ((NamedAsPathSet) asPathSetExpr).getName(),
-          ROUTE_POLICY_AS_PATH_IN,
-          ctx.expr.getStart().getLine());
+          AS_PATH_SET, name, ROUTE_POLICY_AS_PATH_IN, ctx.expr.named.getStart().getLine());
+    } else if (ctx.expr.rpvar != null) {
+      asPathSetExpr = new VarAsPathSet(ctx.expr.rpvar.getText());
+    } else if (ctx.expr.inline != null) {
+      asPathSetExpr = toAsPathSetExpr(ctx.expr.inline);
+    } else {
+      throw convError(AsPathSetExpr.class, ctx.expr);
     }
     return new RoutePolicyBooleanAsPathIn(asPathSetExpr);
   }
