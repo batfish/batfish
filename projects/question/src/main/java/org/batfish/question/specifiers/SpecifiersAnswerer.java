@@ -2,6 +2,8 @@ package org.batfish.question.specifiers;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
@@ -34,13 +36,15 @@ public final class SpecifiersAnswerer extends Answerer {
         question.getIpSpaceSpecifier().resolve(locations, context);
 
     TableAnswerElement table = tableAnswerElement();
+    Map<String, ColumnMetadata> columns = table.getMetadata().toColumnMap();
     for (IpSpaceAssignment.Entry entry : ipSpaceAssignment.getEntries()) {
       table.addRow(
           Row.of(
+              columns,
               "Locations",
-              entry.getLocations().toArray(new Location[0]),
+              entry.getLocations().toString(),
               "IpSpace",
-              entry.getIpSpace()));
+              Objects.toString(entry.getIpSpace())));
     }
     return table;
   }

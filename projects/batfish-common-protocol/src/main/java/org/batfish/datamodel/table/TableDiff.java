@@ -265,7 +265,7 @@ public final class TableDiff {
               && baseRow.getValue(valueColumns).equals(deltaRow.getValue(valueColumns)))) {
         continue;
       }
-      RowBuilder diffRowBuilder = Row.builder(baseRow, keyColumns);
+      RowBuilder diffRowBuilder = Row.builder().putAll(baseRow, keyColumns);
       diffRowValues(diffRowBuilder, baseRow, deltaRow, inputMetadata);
       diffTable.addRow(diffRowBuilder.build());
     }
@@ -279,7 +279,7 @@ public final class TableDiff {
           continue;
         }
         processedKeys.add(deltaKey);
-        RowBuilder diffRowBuilder = Row.builder(deltaRow, keyColumns);
+        RowBuilder diffRowBuilder = Row.builder().putAll(deltaRow, keyColumns);
         diffRowValues(diffRowBuilder, null, deltaRow, inputMetadata);
         diffTable.addRow(diffRowBuilder.build());
       }
