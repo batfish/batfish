@@ -396,19 +396,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       List<BooleanExpr> importPolicyCalls = new ArrayList<>();
       ig.getImportPolicies()
           .forEach(
-              (importPolicyName, importPolicyLine) -> {
+              importPolicyName -> {
                 PolicyStatement importPolicy = _policyStatements.get(importPolicyName);
-                if (importPolicy == null) {
-                  undefined(
-                      JuniperStructureType.POLICY_STATEMENT,
-                      importPolicyName,
-                      JuniperStructureUsage.BGP_IMPORT_POLICY,
-                      importPolicyLine);
-                } else {
-                  setPolicyStatementReferent(
-                      importPolicyName,
-                      ig.getImportPolicies(),
-                      "BGP import policy for neighbor: " + ig.getRemoteAddress());
+                if (importPolicy != null) {
+                  setPolicyStatementReferent(importPolicyName);
                   CallExpr callPolicy = new CallExpr(importPolicyName);
                   importPolicyCalls.add(callPolicy);
                 }
@@ -449,19 +440,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       List<BooleanExpr> exportPolicyCalls = new ArrayList<>();
       ig.getExportPolicies()
           .forEach(
-              (exportPolicyName, exportPolicyLine) -> {
+              exportPolicyName -> {
                 PolicyStatement exportPolicy = _policyStatements.get(exportPolicyName);
-                if (exportPolicy == null) {
-                  undefined(
-                      JuniperStructureType.POLICY_STATEMENT,
-                      exportPolicyName,
-                      JuniperStructureUsage.BGP_EXPORT_POLICY,
-                      exportPolicyLine);
-                } else {
-                  setPolicyStatementReferent(
-                      exportPolicyName,
-                      ig.getExportPolicies(),
-                      "BGP export policy for neighbor: " + ig.getRemoteAddress());
+                if (exportPolicy != null) {
+                  setPolicyStatementReferent(exportPolicyName);
                   CallExpr callPolicy = new CallExpr(exportPolicyName);
                   exportPolicyCalls.add(callPolicy);
                 }
@@ -716,19 +698,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     routingInstance
         .getOspfExportPolicies()
         .forEach(
-            (exportPolicyName, exportPolicyLine) -> {
+            exportPolicyName -> {
               PolicyStatement exportPolicy = _policyStatements.get(exportPolicyName);
-              if (exportPolicy == null) {
-                undefined(
-                    JuniperStructureType.POLICY_STATEMENT,
-                    exportPolicyName,
-                    JuniperStructureUsage.OSPF_EXPORT_POLICY,
-                    exportPolicyLine);
-              } else {
-                setPolicyStatementReferent(
-                    exportPolicyName,
-                    routingInstance.getOspfExportPolicies(),
-                    "OSPF export policies");
+              if (exportPolicy != null) {
+                setPolicyStatementReferent(exportPolicyName);
                 CallExpr callPolicy = new CallExpr(exportPolicyName);
                 matchSomeExportPolicy.getDisjuncts().add(callPolicy);
               }
@@ -1041,12 +1014,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _defaultRoutingInstance.setHostname(hostname);
   }
 
-  private void setPolicyStatementReferent(String policyName, Object referer, String description) {
+  private void setPolicyStatementReferent(String policyName) {
     PolicyStatement policy = _policyStatements.get(policyName);
     if (policy == null) {
       return;
     }
-    policy.getReferers().put(referer, description);
     List<PsTerm> terms = new ArrayList<>();
     terms.add(policy.getDefaultTerm());
     terms.addAll(policy.getTerms().values());
@@ -1055,12 +1027,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         if (from instanceof PsFromPolicyStatement) {
           PsFromPolicyStatement fromPolicyStatement = (PsFromPolicyStatement) from;
           String subPolicyName = fromPolicyStatement.getPolicyStatement();
-          setPolicyStatementReferent(subPolicyName, referer, description);
+          setPolicyStatementReferent(subPolicyName);
         } else if (from instanceof PsFromPolicyStatementConjunction) {
           PsFromPolicyStatementConjunction fromPolicyStatementConjunction =
               (PsFromPolicyStatementConjunction) from;
           for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
-            setPolicyStatementReferent(subPolicyName, referer, description);
+            setPolicyStatementReferent(subPolicyName);
           }
         }
       }
@@ -1150,19 +1122,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       route
           .getPolicies()
           .forEach(
-              (policyName, policyLine) -> {
+              policyName -> {
                 PolicyStatement policy = _policyStatements.get(policyName);
-                if (policy == null) {
-                  undefined(
-                      JuniperStructureType.POLICY_STATEMENT,
-                      policyName,
-                      JuniperStructureUsage.GENERATED_ROUTE_POLICY,
-                      policyLine);
-                } else {
-                  setPolicyStatementReferent(
-                      policyName,
-                      route.getPolicies(),
-                      "Generated route policy for prefix: " + route.getPrefix());
+                if (policy != null) {
+                  setPolicyStatementReferent(policyName);
                   CallExpr callPolicy = new CallExpr(policyName);
                   matchSomeGenerationPolicy.getDisjuncts().add(callPolicy);
                 }
@@ -2208,21 +2171,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String forwardingTableExportPolicyName =
         _defaultRoutingInstance.getForwardingTableExportPolicy();
     if (forwardingTableExportPolicyName != null) {
-      int forwardingTableExportPolicyLine =
-          _defaultRoutingInstance.getForwardingTableExportPolicyLine();
       PolicyStatement forwardingTableExportPolicy =
           _policyStatements.get(forwardingTableExportPolicyName);
       if (forwardingTableExportPolicy != null) {
-        setPolicyStatementReferent(
-            forwardingTableExportPolicyName,
-            _defaultRoutingInstance,
-            "Forwarding-table export policy");
-      } else {
-        undefined(
-            JuniperStructureType.POLICY_STATEMENT,
-            forwardingTableExportPolicyName,
-            JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
-            forwardingTableExportPolicyLine);
+        setPolicyStatementReferent(forwardingTableExportPolicyName);
       }
     }
 
@@ -2252,6 +2204,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE,
         JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE);
     markConcreteStructure(
+        JuniperStructureType.POLICY_STATEMENT,
+        JuniperStructureUsage.BGP_EXPORT_POLICY,
+        JuniperStructureUsage.BGP_IMPORT_POLICY,
+        JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
+        JuniperStructureUsage.GENERATED_ROUTE_POLICY,
+        JuniperStructureUsage.OSPF_EXPORT_POLICY,
+        JuniperStructureUsage.POLICY_STATEMENT_POLICY);
+    markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST,
@@ -2262,7 +2222,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // record defined structures
     recordDhcpRelayServerGroups();
-    recordPolicyStatements();
     markConcreteStructure(
         JuniperStructureType.IKE_GATEWAY, JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY);
     markConcreteStructure(
@@ -2384,17 +2343,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         recordStructure(
             sg, JuniperStructureType.DHCP_RELAY_SERVER_GROUP, name, sg.getDefinitionLine());
       }
-    }
-  }
-
-  private void recordPolicyStatements() {
-    for (Entry<String, PolicyStatement> e : _policyStatements.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")) {
-        continue;
-      }
-      PolicyStatement ps = e.getValue();
-      recordStructure(ps, JuniperStructureType.POLICY_STATEMENT, name, ps.getDefinitionLine());
     }
   }
 

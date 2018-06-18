@@ -1,8 +1,8 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.Ip;
 
@@ -38,11 +38,11 @@ public class BgpGroup implements Serializable {
 
   private Boolean _enforceFirstAs;
 
-  private final Map<String, Integer> _exportPolicies;
+  private final List<String> _exportPolicies;
 
   protected String _groupName;
 
-  private final Map<String, Integer> _importPolicies;
+  private final List<String> _importPolicies;
 
   protected transient boolean _inherited;
 
@@ -67,8 +67,8 @@ public class BgpGroup implements Serializable {
   private BgpGroupType _type;
 
   public BgpGroup() {
-    _exportPolicies = new LinkedHashMap<>();
-    _importPolicies = new LinkedHashMap<>();
+    _exportPolicies = new LinkedList<>();
+    _importPolicies = new LinkedList<>();
   }
 
   public final void cascadeInheritance() {
@@ -109,13 +109,13 @@ public class BgpGroup implements Serializable {
         _ebgpMultihop = _parent._ebgpMultihop;
       }
       if (_exportPolicies.isEmpty()) {
-        _exportPolicies.putAll(_parent._exportPolicies);
+        _exportPolicies.addAll(_parent._exportPolicies);
       }
       if (_groupName == null) {
         _groupName = _parent._groupName;
       }
       if (_importPolicies.isEmpty()) {
-        _importPolicies.putAll(_parent._importPolicies);
+        _importPolicies.addAll(_parent._importPolicies);
       }
       if (_localAs == null) {
         _localAs = _parent._localAs;
@@ -185,7 +185,7 @@ public class BgpGroup implements Serializable {
     return _enforceFirstAs;
   }
 
-  public final Map<String, Integer> getExportPolicies() {
+  public final List<String> getExportPolicies() {
     return _exportPolicies;
   }
 
@@ -193,7 +193,7 @@ public class BgpGroup implements Serializable {
     return _groupName;
   }
 
-  public final Map<String, Integer> getImportPolicies() {
+  public final List<String> getImportPolicies() {
     return _importPolicies;
   }
 

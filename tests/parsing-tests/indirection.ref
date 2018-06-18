@@ -964,25 +964,36 @@
           "policy-statement" : {
             "ps-from-2-criterion-1" : {
               "definitionLines" : [
-                42
+                42,
+                43,
+                45
               ],
               "numReferrers" : 1
             },
             "ps-from-2-criterion-2" : {
               "definitionLines" : [
-                48
+                48,
+                49,
+                50,
+                52
               ],
               "numReferrers" : 1
             },
             "ps-from-2-sub-1" : {
               "definitionLines" : [
-                33
+                33,
+                35,
+                36,
+                37,
+                39
               ],
               "numReferrers" : 1
             },
             "ps-from-2-tagger" : {
               "definitionLines" : [
-                26
+                26,
+                28,
+                30
               ],
               "numReferrers" : 1
             }

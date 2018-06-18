@@ -13,16 +13,21 @@ import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOS
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.AUTHENTICATION_KEY_CHAINS_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_ALLOW;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.GENERATED_ROUTE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
@@ -32,6 +37,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POL
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
@@ -485,6 +492,7 @@ import org.batfish.representation.juniper.IsisSettings;
 import org.batfish.representation.juniper.JuniperAuthenticationKey;
 import org.batfish.representation.juniper.JuniperAuthenticationKeyChain;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.JunosApplication;
 import org.batfish.representation.juniper.JunosApplicationReference;
 import org.batfish.representation.juniper.JunosApplicationSet;
@@ -2224,12 +2232,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterPo_policy_statement(Po_policy_statementContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     Map<String, PolicyStatement> policyStatements = _configuration.getPolicyStatements();
-    _currentPolicyStatement =
-        policyStatements.computeIfAbsent(name, n -> new PolicyStatement(n, definitionLine));
+    _currentPolicyStatement = policyStatements.computeIfAbsent(name, PolicyStatement::new);
     _currentPsTerm = _currentPolicyStatement.getDefaultTerm();
     _currentPsThens = _currentPsTerm.getThens();
+    defineStructure(POLICY_STATEMENT, name, ctx);
   }
 
   @Override
@@ -2896,31 +2903,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitB_export(B_exportContext ctx) {
     Policy_expressionContext expr = ctx.expr;
-    String name;
-    int line;
-    if (expr.variable() != null) {
-      name = expr.variable().getText();
-      line = expr.variable().getStart().getLine();
-    } else {
-      name = toComplexPolicyStatement(expr);
-      line = expr.getStart().getLine();
-    }
-    _currentBgpGroup.getExportPolicies().put(name, line);
+    _currentBgpGroup.getExportPolicies().add(toComplexPolicyStatement(expr, BGP_EXPORT_POLICY));
   }
 
   @Override
   public void exitB_import(B_importContext ctx) {
     Policy_expressionContext expr = ctx.expr;
-    String name;
-    int line;
-    if (expr.variable() != null) {
-      name = expr.variable().getText();
-      line = expr.variable().getStart().getLine();
-    } else {
-      name = toComplexPolicyStatement(expr);
-      line = expr.getStart().getLine();
-    }
-    _currentBgpGroup.getImportPolicies().put(name, line);
+    _currentBgpGroup.getImportPolicies().add(toComplexPolicyStatement(expr, BGP_IMPORT_POLICY));
   }
 
   @Override
@@ -3609,8 +3598,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitO_export(O_exportContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
-    _currentRoutingInstance.getOspfExportPolicies().put(name, line);
+    _currentRoutingInstance.getOspfExportPolicies().add(name);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, OSPF_EXPORT_POLICY, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -3834,7 +3824,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitPopsf_policy(Popsf_policyContext ctx) {
-    String policyName = toComplexPolicyStatement(ctx.policy_expression());
+    String policyName = toComplexPolicyStatement(ctx.policy_expression(), POLICY_STATEMENT_POLICY);
     PsFrom from = new PsFromPolicyStatement(policyName);
     _currentPsTerm.getFroms().add(from);
   }
@@ -4115,9 +4105,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitRof_export(Rof_exportContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _configuration.getDefaultRoutingInstance().setForwardingTableExportPolicy(name);
-    _configuration.getDefaultRoutingInstance().setForwardingTableExportPolicyLine(line);
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, name, FORWARDING_TABLE_EXPORT_POLICY, ctx.name.getStart().getLine());
   }
 
   @Override
@@ -4130,8 +4120,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRog_policy(Rog_policyContext ctx) {
     if (_currentGeneratedRoute != null) { // not ipv6
       String policy = ctx.policy.getText();
-      int line = ctx.policy.getStart().getLine();
-      _currentGeneratedRoute.getPolicies().put(policy, line);
+      _configuration.referenceStructure(
+          POLICY_STATEMENT, policy, GENERATED_ROUTE_POLICY, ctx.policy.getStart().getLine());
+      _currentGeneratedRoute.getPolicies().add(policy);
     }
   }
 
@@ -4903,21 +4894,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private String toComplexPolicyStatement(Policy_expressionContext expr) {
+  private String toComplexPolicyStatement(
+      Policy_expressionContext expr, JuniperStructureUsage usage) {
     if (expr.pe_nested() != null) {
-      return toComplexPolicyStatement(expr.pe_nested().policy_expression());
+      return toComplexPolicyStatement(expr.pe_nested().policy_expression(), usage);
     } else if (expr.variable() != null) {
       String name = expr.variable().getText();
+      _configuration.referenceStructure(
+          POLICY_STATEMENT, name, usage, expr.variable().getStart().getLine());
       return name;
     } else if (expr.pe_conjunction() != null) {
       Set<String> conjuncts = new LinkedHashSet<>();
       for (Policy_expressionContext conjunctCtx : expr.pe_conjunction().policy_expression()) {
-        String conjunctName = toComplexPolicyStatement(conjunctCtx);
+        String conjunctName = toComplexPolicyStatement(conjunctCtx, usage);
         conjuncts.add(conjunctName);
       }
       String conjunctionPolicyName = "~CONJUNCTION_POLICY_" + _conjunctionPolicyIndex + "~";
       _conjunctionPolicyIndex++;
-      PolicyStatement conjunctionPolicy = new PolicyStatement(conjunctionPolicyName, -1);
+      PolicyStatement conjunctionPolicy = new PolicyStatement(conjunctionPolicyName);
       PsTerm conjunctionPolicyTerm = conjunctionPolicy.getDefaultTerm();
       PsFromPolicyStatementConjunction from = new PsFromPolicyStatementConjunction(conjuncts);
       conjunctionPolicyTerm.getFroms().add(from);
@@ -4927,12 +4921,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     } else if (expr.pe_disjunction() != null) {
       Set<String> disjuncts = new LinkedHashSet<>();
       for (Policy_expressionContext disjunctCtx : expr.pe_disjunction().policy_expression()) {
-        String disjunctName = toComplexPolicyStatement(disjunctCtx);
+        String disjunctName = toComplexPolicyStatement(disjunctCtx, usage);
         disjuncts.add(disjunctName);
       }
       String disjunctionPolicyName = "~DISJUNCTION_POLICY_" + _disjunctionPolicyIndex + "~";
       _disjunctionPolicyIndex++;
-      PolicyStatement disjunctionPolicy = new PolicyStatement(disjunctionPolicyName, -1);
+      PolicyStatement disjunctionPolicy = new PolicyStatement(disjunctionPolicyName);
       PsTerm disjunctionPolicyTerm = disjunctionPolicy.getDefaultTerm();
       for (String disjunct : disjuncts) {
         PsFromPolicyStatement from = new PsFromPolicyStatement(disjunct);

@@ -56153,7 +56153,22 @@
           "policy-statement" : {
             "POLICY-NAME" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6,
+                7,
+                8,
+                9,
+                10,
+                11,
+                12,
+                13,
+                14,
+                15,
+                16,
+                17,
+                18,
+                19
               ],
               "numReferrers" : 0
             }
@@ -56173,13 +56188,23 @@
           "policy-statement" : {
             "route-filter-test-v4" : {
               "definitionLines" : [
-                4
+                4,
+                5,
+                6,
+                7,
+                8,
+                9
               ],
               "numReferrers" : 0
             },
             "route-filter-test-v6" : {
               "definitionLines" : [
-                11
+                11,
+                12,
+                13,
+                14,
+                15,
+                16
               ],
               "numReferrers" : 0
             }
@@ -57580,13 +57605,17 @@
             "someexportpolicy" : {
               "bgp export policy-statement" : [
                 8,
-                22
+                15,
+                22,
+                31
               ]
             },
             "someimportpolicy" : {
               "bgp import policy-statement" : [
                 10,
-                24
+                17,
+                24,
+                33
               ]
             }
           }
