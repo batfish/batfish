@@ -321,10 +321,10 @@ public class Main {
   }
 
   public static void main(String[] args) {
-    main(
-        args,
-        new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, true),
-        new BindPortFutures());
+    mainInit(args);
+    _logger =
+        new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile(), false, true);
+    mainRun(new BindPortFutures());
   }
 
   public static void main(String[] args, BatfishLogger logger, BindPortFutures portFutures) {
