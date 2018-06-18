@@ -122,7 +122,9 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<IpSpace> {
               name));
     }
     // Current IpSpace references another valid and as yet unreferenced IP space. Visit that.
-    return referenced.accept(this);
+    IpSpace dereferenced = referenced.accept(this);
+    _referencedIpSpaces.remove(name);
+    return dereferenced;
   }
 
   @Override

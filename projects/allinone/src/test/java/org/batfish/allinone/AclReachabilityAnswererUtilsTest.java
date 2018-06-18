@@ -83,7 +83,6 @@ public class AclReachabilityAnswererUtilsTest {
                     HeaderSpace.builder()
                         .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
                         .build())))
-        .setName("acl1")
         .build();
     _aclb2
         .setLines(
@@ -96,7 +95,6 @@ public class AclReachabilityAnswererUtilsTest {
                     HeaderSpace.builder()
                         .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
                         .build())))
-        .setName("acl1")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1", "c2"));
@@ -162,7 +160,6 @@ public class AclReachabilityAnswererUtilsTest {
         .setLines(
             ImmutableList.of(
                 IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("???")).build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -186,7 +183,6 @@ public class AclReachabilityAnswererUtilsTest {
                                 .setSrcIps(new IpSpaceReference("ipSpace"))
                                 .build()))
                     .build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -224,7 +220,6 @@ public class AclReachabilityAnswererUtilsTest {
                                 .setSrcIps(new IpSpaceReference("ipSpace1"))
                                 .build()))
                     .build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -262,7 +257,6 @@ public class AclReachabilityAnswererUtilsTest {
                                 .setSrcIps(new IpSpaceReference("ipSpace1"))
                                 .build()))
                     .build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -283,7 +277,6 @@ public class AclReachabilityAnswererUtilsTest {
                         new MatchHeaderSpace(
                             HeaderSpace.builder().setSrcIps(new IpSpaceReference("???")).build()))
                     .build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -314,7 +307,6 @@ public class AclReachabilityAnswererUtilsTest {
                                 .setSrcIps(new IpSpaceReference("ipSpace1"))
                                 .build()))
                     .build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -334,7 +326,6 @@ public class AclReachabilityAnswererUtilsTest {
                 IpAccessListLine.accepting()
                     .setMatchCondition(new PermittedByAcl("referencedAcl"))
                     .build()))
-        .setName("acl")
         .build();
     _aclb
         .setLines(
@@ -363,7 +354,6 @@ public class AclReachabilityAnswererUtilsTest {
                 IpAccessListLine.accepting()
                     .setMatchCondition(new MatchSrcInterface(ImmutableList.of("???")))
                     .build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
@@ -372,6 +362,45 @@ public class AclReachabilityAnswererUtilsTest {
     assertThat(aclSpecs, hasSize(1));
     AclSpecs spec = aclSpecs.get(0);
     assertThat(spec.acl.getSanitizedAcl().getLines(), equalTo(ImmutableList.of(UNMATCHABLE)));
+  }
+
+  @Test
+  public void testWithAclIpSpaceWithGoodRefs() {
+    // ACL contains an AclIpSpace that references the same valid named IpSpace twice
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(
+                            AclIpSpace.builder()
+                                .setLines(
+                                    ImmutableList.of(
+                                        AclIpSpaceLine.permit(new IpSpaceReference("ipSpace")),
+                                        AclIpSpaceLine.permit(new IpSpaceReference("ipSpace"))))
+                                .build())
+                        .build())))
+        .build();
+
+    List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
+
+    // The sanitized version of the acl should have correctly dereferenced "ipSpace"
+    assertThat(aclSpecs, hasSize(1));
+    AclSpecs spec = aclSpecs.get(0);
+    assertThat(
+        spec.acl.getSanitizedAcl().getLines(),
+        equalTo(
+            ImmutableList.of(
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(
+                            AclIpSpace.builder()
+                                .setLines(
+                                    ImmutableList.of(
+                                        AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace()),
+                                        AclIpSpaceLine.permit(new Ip("1.2.3.4").toIpSpace())))
+                                .build())
+                        .build()))));
   }
 
   @Test
@@ -398,7 +427,6 @@ public class AclReachabilityAnswererUtilsTest {
                                 .setSrcIps(new IpSpaceReference("aclIpSpace"))
                                 .build()))
                     .build()))
-        .setName("acl")
         .build();
 
     List<AclSpecs> aclSpecs = getAclSpecs(ImmutableSet.of("c1"));
