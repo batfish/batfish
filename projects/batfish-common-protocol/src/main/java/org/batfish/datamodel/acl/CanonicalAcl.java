@@ -90,10 +90,14 @@ public final class CanonicalAcl {
     if (hashCode() != o.hashCode()) {
       return false;
     }
+    /* Not comparing _linesInCycles or _linesWithUndefinedReferences because those should be fully
+    determined by _acl, _dependencies, and _interfaces. Same would be true for _sanitizedAcl, except
+    IpSpaceReferences could reference nonequivalent same-named IP spaces in the original ACLs. */
     CanonicalAcl otherAcl = (CanonicalAcl) o;
     return _acl.equals(otherAcl._acl)
         && _dependencies.equals(otherAcl._dependencies)
-        && _interfaces.equals(otherAcl._interfaces);
+        && _interfaces.equals(otherAcl._interfaces)
+        && _sanitizedAcl.equals(otherAcl._sanitizedAcl);
   }
 
   @Override
@@ -105,6 +109,7 @@ public final class CanonicalAcl {
       _hashCode =
           Objects.hash(
               _acl.getLines(),
+              _sanitizedAcl.getLines(),
               _interfaces,
               _dependencies
                   .entrySet()
