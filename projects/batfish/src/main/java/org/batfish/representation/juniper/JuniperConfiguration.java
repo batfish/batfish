@@ -1163,10 +1163,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     String ikePolicyName = oldIkeGateway.getIkePolicy();
     org.batfish.datamodel.IkePolicy newIkePolicy = _c.getIkePolicies().get(ikePolicyName);
     if (newIkePolicy != null) {
-      _ikePolicies
-          .get(ikePolicyName)
-          .getReferers()
-          .put(oldIkeGateway, "IKE policy for IKE gateway: " + oldIkeGateway);
       newIkeGateway.setIkePolicy(newIkePolicy);
     }
 
@@ -1526,10 +1522,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
             ipsecProposalName -> {
               IpsecProposal ipsecProposal = _c.getIpsecProposals().get(ipsecProposalName);
               if (ipsecProposal != null) {
-                _ipsecProposals
-                    .get(ipsecProposalName)
-                    .getReferers()
-                    .put(oldIpsecPolicy, "IPSEC proposal for IPSEC policy: " + oldIpsecPolicy);
                 newIpsecPolicy.getProposals().add(ipsecProposal);
               }
             });
@@ -1550,7 +1542,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String bindInterfaceName = oldBindInterface.getName();
       org.batfish.datamodel.Interface newBindInterface = _c.getInterfaces().get(bindInterfaceName);
       if (newBindInterface != null) {
-        oldBindInterface.getReferers().put(oldIpsecVpn, "Bind interface for IPSEC VPN: " + name);
         newIpsecVpn.setBindInterface(newBindInterface);
       }
     } else {
@@ -1562,10 +1553,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (ikeGatewayName != null) {
       org.batfish.datamodel.IkeGateway ikeGateway = _c.getIkeGateways().get(ikeGatewayName);
       if (ikeGateway != null) {
-        _ikeGateways
-            .get(ikeGatewayName)
-            .getReferers()
-            .put(oldIpsecVpn, "IKE gateway for IPSEC VPN: " + name);
         newIpsecVpn.setIkeGateway(ikeGateway);
       }
     } else {
@@ -1577,10 +1564,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (ipsecPolicyName != null) {
       org.batfish.datamodel.IpsecPolicy ipsecPolicy = _c.getIpsecPolicies().get(ipsecPolicyName);
       if (ipsecPolicy != null) {
-        _ipsecPolicies
-            .get(ipsecPolicyName)
-            .getReferers()
-            .put(oldIpsecVpn, "IPSEC policy for IPSEC VPN: " + name);
         newIpsecVpn.setIpsecPolicy(ipsecPolicy);
       }
     } else {
