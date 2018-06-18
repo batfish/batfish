@@ -21,6 +21,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 public class IpSpaceDereferencer implements GenericIpSpaceVisitor<Optional<IpSpace>> {
 
   private final Map<String, IpSpace> _namedIpSpaces;
+  private final Set<String> _referencedIpSpaces = new TreeSet<>();
 
   public IpSpaceDereferencer(Map<String, IpSpace> namedIpSpaces) {
     _namedIpSpaces = namedIpSpaces;
@@ -40,7 +41,17 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<Optional<IpSpa
    */
   @Override
   public Optional<IpSpace> visitAclIpSpace(AclIpSpace aclIpSpace) {
-    return sanitize(aclIpSpace, new TreeSet<>());
+    List<AclIpSpaceLine> sanitizedLines = new ArrayList<>();
+    for (AclIpSpaceLine line : aclIpSpace.getLines()) {
+      Optional<IpSpace> ipSpace = line.getIpSpace().accept(this);
+      if (!ipSpace.isPresent()) {
+        // Found an IpSpaceReference or AclIpSpace that contained a cycle or undefined ref.
+        return Optional.empty();
+      }
+      sanitizedLines.add(AclIpSpaceLine.builder().setIpSpace(ipSpace.get()).build());
+    }
+    // No cycles/undefined references in this AclIpSpace. Return reference-free version.
+    return Optional.of(AclIpSpace.builder().setLines(sanitizedLines).build());
   }
 
   @Override
@@ -61,40 +72,18 @@ public class IpSpaceDereferencer implements GenericIpSpaceVisitor<Optional<IpSpa
    */
   @Override
   public Optional<IpSpace> visitIpSpaceReference(IpSpaceReference ipSpaceReference) {
-    return sanitize(ipSpaceReference, new TreeSet<>());
-  }
-
-  private Optional<IpSpace> sanitize(IpSpace current, Set<String> referencedIpSpaces) {
-    if (current instanceof IpSpaceReference) {
-      IpSpaceReference reference = (IpSpaceReference) current;
-      String name = reference.getName();
-      if (!referencedIpSpaces.add(name)) {
-        // Hit a reference to an already-referenced IP space. Line is a cycle.
-        return Optional.empty();
-      }
-      IpSpace referenced = _namedIpSpaces.get(name);
-      if (referenced == null) {
-        // Hit a reference to an undefined IP space.
-        return Optional.empty();
-      }
-      // Current IpSpace references another valid and as yet unreferenced IP space. Sanitize that.
-      return sanitize(referenced, referencedIpSpaces);
-    } else if (current instanceof AclIpSpace) {
-      List<AclIpSpaceLine> sanitizedLines = new ArrayList<>();
-      for (AclIpSpaceLine line : ((AclIpSpace) current).getLines()) {
-        Optional<IpSpace> ipSpace = sanitize(line.getIpSpace(), referencedIpSpaces);
-        if (!ipSpace.isPresent()) {
-          // Found an IpSpaceReference or AclIpSpace that contained a cycle or undefined ref.
-          return Optional.empty();
-        }
-        sanitizedLines.add(AclIpSpaceLine.builder().setIpSpace(ipSpace.get()).build());
-      }
-      // All lines of AclIpSpace proved free of cycles/undefined references. Finalize sane version.
-      return Optional.of(AclIpSpace.builder().setLines(sanitizedLines).build());
-    } else {
-      // IpSpace was not
-      return Optional.of(current);
+    String name = ipSpaceReference.getName();
+    if (!_referencedIpSpaces.add(name)) {
+      // This is a reference to an already-referenced IP space. Line is in a cycle.
+      return Optional.empty();
     }
+    IpSpace referenced = _namedIpSpaces.get(name);
+    if (referenced == null) {
+      // This reference is to an undefined IP space.
+      return Optional.empty();
+    }
+    // Current IpSpace references another valid and as yet unreferenced IP space. Visit that.
+    return referenced.accept(this);
   }
 
   @Override

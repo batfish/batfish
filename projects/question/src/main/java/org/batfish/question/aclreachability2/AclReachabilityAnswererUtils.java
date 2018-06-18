@@ -138,7 +138,6 @@ public final class AclReachabilityAnswererUtils {
     public void sanitizeHeaderSpace(
         int lineNum, HeaderSpace headerSpace, Map<String, IpSpace> namedIpSpaces) {
       HeaderSpace.Builder hsb = headerSpace.toBuilder();
-      IpSpaceDereferencer dereferencer = new IpSpaceDereferencer(namedIpSpaces);
       boolean sanitizedHeaderSpaceDifferent = false;
 
       // Construct a sanitized HeaderSpace where all IpSpaceReferences are replaced with their
@@ -147,7 +146,7 @@ public final class AclReachabilityAnswererUtils {
       IpSpace original = headerSpace.getSrcIps();
       Optional<IpSpace> dereferenced;
       if (original != null) {
-        dereferenced = original.accept(dereferencer);
+        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
         if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
@@ -158,7 +157,7 @@ public final class AclReachabilityAnswererUtils {
       }
       original = headerSpace.getDstIps();
       if (original != null) {
-        dereferenced = original.accept(dereferencer);
+        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
         if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
@@ -169,7 +168,7 @@ public final class AclReachabilityAnswererUtils {
       }
       original = headerSpace.getNotSrcIps();
       if (original != null) {
-        dereferenced = original.accept(dereferencer);
+        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
         if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
@@ -180,7 +179,7 @@ public final class AclReachabilityAnswererUtils {
       }
       original = headerSpace.getNotDstIps();
       if (original != null) {
-        dereferenced = original.accept(dereferencer);
+        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
         if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
@@ -191,7 +190,7 @@ public final class AclReachabilityAnswererUtils {
       }
       original = headerSpace.getSrcOrDstIps();
       if (original != null) {
-        dereferenced = original.accept(dereferencer);
+        dereferenced = original.accept(new IpSpaceDereferencer(namedIpSpaces));
         if (!dereferenced.isPresent()) {
           addUndefinedRef(lineNum);
           return;
