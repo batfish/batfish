@@ -1,6 +1,9 @@
 package org.batfish.question.jsonpath;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -448,6 +451,13 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
       return _innerQuestion.getDataPlane();
     }
 
+    @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
+    @Override
+    public boolean getDifferential() {
+      checkNotNull(_innerQuestion, "Cannot get differential when innerQuestion is null");
+      return _innerQuestion.getDifferential();
+    }
+
     @JsonProperty(PROP_DEBUG)
     public boolean getDebug() {
       if (_debug == null) {
@@ -489,6 +499,19 @@ public class JsonPathQuestionPlugin extends QuestionPlugin {
     public void setDebug(Boolean debug) {
       _debug = debug;
     }
+
+    @JsonIgnore
+    @Override
+    public void setDifferential(boolean differential) {
+      checkNotNull(_innerQuestion, "Cannot set differential when innerQuestion is null");
+      _innerQuestion.setDifferential(differential);
+    }
+
+    /*
+     * Used only for deserialization.
+     */
+    @JsonProperty(BfConsts.PROP_DIFFERENTIAL)
+    public void setDifferentialPrivate(boolean differential) {}
 
     @JsonProperty(BfConsts.PROP_INNER_QUESTION)
     public void setInnerQuestion(Question innerQuestion) {
