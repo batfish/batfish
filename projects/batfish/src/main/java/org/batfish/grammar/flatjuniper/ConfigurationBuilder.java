@@ -10,6 +10,9 @@ import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_F
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
@@ -20,11 +23,15 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.BGP_NEIGH
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_EXTERNAL_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_GATEWAY_IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IKE_POLICY_IKE_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_POLICY_IPSEC_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_BIND_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
@@ -2569,21 +2576,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void enterSeip_policy(Seip_policyContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
-    _currentIpsecPolicy =
-        _configuration
-            .getIpsecPolicies()
-            .computeIfAbsent(name, n -> new IpsecPolicy(n, definitionLine));
+    _currentIpsecPolicy = _configuration.getIpsecPolicies().computeIfAbsent(name, IpsecPolicy::new);
+    defineStructure(IPSEC_POLICY, name, ctx);
   }
 
   @Override
   public void enterSeip_proposal(Seip_proposalContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     _currentIpsecProposal =
-        _configuration
-            .getIpsecProposals()
-            .computeIfAbsent(name, n -> new IpsecProposal(n, definitionLine));
+        _configuration.getIpsecProposals().computeIfAbsent(name, IpsecProposal::new);
+    defineStructure(IPSEC_PROPOSAL, name, ctx);
   }
 
   @Override
@@ -4048,6 +4050,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitRi_interface(Ri_interfaceContext ctx) {
     Interface iface = initInterface(ctx.id);
     iface.setRoutingInstance(_currentRoutingInstance.getName());
+    defineStructure(INTERFACE, iface.getName(), ctx);
   }
 
   @Override
@@ -4258,10 +4261,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSeikg_external_interface(Seikg_external_interfaceContext ctx) {
     Interface_idContext interfaceId = ctx.interface_id();
-    int line = ctx.interface_id().getStart().getLine();
     Interface iface = initInterface(interfaceId);
     _currentIkeGateway.setExternalInterface(iface);
-    _currentIkeGateway.setExternalInterfaceLine(line);
+    _configuration.referenceStructure(
+        INTERFACE,
+        iface.getName(),
+        IKE_GATEWAY_EXTERNAL_INTERFACE,
+        ctx.interface_id().getStart().getLine());
   }
 
   @Override
@@ -4360,15 +4366,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   public void exitSeipp_proposal_set(Seipp_proposal_setContext ctx) {
     Set<String> proposalsInSet = initIpsecProposalSet(ctx.proposal_set_type());
     for (String proposal : proposalsInSet) {
-      _currentIpsecPolicy.getProposals().put(proposal, -1);
+      _currentIpsecPolicy.getProposals().add(proposal);
     }
   }
 
   @Override
   public void exitSeipp_proposals(Seipp_proposalsContext ctx) {
     for (VariableContext proposal : ctx.proposals) {
-      int line = proposal.getStart().getLine();
-      _currentIpsecPolicy.getProposals().put(proposal.getText(), line);
+      String name = proposal.getText();
+      _currentIpsecPolicy.getProposals().add(name);
+      _configuration.referenceStructure(
+          IPSEC_PROPOSAL, name, IPSEC_POLICY_IPSEC_PROPOSAL, proposal.getStart().getLine());
     }
   }
 
@@ -4405,9 +4413,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSeipv_bind_interface(Seipv_bind_interfaceContext ctx) {
     Interface iface = initInterface(ctx.interface_id());
-    int line = ctx.interface_id().getStart().getLine();
     _currentIpsecVpn.setBindInterface(iface);
-    _currentIpsecVpn.setBindInterfaceLine(line);
+    _configuration.referenceStructure(
+        INTERFACE,
+        iface.getName(),
+        IPSEC_VPN_BIND_INTERFACE,
+        ctx.interface_id().getStart().getLine());
   }
 
   @Override
@@ -4421,9 +4432,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitSeipvi_ipsec_policy(Seipvi_ipsec_policyContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     _currentIpsecVpn.setIpsecPolicy(name);
-    _currentIpsecVpn.setIpsecPolicyLine(line);
+    _configuration.referenceStructure(
+        IPSEC_POLICY, name, IPSEC_VPN_IPSEC_POLICY, ctx.name.getStart().getLine());
   }
 
   @Override
