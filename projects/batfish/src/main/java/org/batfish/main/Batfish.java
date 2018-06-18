@@ -3517,9 +3517,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public AnswerElement reducedReachability(ReachabilityParameters params) {
-    /* This always should be (and has to be) true, but the question doesn't enforce it. */
-    _settings.setDiffQuestion(true);
-
     checkDifferentialDataPlaneQuestionDependencies();
     pushBaseEnvironment();
     ResolvedReachabilityParameters baseParams;
