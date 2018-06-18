@@ -51,11 +51,11 @@ public final class VerboseBgpEdge implements Serializable, Comparable<VerboseBgp
     if (cmp != 0) {
       return cmp;
     }
-    cmp = _session1.compareTo(o._session1);
+    cmp = _session1.getName().compareTo(o._session1.getName());
     if (cmp != 0) {
       return cmp;
     }
-    cmp = _session2.compareTo(o._session2);
+    cmp = _session2.getName().compareTo(o._session2.getName());
     return cmp;
   }
 }

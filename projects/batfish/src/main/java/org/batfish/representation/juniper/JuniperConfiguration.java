@@ -232,7 +232,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
     _interfaces = new TreeMap<>();
-    _interfaceZones = new TreeMap<>();
+    // TODO: key _interfaceZones by name instead of Interface to begin with
+    _interfaceZones = new TreeMap<>(Interface.NAME_COMPARATOR);
     _ipsecPolicies = new TreeMap<>();
     _ipsecProposals = new TreeMap<>();
     _ipsecVpns = new TreeMap<>();

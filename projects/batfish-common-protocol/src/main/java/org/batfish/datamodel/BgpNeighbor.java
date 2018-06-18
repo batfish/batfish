@@ -587,6 +587,29 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     return _vrf;
   }
 
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _advertiseExternal,
+        _advertiseInactive,
+        _allowLocalAsIn,
+        _allowRemoteAsOut,
+        _authenticationSettings,
+        _clusterId,
+        _defaultMetric,
+        _ebgpMultihop,
+        _enforceFirstAs,
+        _exportPolicy,
+        _group,
+        _importPolicy,
+        _localAs,
+        _localIp,
+        _remoteAs,
+        _routeReflectorClient,
+        _sendCommunity,
+        _dynamic);
+  }
+
   public void resolveReferences(Configuration owner) {
     _owner = owner;
   }

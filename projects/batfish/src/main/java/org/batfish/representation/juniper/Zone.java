@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -31,10 +32,23 @@ public final class Zone extends ComparableStructure<String> {
     super(name);
     _addressBook = new AddressBook(name, globalAddressBooks);
     _inboundFilter = new FirewallFilter("~INBOUND_ZONE_FILTER~" + name, Family.INET, -1);
-    _inboundInterfaceFilters = new TreeMap<>();
-    _interfaces = new TreeSet<>();
+    _inboundInterfaceFilters = new TreeMap<>(Interface.NAME_COMPARATOR);
+    _interfaces = new TreeSet<>(Interface.NAME_COMPARATOR);
     _fromZonePolicies = new TreeMap<>();
     _toZonePolicies = new TreeMap<>();
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Zone)) {
+      return false;
+    }
+    Zone other = (Zone) o;
+    // TODO: compare all fields
+    return _key.equals(other._key);
   }
 
   public AddressBook getAddressBook() {
@@ -67,6 +81,12 @@ public final class Zone extends ComparableStructure<String> {
 
   public Map<String, FirewallFilter> getToZonePolicies() {
     return _toZonePolicies;
+  }
+
+  @Override
+  public int hashCode() {
+    // TODO: hash all fields
+    return Objects.hash(_key);
   }
 
   public void setFromHostFilter(FirewallFilter fromHostFilter) {

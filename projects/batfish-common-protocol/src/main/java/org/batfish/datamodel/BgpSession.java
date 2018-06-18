@@ -63,8 +63,8 @@ public class BgpSession implements Comparable<BgpSession> {
   @Override
   public int compareTo(@Nonnull BgpSession o) {
     return Comparator.comparing((BgpSession s) -> s.getSrc().getPrefix())
-        .thenComparing(s -> s.getSrc().getOwner())
-        .thenComparing(s -> s.getDst().getOwner())
+        .thenComparing(s -> s.getSrc().getOwner().getName())
+        .thenComparing(s -> s.getDst().getOwner().getName())
         .compare(this, o);
   }
 

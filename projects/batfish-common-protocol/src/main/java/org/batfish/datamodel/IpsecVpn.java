@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import java.util.Comparator;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
@@ -176,7 +177,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
 
   public void initCandidateRemoteVpns() {
     if (_candidateRemoteIpsecVpns == null) {
-      _candidateRemoteIpsecVpns = new TreeSet<>();
+      _candidateRemoteIpsecVpns = new TreeSet<>(Comparator.comparing(IpsecVpn::getName));
     }
   }
 

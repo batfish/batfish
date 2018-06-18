@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 import org.batfish.datamodel.acl.Evaluator;
@@ -143,6 +144,11 @@ public class IpAccessList extends ComparableStructure<String> {
       count++;
     }
     return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_lines);
   }
 
   @JsonProperty(PROP_LINES)

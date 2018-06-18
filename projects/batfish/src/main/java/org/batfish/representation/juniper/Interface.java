@@ -1,11 +1,14 @@
 package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -19,6 +22,17 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.VrrpGroup;
 
 public class Interface extends ComparableStructure<String> {
+
+  private static class NameComparator implements Comparator<Interface>, Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public int compare(Interface o1, Interface o2) {
+      return o1._key.compareTo(o2._key);
+    }
+  }
+
+  public static final Comparator<Interface> NAME_COMPARATOR = new NameComparator();
 
   private static final long serialVersionUID = 1L;
 
@@ -122,6 +136,19 @@ public class Interface extends ComparableStructure<String> {
 
   public void addAllowedRanges(List<SubRange> ranges) {
     _allowedVlans.addAll(ranges);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof Interface)) {
+      return false;
+    }
+    Interface other = (Interface) o;
+    // TODO: compare all fields
+    return _key.equals(other._key);
   }
 
   public String getAccessVlan() {
@@ -242,6 +269,12 @@ public class Interface extends ComparableStructure<String> {
 
   public SortedMap<Integer, VrrpGroup> getVrrpGroups() {
     return _vrrpGroups;
+  }
+
+  @Override
+  public int hashCode() {
+    // TODO: hash all fields
+    return Objects.hash(_key);
   }
 
   public void inheritUnsetFields() {

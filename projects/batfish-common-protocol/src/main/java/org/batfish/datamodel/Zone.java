@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -195,6 +196,12 @@ public final class Zone extends ComparableStructure<String> {
     } else {
       return _toZonePoliciesNames;
     }
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _fromHostFilter, _inboundFilter, _inboundInterfaceFilters, _toHostFilter, _toZonePolicies);
   }
 
   @JsonIgnore
