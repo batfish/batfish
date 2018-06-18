@@ -3285,7 +3285,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP,
         CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL,
         CiscoStructureUsage.INTERFACE_IP_INBAND_ACCESS_GROUP,
-        CiscoStructureUsage.IP_NAT_SOURCE_ACCESS_LIST,
         CiscoStructureUsage.RIP_DISTRIBUTE_LIST,
         CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL,
         CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL,
