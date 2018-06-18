@@ -1822,7 +1822,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.crypto_map_seq_num() != null
         && ctx.crypto_map_seq_num().crypto_map_sn_ipsec_isakmp() != null) {
       _currentCryptoMapEntry =
-          new CryptoMapEntry(name, toInteger(ctx.crypto_map_seq_num().seq_num));
+          new CryptoMapEntry(name, toInteger(ctx.crypto_map_seq_num().num));
 
       CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(name);
       // if this is the first crypto map entry in the crypto map set

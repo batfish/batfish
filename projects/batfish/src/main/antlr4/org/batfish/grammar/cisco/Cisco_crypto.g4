@@ -97,14 +97,13 @@ cd_null
 cd_set
 :
    SET
-      (
-         cd_set_isakmp_profile
-         | cd_set_null
-         | cd_set_peer
-         | cd_set_pfs
-         | cd_set_transform_set
-
-      )
+   (
+      cd_set_isakmp_profile
+      | cd_set_null
+      | cd_set_peer
+      | cd_set_pfs
+      | cd_set_transform_set
+   )
 ;
 
 cd_set_isakmp_profile
@@ -618,7 +617,7 @@ crypto_csr_params
 
 crypto_dynamic_map
 :
-   DYNAMIC_MAP name = variable seq_num = DEC
+   DYNAMIC_MAP name = variable seq_num = DEC crypto_dynamic_map_null?
    (
      NEWLINE
        (
@@ -627,6 +626,14 @@ crypto_dynamic_map
           | cd_set
        )*
    )
+;
+
+crypto_dynamic_map_null
+:
+   (
+     MATCH
+     | SET
+   ) ~NEWLINE*
 ;
 
 crypto_engine
@@ -713,7 +720,7 @@ crypto_map_null
 
 crypto_map_seq_num
 :
-   seq_num = DEC
+   num = DEC
    (
       crypto_map_sn_ipsec_isakmp
       | crypto_map_sn_null
@@ -793,7 +800,11 @@ crypto_map_sn_ipsec_isakmp
 
 crypto_map_sn_null
 :
-   IPSEC_MANUAL
+   (
+      IPSEC_MANUAL
+      | MATCH
+      | SET
+   ) null_rest_of_line
 ;
 
 crypto_pki
