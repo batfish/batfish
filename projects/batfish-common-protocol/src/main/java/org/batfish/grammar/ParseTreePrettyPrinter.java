@@ -21,7 +21,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   private ParserRuleContext _ctx;
   private int _indent;
   private ParseTreeSentences _ptSentences;
-  private Boolean _printLineNumbers;
+  private boolean _printLineNumbers;
   private List<String> _ruleNames;
   private Vocabulary _vocabulary;
 
