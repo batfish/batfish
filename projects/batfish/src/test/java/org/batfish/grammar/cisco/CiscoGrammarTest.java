@@ -71,8 +71,13 @@ import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
+import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.hasDisjuncts;
 import static org.batfish.datamodel.matchers.OrMatchExprMatchers.isOrMatchExprThat;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasNssa;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStub;
+import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasStubType;
 import static org.batfish.datamodel.matchers.OspfAreaMatchers.hasSummary;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertised;
@@ -153,8 +158,6 @@ import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.PrefixRange;
@@ -168,6 +171,11 @@ import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
+import org.batfish.datamodel.matchers.StubSettingsMatchers;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.ospf.StubType;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -979,6 +987,42 @@ public class CiscoGrammarTest {
     assertThat(
         defaults.getDefaultVrf().getOspfProcess().getReferenceBandwidth(),
         equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
+  }
+
+  @Test
+  public void testIosOspfStubSettings() throws IOException {
+    Configuration c = parseConfig("ios-ospf-stub-settings");
+
+    // Check correct stub types are assigned
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(0L, hasStubType(StubType.NONE)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(1L, hasStubType(StubType.NSSA)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(2L, hasStubType(StubType.NSSA)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(3L, hasStubType(StubType.STUB)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(4L, hasStubType(StubType.STUB)))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(5L, hasStubType(StubType.NONE)))));
+
+    // Check for stub subtype settings
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(
+                    1L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(1L, hasNssa(hasSuppressType3(false))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(
+                hasArea(2L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))))));
+    assertThat(c, hasDefaultVrf(hasOspfProcess(hasArea(2L, hasNssa(hasSuppressType3())))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
+    assertThat(
+        c,
+        hasDefaultVrf(
+            hasOspfProcess(hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
   }
 
   @Test

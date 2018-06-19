@@ -4,9 +4,9 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfNeighbor;
-import org.batfish.datamodel.OspfProcess;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 

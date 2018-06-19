@@ -350,6 +350,7 @@
         "description" : "Undefined reference to structure of type: 'dhcp-relay server-group' with usage: 'dhcp relay group active-server-group' named 'site-dhcp'",
         "files" : {
           "juniper_forwarding_options" : [
+            8,
             13
           ]
         }
@@ -358,7 +359,15 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'GigabitEthernet0/0/0/19'",
         "files" : {
           "cisco_vrrp" : [
-            16
+            14
+          ]
+        }
+      },
+      "undefined:interface:usage:router vrrp interface:ManagementEthernet0/RSP0/CPU0/0" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'ManagementEthernet0/RSP0/CPU0/0'",
+        "files" : {
+          "cisco_vrrp" : [
+            24
           ]
         }
       },
@@ -366,7 +375,7 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'ManagementEthernet0/RSP1/CPU0/0'",
         "files" : {
           "cisco_vrrp" : [
-            28
+            26
           ]
         }
       },
@@ -377,7 +386,11 @@
             14
           ],
           "ios_xr_bgp_neighbor_group" : [
-            0
+            22,
+            36,
+            48,
+            58,
+            69
           ]
         }
       },
@@ -385,7 +398,19 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback1'",
         "files" : {
           "foundry_bgp" : [
-            0
+            16
+          ],
+          "peer_template" : [
+            16
+          ]
+        }
+      },
+      "undefined:interface:usage:update-source interface:Loopback15" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback15'",
+        "files" : {
+          "cadant_bgp" : [
+            12,
+            17
           ]
         }
       },
@@ -742,14 +767,6 @@
           ]
         }
       },
-      "undefined:ipv4/6 acl:usage:ip nat source dynamic access-list:def" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
-        "files" : {
-          "cisco_interface" : [
-            90
-          ]
-        }
-      },
       "undefined:ipv4/6 acl:usage:ip wccp group-list:wccp-cachelist" : {
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip wccp group-list' named 'wccp-cachelist'",
         "files" : {
@@ -902,7 +919,9 @@
         "files" : {
           "juniper_bgp" : [
             8,
-            22
+            15,
+            22,
+            31
           ]
         }
       },
@@ -911,7 +930,9 @@
         "files" : {
           "juniper_bgp" : [
             10,
-            24
+            17,
+            24,
+            33
           ]
         }
       },
@@ -1265,7 +1286,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 156
+      "numResults" : 158
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1362,6 +1383,14 @@
         }
       },
       "cadant_bgp" : {
+        "interface" : {
+          "Loopback15" : {
+            "update-source interface" : [
+              12,
+              17
+            ]
+          }
+        },
         "route-map" : {
           "blarp" : {
             "bgp outbound route-map" : [
@@ -1579,11 +1608,6 @@
           "1" : {
             "interface igmp access-group acl" : [
               77
-            ]
-          },
-          "def" : {
-            "ip nat source dynamic access-list" : [
-              90
             ]
           }
         },
@@ -1923,12 +1947,17 @@
         "interface" : {
           "GigabitEthernet0/0/0/19" : {
             "router vrrp interface" : [
-              16
+              14
+            ]
+          },
+          "ManagementEthernet0/RSP0/CPU0/0" : {
+            "router vrrp interface" : [
+              24
             ]
           },
           "ManagementEthernet0/RSP1/CPU0/0" : {
             "router vrrp interface" : [
-              28
+              26
             ]
           }
         }
@@ -1946,7 +1975,7 @@
         "interface" : {
           "Loopback1" : {
             "update-source interface" : [
-              0
+              16
             ]
           }
         }
@@ -1992,7 +2021,11 @@
         "interface" : {
           "Loopback0" : {
             "update-source interface" : [
-              0
+              22,
+              36,
+              48,
+              58,
+              69
             ]
           }
         }
@@ -2027,13 +2060,17 @@
           "someexportpolicy" : {
             "bgp export policy-statement" : [
               8,
-              22
+              15,
+              22,
+              31
             ]
           },
           "someimportpolicy" : {
             "bgp import policy-statement" : [
               10,
-              24
+              17,
+              24,
+              33
             ]
           }
         }
@@ -2051,6 +2088,7 @@
         "dhcp-relay server-group" : {
           "site-dhcp" : {
             "dhcp relay group active-server-group" : [
+              8,
               13
             ]
           }
@@ -2171,6 +2209,13 @@
         }
       },
       "peer_template" : {
+        "interface" : {
+          "Loopback1" : {
+            "update-source interface" : [
+              16
+            ]
+          }
+        },
         "route-map" : {
           "PROTECT-LEAF" : {
             "bgp inbound route-map" : [

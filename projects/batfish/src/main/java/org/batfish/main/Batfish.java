@@ -105,7 +105,6 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecVpn;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.RipNeighbor;
 import org.batfish.datamodel.RipProcess;
 import org.batfish.datamodel.SubRange;
@@ -140,6 +139,7 @@ import org.batfish.datamodel.collections.NamedStructureEquivalenceSets;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.collections.RoutesByVrf;
 import org.batfish.datamodel.collections.TreeMultiSet;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.pojo.Environment;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
 import org.batfish.datamodel.questions.NodesSpecifier;
@@ -3544,6 +3544,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Settings settings = getSettings();
     String tag = getDifferentialFlowTag();
 
+    /* Invaraint: baseParams should agree with deltaParams on all params
+     * other than those that are computed by resolution (i.e. those determined
+     * by specifiers).
+     */
+    assert baseParams.getActions().equals(deltaParams.getActions());
+    assert baseParams.getHeaderSpace() == deltaParams.getHeaderSpace()
+        || baseParams.getHeaderSpace().equals(deltaParams.getHeaderSpace());
+    assert baseParams.getSpecialize() == deltaParams.getSpecialize();
+    assert baseParams.getSrcNatted().equals(deltaParams.getSrcNatted());
+
     // push environment so we use the right forwarding analysis.
     pushBaseEnvironment();
     Synthesizer baseDataPlaneSynthesizer = synthesizeDataPlane(baseParams);
@@ -3587,7 +3597,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
                 entry -> {
                   Map<IngressLocation, BooleanExpr> srcIpConstraint =
                       ImmutableMap.of(entry.getKey(), entry.getValue());
-                  StandardReachabilityQuerySynthesizer acceptQuery =
+                  // build the query for the base testrig
+                  StandardReachabilityQuerySynthesizer baseQuery =
                       StandardReachabilityQuerySynthesizer.builder()
                           .setActions(baseParams.getActions())
                           .setHeaderSpace(baseParams.getHeaderSpace())
@@ -3597,19 +3608,24 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           .setSrcIpConstraints(srcIpConstraint)
                           .setSrcNatted(baseParams.getSrcNatted())
                           .build();
-                  StandardReachabilityQuerySynthesizer notAcceptQuery =
+                  // build the query for the delta testrig
+                  StandardReachabilityQuerySynthesizer deltaQuery =
                       StandardReachabilityQuerySynthesizer.builder()
-                          .setActions(baseParams.getActions())
-                          .setHeaderSpace(baseParams.getHeaderSpace())
+                          .setActions(deltaParams.getActions())
+                          .setHeaderSpace(deltaParams.getHeaderSpace())
                           .setFinalNodes(ImmutableSet.of())
                           .setForbiddenTransitNodes(ImmutableSet.of())
                           .setRequiredTransitNodes(ImmutableSet.of())
                           .setSrcIpConstraints(srcIpConstraint)
-                          .setSrcNatted(baseParams.getSrcNatted())
+                          .setSrcNatted(deltaParams.getSrcNatted())
                           .build();
-                  notAcceptQuery.setNegate(true);
+                  /*
+                   * "Reduced" means flows that match the constraints on the base testrig,
+                   * bot not on the delta testrig.
+                   */
+                  deltaQuery.setNegate(true);
                   List<QuerySynthesizer> queries =
-                      ImmutableList.of(acceptQuery, notAcceptQuery /*, blacklistQuery*/);
+                      ImmutableList.of(baseQuery, deltaQuery /*, blacklistQuery*/);
                   return new CompositeNodJob(
                       settings,
                       synthesizers,

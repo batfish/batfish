@@ -1280,7 +1280,8 @@
                           "GigabitEthernet1/0",
                           "GigabitEthernet2/0",
                           "Loopback0"
-                        ]
+                        ],
+                        "stubType" : "NONE"
                       }
                     },
                     "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",

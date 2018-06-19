@@ -1,12 +1,12 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OspfArea;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SnmpServer;
 
@@ -33,8 +33,6 @@ public class RoutingInstance implements Serializable {
 
   private String _forwardingTableExportPolicy;
 
-  private int _forwardingTableExportPolicyLine;
-
   private final Interface _globalMasterInterface;
 
   private String _hostname;
@@ -55,7 +53,7 @@ public class RoutingInstance implements Serializable {
 
   private Map<Long, OspfArea> _ospfAreas;
 
-  private Map<String, Integer> _ospfExportPolicies;
+  private List<String> _ospfExportPolicies;
 
   private double _ospfReferenceBandwidth;
 
@@ -82,7 +80,7 @@ public class RoutingInstance implements Serializable {
     _namedBgpGroups = new TreeMap<>();
     _nodeDevices = new TreeMap<>();
     _ospfAreas = new TreeMap<>();
-    _ospfExportPolicies = new LinkedHashMap<>();
+    _ospfExportPolicies = new LinkedList<>();
     _ospfReferenceBandwidth = DEFAULT_OSPF_REFERENCE_BANDWIDTH;
     _ribs = new TreeMap<>();
     _ribs.put(
@@ -134,10 +132,6 @@ public class RoutingInstance implements Serializable {
     return _forwardingTableExportPolicy;
   }
 
-  public int getForwardingTableExportPolicyLine() {
-    return _forwardingTableExportPolicyLine;
-  }
-
   public Interface getGlobalMasterInterface() {
     return _globalMasterInterface;
   }
@@ -178,7 +172,7 @@ public class RoutingInstance implements Serializable {
     return _ospfAreas;
   }
 
-  public Map<String, Integer> getOspfExportPolicies() {
+  public List<String> getOspfExportPolicies() {
     return _ospfExportPolicies;
   }
 
@@ -220,10 +214,6 @@ public class RoutingInstance implements Serializable {
 
   public void setForwardingTableExportPolicy(String forwardingTableExportPolicy) {
     _forwardingTableExportPolicy = forwardingTableExportPolicy;
-  }
-
-  public void setForwardingTableExportPolicyLine(int forwardingTableExportPolicyLine) {
-    _forwardingTableExportPolicyLine = forwardingTableExportPolicyLine;
   }
 
   public void setHostname(String hostname) {
