@@ -379,6 +379,14 @@
           ]
         }
       },
+      "undefined:interface:usage:service-policy interface:Loopback0" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'service-policy interface' named 'Loopback0'",
+        "files" : {
+          "cisco_misc" : [
+            238
+          ]
+        }
+      },
       "undefined:interface:usage:update-source interface:Loopback0" : {
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback0'",
         "files" : {
@@ -922,6 +930,22 @@
           ]
         }
       },
+      "undefined:policy-map:usage:policy-map class service-policy:prioritize_backbone" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'policy-map class service-policy' named 'prioritize_backbone'",
+        "files" : {
+          "cisco_qos" : [
+            74
+          ]
+        }
+      },
+      "undefined:policy-map:usage:service-policy interface policy:some-interface-policy" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'service-policy interface policy' named 'some-interface-policy'",
+        "files" : {
+          "cisco_misc" : [
+            238
+          ]
+        }
+      },
       "undefined:policy-statement:usage:bgp export policy-statement:someexportpolicy" : {
         "description" : "Undefined reference to structure of type: 'policy-statement' with usage: 'bgp export policy-statement' named 'someexportpolicy'",
         "files" : {
@@ -1302,7 +1326,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 160
+      "numResults" : 163
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1708,10 +1732,24 @@
             ]
           }
         },
+        "interface" : {
+          "Loopback0" : {
+            "service-policy interface" : [
+              238
+            ]
+          }
+        },
         "ipv4/6 acl" : {
           "cops-acl" : {
             "cops listener access-list" : [
               42
+            ]
+          }
+        },
+        "policy-map" : {
+          "some-interface-policy" : {
+            "service-policy interface policy" : [
+              238
             ]
           }
         }
@@ -1851,6 +1889,13 @@
           "cinspect" : {
             "policy-map type inspect class type inspect" : [
               43
+            ]
+          }
+        },
+        "policy-map" : {
+          "prioritize_backbone" : {
+            "policy-map class service-policy" : [
+              74
             ]
           }
         },
