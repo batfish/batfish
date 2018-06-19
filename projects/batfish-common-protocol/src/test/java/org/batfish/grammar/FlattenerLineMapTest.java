@@ -29,5 +29,9 @@ public class FlattenerLineMapTest {
     // Confirm looking up a position before first mapping returns the last original line
     assertThat(lineMap.getOriginalLine(1, 0), equalTo(2));
     assertThat(lineMap.getOriginalLine(2, 1), equalTo(3));
+
+    // Conrifm looking up an unmapped line results in the default unmapped line number
+    assertThat(lineMap.getOriginalLine(0, 10), equalTo(FlattenerLineMap.UNMAPPED_LINE_NUMBER));
+    assertThat(lineMap.getOriginalLine(3, 10), equalTo(FlattenerLineMap.UNMAPPED_LINE_NUMBER));
   }
 }
