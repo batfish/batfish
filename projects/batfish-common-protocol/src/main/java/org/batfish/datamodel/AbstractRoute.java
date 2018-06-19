@@ -58,7 +58,7 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   }
 
   @Override
-  public final int compareTo(AbstractRoute rhs) {
+  public final int compareTo(@Nullable AbstractRoute rhs) {
     return Comparator.comparing(AbstractRoute::getNetwork)
         .thenComparingInt(AbstractRoute::getAdministrativeCost)
         .thenComparing(AbstractRoute::getMetric)
