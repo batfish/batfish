@@ -123,6 +123,7 @@ interface Ethernet0
  no ip sticky-arp
  ip sticky-arp ignore
  ip summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map
+ ip traffic-export apply some-traffix-export size 10000000
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167

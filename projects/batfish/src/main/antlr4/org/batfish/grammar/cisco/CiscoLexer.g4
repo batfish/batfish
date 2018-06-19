@@ -11841,6 +11841,11 @@ TRAFFIC_ENG
    'traffic-eng'
 ;
 
+TRAFFIC_EXPORT
+:
+   'traffic-export'
+;
+
 TRAFFIC_INDEX
 :
    'traffic-index'

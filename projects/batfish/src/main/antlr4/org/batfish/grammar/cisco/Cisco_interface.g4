@@ -814,6 +814,7 @@ if_null_single
    (
       BCMC_OPTIMIZATION
       | DOT1X
+      | IP TRAFFIC_EXPORT
       | JUMBO
       | LINKDEBOUNCE
       | MAB
