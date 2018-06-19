@@ -5,9 +5,9 @@ import java.util.NavigableMap;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 
 public class FlattenerLineMap {
+  public static final int UNMAPPED_LINE_NUMBER = -1;
   /**
    * Map of new line number to word map, where word map is map of a word's starting-position in
    * new/flattened line to original line number
@@ -26,11 +26,11 @@ public class FlattenerLineMap {
   public int getOriginalLine(@Nonnull Integer newLineNumber, @Nonnull Integer newStartingPosition) {
     NavigableMap<Integer, Integer> wordMap = _lineMap.get(newLineNumber);
     if (wordMap == null) {
-      // Result from looking up an unmapped line, should never get here
-      throw new BatfishException(
-          String.format(
-              "Original line does not exist for the specified new line number:%s at position:%s",
-              newLineNumber, newStartingPosition));
+      /*
+       * Result from looking up an unmapped line, this handles lines like the header inserted after
+       * flattening
+       */
+      return UNMAPPED_LINE_NUMBER;
     } else {
       Entry<Integer, Integer> originalLineEntry = wordMap.floorEntry(newStartingPosition);
       /*
