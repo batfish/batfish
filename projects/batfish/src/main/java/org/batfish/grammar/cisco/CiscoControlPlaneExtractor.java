@@ -1516,11 +1516,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterAf_group_rb_stanza(Af_group_rb_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     // String af = ctx.bgp_address_family().getText();
     NamedBgpPeerGroup afGroup = proc.getAfGroups().get(name);
     if (afGroup == null) {
-      proc.addNamedPeerGroup(name, definitionLine);
+      proc.addNamedPeerGroup(name, ctx.name.getStart().getLine());
       afGroup = proc.getNamedPeerGroups().get(name);
     }
     pushPeer(afGroup);
@@ -1761,28 +1760,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterClb_docsis_policy(Clb_docsis_policyContext ctx) {
     String name = ctx.policy.getText();
     String rule = ctx.rulenum.getText();
-    int line = ctx.getStart().getLine();
     DocsisPolicy policy =
         _configuration
             .getCf()
             .getCable()
             .getDocsisPolicies()
-            .computeIfAbsent(name, n -> new DocsisPolicy(n, line));
+            .computeIfAbsent(name, DocsisPolicy::new);
     defineStructure(DOCSIS_POLICY, name, ctx);
     policy.getRules().add(rule);
     _configuration.referenceStructure(
-        DOCSIS_POLICY_RULE, rule, DOCSIS_POLICY_DOCSIS_POLICY_RULE, line);
+        DOCSIS_POLICY_RULE, rule, DOCSIS_POLICY_DOCSIS_POLICY_RULE, ctx.getStart().getLine());
   }
 
   @Override
   public void enterClb_rule(Clb_ruleContext ctx) {
     String name = ctx.rulenum.getText();
-    int line = ctx.getStart().getLine();
     _configuration
         .getCf()
         .getCable()
         .getDocsisPolicyRules()
-        .computeIfAbsent(name, n -> new DocsisPolicyRule(n, line));
+        .computeIfAbsent(name, DocsisPolicyRule::new);
     defineStructure(DOCSIS_POLICY_RULE, name, ctx);
   }
 
@@ -1803,28 +1800,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCs_class(Cs_classContext ctx) {
     String number = ctx.num.getText();
-    int line = ctx.num.getLine();
     _currentServiceClass =
         _configuration
             .getCf()
             .getCable()
             .getServiceClasses()
-            .computeIfAbsent(number, n -> new ServiceClass(n, line));
+            .computeIfAbsent(number, ServiceClass::new);
     defineStructure(SERVICE_CLASS, number, ctx);
   }
 
   @Override
   public void enterDt_depi_class(Dt_depi_classContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(DEPI_CLASS, name, DEPI_TUNNEL_DEPI_CLASS, line);
+    _configuration.referenceStructure(
+        DEPI_CLASS, name, DEPI_TUNNEL_DEPI_CLASS, ctx.getStart().getLine());
   }
 
   @Override
   public void enterDt_l2tp_class(Dt_l2tp_classContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, line);
+    _configuration.referenceStructure(
+        L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
   }
 
   @Override
@@ -1904,40 +1900,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
     String name;
-    int definitionLine;
     if (ctx.num != null) {
       name = ctx.num.getText();
-      definitionLine = ctx.num.getLine();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-      definitionLine = ctx.name.getStart().getLine();
     } else {
       throw new BatfishException("Invalid community-list name");
     }
     _currentExpandedCommunityList =
         _configuration
             .getExpandedCommunityLists()
-            .computeIfAbsent(name, n -> new ExpandedCommunityList(n, definitionLine));
+            .computeIfAbsent(name, ExpandedCommunityList::new);
     defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
   public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
     String name;
-    int definitionLine;
     if (ctx.num != null) {
       name = ctx.num.getText();
-      definitionLine = ctx.num.getLine();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-      definitionLine = ctx.name.getStart().getLine();
     } else {
       throw new BatfishException("Invalid standard community-list name");
     }
     _currentStandardCommunityList =
         _configuration
             .getStandardCommunityLists()
-            .computeIfAbsent(name, n -> new StandardCommunityList(n, definitionLine));
+            .computeIfAbsent(name, StandardCommunityList::new);
     defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
@@ -3093,8 +3083,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_l2tp_class(S_l2tp_classContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.getCf().getL2tpClasses().computeIfAbsent(name, n -> new L2tpClass(n, line));
+    _configuration.getCf().getL2tpClasses().computeIfAbsent(name, L2tpClass::new);
     defineStructure(L2TP_CLASS, name, ctx);
   }
 
@@ -3622,7 +3611,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
     if (asPathSet != null) {
       _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
@@ -3633,7 +3621,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       AsPathSetElem elem = toAsPathSetElem(elemCtx);
       asPathSet.getElements().add(elem);
     }
-    _configuration.defineStructure(AS_PATH_SET, name, definitionLine);
+    defineStructure(AS_PATH_SET, name, ctx);
   }
 
   @Override
@@ -3717,8 +3705,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitClbdg_docsis_policy(Clbdg_docsis_policyContext ctx) {
     String name = ctx.policy.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(DOCSIS_POLICY, name, DOCSIS_GROUP_DOCSIS_POLICY, line);
+    _configuration.referenceStructure(
+        DOCSIS_POLICY, name, DOCSIS_GROUP_DOCSIS_POLICY, ctx.getStart().getLine());
   }
 
   @Override
@@ -3737,7 +3725,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
     _currentInspectClassMap =
-        _configuration.getInspectClassMaps().computeIfAbsent(name, n -> new InspectClassMap(n));
+        _configuration.getInspectClassMaps().computeIfAbsent(name, InspectClassMap::new);
     defineStructure(INSPECT_CLASS_MAP, name, ctx);
     MatchSemantics matchSemantics =
         ctx.match_semantics() != null

@@ -30,7 +30,9 @@
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
         "files" : {
           "route_policy_as_path" : [
-            34
+            34,
+            35,
+            36
           ]
         }
       },
@@ -38,7 +40,8 @@
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path2'",
         "files" : {
           "route_policy_as_path" : [
-            37
+            37,
+            38
           ]
         }
       },
@@ -46,7 +49,11 @@
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path3'",
         "files" : {
           "route_policy_as_path" : [
-            39
+            39,
+            40,
+            41,
+            42,
+            43
           ]
         }
       },
@@ -2431,13 +2438,20 @@
       "route_policy_as_path_set" : {
         "as-path-set" : {
           "ama-coe-as-path" : [
-            34
+            34,
+            35,
+            36
           ],
           "ama-coe-as-path2" : [
-            37
+            37,
+            38
           ],
           "ama-coe-as-path3" : [
-            39
+            39,
+            40,
+            41,
+            42,
+            43
           ]
         }
       },

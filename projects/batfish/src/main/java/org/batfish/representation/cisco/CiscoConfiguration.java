@@ -3445,11 +3445,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.AS_PATH_SET, CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN);
 
     // record references to defined structures
-    recordDocsisPolicies();
-    recordDocsisPolicyRules();
     recordPeerGroups();
     recordPeerSessions();
-    recordServiceClasses();
 
     c.simplifyRoutingPolicies();
 
@@ -3906,18 +3903,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
   }
 
-  private void recordDocsisPolicies() {
-    if (_cf.getCable() != null) {
-      recordStructure(_cf.getCable().getDocsisPolicies(), CiscoStructureType.DOCSIS_POLICY);
-    }
-  }
-
-  private void recordDocsisPolicyRules() {
-    if (_cf.getCable() != null) {
-      recordStructure(_cf.getCable().getDocsisPolicyRules(), CiscoStructureType.DOCSIS_POLICY_RULE);
-    }
-  }
-
   private void recordPeerGroups() {
     for (Vrf vrf : getVrfs().values()) {
       BgpProcess proc = vrf.getBgpProcess();
@@ -3959,12 +3944,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
             numReferrers,
             peerSession.getDefinitionLine());
       }
-    }
-  }
-
-  private void recordServiceClasses() {
-    if (_cf.getCable() != null) {
-      recordStructure(_cf.getCable().getServiceClasses(), CiscoStructureType.SERVICE_CLASS);
     }
   }
 
