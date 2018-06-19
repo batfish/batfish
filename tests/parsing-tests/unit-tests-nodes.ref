@@ -948,6 +948,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.3.32/29",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -956,6 +957,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "2.3.4.5/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "3.4.5.6",
@@ -3894,6 +3896,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 253,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.1.1.1",
@@ -3902,6 +3905,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 254,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "2.2.2.2",
@@ -3910,6 +3914,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.1.1.0/24",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "6.6.6.6",
@@ -3918,6 +3923,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "22.71.224.0/19",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "22.71.252.185",
@@ -3931,6 +3937,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "7.7.7.7",
@@ -3939,6 +3946,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "9.9.9.0/27",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "10.10.10.10",
@@ -3952,6 +3960,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "127.0.0.1",
@@ -6947,6 +6956,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 100,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Loopback66",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6955,6 +6965,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 150,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Loopback99",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6963,6 +6974,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 250,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Dialer1",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6971,6 +6983,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 300,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "Dialer2",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -6979,6 +6992,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 10,
+                "metric" : 0,
                 "network" : "1.2.3.0/25",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "2.3.4.5",
@@ -6987,6 +7001,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.3.4/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "2.3.4.5",
@@ -6995,6 +7010,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.37.104/29",
                 "nextHopInterface" : "GigabitEthernet3/0/0.212",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -7003,6 +7019,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.39.17/32",
                 "nextHopInterface" : "Serial5/0:2",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -7011,6 +7028,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 210,
+                "metric" : 0,
                 "network" : "1.2.39.22/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.32.39",
@@ -7019,6 +7037,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 240,
+                "metric" : 0,
                 "network" : "1.2.39.32/32",
                 "nextHopInterface" : "Serial5/1:5",
                 "nextHopIp" : "1.2.32.59",
@@ -7027,6 +7046,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.39.69/32",
                 "nextHopInterface" : "POS5/3:10",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -7040,6 +7060,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "5.6.7.8",
@@ -9830,6 +9851,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.3.4",
@@ -10616,6 +10638,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.28.104/31",
                 "nextHopInterface" : "Ethernet13/10",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -10914,6 +10937,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "eth0",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12450,6 +12474,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12458,6 +12483,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.11.251/32",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12466,6 +12492,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.16.0/24",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12474,6 +12501,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.16.255/32",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12482,6 +12510,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.42.185/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.42.186",
@@ -12490,6 +12519,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.2.220.0/24",
                 "nextHopInterface" : "TenGigabitEthernet0/0/2/3",
                 "nextHopIp" : "1.2.220.245",
@@ -12498,6 +12528,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "2.3.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12506,6 +12537,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "4.5.0.0/16",
                 "nextHopInterface" : "null_interface",
                 "nextHopIp" : "AUTO/NONE(-1l)",
@@ -12514,6 +12546,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "6.7.165.2/32",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "198.188.255.22",
@@ -12522,6 +12555,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "9.8.192.32/29",
                 "nextHopInterface" : "GigabitEthernet0/2/1/5.290",
                 "nextHopIp" : "1.2.24.98",
@@ -22613,6 +22647,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "1.1.1.0/24",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "5.6.7.8",
@@ -22626,6 +22661,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "dynamic",
                 "nextHopIp" : "1.2.3.4",
