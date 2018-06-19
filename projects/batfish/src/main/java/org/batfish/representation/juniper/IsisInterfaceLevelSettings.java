@@ -18,9 +18,9 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   private Integer _holdTime;
 
-  private Integer _metric;
+  private Long _metric;
 
-  private Integer _teMetric;
+  private Long _teMetric;
 
   public boolean getEnabled() {
     return _enabled;
@@ -42,11 +42,11 @@ public class IsisInterfaceLevelSettings implements Serializable {
     return _holdTime;
   }
 
-  public Integer getMetric() {
+  public Long getMetric() {
     return _metric;
   }
 
-  public Integer getTeMetric() {
+  public Long getTeMetric() {
     return _teMetric;
   }
 
@@ -70,11 +70,11 @@ public class IsisInterfaceLevelSettings implements Serializable {
     _holdTime = holdTime;
   }
 
-  public void setMetric(int metric) {
+  public void setMetric(long metric) {
     _metric = metric;
   }
 
-  public void setTeMetric(int teMetric) {
+  public void setTeMetric(long teMetric) {
     _teMetric = teMetric;
   }
 }

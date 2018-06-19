@@ -31,7 +31,7 @@ public final class IsisInterfaceLevelSettingsMatchers {
    * IsisInterfaceLevelSettings}'s cost.
    */
   public static @Nonnull Matcher<IsisInterfaceLevelSettings> hasCost(
-      @Nonnull Matcher<? super Integer> subMatcher) {
+      @Nonnull Matcher<? super Long> subMatcher) {
     return new HasCost(subMatcher);
   }
 

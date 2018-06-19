@@ -118,6 +118,14 @@ public final class IsoAddress implements Serializable {
     return _areaId;
   }
 
+  public @Nonnull String getAreaIdString() {
+    StringBuilder sb = new StringBuilder();
+    for (byte b : _areaId) {
+      sb.append(String.format("%02X", b));
+    }
+    return sb.toString();
+  }
+
   public byte getNSelector() {
     return _nSel;
   }

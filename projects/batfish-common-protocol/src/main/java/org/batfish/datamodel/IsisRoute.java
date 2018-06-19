@@ -60,6 +60,8 @@ public class IsisRoute extends AbstractRoute {
     }
   }
 
+  public static final long DEFAULT_METRIC = 10L;
+
   private static final String PROP_AREA = "area";
 
   private static final String PROP_DOWN = "down";

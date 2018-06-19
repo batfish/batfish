@@ -54,6 +54,11 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.IsisInterfaceSettings;
+import org.batfish.datamodel.IsisLevel;
+import org.batfish.datamodel.IsisLevelSettings;
+import org.batfish.datamodel.IsisProcess;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -87,6 +92,8 @@ import org.batfish.dataplane.protocols.OspfProtocolHelper;
 import org.batfish.dataplane.rib.BgpBestPathRib;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.ConnectedRib;
+import org.batfish.dataplane.rib.IsisLevelRib;
+import org.batfish.dataplane.rib.IsisRib;
 import org.batfish.dataplane.rib.LocalRib;
 import org.batfish.dataplane.rib.OspfExternalType1Rib;
 import org.batfish.dataplane.rib.OspfExternalType2Rib;
@@ -164,6 +171,14 @@ public class VirtualRouter extends ComparableStructure<String> {
 
   /** Incoming messages into this router from each IS-IS circuit */
   transient SortedMap<UndirectedIsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
+
+  private transient Map<IsisNode, IsisEdge>
+  
+  transient IsisRib _isisRib;
+
+  transient IsisLevelRib _isisL1Rib;
+
+  transient IsisLevelRib _isisL2Rib;
 
   transient LocalRib _localRib;
 
@@ -399,7 +414,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     initBgpQueues(bgpTopology);
 
     initIsisQueues(isisTopology);
-
+    
     // Initialize message queues for each Ospf neighbor
     if (_vrf.getOspfProcess() == null) {
       _ospfExternalIncomingRoutes = ImmutableSortedMap.of();
@@ -1036,6 +1051,67 @@ public class VirtualRouter extends ComparableStructure<String> {
     return outputRoute;
   }
 
+  void initIsisExports() {
+    /* TODO: https://github.com/batfish/batfish/issues/1703 */
+    IsisProcess proc = _vrf.getIsisProcess();
+    if (proc == null) {
+      return; // nothing to do
+    }
+    /*
+     * init L1 and L2 routes from connected routes
+     */
+    int admin = RoutingProtocol.ISIS.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+    IsisLevelSettings l1Settings = proc.getLevel1();
+    IsisLevelSettings l2Settings = proc.getLevel2();
+    IsisRoute.Builder builder =
+        new IsisRoute.Builder().setAdmin(admin).setArea(proc.getNetAddress().getAreaIdString());
+    _vrf.getInterfaces()
+        .values()
+        .forEach(
+            iface -> {
+              IsisInterfaceSettings ifaceSettings = iface.getIsis();
+              if (ifaceSettings == null) {
+                return;
+              }
+              IsisInterfaceLevelSettings ifaceL1Settings = ifaceSettings.getLevel1();
+              IsisInterfaceLevelSettings ifaceL2Settings = ifaceSettings.getLevel2();
+              if (ifaceL1Settings != null && l1Settings != null) {
+                long metric = firstNonNull(ifaceL1Settings.getCost(), IsisRoute.DEFAULT_METRIC);
+                builder
+                    .setLevel(IsisLevel.LEVEL_1)
+                    .setMetric(metric)
+                    .setProtocol(RoutingProtocol.ISIS_L1);
+                iface
+                    .getAllAddresses()
+                    .forEach(
+                        address -> {
+                          _isisL1Rib.mergeRoute(
+                              builder
+                                  .setNetwork(address.getPrefix())
+                                  .setNextHopIp(address.getIp())
+                                  .build());
+                        });
+              }
+              if (ifaceL2Settings != null && l2Settings != null) {
+                long metric = firstNonNull(ifaceL2Settings.getCost(), IsisRoute.DEFAULT_METRIC);
+                builder
+                    .setLevel(IsisLevel.LEVEL_2)
+                    .setMetric(metric)
+                    .setProtocol(RoutingProtocol.ISIS_L2);
+                iface
+                    .getAllAddresses()
+                    .forEach(
+                        address -> {
+                          _isisL2Rib.mergeRoute(
+                              builder
+                                  .setNetwork(address.getPrefix())
+                                  .setNextHopIp(address.getIp())
+                                  .build());
+                        });
+              }
+            });
+  }
+
   void initOspfExports() {
     OspfProcess proc = _vrf.getOspfProcess();
     // Nothing to do
@@ -1088,6 +1164,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _independentRib = new Rib();
+    _isisRib = new IsisRib();
+    _isisL1Rib = new IsisLevelRib();
+    _isisL2Rib = new IsisLevelRib();
     _mainRib = new Rib();
     _ospfExternalType1Rib =
         new OspfExternalType1Rib(getHostname(), _receivedOspExternalType1Routes);
@@ -1542,6 +1621,174 @@ public class VirtualRouter extends ComparableStructure<String> {
           }
         });
     return builtDeltas;
+  }
+
+  /**
+   * Propagate IS-IS routes from our neighbors by reading IS-IS route "advertisements" from our
+   * queues.
+   *
+   * @param allNodes map of all nodes, keyed by hostname
+   * @param topology the Layer-3 network topology
+   * @return a pair of {@link RibDelta}s, for L1 and L2 routes
+   */
+  @Nullable
+  public Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> propagateOspfExternalRoutes(
+      final Map<String, Node> allNodes, Topology topology) {
+    String node = _c.getHostname();
+    OspfProcess proc = _vrf.getOspfProcess();
+    if (proc == null) {
+      return null;
+    }
+    int admin = RoutingProtocol.OSPF.getDefaultAdministrativeCost(_c.getConfigurationFormat());
+    SortedSet<Edge> edges = topology.getNodeEdges().get(node);
+    if (edges == null) {
+      // there are no edges, so OSPF won't produce anything
+      return null;
+    }
+
+    RibDelta.Builder<OspfExternalType1Route> builderType1 =
+        new RibDelta.Builder<>(_ospfExternalType1StagingRib);
+    RibDelta.Builder<OspfExternalType2Route> builderType2 =
+        new RibDelta.Builder<>(_ospfExternalType2StagingRib);
+
+    for (Edge edge : edges) {
+      if (!edge.getNode1().equals(node)) {
+        continue;
+      }
+      String connectingInterfaceName = edge.getInt1();
+      Interface connectingInterface = _vrf.getInterfaces().get(connectingInterfaceName);
+      if (connectingInterface == null) {
+        // wrong vrf, so skip
+        continue;
+      }
+      String neighborName = edge.getNode2();
+      Node neighbor = allNodes.get(neighborName);
+      String neighborInterfaceName = edge.getInt2();
+      OspfArea area = connectingInterface.getOspfArea();
+      Configuration nc = neighbor.getConfiguration();
+      Interface neighborInterface = nc.getInterfaces().get(neighborInterfaceName);
+      String neighborVrfName = neighborInterface.getVrfName();
+      VirtualRouter neighborVirtualRouter =
+          allNodes.get(neighborName).getVirtualRouters().get(neighborVrfName);
+
+      OspfArea neighborArea = neighborInterface.getOspfArea();
+      if (connectingInterface.getOspfEnabled()
+          && !connectingInterface.getOspfPassive()
+          && neighborInterface.getOspfEnabled()
+          && !neighborInterface.getOspfPassive()
+          && area != null
+          && neighborArea != null
+          && area.getName().equals(neighborArea.getName())) {
+        /*
+         * We have an ospf neighbor relationship on this edge. So we
+         * should add all ospf external type 1(2) routes from this
+         * neighbor into our ospf external type 1(2) staging rib. For
+         * type 1, the cost of the route increases each time. For type 2,
+         * the cost remains constant, but we must keep track of cost to
+         * advertiser as a tie-breaker.
+         */
+        long connectingInterfaceCost = connectingInterface.getOspfCost();
+        long incrementalCost =
+            proc.getMaxMetricTransitLinks() != null
+                ? proc.getMaxMetricTransitLinks()
+                : connectingInterfaceCost;
+
+        Queue<RouteAdvertisement<OspfExternalRoute>> q =
+            _ospfExternalIncomingRoutes.get(connectingInterface.getAddress().getPrefix());
+        while (q.peek() != null) {
+          RouteAdvertisement<OspfExternalRoute> routeAdvert = q.remove();
+          OspfExternalRoute neighborRoute = routeAdvert.getRoute();
+          boolean withdraw = routeAdvert.isWithdrawn();
+          if (neighborRoute instanceof OspfExternalType1Route) {
+            long oldArea = neighborRoute.getArea();
+            long connectionArea = area.getName();
+            long newArea;
+            long baseMetric = neighborRoute.getMetric();
+            long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
+            newArea = connectionArea;
+            if (oldArea != OspfRoute.NO_AREA) {
+              Long maxMetricSummaryNetworks =
+                  neighborVirtualRouter._vrf.getOspfProcess().getMaxMetricSummaryNetworks();
+              if (connectionArea != oldArea) {
+                if (connectionArea != 0L && oldArea != 0L) {
+                  continue;
+                }
+                if (maxMetricSummaryNetworks != null) {
+                  baseMetric = maxMetricSummaryNetworks + neighborRoute.getLsaMetric();
+                  baseCostToAdvertiser = maxMetricSummaryNetworks;
+                }
+              }
+            }
+            long newMetric = baseMetric + incrementalCost;
+            long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
+            OspfExternalType1Route newRoute =
+                new OspfExternalType1Route(
+                    neighborRoute.getNetwork(),
+                    neighborInterface.getAddress().getIp(),
+                    admin,
+                    newMetric,
+                    neighborRoute.getLsaMetric(),
+                    newArea,
+                    newCostToAdvertiser,
+                    neighborRoute.getAdvertiser());
+            if (withdraw) {
+              builderType1.remove(newRoute, Reason.WITHDRAW);
+              SortedSet<OspfExternalType1Route> backups =
+                  _receivedOspExternalType1Routes.get(newRoute.getNetwork());
+              if (backups != null) {
+                backups.remove(newRoute);
+              }
+            } else {
+              builderType1.from(_ospfExternalType1StagingRib.mergeRouteGetDelta(newRoute));
+              _receivedOspExternalType1Routes
+                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
+                  .add(newRoute);
+            }
+
+          } else if (neighborRoute instanceof OspfExternalType2Route) {
+            long oldArea = neighborRoute.getArea();
+            long connectionArea = area.getName();
+            long newArea;
+            long baseCostToAdvertiser = neighborRoute.getCostToAdvertiser();
+            if (oldArea == OspfRoute.NO_AREA) {
+              newArea = connectionArea;
+            } else {
+              newArea = oldArea;
+              Long maxMetricSummaryNetworks =
+                  neighborVirtualRouter._vrf.getOspfProcess().getMaxMetricSummaryNetworks();
+              if (connectionArea != oldArea && maxMetricSummaryNetworks != null) {
+                baseCostToAdvertiser = maxMetricSummaryNetworks;
+              }
+            }
+            long newCostToAdvertiser = baseCostToAdvertiser + incrementalCost;
+            OspfExternalType2Route newRoute =
+                new OspfExternalType2Route(
+                    neighborRoute.getNetwork(),
+                    neighborInterface.getAddress().getIp(),
+                    admin,
+                    neighborRoute.getMetric(),
+                    neighborRoute.getLsaMetric(),
+                    newArea,
+                    newCostToAdvertiser,
+                    neighborRoute.getAdvertiser());
+            if (withdraw) {
+              builderType2.remove(newRoute, Reason.WITHDRAW);
+              SortedSet<OspfExternalType2Route> backups =
+                  _receivedOspExternalType2Routes.get(newRoute.getNetwork());
+              if (backups != null) {
+                backups.remove(newRoute);
+              }
+            } else {
+              builderType2.from(_ospfExternalType2StagingRib.mergeRouteGetDelta(newRoute));
+              _receivedOspExternalType2Routes
+                  .computeIfAbsent(newRoute.getNetwork(), k -> new TreeSet<>())
+                  .add(newRoute);
+            }
+          }
+        }
+      }
+    }
+    return new SimpleEntry<>(builderType1.build(), builderType2.build());
   }
 
   /**
@@ -2134,6 +2381,27 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
+  private void queueOutgoingIsisRoutes(
+      @Nullable RibDelta<IsisRoute> l1delta,
+      @Nullable RibDelta<IsisRoute> l2delta) {
+    if (_vrf.getIsisProcess() == null) {
+      return;
+    }
+    if (_isisNeighbors != null) {
+      _isisNeighbors.forEach(
+          (key, ospfLink) -> {
+            if (ospfLink._localOspfArea.getStubType() == StubType.STUB) {
+              return;
+            }
+            // Get remote neighbor's queue by prefix
+            Queue<RouteAdvertisement<OspfExternalRoute>> q =
+                ospfLink._remoteVirtualRouter._ospfExternalIncomingRoutes.get(key);
+            queueDelta(q, l1delta);
+            queueDelta(q, l2delta);
+          });
+    }
+  }
+
   /**
    * Send out OSPF External route updates to our neighbors
    *
@@ -2214,6 +2482,17 @@ public class VirtualRouter extends ComparableStructure<String> {
         _mainRibRouteDeltaBuiler.build(),
         allNodes,
         bgpTopology);
+  }
+
+  boolean unstageIsisRoutes(RibDelta<IsisRoute> l1Delta, RibDelta<IsisRoute> l2Delta) {
+    RibDelta<IsisRoute> d1 = importRibDelta(_isisL1Rib, l1Delta);
+    RibDelta<IsisRoute> d2 = importRibDelta(_isisL2Rib, l2Delta);
+    queueOutgoingIsisRoutes(d1, d2);
+    Builder<IsisRoute> isisDeltaBuilder = new Builder<>(_isisRib);
+    isisDeltaBuilder.from(importRibDelta(_isisRib, d1));
+    isisDeltaBuilder.from(importRibDelta(_isisRib, d2));
+    _mainRibRouteDeltaBuiler.from(importRibDelta(_mainRib, isisDeltaBuilder.build()));
+    return d1 != null || d2 != null;
   }
 
   /**

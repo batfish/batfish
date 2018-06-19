@@ -11,7 +11,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   public static class Builder {
 
-    private Integer _cost;
+    private Long _cost;
 
     private String _helloAuthenticationKey;
 
@@ -33,7 +33,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
           _mode);
     }
 
-    public @Nonnull Builder setCost(@Nullable Integer cost) {
+    public @Nonnull Builder setCost(@Nullable Long cost) {
       _cost = cost;
       return this;
     }
@@ -85,7 +85,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   @JsonCreator
   private static @Nonnull IsisInterfaceLevelSettings create(
-      Integer cost,
+      Long cost,
       String helloAuthenticationKey,
       IsisHelloAuthenticationType helloAuthenticationType,
       Integer helloInterval,
@@ -95,7 +95,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
         cost, helloAuthenticationKey, helloAuthenticationType, helloInterval, holdTime, mode);
   }
 
-  private final Integer _cost;
+  private final Long _cost;
 
   private final String _helloAuthenticationKey;
 
@@ -108,7 +108,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
   private final IsisInterfaceMode _mode;
 
   private IsisInterfaceLevelSettings(
-      @JsonProperty(PROP_COST) @Nullable Integer cost,
+      @JsonProperty(PROP_COST) @Nullable Long cost,
       @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY) @Nullable String helloAuthenticationKey,
       @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE) @Nullable
           IsisHelloAuthenticationType helloAuthenticationType,
@@ -141,7 +141,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
   }
 
   @JsonProperty(PROP_COST)
-  public @Nullable Integer getCost() {
+  public @Nullable Long getCost() {
     return _cost;
   }
 

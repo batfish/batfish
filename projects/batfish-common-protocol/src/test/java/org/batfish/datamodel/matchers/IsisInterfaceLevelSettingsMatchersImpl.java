@@ -8,13 +8,13 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class IsisInterfaceLevelSettingsMatchersImpl {
-  static final class HasCost extends FeatureMatcher<IsisInterfaceLevelSettings, Integer> {
-    public HasCost(Matcher<? super Integer> subMatcher) {
+  static final class HasCost extends FeatureMatcher<IsisInterfaceLevelSettings, Long> {
+    public HasCost(Matcher<? super Long> subMatcher) {
       super(subMatcher, "An IsisInterfaceLevelSettings with cost:", "cost");
     }
 
     @Override
-    protected Integer featureValueOf(IsisInterfaceLevelSettings actual) {
+    protected Long featureValueOf(IsisInterfaceLevelSettings actual) {
       return actual.getCost();
     }
   }

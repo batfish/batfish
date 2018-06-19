@@ -130,7 +130,7 @@ public class Interface extends ComparableStructure<String> {
 
   private int _incomingFilterLine;
 
-  private Integer _isisCost;
+  private Long _isisCost;
 
   private IsisInterfaceMode _isisInterfaceMode;
 
@@ -291,7 +291,7 @@ public class Interface extends ComparableStructure<String> {
     return _incomingFilterLine;
   }
 
-  public Integer getIsisCost() {
+  public Long getIsisCost() {
     return _isisCost;
   }
 
@@ -446,7 +446,7 @@ public class Interface extends ComparableStructure<String> {
     _incomingFilterLine = incomingFilterLine;
   }
 
-  public void setIsisCost(Integer isisCost) {
+  public void setIsisCost(Long isisCost) {
     _isisCost = isisCost;
   }
 

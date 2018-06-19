@@ -37,6 +37,7 @@ import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.OspfExternalType1Route;
 import org.batfish.datamodel.OspfExternalType2Route;
 import org.batfish.datamodel.Topology;
@@ -245,6 +246,45 @@ class IncrementalBdpEngine {
               }
               recomputeAggregateCompleted.incrementAndGet();
             });
+
+    // Re-initialize IS-IS exports.
+    nodes
+        .values()
+        .parallelStream()
+        .forEach(
+            n -> {
+              for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                vr.initIsisExports();
+              }
+            });
+    // IS-IS route propagation
+    AtomicBoolean isisChanged = new AtomicBoolean(true);
+    int isisSubIterations = 0;
+    while (isisChanged.get()) {
+      isisSubIterations++;
+      AtomicInteger propagateIsisCompleted =
+          _newBatch.apply(
+              "Iteration "
+                  + iteration
+                  + ": Propagate IS-IS routes: subIteration: "
+                  + isisSubIterations,
+              nodes.size());
+      isisChanged.set(false);
+      nodes
+          .values()
+          .parallelStream()
+          .forEach(
+              n -> {
+                for (VirtualRouter vr : n.getVirtualRouters().values()) {
+                  Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> p =
+                      vr.propagateIsisRoutes(allNodes, topology);
+                  if (p != null && vr.unstageIsisRoutes(p.getKey(), p.getValue())) {
+                    isisChanged.set(true);
+                  }
+                }
+                propagateIsisCompleted.incrementAndGet();
+              });
+    }
 
     // OSPF external routes
     // recompute exports
