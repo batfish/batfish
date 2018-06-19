@@ -21670,6 +21670,14 @@
             "          (null_rest_of_line",
             "            TRUST:'trust'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (if_ip_flow_monitor",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        FLOW:'flow'  <== mode:DEFAULT_MODE",
+            "        MONITOR:'monitor'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'some-flow-mon'  <== mode:DEFAULT_MODE)",
+            "        OUTPUT:'output'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_ip_helper_address",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        HELPER_ADDRESS:'helper-address'  <== mode:DEFAULT_MODE",
@@ -54694,25 +54702,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                280
+                281
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                282
+                283
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                284
+                285
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                286
+                287
               ],
               "numReferrers" : 1
             },
@@ -54989,114 +54997,115 @@
                 275,
                 276,
                 277,
-                278
+                278,
+                279
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                288
+                289
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                325,
-                326
+                326,
+                327
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                290,
                 291,
                 292,
                 293,
-                294
+                294,
+                295
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                296
+                297
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                298
+                299
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                300
+                301
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                309
+                310
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                315
+                316
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                317
+                318
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                304
+                305
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                319
+                320
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                311
+                312
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                313
+                314
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                321
+                322
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                306
+                307
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                323
+                324
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                302
+                303
               ],
               "numReferrers" : 1
             }
@@ -57134,12 +57143,12 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                124
+                125
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                127
+                128
               ]
             },
             "ag1" : {
@@ -57154,33 +57163,33 @@
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                90
+                91
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                87
+                88
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                77
+                78
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                91
+                92
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                278
+                279
               ]
             }
           }

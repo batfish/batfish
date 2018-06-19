@@ -72,6 +72,7 @@ interface Ethernet0
  ip dhcp snooping limit rate 10
  ip dhcp snooping trust
  no ip dhcp snooping trust
+ ip flow monitor some-flow-mon output
  ip helper-address 172.16.0.1
  ip helper-address 172.17.0.1
  ip igmp access-group 1

@@ -172,6 +172,15 @@ if_ip_dhcp
    )
 ;
 
+if_ip_flow_monitor
+:
+   IP FLOW MONITOR name = variable
+   (
+      INPUT
+      | OUTPUT
+   ) NEWLINE
+;
+
 if_ip_helper_address
 :
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
@@ -1249,6 +1258,7 @@ s_interface
       | if_ip_address_dhcp
       | if_ip_address_secondary
       | if_ip_dhcp
+      | if_ip_flow_monitor
       | if_ip_helper_address
       | if_ip_inband_access_group
       | if_ip_igmp
