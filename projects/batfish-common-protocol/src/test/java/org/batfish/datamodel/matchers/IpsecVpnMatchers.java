@@ -17,7 +17,8 @@ public final class IpsecVpnMatchers {
    * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
    * specified {@code bindInterface}
    */
-  public static HasBindInterface hasBindInterface(@Nonnull Matcher<? super Interface> subMatcher) {
+  public static @Nonnull HasBindInterface hasBindInterface(
+      @Nonnull Matcher<? super Interface> subMatcher) {
     return new HasBindInterface(subMatcher);
   }
 
@@ -25,7 +26,8 @@ public final class IpsecVpnMatchers {
    * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
    * specified {@code ikeGateway}
    */
-  public static HasIkeGatewaay hasIkeGatewaay(@Nonnull Matcher<? super IkeGateway> subMatcher) {
+  public static @Nonnull HasIkeGatewaay hasIkeGatewaay(
+      @Nonnull Matcher<? super IkeGateway> subMatcher) {
     return new HasIkeGatewaay(subMatcher);
   }
 
@@ -33,7 +35,8 @@ public final class IpsecVpnMatchers {
    * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
    * specified {@code ipsecPolicy}
    */
-  public static HasIpsecPolicy hasIpsecPolicy(@Nonnull Matcher<? super IpsecPolicy> subMatcher) {
+  public static @Nonnull HasIpsecPolicy hasIpsecPolicy(
+      @Nonnull Matcher<? super IpsecPolicy> subMatcher) {
     return new HasIpsecPolicy(subMatcher);
   }
 
@@ -41,7 +44,7 @@ public final class IpsecVpnMatchers {
    * Provides a matcher that matches if the Ipsec VPN's value of {@code subMatcher} matches
    * specified {@code policy}
    */
-  public static HasPolicy hasPolicy(@Nonnull Matcher<? super IpAccessList> subMatcher) {
+  public static @Nonnull HasPolicy hasPolicy(@Nonnull Matcher<? super IpAccessList> subMatcher) {
     return new HasPolicy(subMatcher);
   }
 

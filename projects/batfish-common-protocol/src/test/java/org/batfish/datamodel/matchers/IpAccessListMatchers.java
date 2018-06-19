@@ -53,7 +53,7 @@ public final class IpAccessListMatchers {
    * Provides a matcher that matches if the Ip Access List's value of {@code name} matches specified
    * {@code name}
    */
-  public static HasName hasName(String name) {
+  public static @Nonnull HasName hasName(String name) {
     return new HasName(equalTo(name));
   }
 

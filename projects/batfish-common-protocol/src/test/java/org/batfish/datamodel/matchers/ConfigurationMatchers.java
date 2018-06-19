@@ -140,7 +140,7 @@ public class ConfigurationMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
    * Ipsec vpn with specified name.
    */
-  public static HasIpsecVpn hasIpsecVpn(
+  public static @Nonnull HasIpsecVpn hasIpsecVpn(
       @Nonnull String name, @Nonnull Matcher<? super IpsecVpn> subMatcher) {
     return new HasIpsecVpn(name, subMatcher);
   }

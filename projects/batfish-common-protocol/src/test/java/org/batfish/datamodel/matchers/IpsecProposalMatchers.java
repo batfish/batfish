@@ -3,6 +3,7 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Set;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
@@ -17,7 +18,7 @@ public final class IpsecProposalMatchers {
    * Provides a matcher that matches if the Ipsec Proposal's value of {@code encryptionAlgorithm}
    * matches specified {@code encryptionAlgorithm}
    */
-  public static HasEncryptionAlgorithm hasEncryptionAlgorithm(
+  public static @Nonnull HasEncryptionAlgorithm hasEncryptionAlgorithm(
       EncryptionAlgorithm encryptionAlgorithm) {
     return new HasEncryptionAlgorithm(equalTo(encryptionAlgorithm));
   }
@@ -26,7 +27,7 @@ public final class IpsecProposalMatchers {
    * Provides a matcher that matches if the Ipsec Proposal's value of {@code
    * authenticationAlgorithm} matches specified {@code authenticationAlgorithm}
    */
-  public static HasAuthenticationAlgorithm hasAuthenticationAlgorithm(
+  public static @Nonnull HasAuthenticationAlgorithm hasAuthenticationAlgorithm(
       IpsecAuthenticationAlgorithm ipsecAuthenticationAlgorithm) {
     return new HasAuthenticationAlgorithm(equalTo(ipsecAuthenticationAlgorithm));
   }
@@ -35,7 +36,7 @@ public final class IpsecProposalMatchers {
    * Provides a matcher that matches if the Ipsec Proposal's value of {@code name} matches specified
    * {@code name}
    */
-  public static HasName hasName(String name) {
+  public static @Nonnull HasName hasName(String name) {
     return new HasName(equalTo(name));
   }
 

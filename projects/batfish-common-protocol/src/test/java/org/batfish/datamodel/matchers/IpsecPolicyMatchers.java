@@ -19,7 +19,7 @@ public final class IpsecPolicyMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
    * Ipsec Proposals.
    */
-  public static HasIpsecProposals hasIpsecProposals(
+  public static @Nonnull HasIpsecProposals hasIpsecProposals(
       @Nonnull Matcher<? super List<IpsecProposal>> subMatcher) {
     return new HasIpsecProposals(subMatcher);
   }
@@ -28,7 +28,8 @@ public final class IpsecPolicyMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
    * Ike Gateway
    */
-  public static HasIkeGateway hasIkeGateway(@Nonnull Matcher<? super IkeGateway> subMatcher) {
+  public static @Nonnull HasIkeGateway hasIkeGateway(
+      @Nonnull Matcher<? super IkeGateway> subMatcher) {
     return new HasIkeGateway(subMatcher);
   }
 
@@ -36,14 +37,14 @@ public final class IpsecPolicyMatchers {
    * Provides a matcher that matches if the provided {@code pfsKeyGroup} matches the Ipsec policy's
    * PfsKeyGroup
    */
-  public static HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
+  public static @Nonnull HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
     return new HasPfsKeyGroup(equalTo(pfsKeyGroup));
   }
 
   /**
    * Provides a matcher that matches if the provided {@code name} matches the Ipsec policy's name
    */
-  public static HasName hasName(String name) {
+  public static @Nonnull HasName hasName(String name) {
     return new HasName(equalTo(name));
   }
 

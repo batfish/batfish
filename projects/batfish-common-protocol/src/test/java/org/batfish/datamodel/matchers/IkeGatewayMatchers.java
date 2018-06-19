@@ -2,6 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
 
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -18,7 +19,7 @@ public final class IkeGatewayMatchers {
    * Provides a matcher that matches if the IKE Gateway's value of {@code address} matches specified
    * {@code address}
    */
-  public static HasAddress hasAddress(Ip address) {
+  public static @Nonnull HasAddress hasAddress(Ip address) {
     return new HasAddress(equalTo(address));
   }
 
@@ -26,7 +27,7 @@ public final class IkeGatewayMatchers {
    * Provides a matcher that matches if the IKE Gateway's value of {@code externalInterface} matches
    * specified {@code externalInterface}
    */
-  public static HasExternalInterface hasExternalInterface(Matcher<Interface> subMatcher) {
+  public static @Nonnull HasExternalInterface hasExternalInterface(Matcher<Interface> subMatcher) {
     return new HasExternalInterface(subMatcher);
   }
 
@@ -34,7 +35,7 @@ public final class IkeGatewayMatchers {
    * Provides a matcher that matches if the IKE Gateway's value of {@code ikePolicy} matches
    * specified {@code ikePolicy}
    */
-  public static HasIkePolicy hasIkePolicy(Matcher<IkePolicy> subMatcher) {
+  public static @Nonnull HasIkePolicy hasIkePolicy(Matcher<IkePolicy> subMatcher) {
     return new HasIkePolicy(subMatcher);
   }
 
@@ -50,7 +51,7 @@ public final class IkeGatewayMatchers {
    * Provides a matcher that matches if the IKE Gateway's value of {@code name} matches specified
    * {@code name}
    */
-  public static HasName hasName(String name) {
+  public static @Nonnull HasName hasName(String name) {
     return new HasName(equalTo(name));
   }
 
