@@ -2,44 +2,32 @@ package org.batfish.datamodel.acl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.lessThan;
 
 import org.junit.Test;
 
 public class AclLineMatchExprTest {
 
+  private static final AclLineMatchExpr[] EXPRS = {
+    new AndMatchExpr(null, null),
+    new AndMatchExpr(null, "a"),
+    new AndMatchExpr(null, "b"),
+    FalseExpr.INSTANCE,
+  };
+
   @Test
-  public void testCompareDifferentClasses() {
-    assertThat(FalseExpr.INSTANCE.compareTo(TrueExpr.INSTANCE), not(equalTo(0)));
+  public void testCompareToForDifferentVals() {
+    for (int i = 0; i + 1 < EXPRS.length; i++) {
+      for (int j = i + 1; j < EXPRS.length; j++) {
+        assertThat(EXPRS[i].compareTo(EXPRS[j]), lessThan(0));
+      }
+    }
   }
 
   @Test
-  public void testCompareSameDescription() {
-    assertThat(exprWithDescription("desc").compareTo(exprWithDescription("desc")), equalTo(0));
-  }
-
-  @Test
-  public void testCompareDifferentDescriptions() {
-    assertThat(
-        exprWithDescription("desc1").compareTo(exprWithDescription("desc2")), not(equalTo(0)));
-  }
-
-  @Test
-  public void testCompareFirstDescriptionNull() {
-    assertThat(exprWithDescription(null).compareTo(exprWithDescription("desc")), not(equalTo(0)));
-  }
-
-  @Test
-  public void testCompareSecondDescriptionNull() {
-    assertThat(exprWithDescription("desc").compareTo(exprWithDescription(null)), not(equalTo(0)));
-  }
-
-  @Test
-  public void testCompareBothDescriptionsNull() {
-    assertThat(exprWithDescription(null).compareTo(exprWithDescription(null)), equalTo(0));
-  }
-
-  private AclLineMatchExpr exprWithDescription(String description) {
-    return new AndMatchExpr(null, description);
+  public void testCompareToForEqualVals() {
+    // Test equivalent expressions with both non-null and null descriptions
+    assertThat(new AndMatchExpr(null, "x").compareTo(new AndMatchExpr(null, "x")), equalTo(0));
+    assertThat(new AndMatchExpr(null, null).compareTo(new AndMatchExpr(null, null)), equalTo(0));
   }
 }
