@@ -1631,88 +1631,80 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testCryptoMaps() throws IOException {
+  public void testCryptoMapsToIpsecPolicies() throws IOException {
     Configuration c = parseConfig("ios-crypto-map");
 
     assertThat(
         c,
-        allOf(
-            hasIpsecPolicy(
-                "mymap:10",
-                allOf(
-                    IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-                    hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
-                    hasIpsecProposals(
-                        contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))),
-            hasIpsecPolicy(
-                "mymap:30",
+        hasIpsecPolicy(
+            "mymap:10",
+            allOf(
+                IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
                 hasIpsecProposals(
                     contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))));
 
     assertThat(
         c,
-        allOf(
-            hasIpsecVpn(
-                "mymap:10:TenGigabitEthernet0/0",
-                allOf(
-                    hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                    IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
-                    hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
-                    hasPolicy(
-                        hasLines(
-                            equalTo(
-                                ImmutableList.of(
-                                    IpAccessListLine.accepting()
-                                        .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
-                                        .setMatchCondition(
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setSrcIps(
-                                                        new IpWildcard("1.1.1.1").toIpSpace())
-                                                    .setDstIps(
-                                                        new IpWildcard("2.2.2.2").toIpSpace())
-                                                    .build()))
-                                        .build(),
-                                    IpAccessListLine.accepting()
-                                        .setMatchCondition(
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setSrcIps(
-                                                        new IpWildcard("2.2.2.2").toIpSpace())
-                                                    .setDstIps(
-                                                        new IpWildcard("1.1.1.1").toIpSpace())
-                                                    .build()))
-                                        .build())))))),
-            hasIpsecVpn(
-                "mymap:30:TenGigabitEthernet0/0",
-                allOf(
-                    hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
-                    IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30")),
-                    hasPolicy(
-                        hasLines(
-                            equalTo(
-                                ImmutableList.of(
-                                    IpAccessListLine.accepting()
-                                        .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
-                                        .setMatchCondition(
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setSrcIps(
-                                                        new IpWildcard("1.1.1.1").toIpSpace())
-                                                    .setDstIps(
-                                                        new IpWildcard("2.2.2.2").toIpSpace())
-                                                    .build()))
-                                        .build(),
-                                    IpAccessListLine.accepting()
-                                        .setMatchCondition(
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setSrcIps(
-                                                        new IpWildcard("2.2.2.2").toIpSpace())
-                                                    .setDstIps(
-                                                        new IpWildcard("1.1.1.1").toIpSpace())
-                                                    .build()))
-                                        .build()))))))));
+        hasIpsecPolicy(
+            "mymap:30:5",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))));
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:30:15",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
+  }
+
+  @Test
+  public void testCryptoMapsToIpsecVpns() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+
+    List<IpAccessListLine> expectedAclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .build()))
+                .build(),
+            IpAccessListLine.accepting()
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .build()))
+                .build());
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:10:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
+                hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:30:5:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:5")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:30:15:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:15")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
   }
 
   @Test

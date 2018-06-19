@@ -14,6 +14,9 @@ crypto isakmp profile ISAKMP-PROFILE
 crypto ipsec transform-set ts1 esp-aes 256 esp-md5-hmac
  mode tunnel
 !
+crypto ipsec transform-set ts2 esp-aes 256 esp-sha-hmac
+ mode tunnel
+!
 crypto map mymap 10 ipsec-isakmp
  match address ACL
  set transform-set ts1
@@ -22,9 +25,13 @@ crypto map mymap 10 ipsec-isakmp
  set pfs group14
 crypto map mymap 30 ipsec-isakmp dynamic mydynamicmap
 !
-crypto dynamic-map mydynamicmap 10
+crypto dynamic-map mydynamicmap 5
  match address ACL
  set transform-set ts1
+!
+crypto dynamic-map mydynamicmap 15
+ match address ACL
+ set transform-set ts2
 !
 ip access-list extended ACL
  permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0

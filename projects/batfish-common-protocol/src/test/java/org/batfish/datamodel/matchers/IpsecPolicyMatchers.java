@@ -34,7 +34,7 @@ public final class IpsecPolicyMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@code pfsKeyGroup} matches the Ipsec policy's
-   * PfsKeyGroupy
+   * PfsKeyGroup
    */
   public static HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
     return new HasPfsKeyGroup(equalTo(pfsKeyGroup));

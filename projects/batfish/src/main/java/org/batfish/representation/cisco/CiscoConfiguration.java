@@ -2095,13 +2095,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return newBgpProcess;
   }
 
-  /** Converts a crypto map entry an Ipsec policy and a list of Ipsec VPNs */
+  /** Converts a crypto map entry to an Ipsec policy and a list of Ipsec VPNs */
   private void convertCryptoMapEntry(
-      final Configuration c, CryptoMapEntry cryptoMapEntry, String generatedName) {
+      final Configuration c,
+      CryptoMapEntry cryptoMapEntry,
+      String generatedName,
+      String cryptoMapName) {
     IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, generatedName);
     c.getIpsecPolicies().put(generatedName, ipsecPolicy);
 
-    List<IpsecVpn> ipsecVpns = toIpsecVpns(c, cryptoMapEntry, generatedName);
+    List<IpsecVpn> ipsecVpns = toIpsecVpns(c, cryptoMapEntry, generatedName, cryptoMapName);
     ipsecVpns.forEach(
         ipsecVpn -> {
           ipsecVpn.setIpsecPolicy(ipsecPolicy);
@@ -2123,26 +2126,26 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (cryptoMapEntry.getReferredDynamicMapSet() != null) {
         CryptoMapSet dynamicCryptoMapSet =
             _cryptoMapSets.get(cryptoMapEntry.getReferredDynamicMapSet());
-        if (dynamicCryptoMapSet == null || !dynamicCryptoMapSet.getDynamic()) {
-          _w.redFlag(
-              String.format(
-                  "Dynamic Crypto map set '%s' referred by crypto map '%s' does not exist",
-                  cryptoMapEntry.getReferredDynamicMapSet(), cryptoMapEntry.getName()));
-
-        } else {
+        if (dynamicCryptoMapSet != null && dynamicCryptoMapSet.getDynamic()) {
           // convert all entries of the referred dynamic crypto map
           dynamicCryptoMapSet
               .getCryptoMapEntries()
-              .forEach(cryptoMap -> convertCryptoMapEntry(c, cryptoMap, nameSeqNum));
+              .forEach(
+                  cryptoMap ->
+                      convertCryptoMapEntry(
+                          c,
+                          cryptoMap,
+                          String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
+                          cryptoMapEntry.getName()));
         }
       } else {
-        convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum);
+        convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName());
       }
     }
   }
 
   /** Converts a CryptoMapEntry to an IpsecPolicy */
-  private IpsecPolicy toIpsecPolicy(
+  private static IpsecPolicy toIpsecPolicy(
       Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecPolicyName) {
     IpsecPolicy ipsecPolicy = new IpsecPolicy(ipsecPolicyName);
 
@@ -2172,12 +2175,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
    * Converts a crypto map entry to a list of ipsec vpns(one per interface on which it is referred)
    */
   private List<IpsecVpn> toIpsecVpns(
-      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecVpnName) {
+      Configuration c, CryptoMapEntry cryptoMapEntry, String ipsecVpnName, String cryptoMapName) {
     List<org.batfish.datamodel.Interface> referencingInterfaces =
         c.getInterfaces()
             .values()
             .stream()
-            .filter(iface -> Objects.equals(iface.getCryptoMap(), ipsecVpnName.split(":")[0]))
+            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
             .collect(Collectors.toList());
 
     List<IpsecVpn> ipsecVpns = new ArrayList<>();
@@ -2212,8 +2215,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
                 .stream()
                 .filter(
                     ikeGateway1 ->
-                        ikeGateway1.getLocalIp() == bindingInterfaceIp
-                            && ikeGateway1.getAddress() == cryptoMapEntry.getPeer())
+                        ikeGateway1.getLocalIp().equals(bindingInterfaceIp)
+                            && ikeGateway1.getAddress().equals(cryptoMapEntry.getPeer()))
                 .findFirst();
         filteredIkeGateway.ifPresent(ipsecVpn::setIkeGateway);
       }

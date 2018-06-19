@@ -1,6 +1,6 @@
 package org.batfish.datamodel.matchers;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
 import java.util.Map;

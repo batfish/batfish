@@ -91,7 +91,7 @@ public final class InterfaceMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's
    * crypto map.
    */
-  public static HasCryptoMap hasCryptoMap(@Nonnull Matcher<? super String> subMatcher) {
+  public static @Nonnull HasCryptoMap hasCryptoMap(@Nonnull Matcher<? super String> subMatcher) {
     return new HasCryptoMap(subMatcher);
   }
 

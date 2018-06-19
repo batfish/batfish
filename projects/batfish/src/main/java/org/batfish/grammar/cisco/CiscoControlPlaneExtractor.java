@@ -420,6 +420,7 @@ import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_mapContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_seq_numContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_match_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_isakmp_profileContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_peerContext;
@@ -1239,6 +1240,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private CryptoMapEntry _currentCryptoMapEntry;
 
+  private String _currentCryptoMapName;
+
+  private Integer _currentCryptoMapSequenceNum;
+
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
   private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
@@ -1817,27 +1822,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCrypto_map(Crypto_mapContext ctx) {
-    String name = ctx.name.getText();
-    // crypto map entry should be created only if seq number is present ahead
-    if (ctx.crypto_map_seq_num() != null
-        && ctx.crypto_map_seq_num().crypto_map_sn_ipsec_isakmp() != null) {
-      _currentCryptoMapEntry =
-          new CryptoMapEntry(name, toInteger(ctx.crypto_map_seq_num().num));
+    _currentCryptoMapName = ctx.name.getText();
+  }
 
-      CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(name);
-      // if this is the first crypto map entry in the crypto map set
-      if (cryptoMapSet == null) {
-        cryptoMapSet = new CryptoMapSet(name);
-        _configuration.getCryptoMapSets().put(name, cryptoMapSet);
-        defineStructure(CRYPTO_MAP_SET, name, ctx);
-      } else if (cryptoMapSet.getDynamic()) {
-        _w.redFlag(
-            String.format(
-                "Cannot add static crypto map entry %s to a dynamic crypto map set", name));
-        return;
-      }
-      cryptoMapSet.getCryptoMapEntries().add(_currentCryptoMapEntry);
-    }
+  @Override
+  public void enterCrypto_map_seq_num(Crypto_map_seq_numContext ctx) {
+    _currentCryptoMapSequenceNum = toInteger(ctx.num);
   }
 
   @Override
@@ -1864,13 +1854,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCrypto_map_sn_ipsec_isakmp(Crypto_map_sn_ipsec_isakmpContext ctx) {
+    _currentCryptoMapEntry =
+        new CryptoMapEntry(_currentCryptoMapName, _currentCryptoMapSequenceNum);
+
+    CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(_currentCryptoMapName);
+    // if this is the first crypto map entry in the crypto map set
+    if (cryptoMapSet == null) {
+      cryptoMapSet = new CryptoMapSet(_currentCryptoMapName);
+      _configuration.getCryptoMapSets().put(_currentCryptoMapName, cryptoMapSet);
+      defineStructure(CRYPTO_MAP_SET, _currentCryptoMapName, ctx);
+    } else if (cryptoMapSet.getDynamic()) {
+      _w.redFlag(
+          String.format(
+              "Cannot add static crypto map entry %s to a dynamic crypto map set",
+              _currentCryptoMapName));
+      return;
+    }
+
     if (ctx.crypto_dynamic_map_name != null) {
       String name = ctx.crypto_dynamic_map_name.getText();
       _currentCryptoMapEntry.setReferredDynamicMapSet(name);
-      int line = ctx.getStart().getLine();
       _configuration.referenceStructure(
-          CRYPTO_DYNAMIC_MAP_SET, name, CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET, line);
+          CRYPTO_DYNAMIC_MAP_SET,
+          name,
+          CRYPTO_MAP_IPSEC_ISAKMP_CRYPTO_DYNAMIC_MAP_SET,
+          ctx.getStart().getLine());
     }
+
+    cryptoMapSet.getCryptoMapEntries().add(_currentCryptoMapEntry);
   }
 
   @Override
@@ -4088,6 +4099,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           IPSEC_TRANSFORM_SET, name, CRYPTO_MAP_IPSEC_ISAKMP_TRANSFORM_SET, line);
     }
+  }
+
+  @Override
+  public void exitCrypto_map_sn_ipsec_isakmp(Crypto_map_sn_ipsec_isakmpContext ctx) {
+    _currentCryptoMapName = null;
+    _currentCryptoMapSequenceNum = null;
   }
 
   @Override
