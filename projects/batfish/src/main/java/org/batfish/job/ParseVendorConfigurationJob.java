@@ -12,14 +12,14 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.answers.ParseStatus;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.ControlPlaneExtractor;
+import org.batfish.grammar.Flattener;
+import org.batfish.grammar.FlattenerLineMap;
 import org.batfish.grammar.ParseTreePrettyPrinter;
 import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
-import org.batfish.grammar.flattener.Flattener;
-import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
@@ -350,7 +350,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
       if (_settings.getPrintParseTree()) {
         _ptSentences =
             ParseTreePrettyPrinter.getParseTreeSentences(
-                tree, combinedParser, _settings.getPrintParseTreeLineNums(), lineMap);
+                tree, combinedParser, _settings.getPrintParseTreeLineNums());
       }
       _logger.info("\tPost-processing...");
       extractor.processParseTree(tree);
