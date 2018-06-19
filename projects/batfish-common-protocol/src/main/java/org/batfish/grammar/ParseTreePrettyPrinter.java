@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.List;
 import java.util.ListIterator;
+import javax.annotation.Nullable;
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -20,29 +21,37 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   private BatfishCombinedParser<?, ?> _combinedParser;
   private ParserRuleContext _ctx;
   private int _indent;
+  private FlattenerLineMap _lineMap;
   private ParseTreeSentences _ptSentences;
   private boolean _printLineNumbers;
   private List<String> _ruleNames;
   private Vocabulary _vocabulary;
 
   private ParseTreePrettyPrinter(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
+      ParserRuleContext ctx,
+      BatfishCombinedParser<?, ?> combinedParser,
+      boolean printLineNumbers,
+      @Nullable FlattenerLineMap lineMap) {
     Parser grammar = combinedParser.getParser();
     List<String> ruleNames = Arrays.asList(grammar.getRuleNames());
     _vocabulary = grammar.getVocabulary();
     _combinedParser = combinedParser;
     _ruleNames = ruleNames;
     _ctx = ctx;
+    _lineMap = lineMap;
     _ptSentences = new ParseTreeSentences();
     _printLineNumbers = printLineNumbers;
     _indent = 0;
   }
 
   public static ParseTreeSentences getParseTreeSentences(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
+      ParserRuleContext ctx,
+      BatfishCombinedParser<?, ?> combinedParser,
+      boolean printLineNumbers,
+      FlattenerLineMap lineMap) {
     ParseTreeWalker walker = new ParseTreeWalker();
     ParseTreePrettyPrinter printer =
-        new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers);
+        new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers, lineMap);
     walker.walk(printer, ctx);
     return printer._ptSentences;
   }
@@ -74,14 +83,17 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   }
 
   public static String print(ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
-    return print(ctx, combinedParser, false);
+    return print(ctx, combinedParser, false, null);
   }
 
   public static String print(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
+      ParserRuleContext ctx,
+      BatfishCombinedParser<?, ?> combinedParser,
+      boolean printLineNumbers,
+      @Nullable FlattenerLineMap lineMap) {
     int maxStringLength = combinedParser.getSettings().getMaxParseTreePrintLength();
     List<String> strings =
-        getParseTreeSentences(ctx, combinedParser, printLineNumbers).getSentences();
+        getParseTreeSentences(ctx, combinedParser, printLineNumbers, lineMap).getSentences();
     return printWithCharacterLimit(strings, maxStringLength);
   }
 

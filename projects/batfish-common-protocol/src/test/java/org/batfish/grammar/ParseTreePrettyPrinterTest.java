@@ -66,4 +66,28 @@ public class ParseTreePrettyPrinterTest {
         ptSentencesLineNums.getSentences().get(16),
         containsString("EOF:<EOF>  <== mode:DEFAULT_MODE line:5)"));
   }
+
+  @Test
+  public void testGetParseTreeSentencesMappedLineNumbers() throws IOException {
+    String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
+    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings);
+    ParserRuleContext tree = cp.parse();
+    ParseTreeSentences ptSentencesLineNums =
+        ParseTreePrettyPrinter.getParseTreeSentences(tree, cp, true);
+
+    /* Confirm printed parse tree includes original line numbers */
+    assertThat(
+        ptSentencesLineNums.getSentences().get(3),
+        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:6"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(9),
+        containsString("BLOCK:'block'  <== mode:DEFAULT_MODE line:7"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(14),
+        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:8)"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(16),
+        containsString("EOF:<EOF>  <== mode:DEFAULT_MODE line:9)"));
+  }
 }
