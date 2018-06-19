@@ -3621,7 +3621,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       AsPathSetElem elem = toAsPathSetElem(elemCtx);
       asPathSet.getElements().add(elem);
     }
-    _configuration.defineStructure(AS_PATH_SET, name, ctx.name.getStart().getLine());
+    defineStructure(AS_PATH_SET, name, ctx);
   }
 
   @Override
