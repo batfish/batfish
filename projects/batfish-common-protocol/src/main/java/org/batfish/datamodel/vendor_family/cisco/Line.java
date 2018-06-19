@@ -14,6 +14,8 @@ public class Line extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
+  private static final String PROP_LINE_TYPE = "lineType";
+
   private AaaAuthenticationLoginList _aaaAuthenticationLoginList;
 
   private int _execTimeoutMinutes;
@@ -24,6 +26,7 @@ public class Line extends ComparableStructure<String> {
 
   private String _inputIpv6AccessList;
 
+  @JsonProperty(PROP_LINE_TYPE)
   private LineType _lineType;
 
   private String _loginAuthentication;
@@ -67,6 +70,7 @@ public class Line extends ComparableStructure<String> {
     return _inputIpv6AccessList;
   }
 
+  @JsonProperty(PROP_LINE_TYPE)
   public LineType getLineType() {
     return _lineType;
   }
