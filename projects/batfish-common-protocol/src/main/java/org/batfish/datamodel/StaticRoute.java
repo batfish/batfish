@@ -9,12 +9,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class StaticRoute extends AbstractRoute {
+  static final long DEFAULT_STATIC_ROUTE_METRIC = 0L;
 
   private static final String PROP_NEXT_HOP_INTERFACE = "nextHopInterface";
 
   private static final long serialVersionUID = 1L;
 
   private final int _administrativeCost;
+
+  private final long _metric;
 
   @Nonnull private final String _nextHopInterface;
 
@@ -23,14 +26,26 @@ public class StaticRoute extends AbstractRoute {
   private final int _tag;
 
   @JsonCreator
-  public StaticRoute(
-      @JsonProperty(PROP_NETWORK) Prefix network,
+  private static StaticRoute jsonCreator(
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
+      @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) int tag) {
+    return new StaticRoute(network, nextHopIp, nextHopInterface, administrativeCost, metric, tag);
+  }
+
+  public StaticRoute(
+      Prefix network,
+      @Nullable Ip nextHopIp,
+      @Nullable String nextHopInterface,
+      int administrativeCost,
+      long metric,
+      int tag) {
     super(network);
     _administrativeCost = administrativeCost;
+    _metric = metric;
     _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
     _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
     _tag = tag;
@@ -59,9 +74,10 @@ public class StaticRoute extends AbstractRoute {
   }
 
   @Override
-  @JsonIgnore
+  @JsonIgnore(false)
+  @JsonProperty(PROP_METRIC)
   public Long getMetric() {
-    return 0L;
+    return _metric;
   }
 
   @Nonnull
@@ -128,7 +144,12 @@ public class StaticRoute extends AbstractRoute {
     @Override
     public StaticRoute build() {
       return new StaticRoute(
-          getNetwork(), getNextHopIp(), _nextHopInterface, _administrativeCost, getTag());
+          getNetwork(),
+          getNextHopIp(),
+          _nextHopInterface,
+          _administrativeCost,
+          getMetric(),
+          getTag());
     }
 
     @Override
