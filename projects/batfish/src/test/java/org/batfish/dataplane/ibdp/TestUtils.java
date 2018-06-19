@@ -23,7 +23,13 @@ public class TestUtils {
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
       String hostname,
       InterfaceAddress address) {
-    Prefix prefix = address.getPrefix();
+    assertNoRoute(routesByNode, hostname, address.getPrefix());
+  }
+
+  public static void assertNoRoute(
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      String hostname,
+      Prefix prefix) {
     assertThat(routesByNode, hasKey(hostname));
     SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
@@ -37,7 +43,15 @@ public class TestUtils {
       String hostname,
       InterfaceAddress address,
       long expectedCost) {
-    Prefix prefix = address.getPrefix();
+    assertRoute(routesByNode, protocol, hostname, address.getPrefix(), expectedCost);
+  }
+
+  public static void assertRoute(
+      SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
+      RoutingProtocol protocol,
+      String hostname,
+      Prefix prefix,
+      long expectedCost) {
     assertThat(routesByNode, hasKey(hostname));
     SortedMap<String, SortedSet<AbstractRoute>> routesByVrf = routesByNode.get(hostname);
     assertThat(routesByVrf, hasKey(Configuration.DEFAULT_VRF_NAME));
