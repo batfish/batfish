@@ -463,14 +463,16 @@ public class VirtualRouterTest {
 
     List<StaticRoute> routes =
         ImmutableList.of(
-            new StaticRoute(Prefix.parse("1.1.1.1/32"), null, "Ethernet1", 1, 1),
-            new StaticRoute(Prefix.parse("2.2.2.2/32"), new Ip("9.9.9.8"), null, 1, 1),
-            new StaticRoute(Prefix.parse("3.3.3.3/32"), new Ip("9.9.9.9"), "Ethernet1", 1, 1),
-            new StaticRoute(Prefix.parse("4.4.4.4/32"), null, Interface.NULL_INTERFACE_NAME, 1, 1),
+            new StaticRoute(Prefix.parse("1.1.1.1/32"), null, "Ethernet1", 1, 0L, 1),
+            new StaticRoute(Prefix.parse("2.2.2.2/32"), new Ip("9.9.9.8"), null, 1, 0L, 1),
+            new StaticRoute(Prefix.parse("3.3.3.3/32"), new Ip("9.9.9.9"), "Ethernet1", 1, 0L, 1),
+            new StaticRoute(Prefix.parse("4.4.4.4/32"), null, Interface.NULL_INTERFACE_NAME, 1,
+                0L,
+                1),
 
             // These do not get activated due to missing/incorrect interface names
-            new StaticRoute(Prefix.parse("5.5.5.5/32"), null, "Eth1", 1, 1),
-            new StaticRoute(Prefix.parse("6.6.6.6/32"), null, null, 1, 1));
+            new StaticRoute(Prefix.parse("5.5.5.5/32"), null, "Eth1", 1, 0L, 1),
+            new StaticRoute(Prefix.parse("6.6.6.6/32"), null, null, 1, 0L, 1));
     vr.getConfiguration()
         .getVrfs()
         .get(Configuration.DEFAULT_VRF_NAME)
@@ -682,7 +684,7 @@ public class VirtualRouterTest {
     VirtualRouter vr = makeIosVirtualRouter(null);
     vr.initRibs();
     SortedSet<StaticRoute> routeSet =
-        ImmutableSortedSet.of(new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 1, 0));
+        ImmutableSortedSet.of(new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 1, 0L, 0));
     vr._vrf.setStaticRoutes(routeSet);
 
     // Test
@@ -705,8 +707,8 @@ public class VirtualRouterTest {
     assertThat(q, empty());
 
     // Test queueing non-empty delta
-    StaticRoute sr1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 1);
-    StaticRoute sr2 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 100, 1);
+    StaticRoute sr1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 0L, 1);
+    StaticRoute sr2 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 100, 0L, 1);
     RibDelta.Builder<AbstractRoute> builder = new Builder<>(null).add(sr1);
 
     // Add one route
@@ -723,8 +725,8 @@ public class VirtualRouterTest {
   @Test
   public void testQueueDeltaOrder() {
     Queue<RouteAdvertisement<AbstractRoute>> q = new ConcurrentLinkedQueue<>();
-    StaticRoute sr1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 1);
-    StaticRoute sr2 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 100, 1);
+    StaticRoute sr1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 0L, 1);
+    StaticRoute sr2 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 100, 0L, 1);
     RibDelta.Builder<AbstractRoute> builder = new Builder<>(null);
 
     // Test queueing empty deltas

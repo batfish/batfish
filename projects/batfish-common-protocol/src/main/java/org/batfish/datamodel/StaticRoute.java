@@ -25,19 +25,14 @@ public class StaticRoute extends AbstractRoute {
   private final int _tag;
 
   @JsonCreator
-  private StaticRoute(
-      @JsonProperty(PROP_NETWORK) Prefix network,
+  private static StaticRoute jsonCreator(
+      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) int tag) {
-    super(network);
-    _administrativeCost = administrativeCost;
-    _metric = metric;
-    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
-    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
-    _tag = tag;
+    return new StaticRoute(network, nextHopIp, nextHopInterface, administrativeCost, metric, tag);
   }
 
   public StaticRoute(
@@ -45,9 +40,14 @@ public class StaticRoute extends AbstractRoute {
       @Nullable Ip nextHopIp,
       @Nullable String nextHopInterface,
       int administrativeCost,
+      long metric,
       int tag) {
-    this(
-        network, nextHopIp, nextHopInterface, administrativeCost, DEFAULT_STATIC_ROUTE_METRIC, tag);
+    super(network);
+    _administrativeCost = administrativeCost;
+    _metric = metric;
+    _nextHopInterface = firstNonNull(nextHopInterface, Route.UNSET_NEXT_HOP_INTERFACE);
+    _nextHopIp = firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _tag = tag;
   }
 
   @Override
