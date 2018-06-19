@@ -1922,6 +1922,17 @@ public final class CiscoConfiguration extends VendorConfiguration {
       CryptoMapEntry cryptoMapEntry,
       String generatedName,
       String cryptoMapName) {
+    // skipping incomplete static or dynamic crypto maps
+    if (!cryptoMapEntry.getDynamic()) {
+      if (cryptoMapEntry.getAccessList() == null || cryptoMapEntry.getPeer() == null) {
+        return;
+      }
+    } else {
+      if (cryptoMapEntry.getAccessList() == null) {
+        return;
+      }
+    }
+
     IpsecPolicy ipsecPolicy = toIpsecPolicy(c, cryptoMapEntry, generatedName);
     c.getIpsecPolicies().put(generatedName, ipsecPolicy);
 
