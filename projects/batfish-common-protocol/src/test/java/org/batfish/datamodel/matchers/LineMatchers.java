@@ -9,7 +9,8 @@ import org.hamcrest.Matcher;
 
 public class LineMatchers {
 
-  public static HasAuthenticationLoginList hasAuthenticationLoginList(Matcher<? super AaaAuthenticationLoginList> subMatcher) {
+  public static HasAuthenticationLoginList hasAuthenticationLoginList(
+      Matcher<? super AaaAuthenticationLoginList> subMatcher) {
     return new HasAuthenticationLoginList(subMatcher);
   }
 
