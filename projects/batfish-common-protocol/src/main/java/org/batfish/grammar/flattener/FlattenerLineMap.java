@@ -29,7 +29,7 @@ public class FlattenerLineMap {
       // Result from looking up an unmapped line, should never get here
       throw new BatfishException(
           String.format(
-              "Original line does not exist for the specified new line:%s at position:%s",
+              "Original line does not exist for the specified new line number:%s at position:%s",
               newLineNumber, newStartingPosition));
     } else {
       Entry<Integer, Integer> originalLineEntry = wordMap.floorEntry(newStartingPosition);

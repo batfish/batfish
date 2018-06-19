@@ -2,7 +2,6 @@ package org.batfish.grammar.juniper;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.BatfishException;
 import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.juniper.JuniperParser.Bracketed_clauseContext;
@@ -123,6 +122,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   @Override
   public FlattenerLineMap getOriginalLineMap() {
-    throw new BatfishException("getOriginalLine() not implemented for JuniperFlattener");
+    throw new UnsupportedOperationException(
+        "getOriginalLines is not supported for JuniperFlattener");
   }
 }

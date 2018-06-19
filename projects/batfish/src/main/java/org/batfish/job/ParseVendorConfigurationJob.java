@@ -19,7 +19,6 @@ import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
 import org.batfish.grammar.flattener.Flattener;
-import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
@@ -100,7 +99,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     ParserRuleContext tree = null;
     ControlPlaneExtractor extractor = null;
     ConfigurationFormat format = _format;
-    FlattenerLineMap lineMap = null;
     _logger.infof("Processing: '%s'\n", currentPath);
 
     for (String s : _settings.ignoreFilesWithStrings()) {
@@ -214,7 +212,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _settings,
                     ConfigurationFormat.JUNIPER,
                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-            lineMap = flattener.getOriginalLineMap();
             _fileText = flattener.getFlattenedConfigurationText();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;
@@ -274,7 +271,6 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     _settings,
                     ConfigurationFormat.PALO_ALTO_NESTED,
                     VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
-            lineMap = flattener.getOriginalLineMap();
             _fileText = flattener.getFlattenedConfigurationText();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;

@@ -77,13 +77,13 @@ public class ParseTreePrettyPrinterTest {
     GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
     FlattenerLineMap lineMap = new FlattenerLineMap();
     // Map words on each line to different original lines
-    // simple
+    // (first) simple
     lineMap.setOriginalLine(1, 0, 5);
     // block
     lineMap.setOriginalLine(2, 0, 6);
     // inner
     lineMap.setOriginalLine(3, 2, 7);
-    // simple
+    // (last) simple
     lineMap.setOriginalLine(3, 7, 8);
     // EOF
     lineMap.setOriginalLine(5, 0, 9);
