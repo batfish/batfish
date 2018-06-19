@@ -426,7 +426,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            124
+            125
           ]
         }
       },
@@ -434,7 +434,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            127
+            128
           ]
         }
       },
@@ -461,7 +461,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat destination acl' named 'mynatacl'",
         "files" : {
           "cisco_interface" : [
-            87
+            88
           ]
         }
       },
@@ -469,7 +469,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
           "cisco_interface" : [
-            90
+            91
           ]
         }
       },
@@ -755,7 +755,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface igmp access-group acl' named '1'",
         "files" : {
           "cisco_interface" : [
-            77
+            78
           ]
         }
       },
@@ -894,7 +894,7 @@
         "description" : "Undefined reference to structure of type: 'nat pool' with usage: 'ip nat source pool' named 'beeble'",
         "files" : {
           "cisco_interface" : [
-            91
+            92
           ]
         }
       },
@@ -1278,7 +1278,7 @@
         "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
         "files" : {
           "cisco_interface" : [
-            278
+            279
           ]
         }
       }
@@ -1575,12 +1575,12 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              124
+              125
             ]
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              127
+              128
             ]
           },
           "ag1" : {
@@ -1595,33 +1595,33 @@
           },
           "def" : {
             "ip nat source dynamic access-list" : [
-              90
+              91
             ]
           },
           "mynatacl" : {
             "ip nat destination acl" : [
-              87
+              88
             ]
           }
         },
         "ipv4/6 acl" : {
           "1" : {
             "interface igmp access-group acl" : [
-              77
+              78
             ]
           }
         },
         "nat pool" : {
           "beeble" : {
             "ip nat source pool" : [
-              91
+              92
             ]
           }
         },
         "zone security" : {
           "z1" : {
             "interface zone-member" : [
-              278
+              279
             ]
           }
         }
