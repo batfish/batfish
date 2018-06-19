@@ -1,0 +1,28 @@
+package org.batfish.symbolic.smt.matchers;
+
+import static org.hamcrest.Matchers.equalTo;
+
+import java.util.Set;
+import java.util.SortedMap;
+import org.batfish.symbolic.smt.VerificationResult;
+import org.batfish.symbolic.smt.matchers.VerificationResultMatchersImpl.HasFailures;
+import org.batfish.symbolic.smt.matchers.VerificationResultMatchersImpl.HasIsVerified;
+import org.batfish.symbolic.smt.matchers.VerificationResultMatchersImpl.HasPacketModel;
+import org.hamcrest.Matcher;
+
+public final class VerificationResultMatchers {
+  private VerificationResultMatchers() {}
+
+  public static Matcher<VerificationResult> hasFailures(Matcher<? super Set<String>> matcher) {
+    return new HasFailures(matcher);
+  }
+
+  public static Matcher<VerificationResult> hasIsVerified(boolean isVerified) {
+    return new HasIsVerified(equalTo(isVerified));
+  }
+
+  public static Matcher<VerificationResult> hasPacketModel(
+      Matcher<? super SortedMap<String, String>> matcher) {
+    return new HasPacketModel(matcher);
+  }
+}
