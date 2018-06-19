@@ -69,6 +69,7 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
@@ -137,6 +138,7 @@ import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpSession;
@@ -157,6 +159,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
@@ -218,13 +221,75 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testLineAuthenticationMethods() throws IOException {
+    // test IOS
+    Configuration iosConfiguration = parseConfig("aaaAuthenticationIos");
+    SortedMap<String, Line> iosLines = iosConfiguration.getVendorFamily().getCisco().getLines();
+
+    assertThat(
+        iosLines.get("con0"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.GROUP_TACACS)));
+    assertThat(
+        iosLines.get("con0"), hasAuthenticationLoginList(hasMethod(AuthenticationMethod.KRB5)));
+    assertThat(
+        iosLines.get("con0"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.LOCAL_CASE)));
+    assertThat(
+        iosLines.get("con0"), hasAuthenticationLoginList(hasMethod(AuthenticationMethod.LOCAL)));
+
+    assertThat(
+        iosLines.get("vty0"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.KRB5_TELNET)));
+    assertThat(
+        iosLines.get("vty0"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.GROUP_RADIUS)));
+    assertThat(
+        iosLines.get("vty0"), hasAuthenticationLoginList(hasMethod(AuthenticationMethod.ENABLE)));
+
+    assertThat(
+        iosLines.get("aux0"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.GROUP_USER_DEFINED)));
+    assertThat(
+        iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(AuthenticationMethod.LINE)));
+    assertThat(
+        iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(AuthenticationMethod.NONE)));
+
+    // test ASA
+    Configuration asaConfiguration = parseConfig("aaaAuthenticationAsa");
+    SortedMap<String, Line> asaLines = asaConfiguration.getVendorFamily().getCisco().getLines();
+
+    assertThat(asaLines.get("http"), not(hasAuthenticationLoginList(notNullValue())));
+
+    assertThat(
+        asaLines.get("ssh"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.GROUP_USER_DEFINED)));
+    assertThat(
+        asaLines.get("ssh"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.LOCAL_CASE)));
+
+    assertThat(
+        asaLines.get("serial"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.LOCAL_CASE)));
+    assertThat(
+        asaLines.get("serial"),
+        hasAuthenticationLoginList(not(hasMethod(AuthenticationMethod.GROUP_USER_DEFINED))));
+
+    assertThat(
+        asaLines.get("telnet"),
+        hasAuthenticationLoginList(hasMethod(AuthenticationMethod.GROUP_USER_DEFINED)));
+    assertThat(
+        asaLines.get("telnet"),
+        hasAuthenticationLoginList(not(hasMethod(AuthenticationMethod.LOCAL_CASE))));
+  }
+
+  @Test
   public void testAaaAuthenticationLogin() throws IOException {
     // test ASA config
     Configuration aaaAuthAsaConfiguration = parseConfig("aaaAuthenticationAsa");
     SortedMap<String, Line> asaLines =
         aaaAuthAsaConfiguration.getVendorFamily().getCisco().getLines();
     for (Line line : asaLines.values()) {
-      if (line.getName().equals("http")) {
+      if (line.getLineType() == LineType.HTTP) {
         assertThat(line, not(requiresAuthentication()));
       } else {
         assertThat(line, requiresAuthentication());
@@ -235,52 +300,77 @@ public class CiscoGrammarTest {
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
-                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod("LOCAL"), "ssh")))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
                 hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod("authServer"), "ssh")))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(hasLogin(not(hasListForKey(hasMethod("LOCAL"), "http"))))))));
+                    hasAuthentication(
+                        hasLogin(
+                            hasListForKey(hasMethod(AuthenticationMethod.LOCAL_CASE), "ssh")))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(not(hasListForKey(hasMethod("authServer"), "http"))))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod("LOCAL"), "serial")))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod("authServer")), "serial")))))));
+                        hasLogin(
+                            hasListForKey(
+                                hasMethod(AuthenticationMethod.GROUP_USER_DEFINED), "ssh")))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod("LOCAL")), "telnet")))))));
+                        hasLogin(
+                            not(
+                                hasListForKey(
+                                    hasMethod(AuthenticationMethod.LOCAL_CASE), "http"))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(hasMethod("authServer"), "telnet")))))));
+                        hasLogin(
+                            not(
+                                hasListForKey(
+                                    hasMethod(AuthenticationMethod.GROUP_USER_DEFINED),
+                                    "http"))))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(
+                            hasListForKey(
+                                hasMethod(AuthenticationMethod.LOCAL_CASE), "serial")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(
+                            hasListForKey(
+                                not(hasMethod(AuthenticationMethod.GROUP_USER_DEFINED)),
+                                "serial")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(
+                            hasListForKey(
+                                not(hasMethod(AuthenticationMethod.LOCAL_CASE)), "telnet")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(
+                            hasListForKey(
+                                hasMethod(AuthenticationMethod.GROUP_USER_DEFINED), "telnet")))))));
 
     // test IOS config
     Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
@@ -289,7 +379,7 @@ public class CiscoGrammarTest {
         aaaAuthIosConfiguration.getVendorFamily().getCisco().getLines();
 
     for (Line line : iosLines.values()) {
-      if (line.getName().equals("aux0")) {
+      if (line.getLineType() == LineType.AUX) {
         assertThat(line, not(requiresAuthentication()));
       } else {
         assertThat(line, requiresAuthentication());
@@ -302,27 +392,36 @@ public class CiscoGrammarTest {
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(hasMethod("grouptacacs+"), "default")))))));
-    assertThat(
-        aaaAuthIosConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod("local"), "default")))))));
-    assertThat(
-        aaaAuthIosConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod("groupradius")), "default")))))));
+                        hasLogin(
+                            hasListForKey(
+                                hasMethod(AuthenticationMethod.GROUP_TACACS), "default")))))));
     assertThat(
         aaaAuthIosConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(not(hasListForKey(hasMethod("grouptacacs+"), "ssh"))))))));
+                        hasLogin(
+                            hasListForKey(hasMethod(AuthenticationMethod.LOCAL), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(
+                            hasListForKey(
+                                not(hasMethod(AuthenticationMethod.GROUP_RADIUS)), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(
+                            not(
+                                hasListForKey(
+                                    hasMethod(AuthenticationMethod.GROUP_TACACS), "ssh"))))))));
 
     // test IOS config with no default login list defined
     Configuration aaaAuthIosConfigNoDefault = parseConfig("aaaAuthenticationIosNoDefault");
@@ -331,7 +430,7 @@ public class CiscoGrammarTest {
         aaaAuthIosConfigNoDefault.getVendorFamily().getCisco().getLines();
 
     for (Line line : iosNoDefaultLines.values()) {
-      if (line.getName().equals("aux0") || line.getName().equals("con0")) {
+      if (line.getLineType() == LineType.AUX || line.getLineType() == LineType.CON) {
         assertThat(line, not(requiresAuthentication()));
       } else {
         assertThat(line, requiresAuthentication());

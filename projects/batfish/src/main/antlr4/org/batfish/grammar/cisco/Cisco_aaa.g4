@@ -422,8 +422,11 @@ aaa_authentication_list_method
       | aaa_authentication_list_method_fallback
       | aaa_authentication_list_method_group
       | aaa_authentication_list_method_if_needed
+      | aaa_authentication_list_method_krb5
+      | aaa_authentication_list_method_krb5_telnet
       | aaa_authentication_list_method_line
       | aaa_authentication_list_method_local
+      | aaa_authentication_list_method_local_case
       | aaa_authentication_list_method_none
       | aaa_authentication_list_method_radius
       | aaa_authentication_list_method_tacacs_local
@@ -443,16 +446,37 @@ aaa_authentication_list_method_fallback
 
 aaa_authentication_list_method_group
 :
-   GROUP groups += ~NEWLINE
+   GROUP
    (
-      groups += ~( NEWLINE | ENABLE | FALLBACK | GROUP | IF_NEEDED | LINE |
-      LOCAL | NONE | TACACS_PLUS )
-   )*
+      aaa_authentication_list_method_group_ios
+      |
+      (
+           groups += ~( NEWLINE | CACHE | ENABLE | FALLBACK | GROUP | IF_NEEDED | KRB5 | LINE |
+           LOCAL | LOCAL_CASE | NONE | TACACS_PLUS )
+      )*
+   )
+;
+
+aaa_authentication_list_method_group_ios
+:
+   RADIUS
+   | TACACS_PLUS
+   | groupName = variable
 ;
 
 aaa_authentication_list_method_if_needed
 :
    IF_NEEDED
+;
+
+aaa_authentication_list_method_krb5
+:
+   KRB5
+;
+
+aaa_authentication_list_method_krb5_telnet
+:
+   KRB5_TELNET
 ;
 
 aaa_authentication_list_method_line
@@ -463,6 +487,11 @@ aaa_authentication_list_method_line
 aaa_authentication_list_method_local
 :
    LOCAL
+;
+
+aaa_authentication_list_method_local_case
+:
+   LOCAL_CASE
 ;
 
 aaa_authentication_list_method_none

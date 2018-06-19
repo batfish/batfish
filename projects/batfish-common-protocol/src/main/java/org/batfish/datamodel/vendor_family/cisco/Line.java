@@ -6,6 +6,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.AuthenticationMethod;
+import org.batfish.datamodel.LineType;
 
 public class Line extends ComparableStructure<String> {
 
@@ -21,6 +23,8 @@ public class Line extends ComparableStructure<String> {
   private String _inputAccessList;
 
   private String _inputIpv6AccessList;
+
+  private LineType _lineType;
 
   private String _loginAuthentication;
 
@@ -40,6 +44,7 @@ public class Line extends ComparableStructure<String> {
     _transportInput = new TreeSet<>();
     _transportOutput = new TreeSet<>();
     _transportPreferred = new TreeSet<>();
+    _lineType = LineType.toLineType(name);
   }
 
   public AaaAuthenticationLoginList getAaaAuthenticationLoginList() {
@@ -60,6 +65,10 @@ public class Line extends ComparableStructure<String> {
 
   public String getInputIpv6AccessList() {
     return _inputIpv6AccessList;
+  }
+
+  public LineType getLineType() {
+    return _lineType;
   }
 
   public String getLoginAuthentication() {
@@ -86,19 +95,25 @@ public class Line extends ComparableStructure<String> {
     return _transportPreferred;
   }
 
+  /**
+   * Method to check whether the line requires authentication. A line requires authentication if it
+   * has a login list with at least one method and does not contain the 'none' method
+   *
+   * @return true if line requires authentication, false if otherwise
+   */
   public boolean requiresAuthentication() {
-    boolean authenticated = false;
+    boolean requiresAuthentication = false;
 
     if (_aaaAuthenticationLoginList != null) {
-      for (String method : _aaaAuthenticationLoginList.getMethods()) {
-        if (method.equals("none")) {
+      for (AuthenticationMethod method : _aaaAuthenticationLoginList.getMethods()) {
+        if (method == AuthenticationMethod.NONE || method == AuthenticationMethod.UNKNOWN) {
           return false;
         }
-        authenticated = true;
+        requiresAuthentication = true;
       }
     }
 
-    return authenticated;
+    return requiresAuthentication;
   }
 
   public void setAaaAuthenticationLoginList(AaaAuthenticationLoginList aaaAuthenticationLoginList) {

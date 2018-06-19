@@ -3,9 +3,9 @@ hostname aaaAuthenticationIos
 !
 aaa new-model
 !
-aaa authentication login default group tacacs+ local
-aaa authentication login noAuth local none
-aaa authentication login hasAuth local
+aaa authentication login default group tacacs+ krb5 local-case local
+aaa authentication login noAuth group serverGroup line none
+aaa authentication login hasAuth krb5-telnet group radius enable local
 !
 line con 0
 line vty 0
