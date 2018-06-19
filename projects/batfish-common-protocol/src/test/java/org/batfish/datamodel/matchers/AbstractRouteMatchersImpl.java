@@ -8,6 +8,17 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class AbstractRouteMatchersImpl {
+  static final class HasAdministrativeCost extends FeatureMatcher<AbstractRoute, Integer> {
+    HasAdministrativeCost(@Nonnull Matcher<? super Integer> subMatcher) {
+      super(subMatcher, "An AbstractRoute with administrativeCost:", "administrativeCost");
+    }
+
+    @Override
+    protected Integer featureValueOf(AbstractRoute actual) {
+      return actual.getAdministrativeCost();
+    }
+  }
+
   static final class HasMetric extends FeatureMatcher<AbstractRoute, Long> {
     HasMetric(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "An AbstractRoute with metric:", "metric");

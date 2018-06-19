@@ -5,12 +5,22 @@ import static org.hamcrest.Matchers.equalTo;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasAdministrativeCost;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasMetric;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasPrefix;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasProtocol;
 import org.hamcrest.Matcher;
 
 public final class AbstractRouteMatchers {
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRoute}'s administrative cost.
+   */
+  public static HasAdministrativeCost hasAdministrativeCost(
+      @Nonnull Matcher<? super Integer> subMatcher) {
+    return new HasAdministrativeCost(subMatcher);
+  }
 
   /**
    * Provides a matcher that matches when the {@code expectedMetric} is equal to the {@link

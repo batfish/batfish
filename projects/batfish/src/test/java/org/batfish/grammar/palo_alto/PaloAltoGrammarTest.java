@@ -1,5 +1,6 @@
 package org.batfish.grammar.palo_alto;
 
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
@@ -155,7 +156,7 @@ public class PaloAltoGrammarTest {
     assertThat(
         c, hasVrf("default", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
     assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasMetric(equalTo(12))))));
-    // assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasAdminDist(equalTo(12))))));
+    assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123))))));
   }
 
   @Test
@@ -167,6 +168,6 @@ public class PaloAltoGrammarTest {
     assertThat(
         c, hasVrf("default", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
     assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasMetric(equalTo(10))))));
-    // assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasAdminDist(equalTo(10))))));
+    assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10))))));
   }
 }
