@@ -192,6 +192,8 @@ interface Ethernet0
   protocol ppp dialer
  !
  queue-monitor length thresholds 12 1
+ redundancy rii 1
+ redundancy group 1 ip 1.2.3.4 exclusive
  service instance 1 ethernet
   bridge-domain 710
   encapsulation default

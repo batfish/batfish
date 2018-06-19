@@ -813,6 +813,7 @@ if_null_single
       | LINKDEBOUNCE
       | MAB
       | PHY
+      | REDUNDANCY
       | SWITCHPORT CAPTURE
       | SUPPRESS_ARP
       | TRIMODE
