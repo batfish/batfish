@@ -30,10 +30,15 @@ public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLi
     if (this == o) {
       return 0;
     }
-    return Comparator.comparing((AclLineMatchExpr e) -> e.getClass().getSimpleName())
-        .thenComparing(this::compareSameClass)
-        .thenComparing(AclLineMatchExpr::getDescription)
-        .compare(this, o);
+    int compareWithoutDescription =
+        Comparator.comparing((AclLineMatchExpr e) -> e.getClass().getSimpleName())
+            .thenComparing(this::compareSameClass)
+            .compare(this, o);
+    if (compareWithoutDescription == 0) {
+      return Objects.compare(
+          _description, o._description, Comparator.nullsFirst(Comparator.naturalOrder()));
+    }
+    return compareWithoutDescription;
   }
 
   @Override
