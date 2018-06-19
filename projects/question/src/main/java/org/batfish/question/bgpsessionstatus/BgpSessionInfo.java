@@ -221,13 +221,13 @@ public class BgpSessionInfo implements Comparable<BgpSessionInfo> {
   public static final class Builder {
     private SessionStatus _configuredStatus;
     private Integer _establishedNeighbors;
-    private String _nodeName;
+    private final String _nodeName;
     private NodeInterfacePair _localInterface;
     private Ip _localIp;
     private String _remoteNode;
-    private Prefix _remotePrefix;
-    private SessionType _sessionType;
-    private String _vrfName;
+    private final Prefix _remotePrefix;
+    private final SessionType _sessionType;
+    private final String _vrfName;
 
     private Builder(String nodeName, String vfrName, Prefix remotePrefix, SessionType sessionType) {
       _nodeName = nodeName;
