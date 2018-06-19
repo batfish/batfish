@@ -157,7 +157,7 @@ public abstract class AbstractNodJob extends Z3ContextJob<NodJobResult> {
                     ((BitVecNum) model.getConstInterp(variablesAsConsts.get(field))).getLong()));
   }
 
-  protected static class QueryUnsatException extends Throwable {
+  protected static class QueryUnsatException extends Exception {
     static final long serialVersionUID = 1L;
   }
 }

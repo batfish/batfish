@@ -6,7 +6,7 @@ import org.batfish.datamodel.matchers.OspfAreaSummaryMatchersImpl.HasMetric;
 import org.batfish.datamodel.matchers.OspfAreaSummaryMatchersImpl.IsAdvertised;
 import org.hamcrest.Matcher;
 
-/** Matchers for {@link org.batfish.datamodel.OspfAreaSummary}. */
+/** Matchers for {@link org.batfish.datamodel.ospf.OspfAreaSummary}. */
 public final class OspfAreaSummaryMatchers {
 
   /** Returns a matcher asserting that the OSPF summary route has the specified metric. */

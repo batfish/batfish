@@ -34,6 +34,7 @@ junit_tests(
     srcs = glob([
         "src/test/**/*Test.java",
     ]),
+    resources = glob(["src/test/resources/**"]),
     deps = [
         ":allinone",
         "//projects/batfish",

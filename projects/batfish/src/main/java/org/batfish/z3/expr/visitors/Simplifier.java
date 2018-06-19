@@ -96,7 +96,7 @@ public class Simplifier
       }
     }
     List<BooleanExpr> newConjuncts = newConjunctsBuilder.build();
-    if (newConjuncts.size() == 0) {
+    if (newConjuncts.isEmpty()) {
       return TrueExpr.INSTANCE;
     } else if (newConjuncts.size() == 1) {
       return newConjuncts.get(0);
@@ -299,7 +299,7 @@ public class Simplifier
       }
     }
     List<BooleanExpr> newDisjuncts = newDisjunctsBuilder.build();
-    if (newDisjuncts.size() == 0) {
+    if (newDisjuncts.isEmpty()) {
       return FalseExpr.INSTANCE;
     } else if (newDisjuncts.size() == 1) {
       return newDisjuncts.get(0);

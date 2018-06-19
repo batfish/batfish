@@ -107,9 +107,6 @@ import org.batfish.datamodel.IpWildcardIpSpace;
 import org.batfish.datamodel.IpWildcardSetIpSpace;
 import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.NamedPort;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfNeighbor;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.SubRange;
@@ -117,6 +114,9 @@ import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfNeighbor;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.grizzly.ssl.SSLContextConfigurator;
 import org.glassfish.grizzly.ssl.SSLEngineConfigurator;
@@ -164,6 +164,19 @@ public class CommonUtil {
 
   public static <C extends Collection<?>> C nullIfEmpty(C collection) {
     return collection == null ? null : collection.isEmpty() ? null : collection;
+  }
+
+  /** Compare two nullable comparable objects. null is considered less than non-null. */
+  public static <T extends Comparable<T>> int compareNullable(@Nullable T a, @Nullable T b) {
+    if (a == b) {
+      return 0;
+    } else if (a == null) {
+      return -1;
+    } else if (b == null) {
+      return 1;
+    } else {
+      return a.compareTo(b);
+    }
   }
 
   private static class TrustAllHostNameVerifier implements HostnameVerifier {
@@ -373,7 +386,7 @@ public class CommonUtil {
         (hostname, interfaces) ->
             interfaces.forEach(
                 i -> {
-                  if (!i.getActive() && (excludeInactive || !i.getBlacklisted())) {
+                  if ((!i.getActive() || i.getBlacklisted()) && excludeInactive) {
                     return;
                   }
                   // collect vrrp info
@@ -793,7 +806,7 @@ public class CommonUtil {
     try {
       return Paths.get(path.toFile().getCanonicalPath());
     } catch (IOException e) {
-      throw new BatfishException("Could not get canonical path from: '" + path + "'");
+      throw new BatfishException("Could not get canonical path from: '" + path + "'", e);
     }
   }
 
@@ -867,7 +880,7 @@ public class CommonUtil {
     try {
       return Files.getLastModifiedTime(path);
     } catch (IOException e) {
-      throw new BatfishException("Failed to get last modified time for '" + path + "'");
+      throw new BatfishException("Failed to get last modified time for '" + path + "'", e);
     }
   }
 
@@ -1396,7 +1409,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to read and output lines of file: '" + downloadedFile + "'");
+          "Failed to read and output lines of file: '" + downloadedFile + "'", e);
     }
   }
 
@@ -1603,7 +1616,7 @@ public class CommonUtil {
       }
     } catch (IOException e) {
       throw new BatfishException(
-          "Failed to write input stream to output file: '" + outputFile + "'");
+          "Failed to write input stream to output file: '" + outputFile + "'", e);
     }
   }
 }

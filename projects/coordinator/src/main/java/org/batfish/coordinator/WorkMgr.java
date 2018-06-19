@@ -1,6 +1,7 @@
 package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -902,8 +903,12 @@ public class WorkMgr extends AbstractCoordinator {
    *     NodeRolesData}
    */
   public NodeRolesData getNodeRolesData(String container) throws IOException {
-    Path nodeRolesPath = getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
-    return NodeRolesData.read(nodeRolesPath);
+    return NodeRolesData.read(getNodeRolesPath(container));
+  }
+
+  /** Gets the path of the node roles file */
+  public Path getNodeRolesPath(String container) {
+    return getdirContainer(container).resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
   }
 
   /**
@@ -1071,12 +1076,11 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   public String initContainer(@Nullable String containerName, @Nullable String containerPrefix) {
-    if (containerName == null || containerName.equals("")) {
-      containerName = containerPrefix + "_" + UUID.randomUUID();
-    }
-    Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
+    String newContainerName =
+        isNullOrEmpty(containerName) ? containerPrefix + "_" + UUID.randomUUID() : containerName;
+    Path containerDir = Main.getSettings().getContainersLocation().resolve(newContainerName);
     if (Files.exists(containerDir)) {
-      throw new BatfishException("Container '" + containerName + "' already exists!");
+      throw new BatfishException("Container '" + newContainerName + "' already exists!");
     }
     if (!containerDir.toFile().mkdirs()) {
       throw new BatfishException("failed to create directory '" + containerDir + "'");
@@ -1093,7 +1097,7 @@ public class WorkMgr extends AbstractCoordinator {
     if (!questionsDir.toFile().mkdir()) {
       throw new BatfishException("failed to create directory '" + questionsDir + "'");
     }
-    return containerName;
+    return newContainerName;
   }
 
   @Override

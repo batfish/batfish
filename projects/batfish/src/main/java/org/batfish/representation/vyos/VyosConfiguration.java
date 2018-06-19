@@ -136,10 +136,6 @@ public class VyosConfiguration extends VendorConfiguration {
       org.batfish.datamodel.Interface newBindInterface =
           _c.getDefaultVrf().getInterfaces().get(bindInterfaceName);
       if (newBindInterface != null) {
-        Interface bindInterface = _interfaces.get(bindInterfaceName);
-        bindInterface
-            .getReferers()
-            .put(ipsecPeer, "bind interface for site-to-site peer \"" + newIpsecVpnName + "\"");
         newIpsecVpn.setBindInterface(newBindInterface);
       } else {
         _w.redFlag("Reference to undefined bind-interface: \"" + bindInterfaceName + "\"");
@@ -151,9 +147,6 @@ public class VyosConfiguration extends VendorConfiguration {
       if (ikeGroup == null) {
         _w.redFlag("Reference to undefined ike-group: \"" + ikeGroupName + "\"");
       } else {
-        ikeGroup
-            .getReferers()
-            .put(ipsecPeer, "ike group for site-to-site peer: \"" + newIpsecVpnName + "\"");
         IkePolicy newIkePolicy = new IkePolicy(ikeGroupName);
         _c.getIkePolicies().put(ikeGroupName, newIkePolicy);
         newIkeGateway.setIkePolicy(newIkePolicy);
@@ -183,9 +176,6 @@ public class VyosConfiguration extends VendorConfiguration {
       if (espGroup == null) {
         _w.redFlag("Reference to undefined esp-group: \"" + espGroupName + "\"");
       } else {
-        espGroup
-            .getReferers()
-            .put(ipsecPeer, "esp-group for ipsec site-to-site peer: \"" + newIpsecVpnName + "\"");
         IpsecPolicy newIpsecPolicy = new IpsecPolicy(espGroupName);
         _c.getIpsecPolicies().put(espGroupName, newIpsecPolicy);
         newIpsecVpn.setIpsecPolicy(newIpsecPolicy);
@@ -363,19 +353,6 @@ public class VyosConfiguration extends VendorConfiguration {
 
     // TODO: convert routing processes
 
-    warnAndDisableUnreferencedVtiInterfaces();
-
     return _c;
-  }
-
-  private void warnAndDisableUnreferencedVtiInterfaces() {
-    for (Entry<String, Interface> ifaceEntry : _interfaces.entrySet()) {
-      Interface iface = ifaceEntry.getValue();
-      if (iface.getType() == InterfaceType.VTI && iface.isUnused()) {
-        String name = ifaceEntry.getKey();
-        _c.getDefaultVrf().getInterfaces().remove(name);
-        _w.redFlag("Disabling unused VTI interface: \"" + name + "\"");
-      }
-    }
   }
 }

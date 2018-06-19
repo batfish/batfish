@@ -28,7 +28,6 @@ public class FwFromSourcePrefixListExcept extends FwFrom {
       Configuration c) {
     PrefixList pl = jc.getPrefixLists().get(_name);
     if (pl != null) {
-      pl.getReferers().put(this, "firewall from source-prefix-list except");
       if (pl.getIpv6()) {
         return;
       }

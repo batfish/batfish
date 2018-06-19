@@ -31,7 +31,6 @@ public class RouteMapMatchIpv6PrefixListLine extends RouteMapMatchLine {
     for (String listName : _listNames) {
       Prefix6List list = cc.getPrefix6Lists().get(listName);
       if (list != null) {
-        list.getReferers().put(this, "route-map match prefix-list");
         disjuncts.add(
             new MatchPrefix6Set(new DestinationNetwork6(), new NamedPrefix6Set(listName)));
       }

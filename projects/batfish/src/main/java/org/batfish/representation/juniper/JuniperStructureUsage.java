@@ -28,6 +28,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   IPSEC_VPN_IKE_GATEWAY("ipsec vpn ike gateway"),
   IPSEC_VPN_IPSEC_POLICY("ipsec vpn ipsec policy"),
   OSPF_EXPORT_POLICY("ospf export policy-statement"),
+  POLICY_STATEMENT_POLICY("policy-statement policy"),
   POLICY_STATEMENT_PREFIX_LIST("policy-statement prefix-list"),
   POLICY_STATEMENT_PREFIX_LIST_FILTER("policy-statement prefix-list-filter"),
   SECURITY_POLICY_MATCH_APPLICATION("security policy match application"),

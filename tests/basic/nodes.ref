@@ -1223,7 +1223,8 @@
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -2491,7 +2492,8 @@
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -2884,7 +2886,8 @@
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -4150,7 +4153,8 @@
                     "GigabitEthernet1/0",
                     "GigabitEthernet2/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -5393,7 +5397,8 @@
                     "GigabitEthernet1/0",
                     "GigabitEthernet2/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -6003,7 +6008,8 @@
                     "GigabitEthernet2/0",
                     "GigabitEthernet3/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -6562,7 +6568,8 @@
                     "GigabitEthernet2/0",
                     "GigabitEthernet3/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -8270,7 +8277,8 @@
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -9027,7 +9035,8 @@
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -10175,7 +10184,8 @@
                   "interfaces" : [
                     "GigabitEthernet0/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -11266,7 +11276,8 @@
                   "interfaces" : [
                     "GigabitEthernet1/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",
@@ -11859,7 +11870,8 @@
                     "GigabitEthernet0/0",
                     "GigabitEthernet1/0",
                     "Loopback0"
-                  ]
+                  ],
+                  "stubType" : "NONE"
                 }
               },
               "exportPolicy" : "~OSPF_EXPORT_POLICY:default~",

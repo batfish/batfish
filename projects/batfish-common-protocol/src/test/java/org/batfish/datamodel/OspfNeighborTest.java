@@ -11,6 +11,8 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.junit.Before;
 import org.junit.Test;
 

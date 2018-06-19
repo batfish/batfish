@@ -44,7 +44,7 @@ public class Interface extends ComparableStructure<String> {
 
   private final Set<Ip> _allAddressIps;
 
-  private final ArrayList<SubRange> _allowedVlans;
+  private final List<SubRange> _allowedVlans;
 
   private double _bandwidth;
 
@@ -53,8 +53,6 @@ public class Interface extends ComparableStructure<String> {
   private String _description;
 
   private String _incomingFilter;
-
-  private int _incomingFilterLine;
 
   private transient boolean _inherited;
 
@@ -77,8 +75,6 @@ public class Interface extends ComparableStructure<String> {
   private final Set<Ip> _ospfPassiveAreas;
 
   private String _outgoingFilter;
-
-  private int _outgoingFilterLine;
 
   private Interface _parent;
 
@@ -164,10 +160,6 @@ public class Interface extends ComparableStructure<String> {
     return _incomingFilter;
   }
 
-  public int getIncomingFilterLine() {
-    return _incomingFilterLine;
-  }
-
   public IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
   }
@@ -206,10 +198,6 @@ public class Interface extends ComparableStructure<String> {
 
   public String getOutgoingFilter() {
     return _outgoingFilter;
-  }
-
-  public int getOutgoingFilterLine() {
-    return _outgoingFilterLine;
   }
 
   public Interface getParent() {
@@ -288,10 +276,6 @@ public class Interface extends ComparableStructure<String> {
     _incomingFilter = accessListName;
   }
 
-  public void setIncomingFilterLine(int incomingFilterLine) {
-    _incomingFilterLine = incomingFilterLine;
-  }
-
   public void setIsoAddress(IsoAddress address) {
     _isoAddress = address;
   }
@@ -322,10 +306,6 @@ public class Interface extends ComparableStructure<String> {
 
   public void setOutgoingFilter(String accessListName) {
     _outgoingFilter = accessListName;
-  }
-
-  public void setOutgoingFilterLine(int outgoingFilterLine) {
-    _outgoingFilterLine = outgoingFilterLine;
   }
 
   public void setParent(Interface parent) {

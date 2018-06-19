@@ -327,7 +327,7 @@ public class JsonPathResult {
         default:
           throw new BatfishException("Unknown UseType " + jpeHint.getUse());
       }
-      if (extractedList.size() == 0) {
+      if (extractedList.isEmpty()) {
         throw new BatfishException(
             "Got no results after filtering suffix values of the answer"
                 + "\nFilter: "

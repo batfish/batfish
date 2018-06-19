@@ -29,8 +29,6 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OspfArea;
-import org.batfish.datamodel.OspfProcess;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.RoutingProtocol;
@@ -38,6 +36,8 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CommunitySetElem;
@@ -714,13 +714,14 @@ public class Graph {
    * as the router provided as a parameter
    */
   private Set<String> findDomain(String router) {
+    String currentRouter = router;
     Set<String> sameDomain = new HashSet<>();
     Queue<String> todo = new ArrayDeque<>();
-    todo.add(router);
-    sameDomain.add(router);
+    todo.add(currentRouter);
+    sameDomain.add(currentRouter);
     while (!todo.isEmpty()) {
-      router = todo.remove();
-      for (GraphEdge ge : getEdgeMap().get(router)) {
+      currentRouter = todo.remove();
+      for (GraphEdge ge : getEdgeMap().get(currentRouter)) {
         String peer = ge.getPeer();
         if (peer != null && !sameDomain.contains(peer) && _ebgpNeighbors.get(ge) == null) {
           todo.add(peer);
@@ -1069,7 +1070,7 @@ public class Graph {
     // Only use specified edges from static routes
     if (proto.isStatic()) {
       List<StaticRoute> srs = getStaticRoutes().get(conf.getName(), iface.getName());
-      return iface.getActive() && srs != null && srs.size() > 0;
+      return iface.getActive() && srs != null && !srs.isEmpty();
     }
 
     // Only use an edge in BGP if there is an explicit peering

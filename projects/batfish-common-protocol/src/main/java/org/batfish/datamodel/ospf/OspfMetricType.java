@@ -1,6 +1,7 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.ospf;
 
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.RoutingProtocol;
 
 public enum OspfMetricType {
   E1,

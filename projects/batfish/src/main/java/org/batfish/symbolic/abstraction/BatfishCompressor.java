@@ -263,7 +263,7 @@ public class BatfishCompressor {
 
   public Map<String, Configuration> compress(HeaderSpace h) {
     DestinationClasses dcs = DestinationClasses.create(_batfish, _graph, h, true);
-    ArrayList<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, 0);
+    List<Supplier<NetworkSlice>> ecs = NetworkSlice.allSlices(dcs, 0);
     Optional<Map<GraphEdge, EquivalenceClassFilter>> opt =
         ecs.stream().map(Supplier::get).map(this::processSlice).reduce(this::mergeFilters);
     if (!opt.isPresent()) {

@@ -200,15 +200,15 @@ public class DbAuthorizer implements Authorizer {
         String.format(
             "SELECT COUNT(*) FROM %s WHERE %s = ? AND %s = ?",
             TABLE_PERMISSIONS, COLUMN_APIKEY, COLUMN_CONTAINER_NAME);
-    ResultSet rs;
     boolean authorized = false;
     try (PreparedStatement ps = _dbConn.prepareStatement(selectPermittedContainerString)) {
       ps.setString(1, apiKey);
       ps.setString(2, containerName);
-      rs = executeQuery(ps);
-      if (rs != null) {
-        rs.next();
-        authorized = rs.getInt(1) == 1;
+      try (ResultSet rs = executeQuery(ps)) {
+        if (rs != null) {
+          rs.next();
+          authorized = rs.getInt(1) == 1;
+        }
       }
     } catch (SQLException e) {
       throw new BatfishException("Could not query permissions table successfully", e);
@@ -248,16 +248,16 @@ public class DbAuthorizer implements Authorizer {
     }
     String selectApiKeyRowString =
         String.format("SELECT COUNT(*) FROM %s WHERE %s = ?", TABLE_USERS, COLUMN_APIKEY);
-    ResultSet rs;
     boolean authorized;
     try (PreparedStatement ps = _dbConn.prepareStatement(selectApiKeyRowString)) {
       ps.setString(1, apiKey);
-      rs = executeQuery(ps);
-      if (rs == null) {
-        return false;
+      try (ResultSet rs = executeQuery(ps)) {
+        if (rs == null) {
+          return false;
+        }
+        rs.next();
+        authorized = rs.getInt(1) == 1;
       }
-      rs.next();
-      authorized = rs.getInt(1) == 1;
     } catch (SQLException e) {
       throw new BatfishException("Could not query users table", e);
     }

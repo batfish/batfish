@@ -1,9 +1,13 @@
-package org.batfish.datamodel;
+package org.batfish.datamodel.ospf;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpLink;
 
 public class OspfNeighbor extends ComparableStructure<IpLink> {
 
