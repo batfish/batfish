@@ -74,6 +74,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INTERFACE_POLICY_ROUTING_MAP("interface policy-routing route-map"),
   INTERFACE_SELF_REF("interface"),
   INTERFACE_SERVICE_POLICY("interface service-policy"),
+  INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP("interface summary-address eigrp leak-map"),
   INTERFACE_ZONE_MEMBER("interface zone-member"),
   IP_NAT_DESTINATION_ACCESS_LIST("ip nat destination acl"),
   IP_NAT_SOURCE_ACCESS_LIST("ip nat source dynamic access-list"),
