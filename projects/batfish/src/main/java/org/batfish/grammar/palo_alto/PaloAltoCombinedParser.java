@@ -1,10 +1,12 @@
 package org.batfish.grammar.palo_alto;
 
+import javax.annotation.Nullable;
 import org.batfish.config.Settings;
 import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 
 public class PaloAltoCombinedParser extends BatfishCombinedParser<PaloAltoParser, PaloAltoLexer> {
@@ -12,14 +14,16 @@ public class PaloAltoCombinedParser extends BatfishCombinedParser<PaloAltoParser
   private static final BatfishANTLRErrorStrategyFactory NEWLINE_BASED_RECOVERY =
       new BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory(PaloAltoLexer.NEWLINE, "\n");
 
-  public PaloAltoCombinedParser(String input, Settings settings) {
+  public PaloAltoCombinedParser(
+      String input, Settings settings, @Nullable FlattenerLineMap lineMap) {
     super(
         PaloAltoParser.class,
         PaloAltoLexer.class,
         input,
         settings,
         NEWLINE_BASED_RECOVERY,
-        BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
+        BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES,
+        lineMap);
   }
 
   @Override

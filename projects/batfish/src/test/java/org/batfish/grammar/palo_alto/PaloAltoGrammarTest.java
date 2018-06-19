@@ -16,8 +16,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -129,6 +136,31 @@ public class PaloAltoGrammarTest {
 
     // Confirm a simple extraction (hostname) works for nested config format
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testNestedConfigLinePreservation() throws IOException {
+    String hostname = "nested-config";
+    Configuration c = parseConfig(hostname);
+    Flattener flattener =
+        Batfish.flatten(
+            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            ConfigurationFormat.PALO_ALTO_NESTED,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    /*
+     * Flattened config should be two lines: header line and set-hostname line
+     * Asserts are only checking content of the second line
+     */
+    String flatText = flattener.getFlattenedConfigurationText().split("\n")[1];
+
+    // Confirm original line numbers are preserved
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("deviceconfig")), equalTo(1));
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("hostname")), equalTo(3));
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("nested-config")), equalTo(3));
   }
 
   @Test

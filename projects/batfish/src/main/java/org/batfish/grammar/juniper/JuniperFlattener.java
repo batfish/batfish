@@ -1,5 +1,6 @@
 package org.batfish.grammar.juniper;
 
+import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
 import org.batfish.grammar.flattener.Flattener;
@@ -12,24 +13,31 @@ import org.batfish.grammar.juniper.JuniperParser.WordContext;
 
 public class JuniperFlattener extends JuniperParserBaseListener implements Flattener {
 
-  private List<String> _currentBracketedWords;
+  private List<WordContext> _currentBracketedWords;
 
-  private List<String> _currentStatement;
+  private List<WordContext> _currentStatement;
 
   private String _flattenedConfigurationText;
 
   private final String _header;
 
+  private final Integer _headerLineCount;
+
   private StatementContext _inactiveStatement;
 
   private boolean _inBrackets;
 
+  private FlattenerLineMap _lineMap;
+
   private List<String> _setStatements;
 
-  private List<List<String>> _stack;
+  private List<List<WordContext>> _stack;
 
   public JuniperFlattener(String header) {
     _header = header;
+    // Determine length of header to offset subsequent line numbers for original line mapping
+    _headerLineCount = header.split("\r\n|\r|\n").length;
+    _lineMap = new FlattenerLineMap();
     _stack = new ArrayList<>();
     _setStatements = new ArrayList<>();
   }
@@ -66,7 +74,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     StringBuilder sb = new StringBuilder();
     sb.append(_header);
     for (String setStatement : _setStatements) {
-      sb.append(setStatement + "\n");
+      sb.append(setStatement);
+      sb.append("\n");
     }
     _flattenedConfigurationText = sb.toString();
   }
@@ -80,25 +89,36 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     }
   }
 
+  // Helper method to construct and save set-line and line-mapping
+  private void constructSetLine() {
+    StringBuilder sb = new StringBuilder();
+    sb.append("set");
+    for (List<WordContext> prefix : _stack) {
+      for (WordContext wordCtx : prefix) {
+        sb.append(" ");
+        // Offset new line number by header line count plus one (since line numbers start at 1)
+        _lineMap.setOriginalLine(
+            _setStatements.size() + _headerLineCount + 1,
+            sb.length(),
+            wordCtx.WORD().getSymbol().getLine());
+        sb.append(wordCtx.getText());
+      }
+    }
+    _setStatements.add(sb.toString());
+  }
+
   @Override
   public void exitTerminator(TerminatorContext ctx) {
     if (_inactiveStatement == null) {
-      StringBuilder sb = new StringBuilder();
-      sb.append("set");
-      for (List<String> prefix : _stack) {
-        for (String word : prefix) {
-          sb.append(" " + word);
-        }
-      }
-      String setStatementBase = sb.toString();
       if (_currentBracketedWords != null) {
-        for (String bracketedWord : _currentBracketedWords) {
-          String setStatement = setStatementBase + " " + bracketedWord;
-          _setStatements.add(setStatement);
+        // Make a separate set-line for each of the bracketed words
+        for (WordContext bracketedWordCtx : _currentBracketedWords) {
+          _stack.add(ImmutableList.of(bracketedWordCtx));
+          constructSetLine();
+          _stack.remove(_stack.size() - 1);
         }
-        _currentBracketedWords = null;
       } else {
-        _setStatements.add(setStatementBase);
+        constructSetLine();
       }
     }
   }
@@ -106,11 +126,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   @Override
   public void exitWord(WordContext ctx) {
     if (_inactiveStatement == null) {
-      String word = ctx.getText();
       if (_inBrackets) {
-        _currentBracketedWords.add(word);
+        _currentBracketedWords.add(ctx);
       } else {
-        _currentStatement.add(word);
+        _currentStatement.add(ctx);
       }
     }
   }
@@ -122,7 +141,6 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   @Override
   public FlattenerLineMap getOriginalLineMap() {
-    throw new UnsupportedOperationException(
-        "getOriginalLines is not supported for JuniperFlattener");
+    return _lineMap;
   }
 }
