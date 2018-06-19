@@ -3240,6 +3240,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
+        CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
         CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
         CiscoStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,

@@ -96,6 +96,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   OSPF_DEFAULT_ORIGINATE_ROUTE_MAP("ospf default-originate route-map"),
   OSPF_REDISTRIBUTE_BGP_MAP("ospf redistribute bgp route-map"),
   OSPF_REDISTRIBUTE_CONNECTED_MAP("ospf redistribute connected route-map"),
+  OSPF_REDISTRIBUTE_EIGRP_MAP("ospf redistribute eigrp route-map"),
   OSPF_REDISTRIBUTE_STATIC_MAP("ospf redistribute static route-map"),
   PIM_ACCEPT_REGISTER_ACL("pim accept-register acl"),
   PIM_ACCEPT_REGISTER_ROUTE_MAP("pim accept-register route-map"),
