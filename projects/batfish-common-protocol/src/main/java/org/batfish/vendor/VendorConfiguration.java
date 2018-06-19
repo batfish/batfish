@@ -20,7 +20,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -204,10 +203,5 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
     } else {
       info.setNumReferrers(info.getNumReferrers() + numReferrers);
     }
-  }
-
-  public void recordStructure(
-      ReferenceCountedStructure structure, StructureType structureType, String name, int line) {
-    recordStructure(structureType, name, structure.getReferers().size(), line);
   }
 }

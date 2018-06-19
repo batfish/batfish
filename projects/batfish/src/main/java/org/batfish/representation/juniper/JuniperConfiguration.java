@@ -2142,7 +2142,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markConcreteStructure(
         JuniperStructureType.DHCP_RELAY_SERVER_GROUP,
         JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP);
-    // record defined structures
+
     markConcreteStructure(
         JuniperStructureType.IKE_GATEWAY, JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY);
     markConcreteStructure(
