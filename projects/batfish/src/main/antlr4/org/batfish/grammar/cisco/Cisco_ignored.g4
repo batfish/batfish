@@ -877,7 +877,6 @@ null_single
       | SDM
       | SECURITY
       | SERVER_TYPE
-      | SERVICE_POLICY
       | SETUP
       | SHELFNAME
       | SHELL

@@ -705,7 +705,6 @@ if_null_block
       | SCRAMBLE
       | SECURITY_LEVEL
       | SERIAL
-      | SERVICE
       | SERVICE_MODULE
       | SFLOW
       | SHAPE
@@ -794,7 +793,6 @@ if_null_inner
       | REMOTE_PORTS
       | REWRITE
       | SATELLITE_FABRIC_LINK
-      | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
@@ -828,6 +826,52 @@ if_port_security
 if_private_vlan
 :
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
+;
+
+if_service_instance
+:
+   SERVICE INSTANCE id = DEC ETHERNET NEWLINE
+   if_si_inner*
+;
+
+if_si_inner
+:
+    if_si_bridge_domain
+    | if_si_encapsulation
+    | if_si_l2protocol
+    | if_si_no_bridge_domain
+    | if_si_rewrite
+    | if_si_service_policy
+;
+
+if_si_bridge_domain
+:
+    BRIDGE_DOMAIN id = DEC SPLIT_HORIZON? NEWLINE
+;
+
+if_si_encapsulation
+:
+    NO? ENCAPSULATION null_rest_of_line
+;
+
+if_si_l2protocol
+:
+    L2PROTOCOL TUNNEL? (DROP | FORWARD | PEER)? (CDP | DOT1X | DTP | LACP | PAGP | STP | VTP)? NEWLINE
+;
+
+if_si_no_bridge_domain
+:
+    NO BRIDGE_DOMAIN id = DEC NEWLINE
+;
+
+if_si_rewrite
+:
+    REWRITE null_rest_of_line
+;
+
+if_si_service_policy
+:
+    SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
 ;
 
 if_spanning_tree
@@ -1301,6 +1345,7 @@ s_interface
       | if_no_ip_address
       | if_port_security
       | if_private_vlan
+      | if_service_instance
       | if_service_policy
       | if_shutdown
       | if_spanning_tree

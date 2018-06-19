@@ -139,6 +139,8 @@ policy-map type control subscriber my-bogus-policy
    80 clear-session
    90 resume reauthentication
 !
+service-policy global_policy global
+service-policy some-interface-policy interface Loopback0
 service-template template_name
  access-group ACL_NAME
  description Service template for Fail open mode

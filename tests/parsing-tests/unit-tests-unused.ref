@@ -1346,15 +1346,15 @@
         "description" : "Unused structure of type: 'service-template' with name: 'template_name'",
         "files" : {
           "cisco_qos" : [
-            142,
-            143,
             144,
             145,
             146,
             147,
             148,
             149,
-            150
+            150,
+            151,
+            152
           ]
         }
       },
@@ -1899,15 +1899,15 @@
         },
         "service-template" : {
           "template_name" : [
-            142,
-            143,
             144,
             145,
             146,
             147,
             148,
             149,
-            150
+            150,
+            151,
+            152
           ]
         }
       },
