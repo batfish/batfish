@@ -10,6 +10,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.recovery.RecoveryCombinedParser;
 import org.junit.Test;
 

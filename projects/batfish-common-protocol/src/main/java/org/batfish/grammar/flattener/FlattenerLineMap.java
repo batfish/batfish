@@ -1,4 +1,4 @@
-package org.batfish.grammar;
+package org.batfish.grammar.flattener;
 
 import java.util.Map.Entry;
 import java.util.NavigableMap;

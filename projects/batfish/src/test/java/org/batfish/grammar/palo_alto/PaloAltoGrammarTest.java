@@ -18,7 +18,6 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
-import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Rule;
@@ -139,20 +138,5 @@ public class PaloAltoGrammarTest {
 
     // Confirm both ntp servers show up
     assertThat(c.getNtpServers(), containsInAnyOrder("1.1.1.1", "ntpservername"));
-  }
-
-  @Test
-  public void testLineTracking() throws IOException {
-    String hostname = "nested-config-line-tracking";
-    // Configuration c = parseConfig(hostname);
-
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.getSettings().setDisableUnrecognized(false);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-
-    String blah = "blah";
-    // Confirm flattening preserves original line numbers
-    assert (true);
   }
 }

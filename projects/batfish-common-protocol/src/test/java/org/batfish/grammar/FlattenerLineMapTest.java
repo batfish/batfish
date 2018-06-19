@@ -3,6 +3,7 @@ package org.batfish.grammar;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.junit.Test;
 
 public class FlattenerLineMapTest {

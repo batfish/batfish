@@ -13,6 +13,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.batfish.common.BatfishException;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 
 public abstract class BatfishCombinedParser<P extends BatfishParser, L extends BatfishLexer> {
 
@@ -134,10 +135,7 @@ public abstract class BatfishCombinedParser<P extends BatfishParser, L extends B
   /** Get line number for a specified token, applying line mapping if applicable. */
   public int getLine(@Nonnull Token t) {
     int line = t.getLine();
-    if (_lineMap != null) {
-      return _lineMap.getOriginalLine(line, t.getCharPositionInLine());
-    }
-    return line;
+    return (_lineMap == null) ? line : _lineMap.getOriginalLine(line, t.getCharPositionInLine());
   }
 
   public P getParser() {

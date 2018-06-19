@@ -2,8 +2,8 @@ package org.batfish.grammar.vyos;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.grammar.Flattener;
-import org.batfish.grammar.FlattenerLineMap;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.vyos.VyosParser.StatementContext;
 import org.batfish.grammar.vyos.VyosParser.TerminatorContext;
 import org.batfish.grammar.vyos.VyosParser.Vyos_configurationContext;

@@ -4,8 +4,8 @@ import org.batfish.grammar.BatfishANTLRErrorStrategy;
 import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFactory;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
-import org.batfish.grammar.FlattenerLineMap;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
 
 public class RecoveryCombinedParser extends BatfishCombinedParser<RecoveryParser, RecoveryLexer> {

@@ -1,4 +1,4 @@
-package org.batfish.grammar;
+package org.batfish.grammar.flattener;
 
 public interface Flattener {
   /** Return a string corresponding to the text of the flattened config */
