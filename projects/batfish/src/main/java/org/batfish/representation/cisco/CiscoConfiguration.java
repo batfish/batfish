@@ -3231,6 +3231,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
+        CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,

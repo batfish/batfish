@@ -306,6 +306,14 @@ if_ip_sticky_arp
    (IP STICKY_ARP IGNORE NEWLINE)
 ;
 
+if_ip_summary_address
+:
+   IP SUMMARY_ADDRESS EIGRP asn = DEC (
+      addr = IP_ADDRESS netmask = IP_ADDRESS
+      | prefix = IP_PREFIX
+   ) (LEAK_MAP mapname = variable)? NEWLINE
+;
+
 if_ip_verify
 :
    IP VERIFY UNICAST
@@ -1278,6 +1286,7 @@ s_interface
       | if_ip_router_ospf_area
       | if_ip_rtp
       | if_ip_sticky_arp
+      | if_ip_summary_address
       | if_ip_virtual_router
       | if_ip_vrf_forwarding
       | if_isis_circuit_type
