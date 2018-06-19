@@ -3165,6 +3165,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
         CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
+        CiscoStructureUsage.NTP_ACCESS_GROUP,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
         CiscoStructureUsage.SSH_IPV6_ACL);

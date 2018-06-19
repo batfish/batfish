@@ -29063,6 +29063,17 @@
             "    (s_ntp",
             "      NTP:'ntp'  <== mode:DEFAULT_MODE",
             "      (ntp_common",
+            "        (ntp_access_group",
+            "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "          PEER:'peer'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'ntp-peer-group'  <== mode:DEFAULT_MODE)",
+            "          KOD:'kod'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'  <== mode:DEFAULT_MODE",
+            "      (ntp_common",
             "        (ntp_server",
             "          SERVER:'server'  <== mode:DEFAULT_MODE",
             "          VRF:'vrf'  <== mode:DEFAULT_MODE",
@@ -57276,6 +57287,15 @@
             "cops-acl" : {
               "cops listener access-list" : [
                 42
+              ]
+            }
+          }
+        },
+        "cisco_ntp" : {
+          "ipv4 acl" : {
+            "ntp-peer-group" : {
+              "ntp access-group" : [
+                4
               ]
             }
           }

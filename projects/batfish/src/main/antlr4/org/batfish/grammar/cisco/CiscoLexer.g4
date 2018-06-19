@@ -5899,6 +5899,11 @@ KLOGIN
    'klogin'
 ;
 
+KOD
+:
+   'kod'
+;
+
 KRON
 :
    'kron'

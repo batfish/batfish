@@ -517,6 +517,14 @@
           ]
         }
       },
+      "undefined:ipv4 acl:usage:ntp access-group:ntp-peer-group" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ntp access-group' named 'ntp-peer-group'",
+        "files" : {
+          "cisco_ntp" : [
+            4
+          ]
+        }
+      },
       "undefined:ipv4 acl:usage:pim rp-address:foobar" : {
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'pim rp-address' named 'foobar'",
         "files" : {
@@ -1294,7 +1302,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 159
+      "numResults" : 160
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1704,6 +1712,15 @@
           "cops-acl" : {
             "cops listener access-list" : [
               42
+            ]
+          }
+        }
+      },
+      "cisco_ntp" : {
+        "ipv4 acl" : {
+          "ntp-peer-group" : {
+            "ntp access-group" : [
+              4
             ]
           }
         }
