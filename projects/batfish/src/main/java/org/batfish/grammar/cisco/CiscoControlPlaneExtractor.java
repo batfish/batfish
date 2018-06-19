@@ -476,6 +476,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_intervalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_interval_minimalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_passive_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_pim_neighbor_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_proxy_arpContext;
@@ -4736,6 +4737,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       for (Interface iface : _currentInterfaces) {
         iface.setOspfPassive(true);
       }
+    }
+  }
+
+  @Override
+  public void exitIf_ip_ospf_shutdown(If_ip_ospf_shutdownContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setOspfShutdown(ctx.NO() == null);
     }
   }
 

@@ -269,6 +269,11 @@ if_ip_ospf_passive_interface
    NO? IP OSPF PASSIVE_INTERFACE NEWLINE
 ;
 
+if_ip_ospf_shutdown
+:
+   NO? IP OSPF SHUTDOWN NEWLINE
+;
+
 if_ip_passive_interface_eigrp
 :
    NO? IP PASSIVE_INTERFACE EIGRP tag = DEC NEWLINE
@@ -1330,6 +1335,7 @@ s_interface
       | if_ip_ospf_hello_interval
       | if_ip_ospf_network
       | if_ip_ospf_passive_interface
+      | if_ip_ospf_shutdown
       | if_ip_passive_interface_eigrp
       | if_ip_pim_neighbor_filter
       | if_ip_policy
