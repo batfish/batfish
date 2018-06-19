@@ -14384,6 +14384,11 @@ M_Interface_DOLLAR
    '$' -> type ( DOLLAR ) , popMode
 ;
 
+M_Interface_EIGRP
+:
+   'eigrp' -> type ( EIGRP ) , popMode
+;
+
 M_Interface_EQ
 :
    'eq' -> type ( EQ ) , popMode
