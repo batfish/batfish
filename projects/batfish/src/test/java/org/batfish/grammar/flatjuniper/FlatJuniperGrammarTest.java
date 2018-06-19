@@ -97,6 +97,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -104,6 +105,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -152,7 +154,10 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1057,6 +1062,37 @@ public class FlatJuniperGrammarTest {
     assertThat(
         aclTrustOut,
         rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testNestedConfig() throws IOException {
+    String hostname = "nested-config";
+
+    // Confirm a simple extraction (hostname) works for nested config format
+    assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testNestedConfigLinePreservation() throws IOException {
+    String hostname = "nested-config";
+    Flattener flattener =
+        Batfish.flatten(
+            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    /*
+     * Flattened config should be two lines: header line and set-hostname line
+     * Asserts are only checking content of the second line
+     */
+    String flatText = flattener.getFlattenedConfigurationText().split("\n")[1];
+
+    /* Confirm original line numbers are preserved */
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("host-name")), equalTo(3));
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("nested-config")), equalTo(3));
   }
 
   @Test

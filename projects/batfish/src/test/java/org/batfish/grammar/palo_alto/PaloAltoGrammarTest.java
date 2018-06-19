@@ -141,7 +141,6 @@ public class PaloAltoGrammarTest {
   @Test
   public void testNestedConfigLinePreservation() throws IOException {
     String hostname = "nested-config";
-    Configuration c = parseConfig(hostname);
     Flattener flattener =
         Batfish.flatten(
             CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
@@ -156,7 +155,7 @@ public class PaloAltoGrammarTest {
      */
     String flatText = flattener.getFlattenedConfigurationText().split("\n")[1];
 
-    // Confirm original line numbers are preserved
+    /* Confirm original line numbers are preserved */
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("deviceconfig")), equalTo(1));
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("hostname")), equalTo(3));
