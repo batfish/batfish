@@ -66,7 +66,7 @@ public class LocalRoute extends AbstractRoute {
     return _nextHopInterface;
   }
 
-  @Override
+  @Nonnull @Override
   public Ip getNextHopIp() {
     return Route.UNSET_ROUTE_NEXT_HOP_IP;
   }

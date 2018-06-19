@@ -13,6 +13,8 @@ import org.batfish.common.BatfishException;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CLASS, include = JsonTypeInfo.As.PROPERTY, property = "class")
 public abstract class AbstractRoute implements Serializable, Comparable<AbstractRoute> {
 
+  private static final long serialVersionUID = 1L;
+
   protected static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
 
   protected static final String PROP_METRIC = "metric";
@@ -30,8 +32,6 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   private static final String PROP_NODE = "node";
 
   protected static final String PROP_PROTOCOL = "protocol";
-
-  private static final long serialVersionUID = 1L;
 
   protected static final String PROP_TAG = "tag";
 
@@ -144,12 +144,10 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     String net = getNetwork().toString();
     String admin = Integer.toString(getAdministrativeCost());
     String cost = Long.toString(getMetric());
-    String prot = getProtocol().protocolName();
-    String routeStr =
-        String.format(
-            "%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s %s",
-            _node, _vrf, net, nhip, nhint, nhnode, admin, cost, tag, prot, protocolRouteString());
-    return routeStr;
+    String protocol = getProtocol().protocolName();
+    return String.format(
+        "%s vrf:%s net:%s nhip:%s nhint:%s nhnode:%s admin:%s cost:%s tag:%s prot:%s %s",
+        _node, _vrf, net, nhip, nhint, nhnode, admin, cost, tag, protocol, protocolRouteString());
   }
 
   @JsonIgnore
@@ -173,8 +171,8 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
   @Nonnull
   public abstract String getNextHopInterface();
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   public abstract Ip getNextHopIp();
 
   @JsonProperty(PROP_NODE)
@@ -265,7 +263,6 @@ public abstract class AbstractRoute implements Serializable, Comparable<Abstract
     rb.setProtocol(getProtocol());
     rb.setTag(getTag());
     rb.setVrf(vrfName);
-    Route outputRoute = rb.build();
-    return outputRoute;
+    return rb.build();
   }
 }
