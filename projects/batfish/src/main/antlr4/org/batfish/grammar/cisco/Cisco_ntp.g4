@@ -12,6 +12,7 @@ ntp_access_group
    (
       IPV4
       | IPV6
+      | KOD
       |
       (
          PEER
