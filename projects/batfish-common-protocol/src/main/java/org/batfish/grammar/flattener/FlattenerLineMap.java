@@ -26,7 +26,10 @@ public class FlattenerLineMap {
   public int getOriginalLine(@Nonnull Integer newLineNumber, @Nonnull Integer newStartingPosition) {
     NavigableMap<Integer, Integer> wordMap = _lineMap.get(newLineNumber);
     if (wordMap == null) {
-      // Result from looking up an unmapped line, handles lines like the inserted header
+      /*
+       * Result from looking up an unmapped line, this handles lines like the header inserted after
+       * flattening
+       */
       return UNMAPPED_LINE_NUMBER;
     } else {
       Entry<Integer, Integer> originalLineEntry = wordMap.floorEntry(newStartingPosition);
