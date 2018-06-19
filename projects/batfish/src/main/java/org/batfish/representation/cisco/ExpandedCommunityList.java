@@ -2,16 +2,16 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.DefinedStructure;
+import org.batfish.common.util.ComparableStructure;
 
-public class ExpandedCommunityList extends DefinedStructure<String> {
+public class ExpandedCommunityList extends ComparableStructure<String> {
 
   private static final long serialVersionUID = 1L;
 
   private List<ExpandedCommunityListLine> _lines;
 
-  public ExpandedCommunityList(String name, int definitionLine) {
-    super(name, definitionLine);
+  public ExpandedCommunityList(String name) {
+    super(name);
     _lines = new ArrayList<>();
   }
 

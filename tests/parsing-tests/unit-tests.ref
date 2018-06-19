@@ -56744,19 +56744,26 @@
           "as-path-set" : {
             "ama-coe-as-path" : {
               "definitionLines" : [
-                34
+                34,
+                35,
+                36
               ],
               "numReferrers" : 0
             },
             "ama-coe-as-path2" : {
               "definitionLines" : [
-                37
+                37,
+                38
               ],
               "numReferrers" : 0
             },
             "ama-coe-as-path3" : {
               "definitionLines" : [
-                39
+                39,
+                40,
+                41,
+                42,
+                43
               ],
               "numReferrers" : 0
             }
