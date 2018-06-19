@@ -76,16 +76,16 @@ public class ParseTreePrettyPrinterTest {
     String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
     GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
     FlattenerLineMap lineMap = new FlattenerLineMap();
-    // Map words on each line to different original lines
-    // (first) simple
+    /* Map words on each line to different original lines */
+    /* (first) simple */
     lineMap.setOriginalLine(1, 0, 5);
-    // block
+    /* block */
     lineMap.setOriginalLine(2, 0, 6);
-    // inner
+    /* inner */
     lineMap.setOriginalLine(3, 2, 7);
-    // (last) simple
+    /* (last) simple */
     lineMap.setOriginalLine(3, 7, 8);
-    // EOF
+    /* EOF */
     lineMap.setOriginalLine(5, 0, 9);
     RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings, lineMap);
     ParserRuleContext tree = cp.parse();
