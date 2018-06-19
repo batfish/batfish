@@ -463,6 +463,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_PRINT_PARSE_TREES = "ppt";
 
+  private static final String ARG_PRINT_PARSE_TREE_LINE_NUMS = "printparsetreelinenums";
+
   private static final String ARG_PRINT_SYMMETRIC_EDGES = "printsymmetricedges";
 
   public static final String ARG_RUN_MODE = "runmode";
@@ -790,6 +792,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(ARG_PRINT_PARSE_TREES);
   }
 
+  @Override
+  public boolean getPrintParseTreeLineNums() {
+    return _config.getBoolean(ARG_PRINT_PARSE_TREE_LINE_NUMS);
+  }
+
   public boolean getPrintSymmetricEdgePairs() {
     return _config.getBoolean(ARG_PRINT_SYMMETRIC_EDGES);
   }
@@ -1023,6 +1030,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_PRETTY_PRINT_ANSWER, false);
     setDefaultProperty(ARG_PARENT_PID, -1);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
+    setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(ARG_PRINT_SYMMETRIC_EDGES, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
     setDefaultProperty(BfConsts.ARG_RED_FLAG_AS_ERROR, false);
@@ -1250,6 +1258,9 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
     addBooleanOption(
+        ARG_PRINT_PARSE_TREE_LINE_NUMS, "print line numbers when printing parse trees");
+
+    addBooleanOption(
         ARG_PRINT_SYMMETRIC_EDGES, "print topology with symmetric edges adjacent in listing");
 
     addOption(BfConsts.ARG_QUESTION_NAME, "name of question", ARGNAME_NAME);
@@ -1434,6 +1445,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_PEDANTIC_SUPPRESS);
     getBooleanOptionValue(BfConsts.ARG_PRETTY_PRINT_ANSWER);
     getBooleanOptionValue(ARG_PRINT_PARSE_TREES);
+    getBooleanOptionValue(ARG_PRINT_PARSE_TREE_LINE_NUMS);
     getBooleanOptionValue(ARG_PRINT_SYMMETRIC_EDGES);
     getStringOptionValue(BfConsts.ARG_QUESTION_NAME);
     getBooleanOptionValue(BfConsts.ARG_RED_FLAG_AS_ERROR);
@@ -1554,6 +1566,11 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   @Override
   public void setPrintParseTree(boolean printParseTree) {
     _config.setProperty(ARG_PRINT_PARSE_TREES, printParseTree);
+  }
+
+  @Override
+  public void setPrintParseTreeLineNums(boolean printParseTreeLineNums) {
+    _config.setProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, printParseTreeLineNums);
   }
 
   public void setQuestionPath(@Nullable Path questionPath) {

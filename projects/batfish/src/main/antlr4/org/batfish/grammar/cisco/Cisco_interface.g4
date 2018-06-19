@@ -172,6 +172,15 @@ if_ip_dhcp
    )
 ;
 
+if_ip_flow_monitor
+:
+   IP FLOW MONITOR name = variable
+   (
+      INPUT
+      | OUTPUT
+   ) NEWLINE
+;
+
 if_ip_helper_address
 :
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
@@ -209,6 +218,11 @@ if_ip_nat_source
          POOL pool = variable
       )
    )* NEWLINE
+;
+
+if_ip_nbar
+:
+   IP NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
 ;
 
 if_ip_ospf_area
@@ -290,6 +304,14 @@ if_ip_sticky_arp
    (NO? IP STICKY_ARP NEWLINE)
    |
    (IP STICKY_ARP IGNORE NEWLINE)
+;
+
+if_ip_summary_address
+:
+   IP SUMMARY_ADDRESS EIGRP asn = DEC (
+      addr = IP_ADDRESS netmask = IP_ADDRESS
+      | prefix = IP_PREFIX
+   ) (LEAK_MAP mapname = variable)? NEWLINE
 ;
 
 if_ip_verify
@@ -1244,11 +1266,13 @@ s_interface
       | if_ip_address_dhcp
       | if_ip_address_secondary
       | if_ip_dhcp
+      | if_ip_flow_monitor
       | if_ip_helper_address
       | if_ip_inband_access_group
       | if_ip_igmp
       | if_ip_nat_destination
       | if_ip_nat_source
+      | if_ip_nbar
       | if_ip_ospf_area
       | if_ip_ospf_cost
       | if_ip_ospf_dead_interval
@@ -1262,6 +1286,7 @@ s_interface
       | if_ip_router_ospf_area
       | if_ip_rtp
       | if_ip_sticky_arp
+      | if_ip_summary_address
       | if_ip_virtual_router
       | if_ip_vrf_forwarding
       | if_isis_circuit_type

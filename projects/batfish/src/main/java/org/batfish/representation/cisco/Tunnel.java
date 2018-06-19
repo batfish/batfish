@@ -1,11 +1,11 @@
 package org.batfish.representation.cisco;
 
+import java.io.Serializable;
 import javax.annotation.Nullable;
-import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 
-public class Tunnel extends ReferenceCountedStructure {
+public final class Tunnel implements Serializable {
 
   public enum TunnelMode {
     GRE,
@@ -14,17 +14,17 @@ public class Tunnel extends ReferenceCountedStructure {
 
   private static final long serialVersionUID = 1L;
 
-  Ip _destination;
+  private Ip _destination;
 
-  String _ipsecProfileName;
+  private String _ipsecProfileName;
 
-  TunnelMode _mode;
+  private TunnelMode _mode;
 
-  IpProtocol _protocol;
+  private IpProtocol _protocol;
 
-  @Nullable Ip _sourceAddress;
+  private @Nullable Ip _sourceAddress;
 
-  @Nullable String _sourceInterfaceName;
+  private @Nullable String _sourceInterfaceName;
 
   public Ip getDestination() {
     return _destination;
@@ -36,6 +36,10 @@ public class Tunnel extends ReferenceCountedStructure {
 
   public TunnelMode getMode() {
     return _mode;
+  }
+
+  public IpProtocol getProtocol() {
+    return _protocol;
   }
 
   @Nullable

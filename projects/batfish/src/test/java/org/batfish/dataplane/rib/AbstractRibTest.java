@@ -38,7 +38,7 @@ public class AbstractRibTest {
    */
   private AbstractRib<StaticRoute> _rib;
   private static final StaticRoute _mostGeneralRoute =
-      new StaticRoute(Prefix.ZERO, Ip.ZERO, null, 0, 0);
+      new StaticRoute(Prefix.ZERO, Ip.ZERO, null, 0, 0L, 0);
   @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
@@ -64,7 +64,7 @@ public class AbstractRibTest {
     // Check that containsRoute works as expected for this simple case
     assertThat(_rib.containsRoute(_mostGeneralRoute), is(true));
     assertThat(
-        _rib.containsRoute(new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0)),
+        _rib.containsRoute(new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0L, 0)),
         is(false));
   }
 
@@ -77,7 +77,7 @@ public class AbstractRibTest {
 
     // Test: merge the routes into the RIB
     for (String prefixStr : testPrefixes) {
-      StaticRoute r = new StaticRoute(Prefix.parse(prefixStr), Ip.ZERO, null, 0, 0);
+      StaticRoute r = new StaticRoute(Prefix.parse(prefixStr), Ip.ZERO, null, 0, 0L, 0);
       _rib.mergeRouteGetDelta(r);
       routes.add(r);
     }
@@ -88,7 +88,7 @@ public class AbstractRibTest {
   @Test
   public void testRepeatedAdd() {
     // Setup
-    StaticRoute route = new StaticRoute(Prefix.parse("10.0.0.0/11"), Ip.ZERO, null, 0, 0);
+    StaticRoute route = new StaticRoute(Prefix.parse("10.0.0.0/11"), Ip.ZERO, null, 0, 0L, 0);
 
     // Test
     for (int i = 0; i < 5; i++) {
@@ -109,8 +109,8 @@ public class AbstractRibTest {
   @Test
   public void testNonOverlappingRouteAdd() {
     // Setup
-    StaticRoute r1 = new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0);
-    StaticRoute r2 = new StaticRoute(Prefix.parse("128.1.1.1/32"), Ip.ZERO, null, 0, 0);
+    StaticRoute r1 = new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0L, 0);
+    StaticRoute r2 = new StaticRoute(Prefix.parse("128.1.1.1/32"), Ip.ZERO, null, 0, 0L, 0);
 
     // Test:
     _rib.mergeRouteGetDelta(r1);
@@ -227,7 +227,7 @@ public class AbstractRibTest {
   public void testGetRoutesCannotBeModified() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getRoutes();
-    StaticRoute r1 = new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0);
+    StaticRoute r1 = new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0L, 0);
 
     // Exception because ImmutableSet
     _expectedException.expect(UnsupportedOperationException.class);
@@ -239,7 +239,7 @@ public class AbstractRibTest {
   public void testGetRoutesIsNotAView() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getRoutes();
-    StaticRoute r1 = new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0);
+    StaticRoute r1 = new StaticRoute(Prefix.parse("1.1.1.1/32"), Ip.ZERO, null, 0, 0L, 0);
 
     _rib.mergeRouteGetDelta(r1);
 
@@ -292,7 +292,7 @@ public class AbstractRibTest {
    */
   @Test
   public void testRemoveRoute() {
-    StaticRoute r = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 1);
+    StaticRoute r = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 0L, 1);
     _rib.mergeRoute(_mostGeneralRoute);
     _rib.mergeRoute(r);
 
@@ -323,9 +323,9 @@ public class AbstractRibTest {
   @Test
   public void testRemoveRouteSamePreference() {
     // Two routes for same prefix,
-    StaticRoute r1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 1);
+    StaticRoute r1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 0L, 1);
     StaticRoute r2 =
-        new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), new Ip("2.2.2.2"), null, 1, 1);
+        new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), new Ip("2.2.2.2"), null, 1, 0L, 1);
 
     _rib.mergeRoute(r1);
     _rib.mergeRoute(r2);
@@ -340,9 +340,9 @@ public class AbstractRibTest {
   @Test
   public void testClear() {
     // Two routes for same prefix,
-    StaticRoute r1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 1);
+    StaticRoute r1 = new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), Ip.ZERO, null, 1, 0L, 1);
     StaticRoute r2 =
-        new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), new Ip("2.2.2.2"), null, 1, 1);
+        new StaticRoute(new Prefix(new Ip("1.1.1.1"), 32), new Ip("2.2.2.2"), null, 1, 0L, 1);
 
     _rib.mergeRoute(r1);
     _rib.mergeRoute(r2);

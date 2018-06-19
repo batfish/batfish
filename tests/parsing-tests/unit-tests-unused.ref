@@ -30,7 +30,9 @@
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path'",
         "files" : {
           "route_policy_as_path" : [
-            34
+            34,
+            35,
+            36
           ]
         }
       },
@@ -38,7 +40,8 @@
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path2'",
         "files" : {
           "route_policy_as_path" : [
-            37
+            37,
+            38
           ]
         }
       },
@@ -46,7 +49,11 @@
         "description" : "Unused structure of type: 'as-path-set' with name: 'ama-coe-as-path3'",
         "files" : {
           "route_policy_as_path" : [
-            39
+            39,
+            40,
+            41,
+            42,
+            43
           ]
         }
       },
@@ -402,23 +409,8 @@
         "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'dhcpgrp'",
         "files" : {
           "juniper_forwarding_options" : [
-            24
-          ]
-        }
-      },
-      "unused:dhcp-relay server-group:site-dhcp" : {
-        "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'site-dhcp'",
-        "files" : {
-          "juniper_relay" : [
-            4
-          ]
-        }
-      },
-      "unused:dhcp-relay server-group:test2" : {
-        "description" : "Unused structure of type: 'dhcp-relay server-group' with name: 'test2'",
-        "files" : {
-          "juniper_forwarding_options" : [
-            26
+            24,
+            25
           ]
         }
       },
@@ -975,7 +967,22 @@
         "description" : "Unused structure of type: 'policy-statement' with name: 'POLICY-NAME'",
         "files" : {
           "juniper_policy_statement" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
           ]
         }
       },
@@ -983,7 +990,12 @@
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v4'",
         "files" : {
           "juniper_route_filter" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
           ]
         }
       },
@@ -991,7 +1003,12 @@
         "description" : "Unused structure of type: 'policy-statement' with name: 'route-filter-test-v6'",
         "files" : {
           "juniper_route_filter" : [
-            11
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
           ]
         }
       },
@@ -1401,7 +1418,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 137
+      "numResults" : 135
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -2099,10 +2116,8 @@
       "juniper_forwarding_options" : {
         "dhcp-relay server-group" : {
           "dhcpgrp" : [
-            24
-          ],
-          "test2" : [
-            26
+            24,
+            25
           ]
         }
       },
@@ -2117,24 +2132,42 @@
       "juniper_policy_statement" : {
         "policy-statement" : {
           "POLICY-NAME" : [
-            4
-          ]
-        }
-      },
-      "juniper_relay" : {
-        "dhcp-relay server-group" : {
-          "site-dhcp" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19
           ]
         }
       },
       "juniper_route_filter" : {
         "policy-statement" : {
           "route-filter-test-v4" : [
-            4
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
           ],
           "route-filter-test-v6" : [
-            11
+            11,
+            12,
+            13,
+            14,
+            15,
+            16
           ]
         }
       },
@@ -2405,13 +2438,20 @@
       "route_policy_as_path_set" : {
         "as-path-set" : {
           "ama-coe-as-path" : [
-            34
+            34,
+            35,
+            36
           ],
           "ama-coe-as-path2" : [
-            37
+            37,
+            38
           ],
           "ama-coe-as-path3" : [
-            39
+            39,
+            40,
+            41,
+            42,
+            43
           ]
         }
       },

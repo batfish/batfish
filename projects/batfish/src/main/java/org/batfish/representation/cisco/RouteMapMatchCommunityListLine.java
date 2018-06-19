@@ -35,15 +35,6 @@ public class RouteMapMatchCommunityListLine extends RouteMapMatchLine {
     for (String listName : _listNames) {
       CommunityList list = c.getCommunityLists().get(listName);
       if (list != null) {
-        String msg = "match community line";
-        StandardCommunityList standardCommunityList = cc.getStandardCommunityLists().get(listName);
-        if (standardCommunityList != null) {
-          standardCommunityList.getReferers().put(this, msg);
-        }
-        ExpandedCommunityList expandedCommunityList = cc.getExpandedCommunityLists().get(listName);
-        if (expandedCommunityList != null) {
-          expandedCommunityList.getReferers().put(this, msg);
-        }
         disjuncts.add(new MatchCommunitySet(new NamedCommunitySet(listName)));
       }
     }
