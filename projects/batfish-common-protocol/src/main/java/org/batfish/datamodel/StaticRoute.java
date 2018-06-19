@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -66,12 +67,14 @@ public class StaticRoute extends AbstractRoute {
   }
 
   @Override
+  @JsonIgnore(false)
   @JsonProperty(PROP_ADMINISTRATIVE_COST)
   public int getAdministrativeCost() {
     return _administrativeCost;
   }
 
   @Override
+  @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
   public Long getMetric() {
     return _metric;
@@ -79,12 +82,14 @@ public class StaticRoute extends AbstractRoute {
 
   @Nonnull
   @Override
+  @JsonIgnore(false)
   @JsonProperty(PROP_NEXT_HOP_INTERFACE)
   public String getNextHopInterface() {
     return _nextHopInterface;
   }
 
   @Nonnull
+  @JsonIgnore(false)
   @JsonProperty(PROP_NEXT_HOP_IP)
   @Override
   public Ip getNextHopIp() {
@@ -97,6 +102,7 @@ public class StaticRoute extends AbstractRoute {
   }
 
   @Override
+  @JsonIgnore(false)
   @JsonProperty(PROP_TAG)
   public int getTag() {
     return _tag;

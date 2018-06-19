@@ -466,9 +466,8 @@ public class VirtualRouterTest {
             new StaticRoute(Prefix.parse("1.1.1.1/32"), null, "Ethernet1", 1, 0L, 1),
             new StaticRoute(Prefix.parse("2.2.2.2/32"), new Ip("9.9.9.8"), null, 1, 0L, 1),
             new StaticRoute(Prefix.parse("3.3.3.3/32"), new Ip("9.9.9.9"), "Ethernet1", 1, 0L, 1),
-            new StaticRoute(Prefix.parse("4.4.4.4/32"), null, Interface.NULL_INTERFACE_NAME, 1,
-                0L,
-                1),
+            new StaticRoute(
+                Prefix.parse("4.4.4.4/32"), null, Interface.NULL_INTERFACE_NAME, 1, 0L, 1),
 
             // These do not get activated due to missing/incorrect interface names
             new StaticRoute(Prefix.parse("5.5.5.5/32"), null, "Eth1", 1, 0L, 1),
