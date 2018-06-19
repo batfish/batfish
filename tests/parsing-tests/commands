@@ -42,10 +42,3 @@ test -compareall tests/parsing-tests/unit-tests.ref init-testrig test_rigs/unit-
 test tests/parsing-tests/unit-tests-undefined.ref get undefinedreferences
 test tests/parsing-tests/unit-tests-unused.ref get unusedstructures
 test tests/parsing-tests/unit-tests-nodes.ref get nodes summary=false
-
-
-#parsing tests with parse tree line numbers
-add-batfish-option printparsetreelinenums
-
-#make sure line-numbers show up when that option is set
-test -compareall tests/parsing-tests/line-numbers.ref init-testrig test_rigs/line-numbers
