@@ -9039,6 +9039,11 @@ PROTOCOL
    'protocol'
 ;
 
+PROTOCOL_DISCOVERY
+:
+   'protocol-discovery'
+;
+
 PROTOCOL_HTTP
 :
    'protocol-http'

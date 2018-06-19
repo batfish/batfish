@@ -89,6 +89,7 @@ interface Ethernet0
  ip nat outside
  ip nat source dynamic access-list def overload
  ip nat source dynamic access-list abc pool beeble
+ ip nbar protocol-discovery
  ip nhrp map 130.59.254.2 130.59.32.21
  ip ospf 1 area 0
  ip ospf cost 1

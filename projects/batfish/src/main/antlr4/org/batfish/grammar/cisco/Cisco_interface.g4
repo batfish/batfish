@@ -211,6 +211,11 @@ if_ip_nat_source
    )* NEWLINE
 ;
 
+if_ip_nbar
+:
+   IP NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
+;
+
 if_ip_ospf_area
 :
    IP OSPF procnum = DEC AREA area = DEC NEWLINE
@@ -1249,6 +1254,7 @@ s_interface
       | if_ip_igmp
       | if_ip_nat_destination
       | if_ip_nat_source
+      | if_ip_nbar
       | if_ip_ospf_area
       | if_ip_ospf_cost
       | if_ip_ospf_dead_interval
