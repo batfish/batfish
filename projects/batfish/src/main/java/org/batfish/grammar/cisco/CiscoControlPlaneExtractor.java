@@ -116,6 +116,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -476,6 +477,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_ospf_areaContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
@@ -4769,6 +4771,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     long area = toIp(ctx.area).asLong();
     for (Interface iface : _currentInterfaces) {
       iface.setOspfArea(area);
+    }
+  }
+
+  @Override
+  public void exitIf_ip_summary_address(If_ip_summary_addressContext ctx) {
+    if (ctx.LEAK_MAP() != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP,
+          ctx.mapname.getText(),
+          INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
+          ctx.mapname.getStart().getLine());
     }
   }
 

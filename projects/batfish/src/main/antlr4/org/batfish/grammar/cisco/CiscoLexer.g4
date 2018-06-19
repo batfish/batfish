@@ -6044,6 +6044,11 @@ LE
    'le'
 ;
 
+LEAK_MAP
+:
+   'leak-map'
+;
+
 LEASE
 :
    'lease'

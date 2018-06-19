@@ -21983,6 +21983,17 @@
             "        STICKY_ARP:'sticky-arp'  <== mode:DEFAULT_MODE",
             "        IGNORE:'ignore'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_summary_address",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        SUMMARY_ADDRESS:'summary-address'  <== mode:DEFAULT_MODE",
+            "        EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "        asn = DEC:'11'  <== mode:DEFAULT_MODE",
+            "        addr = IP_ADDRESS:'10.1.2.3'  <== mode:DEFAULT_MODE",
+            "        netmask = IP_ADDRESS:'255.255.255.255'  <== mode:DEFAULT_MODE",
+            "        LEAK_MAP:'leak-map'  <== mode:DEFAULT_MODE",
+            "        mapname = (variable",
+            "          VARIABLE:'eigrp-leak-map'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        NO:'no'  <== mode:DEFAULT_MODE",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
@@ -54702,25 +54713,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                281
+                282
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                283
+                284
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                285
+                286
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                287
+                288
               ],
               "numReferrers" : 1
             },
@@ -54998,114 +55009,115 @@
                 276,
                 277,
                 278,
-                279
+                279,
+                280
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                289
+                290
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                326,
-                327
+                327,
+                328
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                291,
                 292,
                 293,
                 294,
-                295
+                295,
+                296
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                297
+                298
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                299
+                300
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                301
+                302
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                310
+                311
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                316
+                317
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                318
+                319
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                305
+                306
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                320
+                321
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                312
+                313
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                314
+                315
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                322
+                323
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                307
+                308
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                324
+                325
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                303
+                304
               ],
               "numReferrers" : 1
             }
@@ -57143,12 +57155,12 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                125
+                126
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                128
+                129
               ]
             },
             "ag1" : {
@@ -57186,10 +57198,17 @@
               ]
             }
           },
+          "route-map" : {
+            "eigrp-leak-map" : {
+              "interface summary-address eigrp leak-map" : [
+                123
+              ]
+            }
+          },
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                279
+                280
               ]
             }
           }
