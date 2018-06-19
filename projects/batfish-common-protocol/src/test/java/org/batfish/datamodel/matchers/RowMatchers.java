@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.matchers.RowMatchersImpl.HasColumn;
 import org.batfish.datamodel.table.Row;
 import org.hamcrest.Matcher;
@@ -18,8 +19,8 @@ public final class RowMatchers {
   public static @Nonnull <V> Matcher<? super Row> hasColumn(
       @Nonnull Matcher<? super String> keyMatcher,
       @Nonnull Matcher<? super V> valueMatcher,
-      @Nonnull TypeReference<V> valueTypeReference) {
-    return new HasColumn<>(keyMatcher, valueMatcher, valueTypeReference);
+      @Nonnull Schema schema) {
+    return new HasColumn<>(keyMatcher, valueMatcher, schema);
   }
 
   /**
@@ -28,8 +29,8 @@ public final class RowMatchers {
    * use by {@link Row#get(String, TypeReference)}.
    */
   public static @Nonnull <V> Matcher<? super Row> hasColumn(
-      String key, Matcher<? super V> valueMatcher, TypeReference<V> valueTypeReference) {
-    return new HasColumn<>(equalTo(key), valueMatcher, valueTypeReference);
+      String key, Matcher<? super V> valueMatcher, Schema schema) {
+    return new HasColumn<>(equalTo(key), valueMatcher, schema);
   }
 
   private RowMatchers() {}

@@ -240,15 +240,15 @@ public class BgpSessionStatusAnswerer extends Answerer {
    * @return The output object
    */
   public static BgpSessionInfo fromRow(Row row) {
-    Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
-    SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
-    Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);
-    NodeInterfacePair localInterface = row.get(COL_LOCAL_INTERFACE, NodeInterfacePair.class);
-    Node node = row.get(COL_NODE, Node.class);
-    Node remoteNode = row.get(COL_REMOTE_NODE, Node.class);
-    Prefix remotePrefix = row.get(COL_REMOTE_PREFIX, Prefix.class);
-    SessionType sessionType = row.get(COL_SESSION_TYPE, SessionType.class);
-    String vrfName = row.get(COL_VRF_NAME, String.class);
+    Ip localIp = row.getIp(COL_LOCAL_IP);
+    SessionStatus configuredStatus = SessionStatus.valueOf(row.getString(COL_CONFIGURED_STATUS));
+    Integer establishedNeighbors = row.getInteger(COL_ESTABLISHED_NEIGHBORS);
+    NodeInterfacePair localInterface = row.getInterface(COL_LOCAL_INTERFACE);
+    Node node = row.getNode(COL_NODE);
+    Node remoteNode = row.getNode(COL_REMOTE_NODE);
+    Prefix remotePrefix = row.getPrefix(COL_REMOTE_PREFIX);
+    SessionType sessionType = SessionType.valueOf(row.getString(COL_SESSION_TYPE));
+    String vrfName = row.getString(COL_VRF_NAME);
 
     return new BgpSessionInfo(
         configuredStatus,

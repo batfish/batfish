@@ -166,6 +166,19 @@ public class CommonUtil {
     return collection == null ? null : collection.isEmpty() ? null : collection;
   }
 
+  /** Compare two nullable comparable objects. null is considered less than non-null. */
+  public static <T extends Comparable<T>> int compareNullable(@Nullable T a, @Nullable T b) {
+    if (a == b) {
+      return 0;
+    } else if (a == null) {
+      return -1;
+    } else if (b == null) {
+      return 1;
+    } else {
+      return a.compareTo(b);
+    }
+  }
+
   private static class TrustAllHostNameVerifier implements HostnameVerifier {
     @Override
     public boolean verify(String hostname, SSLSession session) {

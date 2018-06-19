@@ -5745,10 +5745,6 @@
           "abcdefg" : {
             "name" : "abcdefg",
             "pfsKeyGroupDynamicIke" : false
-          },
-          "myothermap:65535" : {
-            "name" : "myothermap:65535",
-            "pfsKeyGroupDynamicIke" : false
           }
         },
         "ipsecProposals" : {

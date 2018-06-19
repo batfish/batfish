@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasDstIp;
+import org.batfish.datamodel.matchers.FlowMatchersImpl.HasIngressInterface;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasIngressNode;
 import org.batfish.datamodel.matchers.FlowMatchersImpl.HasSrcIp;
 import org.hamcrest.Matcher;
@@ -22,6 +23,10 @@ public final class FlowMatchers {
 
   public static Matcher<Flow> hasIngressNode(String ingressNode) {
     return new HasIngressNode(equalTo(ingressNode));
+  }
+
+  public static Matcher<Flow> hasIngressInterface(String ingressInterface) {
+    return new HasIngressInterface(equalTo(ingressInterface));
   }
 
   public static Matcher<Flow> hasIngressNode(Matcher<? super String> ingressNodeMatcher) {

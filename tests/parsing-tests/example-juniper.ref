@@ -10528,31 +10528,45 @@
           "policy-statement" : {
             "as1_to_as1" : {
               "definitionLines" : [
-                30
+                30,
+                31,
+                32,
+                33
               ],
               "numReferrers" : 1
             },
             "as1_to_as2" : {
               "definitionLines" : [
-                34
+                34,
+                35,
+                36,
+                37,
+                38,
+                39,
+                40,
+                41
               ],
               "numReferrers" : 1
             },
             "as2_to_as1" : {
               "definitionLines" : [
-                42
+                42,
+                43,
+                44
               ],
               "numReferrers" : 1
             },
             "match_original_prefixes" : {
               "definitionLines" : [
-                45
+                45,
+                46
               ],
               "numReferrers" : 2
             },
             "ospf-redistribute-connected" : {
               "definitionLines" : [
-                28
+                28,
+                29
               ],
               "numReferrers" : 1
             }
@@ -10610,37 +10624,59 @@
           "policy-statement" : {
             "as1_to_as1" : {
               "definitionLines" : [
-                28
+                28,
+                29,
+                30,
+                31
               ],
               "numReferrers" : 1
             },
             "as1_to_as3" : {
               "definitionLines" : [
-                32
+                32,
+                33,
+                34,
+                35,
+                36,
+                37,
+                38,
+                39
               ],
               "numReferrers" : 1
             },
             "as1_to_as4" : {
               "definitionLines" : [
-                43
+                43,
+                44,
+                45,
+                46,
+                47,
+                48,
+                49
               ],
               "numReferrers" : 1
             },
             "as3_to_as1" : {
               "definitionLines" : [
-                40
+                40,
+                41,
+                42
               ],
               "numReferrers" : 1
             },
             "as4_to_as1" : {
               "definitionLines" : [
-                50
+                50,
+                51,
+                52,
+                53
               ],
               "numReferrers" : 1
             },
             "ospf-redistribute-connected" : {
               "definitionLines" : [
-                26
+                26,
+                27
               ],
               "numReferrers" : 1
             }
@@ -10701,7 +10737,7 @@
                 51,
                 52
               ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             }
           }
         },
@@ -10811,7 +10847,7 @@
                 52,
                 53
               ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             }
           },
           "ipv4 prefix-list" : {
@@ -10974,7 +11010,7 @@
                 52,
                 53
               ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             }
           },
           "ipv4 prefix-list" : {
@@ -11096,7 +11132,7 @@
                 54,
                 55
               ],
-              "numReferrers" : 1
+              "numReferrers" : 5
             }
           }
         },
@@ -11151,7 +11187,7 @@
                 54,
                 55
               ],
-              "numReferrers" : 1
+              "numReferrers" : 5
             }
           }
         },
@@ -11337,7 +11373,7 @@
                 54,
                 55
               ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             }
           },
           "route-map" : {
@@ -11433,7 +11469,7 @@
                 54,
                 55
               ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             }
           },
           "route-map" : {
@@ -11574,7 +11610,7 @@
                 52,
                 53
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {
@@ -11719,7 +11755,7 @@
                 52,
                 53
               ],
-              "numReferrers" : 1
+              "numReferrers" : 2
             }
           },
           "ipv4 prefix-list" : {
@@ -11823,7 +11859,7 @@
                 55,
                 56
               ],
-              "numReferrers" : 1
+              "numReferrers" : 3
             }
           }
         }

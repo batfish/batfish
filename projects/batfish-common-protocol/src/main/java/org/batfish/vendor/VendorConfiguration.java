@@ -12,7 +12,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedMap;
@@ -21,8 +20,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
-import org.batfish.common.util.DefinedStructure;
-import org.batfish.common.util.ReferenceCountedStructure;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DefinedStructureInfo;
@@ -205,24 +202,6 @@ public abstract class VendorConfiguration implements Serializable, GenericConfig
       info.setNumReferrers(DefinedStructureInfo.UNKNOWN_NUM_REFERRERS);
     } else {
       info.setNumReferrers(info.getNumReferrers() + numReferrers);
-    }
-  }
-
-  public void recordStructure(
-      ReferenceCountedStructure structure, StructureType structureType, String name, int line) {
-    recordStructure(structureType, name, structure.getReferers().size(), line);
-  }
-
-  protected <T extends DefinedStructure<String>> void recordStructure(
-      Map<String, T> map, StructureType type) {
-    for (Entry<String, T> e : map.entrySet()) {
-      String name = e.getKey();
-      if (name.startsWith("~")
-          || e.getValue().getDefinitionLine() == DefinedStructure.IGNORED_DEFINITION_LINE) {
-        continue;
-      }
-      T t = e.getValue();
-      recordStructure(t, type, name, t.getDefinitionLine());
     }
   }
 }
