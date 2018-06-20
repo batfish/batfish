@@ -18,7 +18,6 @@ import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
-import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
@@ -205,14 +204,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
                   currentPath));
           try {
-            Flattener flattener =
+            _fileText =
                 Batfish.flatten(
-                    _fileText,
-                    _logger,
-                    _settings,
-                    ConfigurationFormat.JUNIPER,
-                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
-            _fileText = flattener.getFlattenedConfigurationText();
+                        _fileText,
+                        _logger,
+                        _settings,
+                        ConfigurationFormat.JUNIPER,
+                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER)
+                    .getFlattenedConfigurationText();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(
@@ -264,14 +263,14 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
                   currentPath));
           try {
-            Flattener flattener =
+            _fileText =
                 Batfish.flatten(
-                    _fileText,
-                    _logger,
-                    _settings,
-                    ConfigurationFormat.PALO_ALTO_NESTED,
-                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
-            _fileText = flattener.getFlattenedConfigurationText();
+                        _fileText,
+                        _logger,
+                        _settings,
+                        ConfigurationFormat.PALO_ALTO_NESTED,
+                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER)
+                    .getFlattenedConfigurationText();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(
