@@ -72,6 +72,7 @@ interface Ethernet0
  ip dhcp snooping limit rate 10
  ip dhcp snooping trust
  no ip dhcp snooping trust
+ ip flow monitor some-flow-mon output
  ip helper-address 172.16.0.1
  ip helper-address 172.17.0.1
  ip igmp access-group 1
@@ -89,6 +90,7 @@ interface Ethernet0
  ip nat outside
  ip nat source dynamic access-list def overload
  ip nat source dynamic access-list abc pool beeble
+ ip nbar protocol-discovery
  ip nhrp map 130.59.254.2 130.59.32.21
  ip ospf 1 area 0
  ip ospf cost 1
@@ -118,6 +120,7 @@ interface Ethernet0
  ip sticky-arp
  no ip sticky-arp
  ip sticky-arp ignore
+ ip summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167

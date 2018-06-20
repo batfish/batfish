@@ -6,31 +6,41 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.Issue;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.answers.SchemaUtils;
+import org.batfish.datamodel.collections.FileLines;
+import org.batfish.datamodel.collections.NodeInterfacePair;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.Exclusion;
 
 /**
  * Represents one row of the table answer. Each row is basically a map of key value pairs, where the
  * key is the column name and the value (currently) is JsonNode.
  */
+@ParametersAreNonnullByDefault
 public class Row implements Comparable<Row> {
 
-  public static class RowBuilder {
+  public abstract static class RowBuilder {
 
     private final ObjectNode _data;
 
@@ -38,27 +48,82 @@ public class Row implements Comparable<Row> {
       _data = BatfishObjectMapper.mapper().createObjectNode();
     }
 
-    private RowBuilder(Row row, Collection<String> columns) {
-      this();
-      columns.forEach(col -> _data.set(col, row.get(col)));
-    }
-
     public Row build() {
       return new Row(_data);
     }
 
+    @VisibleForTesting
+    Row rowOf(Object... objects) {
+      checkArgument(
+          objects.length % 2 == 0,
+          "expecting an even number of parameters, not %s",
+          objects.length);
+      for (int i = 0; i + 1 < objects.length; i += 2) {
+        checkArgument(
+            objects[i] instanceof String,
+            "argument %s must be a string, but is: %s",
+            i,
+            objects[i]);
+        put((String) objects[i], objects[i + 1]);
+      }
+      return build();
+    }
+
     /**
-     * Sets the value for the specified column to the specified value. Any existing values for the
-     * column are overwritten
+     * Sets the value of {@code column} to {@code value}.
      *
-     * @param columnName The column to set
-     * @param value The value to set
-     * @return The RowBuilder object itself (to aid chaining)
+     * <p>Any existing values for the column are overwritten
      */
-    public RowBuilder put(String columnName, Object value) {
-      _data.set(columnName, BatfishObjectMapper.mapper().valueToTree(value));
+    public RowBuilder put(String column, Object value) {
+      _data.set(column, BatfishObjectMapper.mapper().valueToTree(value));
       return this;
     }
+
+    /** Mirrors the values of all columns in {@code otherRow} */
+    public RowBuilder putAll(Row otherRow) {
+      return putAll(otherRow, otherRow.getColumnNames());
+    }
+
+    /**
+     * Mirrors the values of {@code columns} in {@code otherRow}
+     *
+     * @throws NoSuchElementException if one of the columns is not present in {@code otherRow}.
+     */
+    public RowBuilder putAll(Row otherRow, Collection<String> columns) {
+      columns.forEach(col -> put(col, otherRow.get(col)));
+      return this;
+    }
+  }
+
+  public static class TypedRowBuilder extends RowBuilder {
+
+    Map<String, ColumnMetadata> _columns;
+
+    private TypedRowBuilder(Map<String, ColumnMetadata> columns) {
+      checkArgument(columns != null, "Columns cannot be null to instantiate TypedRowBuilder");
+      _columns = columns;
+    }
+
+    /**
+     * Puts {@code object} into column {@code column} of the row, after checking if the object is
+     * compatible with the Schema of the column
+     */
+    @Override
+    public TypedRowBuilder put(String column, @Nullable Object object) {
+      checkArgument(
+          _columns.containsKey(column), Row.missingColumnErrorMessage(column, _columns.keySet()));
+      Schema expectedSchema = _columns.get(column).getSchema();
+      checkArgument(
+          SchemaUtils.isValidObject(object, expectedSchema),
+          String.format(
+              "Cannot convert '%s' to Schema '%s' of column '%s", object, expectedSchema, column));
+      super.put(column, object);
+      return this;
+    }
+  }
+
+  public static class UntypedRowBuilder extends RowBuilder {
+    private UntypedRowBuilder() {}
   }
 
   private final ObjectNode _data;
@@ -66,39 +131,37 @@ public class Row implements Comparable<Row> {
   /**
    * Returns a new {@link Row} with the given entries.
    *
-   * <p>This function requires an even number of parameters, where the 0th and every even parameter
-   * is a {@link String} representing the name of a column.
+   * <p>{@code objects} should be an even number of parameters, where the 0th and every even
+   * parameter is a {@link String} representing the name of a column.
    */
   public static Row of(Object... objects) {
-    checkArgument(
-        objects.length % 2 == 0, "expecting an even number of parameters, not %s", objects.length);
-    Row.RowBuilder builder = Row.builder();
-    for (int i = 0; i + 1 < objects.length; i += 2) {
-      checkArgument(
-          objects[i] instanceof String, "argument %s must be a string, but is: %s", i, objects[i]);
-      builder.put((String) objects[i], objects[i + 1]);
-    }
-    return builder.build();
+    return builder().rowOf(objects);
+  }
+
+  /**
+   * Returns a new {@link Row} with the given entries.
+   *
+   * <p>{@code objects} should be an even number of parameters, where the 0th and every even
+   * parameter is a {@link String} representing the name of a column. The columns names and the
+   * actual objects (in odd parameters) must be compliant with the metadata map in {@code columns}.
+   */
+  public static Row of(Map<String, ColumnMetadata> columns, Object... objects) {
+    return builder(columns).rowOf(objects);
   }
 
   @JsonCreator
-  public Row(ObjectNode data) {
+  private Row(ObjectNode data) {
     _data = firstNonNull(data, BatfishObjectMapper.mapper().createObjectNode());
   }
 
-  /** Returns a builder object for Row */
-  public static RowBuilder builder() {
-    return new RowBuilder();
+  /** Returns an {@link UntypedRowBuilder} object for Row */
+  public static UntypedRowBuilder builder() {
+    return new UntypedRowBuilder();
   }
 
-  /** Returns a builder object for Row seeded by the contents of {@code otheRow} */
-  public static RowBuilder builder(Row otherRow) {
-    return new RowBuilder(otherRow, otherRow.getColumnNames());
-  }
-
-  /** Returns a {@link RowBuilder} object seeded by {@code keyColumns} from {@code otherRow} */
-  public static RowBuilder builder(Row otherRow, Collection<String> keyColumns) {
-    return new RowBuilder(otherRow, keyColumns);
+  /** Returns a {@link TypedRowBuilder} object for Row */
+  public static TypedRowBuilder builder(Map<String, ColumnMetadata> columns) {
+    return new TypedRowBuilder(columns);
   }
 
   /**
@@ -154,57 +217,9 @@ public class Row implements Comparable<Row> {
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(missingColumnErrorMessage(columnName, getColumnNames()));
     }
     return _data.get(columnName);
-  }
-
-  /**
-   * Gets the value of specified column name
-   *
-   * @param columnName The column to fetch
-   * @return The result
-   * @throws NoSuchElementException if this column is not present
-   * @throws ClassCastException if the recovered data cannot be cast to the expected object
-   */
-  public <T> T get(String columnName, Class<T> valueType) {
-    if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
-    }
-    if (_data.get(columnName).isNull()) {
-      return null;
-    }
-    return convertType(_data.get(columnName), valueType);
-  }
-
-  /**
-   * Gets the value of specified column name
-   *
-   * @param columnName The column to fetch
-   * @return The result
-   * @throws NoSuchElementException if this column is not present
-   * @throws ClassCastException if the recovered data cannot be cast to the expected object
-   */
-  public <T> T get(String columnName, TypeReference<T> valueTypeRef) {
-    if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
-    }
-    if (_data.get(columnName).isNull()) {
-      return null;
-    }
-    try {
-      return BatfishObjectMapper.mapper()
-          .readValue(
-              BatfishObjectMapper.mapper().treeAsTokens(_data.get(columnName)), valueTypeRef);
-    } catch (IOException e) {
-      throw new ClassCastException(
-          String.format(
-              "Cannot recover object of type %s from column %s: %s\n%s",
-              valueTypeRef.getClass(),
-              columnName,
-              e.getMessage(),
-              Throwables.getStackTraceAsString(e)));
-    }
   }
 
   /**
@@ -217,28 +232,16 @@ public class Row implements Comparable<Row> {
    */
   public Object get(String columnName, Schema columnSchema) {
     if (!_data.has(columnName)) {
-      throw new NoSuchElementException(getMissingColumnErrorMessage(columnName));
+      throw new NoSuchElementException(missingColumnErrorMessage(columnName, getColumnNames()));
     }
     if (_data.get(columnName).isNull()) {
       return null;
     }
-    switch (columnSchema.getType()) {
-      case BASE:
-        return convertType(_data.get(columnName), columnSchema.getBaseType());
-      case LIST:
-        List<JsonNode> list = get(columnName, new TypeReference<List<JsonNode>>() {});
-        return list.stream()
-            .map(in -> convertType(in, columnSchema.getBaseType()))
-            .collect(Collectors.toList());
-      case SET:
-        Set<JsonNode> set = get(columnName, new TypeReference<Set<JsonNode>>() {});
-        return set.stream()
-            .map(in -> convertType(in, columnSchema.getBaseType()))
-            .collect(Collectors.toSet());
-      default:
-        throw new IllegalArgumentException(
-            "Cannot handle Schema of type: " + columnSchema.getType());
-    }
+    return SchemaUtils.convertType(_data.get(columnName), columnSchema);
+  }
+
+  public Boolean getBoolean(String column) {
+    return (Boolean) get(column, Schema.BOOLEAN);
   }
 
   /**
@@ -255,6 +258,22 @@ public class Row implements Comparable<Row> {
   @JsonValue
   private ObjectNode getData() {
     return _data;
+  }
+
+  public Double getDouble(String column) {
+    return (Double) get(column, Schema.DOUBLE);
+  }
+
+  public FileLines getFileLines(String column) {
+    return (FileLines) get(column, Schema.FILE_LINES);
+  }
+
+  public Flow getFlow(String column) {
+    return (Flow) get(column, Schema.FLOW);
+  }
+
+  public Integer getInteger(String column) {
+    return (Integer) get(column, Schema.INTEGER);
   }
 
   /**
@@ -279,9 +298,32 @@ public class Row implements Comparable<Row> {
     return getKey(metadata.getColumnMetadata());
   }
 
-  private String getMissingColumnErrorMessage(String columnName) {
-    return String.format(
-        "Column '%s' is not present. Valid columns are: %s", columnName, getColumnNames());
+  public NodeInterfacePair getInterface(String column) {
+    return (NodeInterfacePair) get(column, Schema.INTERFACE);
+  }
+
+  public Ip getIp(String column) {
+    return (Ip) get(column, Schema.IP);
+  }
+
+  public Issue getIssue(String column) {
+    return (Issue) get(column, Schema.ISSUE);
+  }
+
+  public Node getNode(String column) {
+    return (Node) get(column, Schema.NODE);
+  }
+
+  public Object getObject(String column) {
+    return get(column, Schema.OBJECT);
+  }
+
+  public Prefix getPrefix(String column) {
+    return (Prefix) get(column, Schema.PREFIX);
+  }
+
+  public String getString(String column) {
+    return (String) get(column, Schema.STRING);
   }
 
   /**
@@ -321,17 +363,9 @@ public class Row implements Comparable<Row> {
     return Exclusion.firstCoversSecond(exclusion, _data);
   }
 
-  /**
-   * Returns a new {@link Row} that has only the specified columns from this row.
-   *
-   * @param columns The columns to keep.
-   * @return A new {@link Row} object
-   * @throws {@link NoSuchElementException} if one of the specified columns are not present
-   */
-  public static Row selectColumns(Row inputRow, Set<String> columns) {
-    RowBuilder retRow = Row.builder();
-    columns.forEach(col -> retRow.put(col, inputRow.get(col)));
-    return retRow.build();
+  /** Returns a message indicating that {@code columnName} is not present in {@code columns} */
+  public static String missingColumnErrorMessage(String columnName, Set<String> columns) {
+    return String.format("Column '%s' is not present. Valid columns are: %s", columnName, columns);
   }
 
   @Override

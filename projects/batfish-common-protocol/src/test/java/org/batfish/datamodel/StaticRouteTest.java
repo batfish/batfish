@@ -24,12 +24,14 @@ public class StaticRouteTest {
             .setNextHopInterface("192.168.1.2")
             .setAdministrativeCost(1)
             .setTag(0)
+            .setMetric(123)
             .build();
     assertThat(sr.getNextHopIp(), is(new Ip("192.168.1.1")));
     assertThat(sr.getNetwork(), is(Prefix.ZERO));
     assertThat(sr.getNextHopInterface(), is("192.168.1.2"));
     assertThat(sr.getAdministrativeCost(), is(1));
     assertThat(sr.getTag(), is(0));
+    assertThat(sr.getMetric(), is(123L));
   }
 
   @Test
@@ -52,6 +54,7 @@ public class StaticRouteTest {
     assertThat(sr.getNextHopIp(), is(Route.UNSET_ROUTE_NEXT_HOP_IP));
     assertThat(sr.getAdministrativeCost(), is(Route.UNSET_ROUTE_ADMIN));
     assertThat(sr.getTag(), is(Route.UNSET_ROUTE_TAG));
+    assertThat(sr.getMetric(), is(StaticRoute.DEFAULT_STATIC_ROUTE_METRIC));
   }
 
   @Test
@@ -63,6 +66,7 @@ public class StaticRouteTest {
             .setNextHopInterface("192.168.1.2")
             .setAdministrativeCost(1)
             .setTag(0)
+            .setMetric(123)
             .build();
     try {
       StaticRoute parsedObj = BatfishObjectMapper.clone(sr, StaticRoute.class);
@@ -71,6 +75,7 @@ public class StaticRouteTest {
       assertThat(parsedObj.getNextHopInterface(), is("192.168.1.2"));
       assertThat(parsedObj.getAdministrativeCost(), is(1));
       assertThat(parsedObj.getTag(), is(0));
+      assertThat(parsedObj.getMetric(), is(123L));
     } catch (IOException e) {
       throw new BatfishException("Cannot parse the json to StaticRoute object", e);
     }

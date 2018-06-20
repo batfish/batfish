@@ -12219,6 +12219,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "eth0",
                 "nextHopIp" : "2.128.0.1",
@@ -12442,6 +12443,7 @@
               {
                 "class" : "org.batfish.datamodel.StaticRoute",
                 "administrativeCost" : 1,
+                "metric" : 0,
                 "network" : "0.0.0.0/0",
                 "nextHopInterface" : "eth0",
                 "nextHopIp" : "2.128.1.1",

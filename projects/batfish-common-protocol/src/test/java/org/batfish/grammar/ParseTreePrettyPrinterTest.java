@@ -1,10 +1,16 @@
 package org.batfish.grammar;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.ParseTreeSentences;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.grammar.recovery.RecoveryCombinedParser;
 import org.junit.Test;
 
 public class ParseTreePrettyPrinterTest {
@@ -35,5 +41,29 @@ public class ParseTreePrettyPrinterTest {
 
     string = ParseTreePrettyPrinter.printWithCharacterLimit(strings, 6);
     assertThat(string, equalTo("1234\n5678"));
+  }
+
+  @Test
+  public void testGetParseTreeSentencesLineNumbers() throws IOException {
+    String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
+    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings);
+    ParserRuleContext tree = cp.parse();
+    ParseTreeSentences ptSentencesLineNums =
+        ParseTreePrettyPrinter.getParseTreeSentences(tree, cp, true);
+
+    /* Confirm printed parse tree includes line numbers when that option is set */
+    assertThat(
+        ptSentencesLineNums.getSentences().get(3),
+        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:1"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(9),
+        containsString("BLOCK:'block'  <== mode:DEFAULT_MODE line:2"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(14),
+        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:3)"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(16),
+        containsString("EOF:<EOF>  <== mode:DEFAULT_MODE line:5)"));
   }
 }

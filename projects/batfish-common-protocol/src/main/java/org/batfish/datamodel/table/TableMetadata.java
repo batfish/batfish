@@ -5,9 +5,11 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -85,5 +87,12 @@ public class TableMetadata {
   @Override
   public String toString() {
     return _columnMetadata.toString() + " " + Objects.toString(_displayHints);
+  }
+
+  /** Returns a map from column name to {@link ColumnMetadata} */
+  public Map<String, ColumnMetadata> toColumnMap() {
+    return _columnMetadata
+        .stream()
+        .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, cm -> cm));
   }
 }

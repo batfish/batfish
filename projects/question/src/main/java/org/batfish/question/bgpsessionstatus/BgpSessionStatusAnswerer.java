@@ -1,5 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multiset;
@@ -11,6 +12,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.plugin.IBatfish;
@@ -19,8 +22,8 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
+import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -32,7 +35,6 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Row.RowBuilder;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
-import org.batfish.question.bgpsessionstatus.BgpSessionInfo.BgpSessionInfoBuilder;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionStatus;
 import org.batfish.question.bgpsessionstatus.BgpSessionInfo.SessionType;
 
@@ -77,6 +79,10 @@ public class BgpSessionStatusAnswerer extends Answerer {
     return !Sets.intersection(includeNodes2, owners).isEmpty();
   }
 
+  /**
+   * Return the answer for {@link BgpSessionStatusQuestion} -- a set of BGP sessions and their
+   * status.
+   */
   public Multiset<BgpSessionInfo> rawAnswer(BgpSessionStatusQuestion question) {
     Multiset<BgpSessionInfo> sessions = HashMultiset.create();
     Map<String, Configuration> configurations = _batfish.loadConfigurations();
@@ -104,88 +110,128 @@ public class BgpSessionStatusAnswerer extends Answerer {
       establishedBgpTopology = null;
     }
 
-    for (BgpNeighbor bgpNeighbor : configuredBgpTopology.nodes()) {
-      String hostname = bgpNeighbor.getOwner().getHostname();
-      String vrfName = bgpNeighbor.getVrf();
-      // Only match nodes we care about
-      if (!includeNodes1.contains(hostname)) {
-        continue;
-      }
-
-      // Match foreign group
-      boolean foreign =
-          bgpNeighbor.getGroup() != null && question.matchesForeignGroup(bgpNeighbor.getGroup());
-      if (foreign) {
-        continue;
-      }
-
-      // Setup session info
-      boolean ebgp = !Objects.equals(bgpNeighbor.getRemoteAs(), bgpNeighbor.getLocalAs());
-      boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
-      Prefix remotePrefix = bgpNeighbor.getPrefix();
-      SessionType sessionType =
-          ebgp
-              ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
-              : SessionType.IBGP;
-      // Skip session types we don't care about
-      if (!question.matchesType(sessionType)) {
-        continue;
-      }
-      BgpSessionInfoBuilder bsiBuilder =
-          new BgpSessionInfoBuilder(hostname, vrfName, remotePrefix, sessionType);
-
-      SessionStatus configuredStatus;
-
-      Ip localIp = bgpNeighbor.getLocalIp();
-      if (bgpNeighbor.getDynamic()) {
-        configuredStatus = SessionStatus.DYNAMIC_LISTEN;
-      } else if (localIp == null) {
-        configuredStatus = SessionStatus.NO_LOCAL_IP;
-      } else {
-        bsiBuilder.withLocalIp(localIp);
-        Optional<org.batfish.datamodel.Interface> iface =
-            CommonUtil.getActiveInterfaceWithIp(localIp, configurations.get(hostname));
-        bsiBuilder.withLocalInterface(
-            iface.isPresent() ? new NodeInterfacePair(hostname, iface.get().getName()) : null);
-
-        Ip remoteIp = bgpNeighbor.getAddress();
-
-        if (!allInterfaceIps.contains(localIp)) {
-          configuredStatus = SessionStatus.INVALID_LOCAL_IP;
-        } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
-          configuredStatus = SessionStatus.UNKNOWN_REMOTE;
-        } else {
-          if (!node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
-            continue;
-          }
-          if (configuredBgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
-            configuredStatus = SessionStatus.HALF_OPEN;
-            // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
-          } else if (configuredBgpTopology.degree(bgpNeighbor) > 2) {
-            configuredStatus = SessionStatus.MULTIPLE_REMOTES;
-          } else {
-            BgpNeighbor remoteNeighbor =
-                configuredBgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
-            bsiBuilder.withRemoteNode(remoteNeighbor.getOwner().getHostname());
-            configuredStatus = SessionStatus.UNIQUE_MATCH;
-          }
-        }
-      }
-      if (!question.matchesStatus(configuredStatus)) {
-        continue;
-      }
-
-      bsiBuilder.withConfiguredStatus(configuredStatus);
-
-      bsiBuilder.withEstablishedNeighbors(
-          establishedBgpTopology != null && establishedBgpTopology.nodes().contains(bgpNeighbor)
-              ? establishedBgpTopology.inDegree(bgpNeighbor)
-              : -1);
-
-      sessions.add(bsiBuilder.build());
-    }
+    sessions.addAll(
+        configuredBgpTopology
+            .nodes()
+            .stream()
+            .map(
+                neighbor ->
+                    getBgpSessionInfo(
+                        question,
+                        configurations,
+                        includeNodes1,
+                        includeNodes2,
+                        ipOwners,
+                        allInterfaceIps,
+                        configuredBgpTopology,
+                        establishedBgpTopology,
+                        neighbor))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableList.toImmutableList()));
 
     return sessions;
+  }
+
+  private static Optional<BgpSessionInfo> getBgpSessionInfo(
+      BgpSessionStatusQuestion question,
+      Map<String, Configuration> configurations,
+      Set<String> includeNodes1,
+      Set<String> includeNodes2,
+      Map<Ip, Set<String>> ipOwners,
+      Set<Ip> allInterfaceIps,
+      Network<BgpNeighbor, BgpSession> configuredBgpTopology,
+      Network<BgpNeighbor, BgpSession> establishedBgpTopology,
+      BgpNeighbor bgpNeighbor) {
+    String hostname = bgpNeighbor.getOwner().getHostname();
+    String vrfName = bgpNeighbor.getVrf();
+    // Only match nodes we care about
+    if (!includeNodes1.contains(hostname)) {
+      return Optional.empty();
+    }
+
+    // Only match groups we care about
+    if (bgpNeighbor.getGroup() != null && question.matchesForeignGroup(bgpNeighbor.getGroup())) {
+      return Optional.empty();
+    }
+
+    // Setup session info
+    boolean ebgp = !Objects.equals(bgpNeighbor.getRemoteAs(), bgpNeighbor.getLocalAs());
+    boolean ebgpMultihop = bgpNeighbor.getEbgpMultihop();
+    SessionType sessionType =
+        ebgp
+            ? ebgpMultihop ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP
+            : SessionType.IBGP;
+    // Skip session types we don't care about
+    if (!question.matchesType(sessionType)) {
+      return Optional.empty();
+    }
+
+    BgpSessionInfo.Builder bsiBuilder =
+        BgpSessionInfo.builder(hostname, vrfName, bgpNeighbor.getPrefix(), sessionType);
+
+    SessionStatus configuredStatus = getLocallyBrokenStatus(bgpNeighbor, sessionType);
+
+    if (configuredStatus == null) {
+      // Nothing "obviously" broken so far, keep checking
+      Ip localIp = bgpNeighbor.getLocalIp();
+      bsiBuilder.withLocalIp(localIp);
+      Optional<Interface> iface =
+          CommonUtil.getActiveInterfaceWithIp(localIp, configurations.get(hostname));
+      bsiBuilder.withLocalInterface(
+          iface
+              .map(anInterface -> new NodeInterfacePair(hostname, anInterface.getName()))
+              .orElse(null));
+
+      Ip remoteIp = bgpNeighbor.getAddress();
+
+      if (!allInterfaceIps.contains(localIp)) {
+        configuredStatus = SessionStatus.INVALID_LOCAL_IP;
+      } else if (remoteIp == null || !allInterfaceIps.contains(remoteIp)) {
+        configuredStatus = SessionStatus.UNKNOWN_REMOTE;
+      } else {
+        if (!node2RegexMatchesIp(remoteIp, ipOwners, includeNodes2)) {
+          return Optional.empty();
+        }
+        if (configuredBgpTopology.adjacentNodes(bgpNeighbor).isEmpty()) {
+          configuredStatus = SessionStatus.HALF_OPEN;
+          // degree > 2 because of directed edges. 1 edge in, 1 edge out == single connection
+        } else if (configuredBgpTopology.degree(bgpNeighbor) > 2) {
+          configuredStatus = SessionStatus.MULTIPLE_REMOTES;
+        } else {
+          BgpNeighbor remoteNeighbor =
+              configuredBgpTopology.adjacentNodes(bgpNeighbor).iterator().next();
+          bsiBuilder.withRemoteNode(remoteNeighbor.getOwner().getHostname());
+          configuredStatus = SessionStatus.UNIQUE_MATCH;
+        }
+      }
+    }
+    if (!question.matchesStatus(configuredStatus)) {
+      return Optional.empty();
+    }
+
+    bsiBuilder.withConfiguredStatus(configuredStatus);
+
+    bsiBuilder.withEstablishedNeighbors(
+        establishedBgpTopology != null && establishedBgpTopology.nodes().contains(bgpNeighbor)
+            ? establishedBgpTopology.inDegree(bgpNeighbor)
+            : -1);
+    return Optional.of(bsiBuilder.build());
+  }
+
+  @Nullable
+  @VisibleForTesting
+  static SessionStatus getLocallyBrokenStatus(BgpNeighbor neighbor, SessionType sessionType) {
+    if (neighbor.getDynamic()) {
+      return SessionStatus.DYNAMIC_LISTEN;
+    } else if (neighbor.getLocalIp() == null) {
+      if (sessionType == SessionType.EBGP_MULTIHOP || sessionType == SessionType.IBGP) {
+        return SessionStatus.LOCAL_IP_UNKNOWN_STATICALLY;
+      } else {
+        return SessionStatus.NO_LOCAL_IP;
+      }
+    }
+    return null;
   }
 
   public static TableMetadata createMetadata(Question question) {
@@ -234,41 +280,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
   }
 
   /**
-   * Creates a {@link BgpSessionInfo} object from the corresponding {@link Row} object.
-   *
-   * @param row The input row
-   * @return The output object
-   */
-  public static BgpSessionInfo fromRow(Row row) {
-    Ip localIp = row.get(COL_LOCAL_IP, Ip.class);
-    SessionStatus configuredStatus = row.get(COL_CONFIGURED_STATUS, SessionStatus.class);
-    Integer establishedNeighbors = row.get(COL_ESTABLISHED_NEIGHBORS, Integer.class);
-    NodeInterfacePair localInterface = row.get(COL_LOCAL_INTERFACE, NodeInterfacePair.class);
-    Node node = row.get(COL_NODE, Node.class);
-    Node remoteNode = row.get(COL_REMOTE_NODE, Node.class);
-    Prefix remotePrefix = row.get(COL_REMOTE_PREFIX, Prefix.class);
-    SessionType sessionType = row.get(COL_SESSION_TYPE, SessionType.class);
-    String vrfName = row.get(COL_VRF_NAME, String.class);
-
-    return new BgpSessionInfo(
-        configuredStatus,
-        establishedNeighbors,
-        node.getName(),
-        localInterface,
-        localIp,
-        remoteNode.getName(),
-        remotePrefix,
-        sessionType,
-        vrfName);
-  }
-
-  /**
    * Creates a {@link Row} object from the corresponding {@link BgpSessionInfo} object.
    *
    * @param info The input object
    * @return The output row
    */
-  public static Row toRow(BgpSessionInfo info) {
+  public static Row toRow(@Nonnull BgpSessionInfo info) {
     RowBuilder row = Row.builder();
     row.put(COL_CONFIGURED_STATUS, info.getConfiguredStatus())
         .put(COL_ESTABLISHED_NEIGHBORS, info.getEstablishedNeighbors())

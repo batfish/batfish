@@ -13,6 +13,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_P
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureType.CLASS_MAP;
+import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST_EXPANDED;
 import static org.batfish.representation.cisco.CiscoStructureType.COMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_CLASS;
@@ -115,6 +116,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -146,17 +148,27 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_CANDID
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.RIP_DISTRIBUTE_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_ISIS_DISTRIBUTE_LIST_ACL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTER_VRRP_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_ADD_COMMUNITY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_DELETE_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV4_PREFIX_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_PREFIX_LIST;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
@@ -341,7 +353,6 @@ import org.batfish.grammar.cisco.CiscoParser.Apply_rp_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_multipath_relax_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_elemContext;
-import org.batfish.grammar.cisco.CiscoParser.As_path_set_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_inlineContext;
 import org.batfish.grammar.cisco.CiscoParser.As_path_set_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Auto_summary_bgp_tailContext;
@@ -473,6 +484,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_ospf_areaContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
@@ -620,6 +632,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pm_iosi_class_type_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_dropContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_passContext;
+import org.batfish.grammar.cisco.CiscoParser.Pmc_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -777,6 +790,8 @@ import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_service_policy_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.S_service_policy_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.S_snmp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_sntpContext;
@@ -1522,11 +1537,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterAf_group_rb_stanza(Af_group_rb_stanzaContext ctx) {
     BgpProcess proc = currentVrf().getBgpProcess();
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     // String af = ctx.bgp_address_family().getText();
     NamedBgpPeerGroup afGroup = proc.getAfGroups().get(name);
     if (afGroup == null) {
-      proc.addNamedPeerGroup(name, definitionLine);
+      proc.addNamedPeerGroup(name, ctx.name.getStart().getLine());
       afGroup = proc.getNamedPeerGroups().get(name);
     }
     pushPeer(afGroup);
@@ -1767,28 +1781,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterClb_docsis_policy(Clb_docsis_policyContext ctx) {
     String name = ctx.policy.getText();
     String rule = ctx.rulenum.getText();
-    int line = ctx.getStart().getLine();
     DocsisPolicy policy =
         _configuration
             .getCf()
             .getCable()
             .getDocsisPolicies()
-            .computeIfAbsent(name, n -> new DocsisPolicy(n, line));
+            .computeIfAbsent(name, DocsisPolicy::new);
     defineStructure(DOCSIS_POLICY, name, ctx);
     policy.getRules().add(rule);
     _configuration.referenceStructure(
-        DOCSIS_POLICY_RULE, rule, DOCSIS_POLICY_DOCSIS_POLICY_RULE, line);
+        DOCSIS_POLICY_RULE, rule, DOCSIS_POLICY_DOCSIS_POLICY_RULE, ctx.getStart().getLine());
   }
 
   @Override
   public void enterClb_rule(Clb_ruleContext ctx) {
     String name = ctx.rulenum.getText();
-    int line = ctx.getStart().getLine();
     _configuration
         .getCf()
         .getCable()
         .getDocsisPolicyRules()
-        .computeIfAbsent(name, n -> new DocsisPolicyRule(n, line));
+        .computeIfAbsent(name, DocsisPolicyRule::new);
     defineStructure(DOCSIS_POLICY_RULE, name, ctx);
   }
 
@@ -1809,28 +1821,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCs_class(Cs_classContext ctx) {
     String number = ctx.num.getText();
-    int line = ctx.num.getLine();
     _currentServiceClass =
         _configuration
             .getCf()
             .getCable()
             .getServiceClasses()
-            .computeIfAbsent(number, n -> new ServiceClass(n, line));
+            .computeIfAbsent(number, ServiceClass::new);
     defineStructure(SERVICE_CLASS, number, ctx);
   }
 
   @Override
   public void enterDt_depi_class(Dt_depi_classContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(DEPI_CLASS, name, DEPI_TUNNEL_DEPI_CLASS, line);
+    _configuration.referenceStructure(
+        DEPI_CLASS, name, DEPI_TUNNEL_DEPI_CLASS, ctx.getStart().getLine());
   }
 
   @Override
   public void enterDt_l2tp_class(Dt_l2tp_classContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, line);
+    _configuration.referenceStructure(
+        L2TP_CLASS, name, DEPI_TUNNEL_L2TP_CLASS, ctx.getStart().getLine());
   }
 
   @Override
@@ -1910,40 +1921,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
     String name;
-    int definitionLine;
     if (ctx.num != null) {
       name = ctx.num.getText();
-      definitionLine = ctx.num.getLine();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-      definitionLine = ctx.name.getStart().getLine();
     } else {
       throw new BatfishException("Invalid community-list name");
     }
     _currentExpandedCommunityList =
         _configuration
             .getExpandedCommunityLists()
-            .computeIfAbsent(name, n -> new ExpandedCommunityList(n, definitionLine));
+            .computeIfAbsent(name, ExpandedCommunityList::new);
     defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
   @Override
   public void enterIp_community_list_standard_stanza(Ip_community_list_standard_stanzaContext ctx) {
     String name;
-    int definitionLine;
     if (ctx.num != null) {
       name = ctx.num.getText();
-      definitionLine = ctx.num.getLine();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-      definitionLine = ctx.name.getStart().getLine();
     } else {
       throw new BatfishException("Invalid standard community-list name");
     }
     _currentStandardCommunityList =
         _configuration
             .getStandardCommunityLists()
-            .computeIfAbsent(name, n -> new StandardCommunityList(n, definitionLine));
+            .computeIfAbsent(name, StandardCommunityList::new);
     defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
@@ -3105,8 +3110,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_l2tp_class(S_l2tp_classContext ctx) {
     String name = ctx.name.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.getCf().getL2tpClasses().computeIfAbsent(name, n -> new L2tpClass(n, line));
+    _configuration.getCf().getL2tpClasses().computeIfAbsent(name, L2tpClass::new);
     defineStructure(L2TP_CLASS, name, ctx);
   }
 
@@ -3504,6 +3508,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterVrrp_interface(Vrrp_interfaceContext ctx) {
     String ifaceName = ctx.iface.getText();
     _currentVrrpInterface = getCanonicalInterfaceName(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE, _currentVrrpInterface, ROUTER_VRRP_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override
@@ -3655,7 +3661,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitAs_path_set_stanza(As_path_set_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int definitionLine = ctx.name.getStart().getLine();
     AsPathSet asPathSet = _configuration.getAsPathSets().get(name);
     if (asPathSet != null) {
       _w.redFlag("Redeclaration of as-path-set: '" + name + "'");
@@ -3666,7 +3671,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       AsPathSetElem elem = toAsPathSetElem(elemCtx);
       asPathSet.getElements().add(elem);
     }
-    _configuration.defineStructure(AS_PATH_SET, name, definitionLine);
+    defineStructure(AS_PATH_SET, name, ctx);
   }
 
   @Override
@@ -3750,8 +3755,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitClbdg_docsis_policy(Clbdg_docsis_policyContext ctx) {
     String name = ctx.policy.getText();
-    int line = ctx.getStart().getLine();
-    _configuration.referenceStructure(DOCSIS_POLICY, name, DOCSIS_GROUP_DOCSIS_POLICY, line);
+    _configuration.referenceStructure(
+        DOCSIS_POLICY, name, DOCSIS_GROUP_DOCSIS_POLICY, ctx.getStart().getLine());
   }
 
   @Override
@@ -3770,7 +3775,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
     _currentInspectClassMap =
-        _configuration.getInspectClassMaps().computeIfAbsent(name, n -> new InspectClassMap(n));
+        _configuration.getInspectClassMaps().computeIfAbsent(name, InspectClassMap::new);
     defineStructure(INSPECT_CLASS_MAP, name, ctx);
     MatchSemantics matchSemantics =
         ctx.match_semantics() != null
@@ -4818,6 +4823,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_ip_summary_address(If_ip_summary_addressContext ctx) {
+    if (ctx.LEAK_MAP() != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP,
+          ctx.mapname.getText(),
+          INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
+          ctx.mapname.getStart().getLine());
+    }
+  }
+
+  @Override
   public void exitIf_ip_verify(If_ip_verifyContext ctx) {
     if (ctx.acl != null) {
       String acl = ctx.acl.getText();
@@ -5653,7 +5669,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitMatch_as_path_access_list_rm_stanza(
       Match_as_path_access_list_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Set<String> names = new TreeSet<>();
     for (VariableContext name : ctx.name_list) {
       names.add(name.getText());
@@ -5661,19 +5676,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
           AS_PATH_ACCESS_LIST, name.getText(),
           ROUTE_MAP_MATCH_AS_PATH_ACCESS_LIST, name.getStart().getLine());
     }
-    RouteMapMatchAsPathAccessListLine line =
-        new RouteMapMatchAsPathAccessListLine(names, statementLine);
+    RouteMapMatchAsPathAccessListLine line = new RouteMapMatchAsPathAccessListLine(names);
     _currentRouteMapClause.addMatchLine(line);
   }
 
   @Override
   public void exitMatch_community_list_rm_stanza(Match_community_list_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Set<String> names = new TreeSet<>();
     for (VariableContext name : ctx.name_list) {
       names.add(name.getText());
+      _configuration.referenceStructure(
+          COMMUNITY_LIST,
+          name.getText(),
+          ROUTE_MAP_MATCH_COMMUNITY_LIST,
+          name.getStart().getLine());
     }
-    RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(names, statementLine);
+    RouteMapMatchCommunityListLine line = new RouteMapMatchCommunityListLine(names);
     _currentRouteMapClause.addMatchLine(line);
   }
 
@@ -5967,7 +5985,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitNtp_access_group(Ntp_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+    if (!ctx.IPV6().isEmpty()) {
+      _configuration.referenceStructure(IPV6_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+    } else {
+      // IPv4 unless IPv6 explicit.
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+    }
   }
 
   @Override
@@ -6228,6 +6251,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitPmc_service_policy(Pmc_service_policyContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP,
+        ctx.name.getText(),
+        POLICY_MAP_CLASS_SERVICE_POLICY,
+        ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
     String listName = ctx.list_name.getText();
     int line = ctx.list_name.getLine();
@@ -6235,11 +6267,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     CiscoStructureUsage usage;
     if (ctx.IN() != null) {
       _currentPeerGroup.setInboundPrefixList(listName);
-      _currentPeerGroup.setInboundPrefixListLine(line);
       usage = _inIpv6BgpPeer ? BGP_INBOUND_PREFIX6_LIST : BGP_INBOUND_PREFIX_LIST;
     } else if (ctx.OUT() != null) {
       _currentPeerGroup.setOutboundPrefixList(listName);
-      _currentPeerGroup.setOutboundPrefixListLine(line);
       usage = _inIpv6BgpPeer ? BGP_OUTBOUND_PREFIX6_LIST : BGP_OUTBOUND_PREFIX_LIST;
     } else {
       throw new BatfishException("bad direction");
@@ -6802,27 +6832,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     String mapName = ctx.name.getText();
-    int line = ctx.name.getStart().getLine();
     boolean ipv6 = _inIpv6BgpPeer || _currentIpv6PeerGroup != null;
     CiscoStructureUsage usage;
     if (ctx.IN() != null) {
       if (ipv6) {
         _currentPeerGroup.setInboundRoute6Map(mapName);
-        _currentPeerGroup.setInboundRoute6MapLine(line);
         usage = BGP_INBOUND_ROUTE6_MAP;
       } else {
         _currentPeerGroup.setInboundRouteMap(mapName);
-        _currentPeerGroup.setInboundRouteMapLine(line);
         usage = BGP_INBOUND_ROUTE_MAP;
       }
     } else if (ctx.OUT() != null) {
       if (ipv6) {
         _currentPeerGroup.setOutboundRoute6Map(mapName);
-        _currentPeerGroup.setOutboundRoute6MapLine(line);
         usage = BGP_OUTBOUND_ROUTE6_MAP;
       } else {
         _currentPeerGroup.setOutboundRouteMap(mapName);
-        _currentPeerGroup.setOutboundRouteMapLine(line);
         usage = BGP_OUTBOUND_ROUTE_MAP;
       }
     } else {
@@ -7101,6 +7126,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitS_service_policy_global(S_service_policy_globalContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP, ctx.name.getText(), SERVICE_POLICY_GLOBAL, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitS_service_policy_interface(S_service_policy_interfaceContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP,
+        ctx.name.getText(),
+        SERVICE_POLICY_INTERFACE_POLICY,
+        ctx.name.getStart().getLine());
+    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    _configuration.referenceStructure(
+        INTERFACE, iface, SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
+  }
+
+  @Override
   public void exitS_spanning_tree(S_spanning_treeContext ctx) {
     _no = false;
   }
@@ -7195,9 +7238,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitSet_comm_list_delete_rm_stanza(Set_comm_list_delete_rm_stanzaContext ctx) {
     String name = ctx.name.getText();
-    int statementLine = ctx.getStart().getLine();
-    RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(name, statementLine);
+    RouteMapSetDeleteCommunityLine line = new RouteMapSetDeleteCommunityLine(name);
     _currentRouteMapClause.addSetLine(line);
+    _configuration.referenceStructure(
+        COMMUNITY_LIST, name, ROUTE_MAP_DELETE_COMMUNITY, ctx.getStart().getLine());
   }
 
   @Override
@@ -7214,27 +7258,34 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitSet_community_list_additive_rm_stanza(
       Set_community_list_additive_rm_stanzaContext ctx) {
-    int statementLine = ctx.getStart().getLine();
     Set<String> communityLists = new LinkedHashSet<>();
     for (VariableContext communityListCtx : ctx.comm_lists) {
       String communityList = communityListCtx.getText();
       communityLists.add(communityList);
+      _configuration.referenceStructure(
+          COMMUNITY_LIST,
+          communityList,
+          ROUTE_MAP_ADD_COMMUNITY,
+          communityListCtx.getStart().getLine());
     }
     RouteMapSetAdditiveCommunityListLine line =
-        new RouteMapSetAdditiveCommunityListLine(communityLists, statementLine);
+        new RouteMapSetAdditiveCommunityListLine(communityLists);
     _currentRouteMapClause.addSetLine(line);
   }
 
   @Override
   public void exitSet_community_list_rm_stanza(Set_community_list_rm_stanzaContext ctx) {
     Set<String> communityLists = new LinkedHashSet<>();
-    int statementLine = ctx.getStart().getLine();
     for (VariableContext communityListCtx : ctx.comm_lists) {
       String communityList = communityListCtx.getText();
       communityLists.add(communityList);
+      _configuration.referenceStructure(
+          COMMUNITY_LIST,
+          communityList,
+          ROUTE_MAP_SET_COMMUNITY,
+          communityListCtx.getStart().getLine());
     }
-    RouteMapSetCommunityListLine line =
-        new RouteMapSetCommunityListLine(communityLists, statementLine);
+    RouteMapSetCommunityListLine line = new RouteMapSetCommunityListLine(communityLists);
     _currentRouteMapClause.addSetLine(line);
   }
 
@@ -7629,13 +7680,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitUpdate_source_bgp_tail(Update_source_bgp_tailContext ctx) {
+    String source = toInterfaceName(ctx.source);
+    _configuration.referenceStructure(
+        INTERFACE, source, BGP_UPDATE_SOURCE_INTERFACE, ctx.getStart().getLine());
+
     if (_currentPeerGroup == null) {
       return;
     } else {
-      String source = toInterfaceName(ctx.source);
-      int line = ctx.source.getStart().getLine();
       _currentPeerGroup.setUpdateSource(source);
-      _currentPeerGroup.setUpdateSourceLine(line);
     }
   }
 
@@ -7894,18 +7946,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return new RegexAsPathSetElem(regex);
     } else {
       throw convError(AsPathSetElem.class, ctx);
-    }
-  }
-
-  private AsPathSetExpr toAsPathSetExpr(As_path_set_exprContext ctx) {
-    if (ctx.named != null) {
-      return new NamedAsPathSet(ctx.named.getText());
-    } else if (ctx.rpvar != null) {
-      return new VarAsPathSet(ctx.rpvar.getText());
-    } else if (ctx.inline != null) {
-      return toAsPathSetExpr(ctx.inline);
-    } else {
-      throw convError(AsPathSetExpr.class, ctx);
     }
   }
 
@@ -8679,9 +8719,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_path_in_rp_stanzaContext ctx) {
-    AsPathSetExpr asPathSetExpr = toAsPathSetExpr(ctx.expr);
-    int expressionLine = ctx.expr.getStart().getLine();
-    return new RoutePolicyBooleanAsPathIn(asPathSetExpr, expressionLine);
+    AsPathSetExpr asPathSetExpr;
+    if (ctx.expr.named != null) {
+      String name = ctx.expr.named.getText();
+      asPathSetExpr = new NamedAsPathSet(name);
+      _configuration.referenceStructure(
+          AS_PATH_SET, name, ROUTE_POLICY_AS_PATH_IN, ctx.expr.named.getStart().getLine());
+    } else if (ctx.expr.rpvar != null) {
+      asPathSetExpr = new VarAsPathSet(ctx.expr.rpvar.getText());
+    } else if (ctx.expr.inline != null) {
+      asPathSetExpr = toAsPathSetExpr(ctx.expr.inline);
+    } else {
+      throw convError(AsPathSetExpr.class, ctx.expr);
+    }
+    return new RoutePolicyBooleanAsPathIn(asPathSetExpr);
   }
 
   private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_as_path_is_local_rp_stanzaContext ctx) {
@@ -8909,9 +8960,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.name != null) {
       // named
       String name = ctx.name.getText();
-      int expressionLine = ctx.name.getStart().getLine();
-      _configuration.referenceStructure(PREFIX_SET, name, ROUTE_POLICY_PREFIX_SET, expressionLine);
-      return new RoutePolicyPrefixSetName(name, expressionLine);
+      _configuration.referenceStructure(
+          PREFIX_SET, name, ROUTE_POLICY_PREFIX_SET, ctx.name.getStart().getLine());
+      return new RoutePolicyPrefixSetName(name);
     } else {
       // inline
       PrefixSpace prefixSpace = new PrefixSpace();

@@ -350,6 +350,7 @@
         "description" : "Undefined reference to structure of type: 'dhcp-relay server-group' with usage: 'dhcp relay group active-server-group' named 'site-dhcp'",
         "files" : {
           "juniper_forwarding_options" : [
+            8,
             13
           ]
         }
@@ -358,7 +359,15 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'GigabitEthernet0/0/0/19'",
         "files" : {
           "cisco_vrrp" : [
-            16
+            14
+          ]
+        }
+      },
+      "undefined:interface:usage:router vrrp interface:ManagementEthernet0/RSP0/CPU0/0" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'ManagementEthernet0/RSP0/CPU0/0'",
+        "files" : {
+          "cisco_vrrp" : [
+            24
           ]
         }
       },
@@ -366,7 +375,15 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'router vrrp interface' named 'ManagementEthernet0/RSP1/CPU0/0'",
         "files" : {
           "cisco_vrrp" : [
-            28
+            26
+          ]
+        }
+      },
+      "undefined:interface:usage:service-policy interface:Loopback0" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'service-policy interface' named 'Loopback0'",
+        "files" : {
+          "cisco_misc" : [
+            238
           ]
         }
       },
@@ -377,7 +394,11 @@
             14
           ],
           "ios_xr_bgp_neighbor_group" : [
-            0
+            22,
+            36,
+            48,
+            58,
+            69
           ]
         }
       },
@@ -385,7 +406,19 @@
         "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback1'",
         "files" : {
           "foundry_bgp" : [
-            0
+            16
+          ],
+          "peer_template" : [
+            16
+          ]
+        }
+      },
+      "undefined:interface:usage:update-source interface:Loopback15" : {
+        "description" : "Undefined reference to structure of type: 'interface' with usage: 'update-source interface' named 'Loopback15'",
+        "files" : {
+          "cadant_bgp" : [
+            12,
+            17
           ]
         }
       },
@@ -401,7 +434,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            123
+            126
           ]
         }
       },
@@ -409,7 +442,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            126
+            129
           ]
         }
       },
@@ -436,7 +469,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat destination acl' named 'mynatacl'",
         "files" : {
           "cisco_interface" : [
-            87
+            88
           ]
         }
       },
@@ -444,7 +477,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
         "files" : {
           "cisco_interface" : [
-            90
+            91
           ]
         }
       },
@@ -489,6 +522,14 @@
             30,
             46,
             47
+          ]
+        }
+      },
+      "undefined:ipv4 acl:usage:ntp access-group:ntp-peer-group" : {
+        "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'ntp access-group' named 'ntp-peer-group'",
+        "files" : {
+          "cisco_ntp" : [
+            4
           ]
         }
       },
@@ -730,7 +771,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'interface igmp access-group acl' named '1'",
         "files" : {
           "cisco_interface" : [
-            77
+            78
           ]
         }
       },
@@ -739,14 +780,6 @@
         "files" : {
           "cadant_interface" : [
             130
-          ]
-        }
-      },
-      "undefined:ipv4/6 acl:usage:ip nat source dynamic access-list:def" : {
-        "description" : "Undefined reference to structure of type: 'ipv4/6 acl' with usage: 'ip nat source dynamic access-list' named 'def'",
-        "files" : {
-          "cisco_interface" : [
-            90
           ]
         }
       },
@@ -877,7 +910,7 @@
         "description" : "Undefined reference to structure of type: 'nat pool' with usage: 'ip nat source pool' named 'beeble'",
         "files" : {
           "cisco_interface" : [
-            91
+            92
           ]
         }
       },
@@ -897,12 +930,30 @@
           ]
         }
       },
+      "undefined:policy-map:usage:policy-map class service-policy:prioritize_backbone" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'policy-map class service-policy' named 'prioritize_backbone'",
+        "files" : {
+          "cisco_qos" : [
+            74
+          ]
+        }
+      },
+      "undefined:policy-map:usage:service-policy interface policy:some-interface-policy" : {
+        "description" : "Undefined reference to structure of type: 'policy-map' with usage: 'service-policy interface policy' named 'some-interface-policy'",
+        "files" : {
+          "cisco_misc" : [
+            238
+          ]
+        }
+      },
       "undefined:policy-statement:usage:bgp export policy-statement:someexportpolicy" : {
         "description" : "Undefined reference to structure of type: 'policy-statement' with usage: 'bgp export policy-statement' named 'someexportpolicy'",
         "files" : {
           "juniper_bgp" : [
             8,
-            22
+            15,
+            22,
+            31
           ]
         }
       },
@@ -911,7 +962,9 @@
         "files" : {
           "juniper_bgp" : [
             10,
-            24
+            17,
+            24,
+            33
           ]
         }
       },
@@ -1197,6 +1250,14 @@
           ]
         }
       },
+      "undefined:route-map:usage:interface summary-address eigrp leak-map:eigrp-leak-map" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'interface summary-address eigrp leak-map' named 'eigrp-leak-map'",
+        "files" : {
+          "cisco_interface" : [
+            123
+          ]
+        }
+      },
       "undefined:route-map:usage:ospf redistribute connected route-map:DIRECT_OSPF" : {
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute connected route-map' named 'DIRECT_OSPF'",
         "files" : {
@@ -1257,7 +1318,7 @@
         "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
         "files" : {
           "cisco_interface" : [
-            277
+            280
           ]
         }
       }
@@ -1265,7 +1326,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 156
+      "numResults" : 163
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1362,6 +1423,14 @@
         }
       },
       "cadant_bgp" : {
+        "interface" : {
+          "Loopback15" : {
+            "update-source interface" : [
+              12,
+              17
+            ]
+          }
+        },
         "route-map" : {
           "blarp" : {
             "bgp outbound route-map" : [
@@ -1546,12 +1615,12 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              123
+              126
             ]
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              126
+              129
             ]
           },
           "ag1" : {
@@ -1566,38 +1635,40 @@
           },
           "def" : {
             "ip nat source dynamic access-list" : [
-              90
+              91
             ]
           },
           "mynatacl" : {
             "ip nat destination acl" : [
-              87
+              88
             ]
           }
         },
         "ipv4/6 acl" : {
           "1" : {
             "interface igmp access-group acl" : [
-              77
-            ]
-          },
-          "def" : {
-            "ip nat source dynamic access-list" : [
-              90
+              78
             ]
           }
         },
         "nat pool" : {
           "beeble" : {
             "ip nat source pool" : [
-              91
+              92
+            ]
+          }
+        },
+        "route-map" : {
+          "eigrp-leak-map" : {
+            "interface summary-address eigrp leak-map" : [
+              123
             ]
           }
         },
         "zone security" : {
           "z1" : {
             "interface zone-member" : [
-              277
+              280
             ]
           }
         }
@@ -1661,10 +1732,33 @@
             ]
           }
         },
+        "interface" : {
+          "Loopback0" : {
+            "service-policy interface" : [
+              238
+            ]
+          }
+        },
         "ipv4/6 acl" : {
           "cops-acl" : {
             "cops listener access-list" : [
               42
+            ]
+          }
+        },
+        "policy-map" : {
+          "some-interface-policy" : {
+            "service-policy interface policy" : [
+              238
+            ]
+          }
+        }
+      },
+      "cisco_ntp" : {
+        "ipv4 acl" : {
+          "ntp-peer-group" : {
+            "ntp access-group" : [
+              4
             ]
           }
         }
@@ -1798,6 +1892,13 @@
             ]
           }
         },
+        "policy-map" : {
+          "prioritize_backbone" : {
+            "policy-map class service-policy" : [
+              74
+            ]
+          }
+        },
         "service-template" : {
           "DEF" : {
             "class-map activate-service-template" : [
@@ -1923,12 +2024,17 @@
         "interface" : {
           "GigabitEthernet0/0/0/19" : {
             "router vrrp interface" : [
-              16
+              14
+            ]
+          },
+          "ManagementEthernet0/RSP0/CPU0/0" : {
+            "router vrrp interface" : [
+              24
             ]
           },
           "ManagementEthernet0/RSP1/CPU0/0" : {
             "router vrrp interface" : [
-              28
+              26
             ]
           }
         }
@@ -1946,7 +2052,7 @@
         "interface" : {
           "Loopback1" : {
             "update-source interface" : [
-              0
+              16
             ]
           }
         }
@@ -1992,7 +2098,11 @@
         "interface" : {
           "Loopback0" : {
             "update-source interface" : [
-              0
+              22,
+              36,
+              48,
+              58,
+              69
             ]
           }
         }
@@ -2027,13 +2137,17 @@
           "someexportpolicy" : {
             "bgp export policy-statement" : [
               8,
-              22
+              15,
+              22,
+              31
             ]
           },
           "someimportpolicy" : {
             "bgp import policy-statement" : [
               10,
-              24
+              17,
+              24,
+              33
             ]
           }
         }
@@ -2051,6 +2165,7 @@
         "dhcp-relay server-group" : {
           "site-dhcp" : {
             "dhcp relay group active-server-group" : [
+              8,
               13
             ]
           }
@@ -2171,6 +2286,13 @@
         }
       },
       "peer_template" : {
+        "interface" : {
+          "Loopback1" : {
+            "update-source interface" : [
+              16
+            ]
+          }
+        },
         "route-map" : {
           "PROTECT-LEAF" : {
             "bgp inbound route-map" : [
