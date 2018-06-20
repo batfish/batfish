@@ -56,7 +56,6 @@ public class BfConsts {
   public static final String ARG_HALT_ON_CONVERT_ERROR = "haltonconverterror";
   public static final String ARG_HALT_ON_PARSE_ERROR = "haltonparseerror";
   public static final String ARG_IGNORE_FILES_WITH_STRINGS = "ignorefileswithstrings";
-  public static final String ARG_LOG_FILE = "logfile";
   public static final String ARG_LOG_LEVEL = "loglevel";
   public static final String ARG_OUTPUT_ENV = "outputenv";
   public static final String ARG_PEDANTIC_AS_ERROR = "pedanticerror";

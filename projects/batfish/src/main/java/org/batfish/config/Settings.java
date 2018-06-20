@@ -732,8 +732,17 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_JOBS);
   }
 
+  @Nullable
   public String getLogFile() {
-    return _config.getString(BfConsts.ARG_LOG_FILE);
+    if (getTaskId() == null) {
+      return null;
+    }
+    return getStorageBase()
+        .resolve(getContainer())
+        .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+        .resolve(getTestrig())
+        .resolve(getTaskId() + BfConsts.SUFFIX_LOG_FILE)
+        .toString();
   }
 
   public BatfishLogger getLogger() {
@@ -899,6 +908,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
   }
 
+  @Nullable
   public String getTaskId() {
     return _config.getString(TASK_ID);
   }
@@ -1019,7 +1029,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_IGNORE_UNSUPPORTED, true);
     setDefaultProperty(ARG_IGNORE_UNKNOWN, true);
     setDefaultProperty(ARG_JOBS, Integer.MAX_VALUE);
-    setDefaultProperty(BfConsts.ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_TEE, false);
     setDefaultProperty(BfConsts.ARG_LOG_LEVEL, "debug");
     setDefaultProperty(ARG_MAX_PARSER_CONTEXT_LINES, 10);
@@ -1221,8 +1230,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     addBooleanOption(ARG_HISTOGRAM, "build histogram of unimplemented features");
 
-    addOption(BfConsts.ARG_LOG_FILE, "path to main log file", ARGNAME_PATH);
-
     addBooleanOption(ARG_LOG_TEE, "print output to both logfile and standard out");
 
     addOption(
@@ -1386,7 +1393,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     _config.setProperty(CAN_EXECUTE, true);
 
     // SPECIAL OPTIONS
-    getStringOptionValue(BfConsts.ARG_LOG_FILE);
     getStringOptionValue(BfConsts.ARG_LOG_LEVEL);
     if (getBooleanOptionValue(ARG_HELP)) {
       _config.setProperty(CAN_EXECUTE, false);

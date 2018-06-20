@@ -179,20 +179,18 @@ public class WorkMgr extends AbstractCoordinator {
       String containerName = work.getWorkItem().getContainerName();
       Path storageBase = Main.getSettings().getContainersLocation();
       String testrigName = work.getWorkItem().getTestrigName();
-      Path testrigBaseDir =
-          storageBase
-              .resolve(containerName)
-              .resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName))
-              .toAbsolutePath();
       task.put(BfConsts.ARG_CONTAINER, containerName);
       task.put(BfConsts.ARG_STORAGE_BASE, storageBase.toAbsolutePath().toString());
       task.put(BfConsts.ARG_TESTRIG, testrigName);
       task.put(
-          BfConsts.ARG_LOG_FILE,
-          testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_LOG_FILE).toString());
-      task.put(
           BfConsts.ARG_ANSWER_JSON_PATH,
-          testrigBaseDir.resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE).toString());
+          storageBase
+              .resolve(containerName)
+              .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+              .resolve(testrigName)
+              .toAbsolutePath()
+              .resolve(work.getId() + BfConsts.SUFFIX_ANSWER_JSON_FILE)
+              .toString());
 
       client =
           CommonUtil.createHttpClientBuilder(
