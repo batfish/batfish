@@ -1692,13 +1692,13 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .setProtocol(RoutingProtocol.ISIS_L2)
                       .build();
               if (withdraw) {
-                l1DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
+                l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
                 SortedSet<IsisRoute> backups = _receivedIsisL2Routes.get(newL2Route.getNetwork());
                 if (backups != null) {
                   backups.remove(newL2Route);
                 }
               } else {
-                l1DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
+                l2DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
                 _receivedIsisL2Routes
                     .computeIfAbsent(newL2Route.getNetwork(), k -> new TreeSet<>())
                     .add(newL2Route);
