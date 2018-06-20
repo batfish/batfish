@@ -10,8 +10,10 @@ import java.util.Collections;
 import java.util.Set;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.answers.AnswerSummary;
+import org.batfish.question.ReachabilityQuestionPlugin.ReachabilityQuestion;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathAnswerElement;
 import org.batfish.question.jsonpath.JsonPathQuestionPlugin.JsonPathQuestion;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class JsonPathQuestionPluginTest {
@@ -27,6 +29,7 @@ public class JsonPathQuestionPluginTest {
             JsonPathAssertionType.equals, mapper.readValue("[true]", JsonNode.class));
     JsonPathQuery query = new JsonPathQuery("ll", false, null, null, oldExceptions, oldAssertion);
     JsonPathQuestion oldQuestion = new JsonPathQuestion();
+    oldQuestion.setInnerQuestion(new ReachabilityQuestion());
     oldQuestion.setPaths(Collections.singletonList(query));
 
     Set<JsonPathException> newExceptions =
@@ -56,6 +59,7 @@ public class JsonPathQuestionPluginTest {
             JsonPathAssertionType.equals, mapper.readValue("[true]", JsonNode.class));
     JsonPathQuery query = new JsonPathQuery("ll", false, null, null, oldExceptions, oldAssertion);
     JsonPathQuestion oldQuestion = new JsonPathQuestion();
+    oldQuestion.setInnerQuestion(new ReachabilityQuestion());
     oldQuestion.setPaths(Collections.singletonList(query));
 
     Set<JsonPathException> newExceptions =
@@ -74,6 +78,24 @@ public class JsonPathQuestionPluginTest {
     // check if null values retained the original values
     assertThat(nullAssertionQuestion.getPaths().get(0).getAssertion(), equalTo(oldAssertion));
     assertThat(nullExceptionQuestion.getPaths().get(0).getExceptions(), equalTo(oldExceptions));
+  }
+
+  @Test
+  public void delegateGetDifferential() {
+    JsonPathQuestion question = new JsonPathQuestion();
+    question.setInnerQuestion(new ReachabilityQuestion());
+    assertThat(question.getDifferential(), Matchers.is(false));
+    question.getInnerQuestion().setDifferential(true);
+    assertThat(question.getDifferential(), Matchers.is(true));
+  }
+
+  @Test
+  public void delegateSetDifferential() {
+    JsonPathQuestion question = new JsonPathQuestion();
+    question.setInnerQuestion(new ReachabilityQuestion());
+    assertThat(question.getInnerQuestion().getDifferential(), Matchers.is(false));
+    question.setDifferential(true);
+    assertThat(question.getInnerQuestion().getDifferential(), Matchers.is(true));
   }
 
   @Test
