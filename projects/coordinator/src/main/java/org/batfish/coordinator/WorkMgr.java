@@ -177,14 +177,15 @@ public class WorkMgr extends AbstractCoordinator {
       // get the task and add other standard stuff
       JSONObject task = new JSONObject(work.getWorkItem().getRequestParams());
       String containerName = work.getWorkItem().getContainerName();
-      Path containerDir = Main.getSettings().getContainersLocation().resolve(containerName);
+      Path storageBase = Main.getSettings().getContainersLocation();
       String testrigName = work.getWorkItem().getTestrigName();
       Path testrigBaseDir =
-          containerDir
+          storageBase
+              .resolve(containerName)
               .resolve(Paths.get(BfConsts.RELPATH_TESTRIGS_DIR, testrigName))
               .toAbsolutePath();
       task.put(BfConsts.ARG_CONTAINER, containerName);
-      task.put(BfConsts.ARG_CONTAINER_DIR, containerDir.toAbsolutePath().toString());
+      task.put(BfConsts.ARG_STORAGE_BASE, storageBase.toAbsolutePath().toString());
       task.put(BfConsts.ARG_TESTRIG, testrigName);
       task.put(
           BfConsts.ARG_LOG_FILE,

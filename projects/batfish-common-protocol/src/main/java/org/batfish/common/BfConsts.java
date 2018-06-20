@@ -46,7 +46,6 @@ public class BfConsts {
   public static final String ARG_BDP_PRINT_OSCILLATING_ITERATIONS = "bdpprintoscillatingiterations";
   public static final String ARG_BDP_RECORD_ALL_ITERATIONS = "bdprecordalliterations";
   public static final String ARG_CONTAINER = "container";
-  public static final String ARG_CONTAINER_DIR = "containerdir";
   public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";
   public static final String ARG_DIFF_ACTIVE = "diffactive";
@@ -72,6 +71,7 @@ public class BfConsts {
   public static final String ARG_SSL_TRUST_ALL_CERTS = "ssltrustallcerts";
   public static final String ARG_SSL_TRUSTSTORE_FILE = "ssltruststorefile";
   public static final String ARG_SSL_TRUSTSTORE_PASSWORD = "ssltruststorepassword";
+  public static final String ARG_STORAGE_BASE = "storagebase";
   public static final String ARG_SYNTHESIZE_JSON_TOPOLOGY = "synthesizejsontopology";
   public static final String ARG_SYNTHESIZE_TOPOLOGY = "synthesizetopology";
   public static final String ARG_TASK_PLUGIN = "taskplugin";

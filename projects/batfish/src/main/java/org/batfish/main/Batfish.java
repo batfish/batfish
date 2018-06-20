@@ -339,7 +339,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static void initQuestionSettings(Settings settings) {
     String questionName = settings.getQuestionName();
-    Path containerDir = settings.getContainerDir();
+    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
     if (questionName != null) {
       Path questionPath =
           containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
@@ -350,7 +350,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static void initTestrigSettings(Settings settings) {
     String testrig = settings.getTestrig();
     String envName = settings.getEnvironmentName();
-    Path containerDir = settings.getContainerDir();
+    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
     if (testrig != null) {
       applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig, envName);
       String deltaTestrig = settings.getDeltaTestrig();
@@ -515,17 +515,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
-    _storage = new BatfishStorage(_settings.getContainerDir(), _logger, this::newBatch);
+    _storage =
+        new BatfishStorage(
+            _settings.getStorageBase().resolve(_settings.getContainer()), _logger, this::newBatch);
   }
 
   private Answer analyze() {
     Answer answer = new Answer();
     AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
-    String containerName = _settings.getContainerDir().getFileName().toString();
+    String containerName = _settings.getContainer();
     Path analysisQuestionsDir =
         _settings
-            .getContainerDir()
+            .getStorageBase()
+            .resolve(containerName)
             .resolve(
                 Paths.get(
                         BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
@@ -1579,7 +1582,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public String getContainerName() {
-    return _settings.getContainerDir().getFileName().toString();
+    return _settings.getContainer();
   }
 
   @Override
@@ -1757,7 +1760,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public NodeRolesData getNodeRolesData() {
-    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    Path nodeRoleDataPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
       return NodeRolesData.read(nodeRoleDataPath);
     } catch (IOException e) {
@@ -1774,7 +1781,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
-    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    Path nodeRoleDataPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
       return NodeRolesData.getNodeRoleDimension(nodeRoleDataPath, dimension);
     } catch (IOException e) {
@@ -3945,7 +3956,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Compute new auto role data and updates existing auto data with it
     SortedSet<NodeRoleDimension> autoRoles =
         new InferRoles(configurations.keySet(), envTopology).inferRoles();
-    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    Path nodeRoleDataPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
       NodeRolesData.mergeNodeRoleDimensions(nodeRoleDataPath, autoRoles, null, true);
     } catch (IOException e) {
@@ -4068,7 +4083,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (!configsFound) {
-      throw new BatfishException("No valid configurations found");
+      throw new BatfishException("No valid configurations found in testrig path " + testRigPath);
     }
 
     // serialize warnings

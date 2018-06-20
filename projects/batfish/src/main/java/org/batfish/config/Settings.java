@@ -627,10 +627,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_CONTAINER);
   }
 
-  public Path getContainerDir() {
-    return Paths.get(_config.getString(BfConsts.ARG_CONTAINER_DIR));
-  }
-
   public String getCoordinatorHost() {
     return _config.getString(ARG_COORDINATOR_HOST);
   }
@@ -895,6 +891,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getString(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
   }
 
+  public Path getStorageBase() {
+    return Paths.get(_config.getString(BfConsts.ARG_STORAGE_BASE));
+  }
+
   public boolean getSynthesizeJsonTopology() {
     return _config.getBoolean(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
   }
@@ -989,7 +989,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
     setDefaultProperty(CAN_EXECUTE, true);
     setDefaultProperty(BfConsts.ARG_CONTAINER, null);
-    setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
     setDefaultProperty(ARG_COORDINATOR_POOL_PORT, CoordConsts.SVC_CFG_POOL_PORT);
@@ -1053,6 +1052,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_SSL_TRUST_ALL_CERTS, false);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_FILE, null);
     setDefaultProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, null);
+    setDefaultProperty(BfConsts.ARG_STORAGE_BASE, null);
     setDefaultProperty(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY, false);
     setDefaultProperty(BfConsts.ARG_TASK_PLUGIN, null);
     setDefaultProperty(ARG_THROW_ON_LEXER_ERROR, true);
@@ -1123,8 +1123,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         "whether to check BGP session reachability during data plane computation");
 
     addOption(BfConsts.ARG_CONTAINER, "name of container", ARGNAME_NAME);
-
-    addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory", ARGNAME_PATH);
 
     addOption(
         ARG_COORDINATOR_HOST,
@@ -1308,6 +1306,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
         BfConsts.ARG_SSL_TRUST_ALL_CERTS,
         "whether to trust all SSL certificates during communication with coordinator");
 
+    addOption(BfConsts.ARG_STORAGE_BASE, "path to the storage base", ARGNAME_PATH);
+
     addBooleanOption(
         BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY,
         "synthesize json topology from interface ip subnet information");
@@ -1414,7 +1414,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
     getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
     getStringOptionValue(BfConsts.ARG_CONTAINER);
-    getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
     getStringOptionValue(ARG_COORDINATOR_HOST);
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
     getBooleanOptionValue(ARG_COORDINATOR_REGISTER);
@@ -1476,6 +1475,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_SSL_TRUST_ALL_CERTS);
     getPathOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_FILE);
     getStringOptionValue(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD);
+    getPathOptionValue(BfConsts.ARG_STORAGE_BASE);
     getBooleanOptionValue(BfConsts.ARG_SYNTHESIZE_JSON_TOPOLOGY);
     getStringOptionValue(BfConsts.ARG_TASK_PLUGIN);
     getStringOptionValue(BfConsts.ARG_TESTRIG);
@@ -1504,10 +1504,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setContainer(String container) {
     _config.setProperty(BfConsts.ARG_CONTAINER, container);
-  }
-
-  public void setContainerDir(Path containerDir) {
-    _config.setProperty(BfConsts.ARG_CONTAINER_DIR, containerDir.toString());
   }
 
   public void setDebugFlags(List<String> debugFlags) {
@@ -1627,6 +1623,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setSslTruststorePassword(String sslTruststorePassword) {
     _config.setProperty(BfConsts.ARG_SSL_TRUSTSTORE_PASSWORD, sslTruststorePassword);
+  }
+
+  public void setStorageBase(Path storageBase) {
+    _config.setProperty(BfConsts.ARG_STORAGE_BASE, storageBase.toString());
   }
 
   public void setTaskId(String taskId) {
