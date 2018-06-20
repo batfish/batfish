@@ -3,9 +3,13 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasAdministrativeCost;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasMetric;
+import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasNextHopInterface;
+import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasNextHopIp;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasPrefix;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasProtocol;
 import org.hamcrest.Matcher;
@@ -13,10 +17,19 @@ import org.hamcrest.Matcher;
 public final class AbstractRouteMatchers {
 
   /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRoute}'s administrative cost.
+   */
+  public static @Nonnull HasAdministrativeCost hasAdministrativeCost(
+      @Nonnull Matcher<? super Integer> subMatcher) {
+    return new HasAdministrativeCost(subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches when the {@code expectedMetric} is equal to the {@link
    * AbstractRoute}'s metric.
    */
-  public static HasMetric hasMetric(Long expectedMetric) {
+  public static @Nonnull HasMetric hasMetric(Long expectedMetric) {
     return new HasMetric(equalTo(expectedMetric));
   }
 
@@ -24,15 +37,32 @@ public final class AbstractRouteMatchers {
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRoute}'s metric.
    */
-  public static HasMetric hasMetric(@Nonnull Matcher<? super Long> subMatcher) {
+  public static @Nonnull HasMetric hasMetric(@Nonnull Matcher<? super Long> subMatcher) {
     return new HasMetric(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRoute}'s nextHopInterface.
+   */
+  public static @Nonnull HasNextHopInterface hasNextHopInterface(
+      @Nonnull Matcher<? super String> subMatcher) {
+    return new HasNextHopInterface(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRoute}'s nextHopIp.
+   */
+  public static @Nonnull HasNextHopIp hasNextHopIp(@Nonnull Matcher<? super Ip> subMatcher) {
+    return new HasNextHopIp(subMatcher);
   }
 
   /**
    * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
    * AbstractRoute}'s prefix.
    */
-  public static HasPrefix hasPrefix(@Nonnull Matcher<? super Prefix> subMatcher) {
+  public static @Nonnull HasPrefix hasPrefix(@Nonnull Matcher<? super Prefix> subMatcher) {
     return new HasPrefix(subMatcher);
   }
 
@@ -40,7 +70,7 @@ public final class AbstractRouteMatchers {
    * Provides a matcher that matches when the {@code expectedPrefix} is equal to the {@link
    * AbstractRoute}'s prefix.
    */
-  public static HasPrefix hasPrefix(Prefix expectedPrefix) {
+  public static @Nonnull HasPrefix hasPrefix(Prefix expectedPrefix) {
     return new HasPrefix(equalTo(expectedPrefix));
   }
 
