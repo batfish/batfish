@@ -15,7 +15,7 @@ public class IsisRoute extends AbstractRoute {
 
     private String _area;
 
-    private Boolean _down;
+    private boolean _down;
 
     private IsisLevel _level;
 
@@ -26,7 +26,7 @@ public class IsisRoute extends AbstractRoute {
       return new IsisRoute(
           getAdmin(),
           requireNonNull(_area),
-          requireNonNull(_down),
+          _down,
           requireNonNull(_level),
           getMetric(),
           requireNonNull(getNetwork()),

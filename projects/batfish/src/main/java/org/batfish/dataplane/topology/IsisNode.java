@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IsisProcess;
+import org.batfish.dataplane.ibdp.Node;
 
 public class IsisNode implements Comparable<IsisNode> {
 
@@ -45,24 +45,24 @@ public class IsisNode implements Comparable<IsisNode> {
     return _hostname;
   }
 
-  public @Nullable Interface getInterface(@Nonnull Map<String, Configuration> configurations) {
-    Configuration c = configurations.get(_hostname);
-    if (c == null) {
+  public @Nullable Interface getInterface(@Nonnull Map<String, Node> nodes) {
+    Node n = nodes.get(_hostname);
+    if (n == null) {
       return null;
     }
-    return c.getInterfaces().get(_interfaceName);
+    return n.getConfiguration().getInterfaces().get(_interfaceName);
   }
 
   public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
-  public @Nullable IsisProcess getIsisProcess(@Nonnull Map<String, Configuration> configurations) {
-    Configuration c = configurations.get(_hostname);
-    if (c == null) {
+  public @Nullable IsisProcess getIsisProcess(@Nonnull Map<String, Node> nodes) {
+    Node n = nodes.get(_hostname);
+    if (n == null) {
       return null;
     }
-    Interface i = c.getInterfaces().get(_interfaceName);
+    Interface i = n.getConfiguration().getInterfaces().get(_interfaceName);
     if (i == null) {
       return null;
     }
