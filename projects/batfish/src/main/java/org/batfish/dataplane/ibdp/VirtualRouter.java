@@ -1692,13 +1692,13 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .setProtocol(RoutingProtocol.ISIS_L2)
                       .build();
               if (withdraw) {
-                l1DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
+                l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
                 SortedSet<IsisRoute> backups = _receivedIsisL2Routes.get(newL2Route.getNetwork());
                 if (backups != null) {
                   backups.remove(newL2Route);
                 }
               } else {
-                l1DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
+                l2DeltaBuilder.from(_isisL2StagingRib.mergeRouteGetDelta(newL2Route));
                 _receivedIsisL2Routes
                     .computeIfAbsent(newL2Route.getNetwork(), k -> new TreeSet<>())
                     .add(newL2Route);
@@ -2546,6 +2546,13 @@ public class VirtualRouter extends ComparableStructure<String> {
         }
       }
     }
+    if (_vrf.getIsisProcess() != null) {
+      for (Queue<RouteAdvertisement<IsisRoute>> queue : _isisIncomingRoutes.values()) {
+        if (!queue.isEmpty()) {
+          return false;
+        }
+      }
+    }
     return true;
   }
 
@@ -2829,6 +2836,12 @@ public class VirtualRouter extends ComparableStructure<String> {
             .mapToInt(RouteAdvertisement::hashCode)
             .sum()
         + _ospfExternalIncomingRoutes
+            .values()
+            .stream()
+            .flatMap(Queue::stream)
+            .mapToInt(RouteAdvertisement::hashCode)
+            .sum()
+        + _isisIncomingRoutes
             .values()
             .stream()
             .flatMap(Queue::stream)
