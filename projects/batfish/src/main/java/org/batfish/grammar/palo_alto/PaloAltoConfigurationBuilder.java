@@ -162,9 +162,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSn_virtual_router(Sn_virtual_routerContext ctx) {
-    String name = ctx.name.getText();
     _currentVirtualRouter =
-        _configuration.getVirtualRouters().computeIfAbsent(name, VirtualRouter::new);
+        _configuration.getVirtualRouters().computeIfAbsent(ctx.name.getText(), VirtualRouter::new);
   }
 
   @Override
