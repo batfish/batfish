@@ -2546,6 +2546,13 @@ public class VirtualRouter extends ComparableStructure<String> {
         }
       }
     }
+    if (_vrf.getIsisProcess() != null) {
+      for (Queue<RouteAdvertisement<IsisRoute>> queue : _isisIncomingRoutes.values()) {
+        if (!queue.isEmpty()) {
+          return false;
+        }
+      }
+    }
     return true;
   }
 
@@ -2829,6 +2836,12 @@ public class VirtualRouter extends ComparableStructure<String> {
             .mapToInt(RouteAdvertisement::hashCode)
             .sum()
         + _ospfExternalIncomingRoutes
+            .values()
+            .stream()
+            .flatMap(Queue::stream)
+            .mapToInt(RouteAdvertisement::hashCode)
+            .sum()
+        + _isisIncomingRoutes
             .values()
             .stream()
             .flatMap(Queue::stream)
