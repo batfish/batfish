@@ -167,6 +167,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void exitSn_virtual_router(Sn_virtual_routerContext ctx) {
+    _currentVirtualRouter = null;
+  }
+
+  @Override
   public void enterSni_ethernet(Sni_ethernetContext ctx) {
     String name = ctx.name.getText();
     _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
@@ -205,6 +210,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         _currentVirtualRouter
             .getStaticRoutes()
             .computeIfAbsent(ctx.name.getText(), StaticRoute::new);
+  }
+
+  @Override
+  public void exitSnvr_routing_table(Snvr_routing_tableContext ctx) {
+    _currentStaticRoute = null;
   }
 
   @Override

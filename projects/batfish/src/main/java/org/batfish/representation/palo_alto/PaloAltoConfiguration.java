@@ -145,7 +145,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
-      String srName = e.getKey();
       // Can only construct a static route if it has a destination
       if (sr.getDestination() != null) {
         vrf.getStaticRoutes()
@@ -160,7 +159,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       } else {
         _w.redFlag(
             String.format(
-                "Cannot convert static route %s, as it does not have a destination.", srName));
+                "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
       }
     }
     return vrf;
