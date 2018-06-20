@@ -173,11 +173,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   currentPath));
           _fileText =
               Batfish.flatten(
-                  _fileText,
-                  _logger,
-                  _settings,
-                  ConfigurationFormat.VYOS,
-                  VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER);
+                      _fileText,
+                      _logger,
+                      _settings,
+                      ConfigurationFormat.VYOS,
+                      VendorConfigurationFormatDetector.BATFISH_FLATTENED_VYOS_HEADER)
+                  .getFlattenedConfigurationText();
         } else {
           elapsedTime = System.currentTimeMillis() - startTime;
           return new ParseVendorConfigurationResult(
@@ -205,11 +206,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           try {
             _fileText =
                 Batfish.flatten(
-                    _fileText,
-                    _logger,
-                    _settings,
-                    ConfigurationFormat.JUNIPER,
-                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+                        _fileText,
+                        _logger,
+                        _settings,
+                        ConfigurationFormat.JUNIPER,
+                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER)
+                    .getFlattenedConfigurationText();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(
@@ -263,11 +265,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           try {
             _fileText =
                 Batfish.flatten(
-                    _fileText,
-                    _logger,
-                    _settings,
-                    ConfigurationFormat.PALO_ALTO_NESTED,
-                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+                        _fileText,
+                        _logger,
+                        _settings,
+                        ConfigurationFormat.PALO_ALTO_NESTED,
+                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER)
+                    .getFlattenedConfigurationText();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(

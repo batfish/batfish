@@ -150,6 +150,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
@@ -302,7 +303,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static String flatten(
+  public static Flattener flatten(
       String input,
       BatfishLogger logger,
       Settings settings,
@@ -318,7 +319,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperFlattener flattener = new JuniperFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
-          return flattener.getFlattenedConfigurationText();
+          return flattener;
         }
 
       case VYOS:
@@ -328,7 +329,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosFlattener flattener = new VyosFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
-          return flattener.getFlattenedConfigurationText();
+          return flattener;
         }
 
         // $CASES-OMITTED$
