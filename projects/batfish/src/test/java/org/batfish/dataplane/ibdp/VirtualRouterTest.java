@@ -91,9 +91,8 @@ import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
-import org.batfish.dataplane.topology.DirectedIsisEdge;
+import org.batfish.dataplane.topology.IsisEdge;
 import org.batfish.dataplane.topology.IsisNode;
-import org.batfish.dataplane.topology.UndirectedIsisEdge;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -767,7 +766,7 @@ public class VirtualRouterTest {
         ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration());
     Network<BgpNeighbor, BgpSession> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
-    Network<IsisNode, DirectedIsisEdge> isisTopology = initIsisTopology(configs, topology);
+    Network<IsisNode, IsisEdge> isisTopology = initIsisTopology(configs, topology);
 
     Map<String, Node> nodes = ImmutableMap.of("r1", n1, "r2", n2);
     Map<String, VirtualRouter> vrs =
@@ -867,7 +866,7 @@ public class VirtualRouterTest {
             .collect(
                 ImmutableMap.toImmutableMap(
                     vr -> vr.getConfiguration().getHostname(), Function.identity()));
-    Network<IsisNode, DirectedIsisEdge> initialIsisTopology = initIsisTopology(configs, topology);
+    Network<IsisNode, IsisEdge> initialIsisTopology = initIsisTopology(configs, topology);
     vrs.values()
         .forEach(
             vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, initialIsisTopology));
@@ -882,7 +881,7 @@ public class VirtualRouterTest {
     // Set IS-IS on interfaces
     i1.setIsis(isisInterfaceSettings);
     i2.setIsis(isisInterfaceSettings);
-    Network<IsisNode, DirectedIsisEdge> updatedIsisTopology = initIsisTopology(configs, topology);
+    Network<IsisNode, IsisEdge> updatedIsisTopology = initIsisTopology(configs, topology);
 
     // Re-run
     vrs.values()
@@ -890,17 +889,22 @@ public class VirtualRouterTest {
             vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, updatedIsisTopology));
 
     // Assert that queues are initialized
-    vrs.values()
-        .forEach(
-            vr ->
-                assertThat(
-                    vr._isisIncomingRoutes.keySet(),
-                    equalTo(
-                        ImmutableSet.of(
-                            new UndirectedIsisEdge(
-                                IsisLevel.LEVEL_1_2,
-                                new IsisNode(c1.getHostname(), i1.getName()),
-                                new IsisNode(c2.getHostname(), i2.getName()))))));
+    assertThat(
+        vrs.get(c1.getName())._isisIncomingRoutes.keySet(),
+        equalTo(
+            ImmutableSet.of(
+                new IsisEdge(
+                    IsisLevel.LEVEL_1_2,
+                    new IsisNode(c1.getHostname(), i1.getName()),
+                    new IsisNode(c2.getHostname(), i2.getName())))));
+    assertThat(
+        vrs.get(c2.getName())._isisIncomingRoutes.keySet(),
+        equalTo(
+            ImmutableSet.of(
+                new IsisEdge(
+                    IsisLevel.LEVEL_1_2,
+                    new IsisNode(c2.getHostname(), i2.getName()),
+                    new IsisNode(c1.getHostname(), i1.getName())))));
   }
 
   /** Test that the routes are exact route matches are removed from the RIB by default */

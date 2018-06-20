@@ -47,7 +47,7 @@ import org.batfish.dataplane.ibdp.schedule.IbdpSchedule;
 import org.batfish.dataplane.ibdp.schedule.IbdpSchedule.Schedule;
 import org.batfish.dataplane.rib.BgpMultipathRib;
 import org.batfish.dataplane.rib.RibDelta;
-import org.batfish.dataplane.topology.DirectedIsisEdge;
+import org.batfish.dataplane.topology.IsisEdge;
 import org.batfish.dataplane.topology.IsisNode;
 
 class IncrementalBdpEngine {
@@ -109,7 +109,7 @@ class IncrementalBdpEngine {
         initBgpTopology(
             configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
 
-    Network<IsisNode, DirectedIsisEdge> isisTopology = initIsisTopology(configurations, topology);
+    Network<IsisNode, IsisEdge> isisTopology = initIsisTopology(configurations, topology);
 
     boolean isOscillating =
         computeNonMonotonicPortionOfDataPlane(
@@ -147,16 +147,16 @@ class IncrementalBdpEngine {
     return new ComputeDataPlaneResult(answerElement, dp);
   }
 
-  static Network<IsisNode, DirectedIsisEdge> initIsisTopology(
+  static Network<IsisNode, IsisEdge> initIsisTopology(
       Map<String, Configuration> configurations, Topology topology) {
-    Set<DirectedIsisEdge> edges =
+    Set<IsisEdge> edges =
         topology
             .getEdges()
             .stream()
-            .map(edge -> DirectedIsisEdge.newEdge(edge, configurations))
+            .map(edge -> IsisEdge.newEdge(edge, configurations))
             .filter(Objects::nonNull)
             .collect(ImmutableSet.toImmutableSet());
-    MutableNetwork<IsisNode, DirectedIsisEdge> graph =
+    MutableNetwork<IsisNode, IsisEdge> graph =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
     ImmutableSet.Builder<IsisNode> nodes = ImmutableSet.builder();
     edges
@@ -254,7 +254,7 @@ class IncrementalBdpEngine {
         .forEach(
             n -> {
               for (VirtualRouter vr : n.getVirtualRouters().values()) {
-                vr.initIsisExports();
+                vr.initIsisExports(allNodes);
               }
             });
     // IS-IS route propagation
@@ -278,7 +278,7 @@ class IncrementalBdpEngine {
                 for (VirtualRouter vr : n.getVirtualRouters().values()) {
                   Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> p =
                       vr.propagateIsisRoutes(allNodes);
-                  if (p != null && vr.unstageIsisRoutes(p.getKey(), p.getValue())) {
+                  if (p != null && vr.unstageIsisRoutes(allNodes, p.getKey(), p.getValue())) {
                     isisChanged.set(true);
                   }
                 }
@@ -467,7 +467,7 @@ class IncrementalBdpEngine {
       IncrementalBdpAnswerElement ae,
       boolean firstPass,
       Network<BgpNeighbor, BgpSession> bgpTopology,
-      Network<IsisNode, DirectedIsisEdge> isisTopology) {
+      Network<IsisNode, IsisEdge> isisTopology) {
 
     /*
      * Initialize all routers and their message queues (can be done as parallel as possible)

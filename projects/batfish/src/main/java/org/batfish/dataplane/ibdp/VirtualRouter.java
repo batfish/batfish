@@ -108,9 +108,8 @@ import org.batfish.dataplane.rib.RipRib;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 import org.batfish.dataplane.rib.StaticRib;
-import org.batfish.dataplane.topology.DirectedIsisEdge;
+import org.batfish.dataplane.topology.IsisEdge;
 import org.batfish.dataplane.topology.IsisNode;
-import org.batfish.dataplane.topology.UndirectedIsisEdge;
 
 public class VirtualRouter extends ComparableStructure<String> {
 
@@ -170,7 +169,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   transient Rib _independentRib;
 
   /** Incoming messages into this router from each IS-IS circuit */
-  transient SortedMap<UndirectedIsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
+  transient SortedMap<IsisEdge, Queue<RouteAdvertisement<IsisRoute>>> _isisIncomingRoutes;
 
   transient IsisLevelRib _isisL1Rib;
 
@@ -402,7 +401,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       final Map<String, Node> allNodes,
       Topology topology,
       Network<BgpNeighbor, BgpSession> bgpTopology,
-      Network<IsisNode, DirectedIsisEdge> isisTopology) {
+      Network<IsisNode, IsisEdge> isisTopology) {
     initQueuesAndDeltaBuilders(allNodes, topology, bgpTopology, isisTopology);
   }
 
@@ -418,7 +417,7 @@ public class VirtualRouter extends ComparableStructure<String> {
       final Map<String, Node> allNodes,
       final Topology topology,
       Network<BgpNeighbor, BgpSession> bgpTopology,
-      Network<IsisNode, DirectedIsisEdge> isisTopology) {
+      Network<IsisNode, IsisEdge> isisTopology) {
 
     // Initialize message queues for each BGP neighbor
     initBgpQueues(bgpTopology);
@@ -465,7 +464,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
   }
 
-  private void initIsisQueues(Network<IsisNode, DirectedIsisEdge> isisTopology) {
+  private void initIsisQueues(Network<IsisNode, IsisEdge> isisTopology) {
     // Initialize message queues for each IS-IS circuit
     if (_vrf.getIsisProcess() == null) {
       _isisIncomingRoutes = ImmutableSortedMap.of();
@@ -476,9 +475,6 @@ public class VirtualRouter extends ComparableStructure<String> {
               .map(ifaceName -> new IsisNode(_c.getHostname(), ifaceName))
               .filter(isisTopology.nodes()::contains)
               .flatMap(n -> isisTopology.incidentEdges(n).stream())
-              .map(DirectedIsisEdge::toUndirectedEdge)
-              .collect(ImmutableSet.toImmutableSet())
-              .stream()
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
@@ -1061,7 +1057,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     return outputRoute;
   }
 
-  void initIsisExports() {
+  void initIsisExports(Map<String, Node> allNodes) {
     /* TODO: https://github.com/batfish/batfish/issues/1703 */
     IsisProcess proc = _vrf.getIsisProcess();
     if (proc == null) {
@@ -1127,7 +1123,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                         });
               }
             });
-    queueOutgoingIsisRoutes(d1.build(), d2.build());
+    queueOutgoingIsisRoutes(allNodes, d1.build(), d2.build());
   }
 
   void initOspfExports() {
@@ -2304,20 +2300,31 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   private void queueOutgoingIsisRoutes(
-      @Nullable RibDelta<IsisRoute> l1delta, @Nullable RibDelta<IsisRoute> l2delta) {
+      @Nonnull Map<String, Node> allNodes,
+      @Nullable RibDelta<IsisRoute> l1delta,
+      @Nullable RibDelta<IsisRoute> l2delta) {
     if (_vrf.getIsisProcess() == null || _isisIncomingRoutes == null) {
       return;
     }
-    _isisIncomingRoutes.forEach(
-        (edge, queue) -> {
-          IsisLevel circuitType = edge.getCircuitType();
-          if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_1) {
-            queueDelta(queue, l1delta);
-          }
-          if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_2) {
-            queueDelta(queue, l2delta);
-          }
-        });
+    _isisIncomingRoutes
+        .keySet()
+        .forEach(
+            edge -> {
+              VirtualRouter remoteVr =
+                  allNodes
+                      .get(edge.getNode2().getHostname())
+                      .getVirtualRouters()
+                      .get(edge.getNode2().getInterface(allNodes).getVrfName());
+              Queue<RouteAdvertisement<IsisRoute>> queue =
+                  remoteVr._isisIncomingRoutes.get(edge.reverse());
+              IsisLevel circuitType = edge.getCircuitType();
+              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_1) {
+                queueDelta(queue, l1delta);
+              }
+              if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_2) {
+                queueDelta(queue, l2delta);
+              }
+            });
   }
 
   /**
@@ -2402,10 +2409,11 @@ public class VirtualRouter extends ComparableStructure<String> {
         bgpTopology);
   }
 
-  boolean unstageIsisRoutes(RibDelta<IsisRoute> l1Delta, RibDelta<IsisRoute> l2Delta) {
+  boolean unstageIsisRoutes(
+      Map<String, Node> allNodes, RibDelta<IsisRoute> l1Delta, RibDelta<IsisRoute> l2Delta) {
     RibDelta<IsisRoute> d1 = importRibDelta(_isisL1Rib, l1Delta);
     RibDelta<IsisRoute> d2 = importRibDelta(_isisL2Rib, l2Delta);
-    queueOutgoingIsisRoutes(d1, d2);
+    queueOutgoingIsisRoutes(allNodes, d1, d2);
     Builder<IsisRoute> isisDeltaBuilder = new Builder<>(_isisRib);
     isisDeltaBuilder.from(importRibDelta(_isisRib, d1));
     isisDeltaBuilder.from(importRibDelta(_isisRib, d2));
