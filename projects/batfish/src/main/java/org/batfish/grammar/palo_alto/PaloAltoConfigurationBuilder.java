@@ -202,9 +202,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void enterSnvr_routing_table(Snvr_routing_tableContext ctx) {
-    String name = ctx.name.getText();
     _currentStaticRoute =
-        _currentVirtualRouter.getStaticRoutes().computeIfAbsent(name, StaticRoute::new);
+        _currentVirtualRouter
+            .getStaticRoutes()
+            .computeIfAbsent(ctx.name.getText(), StaticRoute::new);
   }
 
   @Override

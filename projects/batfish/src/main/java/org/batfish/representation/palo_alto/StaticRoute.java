@@ -17,8 +17,6 @@ public class StaticRoute extends ComparableStructure<String> {
 
   private int _adminDistance;
 
-  private boolean _discard;
-
   private int _metric;
 
   private String _nextHopInterface;
@@ -27,11 +25,8 @@ public class StaticRoute extends ComparableStructure<String> {
 
   private Prefix _destination;
 
-  private Integer _tag;
-
   public StaticRoute(String name) {
     super(name);
-    // default admin costs for static routes in PAN
     _adminDistance = DEFAULT_ADMIN_DISTANCE;
     _metric = DEFAULT_METRIC;
   }
@@ -42,10 +37,6 @@ public class StaticRoute extends ComparableStructure<String> {
 
   public int getAdminDistance() {
     return _adminDistance;
-  }
-
-  public boolean getDiscard() {
-    return _discard;
   }
 
   public int getMetric() {
@@ -60,20 +51,12 @@ public class StaticRoute extends ComparableStructure<String> {
     return _nextHopIp;
   }
 
-  public Integer getTag() {
-    return _tag;
-  }
-
   public void setAdminDistance(int adminDistance) {
     _adminDistance = adminDistance;
   }
 
   public void setDestination(Prefix destination) {
     _destination = destination;
-  }
-
-  public void setDiscard(boolean discard) {
-    _discard = discard;
   }
 
   public void setMetric(int metric) {
@@ -86,9 +69,5 @@ public class StaticRoute extends ComparableStructure<String> {
 
   public void setNextHopIp(Ip nextHopIp) {
     _nextHopIp = nextHopIp;
-  }
-
-  public void setTag(int tag) {
-    _tag = tag;
   }
 }

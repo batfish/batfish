@@ -172,7 +172,7 @@ public class PaloAltoGrammarTest {
     String vrName = "default";
     Configuration c = parseConfig(hostname);
 
-    // Confirm static route shows up with correct default extractions
+    // Confirm static route shows up with correct defaults
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(10L))))));
     assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
