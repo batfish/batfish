@@ -146,13 +146,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
       String srName = e.getKey();
-
       // Can only construct a static route if it has a destination
       if (sr.getDestination() != null) {
         vrf.getStaticRoutes()
             .add(
                 org.batfish.datamodel.StaticRoute.builder()
                     .setNextHopInterface(sr.getNextHopInterface())
+                    .setNextHopIp(sr.getNextHopIp())
                     .setAdministrativeCost(sr.getAdminDistance())
                     .setMetric(sr.getMetric())
                     .setNetwork(sr.getDestination())

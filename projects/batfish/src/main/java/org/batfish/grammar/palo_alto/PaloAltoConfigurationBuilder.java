@@ -23,7 +23,6 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
-import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
@@ -202,11 +201,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
-  public void exitSnvr_interface(Snvr_interfaceContext ctx) {
-    _currentVirtualRouter.getInterfaceNames().add(ctx.name.getText());
-  }
-
-  @Override
   public void enterSnvr_routing_table(Snvr_routing_tableContext ctx) {
     String name = ctx.name.getText();
     _currentStaticRoute =
@@ -230,7 +224,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   @Override
   public void exitSnvrrt_metric(Snvrrt_metricContext ctx) {
-    _currentStaticRoute.setAdminDistance(Integer.parseInt(ctx.metric.getText()));
+    _currentStaticRoute.setMetric(Integer.parseInt(ctx.metric.getText()));
   }
 
   @Override

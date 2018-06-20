@@ -2,6 +2,8 @@ package org.batfish.grammar.palo_alto;
 
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasAdministrativeCost;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasMetric;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopInterface;
+import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasNextHopIp;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
@@ -24,6 +26,7 @@ import java.util.Map;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
@@ -150,24 +153,28 @@ public class PaloAltoGrammarTest {
   @Test
   public void testStaticRoute() throws IOException {
     String hostname = "static-route";
+    String vrName = "somename";
     Configuration c = parseConfig(hostname);
 
     // Confirm static route shows up with correct extractions
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(12L))))));
     assertThat(
-        c, hasVrf("default", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
-    assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasMetric(equalTo(12))))));
-    assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(123))))));
+        c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopIp(equalTo(new Ip("1.1.1.1")))))));
+    assertThat(
+        c, hasVrf(vrName, hasStaticRoutes(hasItem(hasNextHopInterface(equalTo("ethernet1/1"))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
   }
 
   @Test
   public void testStaticRouteDefaults() throws IOException {
     String hostname = "static-route-defaults";
+    String vrName = "default";
     Configuration c = parseConfig(hostname);
 
-    // Confirm static route shows up with correct extractions
-    assertThat(
-        c, hasVrf("default", hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
-    assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasMetric(equalTo(10))))));
-    assertThat(c, hasVrf("default", hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10))))));
+    // Confirm static route shows up with correct default extractions
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasAdministrativeCost(equalTo(10))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasMetric(equalTo(10L))))));
+    assertThat(c, hasVrf(vrName, hasStaticRoutes(hasItem(hasPrefix(Prefix.parse("0.0.0.0/0"))))));
   }
 }

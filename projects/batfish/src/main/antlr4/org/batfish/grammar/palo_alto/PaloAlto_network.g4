@@ -27,8 +27,7 @@ sn_virtual_router
 :
     VIRTUAL_ROUTER name = variable
     (
-        snvr_interface
-        | snvr_routing_table
+        snvr_routing_table
     )
 ;
 
@@ -78,11 +77,6 @@ sniel3_ip
 sniel3_mtu
 :
     MTU mtu = DEC
-;
-
-snvr_interface
-:
-    INTERFACE name = variable
 ;
 
 snvr_routing_table

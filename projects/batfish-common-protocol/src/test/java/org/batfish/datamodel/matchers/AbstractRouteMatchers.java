@@ -3,10 +3,13 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasAdministrativeCost;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasMetric;
+import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasNextHopInterface;
+import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasNextHopIp;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasPrefix;
 import org.batfish.datamodel.matchers.AbstractRouteMatchersImpl.HasProtocol;
 import org.hamcrest.Matcher;
@@ -36,6 +39,23 @@ public final class AbstractRouteMatchers {
    */
   public static HasMetric hasMetric(@Nonnull Matcher<? super Long> subMatcher) {
     return new HasMetric(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRoute}'s nextHopInterface.
+   */
+  public static HasNextHopInterface hasNextHopInterface(
+      @Nonnull Matcher<? super String> subMatcher) {
+    return new HasNextHopInterface(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link
+   * AbstractRoute}'s nextHopIp.
+   */
+  public static HasNextHopIp hasNextHopIp(@Nonnull Matcher<? super Ip> subMatcher) {
+    return new HasNextHopIp(subMatcher);
   }
 
   /**

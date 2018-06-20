@@ -2,6 +2,7 @@ package org.batfish.datamodel.matchers;
 
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
 import org.hamcrest.FeatureMatcher;
@@ -27,6 +28,28 @@ final class AbstractRouteMatchersImpl {
     @Override
     protected Long featureValueOf(AbstractRoute actual) {
       return actual.getMetric();
+    }
+  }
+
+  static final class HasNextHopInterface extends FeatureMatcher<AbstractRoute, String> {
+    HasNextHopInterface(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An AbstractRoute with nextHopInterface:", "nextHopInterface");
+    }
+
+    @Override
+    protected String featureValueOf(AbstractRoute actual) {
+      return actual.getNextHopInterface();
+    }
+  }
+
+  static final class HasNextHopIp extends FeatureMatcher<AbstractRoute, Ip> {
+    HasNextHopIp(@Nonnull Matcher<? super Ip> subMatcher) {
+      super(subMatcher, "An AbstractRoute with nextHopIp:", "nextHopIp");
+    }
+
+    @Override
+    protected Ip featureValueOf(AbstractRoute actual) {
+      return actual.getNextHopIp();
     }
   }
 
