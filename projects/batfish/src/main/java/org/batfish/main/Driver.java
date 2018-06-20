@@ -627,7 +627,7 @@ public class Driver {
                   try (ActiveSpan outputAnswerSpan =
                       GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
                     assert outputAnswerSpan != null;
-                    if (settings.getAnswerJsonPath() != null) {
+                    if (settings.getTaskId() != null) {
                       batfish.outputAnswerWithLog(answer);
                     }
                   }

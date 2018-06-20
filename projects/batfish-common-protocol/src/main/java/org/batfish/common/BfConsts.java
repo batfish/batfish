@@ -37,7 +37,6 @@ public class BfConsts {
   public static final String ABSPATH_DEFAULT_SALT = "org/batfish/common/util/salt";
 
   public static final String ARG_ANALYSIS_NAME = "analysisname";
-  public static final String ARG_ANSWER_JSON_PATH = "answerjsonpath";
   public static final String ARG_BDP_DETAIL = "bdpdetail";
   public static final String ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS =
       "bdpmaxoscillationrecoveryattempts";

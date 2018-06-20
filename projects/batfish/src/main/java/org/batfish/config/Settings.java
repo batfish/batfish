@@ -606,11 +606,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.COMMAND_ANSWER);
   }
 
-  @Nullable
-  public Path getAnswerJsonPath() {
-    return nullablePath(_config.getString(BfConsts.ARG_ANSWER_JSON_PATH));
-  }
-
   public int getAvailableThreads() {
     return Math.min(Runtime.getRuntime().availableProcessors(), getJobs());
   }
@@ -990,7 +985,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private void initConfigDefaults() {
     setDefaultProperty(BfConsts.ARG_ANALYSIS_NAME, null);
-    setDefaultProperty(BfConsts.ARG_ANSWER_JSON_PATH, null);
     setDefaultProperty(BfConsts.ARG_BDP_DETAIL, false);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS, 0);
     setDefaultProperty(BfConsts.ARG_BDP_MAX_RECORDED_ITERATIONS, 5);
@@ -1091,9 +1085,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
   private void initOptions() {
 
     addOption(BfConsts.ARG_ANALYSIS_NAME, "name of analysis", ARGNAME_NAME);
-
-    addOption(
-        BfConsts.ARG_ANSWER_JSON_PATH, "save query json output to specified file", ARGNAME_PATH);
 
     addBooleanOption(
         BfConsts.ARG_BDP_DETAIL,
@@ -1410,7 +1401,6 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getStringOptionValue(BfConsts.ARG_ANALYSIS_NAME);
     getBooleanOptionValue(BfConsts.COMMAND_ANALYZE);
     getBooleanOptionValue(BfConsts.COMMAND_ANSWER);
-    getPathOptionValue(BfConsts.ARG_ANSWER_JSON_PATH);
     getBooleanOptionValue(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS);
     getBooleanOptionValue(BfConsts.ARG_BDP_DETAIL);
     getIntOptionValue(BfConsts.ARG_BDP_MAX_OSCILLATION_RECOVERY_ATTEMPTS);
