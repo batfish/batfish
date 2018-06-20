@@ -11,6 +11,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.VendorConfiguration;
 
 public final class PaloAltoConfiguration extends VendorConfiguration {
@@ -37,10 +38,13 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
 
   private ConfigurationFormat _vendor;
 
+  private final SortedMap<String, VirtualRouter> _virtualRouters;
+
   public PaloAltoConfiguration(Set<String> unimplementedFeatures) {
     _interfaces = new TreeMap<>();
     _syslogServerGroups = new TreeMap<>();
     _unimplementedFeatures = unimplementedFeatures;
+    _virtualRouters = new TreeMap<>();
   }
 
   private NavigableSet<String> getDnsServers() {
@@ -77,6 +81,10 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   @Override
   public Set<String> getUnimplementedFeatures() {
     return _unimplementedFeatures;
+  }
+
+  public SortedMap<String, VirtualRouter> getVirtualRouters() {
+    return _virtualRouters;
   }
 
   public void setDnsServerPrimary(String dnsServerPrimary) {
@@ -131,6 +139,32 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     return newIface;
   }
 
+  /** Convert Palo Alto specific virtual router into vendor independent model Vrf */
+  private Vrf toVrf(VirtualRouter vr) {
+    Vrf vrf = new Vrf(vr.getName());
+
+    for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
+      StaticRoute sr = e.getValue();
+      // Can only construct a static route if it has a destination
+      if (sr.getDestination() != null) {
+        vrf.getStaticRoutes()
+            .add(
+                org.batfish.datamodel.StaticRoute.builder()
+                    .setNextHopInterface(sr.getNextHopInterface())
+                    .setNextHopIp(sr.getNextHopIp())
+                    .setAdministrativeCost(sr.getAdminDistance())
+                    .setMetric(sr.getMetric())
+                    .setNetwork(sr.getDestination())
+                    .build());
+      } else {
+        _w.redFlag(
+            String.format(
+                "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
+      }
+    }
+    return vrf;
+  }
+
   @Override
   public Configuration toVendorIndependentConfiguration() throws VendorConversionException {
     String hostname = getHostname();
@@ -143,11 +177,16 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     for (Entry<String, Interface> i : _interfaces.entrySet()) {
       _c.getInterfaces().put(i.getKey(), toInterface(i.getValue()));
     }
+
     NavigableSet<String> loggingServers = new TreeSet<>();
     _syslogServerGroups
         .values()
         .forEach(g -> g.values().forEach(s -> loggingServers.add(s.getAddress())));
     _c.setLoggingServers(loggingServers);
+
+    for (Entry<String, VirtualRouter> vr : _virtualRouters.entrySet()) {
+      _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
+    }
     return _c;
   }
 }

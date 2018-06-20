@@ -1084,8 +1084,8 @@ public class FlatJuniperGrammarTest {
             VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
     FlattenerLineMap lineMap = flattener.getOriginalLineMap();
     /*
-     * Flattened config should be two lines: header line and set-hostname line
-     * Asserts are only checking content of the second line
+     * Flattened config should be two lines: header line and set-host-name line
+     * This test is only checking content of the set-host-name line
      */
     String flatText = flattener.getFlattenedConfigurationText().split("\n")[1];
 

@@ -3497,6 +3497,11 @@ DTMF_RELAY
    'dtmf-relay'
 ;
 
+DTP
+:
+   'dtp'
+;
+
 DUAL_ACTIVE
 :
    'dual-active'
@@ -4590,6 +4595,11 @@ FORMAT
 FORTYG_FULL
 :
   '40gfull'
+;
+
+FORWARD
+:
+   'forward'
 ;
 
 FORWARD_DIGITS
@@ -5899,6 +5909,11 @@ KLOGIN
    'klogin'
 ;
 
+KOD
+:
+   'kod'
+;
+
 KRON
 :
    'kron'
@@ -6042,6 +6057,11 @@ LDP
 LE
 :
    'le'
+;
+
+LEAK_MAP
+:
+   'leak-map'
 ;
 
 LEASE
@@ -8229,6 +8249,11 @@ PAGER
    'pager'
 ;
 
+PAGP
+:
+   'pagp'
+;
+
 PAN
 :
    'pan'
@@ -9037,6 +9062,11 @@ PROTECTION
 PROTOCOL
 :
    'protocol'
+;
+
+PROTOCOL_DISCOVERY
+:
+   'protocol-discovery'
 ;
 
 PROTOCOL_HTTP
@@ -10887,6 +10917,11 @@ SPEED
 SPEED_DUPLEX
 :
    'speed-duplex'
+;
+
+SPLIT_HORIZON
+:
+   'split-horizon'
 ;
 
 SPLIT_TUNNEL_NETWORK_LIST

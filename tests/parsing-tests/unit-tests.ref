@@ -20462,7 +20462,7 @@
             "          DUAL_ACTIVE:'dual-active'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
             "            VARIABLE:'detection'  <== mode:DEFAULT_MODE",
-            "            VARIABLE:'pagp'  <== mode:DEFAULT_MODE",
+            "            PAGP:'pagp'  <== mode:DEFAULT_MODE",
             "            TRUST:'trust'  <== mode:DEFAULT_MODE",
             "            CHANNEL_GROUP:'channel-group'  <== mode:DEFAULT_MODE",
             "            DEC:'34'  <== mode:DEFAULT_MODE",
@@ -21670,6 +21670,14 @@
             "          (null_rest_of_line",
             "            TRUST:'trust'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "      (if_ip_flow_monitor",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        FLOW:'flow'  <== mode:DEFAULT_MODE",
+            "        MONITOR:'monitor'  <== mode:DEFAULT_MODE",
+            "        name = (variable",
+            "          VARIABLE:'some-flow-mon'  <== mode:DEFAULT_MODE)",
+            "        OUTPUT:'output'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_ip_helper_address",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        HELPER_ADDRESS:'helper-address'  <== mode:DEFAULT_MODE",
@@ -21802,6 +21810,11 @@
             "        POOL:'pool'  <== mode:DEFAULT_MODE",
             "        pool = (variable",
             "          VARIABLE:'beeble'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_nbar",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        NBAR:'nbar'  <== mode:DEFAULT_MODE",
+            "        PROTOCOL_DISCOVERY:'protocol-discovery'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
@@ -21969,6 +21982,17 @@
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        STICKY_ARP:'sticky-arp'  <== mode:DEFAULT_MODE",
             "        IGNORE:'ignore'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_summary_address",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        SUMMARY_ADDRESS:'summary-address'  <== mode:DEFAULT_MODE",
+            "        EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "        asn = DEC:'11'  <== mode:DEFAULT_MODE",
+            "        addr = IP_ADDRESS:'10.1.2.3'  <== mode:DEFAULT_MODE",
+            "        netmask = IP_ADDRESS:'255.255.255.255'  <== mode:DEFAULT_MODE",
+            "        LEAK_MAP:'leak-map'  <== mode:DEFAULT_MODE",
+            "        mapname = (variable",
+            "          VARIABLE:'eigrp-leak-map'  <== mode:DEFAULT_MODE)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -22317,42 +22341,52 @@
             "        DEC:'12'  <== mode:DEFAULT_MODE",
             "        DEC:'1'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "      (if_null_block",
+            "      (if_service_instance",
             "        SERVICE:'service'  <== mode:DEFAULT_MODE",
             "        INSTANCE:'instance'  <== mode:DEFAULT_MODE",
-            "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        id = DEC:'1'  <== mode:DEFAULT_MODE",
             "        ETHERNET:'ethernet'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE",
-            "        (if_null_inner",
-            "          BRIDGE_DOMAIN:'bridge-domain'  <== mode:DEFAULT_MODE",
-            "          DEC:'710'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (if_null_inner",
-            "          ENCAPSULATION:'encapsulation'  <== mode:DEFAULT_MODE",
-            "          DEFAULT:'default'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (if_null_inner",
-            "          L2PROTOCOL:'l2protocol'  <== mode:DEFAULT_MODE",
-            "          TUNNEL:'tunnel'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (if_null_inner",
-            "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
-            "          INPUT:'input'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'limit-access-to-1Gbps'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (if_null_inner",
-            "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
-            "          OUTPUT:'output'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'limit-access-to-1Gbps'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (if_null_inner",
-            "          REWRITE:'rewrite'  <== mode:DEFAULT_MODE",
-            "          INGRESS:'ingress'  <== mode:DEFAULT_MODE",
-            "          TAG:'tag'  <== mode:DEFAULT_MODE",
-            "          VARIABLE:'pop'  <== mode:DEFAULT_MODE",
-            "          DEC:'1'  <== mode:DEFAULT_MODE",
-            "          SYMMETRIC:'symmetric'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_si_inner",
+            "          (if_si_bridge_domain",
+            "            BRIDGE_DOMAIN:'bridge-domain'  <== mode:DEFAULT_MODE",
+            "            id = DEC:'710'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_si_inner",
+            "          (if_si_encapsulation",
+            "            ENCAPSULATION:'encapsulation'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              DEFAULT:'default'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
+            "        (if_si_inner",
+            "          (if_si_l2protocol",
+            "            L2PROTOCOL:'l2protocol'  <== mode:DEFAULT_MODE",
+            "            TUNNEL:'tunnel'  <== mode:DEFAULT_MODE",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_si_inner",
+            "          (if_si_service_policy",
+            "            SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
+            "            INPUT:'input'  <== mode:DEFAULT_MODE",
+            "            policy_map = (variable",
+            "              VARIABLE:'limit-access-to-1Gbps'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_si_inner",
+            "          (if_si_service_policy",
+            "            SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
+            "            OUTPUT:'output'  <== mode:DEFAULT_MODE",
+            "            policy_map = (variable",
+            "              VARIABLE:'limit-access-to-1Gbps'  <== mode:DEFAULT_MODE)",
+            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "        (if_si_inner",
+            "          (if_si_rewrite",
+            "            REWRITE:'rewrite'  <== mode:DEFAULT_MODE",
+            "            (null_rest_of_line",
+            "              INGRESS:'ingress'  <== mode:DEFAULT_MODE",
+            "              TAG:'tag'  <== mode:DEFAULT_MODE",
+            "              VARIABLE:'pop'  <== mode:DEFAULT_MODE",
+            "              DEC:'1'  <== mode:DEFAULT_MODE",
+            "              SYMMETRIC:'symmetric'  <== mode:DEFAULT_MODE",
+            "              NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "      (if_null_block",
             "        SHAPE:'shape'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'rate'  <== mode:DEFAULT_MODE",
@@ -28150,13 +28184,26 @@
             "        (null_rest_of_line",
             "          VARIABLE:'fanspeed-control'  <== mode:DEFAULT_MODE",
             "          VARIABLE:'off'  <== mode:DEFAULT_MODE",
-            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
-            "        (null_inner",
-            "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            VARIABLE:'global_policy'  <== mode:DEFAULT_MODE",
-            "            GLOBAL:'global'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))))",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
+            "  (stanza",
+            "    (s_service_policy_global",
+            "      SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'global_policy'  <== mode:DEFAULT_MODE)",
+            "      GLOBAL:'global'  <== mode:DEFAULT_MODE",
+            "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_service_policy_interface",
+            "      SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
+            "      name = (variable",
+            "        VARIABLE:'some-interface-policy'  <== mode:DEFAULT_MODE)",
+            "      INTERFACE:'interface'  <== mode:DEFAULT_MODE",
+            "      iface = (interface_name",
+            "        name_prefix_alpha = M_Interface_PREFIX:'Loopback'  <== mode:M_Interface",
+            "        (range",
+            "          (subrange",
+            "            low = DEC:'0'  <== mode:M_Interface)))",
+            "      NEWLINE:'\\n'  <== mode:M_Interface))",
             "  (stanza",
             "    (s_null",
             "      (null_block",
@@ -29035,6 +29082,17 @@
             "      HOSTNAME:'hostname'  <== mode:DEFAULT_MODE",
             "      VARIABLE:'cisco_ntp'  <== mode:DEFAULT_MODE",
             "      NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "  (stanza",
+            "    (s_ntp",
+            "      NTP:'ntp'  <== mode:DEFAULT_MODE",
+            "      (ntp_common",
+            "        (ntp_access_group",
+            "          ACCESS_GROUP:'access-group'  <== mode:DEFAULT_MODE",
+            "          PEER:'peer'  <== mode:DEFAULT_MODE",
+            "          name = (variable",
+            "            VARIABLE:'ntp-peer-group'  <== mode:DEFAULT_MODE)",
+            "          KOD:'kod'  <== mode:DEFAULT_MODE",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))))",
             "  (stanza",
             "    (s_ntp",
             "      NTP:'ntp'  <== mode:DEFAULT_MODE",
@@ -30788,11 +30846,11 @@
             "            COS:'cos'  <== mode:DEFAULT_MODE",
             "            DEC:'7'  <== mode:DEFAULT_MODE",
             "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
-            "        (pmc_null",
+            "        (pmc_service_policy",
             "          SERVICE_POLICY:'service-policy'  <== mode:DEFAULT_MODE",
-            "          (null_rest_of_line",
-            "            VARIABLE:'prioritize_backbone'  <== mode:DEFAULT_MODE",
-            "            NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "          name = (variable",
+            "            VARIABLE:'prioritize_backbone'  <== mode:DEFAULT_MODE)",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "        (pmc_null",
             "          TRUST:'trust'  <== mode:DEFAULT_MODE",
             "          (null_rest_of_line",
@@ -33598,14 +33656,14 @@
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      CALL:'call'  <== mode:DEFAULT_MODE",
             "      (null_rest_of_line",
-            "        VARIABLE:'forward'  <== mode:DEFAULT_MODE",
+            "        FORWARD:'forward'  <== mode:DEFAULT_MODE",
             "        ALL:'all'  <== mode:DEFAULT_MODE",
             "        ASTERISK:'*'  <== mode:DEFAULT_MODE",
             "        DEC:'42'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      CALL:'call'  <== mode:DEFAULT_MODE",
             "      (null_rest_of_line",
-            "        VARIABLE:'forward'  <== mode:DEFAULT_MODE",
+            "        FORWARD:'forward'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'cancel'  <== mode:DEFAULT_MODE",
             "        ASTERISK:'*'  <== mode:DEFAULT_MODE",
             "        DEC:'43'  <== mode:DEFAULT_MODE",
@@ -35140,7 +35198,7 @@
             "      (vlan_null",
             "        ACTION:'action'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
-            "          VARIABLE:'forward'  <== mode:DEFAULT_MODE",
+            "          FORWARD:'forward'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (vlan_null",
             "        STATISTICS:'statistics'  <== mode:DEFAULT_MODE",
@@ -35418,7 +35476,7 @@
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      SIGNALING:'signaling'  <== mode:DEFAULT_MODE",
             "      (null_rest_of_line",
-            "        VARIABLE:'forward'  <== mode:DEFAULT_MODE",
+            "        FORWARD:'forward'  <== mode:DEFAULT_MODE",
             "        VARIABLE:'unconditional'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      TRANSLATION_PROFILE:'translation-profile'  <== mode:DEFAULT_MODE",
@@ -54689,25 +54747,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                279
+                282
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                281
+                284
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                283
+                286
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                285
+                288
               ],
               "numReferrers" : 1
             },
@@ -54983,114 +55041,117 @@
                 274,
                 275,
                 276,
-                277
+                277,
+                278,
+                279,
+                280
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                287
+                290
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                324,
-                325
+                327,
+                328
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                289,
-                290,
-                291,
                 292,
-                293
+                293,
+                294,
+                295,
+                296
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                295
+                298
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                297
+                300
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                299
+                302
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                308
+                311
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                314
+                317
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                316
+                319
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                303
+                306
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                318
+                321
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                310
+                313
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                312
+                315
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                320
+                323
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                305
+                308
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                322
+                325
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                301
+                304
               ],
               "numReferrers" : 1
             }
@@ -55305,7 +55366,7 @@
                 210,
                 211
               ],
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           }
         },
@@ -57128,12 +57189,12 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                123
+                126
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                126
+                129
               ]
             },
             "ag1" : {
@@ -57148,33 +57209,40 @@
             },
             "def" : {
               "ip nat source dynamic access-list" : [
-                90
+                91
               ]
             },
             "mynatacl" : {
               "ip nat destination acl" : [
-                87
+                88
               ]
             }
           },
           "ipv4/6 acl" : {
             "1" : {
               "interface igmp access-group acl" : [
-                77
+                78
               ]
             }
           },
           "nat pool" : {
             "beeble" : {
               "ip nat source pool" : [
-                91
+                92
+              ]
+            }
+          },
+          "route-map" : {
+            "eigrp-leak-map" : {
+              "interface summary-address eigrp leak-map" : [
+                123
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                277
+                280
               ]
             }
           }
@@ -57238,10 +57306,33 @@
               ]
             }
           },
+          "interface" : {
+            "Loopback0" : {
+              "service-policy interface" : [
+                238
+              ]
+            }
+          },
           "ipv4/6 acl" : {
             "cops-acl" : {
               "cops listener access-list" : [
                 42
+              ]
+            }
+          },
+          "policy-map" : {
+            "some-interface-policy" : {
+              "service-policy interface policy" : [
+                238
+              ]
+            }
+          }
+        },
+        "cisco_ntp" : {
+          "ipv4 acl" : {
+            "ntp-peer-group" : {
+              "ntp access-group" : [
+                4
               ]
             }
           }
@@ -57372,6 +57463,13 @@
             "cinspect" : {
               "policy-map type inspect class type inspect" : [
                 43
+              ]
+            }
+          },
+          "policy-map" : {
+            "prioritize_backbone" : {
+              "policy-map class service-policy" : [
+                74
               ]
             }
           },

@@ -55,8 +55,8 @@ public class BatfishTestUtils {
     final Cache<Snapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
     final Cache<Snapshot, SortedMap<String, Configuration>> compressedTestrigs = makeTestrigCache();
 
-    Path containerDir = tempFolder.newFolder().toPath();
-    settings.setContainerDir(containerDir);
+    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setContainer("tempContainer");
     if (!configurations.isEmpty()) {
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
@@ -94,8 +94,8 @@ public class BatfishTestUtils {
     final Cache<Snapshot, SortedMap<String, Configuration>> testrigs = makeTestrigCache();
     final Cache<Snapshot, SortedMap<String, Configuration>> compressedTestrigs = makeTestrigCache();
 
-    Path containerDir = tempFolder.newFolder().toPath();
-    settings.setContainerDir(containerDir);
+    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setContainer("tempContainer");
     if (!baseConfigs.isEmpty()) {
       settings.setTestrig("tempTestrig");
       settings.setEnvironmentName("tempEnvironment");
@@ -166,8 +166,8 @@ public class BatfishTestUtils {
     settings.setThrowOnLexerError(true);
     settings.setThrowOnParserError(true);
     settings.setVerboseParse(true);
-    Path containerDir = tempFolder.newFolder().toPath();
-    settings.setContainerDir(containerDir);
+    settings.setStorageBase(tempFolder.newFolder().toPath());
+    settings.setContainer("tempContainer");
     settings.setTestrig("tempTestrig");
     settings.setEnvironmentName("tempEnvironment");
     Batfish.initTestrigSettings(settings);

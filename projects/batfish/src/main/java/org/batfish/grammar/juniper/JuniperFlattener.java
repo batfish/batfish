@@ -93,8 +93,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   private void constructSetLine() {
     StringBuilder sb = new StringBuilder();
     sb.append("set");
-    for (List<WordContext> prefix : _stack) {
-      for (WordContext wordCtx : prefix) {
+    for (List<WordContext> line : _stack) {
+      for (WordContext wordCtx : line) {
         sb.append(" ");
         // Offset new line number by header line count plus one (since line numbers start at 1)
         _lineMap.setOriginalLine(

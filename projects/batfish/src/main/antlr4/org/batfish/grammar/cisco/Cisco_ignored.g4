@@ -486,7 +486,6 @@ null_inner
       | SERVER
       | SERVERFARM
       | SERVER_PRIVATE
-      | SERVICE_POLICY
       | SERVICE_QUEUE
       | SERVICE_TYPE
       | SESSION
@@ -877,7 +876,6 @@ null_single
       | SDM
       | SECURITY
       | SERVER_TYPE
-      | SERVICE_POLICY
       | SETUP
       | SHELFNAME
       | SHELL

@@ -578,7 +578,7 @@ public class Driver {
                       .startActive()) {
                 assert runBatfishSpan != null;
                 Answer answer = null;
-                String containerName = settings.getContainerDir().getFileName().toString();
+                String containerName = settings.getContainer();
                 String testrigName = settings.getTestrig();
                 try {
                   answer = batfish.run();
@@ -627,7 +627,7 @@ public class Driver {
                   try (ActiveSpan outputAnswerSpan =
                       GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
                     assert outputAnswerSpan != null;
-                    if (settings.getAnswerJsonPath() != null) {
+                    if (settings.getTaskId() != null) {
                       batfish.outputAnswerWithLog(answer);
                     }
                   }
