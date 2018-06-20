@@ -3134,6 +3134,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.INTERFACE,
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
+        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
@@ -3298,7 +3299,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.INSPECT_POLICY_MAP,
         CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
     markConcreteStructure(
-        CiscoStructureType.POLICY_MAP, CiscoStructureUsage.INTERFACE_SERVICE_POLICY);
+        CiscoStructureType.POLICY_MAP,
+        CiscoStructureUsage.INTERFACE_SERVICE_POLICY,
+        CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
+        CiscoStructureUsage.SERVICE_POLICY_GLOBAL,
+        CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);
 
     // object-group
     markConcreteStructure(
