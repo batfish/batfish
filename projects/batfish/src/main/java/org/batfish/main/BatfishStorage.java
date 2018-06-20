@@ -1,9 +1,12 @@
 package org.batfish.main;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.plugin.PluginConsumer.DEFAULT_HEADER_LENGTH_BYTES;
 import static org.batfish.common.plugin.PluginConsumer.detectFormat;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.io.Closer;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -17,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -171,6 +175,35 @@ final class BatfishStorage {
             configurations.size(), testrig);
 
     storeConfigurations(outputDir, batchName, configurations);
+  }
+
+  public void writeFile(String content, String key1, String... keyRemainder) {
+    writeFile(content, ImmutableList.<String>builder().add(key1).add(keyRemainder).build());
+  }
+
+  public void writeFile(String content, Iterable<String> keys) {
+    Path parentPath = null;
+    Path path = _containerDir;
+
+    // Build up the path to the file to be written, ensuring every subpath is actually a subpath of
+    // the prefix. (Catches key == "../foo")
+    for (String key : keys) {
+      parentPath = path;
+      path = parentPath.resolve(key);
+      checkArgument(
+          Objects.equals(path.getParent(), parentPath),
+          "Path access violation appending key %s to path %s",
+          key,
+          parentPath);
+    }
+
+    checkArgument(parentPath != null, "keys cannot be empty");
+
+    if (!parentPath.toFile().exists()) {
+      checkState(parentPath.toFile().mkdirs(), "Error creating directory " + parentPath);
+    }
+
+    CommonUtil.writeFile(path, content);
   }
 
   private void storeConfigurations(
