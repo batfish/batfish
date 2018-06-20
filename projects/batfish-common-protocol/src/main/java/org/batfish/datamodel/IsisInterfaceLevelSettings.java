@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static java.util.Objects.requireNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
@@ -30,7 +32,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
           _helloAuthenticationType,
           _helloInterval,
           _holdTime,
-          _mode);
+          requireNonNull(_mode));
     }
 
     public @Nonnull Builder setCost(@Nullable Long cost) {
@@ -85,14 +87,20 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   @JsonCreator
   private static @Nonnull IsisInterfaceLevelSettings create(
-      Long cost,
-      String helloAuthenticationKey,
-      IsisHelloAuthenticationType helloAuthenticationType,
-      Integer helloInterval,
-      Integer holdTime,
-      IsisInterfaceMode mode) {
+      @JsonProperty(PROP_COST) Long cost,
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY) String helloAuthenticationKey,
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE)
+          IsisHelloAuthenticationType helloAuthenticationType,
+      @JsonProperty(PROP_HELLO_INTERVAL) Integer helloInterval,
+      @JsonProperty(PROP_HOLD_TIME) Integer holdTime,
+      @JsonProperty(PROP_MODE) IsisInterfaceMode mode) {
     return new IsisInterfaceLevelSettings(
-        cost, helloAuthenticationKey, helloAuthenticationType, helloInterval, holdTime, mode);
+        cost,
+        helloAuthenticationKey,
+        helloAuthenticationType,
+        helloInterval,
+        holdTime,
+        requireNonNull(mode));
   }
 
   private final Long _cost;
@@ -108,13 +116,12 @@ public class IsisInterfaceLevelSettings implements Serializable {
   private final IsisInterfaceMode _mode;
 
   private IsisInterfaceLevelSettings(
-      @JsonProperty(PROP_COST) @Nullable Long cost,
-      @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY) @Nullable String helloAuthenticationKey,
-      @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE) @Nullable
-          IsisHelloAuthenticationType helloAuthenticationType,
-      @JsonProperty(PROP_HELLO_INTERVAL) @Nullable Integer helloInterval,
-      @JsonProperty(PROP_HOLD_TIME) @Nullable Integer holdTime,
-      @JsonProperty(PROP_MODE) @Nullable IsisInterfaceMode mode) {
+      @Nullable Long cost,
+      @Nullable String helloAuthenticationKey,
+      @Nullable IsisHelloAuthenticationType helloAuthenticationType,
+      @Nullable Integer helloInterval,
+      @Nullable Integer holdTime,
+      @Nonnull IsisInterfaceMode mode) {
     _cost = cost;
     _helloAuthenticationKey = helloAuthenticationKey;
     _helloAuthenticationType = helloAuthenticationType;

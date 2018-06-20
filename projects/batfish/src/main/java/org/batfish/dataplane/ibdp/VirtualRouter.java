@@ -55,6 +55,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisLevelSettings;
@@ -1085,7 +1086,10 @@ public class VirtualRouter extends ComparableStructure<String> {
               IsisInterfaceLevelSettings ifaceL1Settings = ifaceSettings.getLevel1();
               IsisInterfaceLevelSettings ifaceL2Settings = ifaceSettings.getLevel2();
               if (ifaceL1Settings != null && l1Settings != null) {
-                long metric = firstNonNull(ifaceL1Settings.getCost(), IsisRoute.DEFAULT_METRIC);
+                long metric =
+                    ifaceL1Settings.getMode() == IsisInterfaceMode.PASSIVE
+                        ? 0L
+                        : firstNonNull(ifaceL1Settings.getCost(), IsisRoute.DEFAULT_METRIC);
                 builder
                     .setAdmin(l1Admin)
                     .setLevel(IsisLevel.LEVEL_1)
@@ -1104,7 +1108,10 @@ public class VirtualRouter extends ComparableStructure<String> {
                         });
               }
               if (ifaceL2Settings != null && l2Settings != null) {
-                long metric = firstNonNull(ifaceL2Settings.getCost(), IsisRoute.DEFAULT_METRIC);
+                long metric =
+                    ifaceL2Settings.getMode() == IsisInterfaceMode.PASSIVE
+                        ? 0L
+                        : firstNonNull(ifaceL2Settings.getCost(), IsisRoute.DEFAULT_METRIC);
                 builder
                     .setAdmin(l2Admin)
                     .setLevel(IsisLevel.LEVEL_2)

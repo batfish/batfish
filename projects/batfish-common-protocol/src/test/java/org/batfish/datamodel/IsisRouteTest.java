@@ -18,9 +18,8 @@ public class IsisRouteTest {
             .setProtocol(RoutingProtocol.ISIS_L1);
 
     IsisRoute original = b.build();
-    // new String() is intentional
-    @SuppressWarnings("RedundantStringConstructorCall")
-    IsisRoute updated = b.setArea(new String("0")).build();
+    // use StringBuilder to get fresh instance
+    IsisRoute updated = b.setArea(new StringBuilder("0").toString()).build();
 
     assertThat(updated, equalTo(original));
   }
