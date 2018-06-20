@@ -134,7 +134,7 @@ public class IsisRoute extends AbstractRoute {
     }
     IsisRoute rhs = (IsisRoute) o;
     return _administrativeCost == rhs._administrativeCost
-        && _area == rhs._area
+        && _area.equals(rhs._area)
         && _down == rhs._down
         && _level == rhs._level
         && _metric == rhs._metric
@@ -155,6 +155,7 @@ public class IsisRoute extends AbstractRoute {
     return _area;
   }
 
+  /** A "down" bit indicating that this route has already been leaked from level 1 to level 2. */
   @JsonProperty(PROP_DOWN)
   public boolean getDown() {
     return _down;
