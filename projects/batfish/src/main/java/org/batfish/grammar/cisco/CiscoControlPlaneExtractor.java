@@ -148,6 +148,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_CANDID
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
@@ -165,6 +166,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
@@ -625,6 +629,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pm_iosi_class_type_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_dropContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_passContext;
+import org.batfish.grammar.cisco.CiscoParser.Pmc_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -781,6 +786,8 @@ import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_service_policy_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.S_service_policy_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.S_snmp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_sntpContext;
@@ -6188,6 +6195,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitPmc_service_policy(Pmc_service_policyContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP,
+        ctx.name.getText(),
+        POLICY_MAP_CLASS_SERVICE_POLICY,
+        ctx.name.getStart().getLine());
+  }
+
+  @Override
   public void exitPrefix_list_bgp_tail(Prefix_list_bgp_tailContext ctx) {
     String listName = ctx.list_name.getText();
     int line = ctx.list_name.getLine();
@@ -7051,6 +7067,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       currentServices = s.getSubservices();
     }
+  }
+
+  @Override
+  public void exitS_service_policy_global(S_service_policy_globalContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP, ctx.name.getText(), SERVICE_POLICY_GLOBAL, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitS_service_policy_interface(S_service_policy_interfaceContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP,
+        ctx.name.getText(),
+        SERVICE_POLICY_INTERFACE_POLICY,
+        ctx.name.getStart().getLine());
+    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    _configuration.referenceStructure(
+        INTERFACE, iface, SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override

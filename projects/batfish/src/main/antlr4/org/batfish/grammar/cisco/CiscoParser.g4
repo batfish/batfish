@@ -2861,6 +2861,16 @@ s_service
    )+ NEWLINE
 ;
 
+s_service_policy_global
+:
+   SERVICE_POLICY name = variable GLOBAL NEWLINE
+;
+
+s_service_policy_interface
+:
+   SERVICE_POLICY name = variable INTERFACE iface = interface_name NEWLINE
+;
+
 s_sip_ua
 :
    SIP_UA NEWLINE
@@ -3543,6 +3553,8 @@ stanza
    | s_router_vrrp
    | s_sccp
    | s_service
+   | s_service_policy_global
+   | s_service_policy_interface
    | s_service_template
    | s_sip_ua
    | s_snmp_server

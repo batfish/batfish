@@ -567,6 +567,7 @@ pm_class
    (
       pmc_null
       | pmc_police
+      | pmc_service_policy
    )*
 ;
 
@@ -693,7 +694,6 @@ pmc_null
       | QUEUE_BUFFERS
       | QUEUE_LIMIT
       | RANDOM_DETECT
-      | SERVICE_POLICY
       | SET
       | SHAPE
       | TRUST
@@ -707,6 +707,11 @@ pmc_police
    (
       pmcp_null
    )*
+;
+
+pmc_service_policy
+:
+   SERVICE_POLICY name = variable NEWLINE
 ;
 
 pmcp_null
