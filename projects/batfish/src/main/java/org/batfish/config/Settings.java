@@ -623,6 +623,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getBoolean(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
   }
 
+  public String getContainer() {
+    return _config.getString(BfConsts.ARG_CONTAINER);
+  }
+
   public Path getContainerDir() {
     return Paths.get(_config.getString(BfConsts.ARG_CONTAINER_DIR));
   }
@@ -984,6 +988,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS, false);
     setDefaultProperty(BfConsts.ARG_BDP_RECORD_ALL_ITERATIONS, false);
     setDefaultProperty(CAN_EXECUTE, true);
+    setDefaultProperty(BfConsts.ARG_CONTAINER, null);
     setDefaultProperty(BfConsts.ARG_CONTAINER_DIR, null);
     setDefaultProperty(ARG_COORDINATOR_REGISTER, false);
     setDefaultProperty(ARG_COORDINATOR_HOST, "localhost");
@@ -1116,6 +1121,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(
         ARG_CHECK_BGP_REACHABILITY,
         "whether to check BGP session reachability during data plane computation");
+
+    addOption(BfConsts.ARG_CONTAINER, "name of container", ARGNAME_NAME);
 
     addOption(BfConsts.ARG_CONTAINER_DIR, "path to container directory", ARGNAME_PATH);
 
@@ -1406,6 +1413,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     getBooleanOptionValue(BfConsts.ARG_BDP_PRINT_OSCILLATING_ITERATIONS);
     getBooleanOptionValue(ARG_CHECK_BGP_REACHABILITY);
     getBooleanOptionValue(BfConsts.COMMAND_COMPILE_DIFF_ENVIRONMENT);
+    getStringOptionValue(BfConsts.ARG_CONTAINER);
     getPathOptionValue(BfConsts.ARG_CONTAINER_DIR);
     getStringOptionValue(ARG_COORDINATOR_HOST);
     getIntOptionValue(ARG_COORDINATOR_POOL_PORT);
@@ -1492,6 +1500,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   public void setCanExecute(boolean canExecute) {
     _config.setProperty(CAN_EXECUTE, canExecute);
+  }
+
+  public void setContainer(String container) {
+    _config.setProperty(BfConsts.ARG_CONTAINER, container);
   }
 
   public void setContainerDir(Path containerDir) {

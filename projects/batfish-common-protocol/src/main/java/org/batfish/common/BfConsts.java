@@ -45,6 +45,7 @@ public class BfConsts {
   public static final String ARG_BDP_PRINT_ALL_ITERATIONS = "bdpprintalliterations";
   public static final String ARG_BDP_PRINT_OSCILLATING_ITERATIONS = "bdpprintoscillatingiterations";
   public static final String ARG_BDP_RECORD_ALL_ITERATIONS = "bdprecordalliterations";
+  public static final String ARG_CONTAINER = "container";
   public static final String ARG_CONTAINER_DIR = "containerdir";
   public static final String ARG_DELTA_ENVIRONMENT_NAME = "deltaenv";
   public static final String ARG_DELTA_TESTRIG = "deltatestrig";

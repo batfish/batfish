@@ -578,7 +578,7 @@ public class Driver {
                       .startActive()) {
                 assert runBatfishSpan != null;
                 Answer answer = null;
-                String containerName = settings.getContainerDir().getFileName().toString();
+                String containerName = settings.getContainer();
                 String testrigName = settings.getTestrig();
                 try {
                   answer = batfish.run();
