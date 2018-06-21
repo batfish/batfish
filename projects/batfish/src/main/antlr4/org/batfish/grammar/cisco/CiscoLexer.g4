@@ -11841,6 +11841,11 @@ TRAFFIC_ENG
    'traffic-eng'
 ;
 
+TRAFFIC_EXPORT
+:
+   'traffic-export'
+;
+
 TRAFFIC_INDEX
 :
    'traffic-index'
@@ -14382,6 +14387,11 @@ M_Interface_DEFAULT
 M_Interface_DOLLAR
 :
    '$' -> type ( DOLLAR ) , popMode
+;
+
+M_Interface_EIGRP
+:
+   'eigrp' -> type ( EIGRP ) , popMode
 ;
 
 M_Interface_EQ

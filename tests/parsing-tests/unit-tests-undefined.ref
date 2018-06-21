@@ -434,7 +434,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface ip verify access-list' named '167'",
         "files" : {
           "cisco_interface" : [
-            126
+            129
           ]
         }
       },
@@ -442,7 +442,7 @@
         "description" : "Undefined reference to structure of type: 'ipv4 acl' with usage: 'interface outgoing ip access-list' named '310-systems'",
         "files" : {
           "cisco_interface" : [
-            129
+            132
           ]
         }
       },
@@ -1254,7 +1254,7 @@
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'interface summary-address eigrp leak-map' named 'eigrp-leak-map'",
         "files" : {
           "cisco_interface" : [
-            123
+            125
           ]
         }
       },
@@ -1262,7 +1262,7 @@
         "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute connected route-map' named 'DIRECT_OSPF'",
         "files" : {
           "cisco_ospf" : [
-            54
+            55
           ]
         }
       },
@@ -1271,6 +1271,14 @@
         "files" : {
           "nxos_ospf" : [
             9
+          ]
+        }
+      },
+      "undefined:route-map:usage:ospf redistribute eigrp route-map:eigrp-ospf-route-map" : {
+        "description" : "Undefined reference to structure of type: 'route-map' with usage: 'ospf redistribute eigrp route-map' named 'eigrp-ospf-route-map'",
+        "files" : {
+          "cisco_ospf" : [
+            56
           ]
         }
       },
@@ -1318,7 +1326,7 @@
         "description" : "Undefined reference to structure of type: 'zone security' with usage: 'interface zone-member' named 'z1'",
         "files" : {
           "cisco_interface" : [
-            280
+            285
           ]
         }
       }
@@ -1326,7 +1334,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 163
+      "numResults" : 164
     },
     "undefinedReferences" : {
       "IosXrMultiCast" : {
@@ -1615,12 +1623,12 @@
         "ipv4 acl" : {
           "167" : {
             "interface ip verify access-list" : [
-              126
+              129
             ]
           },
           "310-systems" : {
             "interface outgoing ip access-list" : [
-              129
+              132
             ]
           },
           "ag1" : {
@@ -1661,14 +1669,14 @@
         "route-map" : {
           "eigrp-leak-map" : {
             "interface summary-address eigrp leak-map" : [
-              123
+              125
             ]
           }
         },
         "zone security" : {
           "z1" : {
             "interface zone-member" : [
-              280
+              285
             ]
           }
         }
@@ -1776,7 +1784,12 @@
         "route-map" : {
           "DIRECT_OSPF" : {
             "ospf redistribute connected route-map" : [
-              54
+              55
+            ]
+          },
+          "eigrp-ospf-route-map" : {
+            "ospf redistribute eigrp route-map" : [
+              56
             ]
           }
         }

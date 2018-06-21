@@ -21885,6 +21885,19 @@
             "        TRANSMIT_DELAY:'transmit-delay'  <== mode:DEFAULT_MODE",
             "        DEC:'1'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_passive_interface_eigrp",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        PASSIVE_INTERFACE:'passive-interface'  <== mode:DEFAULT_MODE",
+            "        EIGRP:'eigrp'  <== mode:M_Interface",
+            "        tag = DEC:'15'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_passive_interface_eigrp",
+            "        NO:'no'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        PASSIVE_INTERFACE:'passive-interface'  <== mode:DEFAULT_MODE",
+            "        EIGRP:'eigrp'  <== mode:M_Interface",
+            "        tag = DEC:'15'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        IP:'ip'  <== mode:DEFAULT_MODE",
             "        PIM:'pim'  <== mode:DEFAULT_MODE",
@@ -21993,6 +22006,14 @@
             "        LEAK_MAP:'leak-map'  <== mode:DEFAULT_MODE",
             "        mapname = (variable",
             "          VARIABLE:'eigrp-leak-map'  <== mode:DEFAULT_MODE)",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        TRAFFIC_EXPORT:'traffic-export'  <== mode:DEFAULT_MODE",
+            "        APPLY:'apply'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'some-traffix-export'  <== mode:DEFAULT_MODE",
+            "        SIZE:'size'  <== mode:DEFAULT_MODE",
+            "        DEC:'10000000'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_null_block",
             "        NO:'no'  <== mode:DEFAULT_MODE",
@@ -22340,6 +22361,19 @@
             "        VARIABLE:'thresholds'  <== mode:DEFAULT_MODE",
             "        DEC:'12'  <== mode:DEFAULT_MODE",
             "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        REDUNDANCY:'redundancy'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'rii'  <== mode:DEFAULT_MODE",
+            "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_null_single",
+            "        REDUNDANCY:'redundancy'  <== mode:DEFAULT_MODE",
+            "        GROUP:'group'  <== mode:DEFAULT_MODE",
+            "        DEC:'1'  <== mode:DEFAULT_MODE",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        IP_ADDRESS:'1.2.3.4'  <== mode:DEFAULT_MODE",
+            "        VARIABLE:'exclusive'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (if_service_instance",
             "        SERVICE:'service'  <== mode:DEFAULT_MODE",
@@ -28531,6 +28565,10 @@
             "          VARIABLE:'synchronize'  <== mode:DEFAULT_MODE",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
             "      (vpc_null",
+            "        PEER_CONFIG_CHECK_BYPASS:'peer-config-check-bypass'  <== mode:DEFAULT_MODE",
+            "        (null_rest_of_line",
+            "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
+            "      (vpc_null",
             "        PEER_GATEWAY:'peer-gateway'  <== mode:DEFAULT_MODE",
             "        (null_rest_of_line",
             "          NEWLINE:'\\n'  <== mode:DEFAULT_MODE))",
@@ -29422,6 +29460,11 @@
             "        procnum = DEC:'1'  <== mode:DEFAULT_MODE",
             "        AREA:'area'  <== mode:DEFAULT_MODE",
             "        area = IP_ADDRESS:'0.0.0.0'  <== mode:DEFAULT_MODE",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (if_ip_ospf_shutdown",
+            "        IP:'ip'  <== mode:DEFAULT_MODE",
+            "        OSPF:'ospf'  <== mode:DEFAULT_MODE",
+            "        SHUTDOWN:'shutdown'  <== mode:DEFAULT_MODE",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)))",
             "  (stanza",
             "    (s_interface",
@@ -29705,6 +29748,16 @@
             "        DIRECT:'direct'  <== mode:DEFAULT_MODE",
             "        ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
             "        map = VARIABLE:'DIRECT_OSPF'  <== mode:M_RouteMap",
+            "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
+            "      (ro_redistribute_eigrp",
+            "        REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
+            "        EIGRP:'eigrp'  <== mode:DEFAULT_MODE",
+            "        tag = DEC:'5'  <== mode:DEFAULT_MODE",
+            "        METRIC:'metric'  <== mode:DEFAULT_MODE",
+            "        metric = DEC:'6'  <== mode:DEFAULT_MODE",
+            "        ROUTE_MAP:'route-map'  <== mode:DEFAULT_MODE",
+            "        map = (variable",
+            "          VARIABLE:'eigrp-ospf-route-map'  <== mode:M_RouteMap)",
             "        NEWLINE:'\\n'  <== mode:DEFAULT_MODE)",
             "      (ro_redistribute_ospf_null",
             "        REDISTRIBUTE:'redistribute'  <== mode:DEFAULT_MODE",
@@ -54747,25 +54800,25 @@
           "interface" : {
             "Async1" : {
               "definitionLines" : [
-                282
+                287
               ],
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
               "definitionLines" : [
-                284
+                289
               ],
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
               "definitionLines" : [
-                286
+                291
               ],
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
               "definitionLines" : [
-                288
+                293
               ],
               "numReferrers" : 1
             },
@@ -55044,114 +55097,119 @@
                 277,
                 278,
                 279,
-                280
+                280,
+                281,
+                282,
+                283,
+                284,
+                285
               ],
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
               "definitionLines" : [
-                290
+                295
               ],
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
               "definitionLines" : [
-                327,
-                328
+                332,
+                333
               ],
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
               "definitionLines" : [
-                292,
-                293,
-                294,
-                295,
-                296
+                297,
+                298,
+                299,
+                300,
+                301
               ],
               "numReferrers" : 1
             },
             "Loopback0" : {
               "definitionLines" : [
-                298
+                303
               ],
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
               "definitionLines" : [
-                300
+                305
               ],
               "numReferrers" : 1
             },
             "Null0" : {
               "definitionLines" : [
-                302
+                307
               ],
               "numReferrers" : 1
             },
             "Vlan1" : {
               "definitionLines" : [
-                311
+                316
               ],
               "numReferrers" : 1
             },
             "Vlan1005" : {
               "definitionLines" : [
-                317
+                322
               ],
               "numReferrers" : 1
             },
             "Vlan1006" : {
               "definitionLines" : [
-                319
+                324
               ],
               "numReferrers" : 1
             },
             "Vlan111" : {
               "definitionLines" : [
-                306
+                311
               ],
               "numReferrers" : 1
             },
             "Vlan1234" : {
               "definitionLines" : [
-                321
+                326
               ],
               "numReferrers" : 1
             },
             "Vlan2" : {
               "definitionLines" : [
-                313
+                318
               ],
               "numReferrers" : 1
             },
             "Vlan3" : {
               "definitionLines" : [
-                315
+                320
               ],
               "numReferrers" : 1
             },
             "Vlan4094" : {
               "definitionLines" : [
-                323
+                328
               ],
               "numReferrers" : 1
             },
             "Vxlan1" : {
               "definitionLines" : [
-                308
+                313
               ],
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
               "definitionLines" : [
-                325
+                330
               ],
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
               "definitionLines" : [
-                304
+                309
               ],
               "numReferrers" : 1
             }
@@ -55412,10 +55470,11 @@
                 7,
                 8,
                 9,
-                11,
+                10,
                 12,
                 13,
-                14
+                14,
+                15
               ],
               "numReferrers" : 2
             },
@@ -57189,12 +57248,12 @@
           "ipv4 acl" : {
             "167" : {
               "interface ip verify access-list" : [
-                126
+                129
               ]
             },
             "310-systems" : {
               "interface outgoing ip access-list" : [
-                129
+                132
               ]
             },
             "ag1" : {
@@ -57235,14 +57294,14 @@
           "route-map" : {
             "eigrp-leak-map" : {
               "interface summary-address eigrp leak-map" : [
-                123
+                125
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member" : [
-                280
+                285
               ]
             }
           }
@@ -57350,7 +57409,12 @@
           "route-map" : {
             "DIRECT_OSPF" : {
               "ospf redistribute connected route-map" : [
-                54
+                55
+              ]
+            },
+            "eigrp-ospf-route-map" : {
+              "ospf redistribute eigrp route-map" : [
+                56
               ]
             }
           }
