@@ -102,6 +102,8 @@ interface Ethernet0
  ip ospf priority 1
  ip ospf retransmit-interval 5
  ip ospf transmit-delay 1
+ ip passive-interface eigrp 15
+ no ip passive-interface eigrp 15
  ip pim dense-mode
  ip pim dr-priority 1
  ip pim hello-interval 30000
@@ -121,6 +123,7 @@ interface Ethernet0
  no ip sticky-arp
  ip sticky-arp ignore
  ip summary-address eigrp 11 10.1.2.3 255.255.255.255 leak-map eigrp-leak-map
+ ip traffic-export apply some-traffix-export size 10000000
  no ip unreachables
  no ip verify source dhcp-snooping-vlan
  ip verify unicast source reachable-via rx 167
@@ -190,6 +193,8 @@ interface Ethernet0
   protocol ppp dialer
  !
  queue-monitor length thresholds 12 1
+ redundancy rii 1
+ redundancy group 1 ip 1.2.3.4 exclusive
  service instance 1 ethernet
   bridge-domain 710
   encapsulation default

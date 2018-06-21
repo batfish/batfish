@@ -2010,26 +2010,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
     allPrefixes.addAll(iface.getSecondaryAddresses());
     newIface.setAllAddresses(allPrefixes.build());
 
-    Long ospfAreaLong = iface.getOspfArea();
-    if (ospfAreaLong != null) {
-      OspfProcess proc = vrf.getOspfProcess();
-      if (proc != null) {
-        if (iface.getOspfActive()) {
-          proc.getActiveInterfaceList().add(name);
+    if (!iface.getOspfShutdown()) {
+      Long ospfAreaLong = iface.getOspfArea();
+      if (ospfAreaLong != null) {
+        OspfProcess proc = vrf.getOspfProcess();
+        if (proc != null) {
+          if (iface.getOspfActive()) {
+            proc.getActiveInterfaceList().add(name);
+          }
+          if (iface.getOspfPassive()) {
+            proc.getPassiveInterfaceList().add(name);
+          }
+          for (InterfaceAddress address : newIface.getAllAddresses()) {
+            Prefix prefix = address.getPrefix();
+            OspfNetwork ospfNetwork = new OspfNetwork(prefix, ospfAreaLong);
+            proc.getNetworks().add(ospfNetwork);
+          }
+        } else {
+          _w.redFlag(
+              "Interface: '" + name + "' contains OSPF settings, but there is no OSPF process");
         }
-        if (iface.getOspfPassive()) {
-          proc.getPassiveInterfaceList().add(name);
-        }
-        for (InterfaceAddress address : newIface.getAllAddresses()) {
-          Prefix prefix = address.getPrefix();
-          OspfNetwork ospfNetwork = new OspfNetwork(prefix, ospfAreaLong);
-          proc.getNetworks().add(ospfNetwork);
-        }
-      } else {
-        _w.redFlag(
-            "Interface: '" + name + "' contains OSPF settings, but there is no OSPF process");
       }
+      newIface.setOspfCost(iface.getOspfCost());
+      newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
+      newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
     }
+
     boolean level1 = false;
     boolean level2 = false;
     IsisProcess isisProcess = vrf.getIsisProcess();
@@ -2063,9 +2069,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
-    newIface.setOspfCost(iface.getOspfCost());
-    newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
-    newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
 
     // switch settings
     newIface.setAccessVlan(iface.getAccessVlan());
@@ -3237,6 +3240,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
+        CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
         CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
         CiscoStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,

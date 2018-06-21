@@ -138,6 +138,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_FIL
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
@@ -476,6 +477,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_intervalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_interval_minimalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_passive_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_pim_neighbor_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_proxy_arpContext;
@@ -724,6 +726,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_connectedContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_eigrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_rfc1583_compatibilityContext;
@@ -1086,6 +1089,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       "ospf - not-so-stubby areas - no-redistribution";
 
   private static final String F_OSPF_MAXIMUM_PATHS = "ospf - maximum-paths";
+
+  private static final String F_OSPF_REDISTRIBUTE_EIGRP = "ospf - redistribute eigrp";
 
   private static final String F_OSPF_REDISTRIBUTE_RIP = "ospf - redistribute rip";
 
@@ -4740,6 +4745,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_ip_ospf_shutdown(If_ip_ospf_shutdownContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setOspfShutdown(ctx.NO() == null);
+    }
+  }
+
+  @Override
   public void exitIf_ip_pim_neighbor_filter(If_ip_pim_neighbor_filterContext ctx) {
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
@@ -6682,6 +6694,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       r.setTag(tag);
     }
     r.setOnlyClassfulRoutes(ctx.subnets == null && !ospfRedistributeSubnetsByDefault(_format));
+  }
+
+  @Override
+  public void exitRo_redistribute_eigrp(Ro_redistribute_eigrpContext ctx) {
+    if (ctx.map != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, ctx.map.getText(), OSPF_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
+    }
+    todo(ctx, F_OSPF_REDISTRIBUTE_EIGRP);
   }
 
   @Override
