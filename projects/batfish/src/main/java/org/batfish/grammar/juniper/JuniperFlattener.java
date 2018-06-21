@@ -89,7 +89,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     }
   }
 
-  // Helper method to construct and save set-line and line-mapping
+  /** Helper method to construct and save set-line and line-mapping */
   private void constructSetLine() {
     StringBuilder sb = new StringBuilder();
     sb.append("set");

@@ -93,7 +93,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return text;
   }
 
-  /** Return original line number for the specified token. */
+  /** Return original line number for the specified token */
   private int getLine(Token t) {
     return _parser.getLine(t);
   }

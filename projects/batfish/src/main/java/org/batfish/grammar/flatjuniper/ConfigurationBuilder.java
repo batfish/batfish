@@ -65,8 +65,10 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -603,13 +605,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private static final String GLOBAL_ADDRESS_BOOK_NAME = "global";
 
-  private void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    for (int i = getLine(ctx.getStart()); i <= getLine(ctx.getStop()); ++i) {
-      _configuration.defineStructure(type, name, i);
+  /** Mark the specified structure as defined on each line in the supplied context */
+  private void defineStructure(StructureType type, String name, RuleContext ctx) {
+    /* Recursively process children to find all relevant definition lines for the specified context */
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      ParseTree child = ctx.getChild(i);
+      if (child instanceof TerminalNode) {
+        _configuration.defineStructure(type, name, getLine(((TerminalNode) child).getSymbol()));
+      } else if (child instanceof RuleContext) {
+        defineStructure(type, name, (RuleContext) child);
+      }
     }
   }
 
-  /** Return original line number for the specified token. */
+  /** Return original line number for the specified token */
   private int getLine(Token t) {
     return _parser.getLine(t);
   }

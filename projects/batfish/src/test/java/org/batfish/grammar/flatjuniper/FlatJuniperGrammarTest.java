@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolic
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
@@ -1068,8 +1069,36 @@ public class FlatJuniperGrammarTest {
   public void testNestedConfig() throws IOException {
     String hostname = "nested-config";
 
-    // Confirm a simple extraction (hostname) works for nested config format
+    /* Confirm a simple extraction (hostname) works for nested config format */
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testNestedConfigStructureDef() throws IOException {
+    String hostname = "nested-config-structure-def";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm defined structures in nested config show up with original definition line numbers */
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname,
+            JuniperStructureType.FIREWALL_FILTER,
+            "FILTER1",
+            contains(6, 7, 8, 9, 11, 12)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname,
+            JuniperStructureType.FIREWALL_FILTER,
+            "FILTER3",
+            contains(23, 24, 25, 26, 27, 28)));
   }
 
   @Test
