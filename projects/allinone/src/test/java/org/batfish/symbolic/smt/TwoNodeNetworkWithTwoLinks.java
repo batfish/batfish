@@ -25,28 +25,29 @@ public class TwoNodeNetworkWithTwoLinks {
   public static final Prefix LINK_1_NETWORK = Prefix.parse("1.0.0.0/31");
   public static final Prefix LINK_2_NETWORK = Prefix.parse("2.0.0.0/31");
 
-  public final Batfish _batfish;
-  public final Configuration _dstNode;
-  public final Configuration _srcNode;
+  public static final String DST_NODE = "dest";
+  public static final String SRC_NODE = "src";
 
-  public TwoNodeNetworkWithTwoLinks() throws IOException {
+  private TwoNodeNetworkWithTwoLinks() {}
+
+  public static Batfish create(TemporaryFolder temp) throws IOException {
     NetworkFactory nf = new NetworkFactory();
     Builder cb = nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
     Interface.Builder ib = nf.interfaceBuilder().setActive(true).setBandwidth(1E9d);
     Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
 
-    _srcNode = cb.build();
-    _dstNode = cb.build();
-    Vrf srcVrf = vb.setOwner(_srcNode).build();
-    Vrf dstVrf = vb.setOwner(_dstNode).build();
+    Configuration dstNode = cb.setHostname(DST_NODE).build();
+    Configuration srcNode = cb.setHostname(SRC_NODE).build();
+    Vrf dstVrf = vb.setOwner(dstNode).build();
+    Vrf srcVrf = vb.setOwner(srcNode).build();
 
     // first link
-    ib.setOwner(_srcNode)
+    ib.setOwner(srcNode)
         .setVrf(srcVrf)
         .setAddress(
             new InterfaceAddress(LINK_1_NETWORK.getStartIp(), LINK_1_NETWORK.getPrefixLength()))
         .build();
-    ib.setOwner(_dstNode)
+    ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_1_NETWORK.getEndIp(), LINK_1_NETWORK.getPrefixLength()))
@@ -54,12 +55,12 @@ public class TwoNodeNetworkWithTwoLinks {
         .build();
 
     // second link
-    ib.setOwner(_srcNode)
+    ib.setOwner(srcNode)
         .setVrf(srcVrf)
         .setAddress(
             new InterfaceAddress(LINK_2_NETWORK.getStartIp(), LINK_2_NETWORK.getPrefixLength()))
         .build();
-    ib.setOwner(_dstNode)
+    ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setAddress(
             new InterfaceAddress(LINK_2_NETWORK.getEndIp(), LINK_2_NETWORK.getPrefixLength()))
@@ -67,13 +68,13 @@ public class TwoNodeNetworkWithTwoLinks {
         .build();
 
     // destination for the first link
-    ib.setOwner(_dstNode)
+    ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(DST_PREFIX_1.getStartIp(), DST_PREFIX_1.getPrefixLength()))
         .build();
 
     // destination for the second link
-    ib.setOwner(_dstNode)
+    ib.setOwner(dstNode)
         .setVrf(dstVrf)
         .setAddress(new InterfaceAddress(DST_PREFIX_2.getStartIp(), DST_PREFIX_2.getPrefixLength()))
         .build();
@@ -85,9 +86,7 @@ public class TwoNodeNetworkWithTwoLinks {
             bld.setNetwork(DST_PREFIX_2).setNextHopIp(LINK_2_NETWORK.getEndIp()).build()));
 
     SortedMap<String, Configuration> configs =
-        ImmutableSortedMap.of(_srcNode.getName(), _srcNode, _dstNode.getName(), _dstNode);
-    TemporaryFolder temp = new TemporaryFolder();
-    temp.create();
-    _batfish = BatfishTestUtils.getBatfish(configs, temp);
+        ImmutableSortedMap.of(srcNode.getName(), srcNode, dstNode.getName(), dstNode);
+    return BatfishTestUtils.getBatfish(configs, temp);
   }
 }

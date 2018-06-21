@@ -17,6 +17,10 @@ public final class VerificationResultMatchers {
     return new HasFailures(matcher);
   }
 
+  public static Matcher<VerificationResult> hasFailures(Set<String> failures) {
+    return new HasFailures(equalTo(failures));
+  }
+
   public static Matcher<VerificationResult> hasIsVerified(boolean isVerified) {
     return new HasIsVerified(equalTo(isVerified));
   }
