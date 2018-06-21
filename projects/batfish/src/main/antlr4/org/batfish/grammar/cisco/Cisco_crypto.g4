@@ -706,11 +706,7 @@ crypto_map
    MAP name = variable
    (
       crypto_map_null
-   )?
-   seq_num = DEC
-   (
-
-      | crypto_map_tail
+      | seq_num = DEC crypto_map_tail
    )
 ;
 

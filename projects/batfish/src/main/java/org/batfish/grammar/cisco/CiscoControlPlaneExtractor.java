@@ -1839,7 +1839,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCrypto_map(Crypto_mapContext ctx) {
     _currentCryptoMapName = ctx.name.getText();
-    _currentCryptoMapSequenceNum = toInteger(ctx.seq_num);
+    if (ctx.seq_num != null) {
+      _currentCryptoMapSequenceNum = toInteger(ctx.seq_num);
+    }
   }
 
   @Override
