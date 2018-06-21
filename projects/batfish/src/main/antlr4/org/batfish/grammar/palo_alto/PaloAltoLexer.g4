@@ -25,6 +25,11 @@ AUTO
     'auto'
 ;
 
+CLOSE_BRACKET
+:
+    ']'
+;
+
 COMMENT
 :
     'comment'
@@ -128,6 +133,11 @@ NTP_SERVER_ADDRESS
 NTP_SERVERS
 :
     'ntp-servers'
+;
+
+OPEN_BRACKET
+:
+    '['
 ;
 
 PRIMARY

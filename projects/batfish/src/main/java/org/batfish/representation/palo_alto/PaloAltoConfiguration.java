@@ -1,6 +1,8 @@
 package org.batfish.representation.palo_alto;
 
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map.Entry;
+import java.util.NavigableMap;
 import java.util.NavigableSet;
 import java.util.Set;
 import java.util.SortedMap;
@@ -143,6 +145,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
   private Vrf toVrf(VirtualRouter vr) {
     Vrf vrf = new Vrf(vr.getName());
 
+    // Static routes
     for (Entry<String, StaticRoute> e : vr.getStaticRoutes().entrySet()) {
       StaticRoute sr = e.getValue();
       // Can only construct a static route if it has a destination
@@ -162,6 +165,18 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
                 "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
       }
     }
+
+    // Interfaces
+    vrf.setInterfaceNames(ImmutableSortedSet.copyOf(vr.getInterfaceNames()));
+    NavigableMap<String, org.batfish.datamodel.Interface> map = new TreeMap<>();
+    for (String interfaceName : vr.getInterfaceNames()) {
+      org.batfish.datamodel.Interface iface = _c.getInterfaces().get(interfaceName);
+      if (iface != null) {
+        map.put(interfaceName, iface);
+      }
+    }
+    vrf.setInterfaces(map);
+
     return vrf;
   }
 
