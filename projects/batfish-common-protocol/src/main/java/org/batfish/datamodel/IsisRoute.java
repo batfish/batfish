@@ -155,7 +155,9 @@ public class IsisRoute extends AbstractRoute {
     return _area;
   }
 
-  /** A "down" bit indicating that this route has already been leaked from level 1 to level 2. */
+  /**
+   * A "down" bit indicating that this route has already been leaked from level 2 down to level 1.
+   */
   @JsonProperty(PROP_DOWN)
   public boolean getDown() {
     return _down;
