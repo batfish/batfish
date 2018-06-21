@@ -1074,7 +1074,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     IsisLevelSettings l1Settings = proc.getLevel1();
     IsisLevelSettings l2Settings = proc.getLevel2();
     IsisRoute.Builder builder =
-        new IsisRoute.Builder().setArea(proc.getNetAddress().getAreaIdString());
+        new IsisRoute.Builder()
+            .setArea(proc.getNetAddress().getAreaIdString())
+            .setSystemId(proc.getNetAddress().getSystemIdString());
     _vrf.getInterfaces()
         .values()
         .forEach(
@@ -1674,6 +1676,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .setLevel(IsisLevel.LEVEL_1)
                       .setMetric(incrementalMetric + neighborRoute.getMetric())
                       .setProtocol(RoutingProtocol.ISIS_L1)
+                      .setSystemId(neighborRoute.getSystemId())
                       .build();
               if (withdraw) {
                 l1DeltaBuilder.remove(newL1Route, Reason.WITHDRAW);
@@ -1697,6 +1700,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .setLevel(IsisLevel.LEVEL_2)
                       .setMetric(incrementalMetric + neighborRoute.getMetric())
                       .setProtocol(RoutingProtocol.ISIS_L2)
+                      .setSystemId()
                       .build();
               if (withdraw) {
                 l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
