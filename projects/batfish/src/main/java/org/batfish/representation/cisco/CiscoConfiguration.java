@@ -2057,7 +2057,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       if (cryptoMapEntry.getAccessList() != null) {
         IpAccessList cryptoAcl = c.getIpAccessLists().get(cryptoMapEntry.getAccessList());
         if (cryptoAcl != null) {
-          ipsecVpn.setPolicy(makeSymmetrical(cryptoAcl));
+          ipsecVpn.setPolicyAccessList(makeSymmetrical(cryptoAcl));
         }
       }
       ipsecVpns.add(ipsecVpn);

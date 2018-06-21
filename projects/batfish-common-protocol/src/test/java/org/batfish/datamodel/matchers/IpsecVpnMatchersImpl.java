@@ -54,7 +54,7 @@ final class IpsecVpnMatchersImpl {
 
     @Override
     protected IpAccessList featureValueOf(IpsecVpn actual) {
-      return actual.getPolicy();
+      return actual.getPolicyAccessList();
     }
   }
 }

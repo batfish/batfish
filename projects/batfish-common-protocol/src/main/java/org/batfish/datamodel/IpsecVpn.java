@@ -179,7 +179,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_POLICY_ACCESS_LIST)
-  public IpAccessList getPolicy() {
+  public IpAccessList getPolicyAccessList() {
     return _policyAccessList;
   }
 
@@ -241,7 +241,7 @@ public final class IpsecVpn extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_POLICY_ACCESS_LIST)
-  public void setPolicy(IpAccessList policy) {
+  public void setPolicyAccessList(IpAccessList policy) {
     _policyAccessList = policy;
   }
 }
