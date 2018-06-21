@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.questions.NodesSpecifier;
+import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.junit.Test;
 
 /** Tests of {@link RoutesQuestion} */
@@ -17,6 +18,6 @@ public class RoutesQuestionTest {
 
     assertThat(question.getNodeRegex(), equalTo(NodesSpecifier.ALL));
     assertThat(question.getVrfRegex(), equalTo(".*"));
-    assertThat(question.getProtocol(), equalTo("all"));
+    assertThat(question.getProtocol(), equalTo(RibProtocol.ALL));
   }
 }

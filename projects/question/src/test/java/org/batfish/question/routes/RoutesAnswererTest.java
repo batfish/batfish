@@ -99,7 +99,7 @@ public class RoutesAnswererTest {
             .stream()
             .map(ColumnMetadata::getName)
             .collect(ImmutableList.toImmutableList()),
-        contains(COL_NODE, COL_VRF_NAME, COL_NETWORK, COL_NEXT_HOP, COL_NEXT_HOP_IP, COL_PROTOCOL));
+        contains(COL_NODE, COL_VRF_NAME, COL_NETWORK, COL_PROTOCOL, COL_NEXT_HOP, COL_NEXT_HOP_IP));
 
     assertThat(
         columnMetadata
