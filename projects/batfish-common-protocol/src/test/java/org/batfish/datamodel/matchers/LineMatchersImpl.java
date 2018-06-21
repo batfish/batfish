@@ -6,7 +6,7 @@ import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
-public class LineMatchersImpl {
+public final class LineMatchersImpl {
 
   static final class HasAuthenticationLoginList
       extends FeatureMatcher<Line, AaaAuthenticationLoginList> {
@@ -30,4 +30,6 @@ public class LineMatchersImpl {
       return actual.requiresAuthentication();
     }
   }
+
+  private LineMatchersImpl() {}
 }

@@ -2,6 +2,7 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
@@ -47,7 +48,7 @@ public class Line extends ComparableStructure<String> {
     _transportInput = new TreeSet<>();
     _transportOutput = new TreeSet<>();
     _transportPreferred = new TreeSet<>();
-    _lineType = LineType.toLineType(name);
+    _lineType = LineType.toLineType(Objects.requireNonNull(name));
   }
 
   public AaaAuthenticationLoginList getAaaAuthenticationLoginList() {
@@ -100,8 +101,8 @@ public class Line extends ComparableStructure<String> {
   }
 
   /**
-   * Method to check whether the line requires authentication. A line requires authentication if it
-   * has a login list with at least one method and does not contain the 'none' method
+   * Check whether the line requires authentication. A line requires authentication if it has a
+   * login list with at least one method and does not contain the 'none' method
    *
    * @return true if line requires authentication, false if otherwise
    */

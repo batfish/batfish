@@ -1508,6 +1508,23 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     _currentAaaAuthenticationLoginList =
         login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
+
+    // apply the list to each line
+    SortedMap<String, Line> lines = _configuration.getCf().getLines();
+    for (Line line : lines.values()) {
+      if (name.equals(AaaAuthenticationLogin.DEFAULT_LIST_NAME)) {
+        // only apply default list if no other list applied
+        if (line.getAaaAuthenticationLoginList() == null) {
+          line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
+          line.setLoginAuthentication(name);
+        }
+      } else if (line.getLoginAuthentication() != null
+          && line.getLoginAuthentication().equals(name)) {
+        // if not the default list, apply it to lines that have specified this list as it's login
+        // list
+        line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
+      }
+    }
   }
 
   @Override
@@ -5499,11 +5516,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .orElse(null);
 
     // if the authentication list has been defined, apply it to all lines in _currentLineNames
-    if (authList != null) {
-      for (String line : _currentLineNames) {
+    for (String line : _currentLineNames) {
+      if (authList != null) {
         _configuration.getCf().getLines().get(line).setAaaAuthenticationLoginList(authList);
-        _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
       }
+      // set the name of the login list even if the list hasn't been defined yet because it may be
+      // defined later
+      _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
     }
   }
 

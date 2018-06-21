@@ -418,25 +418,14 @@ aaa_authentication_include
 aaa_authentication_list_method
 :
    (
-      aaa_authentication_list_method_enable
+      aaa_authentication_list_method_ios
       | aaa_authentication_list_method_fallback
       | aaa_authentication_list_method_group
       | aaa_authentication_list_method_if_needed
-      | aaa_authentication_list_method_krb5
-      | aaa_authentication_list_method_krb5_telnet
-      | aaa_authentication_list_method_line
-      | aaa_authentication_list_method_local
-      | aaa_authentication_list_method_local_case
-      | aaa_authentication_list_method_none
       | aaa_authentication_list_method_radius
       | aaa_authentication_list_method_tacacs_local
       | aaa_authentication_list_method_tacacs_plus
    )
-;
-
-aaa_authentication_list_method_enable
-:
-   ENABLE
 ;
 
 aaa_authentication_list_method_fallback
@@ -446,15 +435,10 @@ aaa_authentication_list_method_fallback
 
 aaa_authentication_list_method_group
 :
-   GROUP
+   GROUP aaa_authentication_list_method_group_ios
    (
-      aaa_authentication_list_method_group_ios
-      |
-      (
-           groups += ~( NEWLINE | CACHE | ENABLE | FALLBACK | GROUP | IF_NEEDED | KRB5 | LINE |
-           LOCAL | LOCAL_CASE | NONE | TACACS_PLUS )
-      )*
-   )
+      groups += aaa_authentication_list_method_group_additional
+   )*
 ;
 
 aaa_authentication_list_method_group_ios
@@ -464,39 +448,39 @@ aaa_authentication_list_method_group_ios
    | groupName = variable
 ;
 
+aaa_authentication_list_method_group_additional
+:
+   ~(
+      NEWLINE
+      | CACHE
+      | ENABLE
+      | FALLBACK
+      | GROUP
+      | IF_NEEDED
+      | KRB5
+      | KRB5_TELNET
+      | LINE
+      | LOCAL
+      | LOCAL_CASE
+      | NONE
+      | TACACS_PLUS
+   )
+;
+
 aaa_authentication_list_method_if_needed
 :
    IF_NEEDED
 ;
 
-aaa_authentication_list_method_krb5
+aaa_authentication_list_method_ios
 :
-   KRB5
-;
-
-aaa_authentication_list_method_krb5_telnet
-:
-   KRB5_TELNET
-;
-
-aaa_authentication_list_method_line
-:
-   LINE
-;
-
-aaa_authentication_list_method_local
-:
-   LOCAL
-;
-
-aaa_authentication_list_method_local_case
-:
-   LOCAL_CASE
-;
-
-aaa_authentication_list_method_none
-:
-   NONE
+   ENABLE
+   | KRB5
+   | KRB5_TELNET
+   | LINE
+   | LOCAL
+   | LOCAL_CASE
+   | NONE
 ;
 
 aaa_authentication_list_method_radius
