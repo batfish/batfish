@@ -426,13 +426,12 @@ import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_mapContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_seq_numContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_match_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_isakmp_profileContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_peerContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_pfsContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ii_set_transform_setContext;
-import org.batfish.grammar.cisco.CiscoParser.Crypto_map_sn_ipsec_isakmpContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_match_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_set_isakmp_profileContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_set_peerContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_set_pfsContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ii_set_transform_setContext;
+import org.batfish.grammar.cisco.CiscoParser.Crypto_map_t_ipsec_isakmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Cs_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Csc_nameContext;
 import org.batfish.grammar.cisco.CiscoParser.Default_information_originate_rb_stanzaContext;
@@ -1826,11 +1825,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCrypto_map(Crypto_mapContext ctx) {
     _currentCryptoMapName = ctx.name.getText();
-  }
-
-  @Override
-  public void enterCrypto_map_seq_num(Crypto_map_seq_numContext ctx) {
-    _currentCryptoMapSequenceNum = toInteger(ctx.num);
+    _currentCryptoMapSequenceNum = toInteger(ctx.seq_num);
   }
 
   @Override
@@ -1856,7 +1851,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCrypto_map_sn_ipsec_isakmp(Crypto_map_sn_ipsec_isakmpContext ctx) {
+  public void enterCrypto_map_t_ipsec_isakmp(Crypto_map_t_ipsec_isakmpContext ctx) {
     _currentCryptoMapEntry =
         new CryptoMapEntry(_currentCryptoMapName, _currentCryptoMapSequenceNum);
 
@@ -4058,7 +4053,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCrypto_map_sn_ii_match_address(Crypto_map_sn_ii_match_addressContext ctx) {
+  public void exitCrypto_map_t_ii_match_address(Crypto_map_t_ii_match_addressContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _currentCryptoMapEntry.setAccessList(name);
@@ -4066,8 +4061,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCrypto_map_sn_ii_set_isakmp_profile(
-      Crypto_map_sn_ii_set_isakmp_profileContext ctx) {
+  public void exitCrypto_map_t_ii_set_isakmp_profile(
+      Crypto_map_t_ii_set_isakmp_profileContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     _currentCryptoMapEntry.setIsakmpProfile(name);
@@ -4076,18 +4071,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCrypto_map_sn_ii_set_peer(Crypto_map_sn_ii_set_peerContext ctx) {
+  public void exitCrypto_map_t_ii_set_peer(Crypto_map_t_ii_set_peerContext ctx) {
     _currentCryptoMapEntry.setPeer(toIp(ctx.address));
   }
 
   @Override
-  public void exitCrypto_map_sn_ii_set_pfs(Crypto_map_sn_ii_set_pfsContext ctx) {
+  public void exitCrypto_map_t_ii_set_pfs(Crypto_map_t_ii_set_pfsContext ctx) {
     _currentCryptoMapEntry.setPfsKeyGroup(toDhGroup(ctx.dh_group()));
   }
 
   @Override
-  public void exitCrypto_map_sn_ii_set_transform_set(
-      Crypto_map_sn_ii_set_transform_setContext ctx) {
+  public void exitCrypto_map_t_ii_set_transform_set(Crypto_map_t_ii_set_transform_setContext ctx) {
     for (VariableContext transform : ctx.transforms) {
       int line = transform.getStart().getLine();
       String name = transform.getText();
@@ -4098,7 +4092,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitCrypto_map_sn_ipsec_isakmp(Crypto_map_sn_ipsec_isakmpContext ctx) {
+  public void exitCrypto_map_t_ipsec_isakmp(Crypto_map_t_ipsec_isakmpContext ctx) {
     _currentCryptoMapName = null;
     _currentCryptoMapSequenceNum = null;
   }
