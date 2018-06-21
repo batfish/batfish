@@ -10,7 +10,6 @@ import static org.batfish.question.routes.RoutesAnswerer.getMainRibRoutes;
 import static org.batfish.question.routes.RoutesAnswerer.getTableMetadata;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
@@ -95,9 +94,11 @@ public class RoutesAnswererTest {
     List<ColumnMetadata> columnMetadata = getTableMetadata("all").getColumnMetadata();
 
     assertThat(
-        columnMetadata.stream().map(ColumnMetadata::getName).collect(ImmutableSet.toImmutableSet()),
-        containsInAnyOrder(
-            COL_NODE, COL_VRF_NAME, COL_NETWORK, COL_NEXT_HOP, COL_NEXT_HOP_IP, COL_PROTOCOL));
+        columnMetadata
+            .stream()
+            .map(ColumnMetadata::getName)
+            .collect(ImmutableList.toImmutableList()),
+        contains(COL_NODE, COL_VRF_NAME, COL_NETWORK, COL_NEXT_HOP, COL_NEXT_HOP_IP, COL_PROTOCOL));
 
     assertThat(
         columnMetadata

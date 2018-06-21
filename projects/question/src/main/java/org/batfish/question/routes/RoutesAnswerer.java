@@ -5,8 +5,8 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multiset;
+import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.regex.Pattern;
@@ -25,6 +25,7 @@ import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.datamodel.table.TableMetadata;
+import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 
 /** Answerer for {@link RoutesQuestion} */
 @ParametersAreNonnullByDefault
@@ -56,9 +57,9 @@ public class RoutesAnswerer extends Answerer {
   }
 
   private static Multiset<Row> generateRows(
-      DataPlane dp, String protocol, Set<String> matchingNodes, String vrfRegex) {
+      DataPlane dp, RibProtocol protocol, Set<String> matchingNodes, String vrfRegex) {
     switch (protocol) {
-      case "all":
+      case ALL:
       default:
         return getMainRibRoutes(dp.getRibs(), matchingNodes, vrfRegex);
     }
@@ -86,8 +87,8 @@ public class RoutesAnswerer extends Answerer {
     return rows;
   }
 
-  /** Convert a {@link Set} of {@link AbstractRoute} into a set of rows. */
-  private static Set<Row> getRowsForAbstractRoutes(
+  /** Convert a {@link Set} of {@link AbstractRoute} into a list of rows. */
+  private static List<Row> getRowsForAbstractRoutes(
       String node, String vrfName, Set<AbstractRoute> routes) {
     Node nodeObj = new Node(node);
     return routes
@@ -102,14 +103,14 @@ public class RoutesAnswerer extends Answerer {
                     .put(COL_NEXT_HOP, firstNonNull(route.getNextHop(), "N/A"))
                     .put(COL_PROTOCOL, route.getProtocol())
                     .build())
-        .collect(ImmutableSet.toImmutableSet());
+        .collect(ImmutableList.toImmutableList());
   }
 
   /** Generate the table metadata based on the protocol for which we are examining the RIBs */
   @VisibleForTesting
-  static TableMetadata getTableMetadata(String protocol) {
+  static TableMetadata getTableMetadata(RibProtocol protocol) {
     switch (protocol) {
-      case "all":
+      case ALL:
       default:
         ImmutableList.Builder<ColumnMetadata> columnBuilder = ImmutableList.builder();
         columnBuilder.add(new ColumnMetadata(COL_NODE, Schema.NODE, "Node"));
