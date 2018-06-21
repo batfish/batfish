@@ -27,6 +27,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
+import org.batfish.question.routes.RoutesQuestion.RibProtocol;
 import org.junit.Test;
 
 /** Tests of {@link RoutesAnswerer}. */
@@ -91,7 +92,7 @@ public class RoutesAnswererTest {
 
   @Test
   public void testGetTableMetadataProtocolAll() {
-    List<ColumnMetadata> columnMetadata = getTableMetadata("all").getColumnMetadata();
+    List<ColumnMetadata> columnMetadata = getTableMetadata(RibProtocol.ALL).getColumnMetadata();
 
     assertThat(
         columnMetadata
