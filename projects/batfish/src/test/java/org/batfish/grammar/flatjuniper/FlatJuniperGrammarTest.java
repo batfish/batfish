@@ -1092,13 +1092,6 @@ public class FlatJuniperGrammarTest {
         ccae,
         hasDefinedStructureWithDefinitionLines(
             hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
-    assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(
-            hostname,
-            JuniperStructureType.FIREWALL_FILTER,
-            "FILTER3",
-            contains(23, 24, 25, 26, 27, 28)));
   }
 
   @Test
