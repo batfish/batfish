@@ -993,31 +993,6 @@
           ]
         }
       },
-      "unused:policy-map:global_policy" : {
-        "description" : "Unused structure of type: 'policy-map' with name: 'global_policy'",
-        "files" : {
-          "cisco_misc" : [
-            194,
-            195,
-            196,
-            197,
-            198,
-            199,
-            200,
-            201,
-            202,
-            203,
-            204,
-            205,
-            206,
-            207,
-            208,
-            209,
-            210,
-            211
-          ]
-        }
-      },
       "unused:policy-map:limitarp" : {
         "description" : "Unused structure of type: 'policy-map' with name: 'limitarp'",
         "files" : {
@@ -1482,7 +1457,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 141
+      "numResults" : 140
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1911,28 +1886,6 @@
           "SVCGRP-ICMP" : [
             177,
             178
-          ]
-        },
-        "policy-map" : {
-          "global_policy" : [
-            194,
-            195,
-            196,
-            197,
-            198,
-            199,
-            200,
-            201,
-            202,
-            203,
-            204,
-            205,
-            206,
-            207,
-            208,
-            209,
-            210,
-            211
           ]
         }
       },

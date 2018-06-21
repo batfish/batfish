@@ -177,6 +177,15 @@ if_ip_dhcp
    )
 ;
 
+if_ip_flow_monitor
+:
+   IP FLOW MONITOR name = variable
+   (
+      INPUT
+      | OUTPUT
+   ) NEWLINE
+;
+
 if_ip_helper_address
 :
    IP HELPER_ADDRESS address = IP_ADDRESS NEWLINE
@@ -214,6 +223,11 @@ if_ip_nat_source
          POOL pool = variable
       )
    )* NEWLINE
+;
+
+if_ip_nbar
+:
+   IP NBAR PROTOCOL_DISCOVERY (IPV4 | IPV6)? NEWLINE
 ;
 
 if_ip_ospf_area
@@ -260,6 +274,16 @@ if_ip_ospf_passive_interface
    NO? IP OSPF PASSIVE_INTERFACE NEWLINE
 ;
 
+if_ip_ospf_shutdown
+:
+   NO? IP OSPF SHUTDOWN NEWLINE
+;
+
+if_ip_passive_interface_eigrp
+:
+   NO? IP PASSIVE_INTERFACE EIGRP tag = DEC NEWLINE
+;
+
 if_ip_pim_neighbor_filter
 :
    IP PIM NEIGHBOR_FILTER acl = variable NEWLINE
@@ -295,6 +319,14 @@ if_ip_sticky_arp
    (NO? IP STICKY_ARP NEWLINE)
    |
    (IP STICKY_ARP IGNORE NEWLINE)
+;
+
+if_ip_summary_address
+:
+   IP SUMMARY_ADDRESS EIGRP asn = DEC (
+      addr = IP_ADDRESS netmask = IP_ADDRESS
+      | prefix = IP_PREFIX
+   ) (LEAK_MAP mapname = variable)? NEWLINE
 ;
 
 if_ip_verify
@@ -688,7 +720,6 @@ if_null_block
       | SCRAMBLE
       | SECURITY_LEVEL
       | SERIAL
-      | SERVICE
       | SERVICE_MODULE
       | SFLOW
       | SHAPE
@@ -777,7 +808,6 @@ if_null_inner
       | REMOTE_PORTS
       | REWRITE
       | SATELLITE_FABRIC_LINK
-      | SERVICE_POLICY
       | TRANSMIT
       | VIRTUAL_ADDRESS
    ) ~NEWLINE* NEWLINE  // do not change to null_rest_of_line
@@ -789,10 +819,12 @@ if_null_single
    (
       BCMC_OPTIMIZATION
       | DOT1X
+      | IP TRAFFIC_EXPORT
       | JUMBO
       | LINKDEBOUNCE
       | MAB
       | PHY
+      | REDUNDANCY
       | SWITCHPORT CAPTURE
       | SUPPRESS_ARP
       | TRIMODE
@@ -811,6 +843,52 @@ if_port_security
 if_private_vlan
 :
    PRIVATE_VLAN MAPPING (ADD | REMOVE)? null_rest_of_line
+;
+
+if_service_instance
+:
+   SERVICE INSTANCE id = DEC ETHERNET NEWLINE
+   if_si_inner*
+;
+
+if_si_inner
+:
+    if_si_bridge_domain
+    | if_si_encapsulation
+    | if_si_l2protocol
+    | if_si_no_bridge_domain
+    | if_si_rewrite
+    | if_si_service_policy
+;
+
+if_si_bridge_domain
+:
+    BRIDGE_DOMAIN id = DEC SPLIT_HORIZON? NEWLINE
+;
+
+if_si_encapsulation
+:
+    NO? ENCAPSULATION null_rest_of_line
+;
+
+if_si_l2protocol
+:
+    L2PROTOCOL TUNNEL? (DROP | FORWARD | PEER)? (CDP | DOT1X | DTP | LACP | PAGP | STP | VTP)? NEWLINE
+;
+
+if_si_no_bridge_domain
+:
+    NO BRIDGE_DOMAIN id = DEC NEWLINE
+;
+
+if_si_rewrite
+:
+    REWRITE null_rest_of_line
+;
+
+if_si_service_policy
+:
+    SERVICE_POLICY (INPUT | OUTPUT) policy_map = variable NEWLINE
 ;
 
 if_spanning_tree
@@ -1250,11 +1328,13 @@ s_interface
       | if_ip_address_dhcp
       | if_ip_address_secondary
       | if_ip_dhcp
+      | if_ip_flow_monitor
       | if_ip_helper_address
       | if_ip_inband_access_group
       | if_ip_igmp
       | if_ip_nat_destination
       | if_ip_nat_source
+      | if_ip_nbar
       | if_ip_ospf_area
       | if_ip_ospf_cost
       | if_ip_ospf_dead_interval
@@ -1262,12 +1342,15 @@ s_interface
       | if_ip_ospf_hello_interval
       | if_ip_ospf_network
       | if_ip_ospf_passive_interface
+      | if_ip_ospf_shutdown
+      | if_ip_passive_interface_eigrp
       | if_ip_pim_neighbor_filter
       | if_ip_policy
       | if_ip_router_isis
       | if_ip_router_ospf_area
       | if_ip_rtp
       | if_ip_sticky_arp
+      | if_ip_summary_address
       | if_ip_virtual_router
       | if_ip_vrf_forwarding
       | if_isis_circuit_type
@@ -1282,6 +1365,7 @@ s_interface
       | if_no_ip_address
       | if_port_security
       | if_private_vlan
+      | if_service_instance
       | if_service_policy
       | if_shutdown
       | if_spanning_tree

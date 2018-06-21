@@ -122,6 +122,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_PIM
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SELF_REF;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SERVICE_POLICY;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_ZONE_MEMBER;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_ISAKMP_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.IPSEC_PROFILE_TRANSFORM_SET;
@@ -143,6 +144,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_AREA_FIL
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP;
@@ -153,6 +155,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_RP_CANDID
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SEND_RP_ANNOUNCE_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.PIM_SPT_THRESHOLD_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS;
+import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.POLICY_MAP_EVENT_CLASS_ACTIVATE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.QOS_ENFORCE_RULE_SERVICE_CLASS;
@@ -170,6 +173,9 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_MAT
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_MAP_SET_COMMUNITY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_AS_PATH_IN;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ROUTE_POLICY_PREFIX_SET;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_GLOBAL;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL4;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6;
 import static org.batfish.representation.cisco.CiscoStructureUsage.SNMP_SERVER_FILE_TRANSFER_ACL;
@@ -488,11 +494,13 @@ import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_intervalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_dead_interval_minimalContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_passive_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_ospf_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_pim_neighbor_filterContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_proxy_arpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_isisContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_router_ospf_areaContext;
+import org.batfish.grammar.cisco.CiscoParser.If_ip_summary_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_verifyContext;
 import org.batfish.grammar.cisco.CiscoParser.If_ip_vrf_forwardingContext;
 import org.batfish.grammar.cisco.CiscoParser.If_isis_metricContext;
@@ -640,6 +648,7 @@ import org.batfish.grammar.cisco.CiscoParser.Pm_iosi_class_type_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_dropContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_inspectContext;
 import org.batfish.grammar.cisco.CiscoParser.Pm_iosict_passContext;
+import org.batfish.grammar.cisco.CiscoParser.Pmc_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.PortContext;
 import org.batfish.grammar.cisco.CiscoParser.Port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Prefix_list_bgp_tailContext;
@@ -734,6 +743,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_passive_interface_defaultContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_bgpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_connectedContext;
+import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_eigrpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_redistribute_staticContext;
 import org.batfish.grammar.cisco.CiscoParser.Ro_rfc1583_compatibilityContext;
@@ -796,6 +806,8 @@ import org.batfish.grammar.cisco.CiscoParser.S_policy_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ospfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_router_ripContext;
 import org.batfish.grammar.cisco.CiscoParser.S_serviceContext;
+import org.batfish.grammar.cisco.CiscoParser.S_service_policy_globalContext;
+import org.batfish.grammar.cisco.CiscoParser.S_service_policy_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.S_service_templateContext;
 import org.batfish.grammar.cisco.CiscoParser.S_snmp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.S_sntpContext;
@@ -1096,6 +1108,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       "ospf - not-so-stubby areas - no-redistribution";
 
   private static final String F_OSPF_MAXIMUM_PATHS = "ospf - maximum-paths";
+
+  private static final String F_OSPF_REDISTRIBUTE_EIGRP = "ospf - redistribute eigrp";
 
   private static final String F_OSPF_REDISTRIBUTE_RIP = "ospf - redistribute rip";
 
@@ -4879,6 +4893,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitIf_ip_ospf_shutdown(If_ip_ospf_shutdownContext ctx) {
+    for (Interface iface : _currentInterfaces) {
+      iface.setOspfShutdown(ctx.NO() == null);
+    }
+  }
+
+  @Override
   public void exitIf_ip_pim_neighbor_filter(If_ip_pim_neighbor_filterContext ctx) {
     String acl = ctx.acl.getText();
     int line = ctx.acl.getStart().getLine();
@@ -4917,6 +4938,17 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     long area = toIp(ctx.area).asLong();
     for (Interface iface : _currentInterfaces) {
       iface.setOspfArea(area);
+    }
+  }
+
+  @Override
+  public void exitIf_ip_summary_address(If_ip_summary_addressContext ctx) {
+    if (ctx.LEAK_MAP() != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP,
+          ctx.mapname.getText(),
+          INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
+          ctx.mapname.getStart().getLine());
     }
   }
 
@@ -6057,7 +6089,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitNtp_access_group(Ntp_access_groupContext ctx) {
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+    if (!ctx.IPV6().isEmpty()) {
+      _configuration.referenceStructure(IPV6_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+    } else {
+      // IPv4 unless IPv6 explicit.
+      _configuration.referenceStructure(IPV4_ACCESS_LIST, name, NTP_ACCESS_GROUP, line);
+    }
   }
 
   @Override
@@ -6315,6 +6352,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitPm_iosict_drop(Pm_iosict_dropContext ctx) {
     _currentInspectPolicyMapInspectClass.setAction(PolicyMapClassAction.DROP);
+  }
+
+  @Override
+  public void exitPmc_service_policy(Pmc_service_policyContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP,
+        ctx.name.getText(),
+        POLICY_MAP_CLASS_SERVICE_POLICY,
+        ctx.name.getStart().getLine());
   }
 
   @Override
@@ -6799,6 +6845,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitRo_redistribute_eigrp(Ro_redistribute_eigrpContext ctx) {
+    if (ctx.map != null) {
+      _configuration.referenceStructure(
+          ROUTE_MAP, ctx.map.getText(), OSPF_REDISTRIBUTE_EIGRP_MAP, ctx.map.getStart().getLine());
+    }
+    todo(ctx, F_OSPF_REDISTRIBUTE_EIGRP);
+  }
+
+  @Override
   public void exitRo_redistribute_rip(Ro_redistribute_ripContext ctx) {
     todo(ctx, F_OSPF_REDISTRIBUTE_RIP);
   }
@@ -7181,6 +7236,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       currentServices = s.getSubservices();
     }
+  }
+
+  @Override
+  public void exitS_service_policy_global(S_service_policy_globalContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP, ctx.name.getText(), SERVICE_POLICY_GLOBAL, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitS_service_policy_interface(S_service_policy_interfaceContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_MAP,
+        ctx.name.getText(),
+        SERVICE_POLICY_INTERFACE_POLICY,
+        ctx.name.getStart().getLine());
+    String iface = getCanonicalInterfaceName(ctx.iface.getText());
+    _configuration.referenceStructure(
+        INTERFACE, iface, SERVICE_POLICY_INTERFACE, ctx.iface.getStart().getLine());
   }
 
   @Override

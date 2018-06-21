@@ -154,6 +154,8 @@ public class Interface extends ComparableStructure<String> {
 
   private boolean _ospfPointToPoint;
 
+  private boolean _ospfShutdown;
+
   private String _outgoingFilter;
 
   private int _outgoingFilterLine;
@@ -341,6 +343,10 @@ public class Interface extends ComparableStructure<String> {
     return _ospfPointToPoint;
   }
 
+  public boolean getOspfShutdown() {
+    return _ospfShutdown;
+  }
+
   public String getOutgoingFilter() {
     return _outgoingFilter;
   }
@@ -498,6 +504,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setOspfPointToPoint(boolean ospfPointToPoint) {
     _ospfPointToPoint = ospfPointToPoint;
+  }
+
+  public void setOspfShutdown(boolean ospfShutdown) {
+    _ospfShutdown = ospfShutdown;
   }
 
   public void setOutgoingFilter(String accessListName) {

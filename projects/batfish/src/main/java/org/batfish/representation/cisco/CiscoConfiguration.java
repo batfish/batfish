@@ -2193,26 +2193,32 @@ public final class CiscoConfiguration extends VendorConfiguration {
     allPrefixes.addAll(iface.getSecondaryAddresses());
     newIface.setAllAddresses(allPrefixes.build());
 
-    Long ospfAreaLong = iface.getOspfArea();
-    if (ospfAreaLong != null) {
-      OspfProcess proc = vrf.getOspfProcess();
-      if (proc != null) {
-        if (iface.getOspfActive()) {
-          proc.getActiveInterfaceList().add(name);
+    if (!iface.getOspfShutdown()) {
+      Long ospfAreaLong = iface.getOspfArea();
+      if (ospfAreaLong != null) {
+        OspfProcess proc = vrf.getOspfProcess();
+        if (proc != null) {
+          if (iface.getOspfActive()) {
+            proc.getActiveInterfaceList().add(name);
+          }
+          if (iface.getOspfPassive()) {
+            proc.getPassiveInterfaceList().add(name);
+          }
+          for (InterfaceAddress address : newIface.getAllAddresses()) {
+            Prefix prefix = address.getPrefix();
+            OspfNetwork ospfNetwork = new OspfNetwork(prefix, ospfAreaLong);
+            proc.getNetworks().add(ospfNetwork);
+          }
+        } else {
+          _w.redFlag(
+              "Interface: '" + name + "' contains OSPF settings, but there is no OSPF process");
         }
-        if (iface.getOspfPassive()) {
-          proc.getPassiveInterfaceList().add(name);
-        }
-        for (InterfaceAddress address : newIface.getAllAddresses()) {
-          Prefix prefix = address.getPrefix();
-          OspfNetwork ospfNetwork = new OspfNetwork(prefix, ospfAreaLong);
-          proc.getNetworks().add(ospfNetwork);
-        }
-      } else {
-        _w.redFlag(
-            "Interface: '" + name + "' contains OSPF settings, but there is no OSPF process");
       }
+      newIface.setOspfCost(iface.getOspfCost());
+      newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
+      newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
     }
+
     boolean level1 = false;
     boolean level2 = false;
     IsisProcess isisProcess = vrf.getIsisProcess();
@@ -2246,9 +2252,6 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
-    newIface.setOspfCost(iface.getOspfCost());
-    newIface.setOspfDeadInterval(iface.getOspfDeadInterval());
-    newIface.setOspfHelloMultiplier(iface.getOspfHelloMultiplier());
 
     // switch settings
     newIface.setAccessVlan(iface.getAccessVlan());
@@ -3322,6 +3325,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.INTERFACE,
         CiscoStructureUsage.BGP_UPDATE_SOURCE_INTERFACE,
         CiscoStructureUsage.INTERFACE_SELF_REF,
+        CiscoStructureUsage.SERVICE_POLICY_INTERFACE,
         CiscoStructureUsage.ROUTER_VRRP_INTERFACE);
 
     // mark references to ACLs that may not appear in data model
@@ -3353,6 +3357,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.SSH_IPV4_ACL);
     markIpv6Acls(
         CiscoStructureUsage.LINE_ACCESS_CLASS_LIST6,
+        CiscoStructureUsage.NTP_ACCESS_GROUP,
         CiscoStructureUsage.ROUTE_MAP_MATCH_IPV6_ACCESS_LIST,
         CiscoStructureUsage.SNMP_SERVER_COMMUNITY_ACL6,
         CiscoStructureUsage.SSH_IPV6_ACL);
@@ -3419,9 +3424,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureUsage.BGP_ROUTE_MAP_UNSUPPRESS,
         CiscoStructureUsage.BGP_VRF_AGGREGATE_ROUTE_MAP,
         CiscoStructureUsage.INTERFACE_POLICY_ROUTING_MAP,
+        CiscoStructureUsage.INTERFACE_SUMMARY_ADDRESS_EIGRP_LEAK_MAP,
         CiscoStructureUsage.OSPF_DEFAULT_ORIGINATE_ROUTE_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_BGP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_CONNECTED_MAP,
+        CiscoStructureUsage.OSPF_REDISTRIBUTE_EIGRP_MAP,
         CiscoStructureUsage.OSPF_REDISTRIBUTE_STATIC_MAP,
         CiscoStructureUsage.PIM_ACCEPT_REGISTER_ROUTE_MAP,
         CiscoStructureUsage.RIP_DEFAULT_ORIGINATE_ROUTE_MAP,
@@ -3487,7 +3494,11 @@ public final class CiscoConfiguration extends VendorConfiguration {
         CiscoStructureType.INSPECT_POLICY_MAP,
         CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY);
     markConcreteStructure(
-        CiscoStructureType.POLICY_MAP, CiscoStructureUsage.INTERFACE_SERVICE_POLICY);
+        CiscoStructureType.POLICY_MAP,
+        CiscoStructureUsage.INTERFACE_SERVICE_POLICY,
+        CiscoStructureUsage.POLICY_MAP_CLASS_SERVICE_POLICY,
+        CiscoStructureUsage.SERVICE_POLICY_GLOBAL,
+        CiscoStructureUsage.SERVICE_POLICY_INTERFACE_POLICY);
 
     // object-group
     markConcreteStructure(

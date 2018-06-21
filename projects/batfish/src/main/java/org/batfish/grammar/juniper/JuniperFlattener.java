@@ -2,13 +2,15 @@ package org.batfish.grammar.juniper;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.juniper.JuniperParser.Bracketed_clauseContext;
 import org.batfish.grammar.juniper.JuniperParser.Juniper_configurationContext;
 import org.batfish.grammar.juniper.JuniperParser.StatementContext;
 import org.batfish.grammar.juniper.JuniperParser.TerminatorContext;
 import org.batfish.grammar.juniper.JuniperParser.WordContext;
 
-public class JuniperFlattener extends JuniperParserBaseListener {
+public class JuniperFlattener extends JuniperParserBaseListener implements Flattener {
 
   private List<String> _currentBracketedWords;
 
@@ -113,7 +115,14 @@ public class JuniperFlattener extends JuniperParserBaseListener {
     }
   }
 
+  @Override
   public String getFlattenedConfigurationText() {
     return _flattenedConfigurationText;
+  }
+
+  @Override
+  public FlattenerLineMap getOriginalLineMap() {
+    throw new UnsupportedOperationException(
+        "getOriginalLines is not supported for JuniperFlattener");
   }
 }

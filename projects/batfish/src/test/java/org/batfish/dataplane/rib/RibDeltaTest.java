@@ -40,10 +40,13 @@ public class RibDeltaTest {
   /** Check {@link Builder} route addition and that duplicate adds get squashed */
   @Test
   public void testBuilderAddRoute() {
-    StaticRoute route1 = new StaticRoute(new Prefix(new Ip("1.1.1.0"), 24), Ip.ZERO, null, 1, 1);
+    StaticRoute route1 =
+        new StaticRoute(new Prefix(new Ip("1.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
     // Route 2 & 3 should be equal
-    StaticRoute route2 = new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 1);
-    StaticRoute route3 = new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 1);
+    StaticRoute route2 =
+        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+    StaticRoute route3 =
+        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
     _builder.add(route1);
     _builder.add(route2);
 
@@ -62,10 +65,13 @@ public class RibDeltaTest {
   /** Check duplicate removes get squashed */
   @Test
   public void testBuilderRemoveRoute() {
-    StaticRoute route1 = new StaticRoute(new Prefix(new Ip("1.1.1.0"), 24), Ip.ZERO, null, 1, 1);
+    StaticRoute route1 =
+        new StaticRoute(new Prefix(new Ip("1.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
     // Route 2 & 3 should be equal
-    StaticRoute route2 = new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 1);
-    StaticRoute route3 = new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 1);
+    StaticRoute route2 =
+        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
+    StaticRoute route3 =
+        new StaticRoute(new Prefix(new Ip("2.1.1.0"), 24), Ip.ZERO, null, 1, 0L, 1);
     _builder.remove(route1, Reason.WITHDRAW);
     _builder.remove(route2, Reason.WITHDRAW);
 

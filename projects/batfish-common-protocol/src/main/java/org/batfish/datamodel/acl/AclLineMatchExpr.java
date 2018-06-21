@@ -1,5 +1,7 @@
 package org.batfish.datamodel.acl;
 
+import static java.util.Comparator.nullsFirst;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -32,7 +34,7 @@ public abstract class AclLineMatchExpr implements Serializable, Comparable<AclLi
     }
     return Comparator.comparing((AclLineMatchExpr e) -> e.getClass().getSimpleName())
         .thenComparing(this::compareSameClass)
-        .thenComparing(AclLineMatchExpr::getDescription)
+        .thenComparing(AclLineMatchExpr::getDescription, nullsFirst(Comparator.naturalOrder()))
         .compare(this, o);
   }
 

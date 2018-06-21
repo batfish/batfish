@@ -3497,6 +3497,11 @@ DTMF_RELAY
    'dtmf-relay'
 ;
 
+DTP
+:
+   'dtp'
+;
+
 DUAL_ACTIVE
 :
    'dual-active'
@@ -4590,6 +4595,11 @@ FORMAT
 FORTYG_FULL
 :
   '40gfull'
+;
+
+FORWARD
+:
+   'forward'
 ;
 
 FORWARD_DIGITS
@@ -5904,6 +5914,11 @@ KLOGIN
    'klogin'
 ;
 
+KOD
+:
+   'kod'
+;
+
 KRON
 :
    'kron'
@@ -6047,6 +6062,11 @@ LDP
 LE
 :
    'le'
+;
+
+LEAK_MAP
+:
+   'leak-map'
 ;
 
 LEASE
@@ -8234,6 +8254,11 @@ PAGER
    'pager'
 ;
 
+PAGP
+:
+   'pagp'
+;
+
 PAN
 :
    'pan'
@@ -9042,6 +9067,11 @@ PROTECTION
 PROTOCOL
 :
    'protocol'
+;
+
+PROTOCOL_DISCOVERY
+:
+   'protocol-discovery'
 ;
 
 PROTOCOL_HTTP
@@ -10894,6 +10924,11 @@ SPEED_DUPLEX
    'speed-duplex'
 ;
 
+SPLIT_HORIZON
+:
+   'split-horizon'
+;
+
 SPLIT_TUNNEL_NETWORK_LIST
 :
    'split-tunnel-network-list'
@@ -11809,6 +11844,11 @@ TRADITIONAL
 TRAFFIC_ENG
 :
    'traffic-eng'
+;
+
+TRAFFIC_EXPORT
+:
+   'traffic-export'
 ;
 
 TRAFFIC_INDEX
@@ -14352,6 +14392,11 @@ M_Interface_DEFAULT
 M_Interface_DOLLAR
 :
    '$' -> type ( DOLLAR ) , popMode
+;
+
+M_Interface_EIGRP
+:
+   'eigrp' -> type ( EIGRP ) , popMode
 ;
 
 M_Interface_EQ

@@ -5,6 +5,7 @@ import org.batfish.grammar.BatfishANTLRErrorStrategy.BatfishANTLRErrorStrategyFa
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishLexerRecoveryStrategy;
 import org.batfish.grammar.GrammarSettings;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.recovery.RecoveryParser.RecoveryContext;
 
 public class RecoveryCombinedParser extends BatfishCombinedParser<RecoveryParser, RecoveryLexer> {
@@ -20,6 +21,17 @@ public class RecoveryCombinedParser extends BatfishCombinedParser<RecoveryParser
         settings,
         NEWLINE_BASED_RECOVERY,
         BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES);
+  }
+
+  public RecoveryCombinedParser(String input, GrammarSettings settings, FlattenerLineMap lineMap) {
+    super(
+        RecoveryParser.class,
+        RecoveryLexer.class,
+        input,
+        settings,
+        NEWLINE_BASED_RECOVERY,
+        BatfishLexerRecoveryStrategy.WHITESPACE_AND_NEWLINES,
+        lineMap);
   }
 
   @Override
