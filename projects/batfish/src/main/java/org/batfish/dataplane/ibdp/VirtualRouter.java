@@ -475,7 +475,7 @@ public class VirtualRouter extends ComparableStructure<String> {
               .stream()
               .map(ifaceName -> new IsisNode(_c.getHostname(), ifaceName))
               .filter(isisTopology.nodes()::contains)
-              .flatMap(n -> isisTopology.incidentEdges(n).stream())
+              .flatMap(n -> isisTopology.inEdges(n).stream())
               .collect(
                   toImmutableSortedMap(Function.identity(), e -> new ConcurrentLinkedQueue<>()));
     }
@@ -2319,9 +2319,9 @@ public class VirtualRouter extends ComparableStructure<String> {
             edge -> {
               VirtualRouter remoteVr =
                   allNodes
-                      .get(edge.getNode2().getHostname())
+                      .get(edge.getNode1().getHostname())
                       .getVirtualRouters()
-                      .get(edge.getNode2().getInterface(allNodes).getVrfName());
+                      .get(edge.getNode1().getInterface(allNodes).getVrfName());
               Queue<RouteAdvertisement<IsisRoute>> queue =
                   remoteVr._isisIncomingRoutes.get(edge.reverse());
               IsisLevel circuitType = edge.getCircuitType();
