@@ -61,7 +61,7 @@ public class SmtReachabilityTwoLinkTest {
   /**
    * Negation of the above test, i.e. verify unreachability under 1 failure.
    *
-   * <p>{@link Ignore Ignored} because the test is failing. It's unclear whether the intent is that
+   * <p>{@link Ignore Ignored} because of issue #1724. It's unclear whether the intent is that
    * failures constraint should be included in the negation. But that isn't working either
    * (otherwise, failures=0 should return a {@link VerificationResult} with failures != 0. It does
    * not).
