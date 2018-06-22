@@ -9,10 +9,12 @@ import static org.batfish.datamodel.matchers.IsisRouteMatchers.hasDown;
 import static org.batfish.datamodel.matchers.IsisRouteMatchers.isIsisRouteThat;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasKey;
 
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Sets;
 import java.util.Collections;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -262,6 +264,30 @@ public class IsisTest {
     // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.2.2.2/32"), 148L);
     // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.2.3.0/24"), 148L);
     // assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.3.3.100/32"), 10L);
+
+    // Assert r1/r2 have empty l1 rib
+    assertThat(
+        dp.getNodes()
+            .get("r1")
+            .getVirtualRouters()
+            .get(Configuration.DEFAULT_VRF_NAME)
+            ._isisL1Rib
+            .getRoutes(),
+        empty());
+    assertThat(
+        dp.getNodes()
+            .get("r2")
+            .getVirtualRouters()
+            .get(Configuration.DEFAULT_VRF_NAME)
+            ._isisL1Rib
+            .getRoutes(),
+        empty());
+
+    // Assert r3 has disjoint l1/l2 ribs
+    VirtualRouter r3Vr =
+        dp.getNodes().get("r3").getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME);
+    assertThat(
+        Sets.intersection(r3Vr._isisL1Rib.getRoutes(), r3Vr._isisL2Rib.getRoutes()), empty());
   }
 
   private static void assertInterAreaRoute(
