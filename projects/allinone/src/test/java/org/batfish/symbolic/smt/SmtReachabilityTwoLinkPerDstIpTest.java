@@ -127,7 +127,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
    * <p>{@link Ignore Ignored} because of issue #1723: adding a dstIp constraint seems to cause
    * minesweeper to ignore the failures constraint.
    */
-  @Ignore
+  @Ignore("https://github.com/batfish/batfish/issues/1723")
   @Test
   public void testOneFailure() {
     final ReachabilityQuestion question = new ReachabilityQuestion();
@@ -151,7 +151,7 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
    * <p>{@link Ignore Ignored} because of issue #1723: adding a dstIp constraint seems to cause
    * minesweeper to ignore the failures constraint.
    */
-  @Ignore
+  @Ignore("https://github.com/batfish/batfish/issues/1723")
   @Test
   public void testOneFailure_negate() {
     final ReachabilityQuestion question = new ReachabilityQuestion();
