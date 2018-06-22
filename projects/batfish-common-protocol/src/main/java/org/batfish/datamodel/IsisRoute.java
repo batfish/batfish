@@ -76,6 +76,8 @@ public class IsisRoute extends AbstractRoute {
 
   private static final String PROP_LEVEL = "level";
 
+  private static final String PROP_SYSTEM_ID = "systemId";
+
   private static final long serialVersionUID = 1L;
 
   @JsonCreator
@@ -88,7 +90,7 @@ public class IsisRoute extends AbstractRoute {
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @JsonProperty(PROP_PROTOCOL) String systemId) {
+      @JsonProperty(PROP_SYSTEM_ID) String systemId) {
     return new IsisRoute(
         administrativeCost,
         requireNonNull(area),
@@ -206,6 +208,7 @@ public class IsisRoute extends AbstractRoute {
   }
 
   @Nonnull
+  @JsonProperty(PROP_SYSTEM_ID)
   public String getSystemId() {
     return _systemId;
   }
@@ -231,7 +234,8 @@ public class IsisRoute extends AbstractRoute {
   @Override
   protected String protocolRouteString() {
     return String.format(
-        " %s:%s %s:%s %s:%s", PROP_AREA, _area, PROP_DOWN, _down, PROP_LEVEL, _level);
+        " %s:%s %s:%s %s:%s %s:%s",
+        PROP_AREA, _area, PROP_DOWN, _down, PROP_LEVEL, _level, PROP_SYSTEM_ID, _systemId);
   }
 
   @Override
@@ -243,6 +247,7 @@ public class IsisRoute extends AbstractRoute {
     return Comparator.comparing(IsisRoute::getArea)
         .thenComparing(IsisRoute::getDown)
         .thenComparing(IsisRoute::getLevel)
+        .thenComparing(IsisRoute::getSystemId)
         .compare(this, castRhs);
   }
 }

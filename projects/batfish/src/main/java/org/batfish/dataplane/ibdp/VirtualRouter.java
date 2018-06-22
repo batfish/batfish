@@ -1665,7 +1665,11 @@ public class VirtualRouter extends ComparableStructure<String> {
           while (queue.peek() != null) {
             RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
             IsisRoute neighborRoute = routeAdvert.getRoute();
-            routeBuilder.setNetwork(neighborRoute.getNetwork()).setArea(neighborRoute.getArea());
+
+            routeBuilder
+                .setNetwork(neighborRoute.getNetwork())
+                .setArea(neighborRoute.getArea())
+                .setSystemId(neighborRoute.getSystemId());
             boolean withdraw = routeAdvert.isWithdrawn();
             // TODO: simplify
             if (neighborRoute.getLevel() == IsisLevel.LEVEL_1) {
@@ -1677,7 +1681,6 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .setLevel(IsisLevel.LEVEL_1)
                       .setMetric(incrementalMetric + neighborRoute.getMetric())
                       .setProtocol(RoutingProtocol.ISIS_L1)
-                      .setSystemId(neighborRoute.getSystemId())
                       .build();
               if (withdraw) {
                 l1DeltaBuilder.remove(newL1Route, Reason.WITHDRAW);
@@ -1691,7 +1694,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     .computeIfAbsent(newL1Route.getNetwork(), k -> new TreeSet<>())
                     .add(newL1Route);
               }
-            } else {
+            } else { // neighborRoute is level2
               long incrementalMetric =
                   firstNonNull(iface.getIsis().getLevel2().getCost(), IsisRoute.DEFAULT_METRIC);
               IsisRoute newL2Route =
@@ -1700,7 +1703,6 @@ public class VirtualRouter extends ComparableStructure<String> {
                       .setLevel(IsisLevel.LEVEL_2)
                       .setMetric(incrementalMetric + neighborRoute.getMetric())
                       .setProtocol(RoutingProtocol.ISIS_L2)
-                      .setSystemId(neighborRoute.getSystemId())
                       .build();
               if (withdraw) {
                 l2DeltaBuilder.remove(newL2Route, Reason.WITHDRAW);
