@@ -9,6 +9,7 @@ import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IpsecProposal;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasIkeGateway;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasIpsecProposals;
+import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchersImpl.HasPfsKeyGroup;
 import org.hamcrest.Matcher;
 
@@ -18,7 +19,7 @@ public final class IpsecPolicyMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
    * Ipsec Proposals.
    */
-  public static HasIpsecProposals hasIpsecProposals(
+  public static @Nonnull HasIpsecProposals hasIpsecProposals(
       @Nonnull Matcher<? super List<IpsecProposal>> subMatcher) {
     return new HasIpsecProposals(subMatcher);
   }
@@ -27,16 +28,24 @@ public final class IpsecPolicyMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
    * Ike Gateway
    */
-  public static HasIkeGateway hasIkeGateway(@Nonnull Matcher<? super IkeGateway> subMatcher) {
+  public static @Nonnull HasIkeGateway hasIkeGateway(
+      @Nonnull Matcher<? super IkeGateway> subMatcher) {
     return new HasIkeGateway(subMatcher);
   }
 
   /**
-   * Provides a matcher that matches if the provided {@code subMatcher} matches the Ipsec policy's
-   * PfsKeyGroupy
+   * Provides a matcher that matches if the provided {@code pfsKeyGroup} matches the Ipsec policy's
+   * PfsKeyGroup
    */
-  public static HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
+  public static @Nonnull HasPfsKeyGroup hasPfsKeyGroup(DiffieHellmanGroup pfsKeyGroup) {
     return new HasPfsKeyGroup(equalTo(pfsKeyGroup));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code name} matches the Ipsec policy's name
+   */
+  public static @Nonnull HasName hasName(String name) {
+    return new HasName(equalTo(name));
   }
 
   private IpsecPolicyMatchers() {}

@@ -10,6 +10,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.batfish.common.ParseTreeSentences;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.recovery.RecoveryCombinedParser;
 import org.junit.Test;
 
@@ -60,10 +61,52 @@ public class ParseTreePrettyPrinterTest {
         ptSentencesLineNums.getSentences().get(9),
         containsString("BLOCK:'block'  <== mode:DEFAULT_MODE line:2"));
     assertThat(
+        ptSentencesLineNums.getSentences().get(12),
+        containsString("INNER:'inner'  <== mode:DEFAULT_MODE line:3"));
+    assertThat(
         ptSentencesLineNums.getSentences().get(14),
         containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:3)"));
     assertThat(
         ptSentencesLineNums.getSentences().get(16),
         containsString("EOF:<EOF>  <== mode:DEFAULT_MODE line:5)"));
+  }
+
+  @Test
+  public void testGetParseTreeSentencesMappedLineNumbers() throws IOException {
+    String configText = CommonUtil.readResource("org/batfish/grammar/line_numbers");
+    GrammarSettings settings = new MockGrammarSettings(false, 0, 0, 1000, true, true, true, true);
+    FlattenerLineMap lineMap = new FlattenerLineMap();
+    /* Map words on each line to different original lines */
+    /* (first) simple */
+    lineMap.setOriginalLine(1, 0, 5);
+    /* block */
+    lineMap.setOriginalLine(2, 0, 6);
+    /* inner */
+    lineMap.setOriginalLine(3, 2, 7);
+    /* (last) simple */
+    lineMap.setOriginalLine(3, 7, 8);
+    /* EOF */
+    lineMap.setOriginalLine(5, 0, 9);
+    RecoveryCombinedParser cp = new RecoveryCombinedParser(configText, settings, lineMap);
+    ParserRuleContext tree = cp.parse();
+    ParseTreeSentences ptSentencesLineNums =
+        ParseTreePrettyPrinter.getParseTreeSentences(tree, cp, true);
+
+    /* Confirm printed parse tree includes original line numbers */
+    assertThat(
+        ptSentencesLineNums.getSentences().get(3),
+        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:5"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(9),
+        containsString("BLOCK:'block'  <== mode:DEFAULT_MODE line:6"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(12),
+        containsString("INNER:'inner'  <== mode:DEFAULT_MODE line:7"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(14),
+        containsString("SIMPLE:'simple'  <== mode:DEFAULT_MODE line:8)"));
+    assertThat(
+        ptSentencesLineNums.getSentences().get(16),
+        containsString("EOF:<EOF>  <== mode:DEFAULT_MODE line:9)"));
   }
 }

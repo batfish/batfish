@@ -4271,6 +4271,7 @@ vpc_null
       AUTO_RECOVERY
       | DELAY
       | IP
+      | PEER_CONFIG_CHECK_BYPASS
       | PEER_GATEWAY
       | PEER_KEEPALIVE
       | PEER_SWITCH

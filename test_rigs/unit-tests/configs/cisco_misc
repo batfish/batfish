@@ -281,6 +281,7 @@ vpc domain 32
   auto-recovery
   delay restore 150
   ip arp synchronize
+  peer-config-check-bypass
   peer-gateway
   peer-keepalive destination 1.2.3.4 source 1.2.3.5
   peer-switch

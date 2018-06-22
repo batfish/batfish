@@ -182,7 +182,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     _ptSentences.appendToLastSentence("  <== mode:" + mode);
 
     if (_printLineNumbers) {
-      _ptSentences.appendToLastSentence(String.format(" line:%s", t.getLine()));
+      _ptSentences.appendToLastSentence(String.format(" line:%s", _combinedParser.getLine(t)));
     }
   }
 }

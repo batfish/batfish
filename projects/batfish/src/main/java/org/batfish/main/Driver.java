@@ -50,16 +50,14 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.BfConsts.TaskStatus;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.QuestionException;
-import org.batfish.common.Snapshot;
 import org.batfish.common.Task;
 import org.batfish.common.Task.Batch;
 import org.batfish.common.Version;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.ConfigurationLocator;
 import org.batfish.config.Settings;
-import org.batfish.config.Settings.EnvironmentSettings;
-import org.batfish.config.Settings.TestrigSettings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.answers.Answer;
@@ -119,21 +117,21 @@ public class Driver {
 
   private static ConcurrentMap<String, Task> _taskLog;
 
-  private static final Cache<TestrigSettings, DataPlane> CACHED_COMPRESSED_DATA_PLANES =
+  private static final Cache<NetworkSnapshot, DataPlane> CACHED_COMPRESSED_DATA_PLANES =
       buildDataPlaneCache();
 
-  private static final Cache<TestrigSettings, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
+  private static final Cache<NetworkSnapshot, DataPlane> CACHED_DATA_PLANES = buildDataPlaneCache();
 
-  private static final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+  private static final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       CACHED_ENVIRONMENT_BGP_TABLES = buildEnvironmentBgpTablesCache();
 
-  private static final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+  private static final Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
       CACHED_ENVIRONMENT_ROUTING_TABLES = buildEnvironmentRoutingTablesCache();
 
-  private static final Cache<Snapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
+  private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>> CACHED_TESTRIGS =
       buildTestrigCache();
 
-  private static final Cache<Snapshot, SortedMap<String, Configuration>>
+  private static final Cache<NetworkSnapshot, SortedMap<String, Configuration>>
       CACHED_COMPRESSED_TESTRIGS = buildTestrigCache();
 
   private static final int COORDINATOR_CHECK_INTERVAL_MS = 1 * 60 * 1000; // 1 min
@@ -157,25 +155,21 @@ public class Driver {
   static Logger networkListenerLogger =
       Logger.getLogger("org.glassfish.grizzly.http.server.NetworkListener");
 
-  private static Cache<TestrigSettings, DataPlane> buildDataPlaneCache() {
+  private static Cache<NetworkSnapshot, DataPlane> buildDataPlaneCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_DATA_PLANES).weakValues().build();
   }
 
-  private static Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+  private static Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       buildEnvironmentBgpTablesCache() {
-    return Collections.synchronizedMap(
-        new LRUMap<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>(
-            MAX_CACHED_ENVIRONMENT_BGP_TABLES));
+    return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_BGP_TABLES));
   }
 
-  private static Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+  private static Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
       buildEnvironmentRoutingTablesCache() {
-    return Collections.synchronizedMap(
-        new LRUMap<EnvironmentSettings, SortedMap<String, RoutesByVrf>>(
-            MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
+    return Collections.synchronizedMap(new LRUMap<>(MAX_CACHED_ENVIRONMENT_ROUTING_TABLES));
   }
 
-  private static Cache<Snapshot, SortedMap<String, Configuration>> buildTestrigCache() {
+  private static Cache<NetworkSnapshot, SortedMap<String, Configuration>> buildTestrigCache() {
     return CacheBuilder.newBuilder().maximumSize(MAX_CACHED_TESTRIGS).build();
   }
 
@@ -578,7 +572,7 @@ public class Driver {
                       .startActive()) {
                 assert runBatfishSpan != null;
                 Answer answer = null;
-                String containerName = settings.getContainerDir().getFileName().toString();
+                String containerName = settings.getContainer();
                 String testrigName = settings.getTestrig();
                 try {
                   answer = batfish.run();
@@ -627,7 +621,7 @@ public class Driver {
                   try (ActiveSpan outputAnswerSpan =
                       GlobalTracer.get().buildSpan("Outputting answer").startActive()) {
                     assert outputAnswerSpan != null;
-                    if (settings.getAnswerJsonPath() != null) {
+                    if (settings.getTaskId() != null) {
                       batfish.outputAnswerWithLog(answer);
                     }
                   }

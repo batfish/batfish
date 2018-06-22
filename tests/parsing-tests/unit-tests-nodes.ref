@@ -5775,6 +5775,16 @@
           }
         },
         "ipsecPolicies" : {
+          "VPN:5" : {
+            "name" : "VPN:5",
+            "pfsKeyGroup" : "GROUP14",
+            "pfsKeyGroupDynamicIke" : false
+          },
+          "VPNMAP:2" : {
+            "name" : "VPNMAP:2",
+            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroupDynamicIke" : false
+          },
           "abcdefg" : {
             "name" : "abcdefg",
             "pfsKeyGroupDynamicIke" : false
@@ -8735,10 +8745,8 @@
             ],
             "mtu" : 1500,
             "nativeVlan" : 1,
-            "ospfArea" : 0,
-            "ospfCost" : 4000,
             "ospfDeadInterval" : 0,
-            "ospfEnabled" : true,
+            "ospfEnabled" : false,
             "ospfHelloMultiplier" : 0,
             "ospfPassive" : false,
             "ospfPointToPoint" : false,
@@ -8889,14 +8897,7 @@
               "areas" : {
                 "0" : {
                   "name" : 0,
-                  "interfaces" : [
-                    "Ethernet0/0"
-                  ],
-                  "nssa" : {
-                    "defaultOriginateType" : "INTER_AREA",
-                    "suppressType3" : true
-                  },
-                  "stubType" : "NSSA",
+                  "stubType" : "NONE",
                   "summaries" : {
                     "1.2.3.0/24" : {
                       "advertise" : true,

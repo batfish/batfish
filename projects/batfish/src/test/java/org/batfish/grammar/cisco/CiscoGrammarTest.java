@@ -33,6 +33,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecVpn;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
@@ -77,8 +78,12 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
@@ -158,6 +163,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Interface;
@@ -165,7 +171,9 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.LineType;
@@ -178,11 +186,14 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
+import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
@@ -1710,6 +1721,83 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testCryptoMapsToIpsecPolicies() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:10",
+            allOf(
+                IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
+                hasIpsecProposals(
+                    contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))));
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:30:5",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))));
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:30:15",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
+  }
+
+  @Test
+  public void testCryptoMapsToIpsecVpns() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+
+    List<IpAccessListLine> expectedAclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .build()))
+                .build(),
+            IpAccessListLine.accepting()
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .build()))
+                .build());
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:10:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
+                hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:30:5:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:5")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:30:15:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:15")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+  }
+
+  @Test
   public void testIsakmpPolicyAruba() throws IOException {
     Configuration c = parseConfig("arubaCrypto");
     assertThat(
@@ -1866,7 +1954,7 @@ public class CiscoGrammarTest {
             allOf(
                 IpsecPolicyMatchers.hasIkeGateway(
                     allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
-                IpsecPolicyMatchers.hasIpsecProposals(
+                hasIpsecProposals(
                     contains(
                         ImmutableList.of(
                             allOf(

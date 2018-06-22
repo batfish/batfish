@@ -43,6 +43,11 @@ if_channel_group
    )? NEWLINE
 ;
 
+if_crypto_map
+:
+   CRYPTO MAP name = variable NEWLINE
+;
+
 if_default_gw
 :
    DEFAULT_GW IP_ADDRESS NEWLINE
@@ -267,6 +272,16 @@ if_ip_ospf_network
 if_ip_ospf_passive_interface
 :
    NO? IP OSPF PASSIVE_INTERFACE NEWLINE
+;
+
+if_ip_ospf_shutdown
+:
+   NO? IP OSPF SHUTDOWN NEWLINE
+;
+
+if_ip_passive_interface_eigrp
+:
+   NO? IP PASSIVE_INTERFACE EIGRP tag = DEC NEWLINE
 ;
 
 if_ip_pim_neighbor_filter
@@ -804,10 +819,12 @@ if_null_single
    (
       BCMC_OPTIMIZATION
       | DOT1X
+      | IP TRAFFIC_EXPORT
       | JUMBO
       | LINKDEBOUNCE
       | MAB
       | PHY
+      | REDUNDANCY
       | SWITCHPORT CAPTURE
       | SUPPRESS_ARP
       | TRIMODE
@@ -1299,6 +1316,7 @@ s_interface
       if_autostate
       | if_bandwidth
       | if_channel_group
+      | if_crypto_map
       | if_default_gw
       | if_description
       | if_flow_sampler
@@ -1324,6 +1342,8 @@ s_interface
       | if_ip_ospf_hello_interval
       | if_ip_ospf_network
       | if_ip_ospf_passive_interface
+      | if_ip_ospf_shutdown
+      | if_ip_passive_interface_eigrp
       | if_ip_pim_neighbor_filter
       | if_ip_policy
       | if_ip_router_isis

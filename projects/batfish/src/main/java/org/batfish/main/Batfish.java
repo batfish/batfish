@@ -67,6 +67,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.CleanBatfishException;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.Directory;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Pair;
 import org.batfish.common.Snapshot;
 import org.batfish.common.Version;
@@ -150,6 +151,7 @@ import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BgpTableFormat;
 import org.batfish.grammar.GrammarSettings;
 import org.batfish.grammar.ParseTreePrettyPrinter;
+import org.batfish.grammar.flattener.Flattener;
 import org.batfish.grammar.juniper.JuniperCombinedParser;
 import org.batfish.grammar.juniper.JuniperFlattener;
 import org.batfish.grammar.vyos.VyosCombinedParser;
@@ -302,7 +304,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
   }
 
-  public static String flatten(
+  public static Flattener flatten(
       String input,
       BatfishLogger logger,
       Settings settings,
@@ -318,7 +320,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           JuniperFlattener flattener = new JuniperFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
-          return flattener.getFlattenedConfigurationText();
+          return flattener;
         }
 
       case VYOS:
@@ -328,7 +330,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           VyosFlattener flattener = new VyosFlattener(header);
           ParseTreeWalker walker = new ParseTreeWalker();
           walker.walk(flattener, tree);
-          return flattener.getFlattenedConfigurationText();
+          return flattener;
         }
 
         // $CASES-OMITTED$
@@ -339,7 +341,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public static void initQuestionSettings(Settings settings) {
     String questionName = settings.getQuestionName();
-    Path containerDir = settings.getContainerDir();
+    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
     if (questionName != null) {
       Path questionPath =
           containerDir.resolve(BfConsts.RELPATH_QUESTIONS_DIR).resolve(questionName);
@@ -350,7 +352,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   public static void initTestrigSettings(Settings settings) {
     String testrig = settings.getTestrig();
     String envName = settings.getEnvironmentName();
-    Path containerDir = settings.getContainerDir();
+    Path containerDir = settings.getStorageBase().resolve(settings.getContainer());
     if (testrig != null) {
       applyBaseDir(settings.getBaseTestrigSettings(), containerDir, testrig, envName);
       String deltaTestrig = settings.getDeltaTestrig();
@@ -454,18 +456,19 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private SortedMap<BgpTableFormat, BgpTablePlugin> _bgpTablePlugins;
 
-  private final Cache<Snapshot, SortedMap<String, Configuration>> _cachedCompressedConfigurations;
+  private final Cache<NetworkSnapshot, SortedMap<String, Configuration>>
+      _cachedCompressedConfigurations;
 
-  private final Cache<Snapshot, SortedMap<String, Configuration>> _cachedConfigurations;
+  private final Cache<NetworkSnapshot, SortedMap<String, Configuration>> _cachedConfigurations;
 
-  private final Cache<TestrigSettings, DataPlane> _cachedCompressedDataPlanes;
+  private final Cache<NetworkSnapshot, DataPlane> _cachedCompressedDataPlanes;
 
-  private final Cache<TestrigSettings, DataPlane> _cachedDataPlanes;
+  private final Cache<NetworkSnapshot, DataPlane> _cachedDataPlanes;
 
-  private final Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
+  private final Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>>
       _cachedEnvironmentBgpTables;
 
-  private final Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>>
+  private final Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>>
       _cachedEnvironmentRoutingTables;
 
   private TestrigSettings _deltaTestrigSettings;
@@ -490,13 +493,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   public Batfish(
       Settings settings,
-      Cache<Snapshot, SortedMap<String, Configuration>> cachedCompressedConfigurations,
-      Cache<Snapshot, SortedMap<String, Configuration>> cachedConfigurations,
-      Cache<TestrigSettings, DataPlane> cachedCompressedDataPlanes,
-      Cache<TestrigSettings, DataPlane> cachedDataPlanes,
-      Map<EnvironmentSettings, SortedMap<String, BgpAdvertisementsByVrf>>
-          cachedEnvironmentBgpTables,
-      Map<EnvironmentSettings, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
+      Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedCompressedConfigurations,
+      Cache<NetworkSnapshot, SortedMap<String, Configuration>> cachedConfigurations,
+      Cache<NetworkSnapshot, DataPlane> cachedCompressedDataPlanes,
+      Cache<NetworkSnapshot, DataPlane> cachedDataPlanes,
+      Map<NetworkSnapshot, SortedMap<String, BgpAdvertisementsByVrf>> cachedEnvironmentBgpTables,
+      Map<NetworkSnapshot, SortedMap<String, RoutesByVrf>> cachedEnvironmentRoutingTables) {
     super(settings.getSerializeToText());
     _settings = settings;
     _bgpTablePlugins = new TreeMap<>();
@@ -515,17 +517,20 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _answererCreators = new HashMap<>();
     _testrigSettingsStack = new ArrayList<>();
     _dataPlanePlugins = new HashMap<>();
-    _storage = new BatfishStorage(_settings.getContainerDir(), _logger, this::newBatch);
+    _storage =
+        new BatfishStorage(
+            _settings.getStorageBase().resolve(_settings.getContainer()), _logger, this::newBatch);
   }
 
   private Answer analyze() {
     Answer answer = new Answer();
     AnswerSummary summary = new AnswerSummary();
     String analysisName = _settings.getAnalysisName();
-    String containerName = _settings.getContainerDir().getFileName().toString();
+    String containerName = _settings.getContainer();
     Path analysisQuestionsDir =
         _settings
-            .getContainerDir()
+            .getStorageBase()
+            .resolve(containerName)
             .resolve(
                 Paths.get(
                         BfConsts.RELPATH_ANALYSES_DIR, analysisName, BfConsts.RELPATH_QUESTIONS_DIR)
@@ -939,7 +944,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private CompressDataPlaneResult computeCompressedDataPlane() {
     CompressDataPlaneResult result = computeCompressedDataPlane(new HeaderSpace());
-    _cachedCompressedConfigurations.put(getSnapshot(), new TreeMap<>(result._compressedConfigs));
+    _cachedCompressedConfigurations.put(
+        getNetworkSnapshot(), new TreeMap<>(result._compressedConfigs));
     saveDataPlane(result._compressedDataPlane, result._answerElement, true);
     return result;
   }
@@ -1001,10 +1007,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
             ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlaneAnswerPath()
             : _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath();
 
-    Cache<TestrigSettings, DataPlane> cache =
+    Cache<NetworkSnapshot, DataPlane> cache =
         compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
 
-    cache.put(_testrigSettings, dataPlane);
+    cache.put(getNetworkSnapshot(), dataPlane);
 
     _logger.resetTimer();
     newBatch("Writing data plane to disk", 0);
@@ -1579,7 +1585,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public String getContainerName() {
-    return _settings.getContainerDir().getFileName().toString();
+    return _settings.getContainer();
   }
 
   @Override
@@ -1757,7 +1763,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public NodeRolesData getNodeRolesData() {
-    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    Path nodeRoleDataPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
       return NodeRolesData.read(nodeRoleDataPath);
     } catch (IOException e) {
@@ -1774,7 +1784,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
    */
   @Override
   public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
-    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    Path nodeRoleDataPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
       return NodeRolesData.getNodeRoleDimension(nodeRoleDataPath, dimension);
     } catch (IOException e) {
@@ -1833,6 +1847,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
   @Override
   public ImmutableConfiguration getSettingsConfiguration() {
     return _settings.getImmutableConfiguration();
+  }
+
+  private NetworkSnapshot getNetworkSnapshot() {
+    return new NetworkSnapshot(
+        _settings.getContainer(),
+        new Snapshot(
+            _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName()));
   }
 
   private Snapshot getSnapshot() {
@@ -2221,12 +2242,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, Configuration> loadConfigurations() {
-    Snapshot snapshot = getSnapshot();
+    NetworkSnapshot snapshot = getNetworkSnapshot();
     _logger.debugf("Loading configurations for %s\n", snapshot);
     return loadConfigurations(snapshot);
   }
 
-  SortedMap<String, Configuration> loadCompressedConfigurations(Snapshot snapshot) {
+  SortedMap<String, Configuration> loadCompressedConfigurations(NetworkSnapshot snapshot) {
     // Do we already have configurations in the cache?
     SortedMap<String, Configuration> configurations =
         _cachedCompressedConfigurations.getIfPresent(snapshot);
@@ -2236,7 +2257,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadCompressedConfigurations(snapshot.getTestrig());
+    configurations = _storage.loadCompressedConfigurations(snapshot.getSnapshot().getTestrig());
     if (configurations != null) {
       return configurations;
     } else {
@@ -2253,7 +2274,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * Returns the configurations for given snapshot, which including any environment-specific
    * features.
    */
-  SortedMap<String, Configuration> loadConfigurations(Snapshot snapshot) {
+  SortedMap<String, Configuration> loadConfigurations(NetworkSnapshot snapshot) {
     // Do we already have configurations in the cache?
     SortedMap<String, Configuration> configurations = _cachedConfigurations.getIfPresent(snapshot);
     if (configurations != null) {
@@ -2262,7 +2283,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Loading configurations for %s, cache miss", snapshot);
 
     // Next, see if we have an up-to-date, environment-specific configurations on disk.
-    configurations = _storage.loadConfigurations(snapshot.getTestrig());
+    configurations = _storage.loadConfigurations(snapshot.getSnapshot().getTestrig());
     if (configurations != null) {
       _logger.debugf("Loaded configurations for %s off disk", snapshot);
       applyEnvironment(configurations);
@@ -2316,7 +2337,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   DataPlane loadDataPlane(boolean compressed) {
-    Cache<TestrigSettings, DataPlane> cache =
+    Cache<NetworkSnapshot, DataPlane> cache =
         compressed ? _cachedCompressedDataPlanes : _cachedDataPlanes;
 
     Path path =
@@ -2324,7 +2345,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
             ? _testrigSettings.getEnvironmentSettings().getCompressedDataPlanePath()
             : _testrigSettings.getEnvironmentSettings().getDataPlanePath();
 
-    DataPlane dp = cache.getIfPresent(_testrigSettings);
+    NetworkSnapshot snapshot = getNetworkSnapshot();
+    DataPlane dp = cache.getIfPresent(snapshot);
     if (dp == null) {
       /*
        * Data plane should exist after loading answer element, as it triggers
@@ -2336,7 +2358,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
       if (dp == null) {
         newBatch("Loading data plane from disk", 0);
         dp = deserializeObject(path, DataPlane.class);
-        cache.put(_testrigSettings, dp);
+        cache.put(snapshot, dp);
       }
     }
     return dp;
@@ -2369,9 +2391,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public SortedMap<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
+    NetworkSnapshot snapshot = getNetworkSnapshot();
     SortedMap<String, BgpAdvertisementsByVrf> environmentBgpTables =
-        _cachedEnvironmentBgpTables.get(envSettings);
+        _cachedEnvironmentBgpTables.get(snapshot);
     if (environmentBgpTables == null) {
       ParseEnvironmentBgpTablesAnswerElement ae = loadParseEnvironmentBgpTablesAnswerElement();
       if (!Version.isCompatibleVersion(
@@ -2379,17 +2401,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
         repairEnvironmentBgpTables();
       }
       environmentBgpTables =
-          deserializeEnvironmentBgpTables(envSettings.getSerializeEnvironmentBgpTablesPath());
-      _cachedEnvironmentBgpTables.put(envSettings, environmentBgpTables);
+          deserializeEnvironmentBgpTables(
+              _testrigSettings.getEnvironmentSettings().getSerializeEnvironmentBgpTablesPath());
+      _cachedEnvironmentBgpTables.put(snapshot, environmentBgpTables);
     }
     return environmentBgpTables;
   }
 
   @Override
   public SortedMap<String, RoutesByVrf> loadEnvironmentRoutingTables() {
-    EnvironmentSettings envSettings = _testrigSettings.getEnvironmentSettings();
+    NetworkSnapshot snapshot = getNetworkSnapshot();
     SortedMap<String, RoutesByVrf> environmentRoutingTables =
-        _cachedEnvironmentRoutingTables.get(envSettings);
+        _cachedEnvironmentRoutingTables.get(snapshot);
     if (environmentRoutingTables == null) {
       ParseEnvironmentRoutingTablesAnswerElement pertae =
           loadParseEnvironmentRoutingTablesAnswerElement();
@@ -2399,8 +2422,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
       }
       environmentRoutingTables =
           deserializeEnvironmentRoutingTables(
-              envSettings.getSerializeEnvironmentRoutingTablesPath());
-      _cachedEnvironmentRoutingTables.put(envSettings, environmentRoutingTables);
+              _testrigSettings.getEnvironmentSettings().getSerializeEnvironmentRoutingTablesPath());
+      _cachedEnvironmentRoutingTables.put(snapshot, environmentRoutingTables);
     }
     return environmentRoutingTables;
   }
@@ -2812,7 +2835,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseEnvironment();
     Topology baseTopology = getEnvironmentTopology();
     try {
-      baseParameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
+      baseParameters =
+          resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
@@ -2825,7 +2849,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     ResolvedReachabilityParameters deltaParameters;
     pushDeltaEnvironment();
     try {
-      deltaParameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
+      deltaParameters =
+          resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
@@ -3360,7 +3385,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushBaseEnvironment();
     ResolvedReachabilityParameters baseParams;
     try {
-      baseParams = resolveReachabilityParameters(this, params, getSnapshot());
+      baseParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
@@ -3369,7 +3394,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     pushDeltaEnvironment();
     ResolvedReachabilityParameters deltaParams;
     try {
-      deltaParams = resolveReachabilityParameters(this, params, getSnapshot());
+      deltaParams = resolveReachabilityParameters(this, params, getNetworkSnapshot());
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
@@ -3945,7 +3970,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // Compute new auto role data and updates existing auto data with it
     SortedSet<NodeRoleDimension> autoRoles =
         new InferRoles(configurations.keySet(), envTopology).inferRoles();
-    Path nodeRoleDataPath = _settings.getContainerDir().resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
+    Path nodeRoleDataPath =
+        _settings
+            .getStorageBase()
+            .resolve(_settings.getContainer())
+            .resolve(BfConsts.RELPATH_NODE_ROLES_PATH);
     try {
       NodeRolesData.mergeNodeRoleDimensions(nodeRoleDataPath, autoRoles, null, true);
     } catch (IOException e) {
@@ -4068,7 +4097,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     }
 
     if (!configsFound) {
-      throw new BatfishException("No valid configurations found");
+      throw new BatfishException("No valid configurations found in testrig path " + testRigPath);
     }
 
     // serialize warnings
@@ -4094,7 +4123,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     ResolvedReachabilityParameters parameters;
     try {
-      parameters = resolveReachabilityParameters(this, reachabilityParameters, getSnapshot());
+      parameters =
+          resolveReachabilityParameters(this, reachabilityParameters, getNetworkSnapshot());
     } catch (InvalidReachabilityParametersException e) {
       return e.getInvalidParametersAnswer();
     }
@@ -4400,7 +4430,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   @Override
   public void writeDataPlane(DataPlane dp, DataPlaneAnswerElement ae) {
-    _cachedDataPlanes.put(_testrigSettings, dp);
+    _cachedDataPlanes.put(getNetworkSnapshot(), dp);
     serializeObject(dp, _testrigSettings.getEnvironmentSettings().getDataPlanePath());
     serializeObject(ae, _testrigSettings.getEnvironmentSettings().getDataPlaneAnswerPath());
   }
@@ -4450,8 +4480,14 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void writeJsonAnswerWithLog(@Nullable String logString, String structuredAnswerString) {
     // Write log of WorkItem task to the configured path for logs
-    Path jsonPath = _settings.getAnswerJsonPath();
-    if (jsonPath != null && logString != null) {
+    if (logString != null && _settings.getTaskId() != null) {
+      Path jsonPath =
+          _settings
+              .getStorageBase()
+              .resolve(_settings.getContainer())
+              .resolve(BfConsts.RELPATH_TESTRIGS_DIR)
+              .resolve(_settings.getTestrig())
+              .resolve(_settings.getTaskId() + BfConsts.SUFFIX_ANSWER_JSON_FILE);
       CommonUtil.writeFile(jsonPath, logString);
     }
     // Write answer.json and answer-pretty.json if WorkItem was answering a question
