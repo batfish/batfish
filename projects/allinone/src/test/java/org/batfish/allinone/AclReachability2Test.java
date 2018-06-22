@@ -47,7 +47,6 @@ public class AclReachability2Test {
   private Configuration _c2;
 
   private IpAccessList.Builder _aclb;
-  private IpAccessList.Builder _aclb2;
 
   @Before
   public void setup() {
@@ -165,7 +164,7 @@ public class AclReachability2Test {
 
     IpAccessListLine aclLine =
         IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("???")).build();
-    IpAccessList acl = _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
+    _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 

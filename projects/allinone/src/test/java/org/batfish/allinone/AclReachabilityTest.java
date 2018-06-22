@@ -46,7 +46,6 @@ public class AclReachabilityTest {
   private Configuration _c2;
 
   private IpAccessList.Builder _aclb;
-  private IpAccessList.Builder _aclb2;
 
   @Before
   public void setup() {
@@ -233,24 +232,23 @@ public class AclReachabilityTest {
   @Test
   public void testMultipleCoveringLines() throws IOException {
     String aclName = "acl";
-    IpAccessList acl =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.0").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.1:0.0.0.0").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.1").toIpSpace())
-                            .build())))
-            .setName(aclName)
-            .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.0").toIpSpace())
+                        .build()),
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(new IpWildcard("1.0.0.1:0.0.0.0").toIpSpace())
+                        .build()),
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(new IpWildcard("1.0.0.0:0.0.0.1").toIpSpace())
+                        .build())))
+        .setName(aclName)
+        .build();
 
     AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
 
@@ -269,29 +267,28 @@ public class AclReachabilityTest {
   @Test
   public void testIndependentlyUnmatchableLines() throws IOException {
     String aclName = "acl";
-    IpAccessList acl =
-        _aclb
-            .setLines(
-                ImmutableList.of(
-                    rejectingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
-                            .build()),
-                    IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build(),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.0.0.0/32").toIpSpace())
-                            .build()),
-                    acceptingHeaderSpace(
-                        HeaderSpace.builder()
-                            .setSrcIps(Prefix.parse("1.2.3.4/32").toIpSpace())
-                            .build())))
-            .setName(aclName)
-            .build();
+    _aclb
+        .setLines(
+            ImmutableList.of(
+                rejectingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                        .build()),
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(Prefix.parse("1.0.0.0/24").toIpSpace())
+                        .build()),
+                IpAccessListLine.accepting().setMatchCondition(FalseExpr.INSTANCE).build(),
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(Prefix.parse("1.0.0.0/32").toIpSpace())
+                        .build()),
+                acceptingHeaderSpace(
+                    HeaderSpace.builder()
+                        .setSrcIps(Prefix.parse("1.2.3.4/32").toIpSpace())
+                        .build())))
+        .setName(aclName)
+        .build();
 
     AclLinesAnswerElement answer = answer(new AclReachabilityQuestion());
 
