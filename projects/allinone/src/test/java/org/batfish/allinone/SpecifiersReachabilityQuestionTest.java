@@ -50,7 +50,6 @@ public class SpecifiersReachabilityQuestionTest {
   private static final String TESTRIGS_PREFIX = "org/batfish/allinone/testrigs/";
   private static final String TESTRIG_NAME = "specifiers-reachability";
   private static final List<String> TESTRIG_NODE_NAMES = ImmutableList.of(NODE1, NODE2);
-  private static final String VRF = "default";
 
   @Rule public TemporaryFolder _folder = new TemporaryFolder();
 

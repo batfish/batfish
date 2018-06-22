@@ -47,7 +47,6 @@ public class AclReachability2Test {
   private Configuration _c2;
 
   private IpAccessList.Builder _aclb;
-  private IpAccessList.Builder _aclb2;
 
   @Before
   public void setup() {
@@ -57,7 +56,6 @@ public class AclReachability2Test {
     _c1 = cb.setHostname("c1").build();
     _c2 = cb.setHostname("c2").build();
     _aclb = nf.aclBuilder().setOwner(_c1);
-    _aclb2 = nf.aclBuilder().setOwner(_c2);
     _c1.setIpSpaces(ImmutableSortedMap.of("ipSpace", new Ip("1.2.3.4").toIpSpace()));
     _c1.setInterfaces(
         ImmutableSortedMap.of(
@@ -165,7 +163,7 @@ public class AclReachability2Test {
 
     IpAccessListLine aclLine =
         IpAccessListLine.accepting().setMatchCondition(new PermittedByAcl("???")).build();
-    IpAccessList acl = _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
+    _aclb.setLines(ImmutableList.of(aclLine)).setName("acl").build();
 
     TableAnswerElement answer = answer(new AclReachability2Question());
 
