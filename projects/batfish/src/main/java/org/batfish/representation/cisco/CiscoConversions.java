@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
@@ -225,6 +226,8 @@ class CiscoConversions {
       case LEVEL_2:
         newProcess.setLevel2(settings);
         break;
+      default:
+        throw new BatfishException("Unhandled IS-IS level.");
     }
     return newProcess.build();
   }

@@ -14,7 +14,7 @@ public class IsisProtocolHelper {
    *
    * @param route the route to convert
    * @param l2Admin the new L2 admin distance to use.
-   * @return an {@link Optional<IsisRoute>}. It will be empty if the route given is not level 1 or
+   * @return an optional of {@link IsisRoute}. It will be empty if the route given is not level 1 or
    *     has its down bit set.
    */
   public static Optional<IsisRoute> convertRouteLevel1ToLevel2(IsisRoute route, int l2Admin) {
