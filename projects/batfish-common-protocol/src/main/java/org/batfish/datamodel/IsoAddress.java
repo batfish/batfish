@@ -74,7 +74,7 @@ public final class IsoAddress implements Serializable {
 
   /**
    * Create an ISO address from hexadecimal digits, optionally interspersed with period (.)
-   * characters that are ignored. See {@link IsoAddres} documentation for canonical text format.
+   * characters that are ignored. See {@link IsoAddress} documentation for canonical text format.
    */
   public IsoAddress(@Nonnull String isoAddressStr) {
     String trimmed = trim(isoAddressStr);
