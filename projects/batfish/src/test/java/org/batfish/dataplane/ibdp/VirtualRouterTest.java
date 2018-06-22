@@ -56,6 +56,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.IsisInterfaceMode;
 import org.batfish.datamodel.IsisInterfaceSettings;
 import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisLevelSettings;
@@ -828,7 +829,7 @@ public class VirtualRouterTest {
     IsisProcess.Builder isb =
         IsisProcess.builder().setLevel1(levelSettings).setLevel2(levelSettings);
     IsisInterfaceLevelSettings isisInterfaceLevel1Settings =
-        IsisInterfaceLevelSettings.builder().build();
+        IsisInterfaceLevelSettings.builder().setMode(IsisInterfaceMode.ACTIVE).build();
     IsisInterfaceSettings isisInterfaceSettings =
         IsisInterfaceSettings.builder()
             .setPointToPoint(true)
@@ -895,16 +896,16 @@ public class VirtualRouterTest {
             ImmutableSet.of(
                 new IsisEdge(
                     IsisLevel.LEVEL_1_2,
-                    new IsisNode(c1.getHostname(), i1.getName()),
-                    new IsisNode(c2.getHostname(), i2.getName())))));
+                    new IsisNode(c2.getHostname(), i2.getName()),
+                    new IsisNode(c1.getHostname(), i1.getName())))));
     assertThat(
         vrs.get(c2.getName())._isisIncomingRoutes.keySet(),
         equalTo(
             ImmutableSet.of(
                 new IsisEdge(
                     IsisLevel.LEVEL_1_2,
-                    new IsisNode(c2.getHostname(), i2.getName()),
-                    new IsisNode(c1.getHostname(), i1.getName())))));
+                    new IsisNode(c1.getHostname(), i1.getName()),
+                    new IsisNode(c2.getHostname(), i2.getName())))));
   }
 
   /** Test that the routes are exact route matches are removed from the RIB by default */
