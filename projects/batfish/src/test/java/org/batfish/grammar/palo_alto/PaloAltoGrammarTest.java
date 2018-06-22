@@ -210,18 +210,15 @@ public class PaloAltoGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse();
 
-    /* Confirm defined structures in nested config show up with original definition line numbers */
+    // Confirm defined structures in nested config show up with original definition line numbers
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            hostname,
-            PaloAltoStructureType.INTERFACE,
-            "ethernet1/1",
-            contains(6, 7, 8, 9, 11, 12)));
+            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", contains(8, 9, 10, 11, 12)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", contains(16, 17, 18, 19)));
+            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", contains(8, 16, 17, 18, 19)));
   }
 
   @Test

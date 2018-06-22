@@ -94,13 +94,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
-  /* TODO FIX THIS
-  private void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
-    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
-      _configuration.defineStructure(type, name, i);
-    }
-  }
-   */
   /** Mark the specified structure as defined on each line in the supplied context */
   private void defineStructure(StructureType type, String name, RuleContext ctx) {
     /* Recursively process children to find all relevant definition lines for the specified context */

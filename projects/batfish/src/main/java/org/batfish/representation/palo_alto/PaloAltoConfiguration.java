@@ -201,6 +201,7 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
       _c.getVrfs().put(vr.getKey(), toVrf(vr.getValue()));
     }
 
+    // Count and mark structure usages and identify undefined references
     markConcreteStructure(
         PaloAltoStructureType.INTERFACE, PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE);
     return _c;
