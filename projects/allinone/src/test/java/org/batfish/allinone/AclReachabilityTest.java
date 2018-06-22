@@ -55,7 +55,6 @@ public class AclReachabilityTest {
     _c1 = cb.setHostname("c1").build();
     _c2 = cb.setHostname("c2").build();
     _aclb = nf.aclBuilder().setOwner(_c1);
-    _aclb2 = nf.aclBuilder().setOwner(_c2);
     _c1.setIpSpaces(ImmutableSortedMap.of("ipSpace", new Ip("1.2.3.4").toIpSpace()));
     _c1.setInterfaces(
         ImmutableSortedMap.of(
