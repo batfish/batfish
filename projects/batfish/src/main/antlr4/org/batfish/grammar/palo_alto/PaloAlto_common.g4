@@ -13,3 +13,26 @@ variable
 :
     ~NEWLINE
 ;
+
+variable_list
+:
+    (
+        variable_list_item
+        |
+        (
+            OPEN_BRACKET
+            (
+                variable_list_item
+            )*
+            CLOSE_BRACKET
+        )
+    )
+;
+
+variable_list_item
+:
+    ~(
+        CLOSE_BRACKET
+        | NEWLINE
+    )
+;

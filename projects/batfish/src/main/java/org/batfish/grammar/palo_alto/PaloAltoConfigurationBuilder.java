@@ -23,6 +23,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
@@ -32,6 +33,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.StaticRoute;
@@ -210,6 +212,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
         _currentVirtualRouter
             .getStaticRoutes()
             .computeIfAbsent(ctx.name.getText(), StaticRoute::new);
+  }
+
+  @Override
+  public void exitSnvr_interface(Snvr_interfaceContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      _currentVirtualRouter.getInterfaceNames().add(var.getText());
+    }
   }
 
   @Override
