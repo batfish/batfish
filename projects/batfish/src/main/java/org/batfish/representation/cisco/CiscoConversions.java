@@ -213,6 +213,10 @@ class CiscoConversions {
       IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.IsisProcess.Builder newProcess =
         org.batfish.datamodel.IsisProcess.builder();
+    if (proc.getNetAddress() == null) {
+      oldConfig.getWarnings().redFlag("Cannot create IS-IS process without specifying net-address");
+      return null;
+    }
     newProcess.setNetAddress(proc.getNetAddress());
     IsisLevelSettings settings = IsisLevelSettings.builder().build();
     switch (proc.getLevel()) {
