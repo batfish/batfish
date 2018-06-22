@@ -183,11 +183,9 @@ public class PaloAltoGrammarTest {
   @Test
   public void testVirtualRouterInterfaces() throws IOException {
     String hostname = "virtual-router-interfaces";
-    String vrName1 = "default";
-    String vrName2 = "somename";
     Configuration c = parseConfig(hostname);
 
-    assertThat(c, hasVrf(vrName1, hasInterfaces(hasItem("ethernet1/1"))));
-    assertThat(c, hasVrf(vrName2, hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
+    assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
+    assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
   }
 }
