@@ -320,7 +320,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
-    int line = token.getLine();
+    int line = getLine(token);
     String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
     if (_unrecognizedAsRedFlag) {
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");

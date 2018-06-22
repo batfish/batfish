@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -221,6 +222,31 @@ public final class DataModelMatchers {
   }
 
   /**
+   * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
+   * defined structure for {@code hostname} of type {@code type} named {@code structureName}.
+   */
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasDefinedStructure(
+      @Nonnull String hostname, @Nonnull StructureType type, @Nonnull String structureName) {
+    return new ConvertConfigurationAnswerElementMatchers.HasDefinedStructure(
+        hostname, type, structureName);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
+   * defined structure for {@code hostname} of type {@code type} named {@code structureName} with
+   * definition lines matching the provided {@code subMatcher}.
+   */
+  public static @Nonnull Matcher<ConvertConfigurationAnswerElement>
+      hasDefinedStructureWithDefinitionLines(
+          @Nonnull String hostname,
+          @Nonnull StructureType type,
+          @Nonnull String structureName,
+          @Nonnull Matcher<? super Set<Integer>> subMatcher) {
+    return new ConvertConfigurationAnswerElementMatchers.HasDefinedStructureWithDefinitionLines(
+        hostname, type, structureName, subMatcher);
+  }
+
+  /**
    * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link Zone}'s
    * interfaces.
    */
@@ -230,7 +256,7 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the provied {@code subMatcher} matches the {@link Vrf}'s
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the {@link Vrf}'s
    * isisProcess.
    */
   public static @Nonnull Matcher<Vrf> hasIsisProcess(
@@ -257,7 +283,7 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has
-   * an undefined refrence in {@code hostname} to a structure of type {@code type} named {@code
+   * an undefined reference in {@code hostname} to a structure of type {@code type} named {@code
    * structureName}.
    */
   public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasUndefinedReference(
@@ -268,7 +294,7 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has
-   * an undefined refrence in {@code hostname} to a structure of type {@code type} named {@code
+   * an undefined reference in {@code hostname} to a structure of type {@code type} named {@code
    * structureName} of usage type {@code usage}.
    */
   public static @Nonnull Matcher<ConvertConfigurationAnswerElement> hasUndefinedReference(

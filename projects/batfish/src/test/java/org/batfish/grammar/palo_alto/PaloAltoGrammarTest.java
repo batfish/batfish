@@ -8,6 +8,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
@@ -29,11 +30,18 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 import org.batfish.common.BatfishException;
+import org.batfish.common.BatfishLogger;
+import org.batfish.common.util.CommonUtil;
+import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.representation.palo_alto.PaloAltoStructureType;
@@ -169,6 +177,51 @@ public class PaloAltoGrammarTest {
 
     // Confirm a simple extraction (hostname) works for nested config format
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testNestedConfigLineMap() throws IOException {
+    String hostname = "nested-config";
+    Flattener flattener =
+        Batfish.flatten(
+            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            ConfigurationFormat.PALO_ALTO_NESTED,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    /*
+     * Flattened config should be two lines: header line and set-hostname line
+     * This test is only checking content of the set-hostname line
+     */
+    String setLineText = flattener.getFlattenedConfigurationText().split("\n", -1)[1];
+
+    /* Confirm original line numbers are preserved */
+    assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("deviceconfig")), equalTo(1));
+    assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("system")), equalTo(2));
+    assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("hostname")), equalTo(3));
+    assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("nested-config")), equalTo(3));
+  }
+
+  @Test
+  public void testNestedConfigStructureDef() throws IOException {
+    String hostname = "nested-config-structure-def";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm defined structures in nested config show up with original definition line numbers */
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname,
+            PaloAltoStructureType.INTERFACE,
+            "ethernet1/1",
+            contains(6, 7, 8, 9, 11, 12)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname, PaloAltoStructureType.INTERFACE, "ethernet1/2", contains(16, 17, 18, 19)));
   }
 
   @Test
