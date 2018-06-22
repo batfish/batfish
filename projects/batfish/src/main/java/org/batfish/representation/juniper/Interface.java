@@ -2,7 +2,6 @@ package org.batfish.representation.juniper;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class Interface extends ComparableStructure<String> {
 
   private int _nativeVlan;
 
-  private Ip _ospfActiveArea;
+  private Ip _ospfArea;
 
   private Integer _ospfCost;
 
@@ -72,7 +71,7 @@ public class Interface extends ComparableStructure<String> {
 
   private int _ospfHelloMultiplier;
 
-  private final Set<Ip> _ospfPassiveAreas;
+  private boolean _ospfPassive;
 
   private String _outgoingFilter;
 
@@ -111,7 +110,6 @@ public class Interface extends ComparableStructure<String> {
     _switchportTrunkEncapsulation = SwitchportEncapsulationType.DOT1Q;
     _allowedVlans = new ArrayList<>();
     _ospfCost = null;
-    _ospfPassiveAreas = new HashSet<>();
     _units = new TreeMap<>();
     _vrrpGroups = new TreeMap<>();
   }
@@ -176,8 +174,8 @@ public class Interface extends ComparableStructure<String> {
     return _nativeVlan;
   }
 
-  public Ip getOspfActiveArea() {
-    return _ospfActiveArea;
+  public Ip getOspfArea() {
+    return _ospfArea;
   }
 
   public Integer getOspfCost() {
@@ -192,8 +190,8 @@ public class Interface extends ComparableStructure<String> {
     return _ospfHelloMultiplier;
   }
 
-  public Set<Ip> getOspfPassiveAreas() {
-    return _ospfPassiveAreas;
+  public boolean getOspfPassive() {
+    return _ospfPassive;
   }
 
   public String getOutgoingFilter() {
@@ -247,8 +245,8 @@ public class Interface extends ComparableStructure<String> {
     if (_ospfCost == null) {
       _ospfCost = _parent._ospfCost;
     }
-    if (_ospfActiveArea == null) {
-      _ospfActiveArea = _parent._ospfActiveArea;
+    if (_ospfArea == null) {
+      _ospfArea = _parent._ospfArea;
     }
   }
 
@@ -288,8 +286,8 @@ public class Interface extends ComparableStructure<String> {
     _nativeVlan = vlan;
   }
 
-  public void setOspfActiveArea(Ip ospfActiveArea) {
-    _ospfActiveArea = ospfActiveArea;
+  public void setOspfArea(Ip ospfArea) {
+    _ospfArea = ospfArea;
   }
 
   public void setOspfCost(int ospfCost) {
@@ -302,6 +300,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setOspfHelloMultiplier(int multiplier) {
     _ospfHelloMultiplier = multiplier;
+  }
+
+  public void setOspfPassive(boolean ospfPassive) {
+    _ospfPassive = true;
   }
 
   public void setOutgoingFilter(String accessListName) {

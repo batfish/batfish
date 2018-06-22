@@ -29,6 +29,7 @@ import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllowedVlans;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasIsis;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfAreaName;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfCost;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSwitchPortMode;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasZoneName;
@@ -1755,23 +1756,22 @@ public class FlatJuniperGrammarTest {
     Configuration c = parseConfig("ospfInterfaceAreaAssignment");
 
     /* Properly configured interfaces should be present in respective areas. */
+    assertThat(c, hasInterface("xe-0/0/0.0", hasOspfAreaName(0L)));
     assertThat(c, hasInterface("xe-0/0/0.0", isOspfPassive(equalTo(false))));
     assertThat(
         c,
         hasDefaultVrf(
             hasOspfProcess(hasArea(0L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.0"))))));
 
+    assertThat(c, hasInterface("xe-0/0/0.1", hasOspfAreaName(1L)));
     assertThat(c, hasInterface("xe-0/0/0.1", isOspfPassive()));
-    assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(hasArea(0L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.1"))))));
     assertThat(
         c,
         hasDefaultVrf(
             hasOspfProcess(hasArea(1L, OspfAreaMatchers.hasInterfaces(hasItem("xe-0/0/0.1"))))));
 
     /* The following interfaces should be absent since they have no IP addresses assigned. */
+    assertThat(c, hasInterface("xe-0/0/0.2", hasOspfAreaName(nullValue())));
     assertThat(
         c,
         hasDefaultVrf(

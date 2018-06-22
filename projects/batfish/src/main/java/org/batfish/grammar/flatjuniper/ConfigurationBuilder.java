@@ -251,6 +251,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_stubContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oai_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_default_lsaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oan_no_summariesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oand_metric_typeContext;
@@ -2146,14 +2147,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
       unitFullName = _currentOspfInterface.getName();
     }
     Ip currentArea = new Ip(_currentArea.getName());
-    if (ctx.oai_passive() != null) {
-      _currentOspfInterface.getOspfPassiveAreas().add(currentArea);
+    Ip currentInterfaceArea = _currentOspfInterface.getOspfArea();
+    if (currentInterfaceArea != null && !currentArea.equals(currentInterfaceArea)) {
+      _w.redFlag("Interface: \"" + unitFullName + "\" assigned to multiple areas");
     } else {
-      Ip interfaceActiveArea = _currentOspfInterface.getOspfActiveArea();
-      if (interfaceActiveArea != null && !currentArea.equals(interfaceActiveArea)) {
-        _w.redFlag("Interface: \"" + unitFullName + "\" assigned to multiple active areas");
-      }
-      _currentOspfInterface.setOspfActiveArea(currentArea);
+      _currentOspfInterface.setOspfArea(currentArea);
     }
   }
 
@@ -2185,6 +2183,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
   @Override
   public void exitOa_stub(Oa_stubContext ctx) {
     _currentStubSettings = null;
+  }
+
+  @Override
+  public void exitOai_passive(Oai_passiveContext ctx) {
+    _currentOspfInterface.setOspfPassive(true);
   }
 
   @Override
