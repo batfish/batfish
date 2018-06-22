@@ -1,9 +1,12 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
+import com.google.common.collect.ImmutableSortedSet;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -155,7 +158,7 @@ public class Vrf extends ComparableStructure<String> {
     if (_interfaces != null && !_interfaces.isEmpty()) {
       return new TreeSet<>(_interfaces.keySet());
     } else {
-      return _interfaceNames;
+      return firstNonNull(_interfaceNames, ImmutableSortedSet.of());
     }
   }
 

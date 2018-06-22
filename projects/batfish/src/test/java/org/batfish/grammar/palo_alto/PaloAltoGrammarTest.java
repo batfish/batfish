@@ -17,6 +17,7 @@ import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
@@ -187,5 +188,6 @@ public class PaloAltoGrammarTest {
 
     assertThat(c, hasVrf("default", hasInterfaces(hasItem("ethernet1/1"))));
     assertThat(c, hasVrf("somename", hasInterfaces(hasItems("ethernet1/2", "ethernet1/3"))));
+    assertThat(c, hasVrf("someothername", hasInterfaces(emptyIterable())));
   }
 }

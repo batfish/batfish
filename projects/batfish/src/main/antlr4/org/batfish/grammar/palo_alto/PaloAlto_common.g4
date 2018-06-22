@@ -23,7 +23,7 @@ variable_list
             OPEN_BRACKET
             (
                 variable_list_item
-            )+
+            )*
             CLOSE_BRACKET
         )
     )
