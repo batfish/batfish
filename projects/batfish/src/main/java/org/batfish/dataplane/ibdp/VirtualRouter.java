@@ -1673,8 +1673,11 @@ public class VirtualRouter extends ComparableStructure<String> {
     return builtDeltas;
   }
 
-  public Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> propagateIsisRoutes(
+  public @Nullable Entry<RibDelta<IsisRoute>, RibDelta<IsisRoute>> propagateIsisRoutes(
       final Map<String, Node> nodes) {
+    if (_vrf.getIsisProcess() == null) {
+      return null;
+    }
     RibDelta.Builder<IsisRoute> l1DeltaBuilder = new RibDelta.Builder<>(_isisL1StagingRib);
     RibDelta.Builder<IsisRoute> l2DeltaBuilder = new RibDelta.Builder<>(_isisL2StagingRib);
     IsisRoute.Builder routeBuilder = new IsisRoute.Builder();
