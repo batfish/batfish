@@ -5914,6 +5914,16 @@ KLOGIN
    'klogin'
 ;
 
+KRB5
+:
+   'krb5'
+;
+
+KRB5_TELNET
+:
+   'krb5-telnet'
+;
+
 KOD
 :
    'kod'
@@ -6292,6 +6302,11 @@ LOCAL_AS
 LOCAL_ASA
 :
    'LOCAL'
+;
+
+LOCAL_CASE
+:
+   'local-case'
 ;
 
 LOCAL_INTERFACE

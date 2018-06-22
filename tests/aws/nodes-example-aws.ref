@@ -1506,58 +1506,101 @@
             "lines" : {
               "aux0" : {
                 "name" : "aux0",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "telnet"
                 ]
               },
               "vty1" : {
                 "name" : "vty1",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "telnet"
                 ]
               },
               "vty2" : {
                 "name" : "vty2",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "telnet"
                 ]
               },
               "vty3" : {
                 "name" : "vty3",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "ssh"
                 ]
               },
               "vty4" : {
                 "name" : "vty4",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "ssh"
                 ]
               },
               "vty5" : {
                 "name" : "vty5",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
                 "execTimeoutSeconds" : 0,
+                "lineType" : "VTY",
                 "transportInput" : [
                   "ssh"
                 ]

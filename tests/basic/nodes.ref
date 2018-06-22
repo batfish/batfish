@@ -1022,37 +1022,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -2296,37 +2303,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -2731,37 +2745,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -3950,38 +3971,75 @@
             "lines" : {
               "aux0" : {
                 "name" : "aux0",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
+                "aaaAuthenticationLoginList" : {
+                  "methods" : [
+                    "LOCAL"
+                  ]
+                },
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -5198,37 +5256,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -5799,37 +5864,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -6359,37 +6431,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -7373,37 +7452,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -8097,37 +8183,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -8855,37 +8948,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -10021,37 +10121,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -11113,37 +11220,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
@@ -11713,37 +11827,44 @@
               "aux0" : {
                 "name" : "aux0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "AUX"
               },
               "con0" : {
                 "name" : "con0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "CON"
               },
               "vty0" : {
                 "name" : "vty0",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty1" : {
                 "name" : "vty1",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty2" : {
                 "name" : "vty2",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty3" : {
                 "name" : "vty3",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               },
               "vty4" : {
                 "name" : "vty4",
                 "execTimeoutMinutes" : 0,
-                "execTimeoutSeconds" : 0
+                "execTimeoutSeconds" : 0,
+                "lineType" : "VTY"
               }
             },
             "logging" : {
