@@ -15,6 +15,8 @@ public class IsisRoute extends AbstractRoute {
 
     private String _area;
 
+    private boolean _attach;
+
     private boolean _down;
 
     private IsisLevel _level;
@@ -28,6 +30,7 @@ public class IsisRoute extends AbstractRoute {
       return new IsisRoute(
           getAdmin(),
           requireNonNull(_area),
+          _attach,
           _down,
           requireNonNull(_level),
           getMetric(),
@@ -44,6 +47,11 @@ public class IsisRoute extends AbstractRoute {
 
     public Builder setArea(@Nonnull String area) {
       _area = area;
+      return this;
+    }
+
+    public Builder setAttach(boolean attach) {
+      _attach = attach;
       return this;
     }
 
@@ -72,6 +80,8 @@ public class IsisRoute extends AbstractRoute {
 
   private static final String PROP_AREA = "area";
 
+  private static final String PROP_ATTACH = "attach";
+
   private static final String PROP_DOWN = "down";
 
   private static final String PROP_LEVEL = "level";
@@ -84,6 +94,7 @@ public class IsisRoute extends AbstractRoute {
   private static @Nonnull IsisRoute createIsisRoute(
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_AREA) String area,
+      @JsonProperty(PROP_ATTACH) boolean attach,
       @JsonProperty(PROP_DOWN) boolean down,
       @JsonProperty(PROP_LEVEL) IsisLevel level,
       @JsonProperty(PROP_METRIC) long metric,
@@ -94,6 +105,7 @@ public class IsisRoute extends AbstractRoute {
     return new IsisRoute(
         administrativeCost,
         requireNonNull(area),
+        attach,
         down,
         requireNonNull(level),
         metric,
@@ -106,6 +118,8 @@ public class IsisRoute extends AbstractRoute {
   private final int _administrativeCost;
 
   private final String _area;
+
+  private final boolean _attach;
 
   private final boolean _down;
 
@@ -122,6 +136,7 @@ public class IsisRoute extends AbstractRoute {
   private IsisRoute(
       int administrativeCost,
       @Nonnull String area,
+      boolean attach,
       boolean down,
       @Nonnull IsisLevel level,
       long metric,
@@ -132,6 +147,7 @@ public class IsisRoute extends AbstractRoute {
     super(network);
     _administrativeCost = administrativeCost;
     _area = area;
+    _attach = attach;
     _down = down;
     _level = level;
     _metric = metric;
@@ -151,6 +167,7 @@ public class IsisRoute extends AbstractRoute {
     IsisRoute rhs = (IsisRoute) o;
     return _administrativeCost == rhs._administrativeCost
         && _area.equals(rhs._area)
+        && _attach == rhs._attach
         && _down == rhs._down
         && _level == rhs._level
         && _metric == rhs._metric
@@ -170,6 +187,12 @@ public class IsisRoute extends AbstractRoute {
   @JsonProperty(PROP_AREA)
   public @Nonnull String getArea() {
     return _area;
+  }
+
+  /** Attach bit is set on default route originated by L1L2 routers to L1 neighbors. */
+  @JsonProperty(PROP_ATTACH)
+  public boolean getAttach() {
+    return _attach;
   }
 
   /**
@@ -225,6 +248,7 @@ public class IsisRoute extends AbstractRoute {
     return Objects.hash(
         _administrativeCost,
         _area,
+        _attach,
         _down,
         _level.ordinal(),
         _metric,
@@ -236,8 +260,17 @@ public class IsisRoute extends AbstractRoute {
   @Override
   protected String protocolRouteString() {
     return String.format(
-        " %s:%s %s:%s %s:%s %s:%s",
-        PROP_AREA, _area, PROP_DOWN, _down, PROP_LEVEL, _level, PROP_SYSTEM_ID, _systemId);
+        " %s:%s %s:%s %s:%s %s:%s %s:%s",
+        PROP_AREA,
+        _area,
+        PROP_ATTACH,
+        _attach,
+        PROP_DOWN,
+        _down,
+        PROP_LEVEL,
+        _level,
+        PROP_SYSTEM_ID,
+        _systemId);
   }
 
   @Override
@@ -247,6 +280,7 @@ public class IsisRoute extends AbstractRoute {
     }
     IsisRoute castRhs = (IsisRoute) rhs;
     return Comparator.comparing(IsisRoute::getArea)
+        .thenComparing(IsisRoute::getAttach)
         .thenComparing(IsisRoute::getDown)
         .thenComparing(IsisRoute::getLevel)
         .thenComparing(IsisRoute::getSystemId)

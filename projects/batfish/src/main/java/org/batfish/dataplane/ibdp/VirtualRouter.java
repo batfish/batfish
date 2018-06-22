@@ -1134,6 +1134,21 @@ public class VirtualRouter extends ComparableStructure<String> {
                         });
               }
             });
+
+    // export default route for L1 neighbors on L1L2 routers
+    if (l1Settings != null && l2Settings != null) {
+      IsisRoute defaultRoute =
+          builder
+              .setAdmin(l1Admin)
+              .setAttach(true)
+              .setLevel(IsisLevel.LEVEL_1)
+              .setMetric(0L)
+              .setNetwork(Prefix.ZERO)
+              .setProtocol(RoutingProtocol.ISIS_L1)
+              .build();
+      d1.from(_isisL1Rib.mergeRouteGetDelta(defaultRoute));
+    }
+
     queueOutgoingIsisRoutes(allNodes, d1.build(), d2.build());
   }
 
@@ -1189,7 +1204,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     _ibgpMultipathRib = new BgpMultipathRib(mpTieBreaker);
     _ibgpStagingRib = new BgpMultipathRib(mpTieBreaker);
     _independentRib = new Rib();
-    _isisRib = new IsisRib();
+    _isisRib = new IsisRib(isL1Only());
     _isisL1Rib = new IsisLevelRib(_receivedIsisL1Routes);
     _isisL2Rib = new IsisLevelRib(_receivedIsisL2Routes);
     _isisL1StagingRib = new IsisLevelRib(null);
@@ -1226,6 +1241,14 @@ public class VirtualRouter extends ComparableStructure<String> {
     _mainRibRouteDeltaBuiler = new RibDelta.Builder<>(_mainRib);
     _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
     _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);
+  }
+
+  private boolean isL1Only() {
+    IsisProcess proc = _vrf.getIsisProcess();
+    if (proc == null) {
+      return false;
+    }
+    return proc.getLevel1() != null && proc.getLevel2() == null;
   }
 
   /**
@@ -1669,6 +1692,7 @@ public class VirtualRouter extends ComparableStructure<String> {
             routeBuilder
                 .setNetwork(neighborRoute.getNetwork())
                 .setArea(neighborRoute.getArea())
+                .setAttach(neighborRoute.getAttach())
                 .setSystemId(neighborRoute.getSystemId());
             boolean withdraw = routeAdvert.isWithdrawn();
             // TODO: simplify

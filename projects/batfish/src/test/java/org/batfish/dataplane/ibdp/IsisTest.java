@@ -7,6 +7,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.IsisRouteMatchers.hasDown;
 import static org.batfish.datamodel.matchers.IsisRouteMatchers.isIsisRouteThat;
+import static org.batfish.dataplane.ibdp.TestUtils.assertNoRoute;
 import static org.batfish.dataplane.ibdp.TestUtils.assertRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -208,6 +209,7 @@ public class IsisTest {
         IncrementalBdpEngine.getRoutes(dp);
 
     // r1
+    assertNoRoute(routes, r1Name, Prefix.ZERO);
     assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.2.2.2/32"), 10L);
     assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.2.3.0/24"), 20L);
     assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.3.3.3/32"), 10L);
@@ -220,6 +222,7 @@ public class IsisTest {
     // assertRoute(routes, ISIS_L2, r1Name, Prefix.parse("10.3.3.100/32"), 10L);
 
     // r2
+    assertNoRoute(routes, r2Name, Prefix.ZERO);
     assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.1.1.1/32"), 10L);
     assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.1.3.0/24"), 20L);
     assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.3.3.3/32"), 10L);
@@ -232,6 +235,7 @@ public class IsisTest {
     // assertRoute(routes, ISIS_L2, r2Name, Prefix.parse("10.3.3.100/32"), 10L);
 
     // r3
+    assertNoRoute(routes, r3Name, Prefix.ZERO);
     assertRoute(routes, ISIS_L2, r3Name, Prefix.parse("10.1.1.1/32"), 10L);
     assertRoute(routes, ISIS_L2, r3Name, Prefix.parse("10.1.2.0/24"), 20L);
     assertRoute(routes, ISIS_L2, r3Name, Prefix.parse("10.2.2.2/32"), 10L);
@@ -240,7 +244,7 @@ public class IsisTest {
     assertRoute(routes, ISIS_L1, r3Name, Prefix.parse("10.5.5.5/32"), 10L);
 
     // r4
-    assertRoute(routes, ISIS_L1, r4Name, Prefix.ZERO, 10);
+    assertRoute(routes, ISIS_L1, r4Name, Prefix.ZERO, 10L);
     assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.3.3.3/32"), 10L);
     assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.3.5.0/24"), 20L);
     assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.5.5.5/32"), 10L);
@@ -253,10 +257,10 @@ public class IsisTest {
     // assertRoute(routes, ISIS_L1, r4Name, Prefix.parse("10.3.3.100/32"), 10L);
 
     // r5
-    assertRoute(routes, ISIS_L1, r5Name, Prefix.ZERO, 10);
+    assertRoute(routes, ISIS_L1, r5Name, Prefix.ZERO, 10L);
     assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.3.3.3/32"), 10L);
+    assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.3.4.0/24"), 20L);
     assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.4.4.4/32"), 10L);
-    assertRoute(routes, ISIS_L1, r5Name, Prefix.parse("10.4.5.0/24"), 20L);
     /* TODO: https://github.com/batfish/batfish/issues/1703 */
     // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.1.1.1/32"), 148L);
     // assertInterAreaRoute(routes, r5Name, Prefix.parse("10.1.2.0/24"), 158L);

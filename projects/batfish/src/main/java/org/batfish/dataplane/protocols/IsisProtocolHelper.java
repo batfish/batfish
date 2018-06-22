@@ -18,7 +18,7 @@ public class IsisProtocolHelper {
    *     has its down bit set.
    */
   public static Optional<IsisRoute> convertRouteLevel1ToLevel2(IsisRoute route, int l2Admin) {
-    if (route.getLevel() != IsisLevel.LEVEL_1 || route.getDown()) {
+    if (route.getLevel() != IsisLevel.LEVEL_1 || route.getAttach() || route.getDown()) {
       return Optional.empty();
     }
 

@@ -9,8 +9,23 @@ public class IsisRib extends AbstractRib<IsisRoute> {
 
   private static final long serialVersionUID = 1L;
 
-  public IsisRib() {
+  private static int levelCost(IsisRoute isisRoute) {
+    // Lower value is more preferred.
+    switch (isisRoute.getLevel()) {
+      case LEVEL_1:
+        return 1;
+      case LEVEL_2:
+        return 2;
+      default:
+        throw new BatfishException(String.format("Invalid route level: %s", isisRoute.getLevel()));
+    }
+  }
+
+  private final boolean _l1Only;
+
+  public IsisRib(boolean l1Only) {
     super(null);
+    _l1Only = l1Only;
   }
 
   @Override
@@ -22,15 +37,11 @@ public class IsisRib extends AbstractRib<IsisRoute> {
         .compare(rhs, lhs);
   }
 
-  private static int levelCost(IsisRoute isisRoute) {
-    // Lower value is more preferred.
-    switch (isisRoute.getLevel()) {
-      case LEVEL_1:
-        return 1;
-      case LEVEL_2:
-        return 2;
-      default:
-        throw new BatfishException(String.format("Invalid route level: %s", isisRoute.getLevel()));
+  @Override
+  public RibDelta<IsisRoute> mergeRouteGetDelta(IsisRoute route) {
+    if (route.getAttach() && !_l1Only) {
+      return null;
     }
+    return super.mergeRouteGetDelta(route);
   }
 }
