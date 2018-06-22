@@ -2,15 +2,15 @@ genrule(
     name = "gen_test_sh",
     outs = ["test.sh"],
     cmd = """
+      ALL_FILES="$(rootpaths //projects/allinone:allinone_main)"
+      BIN_FILE=$$(tr " " "\n" <<< $${ALL_FILES} | grep -v jar)
       echo \
-        $(rootpath //projects/allinone:allinone_main) \
+        $${BIN_FILE} \
           -coordinatorargs '"-periodassignworkms 5"' \
           -cmdfile $(location :commands) > $@
         """,
     srcs = [
         "commands",
-    ],
-    tools = [
         "//projects/allinone:allinone_main",
     ],
 )
