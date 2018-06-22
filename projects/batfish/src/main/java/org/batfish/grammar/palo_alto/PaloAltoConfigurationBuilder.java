@@ -95,6 +95,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return text;
   }
 
+  /** Return original line number for the specified token */
+  private int getLine(Token t) {
+    return _parser.getLine(t);
+  }
+
   /** Return token text with enclosing quotes removed, if applicable */
   private String getText(ParserRuleContext ctx) {
     return unquote(ctx.getText());
@@ -285,7 +290,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
-    int line = token.getLine();
+    int line = getLine(token);
     String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
     if (_unrecognizedAsRedFlag) {
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");

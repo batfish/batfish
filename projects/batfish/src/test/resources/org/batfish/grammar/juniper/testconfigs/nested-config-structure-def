@@ -1,0 +1,23 @@
+#
+system {
+    host-name nested-config-structure-def;
+}
+firewall {
+    filter FILTER1 {
+        term TERM {
+            from {
+                source-address 1.2.3.6;
+            }
+            then {
+                accept;
+            }
+        }
+    }
+    filter FILTER2 {
+        term TERM {
+            then {
+                accept;
+            }
+        }
+    }
+}

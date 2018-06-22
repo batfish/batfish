@@ -15,6 +15,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolic
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIsisProcess;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferenceBandwidth;
@@ -98,6 +99,7 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
@@ -105,6 +107,7 @@ import org.batfish.datamodel.BgpNeighbor;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -153,7 +156,10 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.grammar.VendorConfigurationFormatDetector;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -1058,6 +1064,58 @@ public class FlatJuniperGrammarTest {
     assertThat(
         aclTrustOut,
         rejects(untrustToTrustFlow, interfaceNameUntrust, c.getIpAccessLists(), c.getIpSpaces()));
+  }
+
+  @Test
+  public void testNestedConfig() throws IOException {
+    String hostname = "nested-config";
+
+    /* Confirm a simple extraction (hostname) works for nested config format */
+    assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
+  public void testNestedConfigStructureDef() throws IOException {
+    String hostname = "nested-config-structure-def";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    /* Confirm defined structures in nested config show up with original definition line numbers */
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname,
+            JuniperStructureType.FIREWALL_FILTER,
+            "FILTER1",
+            contains(6, 7, 8, 9, 11, 12)));
+    assertThat(
+        ccae,
+        hasDefinedStructureWithDefinitionLines(
+            hostname, JuniperStructureType.FIREWALL_FILTER, "FILTER2", contains(16, 17, 18, 19)));
+  }
+
+  @Test
+  public void testNestedConfigLineMap() throws IOException {
+    String hostname = "nested-config";
+    Flattener flattener =
+        Batfish.flatten(
+            CommonUtil.readResource(TESTCONFIGS_PREFIX + hostname),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    FlattenerLineMap lineMap = flattener.getOriginalLineMap();
+    /*
+     * Flattened config should be two lines: header line and set-host-name line
+     * This test is only checking content of the set-host-name line
+     */
+    String flatText = flattener.getFlattenedConfigurationText().split("\n", -1)[1];
+
+    /* Confirm original line numbers are preserved */
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("host-name")), equalTo(3));
+    assertThat(lineMap.getOriginalLine(2, flatText.indexOf("nested-config")), equalTo(3));
   }
 
   @Test
