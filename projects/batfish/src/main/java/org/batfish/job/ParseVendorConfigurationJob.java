@@ -18,6 +18,8 @@ import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.flatjuniper.FlatJuniperCombinedParser;
 import org.batfish.grammar.flatjuniper.FlatJuniperControlPlaneExtractor;
+import org.batfish.grammar.flattener.Flattener;
+import org.batfish.grammar.flattener.FlattenerLineMap;
 import org.batfish.grammar.flatvyos.FlatVyosCombinedParser;
 import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
@@ -98,6 +100,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     ParserRuleContext tree = null;
     ControlPlaneExtractor extractor = null;
     ConfigurationFormat format = _format;
+    FlattenerLineMap lineMap = null;
     _logger.infof("Processing: '%s'\n", currentPath);
 
     for (String s : _settings.ignoreFilesWithStrings()) {
@@ -204,14 +207,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
                   currentPath));
           try {
-            _fileText =
+            Flattener flattener =
                 Batfish.flatten(
-                        _fileText,
-                        _logger,
-                        _settings,
-                        ConfigurationFormat.JUNIPER,
-                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER)
-                    .getFlattenedConfigurationText();
+                    _fileText,
+                    _logger,
+                    _settings,
+                    ConfigurationFormat.JUNIPER,
+                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+            _fileText = flattener.getFlattenedConfigurationText();
+            lineMap = flattener.getOriginalLineMap();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(
@@ -235,7 +239,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         // fall through
       case FLAT_JUNIPER:
         FlatJuniperCombinedParser flatJuniperParser =
-            new FlatJuniperCombinedParser(_fileText, _settings);
+            new FlatJuniperCombinedParser(_fileText, _settings, lineMap);
         combinedParser = flatJuniperParser;
         extractor =
             new FlatJuniperControlPlaneExtractor(
@@ -263,14 +267,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   "Flattening: '%s' on-the-fly; line-numbers reported for this file will be spurious\n",
                   currentPath));
           try {
-            _fileText =
+            Flattener flattener =
                 Batfish.flatten(
-                        _fileText,
-                        _logger,
-                        _settings,
-                        ConfigurationFormat.PALO_ALTO_NESTED,
-                        VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER)
-                    .getFlattenedConfigurationText();
+                    _fileText,
+                    _logger,
+                    _settings,
+                    ConfigurationFormat.PALO_ALTO_NESTED,
+                    VendorConfigurationFormatDetector.BATFISH_FLATTENED_PALO_ALTO_HEADER);
+            _fileText = flattener.getFlattenedConfigurationText();
+            lineMap = flattener.getOriginalLineMap();
           } catch (BatfishException e) {
             elapsedTime = System.currentTimeMillis() - startTime;
             return new ParseVendorConfigurationResult(
@@ -293,7 +298,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
         }
         // fall through
       case PALO_ALTO:
-        PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(_fileText, _settings);
+        PaloAltoCombinedParser paParser = new PaloAltoCombinedParser(_fileText, _settings, lineMap);
         combinedParser = paParser;
         extractor =
             new PaloAltoControlPlaneExtractor(
