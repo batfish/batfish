@@ -1,6 +1,5 @@
 package org.batfish.representation.palo_alto;
 
-import com.google.common.collect.ImmutableSortedSet;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 import java.util.NavigableSet;
@@ -167,7 +166,6 @@ public final class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     // Interfaces
-    vrf.setInterfaceNames(ImmutableSortedSet.copyOf(vr.getInterfaceNames()));
     NavigableMap<String, org.batfish.datamodel.Interface> map = new TreeMap<>();
     for (String interfaceName : vr.getInterfaceNames()) {
       org.batfish.datamodel.Interface iface = _c.getInterfaces().get(interfaceName);
