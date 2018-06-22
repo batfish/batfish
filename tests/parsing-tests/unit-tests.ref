@@ -58148,9 +58148,9 @@
         },
         "juniper-ospf" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Cannot assign interface xe-0/0/1.0 to be active in area 0.1.2.3 because it has no IP address.",
-            "2" : "MISCELLANEOUS: Cannot assign interface xe-0/0/20:0.0 to be active in area 0.1.2.3 because it has no IP address.",
-            "3" : "MISCELLANEOUS: Cannot assign interface xe-0/0/21:0.0 to be passive in area 0.1.2.3 because it has no IP address.",
+            "1" : "MISCELLANEOUS: Cannot assign interface xe-0/0/1.0 to area 0.1.2.3 because it has no IP address.",
+            "2" : "MISCELLANEOUS: Cannot assign interface xe-0/0/20:0.0 to area 0.1.2.3 because it has no IP address.",
+            "3" : "MISCELLANEOUS: Cannot assign interface xe-0/0/21:0.0 to area 0.1.2.3 because it has no IP address.",
             "4" : "MISCELLANEOUS: No candidates for OSPF router-id"
           }
         },
