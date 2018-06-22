@@ -1497,7 +1497,7 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasInterface(physical, hasIsis(hasLevel1(nullValue()))));
     assertThat(
         c,
-        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(5)))));
+        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(5L)))));
     assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.ACTIVE)))));
     assertThat(
         c,
