@@ -8,6 +8,8 @@ import static org.batfish.datamodel.matchers.AbstractRouteMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrf;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
@@ -31,8 +33,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.representation.palo_alto.PaloAltoStructureType;
+import org.batfish.representation.palo_alto.PaloAltoStructureUsage;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -125,6 +130,28 @@ public class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceName1, isActive()));
     assertThat(c, hasInterface(interfaceName2, not(isActive())));
     assertThat(c, hasInterface(interfaceName3, isActive()));
+  }
+
+  @Test
+  public void testInterfaceReference() throws IOException {
+    String hostname = "interface-reference";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+
+    // Confirm reference counts are correct for ACLs
+    assertThat(ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/1", 1));
+    assertThat(
+        ccae, hasNumReferrers(hostname, PaloAltoStructureType.INTERFACE, "ethernet1/unused", 0));
+
+    // Confirm undefined references are detected
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            hostname,
+            PaloAltoStructureType.INTERFACE,
+            "ethernet1/undefined",
+            PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE));
   }
 
   @Test

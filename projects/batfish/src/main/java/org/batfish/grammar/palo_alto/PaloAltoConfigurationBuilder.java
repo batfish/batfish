@@ -1,6 +1,8 @@
 package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 
 import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -39,6 +41,7 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
+import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoConfiguration _configuration;
@@ -88,11 +91,23 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
+  /** TODO FIX THIS */
+  private void defineStructure(StructureType type, String name, ParserRuleContext ctx) {
+    for (int i = ctx.getStart().getLine(); i <= ctx.getStop().getLine(); ++i) {
+      _configuration.defineStructure(type, name, i);
+    }
+  }
+
   private String getFullText(ParserRuleContext ctx) {
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
     String text = _text.substring(start, end + 1);
     return text;
+  }
+
+  /** Return original line number for specified token */
+  private int getLine(Token t) {
+    return _parser.getLine(t);
   }
 
   /** Return token text with enclosing quotes removed, if applicable */
@@ -177,6 +192,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterSni_ethernet(Sni_ethernetContext ctx) {
     String name = ctx.name.getText();
     _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    defineStructure(INTERFACE, name, ctx);
   }
 
   @Override
@@ -217,7 +233,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnvr_interface(Snvr_interfaceContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      _currentVirtualRouter.getInterfaceNames().add(var.getText());
+      String name = var.getText();
+      _currentVirtualRouter.getInterfaceNames().add(name);
+      _configuration.referenceStructure(
+          INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
     }
   }
 
