@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import javax.annotation.Nonnull;
+
 public enum LineType {
   AUX,
   CON,
@@ -11,25 +13,15 @@ public enum LineType {
   UNKNOWN,
   VTY;
 
-  public static LineType toLineType(String lineType) {
-    String lineTypeLowerCase = lineType.toLowerCase();
-    if (lineTypeLowerCase.startsWith("aux")) {
-      return AUX;
-    } else if (lineTypeLowerCase.startsWith("con")) {
+  public static LineType toLineType(@Nonnull String lineName) {
+    if (lineName.startsWith("con")) {
+      // both "con" and "console" are acceptable
       return CON;
-    } else if (lineTypeLowerCase.startsWith("http")) {
-      return HTTP;
-    } else if (lineTypeLowerCase.startsWith("serial")) {
-      return SERIAL;
-    } else if (lineTypeLowerCase.startsWith("ssh")) {
-      return SSH;
-    } else if (lineTypeLowerCase.startsWith("telnet")) {
-      return TELNET;
-    } else if (lineTypeLowerCase.startsWith("tty")) {
-      return TTY;
-    } else if (lineTypeLowerCase.startsWith("vty")) {
-      return VTY;
-    } else {
+    }
+    String removedDigits = lineName.replaceAll("\\d", "");
+    try {
+      return valueOf(removedDigits.toUpperCase());
+    } catch (IllegalArgumentException e) {
       return UNKNOWN;
     }
   }

@@ -11,7 +11,8 @@ import org.hamcrest.Matcher;
 public final class LineMatchers {
 
   /**
-   * Provides a matcher that matches if the {@link Line} has a {@code AaaAuthenticationLoginList}
+   * Provides a matcher that matches when the supplied {@code subMatcher} matches the {@link Line}'s
+   * {@code AaaAuthenticationLoginList}
    */
   public static HasAuthenticationLoginList hasAuthenticationLoginList(
       Matcher<? super AaaAuthenticationLoginList> subMatcher) {
