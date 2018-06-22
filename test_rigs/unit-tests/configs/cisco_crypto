@@ -89,11 +89,24 @@ crypto csr-params BATFISH
   organization-name Batfish
   organization-unit Network Validation
   common-name batfish.org
-crypto dynamic-map mydefaultcryptomap 65534 set ikev1 transform-set ESP-3DES-MD5-trans ESP-3DES-SHA-TRANS ESP-3DES-MD5 ESP-3DES-SHA
-crypto dynamic-map mydefaultcryptomap 65535 set pfs group1
-crypto dynamic-map mydefaultcryptomap 65535 set ikev1 transform-set ESP-3DES-MD5 ESP-AES-128-SHA ESP-AES-128-MD5 ESP-AES-192-SHA ESP-AES-192-MD5 ESP-AES-256-SHA ESP-AES-256-MD5 ESP-3DES-SHA ESP-DES-SHA ESP-DES-MD5
-crypto dynamic-map mydefaultcryptomap 65535 set security-association lifetime seconds 28800
-crypto dynamic-map mydefaultcryptomap 65535 set security-association lifetime kilobytes 4608000
+
+! ASA crypto dynmaic-maps (https://www.cisco.com/c/en/us/support/docs/security/asa-5500-x-series-next-generation-firewalls/118652-configure-asa-00.html)
+crypto dynamic-map asadynamicmaps 65534 set ikev1 transform-set ESP-3DES-MD5-trans ESP-3DES-SHA-TRANS ESP-3DES-MD5 ESP-3DES-SHA
+crypto dynamic-map asadynamicmaps 65535 set pfs group1
+crypto dynamic-map asadynamicmaps 65535 set ikev1 transform-set ESP-3DES-MD5 ESP-AES-128-SHA ESP-AES-128-MD5 ESP-AES-192-SHA ESP-AES-192-MD5 ESP-AES-256-SHA ESP-AES-256-MD5 ESP-3DES-SHA ESP-DES-SHA ESP-DES-MD5
+crypto dynamic-map asadynamicmaps 65535 set security-association lifetime seconds 28800
+crypto dynamic-map asadynamicmaps 65535 set security-association lifetime kilobytes 4608000
+
+crypto dynamic-map mydefaultcryptomap 65534 
+  set transform-set ESP-3DES-MD5-trans ESP-3DES-SHA-TRANS ESP-3DES-MD5 ESP-3DES-SHA
+crypto dynamic-map mydefaultcryptomap 65535 
+  set pfs group1
+crypto dynamic-map mydefaultcryptomap 65535
+  set transform-set ESP-3DES-MD5 ESP-AES-128-SHA ESP-AES-128-MD5 ESP-AES-192-SHA ESP-AES-192-MD5 ESP-AES-256-SHA ESP-AES-256-MD5 ESP-3DES-SHA ESP-DES-SHA ESP-DES-MD5
+crypto dynamic-map mydefaultcryptomap 65535 
+  set security-association lifetime seconds 28800
+crypto dynamic-map mydefaultcryptomap 65535 
+  set security-association lifetime kilobytes 4608000
 crypto dynamic-map mydynamicmap 1
  set transform-set ESP-3DES-MD5 ESP-3DES-SHA
 crypto engine large-mod-accel
@@ -201,12 +214,21 @@ crypto keyring VRF:ABC:DEF:GHI:1234
 crypto map myothermap 65535 ipsec-isakmp dynamic mydefaultcryptomap
 crypto map myothermap redundancy replay-interval inbound 1000 outbound 1000
 crypto map myothermap interface outside
+crypto map VPN 5 ipsec-isakmp
+  match address someacl
+  set pfs group14
+  set peer 1.2.3.4
+  set transform-set bleep
+  set security-association lifetime seconds 86400
 crypto map VPN 10 ipsec-isakmp dynamic bippety
-crypto map VPN 10 match address someacl
-crypto map VPN 10 set pfs
-crypto map VPN 10 set peer 1.2.3.4
-crypto map VPN 10 set ikev1 transform-set bleep
-crypto map VPN 10 set security-association lifetime seconds 86400
+
+! ASA crypto-map configs (https://www.cisco.com/c/en/us/td/docs/security/asa/asa84/configuration/guide/asa_84_cli_config/vpn_site2site.html)
+crypto map asacryptomap 10 match address someacl
+crypto map asacryptomap 10 set pfs
+crypto map asacryptomap 10 set peer 1.2.3.4
+crypto map asacryptomap 10 set ikev1 transform-set bleep
+crypto map asacryptomap 10 set security-association lifetime seconds 86400
+
 crypto map VPNMAP 2 ipsec-isakmp
   description bippety boppety
   match address myvpnacl

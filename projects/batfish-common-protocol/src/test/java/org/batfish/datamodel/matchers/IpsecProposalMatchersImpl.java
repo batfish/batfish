@@ -36,6 +36,17 @@ final class IpsecProposalMatchersImpl {
     }
   }
 
+  static final class HasName extends FeatureMatcher<IpsecProposal, String> {
+    HasName(@Nonnull Matcher<? super String> subMatcher) {
+      super(subMatcher, "An Ipsec Proposal with Name:", "Name");
+    }
+
+    @Override
+    protected String featureValueOf(IpsecProposal actual) {
+      return actual.getName();
+    }
+  }
+
   static final class HasProtocols extends FeatureMatcher<IpsecProposal, SortedSet<IpsecProtocol>> {
     HasProtocols(@Nonnull Matcher<? super SortedSet<IpsecProtocol>> subMatcher) {
       super(subMatcher, "An Ipsec Proposal with protocols:", "protocols");
