@@ -24,7 +24,6 @@ import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
@@ -67,13 +66,19 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     _failureDesc = String.format("link(%s,%s)", _dstNode.getName(), _srcNode.getName());
   }
 
+  private static final List<Ip> DST_IPS =
+      ImmutableList.of(
+          LINK_1_NETWORK.getEndIp(),
+          LINK_2_NETWORK.getEndIp(),
+          DST_PREFIX_1.getStartIp(),
+          DST_PREFIX_2.getStartIp());
+
+  private static final List<String> DST_IP_STRINGS =
+      DST_IPS.stream().map(Ip::toString).collect(ImmutableList.toImmutableList());
+
   @Parameters(name = "{index}: _dstIp = {0}")
-  public static List<Ip> dstIps() {
-    return ImmutableList.of(
-        LINK_1_NETWORK.getEndIp(),
-        LINK_2_NETWORK.getEndIp(),
-        DST_PREFIX_1.getStartIp(),
-        DST_PREFIX_2.getStartIp());
+  public static List<Ip[]> dstIps() {
+    return DST_IPS.stream().map(d -> new Ip[] {d}).collect(ImmutableList.toImmutableList());
   }
 
   /** Verify that with no failures, source can reach the dest IP. */
@@ -182,7 +187,6 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
     assertThat(answer, instanceOf(SmtReachabilityAnswerElement.class));
 
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
-    List<String> dstIps = dstIps().stream().map(Ip::toString).collect(Collectors.toList());
     assertThat(
         smtAnswer,
         hasVerificationResult(
@@ -193,7 +197,9 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
                  * use setDstIps we don't.
                  */
                 hasPacketModel(
-                    hasEntry(equalTo("dstIp"), allOf(in(dstIps), not(equalTo(_dstIp.toString()))))),
+                    hasEntry(
+                        equalTo("dstIp"),
+                        allOf(in(DST_IP_STRINGS), not(equalTo(_dstIp.toString()))))),
                 hasFailures(singleton(_failureDesc)))));
   }
 }
