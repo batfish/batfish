@@ -26,6 +26,7 @@ import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasIsis;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasMtu;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfArea;
+import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfAreaName;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasOspfCost;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSourceNats;
 import org.batfish.datamodel.matchers.InterfaceMatchersImpl.HasSwitchPortMode;
@@ -153,6 +154,22 @@ public final class InterfaceMatchers {
    */
   public static HasOspfArea hasOspfArea(Matcher<OspfArea> subMatcher) {
     return new HasOspfArea(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the the interface's OSPF area ID is {@link expectedArea}.
+   */
+  public static @Nonnull Matcher<Interface> hasOspfAreaName(long expectedArea) {
+    return new HasOspfAreaName(equalTo(expectedArea));
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the interface's OSPF
+   * area ID.
+   */
+  public static @Nonnull Matcher<Interface> hasOspfAreaName(
+      @Nonnull Matcher<? super Long> subMatcher) {
+    return new HasOspfAreaName(subMatcher);
   }
 
   /**
