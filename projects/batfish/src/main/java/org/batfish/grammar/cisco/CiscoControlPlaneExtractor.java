@@ -201,6 +201,7 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -219,6 +220,7 @@ import org.batfish.common.RedFlagBatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.WellKnownCommunity;
 import org.batfish.common.util.CommonUtil;
+import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -245,6 +247,7 @@ import org.batfish.datamodel.IsisLevel;
 import org.batfish.datamodel.IsisMetricType;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -777,6 +780,7 @@ import org.batfish.grammar.cisco.CiscoParser.Rr_passive_interface_defaultContext
 import org.batfish.grammar.cisco.CiscoParser.Rs_routeContext;
 import org.batfish.grammar.cisco.CiscoParser.Rs_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.S_aaaContext;
+import org.batfish.grammar.cisco.CiscoParser.S_access_lineContext;
 import org.batfish.grammar.cisco.CiscoParser.S_cableContext;
 import org.batfish.grammar.cisco.CiscoParser.S_class_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.S_depi_classContext;
@@ -1490,21 +1494,27 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_configuration.getCf().getAaa().getAuthentication().getLogin() == null) {
       _configuration.getCf().getAaa().getAuthentication().setLogin(new AaaAuthenticationLogin());
     }
-    ArrayList<String> methods = new ArrayList<>();
+    ArrayList<AuthenticationMethod> methods = new ArrayList<>();
     if (ctx.aaa_authentication_asa_console().group != null) {
-      methods.add(ctx.aaa_authentication_asa_console().group.getText());
+      methods.add(AuthenticationMethod.GROUP_USER_DEFINED);
     }
     if (ctx.aaa_authentication_asa_console().LOCAL_ASA() != null) {
-      methods.add(ctx.aaa_authentication_asa_console().LOCAL_ASA().getText());
+      methods.add(AuthenticationMethod.LOCAL_CASE);
     }
     if (!methods.isEmpty()) {
       AaaAuthenticationLogin login = _configuration.getCf().getAaa().getAuthentication().getLogin();
       String name = ctx.linetype.getText();
+      AaaAuthenticationLoginList authList = new AaaAuthenticationLoginList(methods);
+
+      _configuration
+          .getCf()
+          .getLines()
+          .computeIfAbsent(name, Line::new)
+          .setAaaAuthenticationLoginList(authList);
 
       // not allowed to specify multiple login lists for a given linetype so use computeIfAbsent
       // rather than put so we only accept the first login list
-      _currentAaaAuthenticationLoginList =
-          login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
+      _currentAaaAuthenticationLoginList = login.getLists().computeIfAbsent(name, k -> authList);
     }
   }
 
@@ -1519,13 +1529,32 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Unsupported mode");
     }
-    List<String> methods =
-        ctx.aaa_authentication_list_method()
-            .stream()
-            .map(Aaa_authentication_list_methodContext::getText)
-            .collect(ImmutableList.toImmutableList());
+
+    List<AuthenticationMethod> methods = new ArrayList<>();
+
+    for (Aaa_authentication_list_methodContext method : ctx.aaa_authentication_list_method()) {
+      methods.add(AuthenticationMethod.toAuthenticationMethod(method.getText()));
+    }
+
     _currentAaaAuthenticationLoginList =
         login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
+
+    // apply the list to each line
+    SortedMap<String, Line> lines = _configuration.getCf().getLines();
+    for (Line line : lines.values()) {
+      if (name.equals(AaaAuthenticationLogin.DEFAULT_LIST_NAME)) {
+        // only apply default list if no other list applied
+        if (line.getAaaAuthenticationLoginList() == null) {
+          line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
+          line.setLoginAuthentication(name);
+        }
+      } else if (line.getLoginAuthentication() != null
+          && line.getLoginAuthentication().equals(name)) {
+        // if not the default list, apply it to lines that have specified this list as it's login
+        // list
+        line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
+      }
+    }
   }
 
   @Override
@@ -3092,6 +3121,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterS_access_line(S_access_lineContext ctx) {
+    String name = ctx.linetype.getText();
+    _configuration.getCf().getLines().computeIfAbsent(name, Line::new);
+  }
+
+  @Override
   public void enterS_cable(S_cableContext ctx) {
     if (_configuration.getCf().getCable() == null) {
       _configuration.getCf().setCable(new Cable());
@@ -3250,10 +3285,33 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       names.add(nameBase);
     }
+
+    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
+    // default list is undefined
+    AaaAuthenticationLoginList defaultList =
+        Optional.ofNullable(_configuration.getCf().getAaa())
+            .map(Aaa::getAuthentication)
+            .map(AaaAuthentication::getLogin)
+            .map(AaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
+            .orElse(null);
+
     for (String name : names) {
       if (_configuration.getCf().getLines().get(name) == null) {
         Line line = new Line(name);
-        line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        if (defaultList != null) {
+          // if default list defined, apply it to all lines
+          line.setAaaAuthenticationLoginList(defaultList);
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        } else if (_configuration.getCf().getAaa() != null
+            && _configuration.getCf().getAaa().getNewModel()
+            && line.getLineType() != LineType.CON) {
+          // if default list not defined but aaa new-model, apply to all lines except con0
+          line.setAaaAuthenticationLoginList(
+              new AaaAuthenticationLoginList(
+                  Collections.singletonList(AuthenticationMethod.LOCAL)));
+          line.setLoginAuthentication(AaaAuthenticationLogin.DEFAULT_LIST_NAME);
+        }
         _configuration.getCf().getLines().put(name, line);
       }
     }
@@ -5608,7 +5666,24 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Invalid list name");
     }
+
+    // get the authentication list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is
+    // null or the list is not defined
+    AaaAuthenticationLoginList authList =
+        Optional.ofNullable(_configuration.getCf().getAaa())
+            .map(Aaa::getAuthentication)
+            .map(AaaAuthentication::getLogin)
+            .map(AaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(list))
+            .orElse(null);
+
+    // if the authentication list has been defined, apply it to all lines in _currentLineNames
     for (String line : _currentLineNames) {
+      if (authList != null) {
+        _configuration.getCf().getLines().get(line).setAaaAuthenticationLoginList(authList);
+      }
+      // set the name of the login list even if the list hasn't been defined yet because it may be
+      // defined later
       _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
     }
   }
