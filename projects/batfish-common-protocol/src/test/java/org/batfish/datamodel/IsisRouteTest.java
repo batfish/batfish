@@ -15,7 +15,8 @@ public class IsisRouteTest {
             .setLevel(IsisLevel.LEVEL_1)
             .setArea("0")
             .setNextHopIp(new Ip("2.2.2.2"))
-            .setProtocol(RoutingProtocol.ISIS_L1);
+            .setProtocol(RoutingProtocol.ISIS_L1)
+            .setSystemId("id");
 
     IsisRoute original = b.build();
     // use StringBuilder to get fresh instance

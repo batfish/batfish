@@ -134,6 +134,15 @@ public final class IsoAddress implements Serializable {
     return _systemId;
   }
 
+  @Nonnull
+  public String getSystemIdString() {
+    StringBuilder sb = new StringBuilder();
+    for (byte b : _systemId) {
+      sb.append(String.format("%02X", b));
+    }
+    return sb.toString();
+  }
+
   @Override
   public int hashCode() {
     return Objects.hash(_afi, _areaId, _nSel, _systemId);

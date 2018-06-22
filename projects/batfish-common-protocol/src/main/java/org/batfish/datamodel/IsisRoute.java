@@ -21,6 +21,8 @@ public class IsisRoute extends AbstractRoute {
 
     private RoutingProtocol _protocol;
 
+    private String _systemId;
+
     @Override
     public IsisRoute build() {
       return new IsisRoute(
@@ -31,7 +33,8 @@ public class IsisRoute extends AbstractRoute {
           getMetric(),
           requireNonNull(getNetwork()),
           requireNonNull(getNextHopIp()),
-          requireNonNull(_protocol));
+          requireNonNull(_protocol),
+          requireNonNull(_systemId));
     }
 
     @Override
@@ -58,6 +61,11 @@ public class IsisRoute extends AbstractRoute {
       _protocol = protocol;
       return this;
     }
+
+    public Builder setSystemId(@Nonnull String systemId) {
+      _systemId = systemId;
+      return this;
+    }
   }
 
   public static final long DEFAULT_METRIC = 10L;
@@ -67,6 +75,8 @@ public class IsisRoute extends AbstractRoute {
   private static final String PROP_DOWN = "down";
 
   private static final String PROP_LEVEL = "level";
+
+  private static final String PROP_SYSTEM_ID = "systemId";
 
   private static final long serialVersionUID = 1L;
 
@@ -79,7 +89,8 @@ public class IsisRoute extends AbstractRoute {
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_NETWORK) Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol) {
+      @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
+      @JsonProperty(PROP_SYSTEM_ID) String systemId) {
     return new IsisRoute(
         administrativeCost,
         requireNonNull(area),
@@ -88,7 +99,8 @@ public class IsisRoute extends AbstractRoute {
         metric,
         requireNonNull(network),
         requireNonNull(nextHopIp),
-        requireNonNull(protocol));
+        requireNonNull(protocol),
+        requireNonNull(systemId));
   }
 
   private final int _administrativeCost;
@@ -105,6 +117,8 @@ public class IsisRoute extends AbstractRoute {
 
   private final RoutingProtocol _protocol;
 
+  private final String _systemId;
+
   private IsisRoute(
       int administrativeCost,
       @Nonnull String area,
@@ -113,7 +127,8 @@ public class IsisRoute extends AbstractRoute {
       long metric,
       @Nonnull Prefix network,
       @Nonnull Ip nextHopIp,
-      @Nonnull RoutingProtocol protocol) {
+      @Nonnull RoutingProtocol protocol,
+      @Nonnull String systemId) {
     super(network);
     _administrativeCost = administrativeCost;
     _area = area;
@@ -122,6 +137,7 @@ public class IsisRoute extends AbstractRoute {
     _metric = metric;
     _nextHopIp = nextHopIp;
     _protocol = protocol;
+    _systemId = systemId;
   }
 
   @Override
@@ -140,7 +156,8 @@ public class IsisRoute extends AbstractRoute {
         && _metric == rhs._metric
         && _network.equals(rhs._network)
         && _nextHopIp.equals(rhs._nextHopIp)
-        && _protocol == rhs._protocol;
+        && _protocol == rhs._protocol
+        && _systemId.equals(rhs._systemId);
   }
 
   @JsonIgnore(false)
@@ -192,6 +209,12 @@ public class IsisRoute extends AbstractRoute {
     return _protocol;
   }
 
+  @Nonnull
+  @JsonProperty(PROP_SYSTEM_ID)
+  public String getSystemId() {
+    return _systemId;
+  }
+
   @Override
   public int getTag() {
     return NO_TAG;
@@ -206,13 +229,15 @@ public class IsisRoute extends AbstractRoute {
         _level.ordinal(),
         _metric,
         _nextHopIp,
-        _protocol.ordinal());
+        _protocol.ordinal(),
+        _systemId);
   }
 
   @Override
   protected String protocolRouteString() {
     return String.format(
-        " %s:%s %s:%s %s:%s", PROP_AREA, _area, PROP_DOWN, _down, PROP_LEVEL, _level);
+        " %s:%s %s:%s %s:%s %s:%s",
+        PROP_AREA, _area, PROP_DOWN, _down, PROP_LEVEL, _level, PROP_SYSTEM_ID, _systemId);
   }
 
   @Override
@@ -224,6 +249,7 @@ public class IsisRoute extends AbstractRoute {
     return Comparator.comparing(IsisRoute::getArea)
         .thenComparing(IsisRoute::getDown)
         .thenComparing(IsisRoute::getLevel)
+        .thenComparing(IsisRoute::getSystemId)
         .compare(this, castRhs);
   }
 }

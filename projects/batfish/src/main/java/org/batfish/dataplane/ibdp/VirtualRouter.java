@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.util.CommonUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
+import static org.batfish.dataplane.protocols.IsisProtocolHelper.convertRouteLevel1ToLevel2;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.isInterfaceRoute;
 import static org.batfish.dataplane.protocols.StaticRouteHelper.shouldActivateNextHopIpRoute;
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
@@ -1074,7 +1076,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     IsisLevelSettings l1Settings = proc.getLevel1();
     IsisLevelSettings l2Settings = proc.getLevel2();
     IsisRoute.Builder builder =
-        new IsisRoute.Builder().setArea(proc.getNetAddress().getAreaIdString());
+        new IsisRoute.Builder()
+            .setArea(proc.getNetAddress().getAreaIdString())
+            .setSystemId(proc.getNetAddress().getSystemIdString());
     _vrf.getInterfaces()
         .values()
         .forEach(
@@ -1657,15 +1661,18 @@ public class VirtualRouter extends ComparableStructure<String> {
         (edge, queue) -> {
           Ip nextHopIp = edge.getNode2().getInterface(nodes).getAddress().getIp();
           Interface iface = edge.getNode1().getInterface(nodes);
-          IsisLevel circuitType = edge.getCircuitType();
           routeBuilder.setNextHopIp(nextHopIp);
           while (queue.peek() != null) {
             RouteAdvertisement<IsisRoute> routeAdvert = queue.remove();
             IsisRoute neighborRoute = routeAdvert.getRoute();
-            routeBuilder.setNetwork(neighborRoute.getNetwork()).setArea(neighborRoute.getArea());
+
+            routeBuilder
+                .setNetwork(neighborRoute.getNetwork())
+                .setArea(neighborRoute.getArea())
+                .setSystemId(neighborRoute.getSystemId());
             boolean withdraw = routeAdvert.isWithdrawn();
-            if (neighborRoute.getLevel() == IsisLevel.LEVEL_1
-                && (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_1)) {
+            // TODO: simplify
+            if (neighborRoute.getLevel() == IsisLevel.LEVEL_1) {
               long incrementalMetric =
                   firstNonNull(iface.getIsis().getLevel1().getCost(), IsisRoute.DEFAULT_METRIC);
               IsisRoute newL1Route =
@@ -1687,8 +1694,7 @@ public class VirtualRouter extends ComparableStructure<String> {
                     .computeIfAbsent(newL1Route.getNetwork(), k -> new TreeSet<>())
                     .add(newL1Route);
               }
-            }
-            if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_2) {
+            } else { // neighborRoute is level2
               long incrementalMetric =
                   firstNonNull(iface.getIsis().getLevel2().getCost(), IsisRoute.DEFAULT_METRIC);
               IsisRoute newL2Route =
@@ -2313,6 +2319,7 @@ public class VirtualRouter extends ComparableStructure<String> {
     if (_vrf.getIsisProcess() == null || _isisIncomingRoutes == null) {
       return;
     }
+    // Loop over neighbors, enqueue messages
     _isisIncomingRoutes
         .keySet()
         .forEach(
@@ -2330,6 +2337,32 @@ public class VirtualRouter extends ComparableStructure<String> {
               }
               if (circuitType == IsisLevel.LEVEL_1_2 || circuitType == IsisLevel.LEVEL_2) {
                 queueDelta(queue, l2delta);
+                if (_vrf.getIsisProcess().getLevel1() != null
+                    && _vrf.getIsisProcess().getLevel2() != null
+                    && l1delta != null) {
+
+                  // We are a L1_L2 router, we must "upgrade" L1 routes to L2 routes
+                  // TODO: a little cumbersome, simplify later
+                  RibDelta.Builder<IsisRoute> upgradedRoutes = new RibDelta.Builder<>(null);
+                  l1delta
+                      .getActions()
+                      .forEach(
+                          ra -> {
+                            Optional<IsisRoute> newRoute =
+                                convertRouteLevel1ToLevel2(
+                                    ra.getRoute(),
+                                    RoutingProtocol.ISIS_L2.getDefaultAdministrativeCost(
+                                        _c.getConfigurationFormat()));
+                            if (newRoute.isPresent()) {
+                              if (ra.isWithdrawn()) {
+                                upgradedRoutes.remove(newRoute.get(), ra.getReason());
+                              } else {
+                                upgradedRoutes.add(newRoute.get());
+                              }
+                            }
+                          });
+                  queueDelta(queue, upgradedRoutes.build());
+                }
               }
             });
   }
