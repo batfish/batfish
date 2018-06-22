@@ -163,7 +163,7 @@ public class PaloAltoGrammarTest {
      * Flattened config should be two lines: header line and set-hostname line
      * This test is only checking content of the set-hostname line
      */
-    String setLineText = flattener.getFlattenedConfigurationText().split("\n")[1];
+    String setLineText = flattener.getFlattenedConfigurationText().split("\n", -1)[1];
 
     /* Confirm original line numbers are preserved */
     assertThat(lineMap.getOriginalLine(2, setLineText.indexOf("deviceconfig")), equalTo(1));

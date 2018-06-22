@@ -36,7 +36,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   public JuniperFlattener(String header) {
     _header = header;
     // Determine length of header to offset subsequent line numbers for original line mapping
-    _headerLineCount = header.split("\r\n|\r|\n").length;
+    _headerLineCount = header.split("\n", -1).length;
     _lineMap = new FlattenerLineMap();
     _stack = new ArrayList<>();
     _setStatements = new ArrayList<>();
@@ -96,9 +96,9 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     for (List<WordContext> line : _stack) {
       for (WordContext wordCtx : line) {
         sb.append(" ");
-        // Offset new line number by header line count plus one (since line numbers start at 1)
+        // Offset new line number by header line count
         _lineMap.setOriginalLine(
-            _setStatements.size() + _headerLineCount + 1,
+            _setStatements.size() + _headerLineCount,
             sb.length(),
             wordCtx.WORD().getSymbol().getLine());
         sb.append(wordCtx.getText());
