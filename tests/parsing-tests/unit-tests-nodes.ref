@@ -5741,6 +5741,16 @@
           }
         },
         "ipsecPolicies" : {
+          "VPN:5" : {
+            "name" : "VPN:5",
+            "pfsKeyGroup" : "GROUP14",
+            "pfsKeyGroupDynamicIke" : false
+          },
+          "VPNMAP:2" : {
+            "name" : "VPNMAP:2",
+            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroupDynamicIke" : false
+          },
           "abcdefg" : {
             "name" : "abcdefg",
             "pfsKeyGroupDynamicIke" : false

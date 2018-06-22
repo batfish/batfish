@@ -334,11 +334,11 @@
         "description" : "Unused structure of type: 'crypto ipsec profile' with name: 'abcdefg'",
         "files" : {
           "cisco_crypto" : [
-            145,
-            146,
-            147,
-            148,
-            149
+            158,
+            159,
+            160,
+            161,
+            162
           ]
         }
       },
@@ -346,9 +346,9 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'ESP-3DES-MD5'",
         "files" : {
           "cisco_crypto" : [
-            154,
-            155,
-            156
+            167,
+            168,
+            169
           ]
         }
       },
@@ -356,7 +356,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'IPSEC_AES_256'",
         "files" : {
           "cisco_crypto" : [
-            157
+            170
           ]
         }
       },
@@ -364,7 +364,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts1'",
         "files" : {
           "cisco_crypto" : [
-            158
+            171
           ]
         }
       },
@@ -372,7 +372,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'cipts2'",
         "files" : {
           "cisco_crypto" : [
-            159
+            172
           ]
         }
       },
@@ -380,7 +380,7 @@
         "description" : "Unused structure of type: 'crypto ipsec transform-set' with name: 'noAuthHeader'",
         "files" : {
           "cisco_crypto" : [
-            160
+            173
           ]
         }
       },
@@ -388,8 +388,72 @@
         "description" : "Unused structure of type: 'crypto keyring' with name: 'VRF:ABC:DEF:GHI:1234'",
         "files" : {
           "cisco_crypto" : [
-            198,
-            199
+            211,
+            212
+          ]
+        }
+      },
+      "unused:crypto-dynamic-map-set:abcd" : {
+        "description" : "Unused structure of type: 'crypto-dynamic-map-set' with name: 'abcd'",
+        "files" : {
+          "aruba_crypto" : [
+            4,
+            5,
+            6
+          ]
+        }
+      },
+      "unused:crypto-dynamic-map-set:asadynamicmaps" : {
+        "description" : "Unused structure of type: 'crypto-dynamic-map-set' with name: 'asadynamicmaps'",
+        "files" : {
+          "cisco_crypto" : [
+            94
+          ]
+        }
+      },
+      "unused:crypto-dynamic-map-set:mydynamicmap" : {
+        "description" : "Unused structure of type: 'crypto-dynamic-map-set' with name: 'mydynamicmap'",
+        "files" : {
+          "cisco_crypto" : [
+            110,
+            111
+          ]
+        }
+      },
+      "unused:crypto-map-set:VPN" : {
+        "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPN'",
+        "files" : {
+          "cisco_crypto" : [
+            217,
+            218,
+            219,
+            220,
+            221,
+            222
+          ]
+        }
+      },
+      "unused:crypto-map-set:VPNMAP" : {
+        "description" : "Unused structure of type: 'crypto-map-set' with name: 'VPNMAP'",
+        "files" : {
+          "cisco_crypto" : [
+            232,
+            233,
+            234,
+            235,
+            236,
+            237,
+            238,
+            239,
+            240
+          ]
+        }
+      },
+      "unused:crypto-map-set:myothermap" : {
+        "description" : "Unused structure of type: 'crypto-map-set' with name: 'myothermap'",
+        "files" : {
+          "cisco_crypto" : [
+            214
           ]
         }
       },
@@ -1393,7 +1457,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 134
+      "numResults" : 140
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1422,6 +1486,15 @@
         "bgp group" : {
           "UNDEFINED_PEER_GROUP" : [
             11
+          ]
+        }
+      },
+      "aruba_crypto" : {
+        "crypto-dynamic-map-set" : {
+          "abcd" : [
+            4,
+            5,
+            6
           ]
         }
       },
@@ -1645,36 +1718,69 @@
       "cisco_crypto" : {
         "crypto ipsec profile" : {
           "abcdefg" : [
-            145,
-            146,
-            147,
-            148,
-            149
+            158,
+            159,
+            160,
+            161,
+            162
           ]
         },
         "crypto ipsec transform-set" : {
           "ESP-3DES-MD5" : [
-            154,
-            155,
-            156
+            167,
+            168,
+            169
           ],
           "IPSEC_AES_256" : [
-            157
+            170
           ],
           "cipts1" : [
-            158
+            171
           ],
           "cipts2" : [
-            159
+            172
           ],
           "noAuthHeader" : [
-            160
+            173
           ]
         },
         "crypto keyring" : {
           "VRF:ABC:DEF:GHI:1234" : [
-            198,
-            199
+            211,
+            212
+          ]
+        },
+        "crypto-dynamic-map-set" : {
+          "asadynamicmaps" : [
+            94
+          ],
+          "mydynamicmap" : [
+            110,
+            111
+          ]
+        },
+        "crypto-map-set" : {
+          "VPN" : [
+            217,
+            218,
+            219,
+            220,
+            221,
+            222
+          ],
+          "VPNMAP" : [
+            232,
+            233,
+            234,
+            235,
+            236,
+            237,
+            238,
+            239,
+            240
+          ],
+          "myothermap" : [
+            214
           ]
         }
       },

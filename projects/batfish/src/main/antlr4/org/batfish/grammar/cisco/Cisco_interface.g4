@@ -43,6 +43,11 @@ if_channel_group
    )? NEWLINE
 ;
 
+if_crypto_map
+:
+   CRYPTO MAP name = variable NEWLINE
+;
+
 if_default_gw
 :
    DEFAULT_GW IP_ADDRESS NEWLINE
@@ -1311,6 +1316,7 @@ s_interface
       if_autostate
       | if_bandwidth
       | if_channel_group
+      | if_crypto_map
       | if_default_gw
       | if_description
       | if_flow_sampler

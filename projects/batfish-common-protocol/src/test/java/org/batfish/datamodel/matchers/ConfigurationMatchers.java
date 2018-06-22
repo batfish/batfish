@@ -15,6 +15,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecPolicy;
 import org.batfish.datamodel.IpsecProposal;
+import org.batfish.datamodel.IpsecVpn;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfigurationFormat;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
@@ -29,6 +30,7 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpace;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpSpaces;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecPolicy;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecProposal;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIpsecVpn;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVendorFamily;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasVrfs;
@@ -132,6 +134,15 @@ public class ConfigurationMatchers {
   public static HasIpsecProposal hasIpsecProposal(
       @Nonnull String name, @Nonnull Matcher<? super IpsecProposal> subMatcher) {
     return new HasIpsecProposal(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * Ipsec vpn with specified name.
+   */
+  public static @Nonnull HasIpsecVpn hasIpsecVpn(
+      @Nonnull String name, @Nonnull Matcher<? super IpsecVpn> subMatcher) {
+    return new HasIpsecVpn(name, subMatcher);
   }
 
   /**
