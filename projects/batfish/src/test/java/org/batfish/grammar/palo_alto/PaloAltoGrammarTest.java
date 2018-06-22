@@ -149,7 +149,7 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testNestedConfigLinePreservation() throws IOException {
+  public void testNestedConfigLineMap() throws IOException {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(

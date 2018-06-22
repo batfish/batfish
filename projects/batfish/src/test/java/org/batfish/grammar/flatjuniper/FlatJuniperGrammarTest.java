@@ -1095,7 +1095,7 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testNestedConfigLinePreservation() throws IOException {
+  public void testNestedConfigLineMap() throws IOException {
     String hostname = "nested-config";
     Flattener flattener =
         Batfish.flatten(
@@ -1109,7 +1109,7 @@ public class FlatJuniperGrammarTest {
      * Flattened config should be two lines: header line and set-host-name line
      * This test is only checking content of the set-host-name line
      */
-    String flatText = flattener.getFlattenedConfigurationText().split("\n")[1];
+    String flatText = flattener.getFlattenedConfigurationText().split("\n", -1)[1];
 
     /* Confirm original line numbers are preserved */
     assertThat(lineMap.getOriginalLine(2, flatText.indexOf("system")), equalTo(2));
