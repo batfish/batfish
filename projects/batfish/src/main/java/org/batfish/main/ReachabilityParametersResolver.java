@@ -2,7 +2,7 @@ package org.batfish.main;
 
 import java.util.Map;
 import org.batfish.common.BatfishException;
-import org.batfish.common.Snapshot;
+import org.batfish.common.NetworkSnapshot;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.questions.InvalidReachabilityParametersException;
@@ -26,10 +26,10 @@ final class ReachabilityParametersResolver {
 
   private final ReachabilityParameters _params;
 
-  private final Snapshot _snapshot;
+  private final NetworkSnapshot _snapshot;
 
   private ReachabilityParametersResolver(
-      Batfish batfish, ReachabilityParameters params, Snapshot snapshot) {
+      Batfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot) {
     _batfish = batfish;
     _params = params;
     _snapshot = snapshot;
@@ -37,7 +37,7 @@ final class ReachabilityParametersResolver {
   }
 
   public static ResolvedReachabilityParameters resolveReachabilityParameters(
-      Batfish batfish, ReachabilityParameters params, Snapshot snapshot)
+      Batfish batfish, ReachabilityParameters params, NetworkSnapshot snapshot)
       throws InvalidReachabilityParametersException {
 
     ReachabilityParametersResolver resolver =

@@ -10,6 +10,11 @@ options {
 
 // Keywords
 
+ADMIN_DIST
+:
+    'admin-dist'
+;
+
 AUTHENTICATION_TYPE
 :
     'authentication-type'
@@ -20,6 +25,11 @@ AUTO
     'auto'
 ;
 
+CLOSE_BRACKET
+:
+    ']'
+;
+
 COMMENT
 :
     'comment'
@@ -28,6 +38,11 @@ COMMENT
 CONFIG
 :
     'config'
+;
+
+DESTINATION
+:
+    'destination'
 ;
 
 DEVICES
@@ -70,6 +85,11 @@ IP
     'ip'
 ;
 
+IP_ADDRESS_LITERAL
+:
+    'ip-address'
+;
+
 LAYER3
 :
     'layer3'
@@ -85,6 +105,11 @@ LOG_SETTINGS
     'log-settings'
 ;
 
+METRIC
+:
+    'metric'
+;
+
 MTU
 :
     'mtu'
@@ -93,6 +118,11 @@ MTU
 NETWORK
 :
     'network'
+;
+
+NEXTHOP
+:
+    'nexthop'
 ;
 
 NTP_SERVER_ADDRESS
@@ -105,6 +135,11 @@ NTP_SERVERS
     'ntp-servers'
 ;
 
+OPEN_BRACKET
+:
+    '['
+;
+
 PRIMARY
 :
     'primary'
@@ -113,6 +148,11 @@ PRIMARY
 PRIMARY_NTP_SERVER
 :
     'primary-ntp-server'
+;
+
+ROUTING_TABLE
+:
+    'routing-table'
 ;
 
 SECONDARY
@@ -145,6 +185,11 @@ SHARED
     'shared'
 ;
 
+STATIC_ROUTE
+:
+    'static-route'
+;
+
 SYSLOG
 :
     'syslog'
@@ -158,6 +203,11 @@ SYSTEM
 UP
 :
     'up'
+;
+
+VIRTUAL_ROUTER
+:
+    'virtual-router'
 ;
 
 // Complex tokens

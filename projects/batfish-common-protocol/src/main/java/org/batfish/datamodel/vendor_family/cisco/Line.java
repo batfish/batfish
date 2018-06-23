@@ -2,15 +2,22 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Objects;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.common.util.ComparableStructure;
+import org.batfish.datamodel.AuthenticationMethod;
+import org.batfish.datamodel.LineType;
 
 public class Line extends ComparableStructure<String> {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  private static final String PROP_LINE_TYPE = "lineType";
+
+  private AaaAuthenticationLoginList _aaaAuthenticationLoginList;
 
   private int _execTimeoutMinutes;
 
@@ -19,6 +26,9 @@ public class Line extends ComparableStructure<String> {
   private String _inputAccessList;
 
   private String _inputIpv6AccessList;
+
+  @JsonProperty(PROP_LINE_TYPE)
+  private LineType _lineType;
 
   private String _loginAuthentication;
 
@@ -38,6 +48,11 @@ public class Line extends ComparableStructure<String> {
     _transportInput = new TreeSet<>();
     _transportOutput = new TreeSet<>();
     _transportPreferred = new TreeSet<>();
+    _lineType = LineType.toLineType(Objects.requireNonNull(name));
+  }
+
+  public AaaAuthenticationLoginList getAaaAuthenticationLoginList() {
+    return _aaaAuthenticationLoginList;
   }
 
   public Integer getExecTimeoutMinutes() {
@@ -54,6 +69,11 @@ public class Line extends ComparableStructure<String> {
 
   public String getInputIpv6AccessList() {
     return _inputIpv6AccessList;
+  }
+
+  @JsonProperty(PROP_LINE_TYPE)
+  public LineType getLineType() {
+    return _lineType;
   }
 
   public String getLoginAuthentication() {
@@ -78,6 +98,31 @@ public class Line extends ComparableStructure<String> {
 
   public SortedSet<String> getTransportPreferred() {
     return _transportPreferred;
+  }
+
+  /**
+   * Check whether the line requires authentication. A line requires authentication if it has a
+   * login list with at least one method and does not contain the 'none' method
+   *
+   * @return true if line requires authentication, false if otherwise
+   */
+  public boolean requiresAuthentication() {
+    boolean requiresAuthentication = false;
+
+    if (_aaaAuthenticationLoginList != null) {
+      for (AuthenticationMethod method : _aaaAuthenticationLoginList.getMethods()) {
+        if (method == AuthenticationMethod.NONE || method == AuthenticationMethod.UNKNOWN) {
+          return false;
+        }
+        requiresAuthentication = true;
+      }
+    }
+
+    return requiresAuthentication;
+  }
+
+  public void setAaaAuthenticationLoginList(AaaAuthenticationLoginList aaaAuthenticationLoginList) {
+    _aaaAuthenticationLoginList = aaaAuthenticationLoginList;
   }
 
   public void setExecTimeoutMinutes(Integer execTimeoutMinutes) {

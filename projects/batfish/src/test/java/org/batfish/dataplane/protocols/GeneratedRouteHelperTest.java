@@ -91,7 +91,7 @@ public class GeneratedRouteHelperTest {
         GeneratedRouteHelper.activateGeneratedRoute(
             gr,
             policy,
-            ImmutableSet.of(new StaticRoute(Prefix.parse("2.2.2.2/32"), null, "eth0", 1, 1)),
+            ImmutableSet.of(new StaticRoute(Prefix.parse("2.2.2.2/32"), null, "eth0", 1, 0L, 1)),
             "vrf");
 
     assertThat(newRoute, notNullValue());

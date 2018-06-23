@@ -21,11 +21,12 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   private ParserRuleContext _ctx;
   private int _indent;
   private ParseTreeSentences _ptSentences;
+  private boolean _printLineNumbers;
   private List<String> _ruleNames;
   private Vocabulary _vocabulary;
 
   private ParseTreePrettyPrinter(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
     Parser grammar = combinedParser.getParser();
     List<String> ruleNames = Arrays.asList(grammar.getRuleNames());
     _vocabulary = grammar.getVocabulary();
@@ -33,13 +34,15 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     _ruleNames = ruleNames;
     _ctx = ctx;
     _ptSentences = new ParseTreeSentences();
+    _printLineNumbers = printLineNumbers;
     _indent = 0;
   }
 
   public static ParseTreeSentences getParseTreeSentences(
-      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
     ParseTreeWalker walker = new ParseTreeWalker();
-    ParseTreePrettyPrinter printer = new ParseTreePrettyPrinter(ctx, combinedParser);
+    ParseTreePrettyPrinter printer =
+        new ParseTreePrettyPrinter(ctx, combinedParser, printLineNumbers);
     walker.walk(printer, ctx);
     return printer._ptSentences;
   }
@@ -71,8 +74,14 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   }
 
   public static String print(ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser) {
+    return print(ctx, combinedParser, false);
+  }
+
+  public static String print(
+      ParserRuleContext ctx, BatfishCombinedParser<?, ?> combinedParser, boolean printLineNumbers) {
     int maxStringLength = combinedParser.getSettings().getMaxParseTreePrintLength();
-    List<String> strings = getParseTreeSentences(ctx, combinedParser).getSentences();
+    List<String> strings =
+        getParseTreeSentences(ctx, combinedParser, printLineNumbers).getSentences();
     return printWithCharacterLimit(strings, maxStringLength);
   }
 
@@ -171,5 +180,9 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
       _ptSentences.appendToLastSentence(tokenName + ":'" + nodeText + "'");
     }
     _ptSentences.appendToLastSentence("  <== mode:" + mode);
+
+    if (_printLineNumbers) {
+      _ptSentences.appendToLastSentence(String.format(" line:%s", _combinedParser.getLine(t)));
+    }
   }
 }

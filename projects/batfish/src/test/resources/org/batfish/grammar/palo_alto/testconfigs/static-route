@@ -1,0 +1,6 @@
+set deviceconfig system hostname static-route
+set network virtual-router somename routing-table ip static-route ROUTE1 interface ethernet1/1
+set network virtual-router somename routing-table ip static-route ROUTE1 destination 0.0.0.0/0
+set network virtual-router somename routing-table ip static-route ROUTE1 nexthop ip-address 1.1.1.1
+set network virtual-router somename routing-table ip static-route ROUTE1 admin-dist 123
+set network virtual-router somename routing-table ip static-route ROUTE1 metric 12

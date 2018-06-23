@@ -120,6 +120,8 @@ public class Interface extends ComparableStructure<String> {
 
   private String _channelGroup;
 
+  private String _cryptoMap;
+
   private String _description;
 
   private SortedSet<Ip> _dhcpRelayAddresses;
@@ -151,6 +153,8 @@ public class Interface extends ComparableStructure<String> {
   private boolean _ospfPassive;
 
   private boolean _ospfPointToPoint;
+
+  private boolean _ospfShutdown;
 
   private String _outgoingFilter;
 
@@ -271,6 +275,10 @@ public class Interface extends ComparableStructure<String> {
     return _channelGroup;
   }
 
+  public String getCryptoMap() {
+    return _cryptoMap;
+  }
+
   public String getDescription() {
     return _description;
   }
@@ -333,6 +341,10 @@ public class Interface extends ComparableStructure<String> {
 
   public boolean getOspfPointToPoint() {
     return _ospfPointToPoint;
+  }
+
+  public boolean getOspfShutdown() {
+    return _ospfShutdown;
   }
 
   public String getOutgoingFilter() {
@@ -426,6 +438,10 @@ public class Interface extends ComparableStructure<String> {
     _channelGroup = channelGroup;
   }
 
+  public void setCryptoMap(String cryptoMap) {
+    _cryptoMap = cryptoMap;
+  }
+
   public void setDescription(String description) {
     _description = description;
   }
@@ -488,6 +504,10 @@ public class Interface extends ComparableStructure<String> {
 
   public void setOspfPointToPoint(boolean ospfPointToPoint) {
     _ospfPointToPoint = ospfPointToPoint;
+  }
+
+  public void setOspfShutdown(boolean ospfShutdown) {
+    _ospfShutdown = ospfShutdown;
   }
 
   public void setOutgoingFilter(String accessListName) {

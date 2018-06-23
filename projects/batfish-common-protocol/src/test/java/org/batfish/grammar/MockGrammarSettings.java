@@ -16,6 +16,8 @@ public class MockGrammarSettings implements GrammarSettings {
 
   private final boolean _printParseTree;
 
+  private final boolean _printParseTreeLineNums;
+
   private final boolean _throwOnLexerError;
 
   private final boolean _throwOnParserError;
@@ -37,6 +39,7 @@ public class MockGrammarSettings implements GrammarSettings {
       int maxParserContextTokens,
       int maxParseTreePrintLength,
       boolean printParseTree,
+      boolean printParseTreeLineNums,
       boolean throwOnLexerError,
       boolean throwOnParserError) {
     _disableUnrecognized = disableUnrecognized;
@@ -44,6 +47,7 @@ public class MockGrammarSettings implements GrammarSettings {
     _maxParserContextTokens = maxParserContextTokens;
     _maxParseTreePrintLength = maxParseTreePrintLength;
     _printParseTree = printParseTree;
+    _printParseTreeLineNums = printParseTreeLineNums;
     _throwOnLexerError = throwOnLexerError;
     _throwOnParserError = throwOnParserError;
   }
@@ -74,6 +78,11 @@ public class MockGrammarSettings implements GrammarSettings {
   }
 
   @Override
+  public boolean getPrintParseTreeLineNums() {
+    return _printParseTreeLineNums;
+  }
+
+  @Override
   public boolean getThrowOnLexerError() {
     return _throwOnLexerError;
   }
@@ -90,6 +99,11 @@ public class MockGrammarSettings implements GrammarSettings {
 
   @Override
   public void setPrintParseTree(boolean b) {
+    throw new UnsupportedOperationException("immutable");
+  }
+
+  @Override
+  public void setPrintParseTreeLineNums(boolean b) {
     throw new UnsupportedOperationException("immutable");
   }
 

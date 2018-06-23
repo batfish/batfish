@@ -2,9 +2,9 @@ package org.batfish.datamodel.vendor_family.cisco;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.util.DefinedStructure;
+import org.batfish.common.util.ComparableStructure;
 
-public class ServiceClass extends DefinedStructure<String> {
+public class ServiceClass extends ComparableStructure<String> {
 
   private static final String PROP_FRIENDLY_NAME = "friendlyName";
 
@@ -14,12 +14,8 @@ public class ServiceClass extends DefinedStructure<String> {
   private String _friendlyName;
 
   @JsonCreator
-  private ServiceClass(@JsonProperty(PROP_NAME) String number) {
-    super(number, -1);
-  }
-
-  public ServiceClass(String number, int definitionLine) {
-    super(number, definitionLine);
+  public ServiceClass(@JsonProperty(PROP_NAME) String number) {
+    super(number);
   }
 
   @JsonProperty(PROP_FRIENDLY_NAME)

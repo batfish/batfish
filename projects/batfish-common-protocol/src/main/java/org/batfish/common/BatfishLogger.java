@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import javax.annotation.Nullable;
 
 public final class BatfishLogger {
 
@@ -175,7 +176,11 @@ public final class BatfishLogger {
   }
 
   public BatfishLogger(
-      String logLevel, boolean timestamp, String logFile, boolean logTee, boolean rotateLog) {
+      String logLevel,
+      boolean timestamp,
+      @Nullable String logFile,
+      boolean logTee,
+      boolean rotateLog) {
     _history = null;
     _timestamp = timestamp;
     String levelStr = logLevel;

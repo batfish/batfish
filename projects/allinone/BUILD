@@ -28,6 +28,25 @@ java_library(
     ],
 )
 
+java_library(
+    name = "allinone_testlib",
+    testonly = True,
+    srcs = glob(
+        [
+            "src/test/**/*.java",
+        ],
+        exclude = ["src/test/**/*Test.java"],
+    ),
+    deps = [
+        ":allinone",
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/batfish-common-protocol:common",
+        "@guava//:compile",
+        "@junit//:compile",
+    ],
+)
+
 junit_tests(
     name = "allinone_tests",
     size = "small",
@@ -37,6 +56,7 @@ junit_tests(
     resources = glob(["src/test/resources/**"]),
     deps = [
         ":allinone",
+        ":allinone_testlib",
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
         "//projects/batfish-common-protocol:common",

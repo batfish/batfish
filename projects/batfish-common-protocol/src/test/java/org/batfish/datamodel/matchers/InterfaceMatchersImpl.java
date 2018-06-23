@@ -140,6 +140,17 @@ final class InterfaceMatchersImpl {
     }
   }
 
+  static final class HasOspfAreaName extends FeatureMatcher<Interface, Long> {
+    HasOspfAreaName(@Nonnull Matcher<? super Long> subMatcher) {
+      super(subMatcher, "an Interface with ospfAreaName:", "ospfAreaName");
+    }
+
+    @Override
+    protected Long featureValueOf(Interface actual) {
+      return actual.getOspfAreaName();
+    }
+  }
+
   static final class HasOspfCost extends FeatureMatcher<Interface, Integer> {
     HasOspfCost(@Nonnull Matcher<? super Integer> subMatcher) {
       super(subMatcher, "an Interface with ospfCost:", "ospfCost");

@@ -9,23 +9,36 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.InterfaceAddress;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Palo_alto_configurationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_virtual_routerContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernetContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_commentContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_statusContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvr_routing_tableContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_admin_distContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_interfaceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_metricContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Snvrrt_nexthopContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ssls_serverContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sslss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Variable_list_itemContext;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.PaloAltoConfiguration;
+import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
+import org.batfish.representation.palo_alto.VirtualRouter;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoConfiguration _configuration;
@@ -36,9 +49,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
 
   private boolean _currentNtpServerPrimary;
 
+  private StaticRoute _currentStaticRoute;
+
   private SyslogServer _currentSyslogServer;
 
   private String _currentSyslogServerGroupName;
+
+  private VirtualRouter _currentVirtualRouter;
 
   private PaloAltoCombinedParser _parser;
 
@@ -76,6 +93,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     int end = ctx.getStop().getStopIndex();
     String text = _text.substring(start, end + 1);
     return text;
+  }
+
+  /** Return original line number for the specified token */
+  private int getLine(Token t) {
+    return _parser.getLine(t);
   }
 
   /** Return token text with enclosing quotes removed, if applicable */
@@ -146,6 +168,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   }
 
   @Override
+  public void enterSn_virtual_router(Sn_virtual_routerContext ctx) {
+    _currentVirtualRouter =
+        _configuration.getVirtualRouters().computeIfAbsent(ctx.name.getText(), VirtualRouter::new);
+  }
+
+  @Override
+  public void exitSn_virtual_router(Sn_virtual_routerContext ctx) {
+    _currentVirtualRouter = null;
+  }
+
+  @Override
   public void enterSni_ethernet(Sni_ethernetContext ctx) {
     String name = ctx.name.getText();
     _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
@@ -176,6 +209,51 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSniel3_mtu(Sniel3_mtuContext ctx) {
     _currentInterface.setMtu(Integer.parseInt(ctx.mtu.getText()));
+  }
+
+  @Override
+  public void enterSnvr_routing_table(Snvr_routing_tableContext ctx) {
+    _currentStaticRoute =
+        _currentVirtualRouter
+            .getStaticRoutes()
+            .computeIfAbsent(ctx.name.getText(), StaticRoute::new);
+  }
+
+  @Override
+  public void exitSnvr_interface(Snvr_interfaceContext ctx) {
+    for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
+      _currentVirtualRouter.getInterfaceNames().add(var.getText());
+    }
+  }
+
+  @Override
+  public void exitSnvr_routing_table(Snvr_routing_tableContext ctx) {
+    _currentStaticRoute = null;
+  }
+
+  @Override
+  public void exitSnvrrt_admin_dist(Snvrrt_admin_distContext ctx) {
+    _currentStaticRoute.setAdminDistance(Integer.parseInt(ctx.distance.getText()));
+  }
+
+  @Override
+  public void exitSnvrrt_destination(Snvrrt_destinationContext ctx) {
+    _currentStaticRoute.setDestination(Prefix.parse(ctx.destination.getText()));
+  }
+
+  @Override
+  public void exitSnvrrt_interface(Snvrrt_interfaceContext ctx) {
+    _currentStaticRoute.setNextHopInterface(ctx.iface.getText());
+  }
+
+  @Override
+  public void exitSnvrrt_metric(Snvrrt_metricContext ctx) {
+    _currentStaticRoute.setMetric(Integer.parseInt(ctx.metric.getText()));
+  }
+
+  @Override
+  public void exitSnvrrt_nexthop(Snvrrt_nexthopContext ctx) {
+    _currentStaticRoute.setNextHopIp(new Ip(ctx.address.getText()));
   }
 
   @Override
@@ -212,7 +290,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
-    int line = token.getLine();
+    int line = getLine(token);
     String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
     if (_unrecognizedAsRedFlag) {
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");

@@ -1,5 +1,15 @@
 package org.batfish.grammar.cisco;
 
+import static org.batfish.datamodel.AuthenticationMethod.ENABLE;
+import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
+import static org.batfish.datamodel.AuthenticationMethod.GROUP_TACACS;
+import static org.batfish.datamodel.AuthenticationMethod.GROUP_USER_DEFINED;
+import static org.batfish.datamodel.AuthenticationMethod.KRB5;
+import static org.batfish.datamodel.AuthenticationMethod.KRB5_TELNET;
+import static org.batfish.datamodel.AuthenticationMethod.LINE;
+import static org.batfish.datamodel.AuthenticationMethod.LOCAL;
+import static org.batfish.datamodel.AuthenticationMethod.LOCAL_CASE;
+import static org.batfish.datamodel.AuthenticationMethod.NONE;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethod;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginMatchers.hasListForKey;
 import static org.batfish.datamodel.matchers.AaaAuthenticationMatchers.hasLogin;
@@ -23,6 +33,7 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessLi
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpSpace;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecPolicy;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecProposal;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpsecVpn;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVendorFamily;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasVrfs;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
@@ -67,8 +78,14 @@ import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.hasLines;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasIpsecProposals;
 import static org.batfish.datamodel.matchers.IpsecPolicyMatchers.hasPfsKeyGroup;
 import static org.batfish.datamodel.matchers.IpsecProposalMatchers.hasProtocols;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasBindInterface;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasIkeGatewaay;
+import static org.batfish.datamodel.matchers.IpsecVpnMatchers.hasPolicy;
+import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
+import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
 import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
@@ -146,6 +163,7 @@ import org.batfish.datamodel.DataPlane;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.Interface;
@@ -153,9 +171,12 @@ import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecProtocol;
+import org.batfish.datamodel.LineType;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
@@ -165,17 +186,21 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.matchers.ConfigurationMatchers;
+import org.batfish.datamodel.matchers.IkeGatewayMatchers;
 import org.batfish.datamodel.matchers.InterfaceMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
+import org.batfish.datamodel.matchers.IpsecVpnMatchers;
 import org.batfish.datamodel.matchers.OspfAreaMatchers;
 import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.vendor_family.cisco.Line;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -216,87 +241,163 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testLineAuthenticationMethods() throws IOException {
+    // test IOS
+    Configuration iosConfiguration = parseConfig("aaaAuthenticationIos");
+    SortedMap<String, Line> iosLines = iosConfiguration.getVendorFamily().getCisco().getLines();
+
+    assertThat(iosLines.get("con0"), hasAuthenticationLoginList(hasMethod(GROUP_TACACS)));
+    assertThat(iosLines.get("con0"), hasAuthenticationLoginList(hasMethod(KRB5)));
+    assertThat(iosLines.get("con0"), hasAuthenticationLoginList(hasMethod(LOCAL_CASE)));
+    assertThat(iosLines.get("con0"), hasAuthenticationLoginList(hasMethod(LOCAL)));
+
+    assertThat(iosLines.get("vty0"), hasAuthenticationLoginList(hasMethod(KRB5_TELNET)));
+    assertThat(iosLines.get("vty0"), hasAuthenticationLoginList(hasMethod(GROUP_RADIUS)));
+    assertThat(iosLines.get("vty0"), hasAuthenticationLoginList(hasMethod(ENABLE)));
+
+    assertThat(iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
+    assertThat(iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(LINE)));
+    assertThat(iosLines.get("aux0"), hasAuthenticationLoginList(hasMethod(NONE)));
+
+    // test ASA
+    Configuration asaConfiguration = parseConfig("aaaAuthenticationAsa");
+    SortedMap<String, Line> asaLines = asaConfiguration.getVendorFamily().getCisco().getLines();
+
+    assertThat(asaLines.get("http"), not(hasAuthenticationLoginList(notNullValue())));
+
+    assertThat(asaLines.get("ssh"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
+    assertThat(asaLines.get("ssh"), hasAuthenticationLoginList(hasMethod(LOCAL_CASE)));
+
+    assertThat(asaLines.get("serial"), hasAuthenticationLoginList(hasMethod(LOCAL_CASE)));
+    assertThat(
+        asaLines.get("serial"), hasAuthenticationLoginList(not(hasMethod(GROUP_USER_DEFINED))));
+
+    assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
+    assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(not(hasMethod(LOCAL_CASE))));
+  }
+
+  @Test
   public void testAaaAuthenticationLogin() throws IOException {
     // test ASA config
     Configuration aaaAuthAsaConfiguration = parseConfig("aaaAuthenticationAsa");
+    SortedMap<String, Line> asaLines =
+        aaaAuthAsaConfiguration.getVendorFamily().getCisco().getLines();
+    for (Line line : asaLines.values()) {
+      if (line.getLineType() == LineType.HTTP) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
+
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
-                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod("LOCAL"), "ssh")))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod("authServer"), "ssh")))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod("LOCAL"), "http")))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod("authServer"), "http")))))));
-    assertThat(
-        aaaAuthAsaConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod("LOCAL"), "serial")))))));
+                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL_CASE), "ssh")))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod("authServer")), "serial")))))));
+                        hasLogin(hasListForKey(hasMethod(GROUP_USER_DEFINED), "ssh")))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod("LOCAL")), "telnet")))))));
+                        hasLogin(not(hasListForKey(hasMethod(LOCAL_CASE), "http"))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(hasMethod("authServer"), "telnet")))))));
+                        hasLogin(not(hasListForKey(hasMethod(GROUP_USER_DEFINED), "http"))))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL_CASE), "serial")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(not(hasMethod(GROUP_USER_DEFINED)), "serial")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(not(hasMethod(LOCAL_CASE)), "telnet")))))));
+    assertThat(
+        aaaAuthAsaConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(hasListForKey(hasMethod(GROUP_USER_DEFINED), "telnet")))))));
 
     // test IOS config
     Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
+
+    SortedMap<String, Line> iosLines =
+        aaaAuthIosConfiguration.getVendorFamily().getCisco().getLines();
+
+    for (Line line : iosLines.values()) {
+      if (line.getLineType() == LineType.AUX) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
+
     assertThat(
         aaaAuthIosConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(hasMethod("grouptacacs+"), "default")))))));
+                        hasLogin(hasListForKey(hasMethod(GROUP_TACACS), "default")))))));
     assertThat(
         aaaAuthIosConfiguration,
         hasVendorFamily(
             hasCisco(
-                hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod("local"), "default")))))));
-    assertThat(
-        aaaAuthIosConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod("groupradius")), "default")))))));
+                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL), "default")))))));
     assertThat(
         aaaAuthIosConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(not(hasListForKey(hasMethod("grouptacacs+"), "ssh"))))))));
+                        hasLogin(hasListForKey(not(hasMethod(GROUP_RADIUS)), "default")))))));
+    assertThat(
+        aaaAuthIosConfiguration,
+        hasVendorFamily(
+            hasCisco(
+                hasAaa(
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(GROUP_TACACS), "ssh"))))))));
+
+    // test IOS config with no default login list defined
+    Configuration aaaAuthIosConfigNoDefault = parseConfig("aaaAuthenticationIosNoDefault");
+
+    SortedMap<String, Line> iosNoDefaultLines =
+        aaaAuthIosConfigNoDefault.getVendorFamily().getCisco().getLines();
+
+    for (Line line : iosNoDefaultLines.values()) {
+      if (line.getLineType() == LineType.AUX || line.getLineType() == LineType.CON) {
+        assertThat(line, not(requiresAuthentication()));
+      } else {
+        assertThat(line, requiresAuthentication());
+      }
+    }
   }
 
   @Test
@@ -1620,6 +1721,83 @@ public class CiscoGrammarTest {
   }
 
   @Test
+  public void testCryptoMapsToIpsecPolicies() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:10",
+            allOf(
+                IpsecPolicyMatchers.hasIkeGateway(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                hasPfsKeyGroup(DiffieHellmanGroup.GROUP14),
+                hasIpsecProposals(
+                    contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1")))))));
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:30:5",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts1"))))));
+
+    assertThat(
+        c,
+        hasIpsecPolicy(
+            "mymap:30:15",
+            hasIpsecProposals(contains(ImmutableList.of(IpsecProposalMatchers.hasName("ts2"))))));
+  }
+
+  @Test
+  public void testCryptoMapsToIpsecVpns() throws IOException {
+    Configuration c = parseConfig("ios-crypto-map");
+
+    List<IpAccessListLine> expectedAclLines =
+        ImmutableList.of(
+            IpAccessListLine.accepting()
+                .setName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0")
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .setDstIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .build()))
+                .build(),
+            IpAccessListLine.accepting()
+                .setMatchCondition(
+                    new MatchHeaderSpace(
+                        HeaderSpace.builder()
+                            .setSrcIps(new IpWildcard("2.2.2.2").toIpSpace())
+                            .setDstIps(new IpWildcard("1.1.1.1").toIpSpace())
+                            .build()))
+                .build());
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:10:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:10")),
+                hasIkeGatewaay(IkeGatewayMatchers.hasName("ISAKMP-PROFILE")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:30:5:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:5")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+    assertThat(
+        c,
+        hasIpsecVpn(
+            "mymap:30:15:TenGigabitEthernet0/0",
+            allOf(
+                hasBindInterface(InterfaceMatchers.hasName("TenGigabitEthernet0/0")),
+                IpsecVpnMatchers.hasIpsecPolicy(IpsecPolicyMatchers.hasName("mymap:30:15")),
+                hasPolicy(hasLines(equalTo(expectedAclLines))))));
+  }
+
+  @Test
   public void testIsakmpPolicyAruba() throws IOException {
     Configuration c = parseConfig("arubaCrypto");
     assertThat(
@@ -1776,7 +1954,7 @@ public class CiscoGrammarTest {
             allOf(
                 IpsecPolicyMatchers.hasIkeGateway(
                     allOf(hasAddress(new Ip("1.2.3.4")), hasLocalIp(new Ip("2.3.4.6")))),
-                IpsecPolicyMatchers.hasIpsecProposals(
+                hasIpsecProposals(
                     contains(
                         ImmutableList.of(
                             allOf(

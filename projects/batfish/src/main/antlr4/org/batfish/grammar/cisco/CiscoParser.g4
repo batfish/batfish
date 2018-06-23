@@ -100,6 +100,16 @@ allow_iimgp_stanza
    ALLOW null_rest_of_line aiimgp_stanza*
 ;
 
+allowed_ip
+:
+   (
+      (
+         hostname = IP_ADDRESS mask = IP_ADDRESS
+      )
+      | hostname = IPV6_ADDRESS
+   ) iname = variable NEWLINE
+;
+
 ap_null
 :
    NO?
@@ -2067,6 +2077,15 @@ router_multicast_tail
    )*
 ;
 
+s_access_line
+:
+   (
+      linetype = HTTP
+      | linetype = SSH
+      | linetype = TELNET
+   ) allowed_ip
+;
+
 s_airgroupservice
 :
    AIRGROUPSERVICE null_rest_of_line
@@ -2861,6 +2880,16 @@ s_service
    )+ NEWLINE
 ;
 
+s_service_policy_global
+:
+   SERVICE_POLICY name = variable GLOBAL NEWLINE
+;
+
+s_service_policy_interface
+:
+   SERVICE_POLICY name = variable INTERFACE iface = interface_name NEWLINE
+;
+
 s_sip_ua
 :
    SIP_UA NEWLINE
@@ -3408,6 +3437,7 @@ stanza
    | router_multicast_stanza
    | rsvp_stanza
    | s_aaa
+   | s_access_line
    | s_airgroupservice
    | s_ap
    | s_ap_group
@@ -3543,6 +3573,8 @@ stanza
    | s_router_vrrp
    | s_sccp
    | s_service
+   | s_service_policy_global
+   | s_service_policy_interface
    | s_service_template
    | s_sip_ua
    | s_snmp_server
@@ -4239,6 +4271,7 @@ vpc_null
       AUTO_RECOVERY
       | DELAY
       | IP
+      | PEER_CONFIG_CHECK_BYPASS
       | PEER_GATEWAY
       | PEER_KEEPALIVE
       | PEER_SWITCH

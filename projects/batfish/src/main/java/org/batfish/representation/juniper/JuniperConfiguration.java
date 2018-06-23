@@ -953,45 +953,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
       String vrfName) {
     Vrf vrf = _c.getVrfs().get(vrfName);
     org.batfish.datamodel.Interface newIface = vrf.getInterfaces().get(name);
-    Ip ospfArea = iface.getOspfActiveArea();
-    boolean setCost = false;
-    if (ospfArea != null) {
-      if (newIface.getAddress() == null) {
-        _w.redFlag(
-            String.format(
-                "Cannot assign interface %s to be active in area %s because it has no IP address.",
-                name, ospfArea));
-      } else {
-        setCost = true;
-        long ospfAreaLong = ospfArea.asLong();
-        org.batfish.datamodel.ospf.OspfArea newArea = newAreas.get(ospfAreaLong);
-        newArea.getInterfaces().add(name);
-        newIface.setOspfArea(newArea);
-        newIface.setOspfEnabled(true);
-      }
+    Ip ospfArea = iface.getOspfArea();
+    if (ospfArea == null) {
+      return;
     }
-    for (Ip passiveArea : iface.getOspfPassiveAreas()) {
-      if (newIface.getAddress() == null) {
-        _w.redFlag(
-            String.format(
-                "Cannot assign interface %s to be passive in area %s because it has no IP address.",
-                name, passiveArea));
-        continue;
-      }
-      setCost = true;
-      long ospfAreaLong = passiveArea.asLong();
-      org.batfish.datamodel.ospf.OspfArea newArea = newAreas.get(ospfAreaLong);
-      newArea.getInterfaces().add(name);
-      newIface.setOspfEnabled(true);
-      newIface.setOspfPassive(true);
+    if (newIface.getAddress() == null) {
+      _w.redFlag(
+          String.format(
+              "Cannot assign interface %s to area %s because it has no IP address.",
+              name, ospfArea));
+      return;
     }
-    if (setCost) {
-      Integer ospfCost = iface.getOspfCost();
-      if (ospfCost == null && newIface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
-        ospfCost = 0;
-      }
-      newIface.setOspfCost(ospfCost);
+    long ospfAreaLong = ospfArea.asLong();
+    org.batfish.datamodel.ospf.OspfArea newArea = newAreas.get(ospfAreaLong);
+    newArea.getInterfaces().add(name);
+    newIface.setOspfArea(newArea);
+    newIface.setOspfEnabled(true);
+    newIface.setOspfPassive(iface.getOspfPassive());
+    Integer ospfCost = iface.getOspfCost();
+    if (ospfCost == null && newIface.isLoopback(ConfigurationFormat.FLAT_JUNIPER)) {
+      ospfCost = 0;
     }
+    newIface.setOspfCost(ospfCost);
   }
 
   public void setDefaultAddressSelection(boolean defaultAddressSelection) {
@@ -2140,7 +2123,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markConcreteStructure(
         JuniperStructureType.DHCP_RELAY_SERVER_GROUP,
         JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP);
-    // record defined structures
+
     markConcreteStructure(
         JuniperStructureType.IKE_GATEWAY, JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY);
     markConcreteStructure(

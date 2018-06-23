@@ -310,6 +310,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private static final String PROP_CHANNEL_GROUP_MEMBERS = "channelGroupMembers";
 
+  private static final String PROP_CRYPTO_MAP = "cryptoMap";
+
   private static final String PROP_DECLARED_NAMES = "declaredNames";
 
   private static final String PROP_DESCRIPTION = "description";
@@ -560,6 +562,8 @@ public final class Interface extends ComparableStructure<String> {
 
   private SortedSet<String> _channelGroupMembers;
 
+  private String _cryptoMap;
+
   private SortedSet<String> _declaredNames;
 
   private String _description;
@@ -709,6 +713,9 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_bandwidth, other._bandwidth)) {
       return false;
     }
+    if (_cryptoMap != other._cryptoMap) {
+      return false;
+    }
     // we check ACLs for name match only -- full ACL diff can be done
     // elsewhere.
     if (!IpAccessList.bothNullOrSameName(this.getInboundFilter(), other.getInboundFilter())) {
@@ -808,6 +815,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
   public SortedSet<String> getChannelGroupMembers() {
     return _channelGroupMembers;
+  }
+
+  @JsonProperty(PROP_CRYPTO_MAP)
+  public String getCryptoMap() {
+    return _cryptoMap;
   }
 
   @JsonProperty(PROP_DECLARED_NAMES)
@@ -1169,6 +1181,11 @@ public final class Interface extends ComparableStructure<String> {
   @JsonProperty(PROP_CHANNEL_GROUP_MEMBERS)
   public void setChannelGroupMembers(Iterable<String> channelGroupMembers) {
     _channelGroupMembers = ImmutableSortedSet.copyOf(channelGroupMembers);
+  }
+
+  @JsonProperty(PROP_CRYPTO_MAP)
+  public void setCryptoMap(String cryptoMap) {
+    _cryptoMap = cryptoMap;
   }
 
   @JsonProperty(PROP_DECLARED_NAMES)

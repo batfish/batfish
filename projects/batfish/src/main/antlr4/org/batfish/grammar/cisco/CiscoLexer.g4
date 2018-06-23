@@ -3497,6 +3497,11 @@ DTMF_RELAY
    'dtmf-relay'
 ;
 
+DTP
+:
+   'dtp'
+;
+
 DUAL_ACTIVE
 :
    'dual-active'
@@ -4590,6 +4595,11 @@ FORMAT
 FORTYG_FULL
 :
   '40gfull'
+;
+
+FORWARD
+:
+   'forward'
 ;
 
 FORWARD_DIGITS
@@ -5689,6 +5699,11 @@ IPSEC_ISAKMP
    'ipsec-isakmp'
 ;
 
+IPSEC_MANUAL
+:
+   'ipsec-manual'
+;
+
 IPSEC_OVER_TCP
 :
    'ipsec-over-tcp'
@@ -5899,6 +5914,21 @@ KLOGIN
    'klogin'
 ;
 
+KRB5
+:
+   'krb5'
+;
+
+KRB5_TELNET
+:
+   'krb5-telnet'
+;
+
+KOD
+:
+   'kod'
+;
+
 KRON
 :
    'kron'
@@ -6042,6 +6072,11 @@ LDP
 LE
 :
    'le'
+;
+
+LEAK_MAP
+:
+   'leak-map'
 ;
 
 LEASE
@@ -6267,6 +6302,11 @@ LOCAL_AS
 LOCAL_ASA
 :
    'LOCAL'
+;
+
+LOCAL_CASE
+:
+   'local-case'
 ;
 
 LOCAL_INTERFACE
@@ -8229,6 +8269,11 @@ PAGER
    'pager'
 ;
 
+PAGP
+:
+   'pagp'
+;
+
 PAN
 :
    'pan'
@@ -9037,6 +9082,11 @@ PROTECTION
 PROTOCOL
 :
    'protocol'
+;
+
+PROTOCOL_DISCOVERY
+:
+   'protocol-discovery'
 ;
 
 PROTOCOL_HTTP
@@ -10889,6 +10939,11 @@ SPEED_DUPLEX
    'speed-duplex'
 ;
 
+SPLIT_HORIZON
+:
+   'split-horizon'
+;
+
 SPLIT_TUNNEL_NETWORK_LIST
 :
    'split-tunnel-network-list'
@@ -11804,6 +11859,11 @@ TRADITIONAL
 TRAFFIC_ENG
 :
    'traffic-eng'
+;
+
+TRAFFIC_EXPORT
+:
+   'traffic-export'
 ;
 
 TRAFFIC_INDEX
@@ -14347,6 +14407,11 @@ M_Interface_DEFAULT
 M_Interface_DOLLAR
 :
    '$' -> type ( DOLLAR ) , popMode
+;
+
+M_Interface_EIGRP
+:
+   'eigrp' -> type ( EIGRP ) , popMode
 ;
 
 M_Interface_EQ

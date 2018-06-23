@@ -1,5 +1,6 @@
 package org.batfish.datamodel.matchers;
 
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
@@ -49,6 +50,125 @@ final class ConvertConfigurationAnswerElementMatchers {
           .noneMatch(_subMatcher::matches)) {
         mismatchDescription.appendText(
             String.format("No red-flag warnings for host '%s' match", _hostname));
+        return false;
+      }
+      return true;
+    }
+  }
+
+  static final class HasDefinedStructure
+      extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
+
+    private final String _hostname;
+
+    private final String _structureName;
+
+    private final String _type;
+
+    HasDefinedStructure(
+        @Nonnull String hostname, @Nonnull StructureType type, @Nonnull String structureName) {
+      _hostname = hostname;
+      _type = type.getDescription();
+      _structureName = structureName;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(
+          String.format(
+              "A ConvertConfigurationAnswerElement for which host '%s' has a defined structure "
+                  + "of type '%s' named '%s'",
+              _hostname, _type, _structureName));
+    }
+
+    @Override
+    protected boolean matchesSafely(
+        ConvertConfigurationAnswerElement item, Description mismatchDescription) {
+      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>> byHostname =
+          item.getDefinedStructures();
+      if (!byHostname.containsKey(_hostname)) {
+        mismatchDescription.appendText(
+            String.format("Host '%s' has no defined structures", _hostname));
+        return false;
+      }
+      SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType = byHostname.get(_hostname);
+      if (!byType.containsKey(_type)) {
+        mismatchDescription.appendText(
+            String.format("Host '%s' has no defined structure of type '%s'", _hostname, _type));
+        return false;
+      }
+      SortedMap<String, DefinedStructureInfo> byStructureName = byType.get(_type);
+      if (!byStructureName.containsKey(_structureName)) {
+        mismatchDescription.appendText(
+            String.format(
+                "Host '%s' has no defined structure of type '%s' named '%s'",
+                _hostname, _type, _structureName));
+        return false;
+      }
+      return true;
+    }
+  }
+
+  static final class HasDefinedStructureWithDefinitionLines
+      extends TypeSafeDiagnosingMatcher<ConvertConfigurationAnswerElement> {
+
+    private final Matcher<? super Set<Integer>> _subMatcher;
+
+    private final String _hostname;
+
+    private final String _structureName;
+
+    private final String _type;
+
+    HasDefinedStructureWithDefinitionLines(
+        @Nonnull String hostname,
+        @Nonnull StructureType type,
+        @Nonnull String structureName,
+        @Nonnull Matcher<? super Set<Integer>> subMatcher) {
+      _subMatcher = subMatcher;
+      _hostname = hostname;
+      _type = type.getDescription();
+      _structureName = structureName;
+    }
+
+    @Override
+    public void describeTo(Description description) {
+      description.appendText(
+          String.format(
+              "A ConvertConfigurationAnswerElement for which host '%s' has a defined structure "
+                  + "of type '%s' named '%s' with definition lines '%s'",
+              _hostname, _type, _structureName, _subMatcher));
+    }
+
+    @Override
+    protected boolean matchesSafely(
+        ConvertConfigurationAnswerElement item, Description mismatchDescription) {
+      SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>> byHostname =
+          item.getDefinedStructures();
+      if (!byHostname.containsKey(_hostname)) {
+        mismatchDescription.appendText(
+            String.format("Host '%s' has no defined structures", _hostname));
+        return false;
+      }
+      SortedMap<String, SortedMap<String, DefinedStructureInfo>> byType = byHostname.get(_hostname);
+      if (!byType.containsKey(_type)) {
+        mismatchDescription.appendText(
+            String.format("Host '%s' has no defined structure of type '%s'", _hostname, _type));
+        return false;
+      }
+      SortedMap<String, DefinedStructureInfo> byStructureName = byType.get(_type);
+      if (!byStructureName.containsKey(_structureName)) {
+        mismatchDescription.appendText(
+            String.format(
+                "Host '%s' has no defined structure of type '%s' named '%s'",
+                _hostname, _type, _structureName));
+        return false;
+      }
+      if (!_subMatcher.matches(byStructureName.get(_structureName).getDefinitionLines())) {
+        mismatchDescription.appendText(
+            String.format(
+                "Host '%s' has no defined structure of type '%s' named '%s' matching definition lines '%s'",
+                _hostname, _type, _structureName, _subMatcher));
         return false;
       }
       return true;
