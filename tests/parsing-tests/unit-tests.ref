@@ -57977,6 +57977,11 @@
             "3" : "MISCELLANEOUS: Could not determine update source for BGP neighbor: '1.2.1.1'"
           }
         },
+        "ios_xr_isis" : {
+          "Red flags" : {
+            "1" : "MISCELLANEOUS: Cannot create IS-IS process without specifying net-address"
+          }
+        },
         "juniper-ospf" : {
           "Red flags" : {
             "1" : "MISCELLANEOUS: Cannot assign interface xe-0/0/1.0 to be active in area 0.1.2.3 because it has no IP address.",
