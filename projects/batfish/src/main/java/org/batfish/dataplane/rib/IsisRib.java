@@ -1,6 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import java.util.Comparator;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IsisRoute;
 
@@ -10,7 +11,7 @@ public class IsisRib extends AbstractRib<IsisRoute> {
   private static final long serialVersionUID = 1L;
 
   private static int levelCost(IsisRoute isisRoute) {
-    // Lower value is more preferred.
+    // Values returned are arbitrary, but L1 routes are preferred and must have lower cost than L2.
     switch (isisRoute.getLevel()) {
       case LEVEL_1:
         return 1;
@@ -38,6 +39,7 @@ public class IsisRib extends AbstractRib<IsisRoute> {
   }
 
   @Override
+  @Nullable
   public RibDelta<IsisRoute> mergeRouteGetDelta(IsisRoute route) {
     if (route.getAttach() && !_l1Only) {
       return null;

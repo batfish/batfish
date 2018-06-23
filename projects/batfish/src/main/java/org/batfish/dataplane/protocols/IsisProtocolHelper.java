@@ -10,7 +10,7 @@ public class IsisProtocolHelper {
 
   /**
    * Convert a level-1 IS-IS route to a level-2 IS-IS route. All route attributes except
-   * level/protcol and the admin distance remain unchanged.
+   * level/protocol and the admin distance remain unchanged.
    *
    * @param route the route to convert
    * @param l2Admin the new L2 admin distance to use.

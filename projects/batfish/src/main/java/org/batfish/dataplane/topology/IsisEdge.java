@@ -21,18 +21,20 @@ import org.batfish.datamodel.Vrf;
 
 public final class IsisEdge implements Comparable<IsisEdge> {
 
+  @Nullable
   private static IsisLevel interfaceSettingsLevel(IsisInterfaceSettings settings) {
     return union(
         settings.getLevel1() != null ? IsisLevel.LEVEL_1 : null,
         settings.getLevel2() != null ? IsisLevel.LEVEL_2 : null);
   }
 
-  private static @Nullable IsisLevel intersection(IsisLevel... levels) {
+  @Nullable
+  private static IsisLevel intersection(IsisLevel... levels) {
     return levels.length == 0 ? null : Arrays.stream(levels).reduce(IsisEdge::intersection).get();
   }
 
-  private static @Nullable IsisLevel intersection(
-      @Nullable IsisLevel first, @Nullable IsisLevel second) {
+  @Nullable
+  private static IsisLevel intersection(@Nullable IsisLevel first, @Nullable IsisLevel second) {
     if (first == second) {
       return first;
     }
@@ -45,7 +47,8 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     return null;
   }
 
-  static @Nullable public IsisEdge newEdge(Edge edge, Map<String, Configuration> configurations) {
+  @Nullable
+  public static IsisEdge newEdge(Edge edge, Map<String, Configuration> configurations) {
     // vertex1
     Configuration c1 = configurations.get(edge.getNode1());
     Interface iface1 = c1.getInterfaces().get(edge.getInt1());
@@ -98,13 +101,15 @@ public final class IsisEdge implements Comparable<IsisEdge> {
         new IsisNode(c2.getHostname(), iface2.getName()));
   }
 
+  @Nullable
   private static IsisLevel processLevel(IsisProcess isisProcess) {
     return union(
         isisProcess.getLevel1() != null ? IsisLevel.LEVEL_1 : null,
         isisProcess.getLevel2() != null ? IsisLevel.LEVEL_2 : null);
   }
 
-  private static @Nullable IsisLevel union(@Nullable IsisLevel level1, @Nullable IsisLevel level2) {
+  @Nullable
+  private static IsisLevel union(@Nullable IsisLevel level1, @Nullable IsisLevel level2) {
     if (level1 == level2) {
       return level1;
     }
@@ -137,7 +142,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
   }
 
   @Override
-  public int compareTo(IsisEdge o) {
+  public int compareTo(@Nonnull IsisEdge o) {
     return Comparator.comparing(IsisEdge::getNode1)
         .thenComparing(IsisEdge::getNode2)
         .thenComparing(IsisEdge::getCircuitType)
@@ -149,7 +154,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (!(o instanceof IsisEdge)) {
       return false;
     }
     IsisEdge rhs = (IsisEdge) o;
@@ -158,15 +163,18 @@ public final class IsisEdge implements Comparable<IsisEdge> {
         && _node2.equals(rhs._node2);
   }
 
-  public @Nonnull IsisLevel getCircuitType() {
+  @Nonnull
+  public IsisLevel getCircuitType() {
     return _circuitType;
   }
 
-  public @Nonnull IsisNode getNode1() {
+  @Nonnull
+  public IsisNode getNode1() {
     return _node1;
   }
 
-  public @Nonnull IsisNode getNode2() {
+  @Nonnull
+  public IsisNode getNode2() {
     return _node2;
   }
 
@@ -175,7 +183,8 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     return Objects.hash(_circuitType.ordinal(), _node1, _node2);
   }
 
-  public @Nonnull IsisEdge reverse() {
+  @Nonnull
+  public IsisEdge reverse() {
     return new IsisEdge(_circuitType, _node2, _node1);
   }
 

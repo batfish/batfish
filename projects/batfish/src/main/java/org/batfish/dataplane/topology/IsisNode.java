@@ -11,7 +11,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IsisProcess;
 import org.batfish.dataplane.ibdp.Node;
 
-public class IsisNode implements Comparable<IsisNode> {
+public final class IsisNode implements Comparable<IsisNode> {
 
   private final String _hostname;
 

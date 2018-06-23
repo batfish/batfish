@@ -1,6 +1,8 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
+import static org.batfish.datamodel.IsisInterfaceMode.UNSET;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -100,20 +102,20 @@ public class IsisInterfaceLevelSettings implements Serializable {
         helloAuthenticationType,
         helloInterval,
         holdTime,
-        requireNonNull(mode));
+        firstNonNull(mode, UNSET));
   }
 
-  private final Long _cost;
+  @Nullable private final Long _cost;
 
-  private final String _helloAuthenticationKey;
+  @Nullable private final String _helloAuthenticationKey;
 
-  private final IsisHelloAuthenticationType _helloAuthenticationType;
+  @Nullable private final IsisHelloAuthenticationType _helloAuthenticationType;
 
-  private final Integer _helloInterval;
+  @Nullable private final Integer _helloInterval;
 
-  private final Integer _holdTime;
+  @Nullable private final Integer _holdTime;
 
-  private final IsisInterfaceMode _mode;
+  @Nonnull private final IsisInterfaceMode _mode;
 
   private IsisInterfaceLevelSettings(
       @Nullable Long cost,
@@ -185,6 +187,6 @@ public class IsisInterfaceLevelSettings implements Serializable {
         _helloAuthenticationType,
         _helloInterval,
         _holdTime,
-        _mode != null ? _mode.ordinal() : -1);
+        _mode.ordinal());
   }
 }

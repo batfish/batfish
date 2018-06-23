@@ -2,6 +2,7 @@ package org.batfish.dataplane.rib;
 
 import java.util.Map;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IsisRoute;
 import org.batfish.datamodel.Prefix;
@@ -16,7 +17,7 @@ public class IsisLevelRib extends AbstractRib<IsisRoute> {
   }
 
   @Override
-  public int comparePreference(IsisRoute lhs, IsisRoute rhs) {
+  public int comparePreference(@Nonnull IsisRoute lhs, @Nonnull IsisRoute rhs) {
     // Flipped rhs & lhs because lower values are more preferred.
     return rhs.getMetric().compareTo(lhs.getMetric());
   }

@@ -17,8 +17,7 @@ public enum IsisInterfaceMode {
   private static Map<String, IsisInterfaceMode> buildMap() {
     ImmutableMap.Builder<String, IsisInterfaceMode> map = ImmutableMap.builder();
     for (IsisInterfaceMode value : IsisInterfaceMode.values()) {
-      String name = value._name;
-      map.put(name, value);
+      map.put(value._name, value);
     }
     return map.build();
   }
