@@ -3,8 +3,14 @@ deviceconfig {
         hostname nested-config-brackets;
     }
 }
+mgt-config {
+    access-domain {
+        All {
+            vsys [ VSYSNAME1 VSYSNAME2];
+        }
+    }
+}
 shared {
-    vsys [ VSYSNAME1 VSYSNAME2 ];
     log-settings {
         syslog {
             SYSLOGNAME {
