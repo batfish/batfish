@@ -92,7 +92,7 @@ WantedBy=multi-user.target
 [Service]
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -runmode workservice -register true &>> $BATFISH_JAVA_LOG'
+ExecStart=/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -runmode workservice -register true &>> $BATFISH_JAVA_LOG'
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
@@ -138,7 +138,7 @@ start() {
       echo "Missing pid file, but lock file present: $BATFISH_LOCK"
       return 1
    fi
-   su -c "bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -runmode workservice -register true &>> $BATFISH_JAVA_LOG & echo \\\$! > $BATFISH_PID_FILE'" batfish
+   su -c "bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -runmode workservice -register true &>> $BATFISH_JAVA_LOG & echo \\\$! > $BATFISH_PID_FILE'" batfish
    touch $BATFISH_LOCK
    echo "Sucess"
 }
@@ -311,8 +311,6 @@ package() {
    BATFISH_LOG_DIR=/var/log/batfish
    LOCK_DIR=/var/lock/subsys
    BATFISH_RUN_DIR=/var/run/batfish
-   BATFISH_LOG_NAME=batfish.log
-   BATFISH_LOG=${BATFISH_LOG_DIR}/${BATFISH_LOG_NAME}
    BATFISH_JAVA_LOG_NAME=batfish-java.log
    BATFISH_JAVA_LOG=${BATFISH_LOG_DIR}/${BATFISH_JAVA_LOG_NAME}
    BATFISH_LOCK_NAME=batfish.lock
