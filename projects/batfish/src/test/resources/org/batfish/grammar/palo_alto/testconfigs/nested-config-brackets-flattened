@@ -1,0 +1,5 @@
+####BATFISH FLATTENED PALO ALTO CONFIG####
+set deviceconfig system hostname nested-config-brackets
+set shared vsys VSYSNAME1
+set shared vsys VSYSNAME2
+set shared log-settings syslog SYSLOGNAME server SERVERNAME server 1.1.1.1
