@@ -72,7 +72,7 @@ WantedBy=multi-user.target
 EnvironmentFile=$BATFISH_ENVFILE
 User=$BATFISH_USER
 Group=$BATFISH_USER
-ExecStart=/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES \${BATFISH_JAVA_ARGS} -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -runmode workservice -register true &>> $BATFISH_JAVA_LOG'
+ExecStart=/bin/bash -c '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES \${BATFISH_JAVA_ARGS} -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -runmode workservice -register true &>> $BATFISH_JAVA_LOG'
 PIDFile=$BATFISH_RUN_DIR/batfish.pid
 Restart=always
 EOF
@@ -106,7 +106,7 @@ stop on runlevel [!2345]
 
 respawn
 
-exec su -c "/bin/bash -c . $BATFISH_ENVFILE && '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES \${BATFISH_JAVA_ARGS} -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -logfile $BATFISH_LOG -runmode workservice -register true &>> $BATFISH_JAVA_LOG'" $BATFISH_USER
+exec su -c "/bin/bash -c . $BATFISH_ENVFILE && '/usr/bin/java -DbatfishBatfishPropertiesPath=$BATFISH_PROPERTIES \${BATFISH_JAVA_ARGS} -cp $ALLINONE_JAR $BATFISH_MAIN_CLASS -runmode workservice -register true &>> $BATFISH_JAVA_LOG'" $BATFISH_USER
 EOF
 
    cat > $COORDINATOR_INIT_P <<EOF
@@ -199,8 +199,6 @@ package() {
    BATFISH_HOME=/var/batfish
    BATFISH_LOG_DIR=/var/log/batfish
    BATFISH_RUN_DIR=/var/run/batfish
-   BATFISH_LOG_NAME=batfish.log
-   BATFISH_LOG=$BATFISH_LOG_DIR/$BATFISH_LOG_NAME
    BATFISH_JAVA_LOG_NAME=batfish-java.log
    BATFISH_JAVA_LOG=$BATFISH_LOG_DIR/$BATFISH_JAVA_LOG_NAME
    COORDINATOR_LOG_NAME=coordinator.log
