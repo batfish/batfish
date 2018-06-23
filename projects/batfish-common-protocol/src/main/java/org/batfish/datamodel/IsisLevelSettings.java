@@ -35,6 +35,10 @@ public class IsisLevelSettings implements Serializable {
     _wideMetricsOnly = wideMetricsOnly;
   }
 
+  public IsisLevelSettings() {
+    _wideMetricsOnly = false;
+  }
+
   @Override
   public boolean equals(Object obj) {
     if (this == obj) {
