@@ -117,6 +117,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
           constructSetLine();
           _stack.remove(_stack.size() - 1);
         }
+        _currentBracketedWords = null;
       } else {
         constructSetLine();
       }
