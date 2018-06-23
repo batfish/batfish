@@ -145,7 +145,7 @@ public final class IsoAddress implements Serializable {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_afi, _areaId, _nSel, _systemId);
+    return Objects.hash(_afi, Arrays.hashCode(_areaId), _nSel, Arrays.hashCode(_systemId));
   }
 
   @Override

@@ -38,7 +38,7 @@ public class IsisNode implements Comparable<IsisNode> {
       return false;
     }
     IsisNode rhs = (IsisNode) o;
-    return _hostname.equals(rhs._hostname) && _interfaceName.equals(_interfaceName);
+    return _hostname.equals(rhs._hostname) && _interfaceName.equals(rhs._interfaceName);
   }
 
   public @Nonnull String getHostname() {
