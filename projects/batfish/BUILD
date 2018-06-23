@@ -75,6 +75,7 @@ java_library(
     deps = [
         ":batfish",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol:common_testlib",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatjuniper",
         "//projects/lib/z3",
         "@antlr4_runtime//:compile",
