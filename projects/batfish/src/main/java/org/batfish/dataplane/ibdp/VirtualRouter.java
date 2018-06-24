@@ -1142,8 +1142,8 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /**
-   * Generate IS-IS from a given interface for a given level (with a given metric/admin cost)
-   * and merge them into the appropriate RIB.
+   * Generate IS-IS from a given interface for a given level (with a given metric/admin cost) and
+   * merge them into the appropriate RIB.
    */
   private static Set<IsisRoute> generateIsisInterfaceRoutesPerLevel(
       int adminCost,
