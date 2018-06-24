@@ -200,22 +200,11 @@ class IncrementalBdpEngine {
       Network<BgpNeighbor, BgpSession> bgpTopology) {
 
     // (Re)initialization of dependent route calculation
-    AtomicInteger reinitializeDependentCompleted =
-        _newBatch.apply("Iteration " + iteration + ": Reinitialize dependent routes", nodes.size());
     nodes
         .values()
         .parallelStream()
-        .forEach(
-            n -> {
-              for (VirtualRouter vr : n.getVirtualRouters().values()) {
-
-                /*
-                 * For RIBs that do not require comparison to previous version, just re-init
-                 */
-                vr.reinitForNewIteration(allNodes);
-              }
-              reinitializeDependentCompleted.incrementAndGet();
-            });
+        .flatMap(n -> n.getVirtualRouters().values().parallelStream())
+        .forEach(VirtualRouter::reinitForNewIteration);
 
     // Static nextHopIp routes
     AtomicInteger recomputeStaticCompleted =

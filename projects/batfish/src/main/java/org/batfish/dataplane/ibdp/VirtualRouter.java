@@ -226,7 +226,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   /** Set of all valid IS-IS level-1 routes that we know about */
   private Map<Prefix, SortedSet<IsisRoute>> _receivedIsisL1Routes;
 
-  /** Set of all valid IS-IS level-1 routes that we know about */
+  /** Set of all valid IS-IS level-2 routes that we know about */
   private Map<Prefix, SortedSet<IsisRoute>> _receivedIsisL2Routes;
 
   /** Set of all valid OSPF external Type 1 routes that we know about */
@@ -1082,58 +1082,9 @@ public class VirtualRouter extends ComparableStructure<String> {
     _vrf.getInterfaces()
         .values()
         .forEach(
-            iface -> {
-              IsisInterfaceSettings ifaceSettings = iface.getIsis();
-              if (ifaceSettings == null) {
-                return;
-              }
-              IsisInterfaceLevelSettings ifaceL1Settings = ifaceSettings.getLevel1();
-              IsisInterfaceLevelSettings ifaceL2Settings = ifaceSettings.getLevel2();
-              if (ifaceL1Settings != null && l1Settings != null) {
-                long metric =
-                    ifaceL1Settings.getMode() == IsisInterfaceMode.PASSIVE
-                        ? 0L
-                        : firstNonNull(ifaceL1Settings.getCost(), IsisRoute.DEFAULT_METRIC);
-                builder
-                    .setAdmin(l1Admin)
-                    .setLevel(IsisLevel.LEVEL_1)
-                    .setMetric(metric)
-                    .setProtocol(RoutingProtocol.ISIS_L1);
-                iface
-                    .getAllAddresses()
-                    .forEach(
-                        address -> {
-                          IsisRoute outputRoute =
-                              builder
-                                  .setNetwork(address.getPrefix())
-                                  .setNextHopIp(address.getIp())
-                                  .build();
-                          d1.from(_isisL1Rib.mergeRouteGetDelta(outputRoute));
-                        });
-              }
-              if (ifaceL2Settings != null && l2Settings != null) {
-                long metric =
-                    ifaceL2Settings.getMode() == IsisInterfaceMode.PASSIVE
-                        ? 0L
-                        : firstNonNull(ifaceL2Settings.getCost(), IsisRoute.DEFAULT_METRIC);
-                builder
-                    .setAdmin(l2Admin)
-                    .setLevel(IsisLevel.LEVEL_2)
-                    .setMetric(metric)
-                    .setProtocol(RoutingProtocol.ISIS_L2);
-                iface
-                    .getAllAddresses()
-                    .forEach(
-                        address -> {
-                          IsisRoute outputRoute =
-                              builder
-                                  .setNetwork(address.getPrefix())
-                                  .setNextHopIp(address.getIp())
-                                  .build();
-                          d2.from(_isisL2Rib.mergeRouteGetDelta(outputRoute));
-                        });
-              }
-            });
+            iface ->
+                generateAllIsisInterfaceRoutes(
+                    d1, d2, l1Admin, l2Admin, l1Settings, l2Settings, builder, iface));
 
     // export default route for L1 neighbors on L1L2 routers
     if (l1Settings != null && l2Settings != null) {
@@ -1150,6 +1101,65 @@ public class VirtualRouter extends ComparableStructure<String> {
     }
 
     queueOutgoingIsisRoutes(allNodes, d1.build(), d2.build());
+  }
+
+  /**
+   * Generate IS-IS L1/L2 routes from a given interface and merge them into appropriate L1/L2 RIBs.
+   */
+  private void generateAllIsisInterfaceRoutes(
+      Builder<IsisRoute> d1,
+      Builder<IsisRoute> d2,
+      int l1Admin,
+      int l2Admin,
+      @Nullable IsisLevelSettings l1Settings,
+      @Nullable IsisLevelSettings l2Settings,
+      IsisRoute.Builder routeBuilder,
+      Interface iface) {
+    IsisInterfaceSettings ifaceSettings = iface.getIsis();
+    if (ifaceSettings == null) {
+      return;
+    }
+    IsisInterfaceLevelSettings ifaceL1Settings = ifaceSettings.getLevel1();
+    IsisInterfaceLevelSettings ifaceL2Settings = ifaceSettings.getLevel2();
+    if (ifaceL1Settings != null && l1Settings != null) {
+      long metric =
+          ifaceL1Settings.getMode() == IsisInterfaceMode.PASSIVE
+              ? 0L
+              : firstNonNull(ifaceL1Settings.getCost(), IsisRoute.DEFAULT_METRIC);
+      generateIsisInterfaceRoutesPerLevel(
+              l1Admin, routeBuilder, iface, metric, IsisLevel.LEVEL_1, RoutingProtocol.ISIS_L1)
+          .forEach(r -> d1.from(_isisL1Rib.mergeRouteGetDelta(r)));
+    }
+    if (ifaceL2Settings != null && l2Settings != null) {
+      long metric =
+          ifaceL2Settings.getMode() == IsisInterfaceMode.PASSIVE
+              ? 0L
+              : firstNonNull(ifaceL2Settings.getCost(), IsisRoute.DEFAULT_METRIC);
+      generateIsisInterfaceRoutesPerLevel(
+              l2Admin, routeBuilder, iface, metric, IsisLevel.LEVEL_2, RoutingProtocol.ISIS_L2)
+          .forEach(r -> d2.from(_isisL2Rib.mergeRouteGetDelta(r)));
+    }
+  }
+
+  /**
+   * Generate IS-IS from a given interface for a given level (with a given metric/admin cost)
+   * and merge them into the appropriate RIB.
+   */
+  private static Set<IsisRoute> generateIsisInterfaceRoutesPerLevel(
+      int adminCost,
+      IsisRoute.Builder routeBuilder,
+      Interface iface,
+      long metric,
+      IsisLevel level,
+      RoutingProtocol isisProtocol) {
+    routeBuilder.setAdmin(adminCost).setLevel(level).setMetric(metric).setProtocol(isisProtocol);
+    return iface
+        .getAllAddresses()
+        .stream()
+        .map(
+            address ->
+                routeBuilder.setNetwork(address.getPrefix()).setNextHopIp(address.getIp()).build())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   void initOspfExports() {
@@ -2476,6 +2486,15 @@ public class VirtualRouter extends ComparableStructure<String> {
         bgpTopology);
   }
 
+  /**
+   * Move IS-IS routes from L1/L2 staging RIBs into their respective "proper" RIBs. Following that,
+   * move any resulting deltas into the combined IS-IS RIB, and finally, main RIB.
+   *
+   * @param allNodes all network nodes, keyed by hostname
+   * @param l1Delta staging Level 1 delta
+   * @param l2Delta staging Level 2 delta
+   * @return true if any routes from given deltas were merged into the combined IS-IS RIB.
+   */
   boolean unstageIsisRoutes(
       Map<String, Node> allNodes, RibDelta<IsisRoute> l1Delta, RibDelta<IsisRoute> l2Delta) {
     RibDelta<IsisRoute> d1 = importRibDelta(_isisL1Rib, l1Delta);
@@ -2520,7 +2539,7 @@ public class VirtualRouter extends ComparableStructure<String> {
   }
 
   /** Re-initialize RIBs (at the start of each iteration). */
-  void reinitForNewIteration(final Map<String, Node> allNodes) {
+  void reinitForNewIteration() {
     _mainRibRouteDeltaBuiler = new Builder<>(_mainRib);
     _bgpBestPathDeltaBuilder = new RibDelta.Builder<>(_bgpBestPathRib);
     _bgpMultiPathDeltaBuilder = new RibDelta.Builder<>(_bgpMultipathRib);

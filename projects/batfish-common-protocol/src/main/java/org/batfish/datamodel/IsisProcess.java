@@ -112,7 +112,6 @@ public class IsisProcess implements Serializable {
 
   private static final String PROP_REFERENCE_BANDWIDTH = "referenceBandwidth";
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   public static @Nonnull Builder builder() {
@@ -138,19 +137,19 @@ public class IsisProcess implements Serializable {
         referenceBandwidth);
   }
 
-  private final String _exportPolicy;
+  @Nullable private final String _exportPolicy;
 
-  private final Set<GeneratedRoute> _generatedRoutes;
+  @Nonnull private final Set<GeneratedRoute> _generatedRoutes;
 
-  private final IsisLevelSettings _level1;
+  @Nullable private final IsisLevelSettings _level1;
 
-  private final IsisLevelSettings _level2;
+  @Nullable private final IsisLevelSettings _level2;
 
-  private final IsoAddress _netAddress;
+  @Nonnull private final IsoAddress _netAddress;
 
-  private final Integer _overloadTimeout;
+  @Nullable private final Integer _overloadTimeout;
 
-  private final Double _referenceBandwidth;
+  @Nullable private final Double _referenceBandwidth;
 
   private IsisProcess(
       @Nullable String exportPolicy,
@@ -187,7 +186,8 @@ public class IsisProcess implements Serializable {
   }
 
   @JsonProperty(PROP_EXPORT_POLICY)
-  public @Nullable String getExportPolicy() {
+  @Nullable
+  public String getExportPolicy() {
     return _exportPolicy;
   }
 
@@ -195,33 +195,39 @@ public class IsisProcess implements Serializable {
       "Generated IPV4 routes for the purpose of export into IS-IS. These routes are not imported "
           + "into the main RIB.")
   @JsonProperty(PROP_GENERATED_ROUTES)
-  public @Nonnull Set<GeneratedRoute> getGeneratedRoutes() {
+  @Nonnull
+  public Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
 
   @JsonProperty(PROP_LEVEL1)
-  public @Nullable IsisLevelSettings getLevel1() {
+  @Nullable
+  public IsisLevelSettings getLevel1() {
     return _level1;
   }
 
   @JsonProperty(PROP_LEVEL2)
-  public @Nullable IsisLevelSettings getLevel2() {
+  @Nullable
+  public IsisLevelSettings getLevel2() {
     return _level2;
   }
 
   @JsonPropertyDescription("The net address is an ISO address representing the IS-IS router ID.")
   @JsonProperty(PROP_NET_ADDRESS)
-  public @Nullable IsoAddress getNetAddress() {
+  @Nonnull
+  public IsoAddress getNetAddress() {
     return _netAddress;
   }
 
   @JsonProperty(PROP_OVERLOAD_TIMEOUT)
-  public @Nullable Integer getOverloadTimeout() {
+  @Nullable
+  public Integer getOverloadTimeout() {
     return _overloadTimeout;
   }
 
   @JsonProperty(PROP_REFERENCE_BANDWIDTH)
-  public @Nullable Double getReferenceBandwidth() {
+  @Nullable
+  public Double getReferenceBandwidth() {
     return _referenceBandwidth;
   }
 
