@@ -90,7 +90,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
             interfaceSettingsLevel(is1),
             processLevel(proc2),
             interfaceSettingsLevel(is2),
-            sameArea ? LEVEL_1_2 : LEVEL_1);
+            sameArea ? LEVEL_1_2 : LEVEL_2);
     if (circuitType == null) {
       return null;
     }
