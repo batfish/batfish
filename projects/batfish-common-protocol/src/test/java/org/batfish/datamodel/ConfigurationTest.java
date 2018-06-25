@@ -64,8 +64,8 @@ public class ConfigurationTest {
     // BGP
     BgpProcess bgpProcess = new BgpProcess();
     vrf.setBgpProcess(bgpProcess);
-    BgpNeighbor neighbor =
-        bgpProcess.getNeighbors().computeIfAbsent(neighborPrefix, BgpNeighbor::new);
+    BgpPeerConfig neighbor =
+        bgpProcess.getNeighbors().computeIfAbsent(neighborPrefix, BgpPeerConfig::new);
     neighbor.setExportPolicy(
         c.getRoutingPolicies()
             .computeIfAbsent(bgpExportPolicyName, n -> new RoutingPolicy(n, c))
@@ -74,10 +74,10 @@ public class ConfigurationTest {
         c.getRoutingPolicies()
             .computeIfAbsent(bgpImportPolicyName, n -> new RoutingPolicy(n, c))
             .getName());
-    BgpNeighbor neighborWithMissingPolicies =
+    BgpPeerConfig neighborWithMissingPolicies =
         bgpProcess
             .getNeighbors()
-            .computeIfAbsent(neigborWithMissingPoliciesPrefix, BgpNeighbor::new);
+            .computeIfAbsent(neigborWithMissingPoliciesPrefix, BgpPeerConfig::new);
     neighborWithMissingPolicies.setExportPolicy(bgpMissingExportPolicyName);
     neighborWithMissingPolicies.setImportPolicy(bgpMissingImportPolicyName);
 

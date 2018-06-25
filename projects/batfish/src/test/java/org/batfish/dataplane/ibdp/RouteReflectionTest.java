@@ -21,7 +21,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -94,7 +94,7 @@ public class RouteReflectionTest {
 
   private Interface.Builder _ib;
 
-  private BgpNeighbor.Builder _nb;
+  private BgpPeerConfig.Builder _nb;
 
   private NetworkFactory _nf;
 

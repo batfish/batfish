@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -31,7 +31,7 @@ public class SelfNextHop extends NextHopExpr {
     if (peerPrefix == null) {
       return null;
     }
-    BgpNeighbor neighbor = environment.getVrf().getBgpProcess().getNeighbors().get(peerPrefix);
+    BgpPeerConfig neighbor = environment.getVrf().getBgpProcess().getNeighbors().get(peerPrefix);
     if (neighbor == null) {
       return null;
     }
