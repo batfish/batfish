@@ -4,13 +4,13 @@ import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
-/** Represents a peering session between two {@link BgpNeighbor}s */
+/** Represents a peering session between two {@link BgpPeerConfig}s */
 public class BgpSession implements Comparable<BgpSession> {
 
   private final boolean _isEbgp;
 
-  @Nonnull private BgpNeighbor _src;
-  @Nonnull private BgpNeighbor _dst;
+  @Nonnull private BgpPeerConfig _src;
+  @Nonnull private BgpPeerConfig _dst;
 
   /**
    * Create a new session
@@ -18,17 +18,17 @@ public class BgpSession implements Comparable<BgpSession> {
    * @param src session initiator
    * @param dst session acceptor
    */
-  public BgpSession(@Nonnull BgpNeighbor src, @Nonnull BgpNeighbor dst) {
+  public BgpSession(@Nonnull BgpPeerConfig src, @Nonnull BgpPeerConfig dst) {
     _src = src;
     _dst = dst;
     _isEbgp = !src.getLocalAs().equals(dst.getLocalAs());
   }
 
-  public BgpNeighbor getSrc() {
+  public BgpPeerConfig getSrc() {
     return _src;
   }
 
-  public BgpNeighbor getDst() {
+  public BgpPeerConfig getDst() {
     return _dst;
   }
 

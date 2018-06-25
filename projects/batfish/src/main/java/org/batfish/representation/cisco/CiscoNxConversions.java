@@ -20,7 +20,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
@@ -148,7 +148,7 @@ final class CiscoNxConversions {
   }
 
   @Nonnull
-  static Map<Ip, BgpNeighbor> getNeighbors(
+  static Map<Ip, BgpPeerConfig> getNeighbors(
       Configuration c,
       Vrf vrf,
       BgpProcess proc,
@@ -178,7 +178,7 @@ final class CiscoNxConversions {
   }
 
   @Nonnull
-  static Map<Prefix, BgpNeighbor> getPassiveNeighbors(
+  static Map<Prefix, BgpPeerConfig> getPassiveNeighbors(
       Configuration c,
       Vrf vrf,
       BgpProcess proc,
@@ -258,7 +258,7 @@ final class CiscoNxConversions {
   }
 
   @Nonnull
-  private static BgpNeighbor toBgpNeighbor(
+  private static BgpPeerConfig toBgpNeighbor(
       Configuration c,
       Vrf vrf,
       BgpProcess proc,
@@ -268,7 +268,7 @@ final class CiscoNxConversions {
       CiscoNxBgpVrfNeighborConfiguration neighbor,
       boolean dynamic,
       Warnings warnings) {
-    BgpNeighbor newNeighbor = new BgpNeighbor(prefix, c, dynamic);
+    BgpPeerConfig newNeighbor = new BgpPeerConfig(prefix, c, dynamic);
 
     newNeighbor.setClusterId(firstNonNull(vrfConfig.getClusterId(), proc.getRouterId()).asLong());
 

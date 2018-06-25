@@ -299,7 +299,7 @@ public final class Configuration extends ComparableStructure<String> {
     for (Vrf vrf : _vrfs.values()) {
       BgpProcess bgpProcess = vrf.getBgpProcess();
       if (bgpProcess != null) {
-        for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
+        for (BgpPeerConfig neighbor : bgpProcess.getNeighbors().values()) {
           neighbor.setExportPolicySources(getRoutingPolicySources(neighbor.getExportPolicy()));
           neighbor.setImportPolicySources(getRoutingPolicySources(neighbor.getImportPolicy()));
         }
