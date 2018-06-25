@@ -129,10 +129,10 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
    * Test that with one failure, both links between the two nodes are down, so no _dstIp is
    * reachable from source.
    *
-   * <p>{@link Ignore Ignored} because of a weird bug: adding a dstIp constraint seems to cause
+   * <p>{@link Ignore Ignored} because of issue #1723: adding a dstIp constraint seems to cause
    * minesweeper to ignore the failures constraint.
    */
-  @Ignore
+  @Ignore("https://github.com/batfish/batfish/issues/1723")
   @Test
   public void testOneFailure() {
     final ReachabilityQuestion question = new ReachabilityQuestion();
@@ -153,10 +153,10 @@ public class SmtReachabilityTwoLinkPerDstIpTest {
   /**
    * Negation of the previous test, so we're verifying unreachability.
    *
-   * <p>{@link Ignore Ignored} because of a weird bug: adding a dstIp constraint seems to cause
+   * <p>{@link Ignore Ignored} because of issue #1723: adding a dstIp constraint seems to cause
    * minesweeper to ignore the failures constraint.
    */
-  @Ignore
+  @Ignore("https://github.com/batfish/batfish/issues/1723")
   @Test
   public void testOneFailure_negate() {
     final ReachabilityQuestion question = new ReachabilityQuestion();
