@@ -106,7 +106,7 @@ public final class IsisEdgeTest {
     Set<IsisEdge> isisEdgesSameSystemId = getIsisEdges(generateIsisConfigs(true, true));
     Set<IsisEdge> isisEdgesDifferentSystemId = getIsisEdges(generateIsisConfigs(true, false));
 
-    // With same area, circuit should be L1L2. With different areas, circuit should just be L2.
+    // Circuit should be established iff system IDs differ
     assertThat(isisEdgesSameSystemId, empty());
     assertThat(
         isisEdgesDifferentSystemId,
