@@ -1,7 +1,5 @@
 package org.batfish.specifier;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -77,26 +75,18 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
 
   @VisibleForTesting
   static LocationSpecifier parseSpecifier(String s) {
-    String[] typeAndClauses = s.split(":");
+    // initialize to default values
+    String locationType = DEFAULT_LOCATION_TYPE;
+    String clauses = s;
 
-    String locationType;
-    String clauses;
-    switch (typeAndClauses.length) {
-      case 1:
-        locationType = DEFAULT_LOCATION_TYPE;
-        clauses = typeAndClauses[0];
-        break;
-      case 2:
-        locationType = typeAndClauses[0];
-        clauses = typeAndClauses[1];
-        break;
-      default:
-        throw new IllegalArgumentException("Too many ':'s in " + s);
+    for (String locType : CLAUSE_PARSERS.keySet()) {
+      if (s.startsWith(locType + ":")) {
+        locationType = locType;
+        clauses = s.substring(locType.length() + 1);
+      }
     }
 
-    checkArgument(CLAUSE_PARSERS.containsKey(locationType), "Unknown type: " + locationType);
     ClauseParser clauseParser = CLAUSE_PARSERS.get(locationType);
-
     return Arrays.stream(clauses.split(","))
         .map(clauseParser::parse)
         .reduce(IntersectionLocationSpecifier::new)
