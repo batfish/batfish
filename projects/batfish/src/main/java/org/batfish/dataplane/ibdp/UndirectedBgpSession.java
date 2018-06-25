@@ -3,7 +3,7 @@ package org.batfish.dataplane.ibdp;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpSession;
 
 /**
@@ -11,17 +11,17 @@ import org.batfish.datamodel.BgpSession;
  * {@link UndirectedBgpSession} is immutable.
  */
 public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
-  @Nonnull private final BgpNeighbor _first;
-  @Nonnull private final BgpNeighbor _second;
+  @Nonnull private final BgpPeerConfig _first;
+  @Nonnull private final BgpPeerConfig _second;
 
   /**
    * Compare BGP neighbors using prefix and hostname. This comparator is **NOT** consistent with
    * equals
    */
-  private static final Comparator<BgpNeighbor> COMPARATOR =
-      Comparator.comparing(BgpNeighbor::getPrefix).thenComparing(BgpNeighbor::getOwner);
+  private static final Comparator<BgpPeerConfig> COMPARATOR =
+      Comparator.comparing(BgpPeerConfig::getPrefix).thenComparing(BgpPeerConfig::getOwner);
 
-  UndirectedBgpSession(@Nonnull BgpNeighbor n1, @Nonnull BgpNeighbor n2) {
+  UndirectedBgpSession(@Nonnull BgpPeerConfig n1, @Nonnull BgpPeerConfig n2) {
     if (COMPARATOR.compare(n1, n2) < 0) {
       _first = n1;
       _second = n2;
@@ -32,12 +32,12 @@ public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
   }
 
   @Nonnull
-  public BgpNeighbor getFirst() {
+  public BgpPeerConfig getFirst() {
     return _first;
   }
 
   @Nonnull
-  public BgpNeighbor getSecond() {
+  public BgpPeerConfig getSecond() {
     return _second;
   }
 
@@ -77,7 +77,7 @@ public class UndirectedBgpSession implements Comparable<UndirectedBgpSession> {
     return new UndirectedBgpSession(session.getSrc(), session.getDst());
   }
 
-  public static UndirectedBgpSession from(@Nonnull BgpNeighbor n1, @Nonnull BgpNeighbor n2) {
+  public static UndirectedBgpSession from(@Nonnull BgpPeerConfig n1, @Nonnull BgpPeerConfig n2) {
     return new UndirectedBgpSession(n1, n2);
   }
 }

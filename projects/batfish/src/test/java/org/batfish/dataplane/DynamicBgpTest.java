@@ -11,7 +11,7 @@ import com.google.common.graph.Network;
 import java.io.IOException;
 import java.util.List;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -55,7 +55,7 @@ public class DynamicBgpTest {
 
     batfish.computeDataPlane(false); // compute and cache the dataPlane
     DataPlane dp = batfish.loadDataPlane();
-    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+    Network<BgpPeerConfig, BgpSession> bgpTopology = dp.getBgpTopology();
 
     /*
      * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 and r2<--r4
@@ -87,7 +87,7 @@ public class DynamicBgpTest {
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
-    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+    Network<BgpPeerConfig, BgpSession> bgpTopology = dp.getBgpTopology();
 
     /*
      * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 and r2<--r4
@@ -130,7 +130,7 @@ public class DynamicBgpTest {
     batfish.computeDataPlane(false); // compute and cache the dataPlane
 
     DataPlane dp = batfish.loadDataPlane();
-    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+    Network<BgpPeerConfig, BgpSession> bgpTopology = dp.getBgpTopology();
 
     /*
      * Check peering edges. r1 <---> r2 has two edges, one in each direction. r2<--r3 valid

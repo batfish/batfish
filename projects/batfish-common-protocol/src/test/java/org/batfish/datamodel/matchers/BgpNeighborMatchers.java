@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasClusterId;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasEnforceFirstAs;
 import org.batfish.datamodel.matchers.BgpNeighborMatchersImpl.HasLocalAs;
@@ -14,10 +14,10 @@ import org.hamcrest.Matcher;
 public class BgpNeighborMatchers {
 
   /**
-   * Provides a matcher that matches if the {@link BgpNeighbor}'s clusterId is {@code
+   * Provides a matcher that matches if the {@link BgpPeerConfig}'s clusterId is {@code
    * expectedClusterId}.
    */
-  public static @Nonnull Matcher<BgpNeighbor> hasClusterId(@Nullable Long expectedClusterId) {
+  public static @Nonnull Matcher<BgpPeerConfig> hasClusterId(@Nullable Long expectedClusterId) {
     return new HasClusterId(equalTo(expectedClusterId));
   }
 

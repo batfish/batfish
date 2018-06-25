@@ -31,7 +31,7 @@ import org.batfish.common.Version;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
@@ -105,7 +105,7 @@ class IncrementalBdpEngine {
 
     IncrementalDataPlane dp = dpBuilder.build();
 
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         initBgpTopology(
             configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
 
@@ -129,7 +129,7 @@ class IncrementalBdpEngine {
           initBgpTopology(
               configurations, ipOwners, false, true, TracerouteEngineImpl.getInstance(), dp);
       // Update queues (if necessary) based on new neighbor relationships
-      final Network<BgpNeighbor, BgpSession> finalBgpTopology = bgpTopology;
+      final Network<BgpPeerConfig, BgpSession> finalBgpTopology = bgpTopology;
       nodes
           .values()
           .parallelStream()
@@ -198,7 +198,7 @@ class IncrementalBdpEngine {
       Topology topology,
       int iteration,
       Map<String, Node> allNodes,
-      Network<BgpNeighbor, BgpSession> bgpTopology) {
+      Network<BgpPeerConfig, BgpSession> bgpTopology) {
 
     // (Re)initialization of dependent route calculation
     nodes
@@ -324,7 +324,7 @@ class IncrementalBdpEngine {
       Map<String, Node> nodes,
       int iteration,
       Map<String, Node> allNodes,
-      Network<BgpNeighbor, BgpSession> bgpTopology) {
+      Network<BgpPeerConfig, BgpSession> bgpTopology) {
     // BGP routes
     // first let's initialize nodes-level generated/aggregate routes
     nodes
@@ -456,7 +456,7 @@ class IncrementalBdpEngine {
       Set<BgpAdvertisement> externalAdverts,
       IncrementalBdpAnswerElement ae,
       boolean firstPass,
-      Network<BgpNeighbor, BgpSession> bgpTopology,
+      Network<BgpPeerConfig, BgpSession> bgpTopology,
       Network<IsisNode, IsisEdge> isisTopology) {
 
     /*
@@ -600,7 +600,7 @@ class IncrementalBdpEngine {
    * @return true iff all queues are empty
    */
   private boolean areQueuesEmpty(
-      Map<String, Node> nodes, Network<BgpNeighbor, BgpSession> bgpTopology) {
+      Map<String, Node> nodes, Network<BgpPeerConfig, BgpSession> bgpTopology) {
     AtomicInteger computeQueuesAreEmpty =
         _newBatch.apply("Check for convergence (are queues empty?)", nodes.size());
     AtomicBoolean areEmpty = new AtomicBoolean(true);

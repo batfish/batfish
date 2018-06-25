@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.dataplane.ibdp.IncrementalDataPlaneSettings;
 import org.batfish.dataplane.ibdp.Node;
@@ -78,7 +78,7 @@ public abstract class IbdpSchedule implements Iterator<Map<String, Node>> {
   public static IbdpSchedule getSchedule(
       IncrementalDataPlaneSettings settings,
       Map<String, Node> allNodes,
-      Network<BgpNeighbor, BgpSession> bgpTopology) {
+      Network<BgpPeerConfig, BgpSession> bgpTopology) {
     Schedule schedule = settings.getScheduleName();
     switch (schedule) {
       case ALL:

@@ -58,7 +58,7 @@ public class BgpProcess implements Serializable {
       return _neighbors
           .values()
           .stream()
-          .map(BgpNeighbor::getClusterId)
+          .map(BgpPeerConfig::getClusterId)
           .collect(ImmutableSet.toImmutableSet());
     }
   }
@@ -96,7 +96,7 @@ public class BgpProcess implements Serializable {
    * A map of all the bgp neighbors with which the router owning this process is configured to peer,
    * keyed by prefix
    */
-  private SortedMap<Prefix, BgpNeighbor> _neighbors;
+  private SortedMap<Prefix, BgpPeerConfig> _neighbors;
 
   /** Space of prefixes to be advertised using explicit network statements */
   private PrefixSpace _originationSpace;
@@ -157,7 +157,7 @@ public class BgpProcess implements Serializable {
   /** @return {@link #_neighbors} */
   @JsonProperty(PROP_NEIGHBORS)
   @JsonPropertyDescription("Neighbor relationships configured for this BGP process")
-  public SortedMap<Prefix, BgpNeighbor> getNeighbors() {
+  public SortedMap<Prefix, BgpPeerConfig> getNeighbors() {
     return _neighbors;
   }
 
@@ -200,7 +200,7 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonProperty(PROP_NEIGHBORS)
-  public void setNeighbors(SortedMap<Prefix, BgpNeighbor> neighbors) {
+  public void setNeighbors(SortedMap<Prefix, BgpPeerConfig> neighbors) {
     _neighbors = neighbors;
   }
 

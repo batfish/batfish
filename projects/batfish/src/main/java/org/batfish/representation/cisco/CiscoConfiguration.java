@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.AsPathAccessList;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -1374,18 +1374,18 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Before we process any neighbors, execute the inheritance.
     nxBgpGlobal.doInherit(_w);
 
-    // This is ugly logic to handle the fact that BgpNeighbor does not currently support
+    // This is ugly logic to handle the fact that BgpPeerConfig does not currently support
     // separate tracking of active and passive neighbors.
-    SortedMap<Prefix, BgpNeighbor> newNeighbors = new TreeMap<>();
+    SortedMap<Prefix, BgpPeerConfig> newNeighbors = new TreeMap<>();
     // Process active neighbors first.
-    Map<Ip, BgpNeighbor> activeNeighbors =
+    Map<Ip, BgpPeerConfig> activeNeighbors =
         CiscoNxConversions.getNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
     activeNeighbors.forEach(
         (key, value) -> newNeighbors.put(new Prefix(key, Prefix.MAX_PREFIX_LENGTH), value));
     // Process passive neighbors next. Note that for now, a passive neighbor listening
     // to a /32 will overwrite an active neighbor of the same IP.
     // TODO(https://github.com/batfish/batfish/issues/1228)
-    Map<Prefix, BgpNeighbor> passiveNeighbors =
+    Map<Prefix, BgpPeerConfig> passiveNeighbors =
         CiscoNxConversions.getPassiveNeighbors(c, v, newBgpProcess, nxBgpGlobal, nxBgpVrf, _w);
     newNeighbors.putAll(passiveNeighbors);
 
@@ -1420,7 +1420,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     newBgpProcess.setMultipathEbgp(multipathEbgp);
     newBgpProcess.setMultipathIbgp(multipathIbgp);
 
-    Map<Prefix, BgpNeighbor> newBgpNeighbors = newBgpProcess.getNeighbors();
+    Map<Prefix, BgpPeerConfig> newBgpNeighbors = newBgpProcess.getNeighbors();
     int defaultMetric = proc.getDefaultMetric();
     Ip bgpRouterId = getBgpRouterId(c, vrfName, proc);
     newBgpProcess.setRouterId(bgpRouterId);
@@ -1870,15 +1870,15 @@ public final class CiscoConfiguration extends VendorConfiguration {
         }
         Long pgLocalAs = lpg.getLocalAs();
         long localAs = pgLocalAs != null ? pgLocalAs : proc.getName();
-        BgpNeighbor newNeighbor;
+        BgpPeerConfig newNeighbor;
         if (lpg instanceof IpBgpPeerGroup) {
           IpBgpPeerGroup ipg = (IpBgpPeerGroup) lpg;
           Ip neighborAddress = ipg.getIp();
-          newNeighbor = new BgpNeighbor(neighborAddress, c, false);
+          newNeighbor = new BgpPeerConfig(neighborAddress, c, false);
         } else if (lpg instanceof DynamicIpBgpPeerGroup) {
           DynamicIpBgpPeerGroup dpg = (DynamicIpBgpPeerGroup) lpg;
           Prefix neighborAddressRange = dpg.getPrefix();
-          newNeighbor = new BgpNeighbor(neighborAddressRange, c, true);
+          newNeighbor = new BgpPeerConfig(neighborAddressRange, c, true);
         } else if (lpg instanceof Ipv6BgpPeerGroup || lpg instanceof DynamicIpv6BgpPeerGroup) {
           // TODO: implement ipv6 bgp neighbors
           continue;
