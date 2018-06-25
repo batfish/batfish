@@ -3,14 +3,41 @@ package org.batfish.datamodel;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 
 public class IsisLevelSettings implements Serializable {
+
+  public static class Builder {
+
+    private boolean _wideMetricsOnly;
+
+    public @Nonnull IsisLevelSettings build() {
+      return new IsisLevelSettings(_wideMetricsOnly);
+    }
+
+    public @Nonnull Builder setWideMetricsOnly(boolean wideMetricsOnly) {
+      _wideMetricsOnly = wideMetricsOnly;
+      return this;
+    }
+  }
 
   private static final String PROP_WIDE_METRICS_ONLY = "wideMetricsOnly";
 
   private static final long serialVersionUID = 1L;
 
+  public static Builder builder() {
+    return new Builder();
+  }
+
   private boolean _wideMetricsOnly;
+
+  private IsisLevelSettings(boolean wideMetricsOnly) {
+    _wideMetricsOnly = wideMetricsOnly;
+  }
+
+  public IsisLevelSettings() {
+    _wideMetricsOnly = false;
+  }
 
   @Override
   public boolean equals(Object obj) {

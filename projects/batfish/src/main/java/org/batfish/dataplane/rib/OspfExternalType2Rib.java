@@ -14,7 +14,8 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
   private final String _hostname;
 
   public OspfExternalType2Rib(
-      @Nonnull String hostname, Map<Prefix, SortedSet<OspfExternalType2Route>> backupRoutes) {
+      @Nonnull String hostname,
+      @Nullable Map<Prefix, SortedSet<OspfExternalType2Route>> backupRoutes) {
     super(backupRoutes);
     _hostname = hostname;
   }
