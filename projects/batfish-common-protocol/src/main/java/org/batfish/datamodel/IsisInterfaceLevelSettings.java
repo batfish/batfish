@@ -1,11 +1,73 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static java.util.Objects.requireNonNull;
+import static org.batfish.datamodel.IsisInterfaceMode.UNSET;
+
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
 import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class IsisInterfaceLevelSettings implements Serializable {
+
+  public static class Builder {
+
+    private Long _cost;
+
+    private String _helloAuthenticationKey;
+
+    private IsisHelloAuthenticationType _helloAuthenticationType;
+
+    private Integer _helloInterval;
+
+    private Integer _holdTime;
+
+    private IsisInterfaceMode _mode;
+
+    public IsisInterfaceLevelSettings build() {
+      return new IsisInterfaceLevelSettings(
+          _cost,
+          _helloAuthenticationKey,
+          _helloAuthenticationType,
+          _helloInterval,
+          _holdTime,
+          requireNonNull(_mode));
+    }
+
+    public @Nonnull Builder setCost(@Nullable Long cost) {
+      _cost = cost;
+      return this;
+    }
+
+    public @Nonnull Builder setHelloAuthenticationKey(@Nullable String helloAuthenticationKey) {
+      _helloAuthenticationKey = helloAuthenticationKey;
+      return this;
+    }
+
+    public @Nonnull Builder setHelloAuthenticationType(
+        @Nullable IsisHelloAuthenticationType helloAuthenticationType) {
+      _helloAuthenticationType = helloAuthenticationType;
+      return this;
+    }
+
+    public @Nonnull Builder setHelloInterval(@Nullable Integer helloInterval) {
+      _helloInterval = helloInterval;
+      return this;
+    }
+
+    public @Nonnull Builder setHoldTime(@Nullable Integer holdTime) {
+      _holdTime = holdTime;
+      return this;
+    }
+
+    public @Nonnull Builder setMode(@Nullable IsisInterfaceMode mode) {
+      _mode = mode;
+      return this;
+    }
+  }
 
   private static final String PROP_COST = "cost";
 
@@ -21,17 +83,54 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
-  private Integer _cost;
+  public static Builder builder() {
+    return new Builder();
+  }
 
-  private String _helloAuthenticationKey;
+  @JsonCreator
+  private static @Nonnull IsisInterfaceLevelSettings create(
+      @JsonProperty(PROP_COST) Long cost,
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY) String helloAuthenticationKey,
+      @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE)
+          IsisHelloAuthenticationType helloAuthenticationType,
+      @JsonProperty(PROP_HELLO_INTERVAL) Integer helloInterval,
+      @JsonProperty(PROP_HOLD_TIME) Integer holdTime,
+      @JsonProperty(PROP_MODE) IsisInterfaceMode mode) {
+    return new IsisInterfaceLevelSettings(
+        cost,
+        helloAuthenticationKey,
+        helloAuthenticationType,
+        helloInterval,
+        holdTime,
+        firstNonNull(mode, UNSET));
+  }
 
-  private IsisHelloAuthenticationType _helloAuthenticationType;
+  @Nullable private final Long _cost;
 
-  private Integer _helloInterval;
+  @Nullable private final String _helloAuthenticationKey;
 
-  private Integer _holdTime;
+  @Nullable private final IsisHelloAuthenticationType _helloAuthenticationType;
 
-  private IsisInterfaceMode _mode;
+  @Nullable private final Integer _helloInterval;
+
+  @Nullable private final Integer _holdTime;
+
+  @Nonnull private final IsisInterfaceMode _mode;
+
+  private IsisInterfaceLevelSettings(
+      @Nullable Long cost,
+      @Nullable String helloAuthenticationKey,
+      @Nullable IsisHelloAuthenticationType helloAuthenticationType,
+      @Nullable Integer helloInterval,
+      @Nullable Integer holdTime,
+      @Nonnull IsisInterfaceMode mode) {
+    _cost = cost;
+    _helloAuthenticationKey = helloAuthenticationKey;
+    _helloAuthenticationType = helloAuthenticationType;
+    _helloInterval = helloInterval;
+    _holdTime = holdTime;
+    _mode = mode;
+  }
 
   @Override
   public boolean equals(Object obj) {
@@ -51,7 +150,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
   }
 
   @JsonProperty(PROP_COST)
-  public @Nullable Integer getCost() {
+  public @Nullable Long getCost() {
     return _cost;
   }
 
@@ -88,37 +187,6 @@ public class IsisInterfaceLevelSettings implements Serializable {
         _helloAuthenticationType,
         _helloInterval,
         _holdTime,
-        _mode != null ? _mode.ordinal() : -1);
-  }
-
-  @JsonProperty(PROP_COST)
-  public void setCost(@Nullable Integer cost) {
-    _cost = cost;
-  }
-
-  @JsonProperty(PROP_HELLO_AUTHENTICATION_KEY)
-  public void setHelloAuthenticationKey(@Nullable String helloAuthenticationKey) {
-    _helloAuthenticationKey = helloAuthenticationKey;
-  }
-
-  @JsonProperty(PROP_HELLO_AUTHENTICATION_TYPE)
-  public void setHelloAuthenticationType(
-      @Nullable IsisHelloAuthenticationType helloAuthenticationType) {
-    _helloAuthenticationType = helloAuthenticationType;
-  }
-
-  @JsonProperty(PROP_HELLO_INTERVAL)
-  public void setHelloInterval(@Nullable Integer helloInterval) {
-    _helloInterval = helloInterval;
-  }
-
-  @JsonProperty(PROP_HOLD_TIME)
-  public void setHoldTime(@Nullable Integer holdTime) {
-    _holdTime = holdTime;
-  }
-
-  @JsonProperty(PROP_MODE)
-  public void setMode(@Nullable IsisInterfaceMode mode) {
-    _mode = mode;
+        _mode.ordinal());
   }
 }

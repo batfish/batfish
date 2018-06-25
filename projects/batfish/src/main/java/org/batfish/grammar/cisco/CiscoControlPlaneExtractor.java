@@ -5033,7 +5033,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_isis_metric(If_isis_metricContext ctx) {
-    int metric = toInteger(ctx.metric);
+    long metric = toLong(ctx.metric);
     for (Interface iface : _currentInterfaces) {
       iface.setIsisCost(metric);
     }

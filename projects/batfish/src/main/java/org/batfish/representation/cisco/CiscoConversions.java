@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.common.BatfishException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPathAccessList;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.IpAccessListLine;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpWildcard;
+import org.batfish.datamodel.IsisLevelSettings;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.Prefix6;
@@ -209,12 +211,29 @@ class CiscoConversions {
 
   static org.batfish.datamodel.IsisProcess toIsisProcess(
       IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.IsisProcess newProcess = new org.batfish.datamodel.IsisProcess();
-
+    org.batfish.datamodel.IsisProcess.Builder newProcess =
+        org.batfish.datamodel.IsisProcess.builder();
+    if (proc.getNetAddress() == null) {
+      oldConfig.getWarnings().redFlag("Cannot create IS-IS process without specifying net-address");
+      return null;
+    }
     newProcess.setNetAddress(proc.getNetAddress());
-    newProcess.setLevel(proc.getLevel());
-
-    return newProcess;
+    IsisLevelSettings settings = IsisLevelSettings.builder().build();
+    switch (proc.getLevel()) {
+      case LEVEL_1:
+        newProcess.setLevel1(settings);
+        break;
+      case LEVEL_1_2:
+        newProcess.setLevel1(settings);
+        newProcess.setLevel2(settings);
+        break;
+      case LEVEL_2:
+        newProcess.setLevel2(settings);
+        break;
+      default:
+        throw new BatfishException("Unhandled IS-IS level.");
+    }
+    return newProcess.build();
   }
 
   static Route6FilterList toRoute6FilterList(ExtendedIpv6AccessList eaList) {

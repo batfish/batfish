@@ -64,6 +64,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -1578,6 +1579,14 @@ public class CommonUtil {
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Comparator.naturalOrder(), keyFunction, valueFunction));
+  }
+
+  public static <T, K extends Comparable<? super K>, V>
+      Collector<T, ?, ImmutableSortedMap<K, V>> toImmutableSortedMap(
+          Function<? super T, ? extends K> keyFunction,
+          Function<? super T, ? extends V> valueFunction) {
+    return ImmutableSortedMap.toImmutableSortedMap(
+        Comparator.naturalOrder(), keyFunction, valueFunction);
   }
 
   public static <E, K extends Comparable<? super K>, V> SortedMap<K, V> toImmutableSortedMap(

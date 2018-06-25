@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -132,9 +133,9 @@ public class Interface extends ComparableStructure<String> {
 
   private int _incomingFilterLine;
 
-  private Integer _isisCost;
+  @Nullable private Long _isisCost;
 
-  private IsisInterfaceMode _isisInterfaceMode;
+  @Nullable private IsisInterfaceMode _isisInterfaceMode;
 
   private int _mtu;
 
@@ -299,7 +300,7 @@ public class Interface extends ComparableStructure<String> {
     return _incomingFilterLine;
   }
 
-  public Integer getIsisCost() {
+  public Long getIsisCost() {
     return _isisCost;
   }
 
@@ -462,7 +463,7 @@ public class Interface extends ComparableStructure<String> {
     _incomingFilterLine = incomingFilterLine;
   }
 
-  public void setIsisCost(Integer isisCost) {
+  public void setIsisCost(Long isisCost) {
     _isisCost = isisCost;
   }
 
