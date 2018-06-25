@@ -174,6 +174,20 @@ maven_repository(
 load('@commons_io//:rules.bzl', 'commons_io_compile')
 commons_io_compile()
 
+# diffutils
+maven_repository(
+    name = 'diffutils',
+    deps = [
+        'com.github.wumpz:diffutils:2.2',
+    ],
+    transitive_deps = [
+        '0647f913ef6c350d3b1bc1ffa48a74747a13e89f:com.github.wumpz:diffutils:2.2',
+        '63998ced66e425d9e8bcd0c59f710c98f0c021ff:org.eclipse.jgit:org.eclipse.jgit:4.4.1.201607150455-r',
+    ],
+)
+load('@diffutils//:rules.bzl', 'diffutils_compile')
+diffutils_compile()
+
 # errorprone-annotations
 maven_repository(
     name = 'errorprone_annotations',

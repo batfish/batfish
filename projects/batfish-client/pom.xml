@@ -123,6 +123,11 @@
     </dependency>
 
     <dependency>
+      <groupId>com.github.wumpz</groupId>
+      <artifactId>diffutils</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>io.opentracing</groupId>
       <artifactId>opentracing-api</artifactId>
     </dependency>
