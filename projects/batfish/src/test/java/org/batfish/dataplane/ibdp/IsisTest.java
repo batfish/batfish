@@ -294,6 +294,7 @@ public class IsisTest {
         Sets.intersection(r3Vr._isisL1Rib.getRoutes(), r3Vr._isisL2Rib.getRoutes()), empty());
   }
 
+  @SuppressWarnings("unused")
   private static void assertInterAreaRoute(
       SortedMap<String, SortedMap<String, SortedSet<AbstractRoute>>> routesByNode,
       String hostname,
