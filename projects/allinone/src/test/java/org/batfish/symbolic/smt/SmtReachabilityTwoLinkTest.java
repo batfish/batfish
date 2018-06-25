@@ -8,6 +8,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
 
+import com.google.common.collect.ImmutableSet;
 import java.io.IOException;
 import java.util.SortedMap;
 import org.batfish.datamodel.Configuration;
@@ -16,7 +17,6 @@ import org.batfish.main.Batfish;
 import org.batfish.question.SmtReachabilityQuestionPlugin.ReachabilityQuestion;
 import org.batfish.symbolic.answers.SmtReachabilityAnswerElement;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -40,7 +40,7 @@ public class SmtReachabilityTwoLinkTest {
 
   /**
    * Test that with one failure, both links between the two nodes are down, so no _dstIp is
-   * reachable from the source.
+   * reachable from the source. The reachability property is false under 1 failure.
    */
   @Test
   public void testOneFailure() {
@@ -59,14 +59,13 @@ public class SmtReachabilityTwoLinkTest {
   }
 
   /**
-   * Negation of the above test, i.e. verify unreachability under 1 failure.
+   * Negation of the above test, i.e. verify unreachability for all failure scenarios up to 1 link
+   * (aka, unreachability both in 0 failures or 1 failures). False, because reachability holds under
+   * 0 failures.
    *
-   * <p>{@link Ignore Ignored} because the test is failing. It's unclear whether the intent is that
-   * failures constraint should be included in the negation. But that isn't working either
-   * (otherwise, failures=0 should return a {@link VerificationResult} with failures != 0. It does
-   * not).
+   * <p>This test demonstrates that the negate flag does not negate the entire query. Otherwise,
+   * they could not both be false.
    */
-  @Ignore
   @Test
   public void testOneFailure_negate() {
     final ReachabilityQuestion question = new ReachabilityQuestion();
@@ -81,7 +80,7 @@ public class SmtReachabilityTwoLinkTest {
     final SmtReachabilityAnswerElement smtAnswer = (SmtReachabilityAnswerElement) answer;
     assertThat(
         smtAnswer,
-        hasVerificationResult(allOf(hasIsVerified(true), hasFailures(singleton(_failureDesc)))));
+        hasVerificationResult(allOf(hasIsVerified(false), hasFailures(ImmutableSet.of()))));
   }
 
   @Test
