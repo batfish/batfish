@@ -7,7 +7,7 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 
 /** Dataplane-specific encapsulation of {@link Configuration} */
-public final class Node implements Comparable<Node>, Serializable {
+public final class Node implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -45,16 +45,5 @@ public final class Node implements Comparable<Node>, Serializable {
   @Nonnull
   SortedMap<String, VirtualRouter> getVirtualRouters() {
     return _virtualRouters;
-  }
-
-  /** Return the hostname of this node. */
-  @Nonnull
-  String getHostName() {
-    return _c.getHostname();
-  }
-
-  @Override
-  public int compareTo(@Nonnull Node o) {
-    return getHostName().compareTo(o.getHostName());
   }
 }
