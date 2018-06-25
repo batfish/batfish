@@ -52,6 +52,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
@@ -3235,18 +3236,10 @@ public class Client extends AbstractClient implements IClient {
       }
     }
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("'" + testCommand[0]);
-    for (int i = 1; i < testCommand.length; i++) {
-      sb.append(" " + testCommand[i]);
-    }
-    sb.append("'");
-    String testCommandText = sb.toString();
-
     _logger.outputf(
-        "Test [%s]: %s %s: %s\n",
+        "Test [%s]: %s '%s': %s\n",
         comparisonMode,
-        testCommandText,
+        StringUtils.join(testCommand, " "),
         failingTest ? "results in error as expected" : "matches " + referenceFileName,
         testPassed ? "Pass" : "Fail");
     if (!testPassed) {
