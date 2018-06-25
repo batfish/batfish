@@ -1,6 +1,7 @@
 package org.batfish.dataplane.topology;
 
 import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Optional.empty;
 import static org.batfish.datamodel.IsisLevel.LEVEL_1;
 import static org.batfish.datamodel.IsisLevel.LEVEL_1_2;
 import static org.batfish.datamodel.IsisLevel.LEVEL_2;
@@ -9,6 +10,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Configuration;
@@ -47,8 +49,10 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     return null;
   }
 
-  @Nullable
-  public static IsisEdge newEdge(Edge edge, Map<String, Configuration> configurations) {
+  /** Return an {@link IsisEdge} if there is an IS-IS circuit on {@code edge}. */
+  @Nonnull
+  public static Optional<IsisEdge> edgeIfCircuit(
+      Edge edge, Map<String, Configuration> configurations) {
     // vertex1
     Configuration c1 = configurations.get(edge.getNode1());
     Interface iface1 = c1.getInterfaces().get(edge.getInt1());
@@ -59,7 +63,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     }
     IsisInterfaceSettings is1 = iface1.getIsis();
     if (is1 == null) {
-      return null;
+      return empty();
     }
 
     // vertex2
@@ -68,11 +72,11 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     Vrf vrf2 = iface2.getVrf();
     IsisProcess proc2 = vrf2.getIsisProcess();
     if (proc2 == null) {
-      return null;
+      return empty();
     }
     IsisInterfaceSettings is2 = iface2.getIsis();
     if (is2 == null) {
-      return null;
+      return empty();
     }
 
     boolean sameArea =
@@ -80,7 +84,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
 
     // make sure system IDs are distinct
     if (Arrays.equals(proc1.getNetAddress().getSystemId(), proc2.getNetAddress().getSystemId())) {
-      return null;
+      return empty();
     }
 
     /* Compute level. If areas are distinct, only level 2 is allowed. */
@@ -92,13 +96,14 @@ public final class IsisEdge implements Comparable<IsisEdge> {
             interfaceSettingsLevel(is2),
             sameArea ? LEVEL_1_2 : LEVEL_2);
     if (circuitType == null) {
-      return null;
+      return empty();
     }
 
-    return new IsisEdge(
-        circuitType,
-        new IsisNode(c1.getHostname(), iface1.getName()),
-        new IsisNode(c2.getHostname(), iface2.getName()));
+    return Optional.of(
+        new IsisEdge(
+            circuitType,
+            new IsisNode(c1.getHostname(), iface1.getName()),
+            new IsisNode(c2.getHostname(), iface2.getName())));
   }
 
   @Nullable

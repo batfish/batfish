@@ -17,7 +17,7 @@ import com.google.common.graph.NetworkBuilder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
@@ -153,8 +153,9 @@ class IncrementalBdpEngine {
         topology
             .getEdges()
             .stream()
-            .map(edge -> IsisEdge.newEdge(edge, configurations))
-            .filter(Objects::nonNull)
+            .map(edge -> IsisEdge.edgeIfCircuit(edge, configurations))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
             .collect(ImmutableSet.toImmutableSet());
     MutableNetwork<IsisNode, IsisEdge> graph =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
