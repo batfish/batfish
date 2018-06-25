@@ -1,52 +1,58 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import javax.annotation.Nullable;
 import org.batfish.datamodel.IsisHelloAuthenticationType;
 
 public class IsisInterfaceLevelSettings implements Serializable {
 
-  /** */
   private static final long serialVersionUID = 1L;
 
   private boolean _enabled;
 
-  private String _helloAuthenticationKey;
+  @Nullable private String _helloAuthenticationKey;
 
-  private IsisHelloAuthenticationType _helloAuthenticationType;
+  @Nullable private IsisHelloAuthenticationType _helloAuthenticationType;
 
-  private Integer _helloInterval;
+  @Nullable private Integer _helloInterval;
 
-  private Integer _holdTime;
+  @Nullable private Integer _holdTime;
 
-  private Integer _metric;
+  @Nullable private Long _metric;
 
-  private Integer _teMetric;
+  @Nullable private Long _teMetric;
 
   public boolean getEnabled() {
     return _enabled;
   }
 
+  @Nullable
   public String getHelloAuthenticationKey() {
     return _helloAuthenticationKey;
   }
 
+  @Nullable
   public IsisHelloAuthenticationType getHelloAuthenticationType() {
     return _helloAuthenticationType;
   }
 
+  @Nullable
   public Integer getHelloInterval() {
     return _helloInterval;
   }
 
+  @Nullable
   public Integer getHoldTime() {
     return _holdTime;
   }
 
-  public Integer getMetric() {
+  @Nullable
+  public Long getMetric() {
     return _metric;
   }
 
-  public Integer getTeMetric() {
+  @Nullable
+  public Long getTeMetric() {
     return _teMetric;
   }
 
@@ -70,11 +76,11 @@ public class IsisInterfaceLevelSettings implements Serializable {
     _holdTime = holdTime;
   }
 
-  public void setMetric(int metric) {
+  public void setMetric(long metric) {
     _metric = metric;
   }
 
-  public void setTeMetric(int teMetric) {
+  public void setTeMetric(long teMetric) {
     _teMetric = teMetric;
   }
 }

@@ -103,7 +103,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.Configuration;
@@ -522,9 +522,9 @@ public class FlatJuniperGrammarTest {
 
     Configuration rr = configurations.get(configName);
     BgpProcess proc = rr.getDefaultVrf().getBgpProcess();
-    BgpNeighbor neighbor1 =
+    BgpPeerConfig neighbor1 =
         proc.getNeighbors().get(new Prefix(neighbor1Ip, Prefix.MAX_PREFIX_LENGTH));
-    BgpNeighbor neighbor2 =
+    BgpPeerConfig neighbor2 =
         proc.getNeighbors().get(new Prefix(neighbor2Ip, Prefix.MAX_PREFIX_LENGTH));
 
     assertThat(neighbor1, hasClusterId(new Ip("3.3.3.3").asLong()));
@@ -1564,7 +1564,7 @@ public class FlatJuniperGrammarTest {
     assertThat(c, hasInterface(physical, hasIsis(hasLevel1(nullValue()))));
     assertThat(
         c,
-        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(5)))));
+        hasInterface(physical, hasIsis(hasLevel2(IsisInterfaceLevelSettingsMatchers.hasCost(5L)))));
     assertThat(c, hasInterface(physical, hasIsis(hasLevel2(hasMode(IsisInterfaceMode.ACTIVE)))));
     assertThat(
         c,

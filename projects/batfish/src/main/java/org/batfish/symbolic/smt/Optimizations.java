@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.GeneratedRoute;
@@ -408,8 +408,8 @@ class Optimizations {
 
                   boolean acc = true;
                   BgpProcess p = conf.getDefaultVrf().getBgpProcess();
-                  for (Map.Entry<Prefix, BgpNeighbor> e : p.getNeighbors().entrySet()) {
-                    BgpNeighbor n = e.getValue();
+                  for (Map.Entry<Prefix, BgpPeerConfig> e : p.getNeighbors().entrySet()) {
+                    BgpPeerConfig n = e.getValue();
                     // If iBGP used, then don't merge
                     if (n.getLocalAs().equals(n.getRemoteAs())) {
                       acc = false;
@@ -537,7 +537,7 @@ class Optimizations {
   /*
    * Determine if a BGP neighbor uses the default export policy
    */
-  private boolean isDefaultBgpExport(Configuration conf, BgpNeighbor n) {
+  private boolean isDefaultBgpExport(Configuration conf, BgpPeerConfig n) {
 
     // Check if valid neighbor
     if (n == null || n.getExportPolicy() == null) {

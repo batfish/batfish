@@ -8,7 +8,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -412,10 +412,10 @@ public final class DataModelMatchers {
   }
 
   /**
-   * Provides a matcher that matches if the {@link BgpNeighbor} is configured as a listening end of
-   * a dynamic BGP peering.
+   * Provides a matcher that matches if the {@link BgpPeerConfig} is configured as a listening end
+   * of a dynamic BGP peering.
    */
-  public static @Nonnull Matcher<BgpNeighbor> isDynamic() {
+  public static @Nonnull Matcher<BgpPeerConfig> isDynamic() {
     return new IsDynamic(equalTo(true));
   }
 

@@ -3993,7 +3993,9 @@
           "default" : {
             "name" : "default",
             "isisProcess" : {
-              "level" : "LEVEL_1",
+              "level1" : {
+                "wideMetricsOnly" : false
+              },
               "netAddress" : "12.3456.7890.1234.5678.90"
             }
           }
@@ -7648,7 +7650,12 @@
               "Serial4/0"
             ],
             "isisProcess" : {
-              "level" : "LEVEL_1_2",
+              "level1" : {
+                "wideMetricsOnly" : false
+              },
+              "level2" : {
+                "wideMetricsOnly" : false
+              },
               "netAddress" : "12.1234.1234.1234.1234.12"
             }
           }
@@ -12145,10 +12152,7 @@
             "name" : "default",
             "interfaces" : [
               "GigabitEthernet0/2/1/6"
-            ],
-            "isisProcess" : {
-              "level" : "LEVEL_1_2"
-            }
+            ]
           }
         }
       },

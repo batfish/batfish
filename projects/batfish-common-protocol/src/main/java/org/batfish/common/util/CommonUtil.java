@@ -64,6 +64,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
@@ -85,7 +86,7 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Pair;
 import org.batfish.common.plugin.ITracerouteEngine;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
@@ -915,8 +916,8 @@ public class CommonUtil {
    */
   @Nullable
   private static boolean isReachableBgpNeighbor(
-      BgpNeighbor src,
-      BgpNeighbor dst,
+      BgpPeerConfig src,
+      BgpPeerConfig dst,
       @Nullable ITracerouteEngine tracerouteEngine,
       @Nullable DataPlane dp) {
     Ip srcAddress = src.getLocalIp();
@@ -1001,9 +1002,9 @@ public class CommonUtil {
   }
 
   /**
-   * Compute the BGP topology -- a network of {@link BgpNeighbor}s connected by {@link BgpSession}s.
-   * See {@link #initBgpTopology(Map, Map, boolean, boolean, ITracerouteEngine, DataPlane)} for more
-   * details.
+   * Compute the BGP topology -- a network of {@link BgpPeerConfig}s connected by {@link
+   * BgpSession}s. See {@link #initBgpTopology(Map, Map, boolean, boolean, ITracerouteEngine,
+   * DataPlane)} for more details.
    *
    * @param configurations configuration keyed by hostname
    * @param ipOwners Ip owners (see {@link #computeIpNodeOwners(boolean, Map)}
@@ -1012,7 +1013,7 @@ public class CommonUtil {
    *     you want this to be {@code false}.
    * @return A graph ({@link Network}) representing all BGP peerings.
    */
-  public static Network<BgpNeighbor, BgpSession> initBgpTopology(
+  public static Network<BgpPeerConfig, BgpSession> initBgpTopology(
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid) {
@@ -1020,7 +1021,8 @@ public class CommonUtil {
   }
 
   /**
-   * Compute the BGP topology -- a network of {@link BgpNeighbor}s connected by {@link BgpSession}s.
+   * Compute the BGP topology -- a network of {@link BgpPeerConfig}s connected by {@link
+   * BgpSession}s.
    *
    * @param configurations node configurations, keyed by hostname
    * @param ipOwners network Ip owners (see {@link #computeIpNodeOwners(Map, boolean)} for
@@ -1036,7 +1038,7 @@ public class CommonUtil {
    * @param dp (partially) computed dataplane.
    * @return A graph ({@link Network}) representing all BGP peerings.
    */
-  public static Network<BgpNeighbor, BgpSession> initBgpTopology(
+  public static Network<BgpPeerConfig, BgpSession> initBgpTopology(
       Map<String, Configuration> configurations,
       Map<Ip, Set<String>> ipOwners,
       boolean keepInvalid,
@@ -1050,8 +1052,8 @@ public class CommonUtil {
      * First pass: identify all addresses "owned" by BgpNeighbors,
      * add neighbors as vertices to the graph
      */
-    Map<Ip, Set<BgpNeighbor>> localAddresses = new HashMap<>();
-    MutableNetwork<BgpNeighbor, BgpSession> graph =
+    Map<Ip, Set<BgpPeerConfig>> localAddresses = new HashMap<>();
+    MutableNetwork<BgpPeerConfig, BgpSession> graph =
         NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build();
     for (Configuration node : configurations.values()) {
       String hostname = node.getHostname();
@@ -1061,8 +1063,8 @@ public class CommonUtil {
           // nothing to do if no bgp process on this VRF
           continue;
         }
-        for (BgpNeighbor bgpNeighbor : proc.getNeighbors().values()) {
-          Ip localAddress = bgpNeighbor.getLocalIp();
+        for (BgpPeerConfig bgpPeerConfig : proc.getNeighbors().values()) {
+          Ip localAddress = bgpPeerConfig.getLocalIp();
 
           /*
            * Do these checks as a short-circuit to avoid extra reachability checks.
@@ -1077,24 +1079,24 @@ public class CommonUtil {
             // Local address is not owned by anybody
             continue;
           }
-          graph.addNode(bgpNeighbor);
+          graph.addNode(bgpPeerConfig);
 
           // Add this neighbor as owner of its local address
           localAddresses
               .computeIfAbsent(
                   localAddress, k -> Collections.newSetFromMap(new IdentityHashMap<>()))
-              .add(bgpNeighbor);
+              .add(bgpPeerConfig);
         }
       }
     }
 
     // Second pass: add edges to the graph
-    for (BgpNeighbor neighbor : graph.nodes()) {
+    for (BgpPeerConfig neighbor : graph.nodes()) {
       if (neighbor.getDynamic()) {
         // Passive end of the peering cannot initiate a connection
         continue;
       }
-      Set<BgpNeighbor> candidates = localAddresses.get(neighbor.getAddress());
+      Set<BgpPeerConfig> candidates = localAddresses.get(neighbor.getAddress());
       if (candidates == null) {
         // Check maybe it's trying to reach a dynamic neighbor
         candidates = localAddresses.get(Ip.AUTO);
@@ -1113,7 +1115,7 @@ public class CommonUtil {
       }
       long localLocalAs = neighbor.getLocalAs();
       long localRemoteAs = neighbor.getRemoteAs();
-      for (BgpNeighbor candidateNeighbor : candidates) {
+      for (BgpPeerConfig candidateNeighbor : candidates) {
         long remoteLocalAs = candidateNeighbor.getLocalAs();
         long remoteRemoteAs = candidateNeighbor.getRemoteAs();
         if (neighbor.getLocalIp() == null
@@ -1578,6 +1580,14 @@ public class CommonUtil {
         .collect(
             ImmutableSortedMap.toImmutableSortedMap(
                 Comparator.naturalOrder(), keyFunction, valueFunction));
+  }
+
+  public static <T, K extends Comparable<? super K>, V>
+      Collector<T, ?, ImmutableSortedMap<K, V>> toImmutableSortedMap(
+          Function<? super T, ? extends K> keyFunction,
+          Function<? super T, ? extends V> valueFunction) {
+    return ImmutableSortedMap.toImmutableSortedMap(
+        Comparator.naturalOrder(), keyFunction, valueFunction);
   }
 
   public static <E, K extends Comparable<? super K>, V> SortedMap<K, V> toImmutableSortedMap(

@@ -21,8 +21,7 @@ public final class IsisInterfaceLevelSettingsMatchers {
    * Provides a matcher that matches when the {@link IsisInterfaceLevelSettings}'s cost is {@code
    * expectedCost}.
    */
-  public static @Nonnull Matcher<IsisInterfaceLevelSettings> hasCost(
-      @Nullable Integer expectedCost) {
+  public static @Nonnull Matcher<IsisInterfaceLevelSettings> hasCost(@Nullable Long expectedCost) {
     return new HasCost(equalTo(expectedCost));
   }
 
@@ -31,7 +30,7 @@ public final class IsisInterfaceLevelSettingsMatchers {
    * IsisInterfaceLevelSettings}'s cost.
    */
   public static @Nonnull Matcher<IsisInterfaceLevelSettings> hasCost(
-      @Nonnull Matcher<? super Integer> subMatcher) {
+      @Nonnull Matcher<? super Long> subMatcher) {
     return new HasCost(subMatcher);
   }
 

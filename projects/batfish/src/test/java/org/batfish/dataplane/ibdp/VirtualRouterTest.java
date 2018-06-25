@@ -8,7 +8,9 @@ import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasNetwork
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasOriginatorIp;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasSourceIp;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasType;
+import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.initIsisTopology;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -23,7 +25,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.graph.ImmutableNetwork;
 import com.google.common.graph.Network;
+import com.google.common.graph.NetworkBuilder;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -40,7 +44,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
@@ -51,6 +55,13 @@ import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IsisInterfaceLevelSettings;
+import org.batfish.datamodel.IsisInterfaceMode;
+import org.batfish.datamodel.IsisInterfaceSettings;
+import org.batfish.datamodel.IsisLevel;
+import org.batfish.datamodel.IsisLevelSettings;
+import org.batfish.datamodel.IsisProcess;
+import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.LocalRoute;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.NetworkFactory;
@@ -81,6 +92,8 @@ import org.batfish.dataplane.rib.RibDelta;
 import org.batfish.dataplane.rib.RibDelta.Builder;
 import org.batfish.dataplane.rib.RouteAdvertisement;
 import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
+import org.batfish.dataplane.topology.IsisEdge;
+import org.batfish.dataplane.topology.IsisNode;
 import org.batfish.main.BatfishTestUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,7 +122,7 @@ public class VirtualRouterTest {
   private static final Ip TEST_NEXT_HOP_IP2 = new Ip("2.3.4.5");
   private static final String TEST_VIRTUAL_ROUTER_NAME = "testvirtualrouter";
 
-  private BgpNeighbor.Builder _bgpNeighborBuilder;
+  private BgpPeerConfig.Builder _bgpNeighborBuilder;
   private BgpRoute.Builder _bgpRouteBuilder;
   private Statement _exitAcceptStatement = Statements.ExitAccept.toStaticStatement();
   private Statement _exitRejectStatement = Statements.ExitReject.toStaticStatement();
@@ -753,8 +766,9 @@ public class VirtualRouterTest {
 
     Map<String, Configuration> configs =
         ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration());
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
+    Network<IsisNode, IsisEdge> isisTopology = initIsisTopology(configs, topology);
 
     Map<String, Node> nodes = ImmutableMap.of("r1", n1, "r2", n2);
     Map<String, VirtualRouter> vrs =
@@ -769,14 +783,15 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(Configuration.DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology);
+          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, isisTopology);
     }
-    // Assert that queues are empty as there is no OSPF or BGP processes
+    // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
         .forEach(
             vr -> {
-              assertThat(vr._bgpIncomingRoutes, is(notNullValue()));
-              assertThat(vr._ospfExternalIncomingRoutes, is(notNullValue()));
+              assertThat(vr._bgpIncomingRoutes, anEmptyMap());
+              assertThat(vr._isisIncomingRoutes, anEmptyMap());
+              assertThat(vr._ospfExternalIncomingRoutes, anEmptyMap());
             });
 
     // Set bgp
@@ -793,7 +808,7 @@ public class VirtualRouterTest {
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
           .get(Configuration.DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology);
+          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, isisTopology);
     }
     // Assert that queues are initialized
     vrs.values()
@@ -803,6 +818,95 @@ public class VirtualRouterTest {
               // TODO: change test init for this to work
               //              assertThat(vr._bgpIncomingRoutes.values(), hasSize(1));
             });
+  }
+
+  @Test
+  public void testInitIsisQueuesAndDeltaBuilders() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    IsisLevelSettings levelSettings = IsisLevelSettings.builder().build();
+    IsisProcess.Builder isb =
+        IsisProcess.builder().setLevel1(levelSettings).setLevel2(levelSettings);
+    IsisInterfaceLevelSettings isisInterfaceLevelSettings =
+        IsisInterfaceLevelSettings.builder().setMode(IsisInterfaceMode.ACTIVE).build();
+    IsisInterfaceSettings isisInterfaceSettings =
+        IsisInterfaceSettings.builder()
+            .setPointToPoint(true)
+            .setLevel1(isisInterfaceLevelSettings)
+            .setLevel2(isisInterfaceLevelSettings)
+            .build();
+    Interface.Builder ib = nf.interfaceBuilder().setActive(true);
+
+    Configuration c1 = cb.build();
+    Vrf v1 = vb.setOwner(c1).build();
+    // Area: 0001, SystemID: 0100.0000.0000
+    isb.setVrf(v1).setNetAddress(new IsoAddress("49.0001.0100.0000.0000.00")).build();
+    Interface i1 =
+        ib.setOwner(c1).setVrf(v1).setAddress(new InterfaceAddress("10.0.0.0/31")).build();
+
+    Configuration c2 = cb.build();
+    Vrf v2 = vb.setOwner(c2).build();
+    // Area: 0001, SystemID: 0100.0000.0001
+    isb.setVrf(v2).setNetAddress(new IsoAddress("49.0001.0100.0000.0001.00")).build();
+    Interface i2 =
+        ib.setOwner(c2).setVrf(v2).setAddress(new InterfaceAddress("10.0.0.1/31")).build();
+
+    Map<String, Configuration> configs = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
+    Topology topology = synthesizeTopology(configs);
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
+        ImmutableNetwork.copyOf(
+            NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
+    Map<String, Node> nodes =
+        ImmutableMap.of(c1.getName(), new Node(c1), c2.getName(), new Node(c2));
+    Map<String, VirtualRouter> vrs =
+        nodes
+            .values()
+            .stream()
+            .map(n -> n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME))
+            .collect(
+                ImmutableMap.toImmutableMap(
+                    vr -> vr.getConfiguration().getHostname(), Function.identity()));
+    Network<IsisNode, IsisEdge> initialIsisTopology = initIsisTopology(configs, topology);
+    vrs.values()
+        .forEach(
+            vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, initialIsisTopology));
+
+    // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
+    vrs.values()
+        .forEach(
+            vr -> {
+              assertThat(vr._isisIncomingRoutes, anEmptyMap());
+            });
+
+    // Set IS-IS on interfaces
+    i1.setIsis(isisInterfaceSettings);
+    i2.setIsis(isisInterfaceSettings);
+    Network<IsisNode, IsisEdge> updatedIsisTopology = initIsisTopology(configs, topology);
+
+    // Re-run
+    vrs.values()
+        .forEach(
+            vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, updatedIsisTopology));
+
+    // Assert that queues are initialized
+    assertThat(
+        vrs.get(c1.getName())._isisIncomingRoutes.keySet(),
+        equalTo(
+            ImmutableSet.of(
+                new IsisEdge(
+                    IsisLevel.LEVEL_1_2,
+                    new IsisNode(c2.getHostname(), i2.getName()),
+                    new IsisNode(c1.getHostname(), i1.getName())))));
+    assertThat(
+        vrs.get(c2.getName())._isisIncomingRoutes.keySet(),
+        equalTo(
+            ImmutableSet.of(
+                new IsisEdge(
+                    IsisLevel.LEVEL_1_2,
+                    new IsisNode(c1.getHostname(), i1.getName()),
+                    new IsisNode(c2.getHostname(), i2.getName())))));
   }
 
   /** Test that the routes are exact route matches are removed from the RIB by default */

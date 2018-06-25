@@ -194,12 +194,11 @@ public enum RoutingProtocol {
         switch (vendor) {
           case ALCATEL_AOS:
             break;
-          case ARISTA:
-            break;
           case AWS:
             return 115;
           case CADANT:
             return 117;
+          case ARISTA:
           case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
@@ -236,12 +235,11 @@ public enum RoutingProtocol {
         switch (vendor) {
           case ALCATEL_AOS:
             break;
-          case ARISTA:
-            break;
           case AWS:
             return 115;
           case CADANT:
             return 118;
+          case ARISTA:
           case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
@@ -278,12 +276,11 @@ public enum RoutingProtocol {
         switch (vendor) {
           case ALCATEL_AOS:
             break;
-          case ARISTA:
-            break;
           case AWS:
             return 115;
           case CADANT:
             return 115;
+          case ARISTA:
           case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:
@@ -320,12 +317,11 @@ public enum RoutingProtocol {
         switch (vendor) {
           case ALCATEL_AOS:
             break;
-          case ARISTA:
-            break;
           case AWS:
             return 115;
           case CADANT:
             return 116;
+          case ARISTA:
           case ARUBAOS: // TODO: verify https://github.com/batfish/batfish/issues/1548
           case CISCO_ASA:
           case CISCO_IOS:

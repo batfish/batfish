@@ -32,7 +32,7 @@ import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.BgpAuthenticationSettings;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -319,7 +319,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpNeighbor neighbor = new BgpNeighbor(prefix, _c, ig.getDynamic());
+      BgpPeerConfig neighbor = new BgpPeerConfig(prefix, _c, ig.getDynamic());
       neighbor.setVrf(vrfName);
 
       // route reflection
@@ -584,7 +584,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   private IsisProcess createIsisProcess(RoutingInstance routingInstance, IsoAddress netAddress) {
-    IsisProcess newProc = new IsisProcess();
+    IsisProcess.Builder newProc = IsisProcess.builder();
     newProc.setNetAddress(netAddress);
     IsisSettings settings = _defaultRoutingInstance.getIsisSettings();
     for (String policyName : settings.getExportPolicies()) {
@@ -609,7 +609,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     processIsisInterfaceSettings(routingInstance, settings, level1, level2);
     newProc.setOverloadTimeout(settings.getOverloadTimeout());
     newProc.setReferenceBandwidth(settings.getReferenceBandwidth());
-    return newProc;
+    return newProc.build();
   }
 
   private void processIsisInterfaceSettings(
@@ -656,24 +656,22 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private org.batfish.datamodel.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
       IsisInterfaceSettings interfaceSettings, IsisInterfaceLevelSettings settings) {
-    org.batfish.datamodel.IsisInterfaceLevelSettings newSettings =
-        new org.batfish.datamodel.IsisInterfaceLevelSettings();
-    newSettings.setCost(settings.getMetric());
-    newSettings.setHelloAuthenticationKey(settings.getHelloAuthenticationKey());
-    newSettings.setHelloAuthenticationType(settings.getHelloAuthenticationType());
-    newSettings.setHelloInterval(settings.getHelloInterval());
-    newSettings.setHoldTime(settings.getHoldTime());
-    newSettings.setMode(
-        interfaceSettings.getPassive() ? IsisInterfaceMode.PASSIVE : IsisInterfaceMode.ACTIVE);
-    return newSettings;
+    return org.batfish.datamodel.IsisInterfaceLevelSettings.builder()
+        .setCost(settings.getMetric())
+        .setHelloAuthenticationKey(settings.getHelloAuthenticationKey())
+        .setHelloAuthenticationType(settings.getHelloAuthenticationType())
+        .setHelloInterval(settings.getHelloInterval())
+        .setHoldTime(settings.getHoldTime())
+        .setMode(
+            interfaceSettings.getPassive() ? IsisInterfaceMode.PASSIVE : IsisInterfaceMode.ACTIVE)
+        .build();
   }
 
   private org.batfish.datamodel.IsisLevelSettings toIsisLevelSettings(
       IsisLevelSettings levelSettings) {
-    org.batfish.datamodel.IsisLevelSettings newLevelSettings =
-        new org.batfish.datamodel.IsisLevelSettings();
-    newLevelSettings.setWideMetricsOnly(levelSettings.getWideMetricsOnly());
-    return newLevelSettings;
+    return org.batfish.datamodel.IsisLevelSettings.builder()
+        .setWideMetricsOnly(levelSettings.getWideMetricsOnly())
+        .build();
   }
 
   private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
