@@ -42,7 +42,11 @@ INACTIVE
 
 LINE_COMMENT
 :
-   '#' F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
+    (
+        '#'
+        | '!'
+    )
+    F_NonNewlineChar* F_NewlineChar+ -> channel(HIDDEN)
 ;
 
 MULTILINE_COMMENT

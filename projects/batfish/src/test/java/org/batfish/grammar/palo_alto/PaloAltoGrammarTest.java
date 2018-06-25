@@ -152,6 +152,14 @@ public class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testNestedConfigLineComments() throws IOException {
+    String hostname = "nested-config-line-comments";
+
+    // Confirm extraction works for nested configs even in the presence of line comments
+    assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
   public void testNestedConfigLineMap() throws IOException {
     String hostname = "nested-config";
     Flattener flattener =
