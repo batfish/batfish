@@ -40,7 +40,7 @@ public class SmtReachabilityTwoLinkTest {
 
   /**
    * Test that with one failure, both links between the two nodes are down, so no _dstIp is
-   * reachable from the source.
+   * reachable from the source. The reachability property is false under 1 failure.
    */
   @Test
   public void testOneFailure() {
@@ -59,8 +59,12 @@ public class SmtReachabilityTwoLinkTest {
   }
 
   /**
-   * Negation of the above test, i.e. verify unreachability under 1 failure. False, because
-   * failures=1 means "at most 1 failure". Reachability holds under 0 failures.
+   * Negation of the above test, i.e. verify unreachability for all failure scenarios up to 1 link
+   * (aka, unreachability both in 0 failures or 1 failures). False, because reachability holds under
+   * 0 failures.
+   *
+   * <p>This test demonstrates that the negate flag does not negate the entire query. Otherwise,
+   * they could not both be false.
    */
   @Test
   public void testOneFailure_negate() {
