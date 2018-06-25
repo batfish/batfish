@@ -59,7 +59,7 @@ public final class IsisEdge implements Comparable<IsisEdge> {
     Vrf vrf1 = iface1.getVrf();
     IsisProcess proc1 = vrf1.getIsisProcess();
     if (proc1 == null) {
-      return null;
+      return empty();
     }
     IsisInterfaceSettings is1 = iface1.getIsis();
     if (is1 == null) {

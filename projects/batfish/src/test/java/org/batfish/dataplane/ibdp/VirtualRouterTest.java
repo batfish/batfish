@@ -829,13 +829,13 @@ public class VirtualRouterTest {
     IsisLevelSettings levelSettings = IsisLevelSettings.builder().build();
     IsisProcess.Builder isb =
         IsisProcess.builder().setLevel1(levelSettings).setLevel2(levelSettings);
-    IsisInterfaceLevelSettings isisInterfaceLevel1Settings =
+    IsisInterfaceLevelSettings isisInterfaceLevelSettings =
         IsisInterfaceLevelSettings.builder().setMode(IsisInterfaceMode.ACTIVE).build();
     IsisInterfaceSettings isisInterfaceSettings =
         IsisInterfaceSettings.builder()
             .setPointToPoint(true)
-            .setLevel1(isisInterfaceLevel1Settings)
-            .setLevel2(isisInterfaceLevel1Settings)
+            .setLevel1(isisInterfaceLevelSettings)
+            .setLevel2(isisInterfaceLevelSettings)
             .build();
     Interface.Builder ib = nf.interfaceBuilder().setActive(true);
 
