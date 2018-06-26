@@ -91,6 +91,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.difflib.algorithm.DiffException;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.io.File;
@@ -1749,5 +1750,21 @@ public class ClientTest {
   private void validateTypeWithInvalidInput(String input, String expectedMessage, Type type)
       throws IOException {
     validateTypeWithInvalidInput(input, BatfishException.class, expectedMessage, type);
+  }
+
+  @Test
+  public void getPatch() throws DiffException {
+    String expected = "1\n2\n3";
+    String actual = "1\n2";
+
+    assertThat(
+        Client.getPatch(expected, actual, "expected.txt", "actual.txt"),
+        equalTo(
+            "--- expected.txt\n"
+                + "+++ actual.txt\n"
+                + "@@ -1,3 +1,2 @@\n"
+                + " 1\n"
+                + " 2\n"
+                + "-3"));
   }
 }

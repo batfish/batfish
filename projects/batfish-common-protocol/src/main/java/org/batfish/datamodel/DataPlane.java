@@ -9,7 +9,7 @@ import java.util.SortedSet;
 
 public interface DataPlane extends Serializable {
 
-  Network<BgpNeighbor, BgpSession> getBgpTopology();
+  Network<BgpPeerConfig, BgpSession> getBgpTopology();
 
   Map<String, Configuration> getConfigurations();
 

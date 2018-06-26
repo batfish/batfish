@@ -6,6 +6,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.difflib.DiffUtils;
+import com.github.difflib.UnifiedDiffUtils;
+import com.github.difflib.algorithm.DiffException;
+import com.github.difflib.patch.Patch;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Throwables;
 import com.google.common.collect.HashMultimap;
@@ -50,8 +54,10 @@ import java.util.TreeSet;
 import java.util.UUID;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.io.output.WriterOutputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.Command.TestComparisonMode;
 import org.batfish.client.answer.LoadQuestionAnswerElement;
 import org.batfish.client.config.Settings;
@@ -3154,6 +3160,28 @@ public class Client extends AbstractClient implements IClient {
     return _workHelper.syncTestrigsUpdateSettings(pluginId, _currContainerName, settings);
   }
 
+  /**
+   * Computes a unified diff of the input strings, returning the empty string if the {@code
+   * expected} and {@code actual} are equal.
+   */
+  @Nonnull
+  @VisibleForTesting
+  static String getPatch(
+      String expected, String actual, String expectedFileName, String actualFileName)
+      throws DiffException {
+    List<String> referenceLines = Arrays.asList(expected.split("\n"));
+    List<String> testLines = Arrays.asList(actual.split("\n"));
+    Patch<String> patch = DiffUtils.diff(referenceLines, testLines);
+    if (patch.getDeltas().isEmpty()) {
+      return "";
+    } else {
+      List<String> patchLines =
+          UnifiedDiffUtils.generateUnifiedDiff(
+              expectedFileName, actualFileName, referenceLines, patch, 3);
+      return StringUtils.join(patchLines, "\n");
+    }
+  }
+
   private boolean test(List<String> options, List<String> parameters) throws IOException {
     boolean failingTest = false;
     boolean missingReferenceFile = false;
@@ -3173,6 +3201,7 @@ public class Client extends AbstractClient implements IClient {
       failingTest = true;
     }
     String referenceFileName = parameters.get(0);
+    String testFileName = referenceFileName + ".testout";
 
     String[] testCommand =
         parameters.subList(testCommandIndex, parameters.size()).toArray(new String[0]);
@@ -3188,7 +3217,7 @@ public class Client extends AbstractClient implements IClient {
     }
 
     // Delete any existing testout filename before running this test.
-    Path failedTestoutPath = Paths.get(referenceFile + ".testout");
+    Path failedTestoutPath = Paths.get(testFileName);
     CommonUtil.deleteIfExists(failedTestoutPath);
 
     File testoutFile = Files.createTempFile("test", "out").toFile();
@@ -3199,8 +3228,9 @@ public class Client extends AbstractClient implements IClient {
     testoutWriter.close();
 
     String testOutput = CommonUtil.readFile(Paths.get(testoutFile.getAbsolutePath()));
-    boolean testPassed = false;
 
+    boolean testPassed = false;
+    String patch = "";
     if (failingTest) {
       if (!testCommandSucceeded) {
         // Command failed in the client.
@@ -3220,11 +3250,12 @@ public class Client extends AbstractClient implements IClient {
           testOutput = getTestComparisonString(testAnswer, comparisonMode);
         }
 
-        if (!missingReferenceFile) {
-          String referenceOutput = CommonUtil.readFile(Paths.get(referenceFileName));
-          if (referenceOutput.equals(testOutput)) {
-            testPassed = true;
-          }
+        String referenceOutput =
+            missingReferenceFile ? "" : CommonUtil.readFile(Paths.get(referenceFileName));
+
+        patch = getPatch(referenceOutput, testOutput, referenceFileName, testFileName);
+        if (patch.isEmpty()) {
+          testPassed = true;
         }
       } catch (JsonProcessingException e) {
         _logger.errorf(
@@ -3235,20 +3266,13 @@ public class Client extends AbstractClient implements IClient {
       }
     }
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("'" + testCommand[0]);
-    for (int i = 1; i < testCommand.length; i++) {
-      sb.append(" " + testCommand[i]);
-    }
-    sb.append("'");
-    String testCommandText = sb.toString();
-
     _logger.outputf(
-        "Test [%s]: %s %s: %s\n",
+        "Test [%s]: %s '%s': %s\n%s",
         comparisonMode,
-        testCommandText,
+        StringUtils.join(testCommand, " "),
         failingTest ? "results in error as expected" : "matches " + referenceFileName,
-        testPassed ? "Pass" : "Fail");
+        testPassed ? "Pass" : "Fail",
+        testPassed ? "" : patch + "\n");
     if (!testPassed) {
       CommonUtil.writeFile(failedTestoutPath, testOutput);
       _logger.outputf("Copied output to %s\n", failedTestoutPath);

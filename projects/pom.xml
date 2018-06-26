@@ -55,11 +55,12 @@
     <commons-exec.version>1.3</commons-exec.version>
     <commons-io.version>2.4</commons-io.version>
     <commons-lang3.version>3.7</commons-lang3.version>
+    <diffutils.version>2.2</diffutils.version>
     <errorprone.version>2.0.18</errorprone.version>
     <grizzly.version>2.3.18</grizzly.version>
     <guava.version>22.0</guava.version>
     <guava-eea.version>0.0.1</guava-eea.version>
-    <jackson.version>2.9.0</jackson.version>
+    <jackson.version>2.9.6</jackson.version>
     <java-hamcrest.version>2.0.0.0</java-hamcrest.version>
     <javax-annotation-api.version>1.2</javax-annotation-api.version>
     <jaeger.version>0.21.0</jaeger.version>
@@ -89,10 +90,14 @@
       This can be done via:
       mvn -Declipse.workspace="/path/to/eclipse/workspace" eclipse:configure-workspace
     -->
-    <m2e.eea.annotationpath.jre>M2_REPO/org/lastnpe/eea/jdk-eea/${jdk-eea.version}/jdk-eea-${jdk-eea.version}.jar</m2e.eea.annotationpath.jre>
+    <m2e.eea.annotationpath.jre>
+      M2_REPO/org/lastnpe/eea/jdk-eea/${jdk-eea.version}/jdk-eea-${jdk-eea.version}.jar
+    </m2e.eea.annotationpath.jre>
     <!-- For now we only use guava annotations. Only one jar can be specified, so this is all that is possible
          until resolution of https://github.com/lastnpe/eclipse-null-eea-augments/issues/51 -->
-    <m2e.eea.annotationpath.maven>M2_REPO/org/lastnpe/eea/guava-eea/${guava-eea.version}/guava-eea-${guava-eea.version}.jar</m2e.eea.annotationpath.maven>
+    <m2e.eea.annotationpath.maven>
+      M2_REPO/org/lastnpe/eea/guava-eea/${guava-eea.version}/guava-eea-${guava-eea.version}.jar
+    </m2e.eea.annotationpath.maven>
   </properties>
 
 
@@ -103,7 +108,6 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <cpd.skip>true</cpd.skip>
         <checkstyle.skip>true</checkstyle.skip>
         <findbugs.skip>true</findbugs.skip>
         <mdep.analyze.skip>true</mdep.analyze.skip>
@@ -208,16 +212,6 @@
               <id>check</id>
               <goals>
                 <goal>check</goal>
-              </goals>
-              <configuration>
-                <failOnViolation>true</failOnViolation>
-              </configuration>
-            </execution>
-
-            <execution>
-              <id>cpd-check</id>
-              <goals>
-                <goal>cpd-check</goal>
               </goals>
               <configuration>
                 <failOnViolation>true</failOnViolation>
@@ -578,6 +572,12 @@
         <version>${jackson.version}</version>
         <scope>import</scope>
         <type>pom</type>
+      </dependency>
+
+      <dependency>
+        <groupId>com.github.wumpz</groupId>
+        <artifactId>diffutils</artifactId>
+        <version>${diffutils.version}</version>
       </dependency>
 
       <dependency>

@@ -16,9 +16,9 @@ import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /** Represents a configured BGP peering, at the control plane level */
 @JsonSchemaDescription("A configured e/iBGP peering relationship")
-public final class BgpNeighbor extends ComparableStructure<Prefix> {
+public final class BgpPeerConfig extends ComparableStructure<Prefix> {
 
-  public static class Builder extends NetworkFactoryBuilder<BgpNeighbor> {
+  public static class Builder extends NetworkFactoryBuilder<BgpPeerConfig> {
     private Configuration _owner;
     private Ip _localIp;
     private Ip _peerIpAddress;
@@ -36,51 +36,51 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
     private boolean _dynamic = false;
 
     Builder(NetworkFactory networkFactory) {
-      super(networkFactory, BgpNeighbor.class);
+      super(networkFactory, BgpPeerConfig.class);
     }
 
     @Override
-    public BgpNeighbor build() {
-      BgpNeighbor bgpNeighbor;
+    public BgpPeerConfig build() {
+      BgpPeerConfig bgpPeerConfig;
       Ip peerIpAddress = _peerIpAddress != null ? _peerIpAddress : new Ip(generateLong());
-      bgpNeighbor = new BgpNeighbor(peerIpAddress, _owner, _dynamic);
+      bgpPeerConfig = new BgpPeerConfig(peerIpAddress, _owner, _dynamic);
       if (_clusterId != null) {
-        bgpNeighbor.setClusterId(_clusterId);
+        bgpPeerConfig.setClusterId(_clusterId);
       }
       if (_localIp != null) {
-        bgpNeighbor.setLocalIp(_localIp);
+        bgpPeerConfig.setLocalIp(_localIp);
       }
       if (_localAs != null) {
-        bgpNeighbor.setLocalAs(_localAs);
+        bgpPeerConfig.setLocalAs(_localAs);
       }
       if (_remoteAs != null) {
-        bgpNeighbor.setRemoteAs(_remoteAs);
+        bgpPeerConfig.setRemoteAs(_remoteAs);
       }
       if (_bgpProcess != null) {
-        _bgpProcess.getNeighbors().put(bgpNeighbor.getPrefix(), bgpNeighbor);
+        _bgpProcess.getNeighbors().put(bgpPeerConfig.getPrefix(), bgpPeerConfig);
       }
       if (_exportPolicy != null) {
-        bgpNeighbor.setExportPolicy(_exportPolicy);
+        bgpPeerConfig.setExportPolicy(_exportPolicy);
       }
       if (_advertiseInactive != null) {
-        bgpNeighbor.setAdvertiseInactive(_advertiseInactive);
+        bgpPeerConfig.setAdvertiseInactive(_advertiseInactive);
       }
       if (_advertiseExternal != null) {
-        bgpNeighbor.setAdvertiseExternal(_advertiseExternal);
+        bgpPeerConfig.setAdvertiseExternal(_advertiseExternal);
       }
       if (_additionalPathSend != null) {
-        bgpNeighbor.setAdditionalPathsSend(_additionalPathSend);
+        bgpPeerConfig.setAdditionalPathsSend(_additionalPathSend);
       }
       if (_additionalPathSelectAll != null) {
-        bgpNeighbor.setAdditionalPathsSelectAll(_additionalPathSelectAll);
+        bgpPeerConfig.setAdditionalPathsSelectAll(_additionalPathSelectAll);
       }
       if (_routeReflectorClient != null) {
-        bgpNeighbor.setRouteReflectorClient(_routeReflectorClient);
+        bgpPeerConfig.setRouteReflectorClient(_routeReflectorClient);
       }
       if (_vrf != null) {
-        bgpNeighbor.setVrf(_vrf.getName());
+        bgpPeerConfig.setVrf(_vrf.getName());
       }
-      return bgpNeighbor;
+      return bgpPeerConfig;
     }
 
     public Builder setOwner(Configuration owner) {
@@ -292,12 +292,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   private String _vrf;
 
   @SuppressWarnings("unused")
-  private BgpNeighbor() {
+  private BgpPeerConfig() {
     this(null);
   }
 
   /**
-   * Constructs a BgpNeighbor with the given peer ip address for {@code address} and owner for
+   * Constructs a BgpPeerConfig with the given peer ip address for {@code address} and owner for
    * {@code owner}. Allows specifying whether the end of this session is passive with {@code
    * passive}
    *
@@ -305,12 +305,12 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
    * @param owner The owner of this neighbor
    * @param dynamic Whether the peering is passive (a.k.a dynamic)
    */
-  public BgpNeighbor(Ip address, Configuration owner, boolean dynamic) {
+  public BgpPeerConfig(Ip address, Configuration owner, boolean dynamic) {
     this(new Prefix(address, Prefix.MAX_PREFIX_LENGTH), owner, dynamic);
   }
 
   @JsonCreator
-  public BgpNeighbor(@JsonProperty(PROP_NAME) Prefix prefix) {
+  public BgpPeerConfig(@JsonProperty(PROP_NAME) Prefix prefix) {
     super(prefix);
     _exportPolicySources = new TreeSet<>();
     _generatedRoutes = new LinkedHashSet<>();
@@ -319,14 +319,14 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   }
 
   /**
-   * Constructs a BgpNeighbor with the given peer dynamic ip range for {@code prefix} and owner for
-   * {@code owner}
+   * Constructs a BgpPeerConfig with the given peer dynamic ip range for {@code prefix} and owner
+   * for {@code owner}
    *
    * @param prefix The dynamic ip range of this neighbor
    * @param owner The owner of this neighbor
    * @param dynamic Whether the peering is passive (a.k.a dynamic)
    */
-  public BgpNeighbor(Prefix prefix, Configuration owner, boolean dynamic) {
+  public BgpPeerConfig(Prefix prefix, Configuration owner, boolean dynamic) {
     this(prefix);
     _owner = owner;
     _dynamic = dynamic;
@@ -336,10 +336,10 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
   public boolean equals(Object o) {
     if (o == this) {
       return true;
-    } else if (!(o instanceof BgpNeighbor)) {
+    } else if (!(o instanceof BgpPeerConfig)) {
       return false;
     }
-    BgpNeighbor other = (BgpNeighbor) o;
+    BgpPeerConfig other = (BgpPeerConfig) o;
     if (this._advertiseExternal != other._advertiseExternal) {
       return false;
     }
@@ -736,6 +736,6 @@ public final class BgpNeighbor extends ComparableStructure<Prefix> {
 
   @Override
   public String toString() {
-    return "BgpNeighbor<Prefix:" + _key + ", AS:" + _remoteAs + ">";
+    return "BgpPeerConfig<Prefix:" + _key + ", AS:" + _remoteAs + ">";
   }
 }

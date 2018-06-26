@@ -221,6 +221,10 @@ public final class VendorConfigurationFormatDetector {
         || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
         || fileTextMatches(JUNIPER_SNMP_PATTERN)) {
       return ConfigurationFormat.JUNIPER;
+    } else if (fileTextMatches(RANCID_JUNIPER_PATTERN)) {
+      return (_fileText.contains("{"))
+          ? ConfigurationFormat.JUNIPER
+          : ConfigurationFormat.FLAT_JUNIPER;
     }
     return null;
   }
