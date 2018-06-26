@@ -154,7 +154,7 @@ import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.Configuration;
@@ -1486,7 +1486,7 @@ public class CiscoGrammarTest {
             _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations();
     Map<Ip, Set<String>> ipOwners = CommonUtil.computeIpNodeOwners(configurations, true);
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         CommonUtil.initBgpTopology(configurations, ipOwners, false);
     Configuration r1 = configurations.get("r1");
     Configuration r2 = configurations.get("r2");

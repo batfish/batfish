@@ -5,7 +5,6 @@ import static com.google.common.base.Strings.isNullOrEmpty;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
@@ -305,8 +304,7 @@ public class WorkMgr extends AbstractCoordinator {
       case NODE:
         {
           checkArgument(
-              !Strings.isNullOrEmpty(testrig),
-              "Testrig name should be supplied for 'NODE' autoCompletion");
+              !isNullOrEmpty(testrig), "Testrig name should be supplied for 'NODE' autoCompletion");
           List<AutocompleteSuggestion> suggestions =
               NodesSpecifier.autoComplete(
                   query, getNodes(container, testrig), getNodeRolesData(container));

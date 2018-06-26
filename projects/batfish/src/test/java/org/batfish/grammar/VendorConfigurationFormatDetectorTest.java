@@ -49,6 +49,40 @@ public class VendorConfigurationFormatDetectorTest {
   }
 
   @Test
+  public void testJuniper() {
+    String firewall = "firewall {\n}\n";
+    String policyOptions = "policy-options {\n}\n";
+    String rancid = "!RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n";
+    String snmp = "snmp {\n}\n";
+
+    String flatHostname = "#\nset system host-name blah";
+    String flatRancid = "!RANCID-CONTENT-TYPE: juniper\n!\nset blah\n";
+    String flatSet = "#\nset apply-groups blah\n";
+    String flattened = "####BATFISH FLATTENED JUNIPER CONFIG####\n";
+
+    String flatSwitch = "set hostname\n";
+
+    /* Confirm hierarchical configs are correctly identified */
+    for (String fileText : ImmutableList.of(firewall, policyOptions, rancid, snmp)) {
+      assertThat(
+          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
+          equalTo(ConfigurationFormat.JUNIPER));
+    }
+
+    /* Confirm flat (set-style) configs are correctly identified */
+    for (String fileText : ImmutableList.of(flatHostname, flatRancid, flatSet, flattened)) {
+      assertThat(
+          VendorConfigurationFormatDetector.identifyConfigurationFormat(fileText),
+          equalTo(ConfigurationFormat.FLAT_JUNIPER));
+    }
+
+    /* Confirm Juniper switch format is detected */
+    assertThat(
+        VendorConfigurationFormatDetector.identifyConfigurationFormat(flatSwitch),
+        equalTo(ConfigurationFormat.JUNIPER_SWITCH));
+  }
+
+  @Test
   public void testNxos() {
     String n7000 = "boot system bootflash:n7000-s2-dk9.7.2.1.D1.1.bin sup-2 \n";
     String nxos = "boot nxos bootflash:nxos.7.0.3.I4.7.bin \n";

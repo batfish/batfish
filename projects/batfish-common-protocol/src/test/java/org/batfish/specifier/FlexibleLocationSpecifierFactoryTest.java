@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import static org.batfish.specifier.FlexibleLocationSpecifierFactory.parseSpecifier;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.regex.Pattern;
@@ -23,20 +24,26 @@ public class FlexibleLocationSpecifierFactoryTest {
   }
 
   @Test
-  public void testBuilderLocationSpecifierTyped() {
+  public void testBuilderLocationSpecifier() {
     FlexibleLocationSpecifierFactory factory = new FlexibleLocationSpecifierFactory();
     assertThat(
-        factory.buildLocationSpecifierTyped(""),
-        equalTo(new NameRegexInterfaceLinkLocationSpecifier(Pattern.compile(""))));
+        factory.buildLocationSpecifier(""),
+        equalTo(new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile(""))));
 
-    LocationSpecifier leaf = new NameRegexInterfaceLinkLocationSpecifier(_foo);
+    LocationSpecifier leaf = new NodeNameRegexInterfaceLinkLocationSpecifier(_foo);
     LocationSpecifier union1 = new UnionLocationSpecifier(leaf, leaf);
     LocationSpecifier union2 = new UnionLocationSpecifier(union1, leaf);
     LocationSpecifier union3 = new UnionLocationSpecifier(union2, leaf);
-    assertThat(factory.buildLocationSpecifierTyped("foo"), equalTo(leaf));
-    assertThat(factory.buildLocationSpecifierTyped("foo;foo"), equalTo(union1));
-    assertThat(factory.buildLocationSpecifierTyped("foo;foo;foo"), equalTo(union2));
-    assertThat(factory.buildLocationSpecifierTyped("foo;foo;foo;foo"), equalTo(union3));
+    assertThat(
+        factory.buildLocationSpecifier(null), is(AllInterfaceLinksLocationSpecifier.INSTANCE));
+    assertThat(factory.buildLocationSpecifier("foo"), equalTo(leaf));
+    assertThat(factory.buildLocationSpecifier("foo;foo"), equalTo(union1));
+    assertThat(factory.buildLocationSpecifier("foo;foo;foo"), equalTo(union2));
+    assertThat(factory.buildLocationSpecifier("foo;foo;foo;foo"), equalTo(union3));
+
+    // any nonnull input must be a String
+    exception.expect(IllegalArgumentException.class);
+    factory.buildLocationSpecifier(5);
   }
 
   @Test
@@ -45,14 +52,17 @@ public class FlexibleLocationSpecifierFactoryTest {
         new InterfaceClauseParser().parse("node=foo"),
         equalTo(new NodeNameRegexInterfaceLocationSpecifier(_foo)));
     assertThat(
+        new InterfaceClauseParser().parse("nodeRole:dim=foo"),
+        equalTo(new NodeRoleRegexInterfaceLocationSpecifier("dim", _foo)));
+    assertThat(
         new InterfaceClauseParser().parse("vrf=foo"),
         equalTo(new VrfNameRegexInterfaceLocationSpecifier(_foo)));
     assertThat(
-        new InterfaceClauseParser().parse("name=foo"),
+        new InterfaceClauseParser().parse("interface=foo"),
         equalTo(new NameRegexInterfaceLocationSpecifier(_foo)));
     assertThat(
         new InterfaceClauseParser().parse("foo"),
-        equalTo(new NameRegexInterfaceLocationSpecifier(_foo)));
+        equalTo(new NodeNameRegexInterfaceLocationSpecifier(_foo)));
   }
 
   @Test
@@ -76,16 +86,16 @@ public class FlexibleLocationSpecifierFactoryTest {
         new InterfaceLinkClauseParser().parse("vrf=foo"),
         equalTo(new VrfNameRegexInterfaceLinkLocationSpecifier(_foo)));
     assertThat(
-        new InterfaceLinkClauseParser().parse("name=foo"),
+        new InterfaceLinkClauseParser().parse("interface=foo"),
         equalTo(new NameRegexInterfaceLinkLocationSpecifier(_foo)));
     assertThat(
         new InterfaceLinkClauseParser().parse("foo"),
-        equalTo(new NameRegexInterfaceLinkLocationSpecifier(_foo)));
+        equalTo(new NodeNameRegexInterfaceLinkLocationSpecifier(_foo)));
   }
 
   @Test
   public void testParseSpecifier_intersection() {
-    LocationSpecifier leaf = new NameRegexInterfaceLinkLocationSpecifier(_foo);
+    LocationSpecifier leaf = new NodeNameRegexInterfaceLinkLocationSpecifier(_foo);
     LocationSpecifier intersection1 = new IntersectionLocationSpecifier(leaf, leaf);
     LocationSpecifier intersection2 = new IntersectionLocationSpecifier(intersection1, leaf);
     LocationSpecifier intersection3 = new IntersectionLocationSpecifier(intersection2, leaf);
@@ -95,23 +105,18 @@ public class FlexibleLocationSpecifierFactoryTest {
   }
 
   @Test
-  public void testParseSpecifier_tooManyColons() {
-    exception.expect(IllegalArgumentException.class);
-    parseSpecifier("a:b:c");
+  public void testParseSpecifier_colons() {
+    LocationSpecifier iface =
+        new NodeNameRegexInterfaceLinkLocationSpecifier(Pattern.compile("a:b:c"));
+    assertThat(parseSpecifier("a:b:c"), equalTo(iface));
   }
 
   @Test
   public void testParseSpecifier_type() {
-    LocationSpecifier iface = new NameRegexInterfaceLocationSpecifier(_foo);
-    LocationSpecifier ifaceLink = new NameRegexInterfaceLinkLocationSpecifier(_foo);
+    LocationSpecifier iface = new NodeNameRegexInterfaceLocationSpecifier(_foo);
+    LocationSpecifier ifaceLink = new NodeNameRegexInterfaceLinkLocationSpecifier(_foo);
     assertThat(parseSpecifier("interfaceLink:foo"), equalTo(ifaceLink));
     assertThat(parseSpecifier("interface:foo"), equalTo(iface));
     assertThat(parseSpecifier("foo"), equalTo(ifaceLink));
-  }
-
-  @Test
-  public void testParseSpecifier_unknownLocationType() {
-    exception.expect(IllegalArgumentException.class);
-    parseSpecifier("foo:bar");
   }
 }

@@ -4,7 +4,7 @@ import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Map;
 import javax.annotation.Nonnull;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
@@ -66,7 +66,7 @@ public class BgpProcessMatchers {
    * neighbor with specified prefix.
    */
   public static HasNeighbor hasNeighbor(
-      @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpNeighbor> subMatcher) {
+      @Nonnull Prefix prefix, @Nonnull Matcher<? super BgpPeerConfig> subMatcher) {
     return new HasNeighbor(prefix, subMatcher);
   }
 
@@ -75,7 +75,7 @@ public class BgpProcessMatchers {
    * neighbors.
    */
   public static HasNeighbors hasNeighbors(
-      @Nonnull Matcher<? super Map<Prefix, BgpNeighbor>> subMatcher) {
+      @Nonnull Matcher<? super Map<Prefix, BgpPeerConfig>> subMatcher) {
     return new HasNeighbors(subMatcher);
   }
 

@@ -1436,7 +1436,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // if (!config.getRoles().contains(inputRole)) {
     // continue;
     // }
-    // for (BgpNeighbor neighbor : config.getBgpProcess().getNeighbors()
+    // for (BgpPeerConfig neighbor : config.getBgpProcess().getNeighbors()
     // .values()) {
     // if (!neighbor.getRemoteAs().equals(stubAs)) {
     // continue;
@@ -1523,7 +1523,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     // stubInterface.setBandwidth(10E9d);
     //
     // // create neighbor within bgp process
-    // BgpNeighbor edgeNeighbor = new BgpNeighbor(prefix, stub);
+    // BgpPeerConfig edgeNeighbor = new BgpPeerConfig(prefix, stub);
     // edgeNeighbor.getOriginationPolicies()
     // .add(stubOriginationPolicy);
     // edgeNeighbor.setRemoteAs(edgeAs);

@@ -15,7 +15,7 @@ public class MockDataPlane implements DataPlane {
 
   public static class Builder {
 
-    private Network<BgpNeighbor, BgpSession> _bgpTopology;
+    private Network<BgpPeerConfig, BgpSession> _bgpTopology;
 
     private Map<String, Configuration> _configurations;
 
@@ -46,7 +46,7 @@ public class MockDataPlane implements DataPlane {
       return new MockDataPlane(this);
     }
 
-    public Builder setBgpTopology(Network<BgpNeighbor, BgpSession> bgpTopology) {
+    public Builder setBgpTopology(Network<BgpPeerConfig, BgpSession> bgpTopology) {
       _bgpTopology = bgpTopology;
       return this;
     }
@@ -83,7 +83,7 @@ public class MockDataPlane implements DataPlane {
     return new Builder();
   }
 
-  private final Network<BgpNeighbor, BgpSession> _bgpTopology;
+  private final Network<BgpPeerConfig, BgpSession> _bgpTopology;
 
   private final Map<String, Configuration> _configurations;
 
@@ -150,7 +150,7 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  public Network<BgpNeighbor, BgpSession> getBgpTopology() {
+  public Network<BgpPeerConfig, BgpSession> getBgpTopology() {
     return _bgpTopology;
   }
 

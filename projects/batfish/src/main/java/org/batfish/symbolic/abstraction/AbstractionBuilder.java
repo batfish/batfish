@@ -15,7 +15,7 @@ import java.util.Stack;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
@@ -470,7 +470,7 @@ class AbstractionBuilder {
 
     SortedSet<Interface> toRetain = new TreeSet<>();
     SortedSet<IpLink> ipNeighbors = new TreeSet<>();
-    SortedSet<BgpNeighbor> bgpNeighbors = new TreeSet<>();
+    SortedSet<BgpPeerConfig> bgpPeerConfigs = new TreeSet<>();
 
     List<GraphEdge> edges = _graph.getEdgeMap().get(conf.getName());
     for (GraphEdge ge : edges) {
@@ -483,9 +483,9 @@ class AbstractionBuilder {
           Ip end = ge.getEnd().getAddress().getIp();
           ipNeighbors.add(new IpLink(start, end));
         }
-        BgpNeighbor n = _graph.getEbgpNeighbors().get(ge);
+        BgpPeerConfig n = _graph.getEbgpNeighbors().get(ge);
         if (n != null) {
-          bgpNeighbors.add(n);
+          bgpPeerConfigs.add(n);
         }
       }
     }
@@ -554,12 +554,12 @@ class AbstractionBuilder {
         abstractBgp.setOriginationSpace(bgp.getOriginationSpace());
         // TODO: set bgp neighbors accordingly
         // Copy over neighbors
-        SortedMap<Prefix, BgpNeighbor> abstractBgpNeighbors = new TreeMap<>();
+        SortedMap<Prefix, BgpPeerConfig> abstractBgpNeighbors = new TreeMap<>();
         if (bgp.getNeighbors() != null) {
-          for (Entry<Prefix, BgpNeighbor> entry2 : bgp.getNeighbors().entrySet()) {
+          for (Entry<Prefix, BgpPeerConfig> entry2 : bgp.getNeighbors().entrySet()) {
             Prefix prefix = entry2.getKey();
-            BgpNeighbor neighbor = entry2.getValue();
-            if (bgpNeighbors.contains(neighbor)) {
+            BgpPeerConfig neighbor = entry2.getValue();
+            if (bgpPeerConfigs.contains(neighbor)) {
               abstractBgpNeighbors.put(prefix, neighbor);
             }
           }
