@@ -164,8 +164,8 @@ import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -1807,7 +1807,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
                 hasLifeTimeSeconds(86400))));
     // asserting the default values being set
@@ -1818,7 +1818,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
                 hasLifeTimeSeconds(86400))));
   }
@@ -1834,7 +1834,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
                 hasLifeTimeSeconds(14400))));
 
@@ -1846,7 +1846,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
                 hasLifeTimeSeconds(86400))));
   }
