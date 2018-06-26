@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /**
  * A {@link LocationSpecifierFactory} that parses a specification from a string. The goals are to be
@@ -21,7 +22,7 @@ import java.util.regex.Pattern;
  * Pattern      ::= [Specifier](;[Specifier])*
  * Specifier    ::= ([LocationType]:)?[Clause](,[Clause])*
  * Clause       ::= ([PropertyType]=)?[Regex]
- * PropertyType ::= node | vrf | name | nodeRole_[Dimension]
+ * PropertyType ::= node | vrf | interface | nodeRole_[Dimension]
  * Dimension    ::= [Identifier]
  * LocationType ::= interface | interfaceLink
  * </pre>
@@ -35,10 +36,10 @@ import java.util.regex.Pattern;
  * the specifier represents the intersection of those sets.
  *
  * <p>A clause is a regex, optionally prepended with a property type specifier followed by '='. The
- * default property type is "name".
+ * default property type is "node".
  *
- * <p>There are three property types: the node ("node"), VRF ("vrf"), or name ("name") of the
- * interface.
+ * <p>There property types support specifying locations by node name ("node"), node role
+ * ("nodeRole_[Dimension]"), VRF name ("vrf"), or interface name ("interface").
  */
 @AutoService(LocationSpecifierFactory.class)
 public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
@@ -48,11 +49,11 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
   static final String LOCATION_TYPE_INTERFACE_LINK = "interfaceLink";
   static final String DEFAULT_LOCATION_TYPE = LOCATION_TYPE_INTERFACE_LINK;
 
-  static final String PROPERTY_TYPE_NAME = "name";
-  static final String PROPERTY_TYPE_NODE = "node";
+  static final String PROPERTY_TYPE_INTERFACE_NAME = "interface";
+  static final String PROPERTY_TYPE_NODE_NAME = "node";
   static final String PROPERTY_TYPE_NODE_ROLE = "nodeRole";
-  static final String PROPERTY_TYPE_VRF = "vrf";
-  static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NAME;
+  static final String PROPERTY_TYPE_VRF_NAME = "vrf";
+  static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NODE_NAME;
 
   private static final Map<String, ClauseParser> CLAUSE_PARSERS =
       ImmutableMap.of(
@@ -65,7 +66,7 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
   }
 
   @Override
-  public LocationSpecifier buildLocationSpecifier(Object input) {
+  public LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
     if (input == null) {
       return AllInterfaceLinksLocationSpecifier.INSTANCE;
     }
@@ -118,17 +119,17 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
 
       Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 
-      if (propertyType.equals(PROPERTY_TYPE_NAME)) {
+      if (propertyType.equals(PROPERTY_TYPE_INTERFACE_NAME)) {
         return nameRegex(pattern);
       }
-      if (propertyType.equals(PROPERTY_TYPE_NODE)) {
+      if (propertyType.equals(PROPERTY_TYPE_NODE_NAME)) {
         return nodeRegex(pattern);
       }
       if (propertyType.startsWith(PROPERTY_TYPE_NODE_ROLE + "_")) {
         String dimension = propertyType.substring(PROPERTY_TYPE_NODE_ROLE.length() + 1);
         return nodeRoleRegex(dimension, pattern);
       }
-      if (propertyType.equals(PROPERTY_TYPE_VRF)) {
+      if (propertyType.equals(PROPERTY_TYPE_VRF_NAME)) {
         return vrfRegex(pattern);
       }
 
