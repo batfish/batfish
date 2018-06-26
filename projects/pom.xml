@@ -108,7 +108,6 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <properties>
-        <cpd.skip>true</cpd.skip>
         <checkstyle.skip>true</checkstyle.skip>
         <findbugs.skip>true</findbugs.skip>
         <mdep.analyze.skip>true</mdep.analyze.skip>
@@ -213,16 +212,6 @@
               <id>check</id>
               <goals>
                 <goal>check</goal>
-              </goals>
-              <configuration>
-                <failOnViolation>true</failOnViolation>
-              </configuration>
-            </execution>
-
-            <execution>
-              <id>cpd-check</id>
-              <goals>
-                <goal>cpd-check</goal>
               </goals>
               <configuration>
                 <failOnViolation>true</failOnViolation>
