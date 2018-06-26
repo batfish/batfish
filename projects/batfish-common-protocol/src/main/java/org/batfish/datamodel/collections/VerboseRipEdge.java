@@ -6,7 +6,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.RipNeighbor;
 
-public final class VerboseRipEdge implements Serializable, Comparable<VerboseRipEdge> {
+public final class VerboseRipEdge implements Serializable {
 
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
 
@@ -43,19 +43,5 @@ public final class VerboseRipEdge implements Serializable, Comparable<VerboseRip
   @JsonProperty(PROP_NODE2_SESSION)
   public RipNeighbor getSession2() {
     return _session2;
-  }
-
-  @Override
-  public int compareTo(VerboseRipEdge o) {
-    int cmp = _edgeSummary.compareTo(o._edgeSummary);
-    if (cmp != 0) {
-      return cmp;
-    }
-    cmp = _session1.compareTo(o._session1);
-    if (cmp != 0) {
-      return cmp;
-    }
-    cmp = _session2.compareTo(o._session2);
-    return cmp;
   }
 }
