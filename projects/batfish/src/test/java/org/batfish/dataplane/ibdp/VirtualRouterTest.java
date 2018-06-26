@@ -44,7 +44,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
@@ -122,7 +122,7 @@ public class VirtualRouterTest {
   private static final Ip TEST_NEXT_HOP_IP2 = new Ip("2.3.4.5");
   private static final String TEST_VIRTUAL_ROUTER_NAME = "testvirtualrouter";
 
-  private BgpNeighbor.Builder _bgpNeighborBuilder;
+  private BgpPeerConfig.Builder _bgpNeighborBuilder;
   private BgpRoute.Builder _bgpRouteBuilder;
   private Statement _exitAcceptStatement = Statements.ExitAccept.toStaticStatement();
   private Statement _exitRejectStatement = Statements.ExitReject.toStaticStatement();
@@ -766,7 +766,7 @@ public class VirtualRouterTest {
 
     Map<String, Configuration> configs =
         ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration());
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     Network<IsisNode, IsisEdge> isisTopology = initIsisTopology(configs, topology);
 
@@ -855,7 +855,7 @@ public class VirtualRouterTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
     Topology topology = synthesizeTopology(configs);
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         ImmutableNetwork.copyOf(
             NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
     Map<String, Node> nodes =

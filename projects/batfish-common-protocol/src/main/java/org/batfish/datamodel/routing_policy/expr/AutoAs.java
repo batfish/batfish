@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -40,7 +40,7 @@ public class AutoAs extends AsExpr {
       throw new BatfishException("Expected a peer address");
     }
     Prefix peerPrefix = new Prefix(peerAddress, Prefix.MAX_PREFIX_LENGTH);
-    BgpNeighbor neighbor = proc.getNeighbors().get(peerPrefix);
+    BgpPeerConfig neighbor = proc.getNeighbors().get(peerPrefix);
     if (neighbor == null) {
       throw new BatfishException("Expected a peer with address: " + peerAddress);
     }

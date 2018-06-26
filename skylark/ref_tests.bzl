@@ -9,7 +9,7 @@ echo \
 
 def ref_tests(name, commands, allinone=None, extra_deps=None, **kwargs):
     if allinone == None:
-      allinone = "@batfish//projects/allinone:allinone_main"
+      allinone = "//projects/allinone:allinone_main"
 
     # Generate a shell script that will run allinone on given commands file
     cmd = _CMD.format(allinone=allinone, commands=commands)

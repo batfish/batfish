@@ -2,6 +2,7 @@ package org.batfish.specifier;
 
 import static org.batfish.specifier.FlexibleLocationSpecifierFactory.parseSpecifier;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import java.util.regex.Pattern;
@@ -23,20 +24,26 @@ public class FlexibleLocationSpecifierFactoryTest {
   }
 
   @Test
-  public void testBuilderLocationSpecifierTyped() {
+  public void testBuilderLocationSpecifier() {
     FlexibleLocationSpecifierFactory factory = new FlexibleLocationSpecifierFactory();
     assertThat(
-        factory.buildLocationSpecifierTyped(""),
+        factory.buildLocationSpecifier(""),
         equalTo(new NameRegexInterfaceLinkLocationSpecifier(Pattern.compile(""))));
 
     LocationSpecifier leaf = new NameRegexInterfaceLinkLocationSpecifier(_foo);
     LocationSpecifier union1 = new UnionLocationSpecifier(leaf, leaf);
     LocationSpecifier union2 = new UnionLocationSpecifier(union1, leaf);
     LocationSpecifier union3 = new UnionLocationSpecifier(union2, leaf);
-    assertThat(factory.buildLocationSpecifierTyped("foo"), equalTo(leaf));
-    assertThat(factory.buildLocationSpecifierTyped("foo;foo"), equalTo(union1));
-    assertThat(factory.buildLocationSpecifierTyped("foo;foo;foo"), equalTo(union2));
-    assertThat(factory.buildLocationSpecifierTyped("foo;foo;foo;foo"), equalTo(union3));
+    assertThat(
+        factory.buildLocationSpecifier(null), is(AllInterfaceLinksLocationSpecifier.INSTANCE));
+    assertThat(factory.buildLocationSpecifier("foo"), equalTo(leaf));
+    assertThat(factory.buildLocationSpecifier("foo;foo"), equalTo(union1));
+    assertThat(factory.buildLocationSpecifier("foo;foo;foo"), equalTo(union2));
+    assertThat(factory.buildLocationSpecifier("foo;foo;foo;foo"), equalTo(union3));
+
+    // any nonnull input must be a String
+    exception.expect(IllegalArgumentException.class);
+    factory.buildLocationSpecifier(5);
   }
 
   @Test
@@ -44,6 +51,9 @@ public class FlexibleLocationSpecifierFactoryTest {
     assertThat(
         new InterfaceClauseParser().parse("node=foo"),
         equalTo(new NodeNameRegexInterfaceLocationSpecifier(_foo)));
+    assertThat(
+        new InterfaceClauseParser().parse("nodeRole_dim=foo"),
+        equalTo(new NodeRoleRegexInterfaceLocationSpecifier("dim", _foo)));
     assertThat(
         new InterfaceClauseParser().parse("vrf=foo"),
         equalTo(new VrfNameRegexInterfaceLocationSpecifier(_foo)));
@@ -95,9 +105,9 @@ public class FlexibleLocationSpecifierFactoryTest {
   }
 
   @Test
-  public void testParseSpecifier_tooManyColons() {
-    exception.expect(IllegalArgumentException.class);
-    parseSpecifier("a:b:c");
+  public void testParseSpecifier_colons() {
+    LocationSpecifier iface = new NameRegexInterfaceLinkLocationSpecifier(Pattern.compile("a:b:c"));
+    assertThat(parseSpecifier("a:b:c"), equalTo(iface));
   }
 
   @Test
@@ -107,11 +117,5 @@ public class FlexibleLocationSpecifierFactoryTest {
     assertThat(parseSpecifier("interfaceLink:foo"), equalTo(ifaceLink));
     assertThat(parseSpecifier("interface:foo"), equalTo(iface));
     assertThat(parseSpecifier("foo"), equalTo(ifaceLink));
-  }
-
-  @Test
-  public void testParseSpecifier_unknownLocationType() {
-    exception.expect(IllegalArgumentException.class);
-    parseSpecifier("foo:bar");
   }
 }

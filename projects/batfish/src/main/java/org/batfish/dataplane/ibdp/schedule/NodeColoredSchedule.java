@@ -7,7 +7,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.dataplane.ibdp.Node;
 import org.jgrapht.Graph;
@@ -37,7 +37,7 @@ public class NodeColoredSchedule extends IbdpSchedule {
    * @param bgpTopology the bgp peering relationships
    */
   public NodeColoredSchedule(
-      Map<String, Node> nodes, Coloring algorithm, Network<BgpNeighbor, BgpSession> bgpTopology) {
+      Map<String, Node> nodes, Coloring algorithm, Network<BgpPeerConfig, BgpSession> bgpTopology) {
     super(nodes);
     makeGraph(nodes, bgpTopology);
 
@@ -74,7 +74,7 @@ public class NodeColoredSchedule extends IbdpSchedule {
    *
    * @param nodes all nodes in the network
    */
-  private void makeGraph(Map<String, Node> nodes, Network<BgpNeighbor, BgpSession> bgpTopology) {
+  private void makeGraph(Map<String, Node> nodes, Network<BgpPeerConfig, BgpSession> bgpTopology) {
     /*
      * For the purposes of coloring, two nodes are adjacent if:
      * - They have established a BGP session

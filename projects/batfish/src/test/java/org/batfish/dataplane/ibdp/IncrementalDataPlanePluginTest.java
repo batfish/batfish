@@ -37,7 +37,7 @@ import org.batfish.common.plugin.DataPlanePlugin;
 import org.batfish.common.plugin.DataPlanePlugin.ComputeDataPlaneResult;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSession;
@@ -86,7 +86,7 @@ public class IncrementalDataPlanePluginTest {
   private NetworkFactory _nf;
   private Configuration.Builder _cb;
   private Interface.Builder _ib;
-  private BgpNeighbor.Builder _nb;
+  private BgpPeerConfig.Builder _nb;
   private BgpProcess.Builder _pb;
   private Vrf.Builder _vb;
   private RoutingPolicy.Builder _epb;
@@ -749,16 +749,16 @@ public class IncrementalDataPlanePluginTest {
     DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
     DataPlane dp = dataPlanePlugin.computeDataPlane(false)._dataPlane;
 
-    Network<BgpNeighbor, BgpSession> bgpTopology = dp.getBgpTopology();
+    Network<BgpPeerConfig, BgpSession> bgpTopology = dp.getBgpTopology();
 
     // N2 has proper neighbor relationship
-    Collection<BgpNeighbor> n2Neighbors =
+    Collection<BgpPeerConfig> n2Neighbors =
         configs.get("n2").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
     assertThat(n2Neighbors, hasSize(1));
     assertThat(bgpTopology.degree(n2Neighbors.iterator().next()), is(2));
 
     // N1 does not have a full session established, because it's not reachable
-    Collection<BgpNeighbor> n1Neighbors =
+    Collection<BgpPeerConfig> n1Neighbors =
         configs.get("n1").getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getNeighbors().values();
     assertThat(n1Neighbors, hasSize(1));
     assertThat(bgpTopology.degree(n1Neighbors.iterator().next()), is(0));

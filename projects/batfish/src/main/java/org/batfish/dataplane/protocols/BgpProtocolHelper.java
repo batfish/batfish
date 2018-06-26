@@ -6,7 +6,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.InterfaceAddress;
@@ -26,7 +26,11 @@ public class BgpProtocolHelper {
    */
   @Nullable
   public static BgpRoute.Builder transformBgpRouteOnExport(
-      BgpNeighbor fromNeighbor, BgpNeighbor toNeighbor, Vrf fromVrf, Vrf toVrf, AbstractRoute route)
+      BgpPeerConfig fromNeighbor,
+      BgpPeerConfig toNeighbor,
+      Vrf fromVrf,
+      Vrf toVrf,
+      AbstractRoute route)
       throws BgpRoutePropagationException {
 
     BgpRoute.Builder transformedOutgoingRouteBuilder = new BgpRoute.Builder();
@@ -101,7 +105,7 @@ public class BgpProtocolHelper {
         if (!remoteRouteOriginatedByRemoteNeighbor) {
           // we are reflecting, so we need to get the clusterid associated with the
           // remoteRoute
-          BgpNeighbor remoteReceivedFromSession =
+          BgpPeerConfig remoteReceivedFromSession =
               fromVrf
                   .getBgpProcess()
                   .getNeighbors()
@@ -175,7 +179,7 @@ public class BgpProtocolHelper {
   /** Perform BGP import transformations on a given route after receiving an advertisement */
   @Nullable
   public static BgpRoute.Builder transformBgpRouteOnImport(
-      BgpNeighbor fromNeighbor, BgpNeighbor toNeighbor, BgpRoute route) {
+      BgpPeerConfig fromNeighbor, BgpPeerConfig toNeighbor, BgpRoute route) {
 
     if (route.getAsPath().containsAs(toNeighbor.getLocalAs()) && !toNeighbor.getAllowLocalAsIn()) {
       // skip routes containing peer's AS unless

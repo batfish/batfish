@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Pair;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.CommunityList;
 import org.batfish.datamodel.CommunityListLine;
 import org.batfish.datamodel.Configuration;
@@ -645,10 +645,10 @@ class TransferSSA {
   }
 
   /*
-   * Get the BgpNeighbor object given the current
+   * Get the BgpPeerConfig object given the current
    * graph edge and protocol information
    */
-  private BgpNeighbor getBgpNeighbor() {
+  private BgpPeerConfig getBgpNeighbor() {
     Graph g = _enc.getGraph();
     if (_graphEdge.isAbstract()) {
       return g.getIbgpNeighbors().get(_graphEdge);
@@ -666,7 +666,7 @@ class TransferSSA {
       if (!_isExport) {
         return true;
       }
-      BgpNeighbor n = getBgpNeighbor();
+      BgpPeerConfig n = getBgpNeighbor();
       return n.getSendCommunity();
     } else {
       return false;
