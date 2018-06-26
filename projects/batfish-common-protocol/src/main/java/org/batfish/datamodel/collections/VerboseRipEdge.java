@@ -51,11 +51,11 @@ public final class VerboseRipEdge implements Serializable, Comparable<VerboseRip
     if (cmp != 0) {
       return cmp;
     }
-    cmp = _session1.compareTo(o._session1);
+    cmp = _session1.getIpEdge().compareTo(o._session1.getIpEdge());
     if (cmp != 0) {
       return cmp;
     }
-    cmp = _session2.compareTo(o._session2);
+    cmp = _session2.getIpEdge().compareTo(o._session2.getIpEdge());
     return cmp;
   }
 }
