@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.SortedMap;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
@@ -53,7 +53,7 @@ public class NodeColoredScheduleTest {
     Node n = TestUtils.makeIosRouter("r1");
     Map<String, Node> nodes = ImmutableMap.of("r1", n);
     Map<String, Configuration> configs = ImmutableMap.of("r1", n.getConfiguration());
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
 
@@ -73,7 +73,7 @@ public class NodeColoredScheduleTest {
             .stream()
             .collect(
                 ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getConfiguration()));
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     NodeColoredSchedule schedule = new NodeColoredSchedule(nodes, _coloring, bgpTopology);
 
@@ -92,7 +92,7 @@ public class NodeColoredScheduleTest {
     Vrf.Builder vb = nf.vrfBuilder();
     Interface.Builder ib = nf.interfaceBuilder();
     BgpProcess.Builder pb = nf.bgpProcessBuilder();
-    BgpNeighbor.Builder nb = nf.bgpNeighborBuilder();
+    BgpPeerConfig.Builder nb = nf.bgpNeighborBuilder();
 
     Configuration r1 = cb.setHostname("r1").build();
     Vrf vEdge1 = vb.setOwner(r1).build();
@@ -129,7 +129,7 @@ public class NodeColoredScheduleTest {
             .put(r2.getName(), r2)
             .build();
 
-    Network<BgpNeighbor, BgpSession> bgpTopology =
+    Network<BgpPeerConfig, BgpSession> bgpTopology =
         initBgpTopology(configurations, computeIpNodeOwners(configurations, false), false);
     ImmutableMap<String, Node> nodes = ImmutableMap.of("r1", new Node(r1), "r2", new Node(r2));
 

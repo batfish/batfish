@@ -52,6 +52,9 @@ public class FlexibleLocationSpecifierFactoryTest {
         new InterfaceClauseParser().parse("node=foo"),
         equalTo(new NodeNameRegexInterfaceLocationSpecifier(_foo)));
     assertThat(
+        new InterfaceClauseParser().parse("nodeRole_dim=foo"),
+        equalTo(new NodeRoleRegexInterfaceLocationSpecifier("dim", _foo)));
+    assertThat(
         new InterfaceClauseParser().parse("vrf=foo"),
         equalTo(new VrfNameRegexInterfaceLocationSpecifier(_foo)));
     assertThat(
@@ -102,9 +105,9 @@ public class FlexibleLocationSpecifierFactoryTest {
   }
 
   @Test
-  public void testParseSpecifier_tooManyColons() {
-    exception.expect(IllegalArgumentException.class);
-    parseSpecifier("a:b:c");
+  public void testParseSpecifier_colons() {
+    LocationSpecifier iface = new NameRegexInterfaceLinkLocationSpecifier(Pattern.compile("a:b:c"));
+    assertThat(parseSpecifier("a:b:c"), equalTo(iface));
   }
 
   @Test
@@ -114,11 +117,5 @@ public class FlexibleLocationSpecifierFactoryTest {
     assertThat(parseSpecifier("interfaceLink:foo"), equalTo(ifaceLink));
     assertThat(parseSpecifier("interface:foo"), equalTo(iface));
     assertThat(parseSpecifier("foo"), equalTo(ifaceLink));
-  }
-
-  @Test
-  public void testParseSpecifier_unknownLocationType() {
-    exception.expect(IllegalArgumentException.class);
-    parseSpecifier("foo:bar");
   }
 }

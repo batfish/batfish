@@ -1,7 +1,5 @@
 package org.batfish.specifier;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -21,7 +19,8 @@ import java.util.regex.Pattern;
  * Pattern      ::= [Specifier](;[Specifier])*
  * Specifier    ::= ([LocationType]:)?[Clause](,[Clause])*
  * Clause       ::= ([PropertyType]=)?[Regex]
- * PropertyType ::= node | vrf | name
+ * PropertyType ::= node | vrf | name | nodeRole_[Dimension]
+ * Dimension    ::= [Identifier]
  * LocationType ::= interface | interfaceLink
  * </pre>
  *
@@ -49,6 +48,7 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
 
   static final String PROPERTY_TYPE_NAME = "name";
   static final String PROPERTY_TYPE_NODE = "node";
+  static final String PROPERTY_TYPE_NODE_ROLE = "nodeRole";
   static final String PROPERTY_TYPE_VRF = "vrf";
   static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NAME;
 
@@ -77,26 +77,18 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
 
   @VisibleForTesting
   static LocationSpecifier parseSpecifier(String s) {
-    String[] typeAndClauses = s.split(":");
+    // initialize to default values
+    String locationType = DEFAULT_LOCATION_TYPE;
+    String clauses = s;
 
-    String locationType;
-    String clauses;
-    switch (typeAndClauses.length) {
-      case 1:
-        locationType = DEFAULT_LOCATION_TYPE;
-        clauses = typeAndClauses[0];
-        break;
-      case 2:
-        locationType = typeAndClauses[0];
-        clauses = typeAndClauses[1];
-        break;
-      default:
-        throw new IllegalArgumentException("Too many ':'s in " + s);
+    for (String locType : CLAUSE_PARSERS.keySet()) {
+      if (s.startsWith(locType + ":")) {
+        locationType = locType;
+        clauses = s.substring(locType.length() + 1);
+      }
     }
 
-    checkArgument(CLAUSE_PARSERS.containsKey(locationType), "Unknown type: " + locationType);
     ClauseParser clauseParser = CLAUSE_PARSERS.get(locationType);
-
     return Arrays.stream(clauses.split(","))
         .map(clauseParser::parse)
         .reduce(IntersectionLocationSpecifier::new)
@@ -130,6 +122,10 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
       if (propertyType.equals(PROPERTY_TYPE_NODE)) {
         return nodeRegex(pattern);
       }
+      if (propertyType.startsWith(PROPERTY_TYPE_NODE_ROLE + "_")) {
+        String dimension = propertyType.substring(PROPERTY_TYPE_NODE_ROLE.length() + 1);
+        return nodeRoleRegex(dimension, pattern);
+      }
       if (propertyType.equals(PROPERTY_TYPE_VRF)) {
         return vrfRegex(pattern);
       }
@@ -140,6 +136,8 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
     protected abstract LocationSpecifier nameRegex(Pattern pattern);
 
     protected abstract LocationSpecifier nodeRegex(Pattern pattern);
+
+    protected abstract LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern);
 
     protected abstract LocationSpecifier vrfRegex(Pattern pattern);
   }
@@ -153,6 +151,11 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
     @Override
     protected LocationSpecifier nodeRegex(Pattern pattern) {
       return new NodeNameRegexInterfaceLocationSpecifier(pattern);
+    }
+
+    @Override
+    protected LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern) {
+      return new NodeRoleRegexInterfaceLocationSpecifier(dimension, pattern);
     }
 
     @Override
@@ -170,6 +173,11 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
     @Override
     protected LocationSpecifier nodeRegex(Pattern pattern) {
       return new NodeNameRegexInterfaceLinkLocationSpecifier(pattern);
+    }
+
+    @Override
+    protected LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern) {
+      return new NodeRoleRegexInterfaceLinkLocationSpecifier(dimension, pattern);
     }
 
     @Override
