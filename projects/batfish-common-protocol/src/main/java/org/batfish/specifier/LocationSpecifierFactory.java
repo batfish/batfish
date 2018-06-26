@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import java.util.ServiceLoader;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 /**
@@ -27,5 +28,5 @@ public interface LocationSpecifierFactory {
    * @param input User input of {@link LocationSpecifier} fields to be parsed and/or validated.
    * @return The constructed {@link LocationSpecifier}.
    */
-  LocationSpecifier buildLocationSpecifier(Object input);
+  LocationSpecifier buildLocationSpecifier(@Nullable Object input);
 }
