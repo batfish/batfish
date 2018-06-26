@@ -40,6 +40,7 @@ INACTIVE
    'inactive:'
 ;
 
+// Handle Juniper-style and RANCID-header-style line comments
 LINE_COMMENT
 :
     (
