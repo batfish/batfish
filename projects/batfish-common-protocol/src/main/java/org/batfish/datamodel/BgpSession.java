@@ -1,11 +1,10 @@
 package org.batfish.datamodel;
 
-import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 
 /** Represents a peering session between two {@link BgpPeerConfig}s */
-public class BgpSession implements Comparable<BgpSession> {
+public class BgpSession {
 
   private final boolean _isEbgp;
 
@@ -58,14 +57,6 @@ public class BgpSession implements Comparable<BgpSession> {
         && _dst.getAdditionalPathsReceive()
         && _src.getAdditionalPathsSend()
         && _src.getAdditionalPathsSelectAll();
-  }
-
-  @Override
-  public int compareTo(@Nonnull BgpSession o) {
-    return Comparator.comparing((BgpSession s) -> s.getSrc().getPrefix())
-        .thenComparing(s -> s.getSrc().getOwner())
-        .thenComparing(s -> s.getDst().getOwner())
-        .compare(this, o);
   }
 
   @Override
