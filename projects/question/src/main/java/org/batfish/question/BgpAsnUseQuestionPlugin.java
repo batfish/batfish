@@ -10,7 +10,7 @@ import java.util.Set;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.Plugin;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Vrf;
@@ -75,7 +75,7 @@ public class BgpAsnUseQuestionPlugin extends QuestionPlugin {
         for (Vrf vrf : c.getVrfs().values()) {
           BgpProcess bgpProc = vrf.getBgpProcess();
           if (bgpProc != null) {
-            for (BgpNeighbor neighbor : bgpProc.getNeighbors().values()) {
+            for (BgpPeerConfig neighbor : bgpProc.getNeighbors().values()) {
               asns.put(neighbor.getLocalAs(), hostname);
             }
           }

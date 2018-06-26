@@ -14,7 +14,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import org.batfish.datamodel.AbstractRoute;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpSession;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DataPlane;
@@ -33,7 +33,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   public static class Builder {
 
-    private Network<BgpNeighbor, BgpSession> _bgpTopology;
+    private Network<BgpPeerConfig, BgpSession> _bgpTopology;
 
     private Map<Ip, Set<String>> _ipOwners;
 
@@ -45,7 +45,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     private Topology _topology;
 
-    public Builder setBgpTopology(Network<BgpNeighbor, BgpSession> bgpTopology) {
+    public Builder setBgpTopology(Network<BgpPeerConfig, BgpSession> bgpTopology) {
       _bgpTopology = bgpTopology;
       return this;
     }
@@ -117,7 +117,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return new Builder();
   }
 
-  private final transient Network<BgpNeighbor, BgpSession> _bgpTopology;
+  private final transient Network<BgpPeerConfig, BgpSession> _bgpTopology;
 
   private final Supplier<Map<String, Configuration>> _configurations =
       Suppliers.memoize(new ConfigurationsSupplier());
@@ -183,7 +183,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  public Network<BgpNeighbor, BgpSession> getBgpTopology() {
+  public Network<BgpPeerConfig, BgpSession> getBgpTopology() {
     return _bgpTopology;
   }
 

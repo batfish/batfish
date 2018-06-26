@@ -1,12 +1,13 @@
 package org.batfish.dataplane.ibdp;
 
 import com.google.common.collect.ImmutableSortedMap;
+import java.io.Serializable;
 import java.util.SortedMap;
-import org.batfish.common.util.ComparableStructure;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 
 /** Dataplane-specific encapsulation of {@link Configuration} */
-public final class Node extends ComparableStructure<String> {
+public final class Node implements Serializable {
 
   private static final long serialVersionUID = 1L;
 
@@ -20,8 +21,7 @@ public final class Node extends ComparableStructure<String> {
    *
    * @param configuration the {@link Configuration} backing this node
    */
-  public Node(Configuration configuration) {
-    super(configuration.getHostname());
+  public Node(@Nonnull Configuration configuration) {
     _c = configuration;
     ImmutableSortedMap.Builder<String, VirtualRouter> b = ImmutableSortedMap.naturalOrder();
     for (String vrfName : _c.getVrfs().keySet()) {
@@ -32,6 +32,7 @@ public final class Node extends ComparableStructure<String> {
   }
 
   /** @return The {@link Configuration} backing this Node */
+  @Nonnull
   public Configuration getConfiguration() {
     return _c;
   }
@@ -41,6 +42,7 @@ public final class Node extends ComparableStructure<String> {
    *
    * @return Set of {@link VirtualRouter}s, keyed by VRF name
    */
+  @Nonnull
   SortedMap<String, VirtualRouter> getVirtualRouters() {
     return _virtualRouters;
   }

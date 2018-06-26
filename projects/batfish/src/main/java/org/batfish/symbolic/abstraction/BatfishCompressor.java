@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
@@ -143,9 +143,9 @@ public class BatfishCompressor {
 
   private String internalRegex() {
     StringBuilder matchInternal = new StringBuilder("(,|\\\\{|\\\\}|^|\\$| )(");
-    Collection<BgpNeighbor> neighbors = _graph.getEbgpNeighbors().values();
+    Collection<BgpPeerConfig> neighbors = _graph.getEbgpNeighbors().values();
     Set<Long> allAsns = new HashSet<>();
-    for (BgpNeighbor n : neighbors) {
+    for (BgpPeerConfig n : neighbors) {
       Long asn = n.getLocalAs();
       allAsns.add(asn);
     }

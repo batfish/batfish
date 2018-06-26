@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.BgpNeighbor;
+import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -820,7 +820,7 @@ class EncoderSlice {
             for (LogicalEdge e : eList) {
               if (e.getEdgeType() == EdgeType.IMPORT) {
                 GraphEdge ge = e.getEdge();
-                BgpNeighbor n = getGraph().getEbgpNeighbors().get(ge);
+                BgpPeerConfig n = getGraph().getEbgpNeighbors().get(ge);
                 if (n != null && ge.getEnd() == null) {
 
                   if (!isMainSlice()) {
