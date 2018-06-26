@@ -54,27 +54,6 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>check</id>
-            <goals>
-              <goal>check</goal>
-            </goals>
-            <configuration>
-              <failOnViolation>true</failOnViolation>
-            </configuration>
-          </execution>
-
-          <execution>
-            <id>cpd-check</id>
-            <goals>
-              <goal>cpd-check</goal>
-            </goals>
-            <configuration>
-              <failOnViolation>false</failOnViolation>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
     </plugins>
   </build>

@@ -3,6 +3,7 @@ package org.batfish.coordinator;
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.MOVED_PERMANENTLY;
 import static javax.ws.rs.core.Response.Status.OK;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
 import static org.glassfish.jersey.client.ClientProperties.FOLLOW_REDIRECTS;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
@@ -77,13 +78,16 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
   /** Test that the ApiKey is extracted from the correct header */
   @Test
-  public void correctApiKeyHeader() {
+  public void apiKeyValidationAndCorrectReturnCodes() {
     // Set up by making a call to authorize container
     String containerName = "someContainer";
+    String otherContainerName = "anotherContainer";
     String myKey = "ApiKey";
+    String otherKey = "AnotherApiKey";
     Authorizer auth = new MapAuthorizer();
     Main.setAuthorizer(auth);
     auth.authorizeContainer(myKey, containerName);
+    auth.authorizeContainer(otherKey, otherContainerName);
     Main.getWorkMgr().initContainer(containerName, null);
 
     // Test that subsequent calls return 200 with correct API key
@@ -99,17 +103,29 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         resp.readEntity(Container.class),
         equalTo(Container.of(containerName, Collections.emptySortedSet())));
 
-    // Test that subsequent calls return 403 forbidden with wrong API key
+    // Test that subsequent calls return 401 unauthorized with unknown API key
     resp =
         getContainersTarget()
             .path(containerName)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, "wrongKey")
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, "unknownKey")
+            .get();
+    assertThat(resp.getStatus(), equalTo(UNAUTHORIZED.getStatusCode()));
+    assertThat(
+        resp.readEntity(String.class), equalTo("Authorizer: 'unknownKey' is NOT a valid key"));
+
+    // Test that subsequent calls return 403 forbidden with known API key and no access
+    resp =
+        getContainersTarget()
+            .path(containerName)
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, otherKey)
             .get();
     assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
     assertThat(
         resp.readEntity(String.class),
-        equalTo("container 'someContainer' is not accessible by the api key: wrongKey"));
+        equalTo("container 'someContainer' is not accessible by the api key: AnotherApiKey"));
   }
 }

@@ -89,6 +89,7 @@ java_library(
 
 junit_tests(
     name = "batfish_tests",
+    size = "medium",
     srcs = glob([
         "src/test/**/*Test.java",
     ]),
@@ -110,5 +111,4 @@ junit_tests(
         "@jettison//:compile",
         "@junit//:compile",
     ],
-    size = "medium",
 )
