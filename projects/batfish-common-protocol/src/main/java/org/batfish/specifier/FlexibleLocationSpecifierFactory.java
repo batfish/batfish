@@ -21,7 +21,8 @@ import java.util.regex.Pattern;
  * Pattern      ::= [Specifier](;[Specifier])*
  * Specifier    ::= ([LocationType]:)?[Clause](,[Clause])*
  * Clause       ::= ([PropertyType]=)?[Regex]
- * PropertyType ::= node | vrf | name
+ * PropertyType ::= node | vrf | name | nodeRole_[Dimension]
+ * Dimension    ::= [Identifier]
  * LocationType ::= interface | interfaceLink
  * </pre>
  *
@@ -49,6 +50,7 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
 
   static final String PROPERTY_TYPE_NAME = "name";
   static final String PROPERTY_TYPE_NODE = "node";
+  static final String PROPERTY_TYPE_NODE_ROLE = "nodeRole";
   static final String PROPERTY_TYPE_VRF = "vrf";
   static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NAME;
 
@@ -130,6 +132,10 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
       if (propertyType.equals(PROPERTY_TYPE_NODE)) {
         return nodeRegex(pattern);
       }
+      if (propertyType.startsWith(PROPERTY_TYPE_NODE_ROLE + "_")) {
+        String dimension = propertyType.substring(PROPERTY_TYPE_NODE_ROLE.length() + 1);
+        return nodeRoleRegex(dimension, pattern);
+      }
       if (propertyType.equals(PROPERTY_TYPE_VRF)) {
         return vrfRegex(pattern);
       }
@@ -140,6 +146,8 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
     protected abstract LocationSpecifier nameRegex(Pattern pattern);
 
     protected abstract LocationSpecifier nodeRegex(Pattern pattern);
+
+    protected abstract LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern);
 
     protected abstract LocationSpecifier vrfRegex(Pattern pattern);
   }
@@ -153,6 +161,11 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
     @Override
     protected LocationSpecifier nodeRegex(Pattern pattern) {
       return new NodeNameRegexInterfaceLocationSpecifier(pattern);
+    }
+
+    @Override
+    protected LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern) {
+      return new NodeRoleRegexInterfaceLocationSpecifier(dimension, pattern);
     }
 
     @Override
@@ -170,6 +183,11 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
     @Override
     protected LocationSpecifier nodeRegex(Pattern pattern) {
       return new NodeNameRegexInterfaceLinkLocationSpecifier(pattern);
+    }
+
+    @Override
+    protected LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern) {
+      return new NodeRoleRegexInterfaceLinkLocationSpecifier(dimension, pattern);
     }
 
     @Override
