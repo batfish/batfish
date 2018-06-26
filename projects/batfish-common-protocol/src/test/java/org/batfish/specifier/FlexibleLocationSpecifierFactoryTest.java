@@ -52,7 +52,7 @@ public class FlexibleLocationSpecifierFactoryTest {
         new InterfaceClauseParser().parse("node=foo"),
         equalTo(new NodeNameRegexInterfaceLocationSpecifier(_foo)));
     assertThat(
-        new InterfaceClauseParser().parse("nodeRole_dim=foo"),
+        new InterfaceClauseParser().parse("nodeRole:dim=foo"),
         equalTo(new NodeRoleRegexInterfaceLocationSpecifier("dim", _foo)));
     assertThat(
         new InterfaceClauseParser().parse("vrf=foo"),

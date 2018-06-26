@@ -22,7 +22,7 @@ import javax.annotation.Nullable;
  * Pattern      ::= [Specifier](;[Specifier])*
  * Specifier    ::= ([LocationType]:)?[Clause](,[Clause])*
  * Clause       ::= ([PropertyType]=)?[Regex]
- * PropertyType ::= node | vrf | interface | nodeRole_[Dimension]
+ * PropertyType ::= node | vrf | interface | nodeRole:[Dimension]
  * Dimension    ::= [Identifier]
  * LocationType ::= interface | interfaceLink
  * </pre>
@@ -39,7 +39,7 @@ import javax.annotation.Nullable;
  * default property type is "node".
  *
  * <p>There property types support specifying locations by node name ("node"), node role
- * ("nodeRole_[Dimension]"), VRF name ("vrf"), or interface name ("interface").
+ * ("nodeRole:[Dimension]"), VRF name ("vrf"), or interface name ("interface").
  */
 @AutoService(LocationSpecifierFactory.class)
 public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
@@ -51,7 +51,7 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
 
   static final String PROPERTY_TYPE_INTERFACE_NAME = "interface";
   static final String PROPERTY_TYPE_NODE_NAME = "node";
-  static final String PROPERTY_TYPE_NODE_ROLE = "nodeRole";
+  static final String PROPERTY_TYPE_NODE_ROLE_PREFIX = "nodeRole:";
   static final String PROPERTY_TYPE_VRF_NAME = "vrf";
   static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NODE_NAME;
 
@@ -125,8 +125,8 @@ public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactor
       if (propertyType.equals(PROPERTY_TYPE_NODE_NAME)) {
         return nodeRegex(pattern);
       }
-      if (propertyType.startsWith(PROPERTY_TYPE_NODE_ROLE + "_")) {
-        String dimension = propertyType.substring(PROPERTY_TYPE_NODE_ROLE.length() + 1);
+      if (propertyType.startsWith(PROPERTY_TYPE_NODE_ROLE_PREFIX)) {
+        String dimension = propertyType.substring(PROPERTY_TYPE_NODE_ROLE_PREFIX.length());
         return nodeRoleRegex(dimension, pattern);
       }
       if (propertyType.equals(PROPERTY_TYPE_VRF_NAME)) {
