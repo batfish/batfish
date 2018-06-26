@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
+import java.util.Collections;
 import java.util.List;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
@@ -16,6 +17,7 @@ import javax.ws.rs.core.Response;
 import org.batfish.common.Container;
 import org.batfish.common.CoordConsts;
 import org.batfish.common.CoordConstsV2;
+import org.batfish.common.Version;
 import org.batfish.coordinator.authorizer.Authorizer;
 import org.junit.Before;
 import org.junit.Rule;
@@ -39,12 +41,22 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
 
   @Test
   public void getContainers() {
-    Response response = getContainersTarget().request().get();
+    Response response =
+        getContainersTarget()
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), empty());
 
     Main.getWorkMgr().initContainer("someContainer", null);
-    response = getContainersTarget().request().get();
+    response =
+        getContainersTarget()
+            .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
+            .get();
     assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
     assertThat(response.readEntity(new GenericType<List<Container>>() {}), hasSize(1));
   }
@@ -56,6 +68,8 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .path(CoordConstsV2.RSC_CONTAINER)
             .property(FOLLOW_REDIRECTS, false)
             .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get();
     assertThat(response.getStatus(), equalTo(MOVED_PERMANENTLY.getStatusCode()));
     assertThat(response.getLocation().getPath(), equalTo("/v2/containers"));
@@ -77,17 +91,25 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
         getContainersTarget()
             .path(containerName)
             .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, myKey)
             .get();
     assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
+    assertThat(
+        resp.readEntity(Container.class),
+        equalTo(Container.of(containerName, Collections.emptySortedSet())));
 
     // Test that subsequent calls return 403 forbidden with wrong API key
     resp =
         getContainersTarget()
             .path(containerName)
             .request()
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, Version.getVersion())
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, "wrongKey")
             .get();
     assertThat(resp.getStatus(), equalTo(FORBIDDEN.getStatusCode()));
+    assertThat(
+        resp.readEntity(String.class),
+        equalTo("container 'someContainer' is not accessible by the api key: wrongKey"));
   }
 }
