@@ -1,5 +1,7 @@
 package org.batfish.specifier;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
@@ -39,7 +41,7 @@ import java.util.regex.Pattern;
  * interface.
  */
 @AutoService(LocationSpecifierFactory.class)
-public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFactory<String> {
+public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
   public static final String NAME = FlexibleLocationSpecifierFactory.class.getSimpleName();
 
   static final String LOCATION_TYPE_INTERFACE = "interface";
@@ -63,13 +65,13 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
   }
 
   @Override
-  protected Class<String> getInputClass() {
-    return String.class;
-  }
-
-  @Override
-  public LocationSpecifier buildLocationSpecifierTyped(String input) {
-    return Arrays.stream(input.split(";"))
+  public LocationSpecifier buildLocationSpecifier(Object input) {
+    if (input == null) {
+      return AllInterfaceLinksLocationSpecifier.INSTANCE;
+    }
+    checkArgument(input instanceof String, NAME + " input must be a String");
+    String str = (String) input;
+    return Arrays.stream(str.split(";"))
         .map(FlexibleLocationSpecifierFactory::parseSpecifier)
         .reduce(UnionLocationSpecifier::new)
         .get(); // never empty: split never returns a zero-element array
