@@ -26,8 +26,8 @@ public final class IsisEdge implements Comparable<IsisEdge> {
   @Nullable
   private static IsisLevel interfaceSettingsLevel(IsisInterfaceSettings settings) {
     return union(
-        settings.getLevel1() != null ? IsisLevel.LEVEL_1 : null,
-        settings.getLevel2() != null ? IsisLevel.LEVEL_2 : null);
+        settings.getLevel1() != null ? LEVEL_1 : null,
+        settings.getLevel2() != null ? LEVEL_2 : null);
   }
 
   @Nullable
@@ -109,8 +109,8 @@ public final class IsisEdge implements Comparable<IsisEdge> {
   @Nullable
   private static IsisLevel processLevel(IsisProcess isisProcess) {
     return union(
-        isisProcess.getLevel1() != null ? IsisLevel.LEVEL_1 : null,
-        isisProcess.getLevel2() != null ? IsisLevel.LEVEL_2 : null);
+        isisProcess.getLevel1() != null ? LEVEL_1 : null,
+        isisProcess.getLevel2() != null ? LEVEL_2 : null);
   }
 
   @Nullable
