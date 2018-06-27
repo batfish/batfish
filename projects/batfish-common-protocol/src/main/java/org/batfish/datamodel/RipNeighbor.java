@@ -79,6 +79,10 @@ public class RipNeighbor extends ComparableStructure<Pair<Ip, Ip>> {
     return _iface;
   }
 
+  public Pair<Ip, Ip> getIpEdge() {
+    return _key;
+  }
+
   @JsonIgnore
   public Ip getLocalIp() {
     return _key.getFirst();
