@@ -2,8 +2,10 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -38,6 +40,17 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
       super(question, batfish);
     }
 
+    @VisibleForTesting
+    static List<String> getExposedLines(Collection<Line> lines) {
+      List<String> exposedLines = new ArrayList<>();
+      for (Line line : lines) {
+        if (!line.requiresAuthentication()) {
+          exposedLines.add(line.getName());
+        }
+      }
+      return exposedLines;
+    }
+
     @Override
     public AaaAuthenticationAnswerElement answer() {
       AaaAuthenticationQuestion question = (AaaAuthenticationQuestion) _question;
@@ -51,12 +64,8 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
           (configName, config) -> {
             if (specifiedNodes.contains(configName)
                 && config.getVendorFamily().getCisco() != null) {
-              List<String> lines = new ArrayList<>();
-              for (Line line : config.getVendorFamily().getCisco().getLines().values()) {
-                if (!line.requiresAuthentication()) {
-                  lines.add(line.getName());
-                }
-              }
+              List<String> lines =
+                  getExposedLines(config.getVendorFamily().getCisco().getLines().values());
               if (!lines.isEmpty()) {
                 exposedLines.put(configName, lines);
               }
