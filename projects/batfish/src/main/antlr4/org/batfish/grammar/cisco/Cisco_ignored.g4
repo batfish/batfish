@@ -685,6 +685,7 @@ null_single
             | IGMP
             | LOAD_SHARING
             | LOCAL
+            | NAME_SERVER
             | MFIB
             | MFWD
             | MOBILE
@@ -881,6 +882,7 @@ null_single
       | SHELL
       | SMTP_SERVER
       | SNMP
+      | SNMP_SERVER
       | SOFTWARE
       | SPD
       | SPE
