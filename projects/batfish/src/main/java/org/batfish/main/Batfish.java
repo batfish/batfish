@@ -1856,11 +1856,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName()));
   }
 
-  private Snapshot getSnapshot() {
-    return new Snapshot(
-        _testrigSettings.getName(), _testrigSettings.getEnvironmentSettings().getName());
-  }
-
   private Set<Edge> getSymmetricEdgePairs(SortedSet<Edge> edges) {
     Set<Edge> consumedEdges = new LinkedHashSet<>();
     for (Edge edge : edges) {
