@@ -9,8 +9,6 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.io.IOException;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IpAccessList;
@@ -89,9 +87,5 @@ public class AclLineIndependentSatisfiabilityTest {
         batfish.computeIndependentlyUnmatchableAclLines(_c, "acl", ImmutableSet.of(0, 1));
 
     assertThat(unmatchable, equalTo(ImmutableSet.of()));
-  }
-
-  private Set<Integer> rangeSet(int max) {
-    return IntStream.range(0, max).mapToObj(i -> new Integer(i)).collect(Collectors.toSet());
   }
 }
