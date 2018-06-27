@@ -107,6 +107,7 @@ import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
+import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
@@ -268,9 +269,7 @@ public class CiscoGrammarTest {
     assertThat(asaLines.get("ssh"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
     assertThat(asaLines.get("ssh"), hasAuthenticationLoginList(hasMethod(LOCAL_CASE)));
 
-    assertThat(asaLines.get("serial"), hasAuthenticationLoginList(hasMethod(LOCAL_CASE)));
-    assertThat(
-        asaLines.get("serial"), hasAuthenticationLoginList(not(hasMethod(GROUP_USER_DEFINED))));
+    assertThat(asaLines.get(SERIAL_LINE), not(hasAuthenticationLoginList()));
 
     assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
     assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(not(hasMethod(LOCAL_CASE))));
@@ -283,7 +282,7 @@ public class CiscoGrammarTest {
     SortedMap<String, Line> asaLines =
         aaaAuthAsaConfiguration.getVendorFamily().getCisco().getLines();
     for (Line line : asaLines.values()) {
-      if (line.getLineType() == LineType.HTTP) {
+      if (line.getLineType() == LineType.HTTP || line.getLineType() == LineType.SERIAL) {
         assertThat(line, not(requiresAuthentication()));
       } else {
         assertThat(line, requiresAuthentication());
@@ -321,14 +320,16 @@ public class CiscoGrammarTest {
         hasVendorFamily(
             hasCisco(
                 hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL_CASE), "serial")))))));
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(LOCAL_CASE), SERIAL_LINE))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod(GROUP_USER_DEFINED)), "serial")))))));
+                        hasLogin(
+                            not(hasListForKey(hasMethod(GROUP_USER_DEFINED), SERIAL_LINE))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
