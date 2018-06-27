@@ -40,6 +40,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.KEYRING;
 import static org.batfish.representation.cisco.CiscoStructureType.L2TP_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.MAC_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.NAT_POOL;
+import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT;
 import static org.batfish.representation.cisco.CiscoStructureType.NETWORK_OBJECT_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureType.POLICY_MAP;
 import static org.batfish.representation.cisco.CiscoStructureType.PREFIX6_LIST;
@@ -226,6 +227,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
@@ -616,6 +618,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
+import org.batfish.grammar.cisco.CiscoParser.O_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
@@ -627,6 +630,11 @@ import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
+import org.batfish.grammar.cisco.CiscoParser.On_descriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.On_fqdnContext;
+import org.batfish.grammar.cisco.CiscoParser.On_hostContext;
+import org.batfish.grammar.cisco.CiscoParser.On_rangeContext;
+import org.batfish.grammar.cisco.CiscoParser.On_subnetContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_expr_literalContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_iis_stanzaContext;
@@ -950,6 +958,7 @@ import org.batfish.representation.cisco.MasterBgpPeerGroup;
 import org.batfish.representation.cisco.MatchSemantics;
 import org.batfish.representation.cisco.NamedBgpPeerGroup;
 import org.batfish.representation.cisco.NatPool;
+import org.batfish.representation.cisco.NetworkObject;
 import org.batfish.representation.cisco.NetworkObjectGroup;
 import org.batfish.representation.cisco.NetworkObjectGroupAddressSpecifier;
 import org.batfish.representation.cisco.NssaSettings;
@@ -1374,6 +1383,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private final boolean _unrecognizedAsRedFlag;
 
   private final Warnings _w;
+
+  private NetworkObject _currentNetworkObject;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
@@ -2277,6 +2288,18 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterO_network(O_networkContext ctx) {
+    _currentNetworkObject =
+        _configuration.getNetworkObjects().computeIfAbsent(ctx.name.getText(), NetworkObject::new);
+  }
+
+  @Override
+  public void exitO_network(O_networkContext ctx) {
+    defineStructure(NETWORK_OBJECT, ctx.name.getText(), ctx);
+    _currentNetworkObject = null;
+  }
+
+  @Override
   public void enterOg_network(Og_networkContext ctx) {
     String name = ctx.name.getText();
     // If there is a conflict, create a dummy object group
@@ -2372,10 +2395,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       String name = ctx.name.getText();
       ipSpace = new IpSpaceReference(name);
       _configuration.referenceStructure(
-          NETWORK_OBJECT_GROUP,
-          name,
-          NETWORK_OBJECT_GROUP_NETWORK_OBJECT,
-          ctx.name.start.getLine());
+          NETWORK_OBJECT, name, NETWORK_OBJECT_GROUP_NETWORK_OBJECT, ctx.name.start.getLine());
     }
     if (ipSpace == null) {
       _w.redFlag("Unimplemented object-group network line: " + getFullText(ctx));
@@ -2404,6 +2424,43 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOgs_udp(Ogs_udpContext ctx) {
     _currentServiceObjectGroup.getLines().add(new UdpServiceObjectGroupLine(toPortRanges(ctx.ps)));
+  }
+
+  @Override
+  public void exitOn_description(On_descriptionContext ctx) {
+    _currentNetworkObject.setDescription(ctx.description_line().getText());
+  }
+
+  @Override
+  public void exitOn_fqdn(On_fqdnContext ctx) {
+    _currentNetworkObject.setIpSpace(EmptyIpSpace.INSTANCE);
+    _w.redFlag("Cannot convert fqdn to IpSpace: " + getFullText(ctx));
+  }
+
+  @Override
+  public void exitOn_host(On_hostContext ctx) {
+    if (ctx.address != null) {
+      _currentNetworkObject.setIpSpace(new Ip(ctx.address.getText()).toIpSpace());
+    } else {
+      // Warn about lack of support for IPv6
+      _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
+    }
+  }
+
+  @Override
+  public void exitOn_range(On_rangeContext ctx) {
+    _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
+  }
+
+  @Override
+  public void exitOn_subnet(On_subnetContext ctx) {
+    if (ctx.address != null) {
+      _currentNetworkObject.setIpSpace(
+          new Prefix(new Ip(ctx.address.getText()), new Ip(ctx.mask.getText())).toIpSpace());
+    } else {
+      // Warn about lack of support for IPv6
+      _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
+    }
   }
 
   @Override

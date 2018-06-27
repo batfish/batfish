@@ -1,0 +1,14 @@
+!
+hostname network-object
+!
+object network NO1
+ description blah blah blah
+ host 1.2.3.4
+!
+object network NO2
+ subnet 2.2.2.0 255.255.255.0
+!
+object-group network OGN
+ network-object object NO1
+ network-object object NO_UNDEFINED
+!
