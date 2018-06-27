@@ -1129,6 +1129,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_ACL_OBJECT = "acl match object";
 
+  private static final String SERIAL_LINE = "serial";
+
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
@@ -1727,7 +1729,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (_format == CISCO_ASA) {
       // serial line may not be anywhere in the config so add it here to make sure the serial line
       // is in the data model
-      _configuration.getCf().getLines().computeIfAbsent("serial", Line::new);
+      _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
     }
   }
 
