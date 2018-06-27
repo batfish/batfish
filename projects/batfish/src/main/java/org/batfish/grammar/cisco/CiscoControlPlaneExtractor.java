@@ -191,6 +191,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_DES
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -1129,7 +1130,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String F_ACL_OBJECT = "acl match object";
 
-  private static final String SERIAL_LINE = "serial";
+  @VisibleForTesting static final String SERIAL_LINE = "serial";
 
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
