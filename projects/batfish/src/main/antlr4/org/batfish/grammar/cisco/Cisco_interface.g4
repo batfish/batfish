@@ -9,6 +9,7 @@ options {
 eos_bandwidth_specifier
 :
    FORTYG_FULL
+   | ONE_HUNDREDG_FULL
    | TEN_THOUSAND_FULL
    | ONE_HUNDRED_FULL
    | ONE_THOUSAND_FULL
