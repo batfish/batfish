@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 
 import org.batfish.datamodel.matchers.LineMatchersImpl.HasAuthenticationLoginList;
 import org.batfish.datamodel.matchers.LineMatchersImpl.RequiresAuthentication;
@@ -17,6 +18,14 @@ public final class LineMatchers {
   public static HasAuthenticationLoginList hasAuthenticationLoginList(
       Matcher<? super AaaAuthenticationLoginList> subMatcher) {
     return new HasAuthenticationLoginList(subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches when the {@link Line}'s {@code AaaAuthenticationLoginList} is
+   * not null
+   */
+  public static HasAuthenticationLoginList hasAuthenticationLoginList() {
+    return new HasAuthenticationLoginList(notNullValue());
   }
 
   /** Provides a matcher that matches if the {@link Line} requires authentication */

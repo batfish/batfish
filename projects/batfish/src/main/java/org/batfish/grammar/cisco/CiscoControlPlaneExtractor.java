@@ -1724,6 +1724,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Logging logging = new Logging();
       logging.setOn(true);
       _configuration.getCf().setLogging(logging);
+    } else if (_format == CISCO_ASA) {
+      // serial line may not be anywhere in the config so add it here to make sure the serial line
+      // is in the data model
+      _configuration.getCf().getLines().computeIfAbsent("serial", Line::new);
     }
   }
 
