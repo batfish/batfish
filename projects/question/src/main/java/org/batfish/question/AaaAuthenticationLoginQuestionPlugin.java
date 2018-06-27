@@ -2,6 +2,7 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -21,13 +22,13 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
 
   public static class AaaAuthenticationAnswerElement extends AnswerElement {
 
-    private SortedMap<String, List<String>> _exposedLines;
+    private ImmutableSortedMap<String, List<String>> _exposedLines;
 
-    public AaaAuthenticationAnswerElement() {
-      _exposedLines = new TreeMap<>();
+    public AaaAuthenticationAnswerElement(SortedMap<String, List<String>> exposedLines) {
+      _exposedLines = ImmutableSortedMap.copyOf(exposedLines);
     }
 
-    public SortedMap<String, List<String>> getExposedLines() {
+    public ImmutableSortedMap<String, List<String>> getExposedLines() {
       return _exposedLines;
     }
   }
@@ -40,7 +41,8 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
     @Override
     public AaaAuthenticationAnswerElement answer() {
       AaaAuthenticationQuestion question = (AaaAuthenticationQuestion) _question;
-      AaaAuthenticationAnswerElement answerElement = new AaaAuthenticationAnswerElement();
+
+      SortedMap<String, List<String>> exposedLines = new TreeMap<>();
 
       Set<String> specifiedNodes = question.getNodeRegex().getMatchingNodes(_batfish);
 
@@ -56,12 +58,12 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
                 }
               }
               if (!lines.isEmpty()) {
-                answerElement.getExposedLines().put(configName, lines);
+                exposedLines.put(configName, lines);
               }
             }
           });
 
-      return answerElement;
+      return new AaaAuthenticationAnswerElement(exposedLines);
     }
   }
 
