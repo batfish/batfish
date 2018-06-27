@@ -328,7 +328,8 @@ public class CiscoGrammarTest {
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(not(hasListForKey(hasMethod(GROUP_USER_DEFINED), SERIAL_LINE))))))));
+                        hasLogin(
+                            not(hasListForKey(hasMethod(GROUP_USER_DEFINED), SERIAL_LINE))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
