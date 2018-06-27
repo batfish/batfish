@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
  * A {@link LocationSpecifierFactory} for {@link DescriptionRegexInterfaceLinkLocationSpecifier}.
  */
 @AutoService(LocationSpecifierFactory.class)
-public class DescriptionRegexInterfaceLinkLocationSpecifierFactory
+public final class DescriptionRegexInterfaceLinkLocationSpecifierFactory
     extends CaseInsensitiveRegexLocationSpecifierFactory {
   public static final String NAME =
       DescriptionRegexInterfaceLinkLocationSpecifierFactory.class.getSimpleName();
