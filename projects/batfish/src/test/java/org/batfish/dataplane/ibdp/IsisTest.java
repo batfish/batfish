@@ -300,8 +300,7 @@ public class IsisTest {
         Sets.intersection(r3Vr._isisL1Rib.getRoutes(), r3Vr._isisL2Rib.getRoutes()), empty());
   }
 
-  /* TODO: https://github.com/batfish/batfish/issues/1703 */
-  @Ignore
+  @Ignore("https://github.com/batfish/batfish/issues/1703")
   @Test
   public void testLeakedRoutes() {
     IncrementalDataPlane dp = computeDataPlane();
@@ -321,8 +320,7 @@ public class IsisTest {
     assertInterAreaRoute(routes, R5, Prefix.parse("10.2.3.0/24"), 148L);
   }
 
-  /* TODO: https://github.com/batfish/batfish/issues/1703 */
-  @Ignore
+  @Ignore("https://github.com/batfish/batfish/issues/1703")
   @Test
   public void testRedistributedRoutes() {
     IncrementalDataPlane dp = computeDataPlane();
