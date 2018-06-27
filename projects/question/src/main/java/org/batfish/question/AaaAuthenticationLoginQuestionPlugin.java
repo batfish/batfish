@@ -3,6 +3,7 @@ package org.batfish.question;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -28,7 +29,7 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
   public static class AaaAuthenticationAnswerer extends Answerer {
 
     public static final String COLUMN_NODE = "node";
-    public static final String COLUMN_LINE_NAME = "lineName";
+    public static final String COLUMN_LINE_NAMES = "lineNames";
 
     public AaaAuthenticationAnswerer(Question question, IBatfish batfish) {
       super(question, batfish);
@@ -45,14 +46,15 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
       List<ColumnMetadata> columnMetadata =
           ImmutableList.of(
               new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
-              new ColumnMetadata(COLUMN_LINE_NAME, Schema.STRING, "Line name", false, true));
+              new ColumnMetadata(
+                  COLUMN_LINE_NAMES, Schema.list(Schema.STRING), "Line names", false, true));
       DisplayHints dhints = question.getDisplayHints();
       if (dhints == null) {
         dhints = new DisplayHints();
         dhints.setTextDesc(
             String.format(
-                "Node ${%s} does not require authentication on line ${%s}",
-                COLUMN_NODE, COLUMN_LINE_NAME));
+                "Node ${%s} does not require authentication on line(s) ${%s}",
+                COLUMN_NODE, COLUMN_LINE_NAMES));
       }
       TableMetadata metadata = new TableMetadata(columnMetadata, dhints);
       return new TableAnswerElement(metadata);
@@ -71,20 +73,23 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
           (configName, config) -> {
             if (specifiedNodes.contains(configName)
                 && config.getVendorFamily().getCisco() != null) {
+              List<String> lines = new ArrayList<>();
               for (Line line : config.getVendorFamily().getCisco().getLines().values()) {
                 if (!line.requiresAuthentication()) {
-                  Row row = getRow(configName, line.getName());
-                  answerElement.addRow(row);
+                  lines.add(line.getName());
                 }
+              }
+              if (!lines.isEmpty()) {
+                answerElement.addRow(getRow(configName, lines));
               }
             }
           });
       return answerElement;
     }
 
-    private static Row getRow(String nodeName, String lineName) {
+    private static Row getRow(String nodeName, List<String> lines) {
       RowBuilder row = Row.builder();
-      row.put(COLUMN_NODE, new Node(nodeName)).put(COLUMN_LINE_NAME, lineName);
+      row.put(COLUMN_NODE, new Node(nodeName)).put(COLUMN_LINE_NAMES, lines);
       return row.build();
     }
   }
