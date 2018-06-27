@@ -65,6 +65,7 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticati
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -2418,5 +2419,15 @@ public class CiscoGrammarTest {
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
     assertThat(c.getVrfs().get("bar").getBgpProcess().getNeighbors().values(), hasSize(1));
+  }
+
+  @Test
+  public void testArista100gfullInterface() throws IOException {
+    Configuration c = parseConfig("arista100gfull");
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/1",
+            hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
   }
 }
