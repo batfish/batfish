@@ -1739,7 +1739,15 @@
         },
         "vendorFamily" : {
           "cisco" : {
-            "hostname" : "asa_ospf"
+            "hostname" : "asa_ospf",
+            "lines" : {
+              "serial" : {
+                "name" : "serial",
+                "execTimeoutMinutes" : 0,
+                "execTimeoutSeconds" : 0,
+                "lineType" : "SERIAL"
+              }
+            }
           }
         },
         "vrfs" : {
