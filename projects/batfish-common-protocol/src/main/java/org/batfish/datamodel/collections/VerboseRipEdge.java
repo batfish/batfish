@@ -3,10 +3,11 @@ package org.batfish.datamodel.collections;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.Comparator;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.RipNeighbor;
 
-public final class VerboseRipEdge implements Serializable {
+public final class VerboseRipEdge implements Serializable, Comparable<VerboseRipEdge> {
 
   private static final String PROP_EDGE_SUMMARY = "edgeSummary";
 
@@ -43,5 +44,13 @@ public final class VerboseRipEdge implements Serializable {
   @JsonProperty(PROP_NODE2_SESSION)
   public RipNeighbor getSession2() {
     return _session2;
+  }
+
+  @Override
+  public int compareTo(@Nonnull VerboseRipEdge o) {
+    return Comparator.comparing(VerboseRipEdge::getEdgeSummary)
+        .thenComparing(edge -> edge.getSession1().getIpEdge())
+        .thenComparing(edge -> edge.getSession2().getIpEdge())
+        .compare(this, o);
   }
 }
