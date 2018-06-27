@@ -42,18 +42,18 @@ import javax.annotation.Nullable;
  * ("nodeRole:[Dimension]"), VRF name ("vrf"), or interface name ("interface").
  */
 @AutoService(LocationSpecifierFactory.class)
-public class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
+public final class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
   public static final String NAME = FlexibleLocationSpecifierFactory.class.getSimpleName();
 
-  static final String LOCATION_TYPE_INTERFACE = "interface";
-  static final String LOCATION_TYPE_INTERFACE_LINK = "interfaceLink";
-  static final String DEFAULT_LOCATION_TYPE = LOCATION_TYPE_INTERFACE_LINK;
+  private static final String LOCATION_TYPE_INTERFACE = "interface";
+  private static final String LOCATION_TYPE_INTERFACE_LINK = "interfaceLink";
+  private static final String DEFAULT_LOCATION_TYPE = LOCATION_TYPE_INTERFACE_LINK;
 
-  static final String PROPERTY_TYPE_INTERFACE_NAME = "interface";
-  static final String PROPERTY_TYPE_NODE_NAME = "node";
-  static final String PROPERTY_TYPE_NODE_ROLE_PREFIX = "nodeRole:";
-  static final String PROPERTY_TYPE_VRF_NAME = "vrf";
-  static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NODE_NAME;
+  private static final String PROPERTY_TYPE_INTERFACE_NAME = "interface";
+  private static final String PROPERTY_TYPE_NODE_NAME = "node";
+  private static final String PROPERTY_TYPE_NODE_ROLE_PREFIX = "nodeRole:";
+  private static final String PROPERTY_TYPE_VRF_NAME = "vrf";
+  private static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NODE_NAME;
 
   private static final Map<String, ClauseParser> CLAUSE_PARSERS =
       ImmutableMap.of(
