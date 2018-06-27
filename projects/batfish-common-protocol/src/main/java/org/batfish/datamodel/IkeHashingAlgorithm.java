@@ -1,6 +1,6 @@
 package org.batfish.datamodel;
 
-public enum IkeAuthenticationAlgorithm {
+public enum IkeHashingAlgorithm {
   MD5,
   SHA_256,
   SHA_384,
