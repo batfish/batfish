@@ -45,12 +45,12 @@ java_library(
     srcs = glob([
         "src/main/**/*.java",
     ]),
+    plugins = [
+        "//:auto_service_plugin",
+    ],
     resources = [
         "src/generated/resources/org/batfish/common/common.properties",
         "src/main/resources/org/batfish/common/util/salt",
-    ],
-    plugins = [
-        "//:auto_service_plugin",
     ],
     runtime_deps = [
         "@commons_beanutils//:runtime",
