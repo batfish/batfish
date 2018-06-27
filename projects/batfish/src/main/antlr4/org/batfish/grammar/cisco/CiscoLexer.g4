@@ -8019,6 +8019,11 @@ ONE_HUNDRED_FULL
   '100full'
 ;
 
+ONE_HUNDREDG_FULL
+:
+  '100gfull'
+;
+
 ONE_OUT_OF
 :
    'one-out-of'

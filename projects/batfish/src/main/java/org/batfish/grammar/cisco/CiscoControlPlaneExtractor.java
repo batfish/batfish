@@ -5079,6 +5079,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return 100E6D;
     } else if (ctx.ONE_THOUSAND_FULL() != null) {
       return 1E9D;
+    } else if (ctx.ONE_HUNDREDG_FULL() != null) {
+      return 100E9D;
     } else {
       throw convError(Double.class, ctx);
     }

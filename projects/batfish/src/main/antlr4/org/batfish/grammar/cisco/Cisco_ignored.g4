@@ -495,7 +495,6 @@ null_inner
       | SINGLE_ROUTER_MODE
       | SLOT
       | SORT_BY
-      | SPEED
       | SPLIT_TUNNEL_NETWORK_LIST
       | SPLIT_TUNNEL_POLICY
       | SSH_KEYDIR
@@ -884,7 +883,6 @@ null_single
       | SOFTWARE
       | SPD
       | SPE
-      | SPEED
       | STOPBITS
       | SSL
       | STATIC
