@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import javax.annotation.Nonnull;
 import org.batfish.common.Answerer;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -170,7 +171,6 @@ public final class TracerouteAnswerer extends Answerer {
   }
 
   private void setDstIp(Flow.Builder flowBuilder) {
-    // TODO: better automatic source ip, considering VRFs and routing
     TracerouteQuestion question = (TracerouteQuestion) _question;
     if (flowBuilder.getDstIp().equals(Ip.AUTO)) {
       flowBuilder.setDstIp(question.createDstIpFromDst(_configurations));
@@ -181,7 +181,8 @@ public final class TracerouteAnswerer extends Answerer {
     loc.accept(
         new LocationVisitor<Void>() {
           @Override
-          public Void visitInterfaceLinkLocation(InterfaceLinkLocation interfaceLinkLocation) {
+          public Void visitInterfaceLinkLocation(
+              @Nonnull InterfaceLinkLocation interfaceLinkLocation) {
             flowBuilder
                 .setIngressInterface(interfaceLinkLocation.getInterfaceName())
                 .setIngressNode(interfaceLinkLocation.getNodeName())
@@ -190,7 +191,7 @@ public final class TracerouteAnswerer extends Answerer {
           }
 
           @Override
-          public Void visitInterfaceLocation(InterfaceLocation interfaceLocation) {
+          public Void visitInterfaceLocation(@Nonnull InterfaceLocation interfaceLocation) {
             flowBuilder
                 .setIngressInterface(null)
                 .setIngressNode(interfaceLocation.getNodeName())
