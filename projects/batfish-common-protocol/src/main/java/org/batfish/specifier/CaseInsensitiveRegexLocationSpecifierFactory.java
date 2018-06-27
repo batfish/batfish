@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 public abstract class CaseInsensitiveRegexLocationSpecifierFactory
     implements LocationSpecifierFactory {
   @Override
-  public LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
+  public final LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
     checkArgument(input instanceof String, getName() + " requires input of type String");
     return buildLocationSpecifier(Pattern.compile((String) input, Pattern.CASE_INSENSITIVE));
   }

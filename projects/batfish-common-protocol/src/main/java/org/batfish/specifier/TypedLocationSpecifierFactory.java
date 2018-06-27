@@ -15,7 +15,7 @@ public abstract class TypedLocationSpecifierFactory<T> implements LocationSpecif
   protected abstract Class<T> getInputClass();
 
   @Override
-  public LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
+  public final LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
     Class<T> inputClass = getInputClass();
     if (!getInputClass().isInstance(input)) {
       throw new BatfishException(
