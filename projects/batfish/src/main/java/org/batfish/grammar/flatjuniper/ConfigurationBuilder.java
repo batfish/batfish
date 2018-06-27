@@ -82,8 +82,8 @@ import org.batfish.datamodel.ExtendedCommunity;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
@@ -1377,16 +1377,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
     }
   }
 
-  private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(
+  private static IkeHashingAlgorithm toIkeHashingAlgorithm(
       Ike_authentication_algorithmContext ctx) {
     if (ctx.MD5() != null) {
-      return IkeAuthenticationAlgorithm.MD5;
+      return IkeHashingAlgorithm.MD5;
     } else if (ctx.SHA1() != null) {
-      return IkeAuthenticationAlgorithm.SHA1;
+      return IkeHashingAlgorithm.SHA1;
     } else if (ctx.SHA_256() != null) {
-      return IkeAuthenticationAlgorithm.SHA_256;
+      return IkeHashingAlgorithm.SHA_256;
     } else if (ctx.SHA_384() != null) {
-      return IkeAuthenticationAlgorithm.SHA_384;
+      return IkeHashingAlgorithm.SHA_384;
     } else {
       throw new BatfishException("invalid ike authentication algorithm: " + ctx.getText());
     }
@@ -4324,8 +4324,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   @Override
   public void exitSeikpr_authentication_algorithm(Seikpr_authentication_algorithmContext ctx) {
-    IkeAuthenticationAlgorithm alg =
-        toIkeAuthenticationAlgorithm(ctx.ike_authentication_algorithm());
+    IkeHashingAlgorithm alg = toIkeHashingAlgorithm(ctx.ike_authentication_algorithm());
     _currentIkeProposal.setAuthenticationAlgorithm(alg);
   }
 
