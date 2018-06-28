@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 if [[ "$(uname)" == 'Darwin' && -n "$(which gfind)" ]]; then
    GNU_FIND=gfind
 else

@@ -9,11 +9,11 @@ _batfish_client()
       fi
    done
    if [ "$prev" = "-loglevel" ]; then
-      COMPREPLY=( $(compgen -W "$(grep 'private static final String LEVELSTR' ${COMMON_PATH}/src/org/batfish/common/BatfishLogger.java | sed 's/.* = "\([^"]*\)".*$/\1/g' | tr '\n' ' ')" -- $cur) )
+      COMPREPLY=( $(compgen -W "$(grep 'private static final String LEVELSTR' ${COMMON_PATH}/src/org/batfish/common/BatfishLogger.java | sed 's/.* = "\([^"]*\)".*$/\1/g' | tr '\n' ' ')" -- ${cur}) )
    elif [ "$prev" = "-runmode" ]; then
-      COMPREPLY=( $(compgen -W "$(echo batch interactive)" -- $cur) )
+      COMPREPLY=( $(compgen -W "$(echo batch interactive)" -- ${cur}) )
    else
-      COMPREPLY=( $(compgen -fW "$(cat $BATFISH_CLIENT_COMPLETION_FILE)" -- $cur) )
+      COMPREPLY=( $(compgen -fW "$(cat ${BATFISH_CLIENT_COMPLETION_FILE})" -- ${cur}) )
    fi
 }
 complete -F _batfish_client batfish_client

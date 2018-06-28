@@ -8,5 +8,5 @@ if batfish_cygwin; then
    ALLINONE_JAR="$(cygpath -w "$ALLINONE_JAR")"
    CPSEP=";"
 fi
-java $COORDINATOR_JAVA_ARGS -cp "${ALLINONE_JAR}${CPSEP}${COORDINATOR_CLASSPATH}" org.batfish.coordinator.Main "$@"
+java ${COORDINATOR_JAVA_ARGS} -cp "${ALLINONE_JAR}${CPSEP}${COORDINATOR_CLASSPATH}" org.batfish.coordinator.Main "$@"
 
