@@ -73,6 +73,7 @@ import org.batfish.datamodel.answers.AnswerStatus;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
 import org.batfish.datamodel.answers.AutocompleteSuggestion.CompletionType;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.pojo.Topology;
 import org.batfish.datamodel.questions.InterfacePropertySpecifier;
 import org.batfish.datamodel.questions.NodePropertySpecifier;
@@ -914,7 +915,7 @@ public class WorkMgr extends AbstractCoordinator {
         getdirTestrig(container, testrig).resolve(BfConsts.RELPATH_TESTRIG_POJO_TOPOLOGY_PATH);
     Topology topology =
         BatfishObjectMapper.mapper().readValue(pojoTopologyPath.toFile(), Topology.class);
-    return topology.getNodes().stream().map(node -> node.getName()).collect(Collectors.toSet());
+    return topology.getNodes().stream().map(Node::getName).collect(Collectors.toSet());
   }
 
   public JSONObject getParsingResults(String containerName, String testrigName)
@@ -1490,7 +1491,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
-      Thread thread = new Thread(() -> assignWork());
+      Thread thread = new Thread(this::assignWork);
       thread.start();
     }
     return success;

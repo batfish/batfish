@@ -233,7 +233,7 @@ public class Row implements Comparable<Row> {
    */
   public Set<String> getColumnNames() {
     HashSet<String> columns = new HashSet<>();
-    _data.fieldNames().forEachRemaining(column -> columns.add(column));
+    _data.fieldNames().forEachRemaining(columns::add);
     return columns;
   }
 

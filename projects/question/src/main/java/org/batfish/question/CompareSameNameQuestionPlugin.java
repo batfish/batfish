@@ -329,7 +329,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
     private SortedSet<String> toLowerCase(Collection<String> names) {
       return names
           .stream()
-          .map(name -> name.toLowerCase())
+          .map(String::toLowerCase)
           .collect(ImmutableSortedSet.toImmutableSortedSet(Comparator.naturalOrder()));
     }
   }
