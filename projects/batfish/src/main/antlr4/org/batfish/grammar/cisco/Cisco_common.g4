@@ -473,6 +473,33 @@ rp_subrange
    )
 ;
 
+service_specifier
+:
+   service_specifier_icmp
+   | service_specifier_tcp_udp
+   | service_specifier_protocol
+;
+
+service_specifier_icmp
+:
+   ICMP icmp_object_type?
+;
+
+service_specifier_protocol
+:
+   protocol
+;
+
+service_specifier_tcp_udp
+:
+   (
+      TCP
+      | TCP_UDP
+      | UDP
+   )
+   (SOURCE src_ps = port_specifier)? (DESTINATION dst_ps = port_specifier)?
+;
+
 subrange
 :
    low = DEC

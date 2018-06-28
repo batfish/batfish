@@ -478,6 +478,7 @@ import org.batfish.grammar.cisco.CiscoParser.Filter_list_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Flan_unitContext;
 import org.batfish.grammar.cisco.CiscoParser.Hash_commentContext;
+import org.batfish.grammar.cisco.CiscoParser.Icmp_object_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.If_autostateContext;
 import org.batfish.grammar.cisco.CiscoParser.If_bandwidthContext;
 import org.batfish.grammar.cisco.CiscoParser.If_channel_groupContext;
@@ -616,6 +617,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ntp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.Ntp_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Null_as_path_regexContext;
+import org.batfish.grammar.cisco.CiscoParser.O_serviceContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_networkContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Og_serviceContext;
@@ -625,6 +627,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ogn_ip_with_maskContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogs_service_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_exprContext;
@@ -826,6 +829,9 @@ import org.batfish.grammar.cisco.CiscoParser.S_zone_pairContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_blankContext;
 import org.batfish.grammar.cisco.CiscoParser.Sd_switchport_shutdownContext;
 import org.batfish.grammar.cisco.CiscoParser.Send_community_bgp_tailContext;
+import org.batfish.grammar.cisco.CiscoParser.Service_specifier_icmpContext;
+import org.batfish.grammar.cisco.CiscoParser.Service_specifier_protocolContext;
+import org.batfish.grammar.cisco.CiscoParser.Service_specifier_tcp_udpContext;
 import org.batfish.grammar.cisco.CiscoParser.Session_group_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_as_path_prepend_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Set_comm_list_delete_rm_stanzaContext;
@@ -1046,7 +1052,9 @@ import org.batfish.representation.cisco.RoutePolicySetWeight;
 import org.batfish.representation.cisco.RoutePolicyStatement;
 import org.batfish.representation.cisco.SecurityZone;
 import org.batfish.representation.cisco.SecurityZonePair;
+import org.batfish.representation.cisco.ServiceObject;
 import org.batfish.representation.cisco.ServiceObjectGroup;
+import org.batfish.representation.cisco.ServiceObjectReferenceServiceObjectGroupLine;
 import org.batfish.representation.cisco.SimpleExtendedAccessListServiceSpecifier;
 import org.batfish.representation.cisco.StandardAccessList;
 import org.batfish.representation.cisco.StandardAccessListLine;
@@ -1128,6 +1136,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private static final String F_ACL_INTERFACE = "acl match interface";
 
   private static final String F_ACL_OBJECT = "acl match object";
+
+  private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
@@ -1331,6 +1341,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private RoutePolicy _currentRoutePolicy;
 
   private ServiceClass _currentServiceClass;
+
+  private ServiceObject _currentServiceObject;
 
   private SnmpCommunity _currentSnmpCommunity;
 
@@ -2292,6 +2304,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterO_service(O_serviceContext ctx) {
+    String name = ctx.name.getText();
+    _currentServiceObject =
+        _configuration.getServiceObjects().computeIfAbsent(name, ServiceObject::new);
+    defineStructure(CiscoStructureType.SERVICE_OBJECT, name, ctx);
+  }
+
+  @Override
+  public void exitO_service(O_serviceContext ctx) {
+    _currentServiceObject = null;
+  }
+
+  @Override
   public void exitOg_network(Og_networkContext ctx) {
     _currentNetworkObjectGroup = null;
   }
@@ -2397,6 +2422,31 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterOgs_service_object(Ogs_service_objectContext ctx) {
+    if (ctx.service_specifier() != null) {
+      _currentServiceObject = new ServiceObject(INLINE_SERVICE_OBJECT_NAME);
+    }
+  }
+
+  @Override
+  public void exitOgs_service_object(Ogs_service_objectContext ctx) {
+    if (ctx.name != null) {
+      String name = ctx.name.getText();
+      _currentServiceObjectGroup
+          .getLines()
+          .add(new ServiceObjectReferenceServiceObjectGroupLine(name));
+      _configuration.referenceStructure(
+          CiscoStructureType.SERVICE_OBJECT,
+          name,
+          CiscoStructureUsage.SERVICE_OBJECT_GROUP_SERVICE_OBJECT,
+          ctx.name.getStart().getLine());
+    } else if (ctx.service_specifier() != null) {
+      _currentServiceObjectGroup.getLines().add(_currentServiceObject);
+      _currentServiceObject = null;
+    }
+  }
+
+  @Override
   public void exitOgs_tcp(Ogs_tcpContext ctx) {
     _currentServiceObjectGroup.getLines().add(new TcpServiceObjectGroupLine(toPortRanges(ctx.ps)));
   }
@@ -2404,6 +2454,37 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOgs_udp(Ogs_udpContext ctx) {
     _currentServiceObjectGroup.getLines().add(new UdpServiceObjectGroupLine(toPortRanges(ctx.ps)));
+  }
+
+  @Override
+  public void exitService_specifier_icmp(Service_specifier_icmpContext ctx) {
+    _currentServiceObject.addProtocol(IpProtocol.ICMP);
+    if (ctx.icmp_object_type() != null) {
+      _currentServiceObject.setIcmpType(toIcmpType(ctx.icmp_object_type()));
+    }
+  }
+
+  @Override
+  public void exitService_specifier_protocol(Service_specifier_protocolContext ctx) {
+    _currentServiceObject.addProtocol(toIpProtocol(ctx.protocol()));
+  }
+
+  @Override
+  public void exitService_specifier_tcp_udp(Service_specifier_tcp_udpContext ctx) {
+    if (ctx.TCP() != null) {
+      _currentServiceObject.addProtocol(IpProtocol.TCP);
+    } else if (ctx.TCP_UDP() != null) {
+      _currentServiceObject.addProtocol(IpProtocol.TCP);
+      _currentServiceObject.addProtocol(IpProtocol.UDP);
+    } else {
+      _currentServiceObject.addProtocol(IpProtocol.UDP);
+    }
+    if (ctx.dst_ps != null) {
+      _currentServiceObject.setDstPorts(toPortRanges(ctx.dst_ps));
+    }
+    if (ctx.src_ps != null) {
+      _currentServiceObject.setSrcPorts(toPortRanges(ctx.src_ps));
+    }
   }
 
   @Override
@@ -8419,6 +8500,28 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return EncryptionAlgorithm.THREEDES_CBC;
     } else {
       throw convError(EncryptionAlgorithm.class, ctx);
+    }
+  }
+
+  private Integer toIcmpType(Icmp_object_typeContext ctx) {
+    if (ctx.ECHO() != null) {
+      return IcmpType.ECHO_REQUEST;
+    } else if (ctx.ECHO_REPLY() != null) {
+      return IcmpType.ECHO_REPLY;
+    } else if (ctx.PARAMETER_PROBLEM() != null) {
+      return IcmpType.PARAMETER_PROBLEM;
+    } else if (ctx.REDIRECT() != null) {
+      return IcmpType.REDIRECT_MESSAGE;
+    } else if (ctx.SOURCE_QUENCH() != null) {
+      return IcmpType.SOURCE_QUENCH;
+    } else if (ctx.TIME_EXCEEDED() != null) {
+      return IcmpType.TIME_EXCEEDED;
+    } else if (ctx.TRACEROUTE() != null) {
+      return IcmpType.TRACEROUTE;
+    } else if (ctx.UNREACHABLE() != null) {
+      return IcmpType.DESTINATION_UNREACHABLE;
+    } else {
+      throw convError(IcmpType.class, ctx);
     }
   }
 

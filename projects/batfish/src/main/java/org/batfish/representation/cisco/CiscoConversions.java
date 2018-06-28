@@ -305,6 +305,17 @@ class CiscoConversions {
         .build();
   }
 
+  static IpAccessList toIpAccessList(ServiceObject serviceObject) {
+    return IpAccessList.builder()
+        .setLines(
+            ImmutableList.of(
+                IpAccessListLine.accepting()
+                    .setMatchCondition(serviceObject.toAclLineMatchExpr())
+                    .build()))
+        .setName(CiscoConfiguration.computeServiceObjectGroupAclName(serviceObject.getName()))
+        .build();
+  }
+
   private static IpAccessListLine toIpAccessListLine(
       ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();

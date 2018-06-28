@@ -8340,7 +8340,21 @@
               {
                 "action" : "ACCEPT",
                 "matchCondition" : {
-                  "class" : "org.batfish.datamodel.acl.OrMatchExpr"
+                  "class" : "org.batfish.datamodel.acl.OrMatchExpr",
+                  "disjuncts" : [
+                    {
+                      "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
+                      "headerSpace" : {
+                        "icmpTypes" : [
+                          "8-8"
+                        ],
+                        "ipProtocols" : [
+                          "ICMP"
+                        ],
+                        "negate" : false
+                      }
+                    }
+                  ]
                 }
               }
             ]
