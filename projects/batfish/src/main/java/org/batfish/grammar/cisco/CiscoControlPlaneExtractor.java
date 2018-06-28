@@ -191,6 +191,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_DES
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_INSPECT_SERVICE_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.ZONE_PAIR_SOURCE_ZONE;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.ArrayList;
@@ -229,8 +230,8 @@ import org.batfish.datamodel.DscpType;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IcmpType;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -1140,6 +1141,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
+  @VisibleForTesting static final String SERIAL_LINE = "serial";
+
   @Override
   public void exitIf_ip_ospf_network(If_ip_ospf_networkContext ctx) {
     for (Interface iface : _currentInterfaces) {
@@ -1254,7 +1257,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @SuppressWarnings("unused")
   private List<AaaAccountingCommands> _currentAaaAccountingCommands;
 
-  @SuppressWarnings("unused")
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
   private IpAsPathAccessList _currentAsPathAcl;
@@ -1699,7 +1701,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     /* Pad priority number with zeros, so string sorting sorts in numerical order too */
     String priority = String.format("%03d", toInteger(ctx.priority));
     _currentIsakmpPolicy = new IsakmpPolicy(priority);
-    _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
+    _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
     _currentIsakmpPolicy.getProposal().setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC);
     _currentIsakmpPolicy
         .getProposal()
@@ -1737,6 +1739,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       Logging logging = new Logging();
       logging.setOn(true);
       _configuration.getCf().setLogging(logging);
+    } else if (_format == CISCO_ASA) {
+      // serial line may not be anywhere in the config so add it here to make sure the serial line
+      // is in the data model
+      _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
     }
   }
 
@@ -1780,15 +1786,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitCispol_hash(Cispol_hashContext ctx) {
     if (ctx.MD5() != null) {
-      _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5);
+      _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5);
     } else if (ctx.SHA() != null) {
-      _currentIsakmpPolicy
-          .getProposal()
-          .setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1);
+      _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1);
     } else if (ctx.SHA2_256_128() != null) {
-      _currentIsakmpPolicy
-          .getProposal()
-          .setAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256);
+      _currentIsakmpPolicy.getProposal().setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256);
     } else {
       throw new BatfishException("Unsupported authentication method in " + ctx.getText());
     }
@@ -5169,6 +5171,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return 100E6D;
     } else if (ctx.ONE_THOUSAND_FULL() != null) {
       return 1E9D;
+    } else if (ctx.ONE_HUNDREDG_FULL() != null) {
+      return 100E9D;
     } else {
       throw convError(Double.class, ctx);
     }

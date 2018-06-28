@@ -1,7 +1,9 @@
 package org.batfish.datamodel.matchers;
 
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 import java.util.List;
 import org.batfish.datamodel.AuthenticationMethod;
@@ -16,5 +18,9 @@ public class AaaAuthenticationLoginListMatchers {
 
   public static HasMethods hasMethods(Matcher<? super List<AuthenticationMethod>> subMatcher) {
     return new HasMethods(subMatcher);
+  }
+
+  public static HasMethods hasMethods() {
+    return new HasMethods(not(empty()));
   }
 }

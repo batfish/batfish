@@ -65,6 +65,7 @@ import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticati
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasEncryptionAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasLifeTimeSeconds;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDeclaredNames;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasMtu;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasOspfArea;
@@ -107,6 +108,7 @@ import static org.batfish.datamodel.vendor_family.VendorFamilyMatchers.hasCisco;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasAaa;
 import static org.batfish.datamodel.vendor_family.cisco.CiscoFamilyMatchers.hasLogging;
 import static org.batfish.datamodel.vendor_family.cisco.LoggingMatchers.isOn;
+import static org.batfish.grammar.cisco.CiscoControlPlaneExtractor.SERIAL_LINE;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeCombinedOutgoingAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectClassMapAclName;
 import static org.batfish.representation.cisco.CiscoConfiguration.computeInspectPolicyMapAclName;
@@ -166,8 +168,8 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpType;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.InterfaceType;
@@ -289,9 +291,7 @@ public class CiscoGrammarTest {
     assertThat(asaLines.get("ssh"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
     assertThat(asaLines.get("ssh"), hasAuthenticationLoginList(hasMethod(LOCAL_CASE)));
 
-    assertThat(asaLines.get("serial"), hasAuthenticationLoginList(hasMethod(LOCAL_CASE)));
-    assertThat(
-        asaLines.get("serial"), hasAuthenticationLoginList(not(hasMethod(GROUP_USER_DEFINED))));
+    assertThat(asaLines.get(SERIAL_LINE), not(hasAuthenticationLoginList()));
 
     assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(hasMethod(GROUP_USER_DEFINED)));
     assertThat(asaLines.get("telnet"), hasAuthenticationLoginList(not(hasMethod(LOCAL_CASE))));
@@ -304,7 +304,7 @@ public class CiscoGrammarTest {
     SortedMap<String, Line> asaLines =
         aaaAuthAsaConfiguration.getVendorFamily().getCisco().getLines();
     for (Line line : asaLines.values()) {
-      if (line.getLineType() == LineType.HTTP) {
+      if (line.getLineType() == LineType.HTTP || line.getLineType() == LineType.SERIAL) {
         assertThat(line, not(requiresAuthentication()));
       } else {
         assertThat(line, requiresAuthentication());
@@ -342,14 +342,16 @@ public class CiscoGrammarTest {
         hasVendorFamily(
             hasCisco(
                 hasAaa(
-                    hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL_CASE), "serial")))))));
+                    hasAuthentication(
+                        hasLogin(not(hasListForKey(hasMethod(LOCAL_CASE), SERIAL_LINE))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
             hasCisco(
                 hasAaa(
                     hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod(GROUP_USER_DEFINED)), "serial")))))));
+                        hasLogin(
+                            not(hasListForKey(hasMethod(GROUP_USER_DEFINED), SERIAL_LINE))))))));
     assertThat(
         aaaAuthAsaConfiguration,
         hasVendorFamily(
@@ -1828,7 +1830,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA_256),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA_256),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP19),
                 hasLifeTimeSeconds(86400))));
     // asserting the default values being set
@@ -1839,7 +1841,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
                 hasLifeTimeSeconds(86400))));
   }
@@ -1855,7 +1857,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.MD5),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
                 hasLifeTimeSeconds(14400))));
 
@@ -1867,7 +1869,7 @@ public class CiscoGrammarTest {
             allOf(
                 hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
                 hasAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                hasAuthenticationAlgorithm(IkeAuthenticationAlgorithm.SHA1),
+                hasAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
                 hasLifeTimeSeconds(86400))));
   }
@@ -2477,5 +2479,15 @@ public class CiscoGrammarTest {
   public void testNxosBgpVrf() throws IOException {
     Configuration c = parseConfig("nxosBgpVrf");
     assertThat(c.getVrfs().get("bar").getBgpProcess().getNeighbors().values(), hasSize(1));
+  }
+
+  @Test
+  public void testArista100gfullInterface() throws IOException {
+    Configuration c = parseConfig("arista100gfull");
+    assertThat(
+        c,
+        hasInterface(
+            "Ethernet1/1",
+            hasAllAddresses(containsInAnyOrder(new InterfaceAddress("10.20.0.3/31")))));
   }
 }

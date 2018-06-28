@@ -17,9 +17,9 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
@@ -87,10 +87,10 @@ public class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  private static IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm(String ikeAuthProtocol) {
+  private static IkeHashingAlgorithm toIkeAuthenticationAlgorithm(String ikeAuthProtocol) {
     switch (ikeAuthProtocol) {
       case "sha1":
-        return IkeAuthenticationAlgorithm.SHA1;
+        return IkeHashingAlgorithm.SHA1;
 
       default:
         throw new BatfishException(

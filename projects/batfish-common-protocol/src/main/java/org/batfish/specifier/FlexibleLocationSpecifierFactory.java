@@ -1,11 +1,14 @@
 package org.batfish.specifier;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.auto.service.AutoService;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
+import javax.annotation.Nullable;
 
 /**
  * A {@link LocationSpecifierFactory} that parses a specification from a string. The goals are to be
@@ -19,7 +22,8 @@ import java.util.regex.Pattern;
  * Pattern      ::= [Specifier](;[Specifier])*
  * Specifier    ::= ([LocationType]:)?[Clause](,[Clause])*
  * Clause       ::= ([PropertyType]=)?[Regex]
- * PropertyType ::= node | vrf | name
+ * PropertyType ::= node | vrf | interface | nodeRole:[Dimension]
+ * Dimension    ::= [Identifier]
  * LocationType ::= interface | interfaceLink
  * </pre>
  *
@@ -32,23 +36,24 @@ import java.util.regex.Pattern;
  * the specifier represents the intersection of those sets.
  *
  * <p>A clause is a regex, optionally prepended with a property type specifier followed by '='. The
- * default property type is "name".
+ * default property type is "node".
  *
- * <p>There are three property types: the node ("node"), VRF ("vrf"), or name ("name") of the
- * interface.
+ * <p>There property types support specifying locations by node name ("node"), node role
+ * ("nodeRole:[Dimension]"), VRF name ("vrf"), or interface name ("interface").
  */
 @AutoService(LocationSpecifierFactory.class)
-public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFactory<String> {
+public final class FlexibleLocationSpecifierFactory implements LocationSpecifierFactory {
   public static final String NAME = FlexibleLocationSpecifierFactory.class.getSimpleName();
 
-  static final String LOCATION_TYPE_INTERFACE = "interface";
-  static final String LOCATION_TYPE_INTERFACE_LINK = "interfaceLink";
-  static final String DEFAULT_LOCATION_TYPE = LOCATION_TYPE_INTERFACE_LINK;
+  private static final String LOCATION_TYPE_INTERFACE = "interface";
+  private static final String LOCATION_TYPE_INTERFACE_LINK = "interfaceLink";
+  private static final String DEFAULT_LOCATION_TYPE = LOCATION_TYPE_INTERFACE_LINK;
 
-  static final String PROPERTY_TYPE_NAME = "name";
-  static final String PROPERTY_TYPE_NODE = "node";
-  static final String PROPERTY_TYPE_VRF = "vrf";
-  static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NAME;
+  private static final String PROPERTY_TYPE_INTERFACE_NAME = "interface";
+  private static final String PROPERTY_TYPE_NODE_NAME = "node";
+  private static final String PROPERTY_TYPE_NODE_ROLE_PREFIX = "nodeRole:";
+  private static final String PROPERTY_TYPE_VRF_NAME = "vrf";
+  private static final String DEFAULT_PROPERTY_TYPE = PROPERTY_TYPE_NODE_NAME;
 
   private static final Map<String, ClauseParser> CLAUSE_PARSERS =
       ImmutableMap.of(
@@ -61,13 +66,13 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
   }
 
   @Override
-  protected Class<String> getInputClass() {
-    return String.class;
-  }
-
-  @Override
-  public LocationSpecifier buildLocationSpecifierTyped(String input) {
-    return Arrays.stream(input.split(";"))
+  public LocationSpecifier buildLocationSpecifier(@Nullable Object input) {
+    if (input == null) {
+      return AllInterfaceLinksLocationSpecifier.INSTANCE;
+    }
+    checkArgument(input instanceof String, NAME + " input must be a String");
+    String str = (String) input;
+    return Arrays.stream(str.split(";"))
         .map(FlexibleLocationSpecifierFactory::parseSpecifier)
         .reduce(UnionLocationSpecifier::new)
         .get(); // never empty: split never returns a zero-element array
@@ -114,13 +119,17 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
 
       Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
 
-      if (propertyType.equals(PROPERTY_TYPE_NAME)) {
+      if (propertyType.equals(PROPERTY_TYPE_INTERFACE_NAME)) {
         return nameRegex(pattern);
       }
-      if (propertyType.equals(PROPERTY_TYPE_NODE)) {
+      if (propertyType.equals(PROPERTY_TYPE_NODE_NAME)) {
         return nodeRegex(pattern);
       }
-      if (propertyType.equals(PROPERTY_TYPE_VRF)) {
+      if (propertyType.startsWith(PROPERTY_TYPE_NODE_ROLE_PREFIX)) {
+        String dimension = propertyType.substring(PROPERTY_TYPE_NODE_ROLE_PREFIX.length());
+        return nodeRoleRegex(dimension, pattern);
+      }
+      if (propertyType.equals(PROPERTY_TYPE_VRF_NAME)) {
         return vrfRegex(pattern);
       }
 
@@ -130,6 +139,8 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
     protected abstract LocationSpecifier nameRegex(Pattern pattern);
 
     protected abstract LocationSpecifier nodeRegex(Pattern pattern);
+
+    protected abstract LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern);
 
     protected abstract LocationSpecifier vrfRegex(Pattern pattern);
   }
@@ -143,6 +154,11 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
     @Override
     protected LocationSpecifier nodeRegex(Pattern pattern) {
       return new NodeNameRegexInterfaceLocationSpecifier(pattern);
+    }
+
+    @Override
+    protected LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern) {
+      return new NodeRoleRegexInterfaceLocationSpecifier(dimension, pattern);
     }
 
     @Override
@@ -160,6 +176,11 @@ public class FlexibleLocationSpecifierFactory extends TypedLocationSpecifierFact
     @Override
     protected LocationSpecifier nodeRegex(Pattern pattern) {
       return new NodeNameRegexInterfaceLinkLocationSpecifier(pattern);
+    }
+
+    @Override
+    protected LocationSpecifier nodeRoleRegex(String dimension, Pattern pattern) {
+      return new NodeRoleRegexInterfaceLinkLocationSpecifier(dimension, pattern);
     }
 
     @Override

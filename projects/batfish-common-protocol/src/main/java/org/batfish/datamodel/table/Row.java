@@ -9,7 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Throwables;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -180,23 +179,6 @@ public class Row implements Comparable<Row> {
       return myStr.compareTo(oStr);
     } catch (JsonProcessingException e) {
       throw new BatfishException("Exception in row comparison", e);
-    }
-  }
-
-  /**
-   * Converts {@code jsonNode} to class of {@code valueType}
-   *
-   * @return The converted object
-   * @throws ClassCastException if the conversion fails
-   */
-  private <T> T convertType(JsonNode jsonNode, Class<T> valueType) {
-    try {
-      return BatfishObjectMapper.mapper().treeToValue(jsonNode, valueType);
-    } catch (JsonProcessingException e) {
-      throw new ClassCastException(
-          String.format(
-              "Cannot recover object of type %s from json %s: %s\n%s",
-              valueType.getName(), jsonNode, e.getMessage(), Throwables.getStackTraceAsString(e)));
     }
   }
 

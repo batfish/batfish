@@ -1,11 +1,16 @@
 package org.batfish.grammar.palo_alto;
 
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
+import static org.batfish.representation.palo_alto.PaloAltoStructureType.INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 
 import java.util.Set;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.RuleContext;
 import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.InterfaceAddress;
@@ -39,6 +44,7 @@ import org.batfish.representation.palo_alto.PaloAltoConfiguration;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
 import org.batfish.representation.palo_alto.VirtualRouter;
+import org.batfish.vendor.StructureType;
 
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   private PaloAltoConfiguration _configuration;
@@ -88,6 +94,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
+  /** Mark the specified structure as defined on each line in the supplied context */
+  private void defineStructure(StructureType type, String name, RuleContext ctx) {
+    /* Recursively process children to find all relevant definition lines for the specified context */
+    for (int i = 0; i < ctx.getChildCount(); i++) {
+      ParseTree child = ctx.getChild(i);
+      if (child instanceof TerminalNode) {
+        _configuration.defineStructure(type, name, getLine(((TerminalNode) child).getSymbol()));
+      } else if (child instanceof RuleContext) {
+        defineStructure(type, name, (RuleContext) child);
+      }
+    }
+  }
+
   private String getFullText(ParserRuleContext ctx) {
     int start = ctx.getStart().getStartIndex();
     int end = ctx.getStop().getStopIndex();
@@ -95,7 +114,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
     return text;
   }
 
-  /** Return original line number for the specified token */
+  /** Return original line number for specified token */
   private int getLine(Token t) {
     return _parser.getLine(t);
   }
@@ -182,6 +201,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   public void enterSni_ethernet(Sni_ethernetContext ctx) {
     String name = ctx.name.getText();
     _currentInterface = _configuration.getInterfaces().computeIfAbsent(name, Interface::new);
+    defineStructure(INTERFACE, name, ctx);
   }
 
   @Override
@@ -222,7 +242,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener {
   @Override
   public void exitSnvr_interface(Snvr_interfaceContext ctx) {
     for (Variable_list_itemContext var : ctx.variable_list().variable_list_item()) {
-      _currentVirtualRouter.getInterfaceNames().add(var.getText());
+      String name = var.getText();
+      _currentVirtualRouter.getInterfaceNames().add(name);
+      _configuration.referenceStructure(
+          INTERFACE, name, VIRTUAL_ROUTER_INTERFACE, getLine(var.start));
     }
   }
 

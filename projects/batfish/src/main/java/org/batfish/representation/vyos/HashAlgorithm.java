@@ -1,7 +1,7 @@
 package org.batfish.representation.vyos;
 
 import org.batfish.common.BatfishException;
-import org.batfish.datamodel.IkeAuthenticationAlgorithm;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 
 public enum HashAlgorithm {
@@ -11,22 +11,22 @@ public enum HashAlgorithm {
   SHA384,
   SHA512;
 
-  public IkeAuthenticationAlgorithm toIkeAuthenticationAlgorithm() {
+  public IkeHashingAlgorithm toIkeAuthenticationAlgorithm() {
     switch (this) {
       case MD5:
-        return IkeAuthenticationAlgorithm.MD5;
+        return IkeHashingAlgorithm.MD5;
 
       case SHA1:
-        return IkeAuthenticationAlgorithm.SHA1;
+        return IkeHashingAlgorithm.SHA1;
 
       case SHA256:
-        return IkeAuthenticationAlgorithm.SHA_256;
+        return IkeHashingAlgorithm.SHA_256;
 
       case SHA384:
-        return IkeAuthenticationAlgorithm.SHA_384;
+        return IkeHashingAlgorithm.SHA_384;
 
       case SHA512:
-        return IkeAuthenticationAlgorithm.SHA_512;
+        return IkeHashingAlgorithm.SHA_512;
 
       default:
         throw new BatfishException("Missing conversion");
