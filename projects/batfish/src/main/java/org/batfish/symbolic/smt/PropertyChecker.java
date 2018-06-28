@@ -81,8 +81,7 @@ public class PropertyChecker {
   }
 
   private Set<GraphEdge> findFinalInterfaces(Graph g, PathRegexes p) {
-    Set<GraphEdge> edges = new HashSet<>();
-    edges.addAll(PatternUtils.findMatchingEdges(g, p));
+    Set<GraphEdge> edges = new HashSet<>(PatternUtils.findMatchingEdges(g, p));
     return edges;
   }
 

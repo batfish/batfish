@@ -47,8 +47,7 @@ public class JsonPathToTableComposition extends JsonPathToTableColumn {
    */
   @JsonIgnore
   public Set<String> getVars() {
-    Set<String> retSet = new HashSet<>();
-    retSet.addAll(_dictionary.values());
+    Set<String> retSet = new HashSet<>(_dictionary.values());
     return retSet;
   }
 }
