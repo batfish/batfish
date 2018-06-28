@@ -2434,7 +2434,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitOn_fqdn(On_fqdnContext ctx) {
     _currentNetworkObject.setIpSpace(EmptyIpSpace.INSTANCE);
-    _w.redFlag("Cannot convert fqdn to IpSpace: " + getFullText(ctx));
+    _w.redFlag("Unknown how to resolve domain name to IP address: " + getFullText(ctx));
   }
 
   @Override

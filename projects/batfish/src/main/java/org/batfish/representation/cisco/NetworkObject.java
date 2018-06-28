@@ -1,22 +1,28 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.common.util.ComparableStructure;
+import java.io.Serializable;
 import org.batfish.datamodel.IpSpace;
 
-public final class NetworkObject extends ComparableStructure<String> {
+public final class NetworkObject implements Serializable {
   /** */
   private static final long serialVersionUID = 1L;
 
   private String _description;
 
+  private String _name;
+
   private IpSpace _ipSpace;
 
   public NetworkObject(String name) {
-    super(name);
+    _name = name;
   }
 
   public String getDescription() {
     return _description;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public IpSpace getIpSpace() {
