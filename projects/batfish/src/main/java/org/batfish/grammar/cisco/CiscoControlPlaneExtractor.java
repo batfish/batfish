@@ -2442,7 +2442,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.address != null) {
       _currentNetworkObject.setIpSpace(new Ip(ctx.address.getText()).toIpSpace());
     } else {
-      // Warn about lack of support for IPv6
+      // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
     }
   }
@@ -2458,7 +2458,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNetworkObject.setIpSpace(
           new Prefix(new Ip(ctx.address.getText()), new Ip(ctx.mask.getText())).toIpSpace());
     } else {
-      // Warn about lack of support for IPv6
+      // IPv6
       _w.redFlag("Unimplemented network object line: " + getFullText(ctx));
     }
   }
