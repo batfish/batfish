@@ -173,7 +173,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
           hostnames
               .stream()
               .map(configurations::get)
-              .map(structureMapRetriever::apply)
+              .map(structureMapRetriever)
               .flatMap(structureMap -> structureMap.keySet().stream())
               .filter(structName -> !ignored(structName))
               .collect(ImmutableSet.toImmutableSet());
