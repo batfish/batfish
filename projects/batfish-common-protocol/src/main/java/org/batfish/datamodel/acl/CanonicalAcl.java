@@ -86,8 +86,9 @@ public final class CanonicalAcl {
   public boolean equals(Object o) {
     if (o == this) {
       return true;
-    }
-    if (hashCode() != o.hashCode()) {
+    } else if (!(o instanceof CanonicalAcl)) {
+      return false;
+    } else if (hashCode() != o.hashCode()) {
       return false;
     }
     CanonicalAcl otherAcl = (CanonicalAcl) o;
