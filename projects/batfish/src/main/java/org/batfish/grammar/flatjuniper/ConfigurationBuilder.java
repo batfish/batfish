@@ -4800,69 +4800,72 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener {
 
   private Set<String> initIkeProposalSet(Proposal_set_typeContext ctx) {
     Set<String> proposals = new HashSet<>();
+
+    // the proposal-sets have been defined as per the specifications in the link:
+    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-proposal-set-ike.html
     if (ctx.BASIC() != null) {
-      IkeProposal.Builder ikeProposalBuilder =
-          org.batfish.representation.juniper.IkeProposal.builder()
-              .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
-              .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
-              .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1);
+      IkeProposal proposal1 = new IkeProposal("PSK_DES_DH1_SHA1");
+      IkeProposal proposal2 = new IkeProposal("PSK_DES_DH1_MD5");
+
       proposals.add(
           initIkeProposal(
-              ikeProposalBuilder
-                  .setName("PSK_DES_DH1_SHA1")
-                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
-                  .build()));
+              proposal1
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
       proposals.add(
           initIkeProposal(
-              ikeProposalBuilder
-                  .setName("PSK_DES_DH1_MD5")
-                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)
-                  .build()));
+              proposal2
+                  .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP1)
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)));
     } else if (ctx.COMPATIBLE() != null) {
-      IkeProposal.Builder ikeProposalBuilder =
-          org.batfish.representation.juniper.IkeProposal.builder()
-              .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
-              .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+      IkeProposal proposal1 = new IkeProposal("PSK_3DES_DH2_MD5");
+      IkeProposal proposal2 = new IkeProposal("PSK_DES_DH2_SHA1");
+      IkeProposal proposal3 = new IkeProposal("PSK_DES_DH2_MD5");
+
       proposals.add(
           initIkeProposal(
-              ikeProposalBuilder
-                  .setName("PSK_3DES_DH2_MD5")
+              proposal1
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
                   .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
-                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)
-                  .build()));
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)));
       proposals.add(
           initIkeProposal(
-              ikeProposalBuilder
-                  .setName("PSK_DES_DH2_SHA1")
+              proposal2
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
                   .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
-                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
-                  .build()));
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
       proposals.add(
           initIkeProposal(
-              ikeProposalBuilder
-                  .setName("PSK_DES_DH2_MD5")
+              proposal3
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
                   .setEncryptionAlgorithm(EncryptionAlgorithm.DES_CBC)
-                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)
-                  .build()));
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.MD5)));
+
     } else if (ctx.STANDARD() != null) {
-      IkeProposal.Builder ikeProposalBuilder =
-          org.batfish.representation.juniper.IkeProposal.builder()
-              .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
-              .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2);
+      IkeProposal proposal1 = new IkeProposal("PSK_3DES_DH2_SHA1");
+      IkeProposal proposal2 = new IkeProposal("PSK_AES128_DH2_SHA1");
+
       proposals.add(
           initIkeProposal(
-              ikeProposalBuilder
-                  .setName("PSK_3DES_DH2_SHA1")
+              proposal1
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
                   .setEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC)
-                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
-                  .build()));
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
       proposals.add(
           initIkeProposal(
-              ikeProposalBuilder
-                  .setName("PSK_AES128_DH2_SHA1")
+              proposal2
+                  .setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                  .setDiffieHellmanGroup(DiffieHellmanGroup.GROUP2)
                   .setEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC)
-                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)
-                  .build()));
+                  .setAuthenticationAlgorithm(IkeHashingAlgorithm.SHA1)));
     }
     return proposals;
   }

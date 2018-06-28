@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -12,63 +11,8 @@ public class IkeProposal extends ComparableStructure<String> {
   /** */
   private static final long serialVersionUID = 1L;
 
-  public static class Builder {
-
-    private IkeHashingAlgorithm _authenticationAlgorithm;
-
-    private IkeAuthenticationMethod _authenticationMethod;
-
-    private DiffieHellmanGroup _diffieHellmanGroup;
-
-    private EncryptionAlgorithm _encryptionAlgorithm;
-
-    private Integer _lifetimeSeconds;
-
-    private String _name;
-
-    public IkeProposal build() {
-      if (_name == null) {
-        throw new BatfishException("Cannot create an IKE proposal with no name");
-      }
-      IkeProposal ikeProposal = new IkeProposal(_name);
-      ikeProposal.setAuthenticationMethod(_authenticationMethod);
-      ikeProposal.setDiffieHellmanGroup(_diffieHellmanGroup);
-      ikeProposal.setEncryptionAlgorithm(_encryptionAlgorithm);
-      ikeProposal.setAuthenticationAlgorithm(_authenticationAlgorithm);
-      ikeProposal.setLifetimeSeconds(_lifetimeSeconds);
-      return ikeProposal;
-    }
-
-    public Builder setAuthenticationAlgorithm(IkeHashingAlgorithm authenticationAlgorithm) {
-      _authenticationAlgorithm = authenticationAlgorithm;
-      return this;
-    }
-
-    public Builder setAuthenticationMethod(IkeAuthenticationMethod authenticationMethod) {
-      _authenticationMethod = authenticationMethod;
-      return this;
-    }
-
-    public Builder setDiffieHellmanGroup(DiffieHellmanGroup diffieHellmanGroup) {
-      _diffieHellmanGroup = diffieHellmanGroup;
-      return this;
-    }
-
-    public Builder setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
-      _encryptionAlgorithm = encryptionAlgorithm;
-      return this;
-    }
-
-    public Builder setLifetimeSeconds(Integer lifetimeSeconds) {
-      _lifetimeSeconds = lifetimeSeconds;
-      return this;
-    }
-
-    public Builder setName(String name) {
-      _name = name;
-      return this;
-    }
-  }
+  // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-lifetime-seconds-ike.html
+  private static final Integer DEFAULT_LIFETIME_SECONDS = 28800;
 
   private IkeHashingAlgorithm _authenticationAlgorithm;
 
@@ -82,10 +26,7 @@ public class IkeProposal extends ComparableStructure<String> {
 
   public IkeProposal(String name) {
     super(name);
-  }
-
-  public static Builder builder() {
-    return new Builder();
+    _lifetimeSeconds = DEFAULT_LIFETIME_SECONDS;
   }
 
   public IkeAuthenticationMethod getAuthenticationMethod() {
@@ -108,23 +49,28 @@ public class IkeProposal extends ComparableStructure<String> {
     return _lifetimeSeconds;
   }
 
-  public void setAuthenticationMethod(IkeAuthenticationMethod authenticationMethod) {
+  public IkeProposal setAuthenticationMethod(IkeAuthenticationMethod authenticationMethod) {
     _authenticationMethod = authenticationMethod;
+    return this;
   }
 
-  public void setDiffieHellmanGroup(DiffieHellmanGroup diffieHellmanGroup) {
+  public IkeProposal setDiffieHellmanGroup(DiffieHellmanGroup diffieHellmanGroup) {
     _diffieHellmanGroup = diffieHellmanGroup;
+    return this;
   }
 
-  public void setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
+  public IkeProposal setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
     _encryptionAlgorithm = encryptionAlgorithm;
+    return this;
   }
 
-  public void setAuthenticationAlgorithm(IkeHashingAlgorithm hashingAlgorithm) {
+  public IkeProposal setAuthenticationAlgorithm(IkeHashingAlgorithm hashingAlgorithm) {
     _authenticationAlgorithm = hashingAlgorithm;
+    return this;
   }
 
-  public void setLifetimeSeconds(Integer lifetimeSeconds) {
+  public IkeProposal setLifetimeSeconds(Integer lifetimeSeconds) {
     _lifetimeSeconds = lifetimeSeconds;
+    return this;
   }
 }

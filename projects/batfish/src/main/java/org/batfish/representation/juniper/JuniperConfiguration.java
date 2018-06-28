@@ -1177,8 +1177,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDiffieHellmanGroup());
     newIkeProposal.setAuthenticationMethod(ikeProposal.getAuthenticationMethod());
     newIkeProposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
-    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-lifetime-seconds-ike.html
-    newIkeProposal.setLifetimeSeconds(firstNonNull(ikeProposal.getLifetimeSeconds(), 28800));
+    newIkeProposal.setLifetimeSeconds(ikeProposal.getLifetimeSeconds());
     newIkeProposal.setAuthenticationAlgorithm(ikeProposal.getAuthenticationAlgorithm());
     return newIkeProposal;
   }
