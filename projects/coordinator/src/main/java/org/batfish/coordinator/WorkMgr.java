@@ -2,6 +2,7 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.stream.Collectors.toCollection;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -775,11 +776,10 @@ public class WorkMgr extends AbstractCoordinator {
   /** Return a {@link Container container} contains all testrigs directories inside it */
   public Container getContainer(Path containerDir) {
     SortedSet<String> testrigs =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(containerDir.resolve(BfConsts.RELPATH_TESTRIGS_DIR))
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
 
     return Container.of(containerDir.toFile().getName(), testrigs);
   }
@@ -810,11 +810,10 @@ public class WorkMgr extends AbstractCoordinator {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> containers =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containersDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(containersDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
     return containers;
   }
 
@@ -1352,11 +1351,10 @@ public class WorkMgr extends AbstractCoordinator {
     }
     SortedSet<Path> subdirectories = CommonUtil.getSubdirectories(questionsDir);
     SortedSet<String> subdirectoryNames =
-        new TreeSet<>(
-            subdirectories
-                .stream()
-                .map(path -> path.getFileName().toString())
-                .collect(Collectors.toSet()));
+        subdirectories
+            .stream()
+            .map(path -> path.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
     return subdirectoryNames;
   }
 
@@ -1366,14 +1364,12 @@ public class WorkMgr extends AbstractCoordinator {
       containersDir.toFile().mkdirs();
     }
     SortedSet<String> authorizedContainers =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(containersDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .filter(
-                    container ->
-                        Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(containersDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .filter(
+                container -> Main.getAuthorizer().isAccessibleContainer(apiKey, container, false))
+            .collect(toCollection(TreeSet::new));
     return authorizedContainers;
   }
 
@@ -1388,11 +1384,10 @@ public class WorkMgr extends AbstractCoordinator {
       return new TreeSet<>();
     }
     SortedSet<String> environments =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(environmentsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(environmentsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            .collect(toCollection(TreeSet::new));
     return environments;
   }
 
@@ -1408,14 +1403,13 @@ public class WorkMgr extends AbstractCoordinator {
       return new TreeSet<>();
     }
     SortedSet<String> questions =
-        new TreeSet<>(
-            CommonUtil.getSubdirectories(questionsDir)
-                .stream()
-                .map(dir -> dir.getFileName().toString())
-                // Question dirs starting with __ are internal questions
-                // and should not show up in listQuestions
-                .filter(dir -> verbose || !dir.startsWith("__"))
-                .collect(Collectors.toSet()));
+        CommonUtil.getSubdirectories(questionsDir)
+            .stream()
+            .map(dir -> dir.getFileName().toString())
+            // Question dirs starting with __ are internal questions
+            // and should not show up in listQuestions
+            .filter(dir -> verbose || !dir.startsWith("__"))
+            .collect(toCollection(TreeSet::new));
     return questions;
   }
 
