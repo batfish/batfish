@@ -547,8 +547,6 @@ os_description
 os_service
 :
    SERVICE service_specifier NEWLINE
-   //todo: change to os_service_type allowing tcp and udp port ranges
-
 ;
 
 pm_class

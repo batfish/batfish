@@ -632,6 +632,7 @@ import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_exprContext;
 import org.batfish.grammar.cisco.CiscoParser.Origin_expr_literalContext;
+import org.batfish.grammar.cisco.CiscoParser.Os_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_iis_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_interface_default_is_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Passive_interface_is_stanzaContext;
@@ -2457,6 +2458,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void exitOs_description(Os_descriptionContext ctx) {
+    _currentServiceObject.setDescription(ctx.description_line().getText());
+  }
+
+  @Override
   public void exitService_specifier_icmp(Service_specifier_icmpContext ctx) {
     _currentServiceObject.addProtocol(IpProtocol.ICMP);
     if (ctx.icmp_object_type() != null) {
@@ -2471,12 +2477,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitService_specifier_tcp_udp(Service_specifier_tcp_udpContext ctx) {
-    if (ctx.TCP() != null) {
+    if (ctx.TCP() != null || ctx.TCP_UDP() != null) {
       _currentServiceObject.addProtocol(IpProtocol.TCP);
-    } else if (ctx.TCP_UDP() != null) {
-      _currentServiceObject.addProtocol(IpProtocol.TCP);
-      _currentServiceObject.addProtocol(IpProtocol.UDP);
-    } else {
+    }
+    if (ctx.TCP_UDP() != null || ctx.UDP() != null) {
       _currentServiceObject.addProtocol(IpProtocol.UDP);
     }
     if (ctx.dst_ps != null) {
