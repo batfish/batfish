@@ -2,8 +2,10 @@ package org.batfish.question;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.auto.service.AutoService;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedMap;
@@ -73,23 +75,28 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
           (configName, config) -> {
             if (specifiedNodes.contains(configName)
                 && config.getVendorFamily().getCisco() != null) {
-              List<String> lines = new ArrayList<>();
-              for (Line line : config.getVendorFamily().getCisco().getLines().values()) {
-                if (!line.requiresAuthentication()) {
-                  lines.add(line.getName());
-                }
-              }
-              if (!lines.isEmpty()) {
-                answerElement.addRow(getRow(configName, lines));
+              Row row = getRow(configName, config.getVendorFamily().getCisco().getLines().values());
+              if (row != null) {
+                answerElement.addRow(row);
               }
             }
           });
       return answerElement;
     }
 
-    private static Row getRow(String nodeName, List<String> lines) {
+    @VisibleForTesting
+    public static Row getRow(String nodeName, Collection<Line> lines) {
+      List<String> exposedLines = new ArrayList<>();
+      for (Line line : lines) {
+        if (!line.requiresAuthentication()) {
+          exposedLines.add(line.getName());
+        }
+      }
+      if (exposedLines.isEmpty()) {
+        return null;
+      }
       RowBuilder row = Row.builder();
-      row.put(COLUMN_NODE, new Node(nodeName)).put(COLUMN_LINE_NAMES, lines);
+      row.put(COLUMN_NODE, new Node(nodeName)).put(COLUMN_LINE_NAMES, exposedLines);
       return row.build();
     }
   }
