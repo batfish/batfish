@@ -50,6 +50,7 @@ import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
 import org.batfish.datamodel.IkePolicy;
+import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6AccessList;
@@ -2162,6 +2163,16 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return iface.getMtu();
   }
 
+  private static IkeProposal toIkeProposal(IsakmpPolicy isakmpPolicy) {
+    IkeProposal ikeProposal = new IkeProposal(isakmpPolicy.getName());
+    ikeProposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
+    ikeProposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
+    ikeProposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
+    ikeProposal.setLifetimeSeconds(isakmpPolicy.getLifetimeSeconds());
+    ikeProposal.setAuthenticationAlgorithm(isakmpPolicy.getHashAlgorithm());
+    return ikeProposal;
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     String name = iface.getName();
@@ -3209,9 +3220,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // apply vrrp settings to interfaces
     applyVrrp(c);
 
-    // get IKE proposals
+    // ISAKMP policies to IKE proposals
     for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
-      c.getIkeProposals().put(e.getKey(), e.getValue().getProposal());
+      c.getIkeProposals().put(e.getKey(), toIkeProposal(e.getValue()));
     }
     resolveKeyringIsakmpProfileAddresses();
     resolveTunnelSourceInterfaces();

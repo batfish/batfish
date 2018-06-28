@@ -1,4 +1,4 @@
-package org.batfish.representation.cisco;
+package org.batfish.representation.juniper;
 
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.DiffieHellmanGroup;
@@ -6,10 +6,15 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 
-public class IsakmpPolicy extends ComparableStructure<String> {
+public class IkeProposal extends ComparableStructure<String> {
 
   /** */
   private static final long serialVersionUID = 1L;
+
+  // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/security-edit-lifetime-seconds-ike.html
+  private static final Integer DEFAULT_LIFETIME_SECONDS = 28800;
+
+  private IkeHashingAlgorithm _authenticationAlgorithm;
 
   private IkeAuthenticationMethod _authenticationMethod;
 
@@ -17,12 +22,11 @@ public class IsakmpPolicy extends ComparableStructure<String> {
 
   private EncryptionAlgorithm _encryptionAlgorithm;
 
-  private IkeHashingAlgorithm _hashAlgorithm;
-
   private Integer _lifetimeSeconds;
 
-  public IsakmpPolicy(String name) {
+  public IkeProposal(String name) {
     super(name);
+    _lifetimeSeconds = DEFAULT_LIFETIME_SECONDS;
   }
 
   public IkeAuthenticationMethod getAuthenticationMethod() {
@@ -37,31 +41,36 @@ public class IsakmpPolicy extends ComparableStructure<String> {
     return _encryptionAlgorithm;
   }
 
-  public IkeHashingAlgorithm getHashAlgorithm() {
-    return _hashAlgorithm;
+  public IkeHashingAlgorithm getAuthenticationAlgorithm() {
+    return _authenticationAlgorithm;
   }
 
   public Integer getLifetimeSeconds() {
     return _lifetimeSeconds;
   }
 
-  public void setAuthenticationMethod(IkeAuthenticationMethod authenticationMethod) {
+  public IkeProposal setAuthenticationMethod(IkeAuthenticationMethod authenticationMethod) {
     _authenticationMethod = authenticationMethod;
+    return this;
   }
 
-  public void setDiffieHellmanGroup(DiffieHellmanGroup diffieHellmanGroup) {
+  public IkeProposal setDiffieHellmanGroup(DiffieHellmanGroup diffieHellmanGroup) {
     _diffieHellmanGroup = diffieHellmanGroup;
+    return this;
   }
 
-  public void setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
+  public IkeProposal setEncryptionAlgorithm(EncryptionAlgorithm encryptionAlgorithm) {
     _encryptionAlgorithm = encryptionAlgorithm;
+    return this;
   }
 
-  public void setHashAlgorithm(IkeHashingAlgorithm hashingAlgorithm) {
-    _hashAlgorithm = hashingAlgorithm;
+  public IkeProposal setAuthenticationAlgorithm(IkeHashingAlgorithm hashingAlgorithm) {
+    _authenticationAlgorithm = hashingAlgorithm;
+    return this;
   }
 
-  public void setLifetimeSeconds(Integer lifetimeSeconds) {
+  public IkeProposal setLifetimeSeconds(Integer lifetimeSeconds) {
     _lifetimeSeconds = lifetimeSeconds;
+    return this;
   }
 }

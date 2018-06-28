@@ -37,7 +37,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1162,13 +1161,25 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .getProposals()
         .forEach(
             ikeProposalName -> {
-              IkeProposal ikeProposal = _c.getIkeProposals().get(ikeProposalName);
+              org.batfish.datamodel.IkeProposal ikeProposal =
+                  _c.getIkeProposals().get(ikeProposalName);
               if (ikeProposal != null) {
                 newIkePolicy.getProposals().put(ikeProposalName, ikeProposal);
               }
             });
 
     return newIkePolicy;
+  }
+
+  private org.batfish.datamodel.IkeProposal toIkeProposal(IkeProposal ikeProposal) {
+    org.batfish.datamodel.IkeProposal newIkeProposal =
+        new org.batfish.datamodel.IkeProposal(ikeProposal.getName());
+    newIkeProposal.setDiffieHellmanGroup(ikeProposal.getDiffieHellmanGroup());
+    newIkeProposal.setAuthenticationMethod(ikeProposal.getAuthenticationMethod());
+    newIkeProposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
+    newIkeProposal.setLifetimeSeconds(ikeProposal.getLifetimeSeconds());
+    newIkeProposal.setAuthenticationAlgorithm(ikeProposal.getAuthenticationAlgorithm());
+    return newIkeProposal;
   }
 
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
@@ -1929,8 +1940,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
     }
 
-    // copy ike proposals
-    _c.getIkeProposals().putAll(_ikeProposals);
+    // convert IKE proposals
+    _ikeProposals
+        .values()
+        .forEach(
+            ikeProposal ->
+                _c.getIkeProposals().put(ikeProposal.getName(), toIkeProposal(ikeProposal)));
 
     // convert ike policies
     for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {
