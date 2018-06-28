@@ -21,7 +21,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 public abstract class PropertySpecifier {
 
   @ParametersAreNonnullByDefault
-  public static class PropertyDescriptor<T extends Object> {
+  public static class PropertyDescriptor<T> {
     @Nonnull Function<T, Object> _getter;
     @Nonnull Schema _schema;
 
