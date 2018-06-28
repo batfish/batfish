@@ -37,8 +37,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     private Map<Ip, Set<String>> _ipOwners;
 
-    private Map<Ip, String> _ipOwnersSimple;
-
     private Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
     private Map<String, Node> _nodes;
@@ -52,11 +50,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
     public Builder setIpOwners(Map<Ip, Set<String>> ipOwners) {
       _ipOwners = ImmutableMap.copyOf(ipOwners);
-      return this;
-    }
-
-    public Builder setIpOwnersSimple(Map<Ip, String> ipOwnersSimple) {
-      _ipOwnersSimple = ImmutableMap.copyOf(ipOwnersSimple);
       return this;
     }
 
@@ -130,8 +123,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   private final Map<Ip, Set<String>> _ipOwners;
 
-  private final Map<Ip, String> _ipOwnersSimple;
-
   private final Map<Ip, Map<String, Set<String>>> _ipVrfOwners;
 
   private final Map<String, Node> _nodes;
@@ -143,7 +134,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   private IncrementalDataPlane(Builder builder) {
     _bgpTopology = builder._bgpTopology;
     _ipOwners = builder._ipOwners;
-    _ipOwnersSimple = builder._ipOwnersSimple;
     _ipVrfOwners = builder._ipVrfOwners;
     _nodes = builder._nodes;
     _topology = builder._topology;
@@ -210,10 +200,6 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   @Override
   public Map<Ip, Map<String, Set<String>>> getIpVrfOwners() {
     return _ipVrfOwners;
-  }
-
-  public Map<Ip, String> getIpOwnersSimple() {
-    return _ipOwnersSimple;
   }
 
   public Map<String, Node> getNodes() {
