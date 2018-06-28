@@ -221,7 +221,7 @@ public class JsonPathResult {
         JsonNode varNode = _displayValues.get(resultKey).get(varName);
         if (extractions.get(varName).getSchemaAsObject().getType() == Type.LIST
             || extractions.get(varName).getSchemaAsObject().getType() == Type.SET) {
-          object.set(propertyName, ((ArrayNode) varNode).get(index));
+          object.set(propertyName, varNode.get(index));
         } else {
           object.set(propertyName, varNode);
         }
