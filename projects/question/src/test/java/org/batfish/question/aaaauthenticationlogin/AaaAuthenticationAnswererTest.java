@@ -4,7 +4,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
 
-import com.sun.tools.javac.util.List;
+import java.util.Arrays;
+import java.util.Collections;
 import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.table.Row;
@@ -19,24 +20,25 @@ public class AaaAuthenticationAnswererTest {
   public void testGetRow() {
     Line lineRequiresAuthentication = new Line("con0");
     lineRequiresAuthentication.setAaaAuthenticationLoginList(
-        new AaaAuthenticationLoginList(List.of(AuthenticationMethod.GROUP_TACACS)));
+        new AaaAuthenticationLoginList(
+            Collections.singletonList(AuthenticationMethod.GROUP_TACACS)));
 
     Line lineNoAuthentication = new Line("aux0");
     lineNoAuthentication.setAaaAuthenticationLoginList(
-        new AaaAuthenticationLoginList(List.of(AuthenticationMethod.NONE)));
+        new AaaAuthenticationLoginList(Collections.singletonList(AuthenticationMethod.NONE)));
 
     assertThat(
         AaaAuthenticationAnswerer.getRow(
-            "requiresAuthentication", List.of(lineRequiresAuthentication)),
+            "requiresAuthentication", Collections.singletonList(lineRequiresAuthentication)),
         nullValue());
     assertThat(
         AaaAuthenticationAnswerer.getRow(
-            "noAuthentication", List.of(lineRequiresAuthentication, lineNoAuthentication)),
+            "noAuthentication", Arrays.asList(lineRequiresAuthentication, lineNoAuthentication)),
         equalTo(
             Row.of(
                 AaaAuthenticationAnswerer.COLUMN_NODE,
                 new Node("noAuthentication"),
                 AaaAuthenticationAnswerer.COLUMN_LINE_NAMES,
-                List.of("aux0"))));
+                Collections.singletonList("aux0"))));
   }
 }
