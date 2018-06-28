@@ -5,5 +5,5 @@ public enum IkeHashingAlgorithm {
   SHA_256,
   SHA_384,
   SHA_512,
-  SHA1;
+  SHA1
 }

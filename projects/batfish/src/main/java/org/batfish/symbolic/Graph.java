@@ -338,9 +338,7 @@ public class Graph {
 
     if (proto.isStatic()) {
       for (StaticRoute sr : conf.getDefaultVrf().getStaticRoutes()) {
-        if (sr.getNetwork() != null) {
-          acc.add(sr.getNetwork());
-        }
+        acc.add(sr.getNetwork());
       }
       return acc;
     }

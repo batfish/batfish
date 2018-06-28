@@ -73,7 +73,7 @@ public class Row implements Comparable<Row> {
      *
      * <p>Any existing values for the column are overwritten
      */
-    public RowBuilder put(String column, Object value) {
+    public RowBuilder put(String column, @Nullable Object value) {
       _data.set(column, BatfishObjectMapper.mapper().valueToTree(value));
       return this;
     }
@@ -99,7 +99,6 @@ public class Row implements Comparable<Row> {
     Map<String, ColumnMetadata> _columns;
 
     private TypedRowBuilder(Map<String, ColumnMetadata> columns) {
-      checkArgument(columns != null, "Columns cannot be null to instantiate TypedRowBuilder");
       _columns = columns;
     }
 
@@ -184,7 +183,7 @@ public class Row implements Comparable<Row> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof Row)) {
+    if (!(o instanceof Row)) {
       return false;
     }
     return _data.equals(((Row) o)._data);
@@ -195,7 +194,7 @@ public class Row implements Comparable<Row> {
    *
    * @param columnName The column to fetch
    * @return The {@link JsonNode} object that represents the stored object
-   * @throws {@link NoSuchElementException} if this column does not exist
+   * @throws NoSuchElementException if this column does not exist
    */
   public JsonNode get(String columnName) {
     if (!_data.has(columnName)) {
@@ -233,7 +232,7 @@ public class Row implements Comparable<Row> {
    */
   public Set<String> getColumnNames() {
     HashSet<String> columns = new HashSet<>();
-    _data.fieldNames().forEachRemaining(column -> columns.add(column));
+    _data.fieldNames().forEachRemaining(columns::add);
     return columns;
   }
 

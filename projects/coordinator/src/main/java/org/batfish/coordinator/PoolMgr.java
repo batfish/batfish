@@ -48,21 +48,13 @@ public class PoolMgr {
     // start out as unknown and trigger refresh in the background
     _workerPool.put(worker, new WorkerStatus(WorkerStatus.StatusCode.UNKNOWN));
 
-    Thread thread =
-        new Thread() {
-          @Override
-          public void run() {
-            refreshWorkerStatus(worker);
-          }
-        };
+    Thread thread = new Thread(() -> refreshWorkerStatus(worker));
 
     thread.start();
   }
 
   public synchronized void deleteFromPool(String worker) {
-    if (_workerPool.containsKey(worker)) {
-      _workerPool.remove(worker);
-    }
+    _workerPool.remove(worker);
   }
 
   private synchronized List<String> getAllWorkers() {
@@ -163,7 +155,7 @@ public class PoolMgr {
         JSONObject jObj = new JSONObject(array.get(1).toString());
 
         if (!jObj.has("idle")) {
-          _logger.error(String.format("did not see idle key in json response\n"));
+          _logger.error("did not see idle key in json response\n");
           updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
           return;
         }

@@ -7,7 +7,7 @@ import org.batfish.specifier.InterfaceLocation;
 import org.batfish.specifier.LocationVisitor;
 
 /**
- * Converts {@link Location}s to {@link IngressLocation}s, mapping {@link InterfaceLinkLocation}s to
+ * Converts locations to {@link IngressLocation}s, mapping {@link InterfaceLinkLocation}s to
  * interfaceLink ingress locations, and {@link InterfaceLocation}s to vrf ingress locations.
  */
 public final class LocationToIngressLocation implements LocationVisitor<IngressLocation> {

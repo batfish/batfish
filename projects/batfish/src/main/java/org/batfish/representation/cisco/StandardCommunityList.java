@@ -2,6 +2,7 @@ package org.batfish.representation.cisco;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.ComparableStructure;
 
@@ -20,21 +21,29 @@ public final class StandardCommunityList extends ComparableStructure<String> {
     return _lines;
   }
 
+  private static String getCommunityRegex(List<Long> communities) {
+    if (communities.size() == 1) {
+      return "^" + CommonUtil.longToCommunity(communities.get(0)) + "$";
+    } else {
+      StringBuilder regexB = new StringBuilder("(");
+      for (ListIterator<Long> it = communities.listIterator(); it.hasNext(); ) {
+        Long l = it.next();
+        if (it.hasPrevious()) {
+          regexB.append("$|^");
+        } else {
+          regexB.append("^");
+        }
+        regexB.append(CommonUtil.longToCommunity(l));
+      }
+      return regexB.append("$)").toString();
+    }
+  }
+
   public ExpandedCommunityList toExpandedCommunityList() {
     ExpandedCommunityList newList = new ExpandedCommunityList(_key);
     for (StandardCommunityListLine line : _lines) {
-      List<Long> standardCommunities = line.getCommunities();
-      String regex;
-      if (standardCommunities.size() == 1) {
-        regex = "^" + CommonUtil.longToCommunity(standardCommunities.get(0)) + "$";
-      } else {
-        regex = "(";
-        for (Long l : standardCommunities) {
-          regex += "^" + CommonUtil.longToCommunity(l) + "$|";
-        }
-        regex = regex.substring(0, regex.length() - 1) + ")";
-      }
-      ExpandedCommunityListLine newLine = new ExpandedCommunityListLine(line.getAction(), regex);
+      ExpandedCommunityListLine newLine =
+          new ExpandedCommunityListLine(line.getAction(), getCommunityRegex(line.getCommunities()));
       newList.addLine(newLine);
     }
     return newList;

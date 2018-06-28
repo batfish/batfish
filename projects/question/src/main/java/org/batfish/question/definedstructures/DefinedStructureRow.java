@@ -75,7 +75,7 @@ public class DefinedStructureRow implements Comparable<DefinedStructureRow> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof DefinedStructureRow)) {
+    if (!(o instanceof DefinedStructureRow)) {
       return false;
     }
     DefinedStructureRow other = (DefinedStructureRow) o;

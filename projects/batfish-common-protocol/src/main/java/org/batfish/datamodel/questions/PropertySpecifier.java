@@ -21,7 +21,7 @@ import org.batfish.datamodel.table.Row.RowBuilder;
 public abstract class PropertySpecifier {
 
   @ParametersAreNonnullByDefault
-  public static class PropertyDescriptor<T extends Object> {
+  public static class PropertyDescriptor<T> {
     @Nonnull Function<T, Object> _getter;
     @Nonnull Schema _schema;
 
@@ -53,7 +53,7 @@ public abstract class PropertySpecifier {
     String queryWithStars = ".*" + (finalQuery.isEmpty() ? "" : finalQuery + ".*");
     Pattern queryPattern = safeGetPattern(queryWithStars);
 
-    /**
+    /*
      * if queryWithStars is not a valid Pattern, finalQuery must be a funky string that will not
      * match anything as string.contains or regex.matches; so we skip formalities altogether
      */
@@ -91,7 +91,7 @@ public abstract class PropertySpecifier {
           ((Map<?, ?>) outputPropertyValue)
               .keySet()
               .stream()
-              .map(k -> k.toString())
+              .map(Object::toString)
               .collect(Collectors.toSet());
     }
 

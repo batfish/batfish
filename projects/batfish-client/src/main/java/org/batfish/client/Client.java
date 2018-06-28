@@ -23,7 +23,6 @@ import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -539,7 +538,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  public Client(String[] args) throws Exception {
+  public Client(String[] args) {
     this(new Settings(args));
   }
 
@@ -606,9 +605,7 @@ public class Client extends AbstractClient implements IClient {
     }
     _logger.debug("Uploaded question. Answering now.\n");
     // delete the temporary params file
-    if (questionFile != null) {
-      CommonUtil.deleteIfExists(questionFile);
-    }
+    CommonUtil.deleteIfExists(questionFile);
     // answer the question
     WorkItem wItemAs =
         WorkItemBuilder.getWorkItemAnswerQuestion(
@@ -693,7 +690,7 @@ public class Client extends AbstractClient implements IClient {
         String parameterValue = e.getValue().toString();
         Object parameterObj;
         try {
-          parameterObj = new JSONTokener(parameterValue.toString()).nextValue();
+          parameterObj = new JSONTokener(parameterValue).nextValue();
           questionJson.put(parameterName, parameterObj);
         } catch (JSONException e1) {
           throw new BatfishException(
@@ -756,7 +753,7 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean cat(String[] words) throws IOException, FileNotFoundException {
+  private boolean cat(String[] words) throws IOException {
     if (words.length != 2) {
       _logger.errorf("Invalid arguments: %s\n", Arrays.toString(words));
       printUsage(Command.CAT);
@@ -783,7 +780,7 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean clearScreen(List<String> options, List<String> parameters) throws IOException {
+  private boolean clearScreen(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.CLEAR_SCREEN)) {
       return false;
     }
@@ -1624,11 +1621,7 @@ public class Client extends AbstractClient implements IClient {
     WorkItem wItemProcessEnv =
         WorkItemBuilder.getWorkItemProcessEnvironment(
             _currContainerName, _currDeltaTestrig, _currDeltaEnv);
-    if (!execute(wItemProcessEnv, outWriter)) {
-      return false;
-    }
-
-    return true;
+    return execute(wItemProcessEnv, outWriter);
   }
 
   private boolean initEnvironment(
@@ -2235,9 +2228,8 @@ public class Client extends AbstractClient implements IClient {
       sourceMap
           .get(questionName)
           .forEach(
-              questionContent -> {
-                updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae);
-              });
+              questionContent ->
+                  updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae));
     }
   }
 
@@ -2740,11 +2732,7 @@ public class Client extends AbstractClient implements IClient {
 
     WorkItem wItemParse = WorkItemBuilder.getWorkItemParse(_currContainerName, testrig);
 
-    if (!execute(wItemParse, outWriter)) {
-      return false;
-    }
-
-    return true;
+    return execute(wItemParse, outWriter);
   }
 
   public void run(List<String> initialCommands) {

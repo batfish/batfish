@@ -713,7 +713,7 @@ public final class Interface extends ComparableStructure<String> {
     if (!Objects.equals(_bandwidth, other._bandwidth)) {
       return false;
     }
-    if (_cryptoMap != other._cryptoMap) {
+    if (!Objects.equals(_cryptoMap, other._cryptoMap)) {
       return false;
     }
     // we check ACLs for name match only -- full ACL diff can be done

@@ -1280,7 +1280,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addOption(
         ARG_RUN_MODE,
         "mode to run in",
-        Arrays.stream(RunMode.values()).map(v -> v.toString()).collect(Collectors.joining("|")));
+        Arrays.stream(RunMode.values()).map(Object::toString).collect(Collectors.joining("|")));
 
     addBooleanOption(ARG_SEQUENTIAL, "force sequential operation");
 
@@ -1393,7 +1393,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     if (getBooleanOptionValue(ARG_VERSION)) {
       _config.setProperty(CAN_EXECUTE, false);
-      System.out.printf(Version.getCompleteVersionString());
+      System.out.print(Version.getCompleteVersionString());
       return;
     }
 

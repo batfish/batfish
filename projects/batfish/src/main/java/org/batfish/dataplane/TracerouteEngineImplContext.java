@@ -321,7 +321,7 @@ class TracerouteEngineImplContext {
               /*
                * Interface has no edges
                */
-              /** Check if denied out. If not, make standard neighbor-unreachable trace. */
+              /* Check if denied out. If not, make standard neighbor-unreachable trace. */
               IpAccessList outFilter = outgoingInterface.getOutgoingFilter();
               boolean denied = false;
               if (!_ignoreAcls && outFilter != null) {

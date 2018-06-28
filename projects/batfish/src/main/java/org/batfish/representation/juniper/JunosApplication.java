@@ -199,7 +199,7 @@ public enum JunosApplication implements Application {
 
   private final Supplier<BaseApplication> _baseApplication;
 
-  private JunosApplication() {
+  JunosApplication() {
     _baseApplication = Suppliers.memoize(this::init);
   }
 

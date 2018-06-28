@@ -127,7 +127,7 @@ public class AllInOne {
         e.printStackTrace();
         System.exit(1);
       }
-      _client.run(new LinkedList<String>());
+      _client.run(new LinkedList<>());
       // The program does not terminate without it if the user misses the
       // quit command
       System.exit(0);

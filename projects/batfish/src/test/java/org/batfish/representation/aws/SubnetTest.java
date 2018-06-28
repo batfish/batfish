@@ -35,7 +35,7 @@ public class SubnetTest {
   }
 
   @Test
-  public void testSubnet() throws JSONException {
+  public void testSubnet() {
     // checking the count of subnets initialized
     assertThat(_subnetList, hasSize(1));
 

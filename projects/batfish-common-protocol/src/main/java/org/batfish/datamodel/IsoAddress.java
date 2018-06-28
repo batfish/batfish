@@ -102,6 +102,8 @@ public final class IsoAddress implements Serializable {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
+    } else if (!(obj instanceof IsoAddress)) {
+      return false;
     }
     IsoAddress rhs = (IsoAddress) obj;
     return _afi == rhs._afi

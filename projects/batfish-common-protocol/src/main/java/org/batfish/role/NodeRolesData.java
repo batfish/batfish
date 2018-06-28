@@ -115,8 +115,7 @@ public class NodeRolesData {
     // check first
     return data.getNodeRoleDimensions()
         .stream()
-        .sorted(Comparator.comparing(d -> d.getName()))
-        .findFirst();
+        .min(Comparator.comparing(NodeRoleDimension::getName));
   }
 
   @JsonProperty(PROP_ROLE_DIMENSIONS)
@@ -151,15 +150,14 @@ public class NodeRolesData {
     final SortedSet<NodeRoleDimension> finalNewDimensions =
         newDimensions == null ? new TreeSet<>() : newDimensions;
 
-    SortedSet<NodeRoleDimension> newRoles = new TreeSet<>();
-
     // add the old role dimensions that are not in common with new dimensions
-    newRoles.addAll(
-        oldRolesData
-            ._roleDimensions
-            .stream()
-            .filter(d -> !finalNewDimensions.contains(d))
-            .collect(Collectors.toSet()));
+    SortedSet<NodeRoleDimension> newRoles =
+        new TreeSet<>(
+            oldRolesData
+                ._roleDimensions
+                .stream()
+                .filter(d -> !finalNewDimensions.contains(d))
+                .collect(Collectors.toSet()));
 
     // delete the auto dimensions if needed
     if (deleteAutoFirst) {

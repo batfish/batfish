@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.util.Objects;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrie;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -20,7 +21,7 @@ import org.batfish.datamodel.routing_policy.Environment;
  * (1) the prefix is a subsequence of another (i.e., 1.2.3.0/23), or
  * (2) the address is contained in the trie (i.e., 1.2.3.4). </p>
  */
-public class AbstractionPrefixSet extends PrefixSetExpr {
+public final class AbstractionPrefixSet extends PrefixSetExpr {
 
   /** */
   private static final long serialVersionUID = 1L;
@@ -38,22 +39,11 @@ public class AbstractionPrefixSet extends PrefixSetExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof AbstractionPrefixSet)) {
       return false;
     }
     AbstractionPrefixSet other = (AbstractionPrefixSet) obj;
-    if (_prefixTrie == null) {
-      if (other._prefixTrie != null) {
-        return false;
-      }
-    } else if (!_prefixTrie.equals(other._prefixTrie)) {
-      return false;
-    }
-    return true;
+    return Objects.equals(_prefixTrie, other._prefixTrie);
   }
 
   public PrefixTrie getPrefixTrie() {

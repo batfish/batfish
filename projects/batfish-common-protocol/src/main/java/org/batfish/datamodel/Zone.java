@@ -142,10 +142,7 @@ public final class Zone extends ComparableStructure<String> {
   public SortedMap<String, String> getInboundInterfaceFiltersNames() {
     if (_inboundInterfaceFilters != null && !_inboundInterfaceFilters.isEmpty()) {
       SortedMap<String, String> map = new TreeMap<>();
-      _inboundInterfaceFilters.forEach(
-          (ifaceName, filter) -> {
-            map.put(ifaceName, filter.getName());
-          });
+      _inboundInterfaceFilters.forEach((ifaceName, filter) -> map.put(ifaceName, filter.getName()));
       return map;
     } else {
       return _inboundInterfaceFiltersNames;
@@ -187,10 +184,7 @@ public final class Zone extends ComparableStructure<String> {
   public SortedMap<String, String> getToZonePoliciesNames() {
     if (_toZonePolicies != null && !_toZonePolicies.isEmpty()) {
       SortedMap<String, String> map = new TreeMap<>();
-      _toZonePolicies.forEach(
-          (zoneName, filter) -> {
-            map.put(zoneName, filter.getName());
-          });
+      _toZonePolicies.forEach((zoneName, filter) -> map.put(zoneName, filter.getName()));
       return map;
     } else {
       return _toZonePoliciesNames;
