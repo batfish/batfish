@@ -21,7 +21,7 @@ public class RdsInstance implements AwsVpcEntity, Serializable {
 
   public enum Status {
     AVAILABLE,
-    UNAVAILABLE;
+    UNAVAILABLE
   }
 
   private static final long serialVersionUID = 1L;
