@@ -184,7 +184,7 @@ public class Row implements Comparable<Row> {
 
   @Override
   public boolean equals(Object o) {
-    if (o == null || !(o instanceof Row)) {
+    if (!(o instanceof Row)) {
       return false;
     }
     return _data.equals(((Row) o)._data);
