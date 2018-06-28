@@ -138,13 +138,13 @@ public final class JuniperUtils {
 
   private List<List<Integer>> initCodeMatrix() {
     List<List<Integer>> codeMatrix = new ArrayList<>();
-    codeMatrix.add(Arrays.asList(new Integer[] {1, 4, 32}));
-    codeMatrix.add(Arrays.asList(new Integer[] {1, 16, 32}));
-    codeMatrix.add(Arrays.asList(new Integer[] {1, 8, 32}));
-    codeMatrix.add(Arrays.asList(new Integer[] {1, 64}));
-    codeMatrix.add(Arrays.asList(new Integer[] {1, 32}));
-    codeMatrix.add(Arrays.asList(new Integer[] {1, 4, 16, 128}));
-    codeMatrix.add(Arrays.asList(new Integer[] {1, 32, 64}));
+    codeMatrix.add(Arrays.asList(1, 4, 32));
+    codeMatrix.add(Arrays.asList(1, 16, 32));
+    codeMatrix.add(Arrays.asList(1, 8, 32));
+    codeMatrix.add(Arrays.asList(1, 64));
+    codeMatrix.add(Arrays.asList(1, 32));
+    codeMatrix.add(Arrays.asList(1, 4, 16, 128));
+    codeMatrix.add(Arrays.asList(1, 32, 64));
     return codeMatrix;
   }
 
