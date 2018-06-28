@@ -785,34 +785,6 @@ public class CiscoGrammarTest {
   }
 
   @Test
-  public void testNetworkObject() throws IOException {
-    String hostname = "network-object";
-    Configuration c = parseConfig(hostname);
-    Batfish batfish = getBatfishForConfigurationNames(hostname);
-    ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse();
-    Ip no1Ip = new Ip("1.2.3.4");
-    Ip no2IpStart = new Ip("2.2.2.0");
-    Ip no2IpEnd = new Ip("2.2.2.255");
-
-    /* Confirm network object IpSpaces cover the correct Ip addresses */
-    assertThat(c, hasIpSpace("NO1", containsIp(no1Ip)));
-    assertThat(c, hasIpSpace("NO1", not(containsIp(no2IpStart))));
-    assertThat(c, hasIpSpace("NO2", containsIp(no2IpStart)));
-    assertThat(c, hasIpSpace("NO2", containsIp(no2IpEnd)));
-    assertThat(c, hasIpSpace("NO2", not(containsIp(no1Ip))));
-    assertThat(c, hasIpSpace("OGN", containsIp(no1Ip, c.getIpSpaces())));
-    assertThat(c, hasIpSpace("OGN", not(containsIp(no2IpStart, c.getIpSpaces()))));
-
-    /* Confirm network objects have the correct number of referrers */
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT, "NO1", 1));
-    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT, "NO2", 0));
-    /* Confirm undefined reference shows up as such */
-    assertThat(
-        ccae, hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT, "NO_UNDEFINED"));
-  }
-
-  @Test
   public void testIosObjectGroupNetwork() throws IOException {
     String hostname = "ios-object-group-network";
     Configuration c = parseConfig(hostname);
@@ -1343,6 +1315,38 @@ public class CiscoGrammarTest {
     assertThat(c, hasZone("z1", hasMemberInterfaces(not(empty()))));
     assertThat(c, hasZone("z2", hasMemberInterfaces(not(empty()))));
     assertThat(c, hasZone("zempty", hasMemberInterfaces(empty())));
+  }
+
+  @Test
+  public void testNetworkObject() throws IOException {
+    String hostname = "network-object";
+    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse();
+    Ip on1Ip = new Ip("1.2.3.4");
+    Ip on2IpStart = new Ip("2.2.2.0");
+    Ip on2IpEnd = new Ip("2.2.2.255");
+    Ip inlineIp = new Ip("3.3.3.3");
+
+    /* Confirm network object IpSpaces cover the correct Ip addresses */
+    assertThat(c, hasIpSpace("ON1", containsIp(on1Ip)));
+    assertThat(c, hasIpSpace("ON1", not(containsIp(on2IpStart))));
+    assertThat(c, hasIpSpace("ON2", containsIp(on2IpStart)));
+    assertThat(c, hasIpSpace("ON2", containsIp(on2IpEnd)));
+    assertThat(c, hasIpSpace("ON2", not(containsIp(on1Ip))));
+
+    /* Confirm object-group also covers the IpSpaces its network objects cover */
+    assertThat(c, hasIpSpace("OGN", containsIp(on1Ip, c.getIpSpaces())));
+    assertThat(c, hasIpSpace("OGN", containsIp(inlineIp, c.getIpSpaces())));
+    assertThat(c, hasIpSpace("OGN", not(containsIp(on2IpStart, c.getIpSpaces()))));
+
+    /* Confirm network objects have the correct number of referrers */
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT, "ON1", 1));
+    assertThat(ccae, hasNumReferrers(hostname, CiscoStructureType.NETWORK_OBJECT, "ON2", 0));
+    /* Confirm undefined reference shows up as such */
+    assertThat(
+        ccae, hasUndefinedReference(hostname, CiscoStructureType.NETWORK_OBJECT, "ON_UNDEFINED"));
   }
 
   @Test
