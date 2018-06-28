@@ -2291,11 +2291,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterO_network(O_networkContext ctx) {
     _currentNetworkObject =
         _configuration.getNetworkObjects().computeIfAbsent(ctx.name.getText(), NetworkObject::new);
+    defineStructure(NETWORK_OBJECT, ctx.name.getText(), ctx);
   }
 
   @Override
   public void exitO_network(O_networkContext ctx) {
-    defineStructure(NETWORK_OBJECT, ctx.name.getText(), ctx);
     _currentNetworkObject = null;
   }
 
