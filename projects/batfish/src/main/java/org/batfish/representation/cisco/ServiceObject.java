@@ -15,23 +15,33 @@ public final class ServiceObject implements ServiceObjectGroupLine {
 
   private String _description;
 
-  private List<SubRange> _dstPorts;
+  private final List<SubRange> _dstPorts;
 
   private Integer _icmpType;
 
-  private String _name;
+  private final String _name;
 
-  private List<IpProtocol> _protocols;
+  private final List<IpProtocol> _protocols;
 
-  private List<SubRange> _srcPorts;
+  private final List<SubRange> _srcPorts;
 
   public ServiceObject(String name) {
+    _dstPorts = new ArrayList<>();
     _name = name;
     _protocols = new ArrayList<>();
+    _srcPorts = new ArrayList<>();
+  }
+
+  public void addDstPorts(List<SubRange> dstPorts) {
+    _dstPorts.addAll(dstPorts);
   }
 
   public void addProtocol(IpProtocol protocol) {
     _protocols.add(protocol);
+  }
+
+  public void addSrcPorts(List<SubRange> srcPorts) {
+    _srcPorts.addAll(srcPorts);
   }
 
   public String getDescription() {
@@ -62,27 +72,15 @@ public final class ServiceObject implements ServiceObjectGroupLine {
     _description = description;
   }
 
-  public void setDstPorts(List<SubRange> dstPorts) {
-    _dstPorts = dstPorts;
-  }
-
   public void setIcmpType(Integer icmpType) {
     _icmpType = icmpType;
-  }
-
-  public void setSrcPorts(List<SubRange> srcPorts) {
-    _srcPorts = srcPorts;
   }
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr() {
     HeaderSpace.Builder b = HeaderSpace.builder().setIpProtocols(ImmutableList.copyOf(_protocols));
-    if (_dstPorts != null && !_dstPorts.isEmpty()) {
-      b.setDstPorts(_dstPorts);
-    }
-    if (_srcPorts != null && !_srcPorts.isEmpty()) {
-      b.setSrcPorts(_srcPorts);
-    }
+    b.setDstPorts(_dstPorts);
+    b.setSrcPorts(_srcPorts);
     if (_icmpType != null) {
       b.setIcmpTypes(ImmutableList.of(new SubRange(_icmpType)));
     }

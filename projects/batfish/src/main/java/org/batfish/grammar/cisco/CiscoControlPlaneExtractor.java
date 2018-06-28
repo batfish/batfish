@@ -2486,10 +2486,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentServiceObject.addProtocol(IpProtocol.UDP);
     }
     if (ctx.dst_ps != null) {
-      _currentServiceObject.setDstPorts(toPortRanges(ctx.dst_ps));
+      _currentServiceObject.addDstPorts(toPortRanges(ctx.dst_ps));
     }
     if (ctx.src_ps != null) {
-      _currentServiceObject.setSrcPorts(toPortRanges(ctx.src_ps));
+      _currentServiceObject.addSrcPorts(toPortRanges(ctx.src_ps));
     }
   }
 
