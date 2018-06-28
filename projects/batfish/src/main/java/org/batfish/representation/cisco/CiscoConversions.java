@@ -312,7 +312,7 @@ class CiscoConversions {
                 IpAccessListLine.accepting()
                     .setMatchCondition(serviceObject.toAclLineMatchExpr())
                     .build()))
-        .setName(CiscoConfiguration.computeServiceObjectGroupAclName(serviceObject.getName()))
+        .setName(CiscoConfiguration.computeServiceObjectAclName(serviceObject.getName()))
         .build();
   }
 
