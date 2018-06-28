@@ -2197,7 +2197,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
               isakmpProfileName));
     } else if (isakmpProfile.getKeyring() == null
         || !_keyrings.containsKey(isakmpProfile.getKeyring())) {
-      _w.redFlag(String.format("Cannot find keyring for ISAKMP profile %s", isakmpProfileName));
+      _w.redFlag(
+          String.format(
+              "Cannot find keyring %s for ISAKMP profile %s",
+              firstNonNull(isakmpProfile.getKeyring(), ""), isakmpProfileName));
     } else {
       Keyring keyring = _keyrings.get(isakmpProfile.getKeyring());
       if (Objects.equals(keyring.getLocalAddress(), Ip.AUTO)) {
