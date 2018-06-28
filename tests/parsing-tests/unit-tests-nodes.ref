@@ -235,7 +235,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.2.3.4/32" : {
-                  "name" : "1.2.3.4/32",
+                  "remotePrefix" : "1.2.3.4/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -252,7 +252,6 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.2.3.4~",
                   "localAs" : 1,
                   "remoteAs" : 1,
-                  "remotePrefix" : "1.2.3.4/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -2057,7 +2056,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.1.1.0/24" : {
-                  "name" : "10.1.1.0/24",
+                  "remotePrefix" : "10.1.1.0/24",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -2079,7 +2078,6 @@
                   "localAs" : 1,
                   "localIp" : "1.1.1.1",
                   "remoteAs" : 2,
-                  "remotePrefix" : "10.1.1.0/24",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"
@@ -2294,7 +2292,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "name" : "1.1.1.1/32",
+                  "remotePrefix" : "1.1.1.1/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -2316,7 +2314,6 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:1.1.1.1/32~",
                   "localAs" : 1,
                   "remoteAs" : 2,
-                  "remotePrefix" : "1.1.1.1/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"
@@ -2574,7 +2571,7 @@
               "multipathIbgp" : true,
               "neighbors" : {
                 "1.10.1.1/32" : {
-                  "name" : "1.10.1.1/32",
+                  "remotePrefix" : "1.10.1.1/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -2592,13 +2589,12 @@
                   "group" : "as1",
                   "localAs" : 1,
                   "remoteAs" : 1,
-                  "remotePrefix" : "1.10.1.1/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"
                 },
                 "10.12.11.2/32" : {
-                  "name" : "10.12.11.2/32",
+                  "remotePrefix" : "10.12.11.2/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -2616,7 +2612,6 @@
                   "group" : "as2",
                   "localAs" : 1,
                   "remoteAs" : 2,
-                  "remotePrefix" : "10.12.11.2/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"
@@ -3048,7 +3043,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "64.57.21.1/32" : {
-                  "name" : "64.57.21.1/32",
+                  "remotePrefix" : "64.57.21.1/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -3067,7 +3062,6 @@
                   "group" : "EBGP-PEER-SVL-PNI",
                   "localAs" : 2152,
                   "remoteAs" : 11164,
-                  "remotePrefix" : "64.57.21.1/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -5504,7 +5498,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.0.1.2/32" : {
-                  "name" : "10.0.1.2/32",
+                  "remotePrefix" : "10.0.1.2/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -5525,7 +5519,6 @@
                   ],
                   "localAs" : 1,
                   "remoteAs" : 65001,
-                  "remotePrefix" : "10.0.1.2/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "aVrfWithInnerStatements"
@@ -8710,7 +8703,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "2.2.2.2/32" : {
-                  "name" : "2.2.2.2/32",
+                  "remotePrefix" : "2.2.2.2/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -8727,7 +8720,6 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:2.2.2.2~",
                   "localAs" : 65500,
                   "remoteAs" : 6600,
-                  "remotePrefix" : "2.2.2.2/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -12024,7 +12016,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.2.1.1/32" : {
-                  "name" : "1.2.1.1/32",
+                  "remotePrefix" : "1.2.1.1/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -12043,13 +12035,12 @@
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
                   "remoteAs" : 5555,
-                  "remotePrefix" : "1.2.1.1/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "1.2.1.2/32" : {
-                  "name" : "1.2.1.2/32",
+                  "remotePrefix" : "1.2.1.2/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -12068,13 +12059,12 @@
                   "group" : "foobar-iBGP_ipv4",
                   "localAs" : 5555,
                   "remoteAs" : 5555,
-                  "remotePrefix" : "1.2.1.2/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "1.2.1.3/32" : {
-                  "name" : "1.2.1.3/32",
+                  "remotePrefix" : "1.2.1.3/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -12093,7 +12083,6 @@
                   "group" : "foobar-iBGP_border_ipv4",
                   "localAs" : 5555,
                   "remoteAs" : 5555,
-                  "remotePrefix" : "1.2.1.3/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -13598,7 +13587,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "172.16.2.1/32" : {
-                  "name" : "172.16.2.1/32",
+                  "remotePrefix" : "172.16.2.1/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -13622,13 +13611,12 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.1/32~",
                   "localAs" : 65533,
                   "remoteAs" : 65530,
-                  "remotePrefix" : "172.16.2.1/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"
                 },
                 "172.16.2.2/32" : {
-                  "name" : "172.16.2.2/32",
+                  "remotePrefix" : "172.16.2.2/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -13651,7 +13639,6 @@
                   "importPolicy" : "~PEER_IMPORT_POLICY:172.16.2.2/32~",
                   "localAs" : 65533,
                   "remoteAs" : 65530,
-                  "remotePrefix" : "172.16.2.2/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"
@@ -15266,7 +15253,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "123.123.123.123/32" : {
-                  "name" : "123.123.123.123/32",
+                  "remotePrefix" : "123.123.123.123/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -15283,7 +15270,6 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                   "localAs" : 1,
                   "remoteAs" : 1,
-                  "remotePrefix" : "123.123.123.123/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -15436,7 +15422,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "123.123.123.123/32" : {
-                  "name" : "123.123.123.123/32",
+                  "remotePrefix" : "123.123.123.123/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -15453,7 +15439,6 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:123.123.123.123~",
                   "localAs" : 1,
                   "remoteAs" : 1,
-                  "remotePrefix" : "123.123.123.123/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -15666,7 +15651,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "name" : "1.1.1.1/32",
+                  "remotePrefix" : "1.1.1.1/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -15684,13 +15669,12 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:1.1.1.1~",
                   "localAs" : 1,
                   "remoteAs" : 1,
-                  "remotePrefix" : "1.1.1.1/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "3.3.3.3/32" : {
-                  "name" : "3.3.3.3/32",
+                  "remotePrefix" : "3.3.3.3/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -15708,13 +15692,12 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:3.3.3.3~",
                   "localAs" : 1,
                   "remoteAs" : 3,
-                  "remotePrefix" : "3.3.3.3/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "4.4.4.4/32" : {
-                  "name" : "4.4.4.4/32",
+                  "remotePrefix" : "4.4.4.4/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -15732,7 +15715,6 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:4.4.4.4~",
                   "localAs" : 1,
                   "remoteAs" : 4,
-                  "remotePrefix" : "4.4.4.4/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -16369,7 +16351,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "10.0.0.0/32" : {
-                  "name" : "10.0.0.0/32",
+                  "remotePrefix" : "10.0.0.0/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -16386,7 +16368,6 @@
                   "exportPolicy" : "~BGP_PEER_EXPORT_POLICY:default:10.0.0.0~",
                   "localAs" : 2,
                   "remoteAs" : 1,
-                  "remotePrefix" : "10.0.0.0/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -18471,7 +18452,7 @@
               "multipathIbgp" : true,
               "neighbors" : {
                 "10.98.25.0/25" : {
-                  "name" : "10.98.25.0/25",
+                  "remotePrefix" : "10.98.25.0/25",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -18489,13 +18470,12 @@
                   "group" : "RAAS",
                   "localAs" : 64601,
                   "remoteAs" : 65511,
-                  "remotePrefix" : "10.98.25.0/25",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
                 },
                 "100.93.100.16/32" : {
-                  "name" : "100.93.100.16/32",
+                  "remotePrefix" : "100.93.100.16/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -18514,7 +18494,6 @@
                   "group" : "SPINE",
                   "localAs" : 64601,
                   "remoteAs" : 64802,
-                  "remotePrefix" : "100.93.100.16/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : false,
                   "vrf" : "default"
@@ -20821,7 +20800,7 @@
               "multipathIbgp" : false,
               "neighbors" : {
                 "1.1.1.1/32" : {
-                  "name" : "1.1.1.1/32",
+                  "remotePrefix" : "1.1.1.1/32",
                   "additionalPathsReceive" : false,
                   "additionalPathsSelectAll" : false,
                   "additionalPathsSend" : false,
@@ -20843,7 +20822,6 @@
                   ],
                   "localAs" : 1,
                   "remoteAs" : 2,
-                  "remotePrefix" : "1.1.1.1/32",
                   "routeReflectorClient" : false,
                   "sendCommunity" : true,
                   "vrf" : "default"

@@ -5,18 +5,18 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyDescription;
 import com.kjetland.jackson.jsonSchema.annotations.JsonSchemaDescription;
+import java.io.Serializable;
 import java.util.LinkedHashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.annotation.Nullable;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.NetworkFactory.NetworkFactoryBuilder;
 
 /** Represents a configured BGP peering, at the control plane level */
 @JsonSchemaDescription("A configured e/iBGP peering relationship")
-public final class BgpPeerConfig extends ComparableStructure<Prefix> {
+public final class BgpPeerConfig implements Serializable {
 
   public static class Builder extends NetworkFactoryBuilder<BgpPeerConfig> {
     private Configuration _owner;
@@ -205,8 +205,6 @@ public final class BgpPeerConfig extends ComparableStructure<Prefix> {
 
   private static final String PROP_LOCAL_IP = "localIp";
 
-  private static final String PROP_NAME = "name";
-
   private static final String PROP_OWNER = "owner";
 
   private static final String PROP_REMOTE_AS = "remoteAs";
@@ -277,6 +275,12 @@ public final class BgpPeerConfig extends ComparableStructure<Prefix> {
   /** Whether this session is passive/dynamic (e.g., listens for incoming connections only) */
   private boolean _dynamic;
 
+  /**
+   * The remote peer's IPv4 prefix. Currently nullable because: 1) we sometimes pass null in the
+   * constructor; 2) Jackson deserialization without any enforcement checks.
+   */
+  @Nullable private Prefix _prefix;
+
   /** The autonomous system number that the containing BGP process considers this peer to have. */
   private Long _remoteAs;
 
@@ -310,8 +314,8 @@ public final class BgpPeerConfig extends ComparableStructure<Prefix> {
   }
 
   @JsonCreator
-  public BgpPeerConfig(@JsonProperty(PROP_NAME) Prefix prefix) {
-    super(prefix);
+  public BgpPeerConfig(@Nullable @JsonProperty(PROP_REMOTE_PREFIX) Prefix prefix) {
+    _prefix = prefix;
     _exportPolicySources = new TreeSet<>();
     _generatedRoutes = new LinkedHashSet<>();
     _importPolicySources = new TreeSet<>();
@@ -395,6 +399,37 @@ public final class BgpPeerConfig extends ComparableStructure<Prefix> {
         && this._dynamic == other._dynamic;
   }
 
+  @Override
+  public int hashCode() {
+    // SKIPS: description, generated routes, owner to be consistent with equals
+    return Objects.hash(
+        _additionalPathsReceive,
+        _additionalPathsSelectAll,
+        _additionalPathsSend,
+        _advertiseExternal,
+        _advertiseInactive,
+        _allowLocalAsIn,
+        _allowRemoteAsOut,
+        _authenticationSettings,
+        _clusterId,
+        _defaultMetric,
+        _ebgpMultihop,
+        _enforceFirstAs,
+        _exportPolicy,
+        _exportPolicySources,
+        _group,
+        _importPolicy,
+        _importPolicySources,
+        _localAs,
+        _localIp,
+        _dynamic,
+        _prefix,
+        _remoteAs,
+        _routeReflectorClient,
+        _sendCommunity,
+        _vrf);
+  }
+
   @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE)
   public boolean getAdditionalPathsReceive() {
     return _additionalPathsReceive;
@@ -414,8 +449,8 @@ public final class BgpPeerConfig extends ComparableStructure<Prefix> {
   @JsonProperty(PROP_ADDRESS)
   @JsonPropertyDescription("The IPV4 address of the remote peer if not dynamic (passive)")
   public Ip getAddress() {
-    if (_key != null && _key.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
-      return _key.getStartIp();
+    if (_prefix != null && _prefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
+      return _prefix.getStartIp();
     } else {
       return null;
     }
@@ -559,7 +594,7 @@ public final class BgpPeerConfig extends ComparableStructure<Prefix> {
       "The remote (destination) IPV4 address of this peering (when not-dynamic), or the "
           + "network of peers allowed to connect on this peering (otherwise)")
   public Prefix getPrefix() {
-    return _key;
+    return _prefix;
   }
 
   @JsonProperty(PROP_REMOTE_AS)
@@ -736,6 +771,6 @@ public final class BgpPeerConfig extends ComparableStructure<Prefix> {
 
   @Override
   public String toString() {
-    return "BgpPeerConfig<Prefix:" + _key + ", AS:" + _remoteAs + ">";
+    return "BgpPeerConfig<Prefix:" + _prefix + ", AS:" + _remoteAs + ">";
   }
 }

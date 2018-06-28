@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.auto.service.AutoService;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.graph.Network;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -44,6 +45,16 @@ import org.batfish.role.NodeRoleDimension;
 
 @AutoService(Plugin.class)
 public class NeighborsQuestionPlugin extends QuestionPlugin {
+
+  private static final Comparator<VerboseBgpEdge> VERBOSE_BGP_EDGE_COMPARATOR =
+      Comparator.nullsFirst(
+          Comparator.comparing(VerboseBgpEdge::getEdgeSummary)
+              .thenComparing(
+                  o -> o.getNode1Session().getPrefix(),
+                  Comparator.nullsFirst(Comparator.naturalOrder()))
+              .thenComparing(
+                  o -> o.getNode2Session().getPrefix(),
+                  Comparator.nullsFirst(Comparator.naturalOrder())));
 
   public enum EdgeStyle {
     ROLE("role"),
@@ -390,13 +401,15 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonProperty(PROP_VERBOSE_EBGP_NEIGHBORS)
-    public void setVerboseEbgpNeighbors(SortedSet<VerboseBgpEdge> verboseEbgpNeighbors) {
-      _verboseEbgpNeighbors = verboseEbgpNeighbors;
+    public void setVerboseEbgpNeighbors(Set<VerboseBgpEdge> verboseEbgpNeighbors) {
+      _verboseEbgpNeighbors = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
+      _verboseEbgpNeighbors.addAll(verboseEbgpNeighbors);
     }
 
     @JsonProperty(PROP_VERBOSE_IBGP_NEIGHBORS)
-    public void setVerboseIbgpNeighbors(SortedSet<VerboseBgpEdge> verboseIbgpNeighbors) {
-      _verboseIbgpNeighbors = verboseIbgpNeighbors;
+    public void setVerboseIbgpNeighbors(Set<VerboseBgpEdge> verboseIbgpNeighbors) {
+      _verboseIbgpNeighbors = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
+      _verboseIbgpNeighbors.addAll(verboseIbgpNeighbors);
     }
 
     @JsonProperty(PROP_VERBOSE_LAN_NEIGHBORS)
@@ -569,7 +582,8 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
 
       if (question.getNeighborTypes().contains(NeighborType.EBGP)) {
         initRemoteBgpNeighbors(configurations);
-        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
+        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
+
         for (BgpSession session : _bgpTopology.edges()) {
           BgpPeerConfig bgpPeerConfig = session.getSrc();
           BgpPeerConfig remoteBgpPeerConfig = session.getDst();
@@ -604,7 +618,7 @@ public class NeighborsQuestionPlugin extends QuestionPlugin {
       }
 
       if (question.getNeighborTypes().contains(NeighborType.IBGP)) {
-        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>();
+        SortedSet<VerboseBgpEdge> vedges = new TreeSet<>(VERBOSE_BGP_EDGE_COMPARATOR);
         initRemoteBgpNeighbors(configurations);
         for (BgpSession session : _bgpTopology.edges()) {
           BgpPeerConfig bgpPeerConfig = session.getSrc();
