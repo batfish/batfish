@@ -44,7 +44,8 @@ public class AaaAuthenticationLoginQuestionPlugin extends QuestionPlugin {
      *     {@link DisplayHints}
      * @return The creates the answer element object.
      */
-    private static TableAnswerElement create(AaaAuthenticationQuestion question) {
+    @VisibleForTesting
+    public static TableAnswerElement create(AaaAuthenticationQuestion question) {
       List<ColumnMetadata> columnMetadata =
           ImmutableList.of(
               new ColumnMetadata(COLUMN_NODE, Schema.NODE, "Node", true, false),
