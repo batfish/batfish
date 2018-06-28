@@ -40,13 +40,7 @@ public class Table2<K1, K2, V> {
 
   public void forEach(TriConsumer<? super K1, ? super K2, ? super V> action) {
     Objects.requireNonNull(action);
-    _map.forEach(
-        (key1, map) -> {
-          map.forEach(
-              (key2, v) -> {
-                action.accept(key1, key2, v);
-              });
-        });
+    _map.forEach((key1, map) -> map.forEach((key2, v) -> action.accept(key1, key2, v)));
   }
 
   public V computeIfAbsent(K1 key1, K2 key2, BiFunction<K1, K2, V> f) {

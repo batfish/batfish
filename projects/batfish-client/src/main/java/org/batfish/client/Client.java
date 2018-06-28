@@ -2230,9 +2230,8 @@ public class Client extends AbstractClient implements IClient {
       sourceMap
           .get(questionName)
           .forEach(
-              questionContent -> {
-                updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae);
-              });
+              questionContent ->
+                  updateLoadedQuestionsInfo(questionName, questionContent, destinationMap, ae));
     }
   }
 

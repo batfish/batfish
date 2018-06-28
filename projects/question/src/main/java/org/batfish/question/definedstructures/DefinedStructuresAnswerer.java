@@ -53,19 +53,18 @@ public class DefinedStructuresAnswerer extends Answerer {
                 return;
               }
               byStructType.forEach(
-                  (structType, byStructName) -> {
-                    byStructName.forEach(
-                        (structName, info) -> {
-                          DefinedStructureRow row =
-                              new DefinedStructureRow(
-                                  nodeName,
-                                  structType,
-                                  structName,
-                                  info.getNumReferrers(),
-                                  info.getDefinitionLines());
-                          structures.add(toRow(row));
-                        });
-                  });
+                  (structType, byStructName) ->
+                      byStructName.forEach(
+                          (structName, info) -> {
+                            DefinedStructureRow row =
+                                new DefinedStructureRow(
+                                    nodeName,
+                                    structType,
+                                    structName,
+                                    info.getNumReferrers(),
+                                    info.getDefinitionLines());
+                            structures.add(toRow(row));
+                          }));
             });
 
     return structures;
