@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static org.batfish.common.util.CommonUtil.computeIpNodeOwners;
 import static org.batfish.common.util.CommonUtil.initBgpTopology;
 import static org.batfish.common.util.CommonUtil.synthesizeTopology;
+import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasDestinationIp;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasNetwork;
 import static org.batfish.datamodel.matchers.BgpAdvertisementMatchers.hasOriginatorIp;
@@ -25,9 +26,10 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.graph.ImmutableNetwork;
+import com.google.common.graph.ImmutableValueGraph;
 import com.google.common.graph.Network;
-import com.google.common.graph.NetworkBuilder;
+import com.google.common.graph.ValueGraph;
+import com.google.common.graph.ValueGraphBuilder;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -42,12 +44,13 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAdvertisement;
 import org.batfish.datamodel.BgpAdvertisement.BgpAdvertisementType;
-import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpPeerConfigId;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpRoute;
-import org.batfish.datamodel.BgpSession;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpTieBreaker;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -122,7 +125,7 @@ public class VirtualRouterTest {
   private static final Ip TEST_NEXT_HOP_IP2 = new Ip("2.3.4.5");
   private static final String TEST_VIRTUAL_ROUTER_NAME = "testvirtualrouter";
 
-  private BgpPeerConfig.Builder _bgpNeighborBuilder;
+  private BgpActivePeerConfig.Builder _bgpNeighborBuilder;
   private BgpRoute.Builder _bgpRouteBuilder;
   private Statement _exitAcceptStatement = Statements.ExitAccept.toStaticStatement();
   private Statement _exitRejectStatement = Statements.ExitReject.toStaticStatement();
@@ -147,7 +150,7 @@ public class VirtualRouterTest {
 
   private static VirtualRouter makeIosVirtualRouter(String hostname) {
     Node n = TestUtils.makeIosRouter(hostname);
-    return n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME);
+    return n.getVirtualRouters().get(DEFAULT_VRF_NAME);
   }
 
   /**
@@ -159,7 +162,7 @@ public class VirtualRouterTest {
    */
   private static VirtualRouter createEmptyVirtualRouter(NetworkFactory nf, String nodeName) {
     Configuration config = BatfishTestUtils.createTestConfiguration(nodeName, FORMAT, "interface1");
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf.Builder vb = nf.vrfBuilder().setName(DEFAULT_VRF_NAME);
     Vrf vrf = vb.setOwner(config).build();
     config.getVrfs().put(TEST_VIRTUAL_ROUTER_NAME, vrf);
     VirtualRouter virtualRouter = new VirtualRouter(TEST_VIRTUAL_ROUTER_NAME, config);
@@ -174,14 +177,12 @@ public class VirtualRouterTest {
     _testVirtualRouter = createEmptyVirtualRouter(nf, TEST_VIRTUAL_ROUTER_NAME);
     BgpProcess bgpProcess =
         nf.bgpProcessBuilder().setVrf(_testVirtualRouter._vrf).setRouterId(TEST_SRC_IP).build();
-    Configuration neighborConfiguration =
-        nf.configurationBuilder()
-            .setConfigurationFormat(FORMAT)
-            .setHostname(NEIGHBOR_HOST_NAME)
-            .build();
+    nf.configurationBuilder()
+        .setConfigurationFormat(FORMAT)
+        .setHostname(NEIGHBOR_HOST_NAME)
+        .build();
     _bgpNeighborBuilder =
         nf.bgpNeighborBuilder()
-            .setOwner(neighborConfiguration)
             .setPeerAddress(TEST_DEST_IP)
             .setLocalIp(TEST_SRC_IP)
             .setLocalAs(TEST_AS1)
@@ -274,8 +275,8 @@ public class VirtualRouterTest {
     _bgpNeighborBuilder
         .setRemoteAs(TEST_AS1)
         .setExportPolicy(exportPolicy.getName())
-        .setAdditionalPathSend(true)
-        .setAdditionalPathSelectAll(true)
+        .setAdditionalPathsSend(true)
+        .setAdditionalPathsSelectAll(true)
         .build();
 
     _testVirtualRouter._bgpMultipathRib.mergeRoute(
@@ -363,8 +364,8 @@ public class VirtualRouterTest {
         .setRemoteAs(TEST_AS1)
         .setExportPolicy(exportPolicy.getName())
         .setAdvertiseExternal(true)
-        .setAdditionalPathSend(true)
-        .setAdditionalPathSelectAll(true)
+        .setAdditionalPathsSend(true)
+        .setAdditionalPathsSelectAll(true)
         .build();
 
     _testVirtualRouter._ebgpBestPathRib.mergeRoute(
@@ -400,7 +401,7 @@ public class VirtualRouterTest {
 
     vr.getConfiguration()
         .getVrfs()
-        .get(Configuration.DEFAULT_VRF_NAME)
+        .get(DEFAULT_VRF_NAME)
         .setStaticRoutes(ImmutableSortedSet.of(baseRoute, dependentRoute));
 
     // Initial activation
@@ -481,7 +482,7 @@ public class VirtualRouterTest {
             new StaticRoute(Prefix.parse("6.6.6.6/32"), null, null, 1, 0L, 1));
     vr.getConfiguration()
         .getVrfs()
-        .get(Configuration.DEFAULT_VRF_NAME)
+        .get(DEFAULT_VRF_NAME)
         .setStaticRoutes(ImmutableSortedSet.copyOf(routes));
 
     // Test
@@ -562,8 +563,7 @@ public class VirtualRouterTest {
             .stream()
             .collect(
                 ImmutableMap.toImmutableMap(
-                    Entry::getKey,
-                    e -> e.getValue().getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME)));
+                    Entry::getKey, e -> e.getValue().getVirtualRouters().get(DEFAULT_VRF_NAME)));
     VirtualRouter testRouter = routers.get(testRouterName);
     VirtualRouter exportingRouter = routers.get(exportingRouterName);
     testRouter.initRibs();
@@ -748,37 +748,42 @@ public class VirtualRouterTest {
 
   @Test
   public void testInitQueuesAndDeltaBuilders() {
-    Node n1 = TestUtils.makeIosRouter("r1");
-    Node n2 = TestUtils.makeIosRouter("r2");
-    addInterfaces(
-        n1.getConfiguration(), ImmutableMap.of("eth1", new InterfaceAddress("1.1.1.0/24")));
-    addInterfaces(
-        n2.getConfiguration(), ImmutableMap.of("eth1", new InterfaceAddress("1.1.1.0/24")));
-    Topology topology =
-        synthesizeTopology(
-            ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration()));
+    NetworkFactory nf = new NetworkFactory();
+    Configuration.Builder cb =
+        nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
+    Configuration c1 = cb.setHostname("r1").build();
+    Configuration c2 = cb.setHostname("r2").build();
 
-    Map<String, Configuration> configs =
-        ImmutableMap.of("r1", n1.getConfiguration(), "r2", n2.getConfiguration());
-    Network<BgpPeerConfig, BgpSession> bgpTopology =
+    Vrf vrf1 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
+    Vrf vrf2 = nf.vrfBuilder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
+
+    Interface.Builder ib = nf.interfaceBuilder();
+    ib.setAddress(new InterfaceAddress("1.1.1.1/30")).setOwner(c1).build();
+    ib.setAddress(new InterfaceAddress("1.1.1.2/30")).setOwner(c2).build();
+
+    Topology topology = synthesizeTopology(ImmutableMap.of("r1", c1, "r2", c2));
+
+    Map<String, Configuration> configs = ImmutableMap.of("r1", c1, "r2", c2);
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
         initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     Network<IsisNode, IsisEdge> isisTopology = initIsisTopology(configs, topology);
 
-    Map<String, Node> nodes = ImmutableMap.of("r1", n1, "r2", n2);
+    Map<String, Node> nodes =
+        ImmutableMap.of(c1.getName(), new Node(c1), c2.getName(), new Node(c2));
+
     Map<String, VirtualRouter> vrs =
         nodes
             .values()
             .stream()
-            .map(n -> n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME))
+            .map(n -> n.getVirtualRouters().get(DEFAULT_VRF_NAME))
             .collect(
                 ImmutableMap.toImmutableMap(
                     vr -> vr.getConfiguration().getHostname(), Function.identity()));
+    Network<IsisNode, IsisEdge> initialIsisTopology = initIsisTopology(configs, topology);
+    vrs.values()
+        .forEach(
+            vr -> vr.initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, initialIsisTopology));
 
-    for (Node n : nodes.values()) {
-      n.getVirtualRouters()
-          .get(Configuration.DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, isisTopology);
-    }
     // Assert that queues are empty as there are no OSPF, BGP, nor IS-IS processes
     vrs.values()
         .forEach(
@@ -788,29 +793,38 @@ public class VirtualRouterTest {
               assertThat(vr._ospfExternalIncomingRoutes, anEmptyMap());
             });
 
-    // Set bgp
-    n1.getConfiguration()
-        .getVrfs()
-        .get(Configuration.DEFAULT_VRF_NAME)
-        .setBgpProcess(new BgpProcess());
-    n2.getConfiguration()
-        .getVrfs()
-        .get(Configuration.DEFAULT_VRF_NAME)
-        .setBgpProcess(new BgpProcess());
+    // Set bgp processes and neighbors
+    BgpProcess proc1 = nf.bgpProcessBuilder().setVrf(vrf1).setRouterId(new Ip("1.1.1.1")).build();
+    BgpProcess proc2 = nf.bgpProcessBuilder().setVrf(vrf2).setRouterId(new Ip("1.1.1.2")).build();
+    nf.bgpNeighborBuilder()
+        .setPeerAddress(new Ip("1.1.1.2"))
+        .setLocalIp(new Ip("1.1.1.1"))
+        .setBgpProcess(proc1)
+        .setRemoteAs(2L)
+        .setLocalAs(1L)
+        .build();
+    nf.bgpNeighborBuilder()
+        .setPeerAddress(new Ip("1.1.1.1"))
+        .setLocalIp(new Ip("1.1.1.2"))
+        .setBgpProcess(proc2)
+        .setRemoteAs(1L)
+        .setLocalAs(2L)
+        .build();
 
     // Re-run
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology2 =
+        initBgpTopology(configs, computeIpNodeOwners(configs, false), false);
     for (Node n : nodes.values()) {
       n.getVirtualRouters()
-          .get(Configuration.DEFAULT_VRF_NAME)
-          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology, isisTopology);
+          .get(DEFAULT_VRF_NAME)
+          .initQueuesAndDeltaBuilders(nodes, topology, bgpTopology2, isisTopology);
     }
     // Assert that queues are initialized
     vrs.values()
         .forEach(
             vr -> {
               assertThat(vr._bgpIncomingRoutes, is(notNullValue()));
-              // TODO: change test init for this to work
-              //              assertThat(vr._bgpIncomingRoutes.values(), hasSize(1));
+              assertThat(vr._bgpIncomingRoutes.values(), hasSize(1));
             });
   }
 
@@ -819,7 +833,7 @@ public class VirtualRouterTest {
     NetworkFactory nf = new NetworkFactory();
     Configuration.Builder cb =
         nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS);
-    Vrf.Builder vb = nf.vrfBuilder().setName(Configuration.DEFAULT_VRF_NAME);
+    Vrf.Builder vb = nf.vrfBuilder().setName(DEFAULT_VRF_NAME);
     IsisLevelSettings levelSettings = IsisLevelSettings.builder().build();
     IsisProcess.Builder isb =
         IsisProcess.builder().setLevel1(levelSettings).setLevel2(levelSettings);
@@ -849,16 +863,15 @@ public class VirtualRouterTest {
 
     Map<String, Configuration> configs = ImmutableMap.of(c1.getName(), c1, c2.getName(), c2);
     Topology topology = synthesizeTopology(configs);
-    Network<BgpPeerConfig, BgpSession> bgpTopology =
-        ImmutableNetwork.copyOf(
-            NetworkBuilder.directed().allowsParallelEdges(false).allowsSelfLoops(false).build());
+    ValueGraph<BgpPeerConfigId, BgpSessionProperties> bgpTopology =
+        ImmutableValueGraph.copyOf(ValueGraphBuilder.directed().allowsSelfLoops(false).build());
     Map<String, Node> nodes =
         ImmutableMap.of(c1.getName(), new Node(c1), c2.getName(), new Node(c2));
     Map<String, VirtualRouter> vrs =
         nodes
             .values()
             .stream()
-            .map(n -> n.getVirtualRouters().get(Configuration.DEFAULT_VRF_NAME))
+            .map(n -> n.getVirtualRouters().get(DEFAULT_VRF_NAME))
             .collect(
                 ImmutableMap.toImmutableMap(
                     vr -> vr.getConfiguration().getHostname(), Function.identity()));

@@ -31,8 +31,10 @@ import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclIpSpaceLine;
 import org.batfish.datamodel.AuthenticationKey;
 import org.batfish.datamodel.AuthenticationKeyChain;
+import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.BgpAuthenticationSettings;
+import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
@@ -323,8 +325,18 @@ public final class JuniperConfiguration extends VendorConfiguration {
     for (Entry<Prefix, IpBgpGroup> e : routingInstance.getIpBgpGroups().entrySet()) {
       Prefix prefix = e.getKey();
       IpBgpGroup ig = e.getValue();
-      BgpPeerConfig neighbor = new BgpPeerConfig(prefix, _c, ig.getDynamic());
-      neighbor.setVrf(vrfName);
+      BgpPeerConfig.Builder<?, ?> neighbor;
+      if (ig.getDynamic()) {
+        neighbor =
+            BgpPassivePeerConfig.builder()
+                .setPeerPrefix(prefix)
+                .setRemoteAs(ImmutableList.of(ig.getLocalAs()));
+      } else {
+        neighbor =
+            BgpActivePeerConfig.builder()
+                .setPeerAddress(prefix.getStartIp())
+                .setRemoteAs(ig.getPeerAs());
+      }
 
       // route reflection
       Ip declaredClusterId = ig.getClusterId();
@@ -464,7 +476,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
       // inherit local-as
       neighbor.setLocalAs(ig.getLocalAs());
-      if (neighbor.getLocalAs() == null) {
+      if (ig.getLocalAs() == null) {
         _w.redFlag("Missing local-as for neighbor: " + ig.getRemoteAddress());
         continue;
       }
@@ -475,7 +487,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
        * Also set multipath
        */
       if (ig.getType() == BgpGroupType.INTERNAL) {
-        neighbor.setRemoteAs(ig.getLocalAs());
         boolean currentGroupMultipathIbgp = ig.getMultipath();
         if (multipathIbgpSet && currentGroupMultipathIbgp != multipathIbgp) {
           _w.redFlag(
@@ -487,7 +498,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
           multipathIbgpSet = true;
         }
       } else {
-        neighbor.setRemoteAs(ig.getPeerAs());
         boolean currentGroupMultipathEbgp = ig.getMultipath();
         if (multipathEbgpSet && currentGroupMultipathEbgp != multipathEbgp) {
           _w.redFlag(
@@ -532,7 +542,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
       if (localIp == null) {
-        if (neighbor.getDynamic()) {
+        if (ig.getDynamic()) {
           _w.redFlag(
               "Could not determine local ip for bgp peering with neighbor prefix: " + prefix);
         } else {
@@ -543,7 +553,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       } else {
         neighbor.setLocalIp(localIp);
       }
-      proc.getNeighbors().put(neighbor.getPrefix(), neighbor);
+      neighbor.setBgpProcess(proc);
+      neighbor.build();
     }
     proc.setMultipathEbgp(multipathEbgpSet);
     proc.setMultipathIbgp(multipathIbgp);
