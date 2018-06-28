@@ -2,6 +2,7 @@ package org.batfish.symbolic.abstraction;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -470,7 +471,8 @@ class AbstractionBuilder {
 
     SortedSet<Interface> toRetain = new TreeSet<>();
     SortedSet<IpLink> ipNeighbors = new TreeSet<>();
-    SortedSet<BgpPeerConfig> bgpPeerConfigs = new TreeSet<>();
+    SortedSet<BgpPeerConfig> bgpPeerConfigs =
+        new TreeSet<>(Comparator.comparing(BgpPeerConfig::getPrefix));
 
     List<GraphEdge> edges = _graph.getEdgeMap().get(conf.getName());
     for (GraphEdge ge : edges) {
