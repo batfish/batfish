@@ -135,9 +135,8 @@ public class BgpAdvertisementsQuestionPlugin extends QuestionPlugin {
     public String prettyPrint() {
       StringBuilder sb = new StringBuilder();
       _bgpAdvertisements.forEach(
-          (hostname, adverts) -> {
-            adverts.forEach(advert -> sb.append(advert.prettyPrint(hostname + " ")));
-          });
+          (hostname, adverts) ->
+              adverts.forEach(advert -> sb.append(advert.prettyPrint(hostname + " "))));
       return sb.toString();
     }
   }
