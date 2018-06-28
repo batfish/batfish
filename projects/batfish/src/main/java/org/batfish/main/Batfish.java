@@ -3088,8 +3088,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> configs = loadConfigurations();
     SortedSet<Edge> edges = CommonUtil.synthesizeTopology(configs).getEdges();
     Set<Edge> symmetricEdgePairs = getSymmetricEdgePairs(edges);
-    List<Edge> edgeList = new ArrayList<>();
-    edgeList.addAll(symmetricEdgePairs);
+    List<Edge> edgeList = new ArrayList<>(symmetricEdgePairs);
     for (int i = 0; i < edgeList.size() / 2; i++) {
       Edge edge1 = edgeList.get(2 * i);
       Edge edge2 = edgeList.get(2 * i + 1);

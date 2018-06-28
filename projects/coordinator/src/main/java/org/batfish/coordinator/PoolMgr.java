@@ -157,7 +157,7 @@ public class PoolMgr {
         JSONObject jObj = new JSONObject(array.get(1).toString());
 
         if (!jObj.has("idle")) {
-          _logger.error(String.format("did not see idle key in json response\n"));
+          _logger.error("did not see idle key in json response\n");
           updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
           return;
         }
