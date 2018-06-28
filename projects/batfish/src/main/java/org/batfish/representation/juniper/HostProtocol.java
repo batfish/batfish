@@ -37,7 +37,7 @@ public enum HostProtocol {
 
   private final Supplier<List<IpAccessListLine>> _lines;
 
-  private HostProtocol() {
+  HostProtocol() {
     _lines = Suppliers.memoize(this::init);
   }
 
