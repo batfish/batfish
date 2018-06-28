@@ -2,7 +2,7 @@ package org.batfish.coordinator.authorizer;
 
 public interface Authorizer {
 
-  public enum Type {
+  enum Type {
     database,
     file,
     none
