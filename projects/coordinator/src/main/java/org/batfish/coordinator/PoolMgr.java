@@ -54,9 +54,7 @@ public class PoolMgr {
   }
 
   public synchronized void deleteFromPool(String worker) {
-    if (_workerPool.containsKey(worker)) {
-      _workerPool.remove(worker);
-    }
+    _workerPool.remove(worker);
   }
 
   private synchronized List<String> getAllWorkers() {
