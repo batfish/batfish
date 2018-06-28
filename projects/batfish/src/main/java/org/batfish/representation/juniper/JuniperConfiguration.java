@@ -1205,6 +1205,16 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIkeProposal;
   }
 
+  private IkePhase1Proposal toIkePhase1Proposal(IkeProposal ikeProposal) {
+    IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(ikeProposal.getName());
+    ikePhase1Proposal.setDiffieHellmanGroup(ikeProposal.getDiffieHellmanGroup());
+    ikePhase1Proposal.setAuthenticationMethod(ikeProposal.getAuthenticationMethod());
+    ikePhase1Proposal.setEncryptionAlgorithm(ikeProposal.getEncryptionAlgorithm());
+    ikePhase1Proposal.setLifetimeSeconds(ikeProposal.getLifetimeSeconds());
+    ikePhase1Proposal.setHashingAlgorithm(ikeProposal.getAuthenticationAlgorithm());
+    return ikePhase1Proposal;
+  }
+
   private org.batfish.datamodel.Interface toInterface(Interface iface) {
     String name = iface.getName();
     org.batfish.datamodel.Interface newIface = new org.batfish.datamodel.Interface(name, _c);
@@ -1969,6 +1979,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .forEach(
             ikeProposal ->
                 _c.getIkeProposals().put(ikeProposal.getName(), toIkeProposal(ikeProposal)));
+    _ikeProposals
+        .values()
+        .forEach(
+            ikeProposal ->
+                _c.getIkePhase1Proposals()
+                    .put(ikeProposal.getName(), toIkePhase1Proposal(ikeProposal)));
 
     // convert ike policies
     for (Entry<String, IkePolicy> e : _ikePolicies.entrySet()) {

@@ -86,11 +86,11 @@ final class ConfigurationMatchersImpl {
       return actual.getIkeProposals().get(_name);
     }
   }
+
   static final class HasIkePhase1Policy extends FeatureMatcher<Configuration, IkePhase1Policy> {
     private final String _name;
 
-    HasIkePhase1Policy(
-        @Nonnull String name, @Nonnull Matcher<? super IkePhase1Policy> subMatcher) {
+    HasIkePhase1Policy(@Nonnull String name, @Nonnull Matcher<? super IkePhase1Policy> subMatcher) {
       super(
           subMatcher,
           "A Configuration with ikePhase1Policy " + name + ":",

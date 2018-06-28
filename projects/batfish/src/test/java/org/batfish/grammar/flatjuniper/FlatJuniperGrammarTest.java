@@ -8,6 +8,8 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbor;
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasNeighbors;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDefaultVrf;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Policy;
+import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkePhase1Proposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIkeProposal;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
@@ -24,6 +26,8 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLis
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isDynamic;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Proposals;
+import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasPresharedKey;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationAlgorithm;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasAuthenticationMethod;
 import static org.batfish.datamodel.matchers.IkeProposalMatchers.hasDiffieHellmanGroup;
@@ -147,6 +151,7 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
+import org.batfish.datamodel.matchers.IkePhase1ProposalMatchers;
 import org.batfish.datamodel.matchers.IpAccessListMatchers;
 import org.batfish.datamodel.matchers.IpsecPolicyMatchers;
 import org.batfish.datamodel.matchers.IpsecProposalMatchers;
@@ -1232,6 +1237,20 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIkePolicy() throws IOException {
+    Configuration c = parseConfig("ike-policy");
+
+    assertThat(
+        c,
+        hasIkePhase1Policy(
+            "policy1",
+            allOf(
+                hasPresharedKey(CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                hasIkePhase1Proposals(
+                    contains(ImmutableList.of(IkePhase1ProposalMatchers.hasName("proposal1")))))));
+  }
+
+  @Test
   public void testIkeProposal() throws IOException {
     Configuration c = parseConfig("ike-proposal");
 
@@ -1245,12 +1264,26 @@ public class FlatJuniperGrammarTest {
                 hasAuthenticationAlgorithm(IkeHashingAlgorithm.MD5),
                 hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP14),
                 hasLifeTimeSeconds(50000))));
+
+    // test for IKE phase1 proposals
+    assertThat(
+        c,
+        hasIkePhase1Proposal(
+            "proposal1",
+            allOf(
+                IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                    IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.MD5),
+                IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP14),
+                IkePhase1ProposalMatchers.hasLifeTimeSeconds(50000))));
   }
 
   @Test
   public void testIkeProposalSet() throws IOException {
     Configuration c = parseConfig("ike-proposal");
 
+    /** TODO: Replace with IKE phase 1 proposal tests */
     // ike proposals added as part of the `basic` proposal set
     assertThat(
         c,

@@ -1908,6 +1908,7 @@ public class CiscoGrammarTest {
                 hasIkePolicy(
                     hasPresharedKeyHash(CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))))));
 
+    // test for IKE phase 1 policy
     assertThat(
         c,
         hasIkePhase1Policy(
