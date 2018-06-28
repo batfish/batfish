@@ -117,7 +117,7 @@ public class RoutingPolicy extends ComparableStructure<String> {
       Set<String> parentSources, Map<String, RoutingPolicy> routingPolicies, Warnings w) {
     if (_sources == null) {
       Set<String> newParentSources = Sets.union(parentSources, ImmutableSet.of(_key));
-      ImmutableSet.Builder<String> childSources = ImmutableSet.<String>builder();
+      ImmutableSet.Builder<String> childSources = ImmutableSet.builder();
       childSources.add(_key);
       for (Statement statement : _statements) {
         childSources.addAll(statement.collectSources(newParentSources, routingPolicies, w));

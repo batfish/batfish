@@ -44,7 +44,7 @@ public abstract class AbstractMultiSet<E> implements MultiSet<E> {
 
   @Override
   public MultiSet<Integer> quantityHistogram() {
-    MultiSet<Integer> quantityHistogram = this.<Integer>create();
+    MultiSet<Integer> quantityHistogram = this.create();
     for (int i : _map.values()) {
       quantityHistogram.add(i);
     }
