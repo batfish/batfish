@@ -203,7 +203,7 @@ public class VerificationResult {
                           }
                         }
                       }));
-      System.out.println("");
+      System.out.println();
       _model.forEach(
           (var, val) -> {
             if (filter == null || var.contains(filter)) {
@@ -218,7 +218,7 @@ public class VerificationResult {
         BoolExpr constraint = enc.getUnsatCore().getTrackingVars().get(be.toString());
         System.out.println("Var: " + be);
         System.out.println(constraint);
-        System.out.println("");
+        System.out.println();
       }
     }
   }
