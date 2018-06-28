@@ -22,8 +22,6 @@ public class JsonDiffAnswerElement extends AnswerElement {
 
   @Override
   public String prettyPrint() {
-    final StringBuilder sb = new StringBuilder("Difference between base and delta\n");
-    sb.append(_jsonDiff.prettyPrint("  "));
-    return sb.toString();
+    return "Difference between base and delta\n" + _jsonDiff.prettyPrint("  ");
   }
 }
