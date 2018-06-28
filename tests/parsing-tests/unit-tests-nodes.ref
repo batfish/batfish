@@ -14695,7 +14695,8 @@
         },
         "ikeProposals" : {
           "PROPOSAL" : {
-            "name" : "PROPOSAL"
+            "name" : "PROPOSAL",
+            "lifetimeSeconds" : 28800
           }
         },
         "ipAccessLists" : {
