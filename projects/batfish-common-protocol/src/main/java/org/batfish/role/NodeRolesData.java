@@ -151,11 +151,13 @@ public class NodeRolesData {
         newDimensions == null ? new TreeSet<>() : newDimensions;
 
     // add the old role dimensions that are not in common with new dimensions
-    SortedSet<NodeRoleDimension> newRoles = new TreeSet<>(oldRolesData
-          ._roleDimensions
-          .stream()
-          .filter(d -> !finalNewDimensions.contains(d))
-          .collect(Collectors.toSet()));
+    SortedSet<NodeRoleDimension> newRoles =
+        new TreeSet<>(
+            oldRolesData
+                ._roleDimensions
+                .stream()
+                .filter(d -> !finalNewDimensions.contains(d))
+                .collect(Collectors.toSet()));
 
     // delete the auto dimensions if needed
     if (deleteAutoFirst) {

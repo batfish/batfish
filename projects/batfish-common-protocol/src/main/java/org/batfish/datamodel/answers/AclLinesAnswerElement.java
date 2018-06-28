@@ -106,14 +106,13 @@ public class AclLinesAnswerElement extends AnswerElement implements AclLinesAnsw
     }
 
     public String prettyPrint(String indent) {
-      StringBuilder sb = new StringBuilder();
-      sb.append(String.format("%s[index %d] %s\n", indent, _index, _name));
-      sb.append(
-          String.format(
-              "%s  Earliest covering line: [index %d] %s\n",
-              indent, _earliestMoreGeneralLineIndex, _earliestMoreGeneralLineName));
-      sb.append(String.format("%s  Is different action: %s\n", indent, _differentAction));
-      return sb.toString();
+      String sb =
+          String.format("%s[index %d] %s\n", indent, _index, _name)
+              + String.format(
+                  "%s  Earliest covering line: [index %d] %s\n",
+                  indent, _earliestMoreGeneralLineIndex, _earliestMoreGeneralLineName)
+              + String.format("%s  Is different action: %s\n", indent, _differentAction);
+      return sb;
     }
 
     public void setDifferentAction(boolean differentAction) {

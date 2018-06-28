@@ -122,10 +122,10 @@ public class OspfSessionCheckQuestionPlugin extends QuestionPlugin {
 
     @Override
     public String prettyPrint() {
-      StringBuilder sb = new StringBuilder();
-      sb.append(prettyPrintCategory(_halfOpen, PROP_HALF_OPEN));
-      sb.append(prettyPrintCategory(_mismatchLinkCost, PROP_MISMATCH_LINK_COST));
-      return sb.toString();
+      String sb =
+          String.valueOf(prettyPrintCategory(_halfOpen, PROP_HALF_OPEN))
+              + prettyPrintCategory(_mismatchLinkCost, PROP_MISMATCH_LINK_COST);
+      return sb;
     }
 
     private CharSequence prettyPrintCategory(

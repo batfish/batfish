@@ -74,9 +74,7 @@ public class CompareSameNameQuestionPlugin extends QuestionPlugin {
 
     private String equivalenceSetToString(
         String indent, String name, NamedStructureEquivalenceSets<?> nseSets) {
-      StringBuilder sb = new StringBuilder(indent + name + "\n");
-      sb.append(nseSets.prettyPrint(indent + indent));
-      return sb.toString();
+      return indent + name + "\n" + nseSets.prettyPrint(indent + indent);
     }
 
     @JsonProperty(PROP_EQUIVALENCE_SETS_MAP)
