@@ -91,9 +91,7 @@ public class TableDiffTest {
     assertThat(TableDiff.diffCells(null, null, Schema.INTEGER), equalTo(TableDiff.RESULT_SAME));
 
     /** Integer difference */
-    assertThat(
-        TableDiff.diffCells(1, 2, Schema.INTEGER),
-        equalTo(TableDiff.resultDifferent("-1")));
+    assertThat(TableDiff.diffCells(1, 2, Schema.INTEGER), equalTo(TableDiff.resultDifferent("-1")));
 
     /** Set difference */
     String diffValue =
