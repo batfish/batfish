@@ -1088,6 +1088,14 @@ public class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNestedConfigLineComments() throws IOException {
+    String hostname = "nested-config-line-comments";
+
+    // Confirm extraction works for nested configs even in the presence of line comments
+    assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
+  }
+
+  @Test
   public void testNestedConfigStructureDef() throws IOException {
     String hostname = "nested-config-structure-def";
     Batfish batfish = getBatfishForConfigurationNames(hostname);

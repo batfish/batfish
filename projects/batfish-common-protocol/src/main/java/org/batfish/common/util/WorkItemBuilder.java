@@ -131,9 +131,8 @@ public class WorkItemBuilder {
 
     String testrig = workItem.getTestrigName();
     String envName =
-        reqParams.containsKey(BfConsts.ARG_ENVIRONMENT_NAME)
-            ? reqParams.get(BfConsts.ARG_ENVIRONMENT_NAME)
-            : BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME;
+        reqParams.getOrDefault(
+            BfConsts.ARG_ENVIRONMENT_NAME, BfConsts.RELPATH_DEFAULT_ENVIRONMENT_NAME);
     String deltaTestrig = reqParams.get(BfConsts.ARG_DELTA_TESTRIG);
     String deltaEnvName = reqParams.get(BfConsts.ARG_DELTA_ENVIRONMENT_NAME);
     if (deltaEnvName != null && deltaTestrig == null) {

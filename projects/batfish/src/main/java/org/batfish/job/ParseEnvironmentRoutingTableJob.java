@@ -96,7 +96,7 @@ public class ParseEnvironmentRoutingTableJob
                 _hostname, _fileText, nxosRoutingTableParser, _warnings, _batfish);
         break;
 
-        /** PLACEHOLDER CODES FOR IDENTIFIED BUT UNSUPPORTED ROUTING TABLE FORMATS */
+        /* PLACEHOLDER CODES FOR IDENTIFIED BUT UNSUPPORTED ROUTING TABLE FORMATS */
         /*
          * String unsupportedError = "Unsupported routing-table format: '" +
          * format.toString() + "' for file: '" + currentPath + "'\n"; if

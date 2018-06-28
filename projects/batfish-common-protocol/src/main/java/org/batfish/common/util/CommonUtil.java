@@ -1007,7 +1007,7 @@ public class CommonUtil {
    * DataPlane)} for more details.
    *
    * @param configurations configuration keyed by hostname
-   * @param ipOwners Ip owners (see {@link #computeIpNodeOwners(boolean, Map)}
+   * @param ipOwners Ip owners (see {@link #computeIpNodeOwners(Map, boolean)}
    * @param keepInvalid whether to keep improperly configured neighbors. If performing configuration
    *     checks, you probably want this set to {@code true}, otherwise (e.g., computing dataplane)
    *     you want this to be {@code false}.

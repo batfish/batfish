@@ -253,13 +253,11 @@ public final class TcpFlags implements Serializable, Comparable<TcpFlags> {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    TcpFlags other = (TcpFlags) obj;
-    if (other.toString().equals(this.toString())) {
-      return true;
-    } else {
+    } else if (!(obj instanceof TcpFlags)) {
       return false;
     }
+    TcpFlags other = (TcpFlags) obj;
+    return other.toString().equals(this.toString());
   }
 
   @JsonPropertyDescription("Value for ACK bit if used (true->1/false->0)")

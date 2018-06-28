@@ -1695,8 +1695,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     List<Statement> statements = routingPolicy.getStatements();
     boolean hasDefaultTerm =
         ps.getDefaultTerm().getFroms().size() > 0 || ps.getDefaultTerm().getThens().size() > 0;
-    List<PsTerm> terms = new ArrayList<>();
-    terms.addAll(ps.getTerms().values());
+    List<PsTerm> terms = new ArrayList<>(ps.getTerms().values());
     if (hasDefaultTerm) {
       terms.add(ps.getDefaultTerm());
     }
@@ -1856,8 +1855,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     // remove empty firewall filters (ipv6-only filters)
-    Map<String, FirewallFilter> allFilters = new LinkedHashMap<>();
-    allFilters.putAll(_filters);
+    Map<String, FirewallFilter> allFilters = new LinkedHashMap<>(_filters);
     for (Entry<String, FirewallFilter> e : allFilters.entrySet()) {
       String name = e.getKey();
       FirewallFilter filter = e.getValue();

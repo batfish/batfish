@@ -49,7 +49,6 @@ public class NodePropertySpecifier extends PropertySpecifier {
           .put(
               "default-inbound-action",
               new PropertyDescriptor<>(Configuration::getDefaultInboundAction, Schema.STRING))
-          .put("default-vrf", new PropertyDescriptor<>(Configuration::getDefaultVrf, Schema.STRING))
           .put("device-type", new PropertyDescriptor<>(Configuration::getDeviceType, Schema.STRING))
           .put(
               "dns-servers",

@@ -92,7 +92,7 @@ public class QuestionHelper {
             .readValue(instanceJson.toString(), new TypeReference<InstanceData>() {});
     Map<String, Variable> variables = instanceData.getVariables();
 
-    /**
+    /*
      * We want all variables to be exercised (i.e, assigned values) as part of validation because
      * unexercised parameters and variables are removed as part of template preprocessing in {@link
      * Question#preprocessQuestion(String)} and then we cannot know if the parameter programmed in
