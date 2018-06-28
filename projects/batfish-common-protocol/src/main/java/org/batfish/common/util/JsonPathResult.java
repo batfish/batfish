@@ -1,7 +1,6 @@
 package org.batfish.common.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -84,6 +83,6 @@ public class JsonPathResult {
 
   /** Tells us if the suffix is null or empty */
   public boolean isNullOrEmptySuffix() {
-    return _suffix == null || (_suffix.isArray() && ((ArrayNode) _suffix).size() == 0);
+    return _suffix == null || (_suffix.isArray() && _suffix.size() == 0);
   }
 }
