@@ -1187,7 +1187,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             ikeProposalName -> {
               IkePhase1Proposal ikePhase1Proposal = _c.getIkePhase1Proposals().get(ikeProposalName);
               if (ikePhase1Proposal != null) {
-                ikePhase1Policy.getIkePhase1Propsals().add(ikePhase1Proposal);
+                ikePhase1Policy.getIkePhase1Proposals().add(ikePhase1Proposal);
               }
             });
 

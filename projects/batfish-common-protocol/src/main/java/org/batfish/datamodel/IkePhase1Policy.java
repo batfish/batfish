@@ -28,7 +28,7 @@ public class IkePhase1Policy extends ComparableStructure<String> {
 
   @JsonPropertyDescription("IKE phase 1 proposals to be used with this IKE phase 1 policy")
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  public List<IkePhase1Proposal> getIkePhase1Propsals() {
+  public List<IkePhase1Proposal> getIkePhase1Proposals() {
     return _ikePhase1Proposals;
   }
 
@@ -39,8 +39,8 @@ public class IkePhase1Policy extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
-  public void setIkePhase1Proposals(List<IkePhase1Proposal> ikePhase1Proopsals) {
-    _ikePhase1Proposals = ikePhase1Proopsals;
+  public void setIkePhase1Proposals(List<IkePhase1Proposal> ikePhase1Proposals) {
+    _ikePhase1Proposals = ikePhase1Proposals;
   }
 
   @JsonProperty(PROP_PRE_SHARED_KEY)

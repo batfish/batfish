@@ -2182,7 +2182,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .entrySet()
         .forEach(
             (ikePhase1ProposalEntry ->
-                ikePhase1Policy.getIkePhase1Propsals().add(ikePhase1ProposalEntry.getValue())));
+                ikePhase1Policy.getIkePhase1Proposals().add(ikePhase1ProposalEntry.getValue())));
     ikePhase1Policy.setPreSharedKey(getMatchingPsk(isakmpProfile));
     return ikePhase1Policy;
   }

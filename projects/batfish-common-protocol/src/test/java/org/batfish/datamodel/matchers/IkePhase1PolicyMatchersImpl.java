@@ -28,7 +28,7 @@ final class IkePhase1PolicyMatchersImpl {
 
     @Override
     protected List<IkePhase1Proposal> featureValueOf(IkePhase1Policy actual) {
-      return actual.getIkePhase1Propsals();
+      return actual.getIkePhase1Proposals();
     }
   }
 }
