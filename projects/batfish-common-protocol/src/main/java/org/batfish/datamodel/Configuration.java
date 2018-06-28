@@ -117,6 +117,10 @@ public final class Configuration extends ComparableStructure<String> {
 
   private static final String PROP_IKE_PROPOSALS = "ikeProposals";
 
+  private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
+
+  private static final String PROP_IKE_PHASE1_PROPOSALS = "ikePhase1Proposals";
+
   private static final String PROP_IP_ACCESS_LISTS = "ipAccessLists";
 
   private static final String PROP_IP_SPACES = "ipSpaces";
@@ -178,6 +182,10 @@ public final class Configuration extends ComparableStructure<String> {
   private NavigableMap<String, IkePolicy> _ikePolicies;
 
   private NavigableMap<String, IkeProposal> _ikeProposals;
+
+  private NavigableMap<String, IkePhase1Proposal> _ikePhase1Proposals;
+
+  private NavigableMap<String, IkePhase1Policy> _ikePhase1Policies;
 
   private NavigableMap<String, Interface> _interfaces;
 
@@ -261,6 +269,8 @@ public final class Configuration extends ComparableStructure<String> {
     _ikeGateways = new TreeMap<>();
     _ikePolicies = new TreeMap<>();
     _ikeProposals = new TreeMap<>();
+    _ikePhase1Policies = new TreeMap<>();
+    _ikePhase1Proposals = new TreeMap<>();
     _interfaces = new TreeMap<>();
     _ipAccessLists = new TreeMap<>();
     _ip6AccessLists = new TreeMap<>();
@@ -421,6 +431,18 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonPropertyDescription("Dictionary of all IKE proposals for this node.")
   public NavigableMap<String, IkeProposal> getIkeProposals() {
     return _ikeProposals;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_POLICIES)
+  @JsonPropertyDescription("Dictionary of all IKE phase1 policies for this node.")
+  public NavigableMap<String, IkePhase1Policy> getIkePhase1Policies() {
+    return _ikePhase1Policies;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
+  @JsonPropertyDescription("Dictionary of all IKE phase1 proposals for this node.")
+  public NavigableMap<String, IkePhase1Proposal> getIkePhase1Proposals() {
+    return _ikePhase1Proposals;
   }
 
   @JsonPropertyDescription("Dictionary of all interfaces across all VRFs for this node.")
@@ -669,6 +691,16 @@ public final class Configuration extends ComparableStructure<String> {
   @JsonProperty(PROP_IKE_POLICIES)
   public void setIkePolicies(NavigableMap<String, IkePolicy> ikePolicies) {
     _ikePolicies = ikePolicies;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_POLICIES)
+  public void setIkePhase1Policies(NavigableMap<String, IkePhase1Policy> ikePhase1Policies) {
+    _ikePhase1Policies = ikePhase1Policies;
+  }
+
+  @JsonProperty(PROP_IKE_PHASE1_PROPOSALS)
+  public void setIkePhase1Proposals(NavigableMap<String, IkePhase1Proposal> ikePhase1Proposals) {
+    _ikePhase1Proposals = ikePhase1Proposals;
   }
 
   @JsonProperty(PROP_IKE_PROPOSALS)

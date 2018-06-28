@@ -41,7 +41,8 @@ public class Keyring extends ComparableStructure<String> {
   }
 
   public boolean match(Ip localAddress, Prefix matchIdentity) {
-    return Objects.equals(localAddress, _localAddress) && matchIdentity.containsIp(_remoteAddress);
+    return matchIdentity.containsIp(_remoteAddress)
+        && (_localAddress == null || Objects.equals(localAddress, _localAddress));
   }
 
   public void setKey(String key) {

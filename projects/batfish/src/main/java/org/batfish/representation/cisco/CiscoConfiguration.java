@@ -49,6 +49,8 @@ import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.GeneratedRoute6;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkePolicy;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.InterfaceAddress;
@@ -2170,6 +2172,52 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return ikeProposal;
   }
 
+  private IkePhase1Policy toIkePhase1Policy(IsakmpProfile isakmpProfile, Configuration c) {
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(isakmpProfile.getName());
+    // adding IKE proposals in sorted order of names
+    c.getIkePhase1Proposals()
+        .entrySet()
+        .forEach(
+            (ikePhase1ProposalEntry ->
+                ikePhase1Policy.getIkePhase1Propsals().add(ikePhase1ProposalEntry.getValue())));
+    ikePhase1Policy.setPreSharedKey(getMatchingPsk(isakmpProfile));
+    return ikePhase1Policy;
+  }
+
+  private String getMatchingPsk(IsakmpProfile isakmpProfile) {
+    String psk = null;
+    String isakmpProfileName = isakmpProfile.getName();
+    if (Objects.equals(isakmpProfile.getLocalAddress(), Ip.AUTO)) {
+      _w.redFlag(
+          String.format(
+              "Invalid local address interface configured for ISAKMP profile %s",
+              isakmpProfileName));
+    }
+    if (isakmpProfile.getKeyring() == null || !_keyrings.containsKey(isakmpProfile.getKeyring())) {
+      _w.redFlag(String.format("Cannot find keyring for ISAKMP profile %s", isakmpProfileName));
+    }
+    Keyring keyring = _keyrings.get(isakmpProfile.getKeyring());
+    if (Objects.equals(keyring.getLocalAddress(), Ip.AUTO)) {
+      _w.redFlag(
+          String.format(
+              "Invalid local address interface configured for keyring %s", keyring.getName()));
+    }
+    if (keyring.match(isakmpProfile.getLocalAddress(), isakmpProfile.getMatchIdentity())) {
+      psk = keyring.getKey();
+    }
+    return psk;
+  }
+
+  private static IkePhase1Proposal toIkePhase1Proposal(IsakmpPolicy isakmpPolicy) {
+    IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(isakmpPolicy.getName());
+    ikePhase1Proposal.setDiffieHellmanGroup(isakmpPolicy.getDiffieHellmanGroup());
+    ikePhase1Proposal.setAuthenticationMethod(isakmpPolicy.getAuthenticationMethod());
+    ikePhase1Proposal.setEncryptionAlgorithm(isakmpPolicy.getEncryptionAlgorithm());
+    ikePhase1Proposal.setLifetimeSeconds(isakmpPolicy.getLifetimeSeconds());
+    ikePhase1Proposal.setHashingAlgorithm(isakmpPolicy.getHashAlgorithm());
+    return ikePhase1Proposal;
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     String name = iface.getName();
@@ -3218,10 +3266,19 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // ISAKMP policies to IKE proposals
     for (Entry<String, IsakmpPolicy> e : _isakmpPolicies.entrySet()) {
       c.getIkeProposals().put(e.getKey(), toIkeProposal(e.getValue()));
+      c.getIkePhase1Proposals().put(e.getKey(), toIkePhase1Proposal(e.getValue()));
     }
     resolveKeyringIsakmpProfileAddresses();
     resolveTunnelSourceInterfaces();
     addIkePoliciesAndGateways(c);
+
+    // ISAKMP profiles to IKE phase 1 policies
+    _isakmpProfiles
+        .values()
+        .forEach(
+            isakmpProfile ->
+                c.getIkePhase1Policies()
+                    .put(isakmpProfile.getName(), toIkePhase1Policy(isakmpProfile, c)));
 
     // ipsec proposals
     for (Entry<String, IpsecTransformSet> e : _ipsecTransformSets.entrySet()) {

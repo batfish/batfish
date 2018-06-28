@@ -37,6 +37,8 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -1171,6 +1173,27 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return newIkePolicy;
   }
 
+  private IkePhase1Policy toIkePhase1Policy(IkePolicy ikePolicy) {
+    String name = ikePolicy.getName();
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(name);
+
+    // pre-shared-key
+    ikePhase1Policy.setPreSharedKey(ikePolicy.getPreSharedKeyHash());
+
+    // ike proposals
+    ikePolicy
+        .getProposals()
+        .forEach(
+            ikeProposalName -> {
+              IkePhase1Proposal ikePhase1Proposal = _c.getIkePhase1Proposals().get(ikeProposalName);
+              if (ikePhase1Proposal != null) {
+                ikePhase1Policy.getIkePhase1Propsals().add(ikePhase1Proposal);
+              }
+            });
+
+    return ikePhase1Policy;
+  }
+
   private org.batfish.datamodel.IkeProposal toIkeProposal(IkeProposal ikeProposal) {
     org.batfish.datamodel.IkeProposal newIkeProposal =
         new org.batfish.datamodel.IkeProposal(ikeProposal.getName());
@@ -1953,6 +1976,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IkePolicy oldIkePolicy = e.getValue();
       org.batfish.datamodel.IkePolicy newPolicy = toIkePolicy(oldIkePolicy);
       _c.getIkePolicies().put(name, newPolicy);
+      // storing IKE phase 1 policy
+      IkePhase1Policy ikePhase1Policy = toIkePhase1Policy(oldIkePolicy);
+      _c.getIkePhase1Policies().put(name, ikePhase1Policy);
     }
 
     // convert ike gateways

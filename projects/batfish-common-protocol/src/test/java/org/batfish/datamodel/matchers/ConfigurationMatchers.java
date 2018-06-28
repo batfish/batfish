@@ -9,6 +9,8 @@ import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.IkeGateway;
+import org.batfish.datamodel.IkePhase1Policy;
+import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IkeProposal;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
@@ -21,6 +23,8 @@ import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasConfiguration
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasDefaultVrf;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasHostname;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeGateway;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkePhase1Policy;
+import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkePhase1Proposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasIkeProposal;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterface;
 import org.batfish.datamodel.matchers.ConfigurationMatchersImpl.HasInterfaces;
@@ -89,6 +93,24 @@ public class ConfigurationMatchers {
   public static HasIkeProposal hasIkeProposal(
       @Nonnull String name, @Nonnull Matcher<? super IkeProposal> subMatcher) {
     return new HasIkeProposal(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * IKE phase 1 policy with specified name.
+   */
+  public static HasIkePhase1Policy hasIkePhase1Policy(
+      @Nonnull String name, @Nonnull Matcher<? super IkePhase1Policy> subMatcher) {
+    return new HasIkePhase1Policy(name, subMatcher);
+  }
+
+  /**
+   * Provides a matcher that matches if the provided {@code subMatcher} matches the configuration's
+   * IKE phase 1 proposal with specified name.
+   */
+  public static HasIkePhase1Proposal hasIkePhase1Proposal(
+      @Nonnull String name, @Nonnull Matcher<? super IkePhase1Proposal> subMatcher) {
+    return new HasIkePhase1Proposal(name, subMatcher);
   }
 
   /**
