@@ -941,6 +941,15 @@
           ]
         }
       },
+      "unused:object network:obj_any" : {
+        "description" : "Unused structure of type: 'object network' with name: 'obj_any'",
+        "files" : {
+          "cisco_qos" : [
+            31,
+            32
+          ]
+        }
+      },
       "unused:object-group network:1.2.3.4-24" : {
         "description" : "Unused structure of type: 'object-group network' with name: '1.2.3.4-24'",
         "files" : {
@@ -1457,7 +1466,7 @@
     "summary" : {
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 140
+      "numResults" : 141
     },
     "unusedStructures" : {
       "aggAddress" : {
@@ -1927,6 +1936,12 @@
             23,
             24,
             25
+          ]
+        },
+        "object network" : {
+          "obj_any" : [
+            31,
+            32
           ]
         },
         "object-group network" : {

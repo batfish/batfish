@@ -15,10 +15,10 @@ object-group network ogn_network_object
  network-object host 2.0.0.1
  network-object 1.0.0.0 255.0.0.0
 !
-object-group network ogn_network_object_indirect
- network-object object ogn_host
- network-object object ogn_indirect
- network-object object ogn_undef
+object-group network ogn_object_group_indirect
+ group-object ogn_host
+ group-object ogn_indirect
+ group-object ogn_undef
 !
 object-group network ogn_unused
 !
