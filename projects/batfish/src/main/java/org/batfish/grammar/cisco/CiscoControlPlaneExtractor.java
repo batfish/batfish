@@ -6110,9 +6110,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitNo_ip_prefix_list_stanza(No_ip_prefix_list_stanzaContext ctx) {
     String prefixListName = ctx.name.getText();
-    if (_configuration.getPrefixLists().containsKey(prefixListName)) {
-      _configuration.getPrefixLists().remove(prefixListName);
-    }
+    _configuration.getPrefixLists().remove(prefixListName);
   }
 
   @Override
@@ -6201,9 +6199,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitNo_route_map_stanza(No_route_map_stanzaContext ctx) {
     String mapName = ctx.name.getText();
-    if (_configuration.getRouteMaps().containsKey(mapName)) {
-      _configuration.getRouteMaps().remove(mapName);
-    }
+    _configuration.getRouteMaps().remove(mapName);
   }
 
   @Override

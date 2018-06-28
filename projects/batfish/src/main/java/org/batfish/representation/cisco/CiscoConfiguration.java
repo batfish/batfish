@@ -3181,10 +3181,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     createInspectPolicyMapAcls(c);
 
     // create zones
-    _securityZones.forEach(
-        (name, securityZone) -> {
-          c.getZones().put(name, new Zone(name));
-        });
+    _securityZones.forEach((name, securityZone) -> c.getZones().put(name, new Zone(name)));
 
     // populate zone interfaces
     _interfaces.forEach(
@@ -4071,21 +4068,20 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .stream()
         .filter(keyring -> keyring.getLocalInterfaceName() != null)
         .forEach(
-            keyring -> {
-              keyring.setLocalAddress(
-                  firstNonNull(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName()), Ip.AUTO));
-            });
+            keyring ->
+                keyring.setLocalAddress(
+                    firstNonNull(
+                        ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName()), Ip.AUTO)));
 
     _isakmpProfiles
         .values()
         .stream()
         .filter(isakmpProfile -> isakmpProfile.getLocalInterfaceName() != null)
         .forEach(
-            isakmpProfile -> {
-              isakmpProfile.setLocalAddress(
-                  firstNonNull(
-                      ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName()), Ip.AUTO));
-            });
+            isakmpProfile ->
+                isakmpProfile.setLocalAddress(
+                    firstNonNull(
+                        ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName()), Ip.AUTO)));
   }
 
   /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */

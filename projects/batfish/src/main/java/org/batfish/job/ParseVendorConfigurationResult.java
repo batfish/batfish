@@ -86,7 +86,7 @@ public class ParseVendorConfigurationResult
     if (_vc != null) {
       String hostname = _vc.getHostname();
       if (vendorConfigurations.containsKey(hostname)) {
-        /**
+        /*
          * Modify the hostname of what is already in the vendorConfigurations map. Ideally, we'd add
          * a warning but the getWarnings object around here is null
          */

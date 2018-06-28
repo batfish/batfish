@@ -240,7 +240,7 @@ public class JsonPathToTableAnswerer extends Answerer {
         JsonNode varNode = answerValues.get(varName);
         if (extractions.get(varName).getSchema().getType() == Type.LIST
             || extractions.get(varName).getSchema().getType() == Type.SET) {
-          object.set(propertyName, ((ArrayNode) varNode).get(index));
+          object.set(propertyName, varNode.get(index));
         } else {
           object.set(propertyName, varNode);
         }

@@ -1,6 +1,7 @@
 package org.batfish.specifier;
 
 import java.util.ServiceLoader;
+import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 
 /**
@@ -27,5 +28,5 @@ public interface IpSpaceSpecifierFactory {
    * @param input User input of {@link IpSpaceSpecifier} fields to be parsed and/or validated.
    * @return The constructed {@link IpSpaceSpecifier}.
    */
-  IpSpaceSpecifier buildIpSpaceSpecifier(Object input);
+  IpSpaceSpecifier buildIpSpaceSpecifier(@Nullable Object input);
 }

@@ -1393,7 +1393,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
     if (getBooleanOptionValue(ARG_VERSION)) {
       _config.setProperty(CAN_EXECUTE, false);
-      System.out.printf(Version.getCompleteVersionString());
+      System.out.print(Version.getCompleteVersionString());
       return;
     }
 

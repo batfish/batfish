@@ -130,8 +130,8 @@ public class Route implements Serializable {
           NetworkInterface networkInterface = region.getNetworkInterfaces().get(_target);
           String networkInterfaceSubnetId = networkInterface.getSubnetId();
           if (networkInterfaceSubnetId.equals(subnet.getId())) {
-            Set<Ip> networkInterfaceIps = new TreeSet<>();
-            networkInterfaceIps.addAll(networkInterface.getIpAddressAssociations().keySet());
+            Set<Ip> networkInterfaceIps =
+                new TreeSet<>(networkInterface.getIpAddressAssociations().keySet());
             Ip lowestIp = networkInterfaceIps.toArray(new Ip[] {})[0];
             if (!subnet.getCidrBlock().containsIp(lowestIp)) {
               throw new BatfishException(

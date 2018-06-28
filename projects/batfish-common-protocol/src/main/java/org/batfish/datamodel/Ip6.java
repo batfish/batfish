@@ -10,6 +10,7 @@ import java.util.BitSet;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.batfish.common.BatfishException;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
@@ -28,14 +29,13 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
   private static String asIpv6AddressString(BigInteger ipv6AddressAsBigInteger) {
     BigInteger remainder = ipv6AddressAsBigInteger;
-    String out = "";
-    BigInteger segmentMask = new BigInteger("+FFFF", 16);
+    String[] pieces = new String[8];
     for (int i = 0; i < 8; i++) {
-      out = remainder.and(segmentMask).toString(16) + ":" + out;
+      int mask = (int) remainder.shortValue() & 0xFFFF;
+      pieces[7 - i] = String.format("%x", mask);
       remainder = remainder.shiftRight(16);
     }
-    out = out.substring(0, out.length() - 1);
-    return out;
+    return StringUtils.join(pieces, ":");
   }
 
   private static BigInteger numSubnetBitsToSubnetBigInteger(int numBits) {

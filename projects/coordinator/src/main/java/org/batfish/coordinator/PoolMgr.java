@@ -54,9 +54,7 @@ public class PoolMgr {
   }
 
   public synchronized void deleteFromPool(String worker) {
-    if (_workerPool.containsKey(worker)) {
-      _workerPool.remove(worker);
-    }
+    _workerPool.remove(worker);
   }
 
   private synchronized List<String> getAllWorkers() {
@@ -157,7 +155,7 @@ public class PoolMgr {
         JSONObject jObj = new JSONObject(array.get(1).toString());
 
         if (!jObj.has("idle")) {
-          _logger.error(String.format("did not see idle key in json response\n"));
+          _logger.error("did not see idle key in json response\n");
           updateWorkerStatus(worker, WorkerStatus.StatusCode.UNKNOWN);
           return;
         }
