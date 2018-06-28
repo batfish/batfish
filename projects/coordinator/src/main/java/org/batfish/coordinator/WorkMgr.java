@@ -1493,13 +1493,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // as an optimization trigger AssignWork to see if we can schedule this (or another) work
     if (success) {
-      Thread thread =
-          new Thread() {
-            @Override
-            public void run() {
-              assignWork();
-            }
-          };
+      Thread thread = new Thread(() -> assignWork());
       thread.start();
     }
     return success;

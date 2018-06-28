@@ -48,13 +48,7 @@ public class PoolMgr {
     // start out as unknown and trigger refresh in the background
     _workerPool.put(worker, new WorkerStatus(WorkerStatus.StatusCode.UNKNOWN));
 
-    Thread thread =
-        new Thread() {
-          @Override
-          public void run() {
-            refreshWorkerStatus(worker);
-          }
-        };
+    Thread thread = new Thread(() -> refreshWorkerStatus(worker));
 
     thread.start();
   }
