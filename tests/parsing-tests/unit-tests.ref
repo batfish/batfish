@@ -58387,7 +58387,8 @@
         },
         "cisco_crypto" : {
           "Red flags" : {
-            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile"
+            "1" : "MISCELLANEOUS: Can't get IkeGateway: Local or remote address is not set for isakmpProfile myprofile",
+            "2" : "MISCELLANEOUS: Cannot find keyring VRF:MMS:RMT:UPM:1143 for ISAKMP profile myprofile"
           }
         },
         "cisco_interface" : {

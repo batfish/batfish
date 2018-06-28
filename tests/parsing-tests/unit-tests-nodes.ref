@@ -1214,6 +1214,16 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Proposals" : {
+          "001" : {
+            "name" : "001",
+            "authenticationMethod" : "RSA_SIGNATURES",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256",
+            "lifetimeSeconds" : 86400
+          }
+        },
         "ikeProposals" : {
           "001" : {
             "name" : "001",
@@ -5799,6 +5809,31 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Policies" : {
+          "myprofile" : {
+            "name" : "myprofile",
+            "ikePhase1Proposals" : [
+              {
+                "name" : "001",
+                "authenticationMethod" : "PRE_SHARED_KEYS",
+                "diffieHellmanGroup" : "GROUP2",
+                "encryptionAlgorithm" : "THREEDES_CBC",
+                "hashingAlgorithm" : "MD5",
+                "lifetimeSeconds" : 28800
+              }
+            ]
+          }
+        },
+        "ikePhase1Proposals" : {
+          "001" : {
+            "name" : "001",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "THREEDES_CBC",
+            "hashingAlgorithm" : "MD5",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "myprofile" : {
             "name" : "myprofile",
@@ -14685,6 +14720,23 @@
         "defaultCrossZoneAction" : "ACCEPT",
         "defaultInboundAction" : "ACCEPT",
         "deviceType" : "SWITCH",
+        "ikePhase1Policies" : {
+          "1.2.3.4" : {
+            "name" : "1.2.3.4",
+            "ikePhase1Proposals" : [
+              {
+                "name" : "PROPOSAL",
+                "lifetimeSeconds" : 28800
+              }
+            ]
+          }
+        },
+        "ikePhase1Proposals" : {
+          "PROPOSAL" : {
+            "name" : "PROPOSAL",
+            "lifetimeSeconds" : 28800
+          }
+        },
         "ikePolicies" : {
           "1.2.3.4" : {
             "name" : "1.2.3.4",
