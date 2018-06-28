@@ -3,14 +3,13 @@ package org.batfish.representation.cisco;
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.List;
-import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
-public class ServiceObject extends ComparableStructure<String> implements ServiceObjectGroupLine {
+public final class ServiceObject implements ServiceObjectGroupLine {
   /** */
   private static final long serialVersionUID = 1L;
 
@@ -20,12 +19,14 @@ public class ServiceObject extends ComparableStructure<String> implements Servic
 
   private Integer _icmpType;
 
+  private String _name;
+
   private List<IpProtocol> _protocols;
 
   private List<SubRange> _srcPorts;
 
   public ServiceObject(String name) {
-    super(name);
+    _name = name;
     _protocols = new ArrayList<>();
   }
 
@@ -43,6 +44,10 @@ public class ServiceObject extends ComparableStructure<String> implements Servic
 
   public Integer getIcmpType() {
     return _icmpType;
+  }
+
+  public String getName() {
+    return _name;
   }
 
   public List<IpProtocol> getProtocols() {
