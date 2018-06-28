@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.google.common.collect.Table;
 import com.google.common.graph.Network;
 import java.io.Serializable;
 import java.util.Map;
@@ -8,6 +9,8 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 
 public interface DataPlane extends Serializable {
+
+  Table<String, String, Set<BgpRoute>> getBgpRoutes(boolean multipath);
 
   Network<BgpPeerConfig, BgpSession> getBgpTopology();
 
