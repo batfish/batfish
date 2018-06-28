@@ -23,7 +23,6 @@ import io.opentracing.ActiveSpan;
 import io.opentracing.util.GlobalTracer;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -539,7 +538,7 @@ public class Client extends AbstractClient implements IClient {
     }
   }
 
-  public Client(String[] args) throws Exception {
+  public Client(String[] args) {
     this(new Settings(args));
   }
 
@@ -756,7 +755,7 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean cat(String[] words) throws IOException, FileNotFoundException {
+  private boolean cat(String[] words) throws IOException {
     if (words.length != 2) {
       _logger.errorf("Invalid arguments: %s\n", Arrays.toString(words));
       printUsage(Command.CAT);
@@ -783,7 +782,7 @@ public class Client extends AbstractClient implements IClient {
     return true;
   }
 
-  private boolean clearScreen(List<String> options, List<String> parameters) throws IOException {
+  private boolean clearScreen(List<String> options, List<String> parameters) {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.CLEAR_SCREEN)) {
       return false;
     }
