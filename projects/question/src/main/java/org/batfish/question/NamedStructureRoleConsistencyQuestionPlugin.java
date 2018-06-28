@@ -42,7 +42,6 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
 
     @Override
     public String prettyPrint() {
-
       return "";
     }
 

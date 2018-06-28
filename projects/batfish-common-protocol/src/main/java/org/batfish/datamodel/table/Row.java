@@ -73,7 +73,7 @@ public class Row implements Comparable<Row> {
      *
      * <p>Any existing values for the column are overwritten
      */
-    public RowBuilder put(String column, Object value) {
+    public RowBuilder put(String column, @Nullable Object value) {
       _data.set(column, BatfishObjectMapper.mapper().valueToTree(value));
       return this;
     }
@@ -99,7 +99,6 @@ public class Row implements Comparable<Row> {
     Map<String, ColumnMetadata> _columns;
 
     private TypedRowBuilder(Map<String, ColumnMetadata> columns) {
-      checkArgument(columns != null, "Columns cannot be null to instantiate TypedRowBuilder");
       _columns = columns;
     }
 
