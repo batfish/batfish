@@ -180,7 +180,7 @@ public class NodJobAclTest {
 
     assertThat(
         fieldConstraints,
-        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
@@ -321,7 +321,7 @@ public class NodJobAclTest {
 
     assertThat(
         fieldConstraints,
-        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 

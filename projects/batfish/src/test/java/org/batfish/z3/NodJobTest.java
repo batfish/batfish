@@ -208,7 +208,7 @@ public class NodJobTest {
     // Only one OriginateVrf choice, so this must be 0
     assertThat(
         fieldConstraints,
-        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
     assertThat(fieldConstraints, hasEntry(Field.ORIG_SRC_IP.getName(), new Ip("3.0.0.0").asLong()));
     assertThat(
         fieldConstraints,
@@ -272,7 +272,7 @@ public class NodJobTest {
 
     assertThat(
         fieldConstraints,
-        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, new Long(0)));
+        hasEntry(IngressLocationInstrumentation.INGRESS_LOCATION_FIELD_NAME, 0L));
     assertThat(smtInput._variablesAsConsts, hasKey("SRC_IP"));
     assertThat(fieldConstraints, hasKey(Field.SRC_IP.getName()));
 
