@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -41,7 +42,7 @@ public class PropertySpecifierTest {
 
     // the capital P shouldn't matter and this should autoComplete to three entries
     assertThat(
-        PropertySpecifier.baseAutoComplete("ntP", properties).stream().collect(Collectors.toList()),
+        new ArrayList<>(PropertySpecifier.baseAutoComplete("ntP", properties)),
         equalTo(
             ImmutableList.of(
                 new AutocompleteSuggestion(".*ntp.*", false),

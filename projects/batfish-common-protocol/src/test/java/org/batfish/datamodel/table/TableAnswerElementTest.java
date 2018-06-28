@@ -37,7 +37,7 @@ public class TableAnswerElementTest {
 
   /** Does evaluateAssertion do the right thing for counting assertions? */
   @Test
-  public void testEvaluateAssertionCount() throws IOException {
+  public void testEvaluateAssertionCount() {
     Assertion twoCount = new Assertion(AssertionType.countequals, new IntNode(2));
 
     TableAnswerElement oneRow = new TableAnswerElement(new TableMetadata());

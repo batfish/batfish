@@ -33,7 +33,7 @@ public class JsonPathToTableQuestion extends Question {
       @JsonProperty(PROP_DEBUG) Boolean debug) {
     _innerQuestion = innerQuestion;
     _pathQuery = pathQuery;
-    _debug = debug != null && debug.booleanValue();
+    _debug = debug != null && debug;
 
     // names in text description should correspond to those of entities or extraction vars
     if (_displayHints != null && _displayHints.getTextDesc() != null) {

@@ -50,7 +50,7 @@ public enum HostSystemService {
     return _lines.get();
   }
 
-  private HostSystemService() {
+  HostSystemService() {
     _lines = Suppliers.memoize(this::init);
   }
 

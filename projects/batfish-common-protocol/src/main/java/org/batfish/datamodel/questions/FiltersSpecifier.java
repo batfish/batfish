@@ -66,7 +66,7 @@ public class FiltersSpecifier {
                 + parts[0]
                 + ".  Should be one of "
                 + Arrays.stream(Type.values())
-                    .map(v -> v.toString())
+                    .map(Object::toString)
                     .collect(Collectors.joining(", ")));
       }
     } else {

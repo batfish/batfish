@@ -3,7 +3,6 @@ package org.batfish.common;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -29,8 +28,7 @@ public class Warnings implements Serializable {
   public static class Deserializer extends JsonDeserializer<Warnings> {
 
     @Override
-    public Warnings deserialize(JsonParser parser, DeserializationContext ctx)
-        throws IOException, JsonProcessingException {
+    public Warnings deserialize(JsonParser parser, DeserializationContext ctx) throws IOException {
       JsonNode node = parser.getCodec().readTree(parser);
       Warnings warnings = new Warnings();
       if (node.has(PEDANTIC_VAR)) {
@@ -65,7 +63,7 @@ public class Warnings implements Serializable {
 
     @Override
     public void serialize(Warnings value, JsonGenerator jgen, SerializerProvider provider)
-        throws IOException, JsonProcessingException {
+        throws IOException {
       jgen.writeStartObject();
       if (!value._pedanticWarnings.isEmpty()) {
         jgen.writeFieldName(PEDANTIC_VAR);

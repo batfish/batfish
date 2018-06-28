@@ -1,9 +1,9 @@
 package org.batfish.datamodel.vendor_family;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 
@@ -65,8 +65,7 @@ public class VendorFamily implements Serializable {
   public String toString() {
     return String.join(
         " ",
-        Arrays.asList(_aws, _cisco, _juniper)
-            .stream()
+        Stream.of(_aws, _cisco, _juniper)
             .filter(f -> f != null)
             .map(f -> Objects.toString(toFamilyType(f)))
             .collect(Collectors.toList()));

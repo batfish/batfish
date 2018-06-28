@@ -5,7 +5,6 @@ import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,7 +19,7 @@ import org.junit.Test;
 public class JsonPathToTableAnswererTest {
 
   @Test
-  public void computeAnswerTable() throws IOException {
+  public void computeAnswerTable() {
     String innerAnswer = "{ 'excludeKey' : 'excludeVal', 'includeKey' : 'includeVal'}";
     String pathQuery = "$.*";
 
