@@ -275,6 +275,10 @@ public final class BgpPeerConfig implements Serializable {
   /** Whether this session is passive/dynamic (e.g., listens for incoming connections only) */
   private boolean _dynamic;
 
+  /**
+   * The remote peer's IPv4 prefix. Currently nullable because: 1) we sometimes pass null in the
+   * constructor; 2) Jackson deserialization without any enforcement checks.
+   */
   @Nullable private Prefix _prefix;
 
   /** The autonomous system number that the containing BGP process considers this peer to have. */
